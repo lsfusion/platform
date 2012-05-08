@@ -21,10 +21,7 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
-import platform.server.session.DataSession;
-import platform.server.session.MapDataChanges;
-import platform.server.session.PropertyChange;
-import platform.server.session.SingleKeyTableUsage;
+import platform.server.session.*;
 import tmc.VEDBusinessLogics;
 
 import java.io.File;
@@ -106,7 +103,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
                 if (BaseUtils.singleValue(row.getValue()) == null) { // не нашли объект
 
-                    DataObject article = session.addObject(BL.VEDLM.article, session.modifier);
+                    DataObject article = session.addObject(BL.VEDLM.article);
 
                     String barcode = (String)BaseUtils.singleValue(row.getKey());
 
@@ -115,7 +112,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                             BaseUtils.singleValue(mapBarKeys).compare(article, Compare.EQUALS)),
                             session.modifier);
 
-                    session.execute(barcodeChanges, null, null);
+                    new ExecutionEnvironment(session).execute(barcodeChanges, null);
                 }
             }
 
@@ -170,7 +167,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                     session.modifier);
 
             // сначала execute'им чтобы возврату были только созданные партии
-            session.execute(actionChanges.add(priceChanges.add(quantityChanges.add(nameChanges))), null, null);
+            new ExecutionEnvironment(session).execute(actionChanges.add(priceChanges.add(quantityChanges.add(nameChanges))), null);
 /*
             // импорт количества возврата
             ObjectValue returnDocValue = session.getObjectValue(impReturnDocID, ObjectType.instance);

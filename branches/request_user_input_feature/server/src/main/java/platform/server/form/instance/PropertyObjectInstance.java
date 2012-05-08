@@ -15,13 +15,13 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.instance.filter.CompareValue;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
@@ -133,8 +133,9 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return read(session.sql, modifier, session.env);
     }
 
-    public List<ClientAction> execute(DataSession session, CompareValue getterValue, Modifier modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
+    public List<ClientAction> execute(ExecutionEnvironment env, CompareValue getterValue, GroupObjectInstance groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
+        Modifier modifier = env.getModifier();
 
         Map<ObjectInstance, ? extends Expr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
         Where changeWhere = Where.TRUE;
@@ -147,9 +148,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
             changeWhere = changeWhere.and(mapKeys.get(mapObject.getKey()).compare(mapObject.getValue().getExpr(groupKeys, modifier), Compare.EQUALS));
         }
 
-        return session.execute(property,
-                               new PropertyChange<P>(mapKeys, getterValue.getExpr(groupKeys, modifier), changeWhere),
-                               modifier, executeForm, mapping);
+        return env.execute(property, new PropertyChange<P>(mapKeys, getterValue.getExpr(groupKeys, modifier), changeWhere), mapping);
     }
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {

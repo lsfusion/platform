@@ -18,6 +18,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -34,6 +35,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.PropertyChange;
 import tmc.integration.exp.AbstractSaleExportTask;
@@ -2698,11 +2700,6 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public String checkClientApply(Object clientResult) {
-            return VEDBL.cashRegController.checkCashRegApplyActions(clientResult);
-        }
-
-        @Override
         protected boolean hasExternalScreen() {
             return true;
         }
@@ -3097,10 +3094,6 @@ public class VEDLogicsModule extends LogicsModule {
                 return super.getClientActionOnApply(formInstance);
         }
 
-        @Override
-        public String checkClientApply(Object clientResult) {
-            return VEDBL.cashRegController.checkCashRegApplyActions(clientResult);
-        }
     }
 
     private class SpecificationSupplierFormEntity extends FormEntity {
@@ -3726,11 +3719,6 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public String checkClientApply(Object clientResult) {
-            return VEDBL.cashRegController.checkCashRegApplyActions(clientResult);
-        }
-
-        @Override
         protected boolean hasExternalScreen() {
             return true;
         }
@@ -4197,7 +4185,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public abstract class ImportActionProperty extends CustomActionProperty {
+    public abstract class ImportActionProperty extends CustomReadValueActionProperty {
 
         protected ImportActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -4246,12 +4234,12 @@ public class VEDLogicsModule extends LogicsModule {
             documentInterface = i.next();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
             DataObject document = context.getKeyValue(documentInterface);
 
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xsl файл.");
@@ -4294,8 +4282,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        @Override
-        public DataClass getValueClass() {
+        protected Type getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
 
@@ -4313,10 +4300,10 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать RRP");
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xsl файл.");
@@ -4356,8 +4343,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        @Override
-        public DataClass getValueClass() {
+        protected Type getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4368,10 +4354,10 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать справочн.");
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xls файл.");
@@ -4417,8 +4403,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        @Override
-        public DataClass getValueClass() {
+        protected Type getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4429,12 +4414,12 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать док.", new ValueClass[]{shop});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
             DataObject storeObject = context.getSingleKeyValue();
 
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xls файл.");
@@ -4491,8 +4476,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        @Override
-        public DataClass getValueClass() {
+        protected Type getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4510,7 +4494,7 @@ public class VEDLogicsModule extends LogicsModule {
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
             Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).diff(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey));
             PropertyChange change = articleQuantity.getChange(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), docKey, articleKey);
-            context.getSession().execute(articleQuantity.property, change, context.getModifier(), null, null);
+            context.getEnv().execute(articleQuantity.property, change, null);
 
             context.addAction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }

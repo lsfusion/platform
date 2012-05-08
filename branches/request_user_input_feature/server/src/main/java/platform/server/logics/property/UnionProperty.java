@@ -24,7 +24,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
     protected abstract Collection<PropertyMapImplement<?, Interface>> getOperands();
 
     @Override
-    public void fillDepends(Set<Property> depends, boolean derived) {
+    public void fillDepends(Set<Property> depends, boolean events) {
         fillDepends(depends,getOperands());
     }
 }

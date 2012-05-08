@@ -32,7 +32,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, PropertyObjectInterfaceInstance> innerObjects, Map<I, Expr> innerExprs) throws SQLException {
         if(!isWhereFull())
             changeWhere = changeWhere.and(writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere());
-        writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getSession(), context.getModifier(), notNull, check);
+        writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
     }
 
     protected Collection<Property> getWriteProps() {

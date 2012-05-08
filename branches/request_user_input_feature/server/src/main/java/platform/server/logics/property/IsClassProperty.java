@@ -78,11 +78,11 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+    protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteObjectClass)
-            for(Map<ClassPropertyInterface, DataObject> row : set.executeClasses(session.sql, session.env, session.baseClass))
-                session.changeClass(BaseUtils.singleValue(row), notNull ? (ConcreteObjectClass) valueClass : session.baseClass.unknown);
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = set.executeClasses(env.getSession()).iterator(); iterator.hasNext(); )
+                env.changeClass(null, BaseUtils.singleValue(iterator.next()), notNull ? (ConcreteObjectClass) valueClass : env.getSession().baseClass.unknown, !iterator.hasNext());
     }
 
     public static Set<Property> getParentProps(CustomClass customClass) {

@@ -49,6 +49,7 @@ import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
@@ -144,7 +145,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     public void changePassword(String login, String newPassword) throws RemoteException {
         try {
             DataSession session = createSession();
-            BL.LM.userPassword.execute(newPassword, session, session.modifier, getCurrentUser(login));
+            BL.LM.userPassword.execute(newPassword, session, getCurrentUser(login));
             session.apply(BL);
             session.close();
         } catch (Exception e) {
@@ -766,7 +767,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 threads.add(Thread.currentThread());
                 try {
                     DataSession session = createSession();
-                    List<ClientAction> actions = property.execute(session, true, session.modifier);
+                    List<ClientAction> actions = property.execute(new ExecutionEnvironment(session), true);
                     session.apply(BL);
                     session.close();
                     return new NavigatorActionResult(actions.toArray(new ClientAction[actions.size()]), false);

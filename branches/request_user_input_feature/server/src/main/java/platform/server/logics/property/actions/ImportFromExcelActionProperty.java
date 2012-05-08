@@ -24,7 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ImportFromExcelActionProperty extends CustomActionProperty {
+public class ImportFromExcelActionProperty extends CustomReadValueActionProperty {
     private static Logger logger = Logger.getLogger(ImportFromExcelActionProperty.class);
 
     private CustomClass valueClass;
@@ -35,12 +35,12 @@ public class ImportFromExcelActionProperty extends CustomActionProperty {
         this.valueClass = valueClass;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         context.emitExceptionIfNotInFormSession();
 
         Sheet sh;
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             sh = Workbook.getWorkbook(inFile).getSheet(0);
         } catch (Exception e) {
             logger.fatal(ServerResourceBundle.getString("logics.property.actions.failed.to.read.xls.file"));
@@ -83,7 +83,7 @@ public class ImportFromExcelActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public DataClass getValueClass() {
+    protected Type getReadType(ExecutionContext context) {
         return FileActionClass.getDefinedInstance(false, ServerResourceBundle.getString("logics.property.actions.table.files"), "xls");
     }
 

@@ -1,10 +1,11 @@
 package roman;
 
 import jxl.read.biff.BiffException;
-import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
+import platform.server.data.type.Type;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
     }
 
     @Override
-    public DataClass getValueClass() {
+    protected Type getReadType(ExecutionContext context) {
         return FileActionClass.getDefinedInstance(true, "Файл данных (*.edi, *.txt)", "edi txt *.*");
     }
 }

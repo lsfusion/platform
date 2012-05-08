@@ -71,12 +71,12 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         return true;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
 
         initFields();
 
-        List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+        List<byte[]> fileList = valueClass.getFiles(userValue);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 

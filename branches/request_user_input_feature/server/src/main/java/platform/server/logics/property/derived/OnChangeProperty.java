@@ -106,7 +106,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
         depends.add(onChange);
         depends.add(toChange);
     }

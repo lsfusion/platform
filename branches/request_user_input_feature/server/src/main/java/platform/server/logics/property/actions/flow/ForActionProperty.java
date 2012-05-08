@@ -3,6 +3,7 @@ package platform.server.logics.property.actions.flow;
 import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
@@ -55,6 +56,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     @Override
     protected FlowResult flowExecute(ExecutionContext context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
+        Map<I,PropertyObjectInterfaceInstance> mapObjects = rightNullCrossJoin(mapInterfaces, context.getObjectInstances());
 
         boolean execElse = elseAction != null;
 
@@ -66,7 +68,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                 execElse = false;
             }
             for (Map<I, DataObject> row : rows) {
-                FlowResult actionResult = execute(context, action, row);
+                FlowResult actionResult = execute(context, action, row, mapObjects);
                 if (actionResult != FlowResult.FINISH) {
                     if (actionResult != FlowResult.BREAK) {
                         result = actionResult;
@@ -77,7 +79,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         } while (recursive && !rows.isEmpty());
 
         if (execElse) {
-            return execute(context, elseAction, crossJoin(mapInterfaces, context.getKeys()));
+            return execute(context, elseAction, crossJoin(mapInterfaces, context.getKeys()), mapObjects);
         }
 
         return result;

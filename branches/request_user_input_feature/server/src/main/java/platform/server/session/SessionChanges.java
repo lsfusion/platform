@@ -21,8 +21,6 @@ public interface SessionChanges {
 
     public void restart(boolean cancel) throws SQLException;
 
-    public DataObject addObject(ConcreteCustomClass customClass, Modifier modifier) throws SQLException;
-
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException;
 
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException;

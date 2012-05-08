@@ -2,6 +2,7 @@ package platform.server.session;
 
 import org.apache.poi.ss.formula.Formula;
 import platform.base.BaseUtils;
+import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
@@ -9,6 +10,8 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteObjectClass;
 import platform.server.data.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -16,6 +19,10 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.logics.table.ImplementTable;
 
@@ -26,7 +33,7 @@ import static platform.base.BaseUtils.crossJoin;
 import static platform.base.BaseUtils.objectInstancer;
 
 // вообщем то public потому как иначе aspect не ловит
-public class IncrementApply extends OverrideModifier {
+public class IncrementApply extends OverrideModifier implements ExecutionEnvironmentInterface {
 
     public final NoUpdate noUpdate = new NoUpdate();
     public final IncrementProps increment = new IncrementProps();
@@ -42,6 +49,8 @@ public class IncrementApply extends OverrideModifier {
     }
 
     public <P extends PropertyInterface> void updateApplyStart(OldProperty<P> property, SinglePropertyTableUsage<P> tableUsage, BaseClass baseClass) throws SQLException { // изврат конечно
+        assert !rollbacked;
+
         SinglePropertyTableUsage<P> prevTable = increment.getTable(property);
         if(prevTable==null) {
             prevTable = property.createChangeTable();
@@ -67,6 +76,8 @@ public class IncrementApply extends OverrideModifier {
 
     @Message("message.increment.read.properties")
     public <P extends PropertyInterface> SessionTableUsage<KeyField, Property> readSave(ImplementTable table, @ParamMessage Collection<Property> properties) throws SQLException {
+        assert !rollbacked;
+
         SessionTableUsage<KeyField, Property> changeTable =
                 new SessionTableUsage<KeyField, Property>(table.keys, new ArrayList<Property>(properties), Field.<KeyField>typeGetter(),
                                                           new Type.Getter<Property>() {
@@ -87,4 +98,52 @@ public class IncrementApply extends OverrideModifier {
         return changeTable;
     }
 
+    @Override
+    public PropertyChanges getPropertyChanges() {
+        assert !rollbacked;
+        return super.getPropertyChanges();
+    }
+
+    public boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+        throw new RuntimeException("apply is not allowed in event");
+    }
+
+    boolean rollbacked = false;
+    public ExecutionEnvironmentInterface cancel() throws SQLException {
+        assert !rollbacked;
+
+        // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
+        cleanIncrementTables();
+        session.rollbackTransaction();
+        rollbacked = true;
+
+        return session;
+    }
+
+    public DataSession getSession() {
+        return session;
+    }
+
+    public Modifier getModifier() {
+        return this;
+    }
+
+    public FormInstance getFormInstance() {
+        return null;
+    }
+
+    public boolean isInTransaction() {
+        return true;
+    }
+
+    public <P extends PropertyInterface> void fireChange(Property<P> property, PropertyChange<P> change) throws SQLException {
+    }
+
+    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
+        return session.addObject(cls);
+    }
+
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException {
+        session.changeClass(objectInstance, object, cls, groupLast);
+    }
 }

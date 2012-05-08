@@ -19,7 +19,7 @@ public class MessageActionProperty extends CustomActionProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        Context.context.get().requestUserInteraction(
+        context.requestUserInteraction(
                 new MessageClientAction(((String) context.getKeyValue(msgInterface).object).trim(), caption)
         );
     }

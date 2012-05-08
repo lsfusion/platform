@@ -46,11 +46,7 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
             }
         }
 
-        if (context.isInFormSession() && objectInstance != null) {
-            context.getFormInstance().changeClass((CustomObjectInstance) objectInstance, context.getSingleKeyValue(), -1);
-        } else {
-            context.getSession().changeClass(context.getSingleKeyValue(), null, context.isGroupLast());
-        }
+        context.changeClass(objectInstance, context.getSingleKeyValue(), -1);
 
         if (nearObject != null)
             ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);

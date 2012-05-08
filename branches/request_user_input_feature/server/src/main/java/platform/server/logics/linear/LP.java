@@ -22,6 +22,7 @@ import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
@@ -226,27 +227,27 @@ public class LP<T extends PropertyInterface> {
 
     // execute'ы без Form'
     public List<ClientAction> execute(Object value, DataSession session, DataObject... objects) throws SQLException {
-        return execute(value, session, session.modifier, objects);
+        return execute(value, new ExecutionEnvironment(session), objects);
     }
 
     public List<ClientAction> execute(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
-        return execute(value, context.getSession(), context.getModifier(), objects);
+        return execute(value, context.getEnv(), objects);
     }
 
     public List<ClientAction> execute(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
-        return execute(value, context.getSession(), context.getModifier(), keys);
+        return execute(value, context.getEnv(), keys);
     }
 
-    public List<ClientAction> execute(Object value, DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
-        return execute(value, session, modifier, getMapValues(objects));
+    public List<ClientAction> execute(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
+        return execute(value, env, getMapValues(objects));
     }
 
-    public List<ClientAction> execute(Object value, DataSession session, Modifier modifier, Map<T, DataObject> keys) throws SQLException {
+    public List<ClientAction> execute(Object value, ExecutionEnvironment env, Map<T, DataObject> keys) throws SQLException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
         }
-        return property.execute(keys, session, value, modifier);
+        return property.execute(keys, env, value);
     }
 
     public static List<Property> toPropertyArray(LP[] properties) {

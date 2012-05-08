@@ -230,12 +230,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         changeExpr = new PullExpr(toString() + " value");
     }
 
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
     }
 
-    public Set<Property> getDepends(boolean derived) {
+    public Set<Property> getDepends(boolean events) {
         Set<Property> depends = new HashSet<Property>();
-        fillDepends(depends, derived);
+        fillDepends(depends, events);
         return depends;
     }
 
@@ -815,9 +815,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    public void setJoinNotNull(Map<T, ? extends Expr> implementKeys, Where where, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+    public void setJoinNotNull(Map<T, ? extends Expr> implementKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session, modifier, notNull);
+        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), env, notNull);
     }
 
     public PropertyMapImplement<T, T> getImplement() {
@@ -839,23 +839,23 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public List<ClientAction> execute(ExecutionContext context, Object value) throws SQLException {
-        return execute(context.getSession(), value, context.getModifier());
+        return execute(context.getEnv(), value);
     }
 
-    public List<ClientAction> execute(DataSession session, Object value, Modifier modifier) throws SQLException {
-        return execute(new HashMap(), session, value, modifier);
+    public List<ClientAction> execute(ExecutionEnvironment env, Object value) throws SQLException {
+        return execute(new HashMap(), env, value);
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException {
-        return execute(keys, context.getSession(), value, context.getModifier());
+        return execute(keys, context.getEnv(), value);
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier modifier) throws SQLException {
-        return getImplement().execute(keys, session, value, modifier);
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+        return getImplement().execute(keys, env, value);
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier modifier, RemoteForm executeForm, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        return getImplement().execute(keys, session, value, modifier, executeForm, mapObjects);
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return getImplement().execute(keys, env, value, mapObjects);
     }
 
     // по умолчанию заполняет свойства
@@ -1118,36 +1118,36 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return null;
     }
 
-    public void setNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
-        setNotNull(values, new HashMap<T, KeyExpr>(), Where.TRUE, session, modifier, notNull, check);
+    public void setNotNull(Map<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
+        setNotNull(values, new HashMap<T, KeyExpr>(), Where.TRUE, env, notNull, check);
     }
-    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
-        setNotNull(new HashMap<T, DataObject>(), mapKeys, where, session, modifier, notNull);
+    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
+        setNotNull(new HashMap<T, DataObject>(), mapKeys, where, env, notNull);
     }
-    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
-        setNotNull(mapValues, mapKeys, where, session, modifier, notNull, true);
+    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
+        setNotNull(mapValues, mapKeys, where, env, notNull, true);
     }
-    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
-        setNotNull(new PropertySet<T>(mapValues, mapKeys, where), session, modifier, notNull, check);
+    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
+        setNotNull(new PropertySet<T>(mapValues, mapKeys, where), env, notNull, check);
     }
-    public void setNotNull(PropertySet<T> set, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
+    public void setNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
         if(check) {
-            Where where = getExpr(set.getMapExprs(), session.modifier).getWhere();
+            Where where = getExpr(set.getMapExprs(), env.getModifier()).getWhere();
             if(notNull)
                 where = where.not();
             set = set.and(where);
         }
-        proceedNotNull(set, session, modifier, notNull);
+        proceedNotNull(set, env, notNull);
     }
 
     // assert что where содержит getWhere().not
-    protected void proceedNotNull(PropertySet<T> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+    protected void proceedNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         if(notNull) {
             Expr defaultExpr = getDefaultExpr(set.getMapExprs());
             if(defaultExpr!=null)
-                session.execute(this, new PropertyChange<T>(set, defaultExpr), modifier, null, null);
+                env.execute(this, new PropertyChange<T>(set, defaultExpr), null);
         } else
-            session.execute(this, new PropertyChange<T>(set, CaseExpr.NULL), modifier, null, null);
+            env.execute(this, new PropertyChange<T>(set, CaseExpr.NULL), null);
     }
 
     protected boolean hasSet(boolean notNull) {

@@ -1,7 +1,6 @@
 package platform.server.logics.property.actions;
 
 import platform.server.classes.ValueClass;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -14,6 +13,6 @@ public class CancelActionProperty extends CustomActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
-        context.cancelChanges();
+        context.cancel();
     }
 }

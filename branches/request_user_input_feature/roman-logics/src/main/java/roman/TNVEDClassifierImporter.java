@@ -4,6 +4,7 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.ObjectValue;
@@ -23,7 +24,7 @@ public class TNVEDClassifierImporter extends TNVEDImporter {
         put(9, 10);
     }};
 
-    public TNVEDClassifierImporter(RemoteForm executeForm, ObjectValue value, RomanLogicsModule LM, String classifierType) {
+    public TNVEDClassifierImporter(FormInstance executeForm, ObjectValue value, RomanLogicsModule LM, String classifierType) {
         super(executeForm, value, LM, classifierType);
     }
 

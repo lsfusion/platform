@@ -41,7 +41,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
    }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
         fillDepends(depends, orders.keySet());
         fillDepends(depends, partitions);
         fillDepends(depends, props);

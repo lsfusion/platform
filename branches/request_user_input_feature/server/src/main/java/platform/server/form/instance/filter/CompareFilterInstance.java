@@ -10,7 +10,7 @@ import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
@@ -92,7 +92,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
 
         if(!resolveAdd)
             return;
@@ -105,10 +105,9 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
-        session.execute(property.property, new PropertyChange<P>(mapKeys,
-                            value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), modifier),
-                            getChangedWhere(object, mapObjects, addObject)),
-                            modifier, null, null);
+        env.execute(property.property, new PropertyChange<P>(mapKeys,
+                            value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), env.getModifier()),
+                            getChangedWhere(object, mapObjects, addObject)), null);
     }
 
     @Override

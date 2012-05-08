@@ -5,6 +5,7 @@ import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.interop.action.ClientAction;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
@@ -489,7 +490,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 message += filename + ", ";
             message = message.substring(0, message.length() - 2);
 
-            DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"), session.modifier);
+            DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
             Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
             retailLM.getLPByName("equipmentServerEquipmentServerLog").execute(equipmentServerObject, session, logObject);
             retailLM.getLPByName("dataEquipmentServerLog").execute(message, session, logObject);
@@ -513,7 +514,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public void errorTransactionReport(Integer transactionID, Exception e) throws RemoteException, SQLException {
         DataSession session = createSession();
-        DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"), session.modifier);
+        DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"));
         retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").execute(transactionID, session, errorObject);
         retailLM.getLPByName("dataMachineryPriceTransactionError").execute(e.toString(), session, errorObject);
         retailLM.getLPByName("dateMachineryPriceTransactionError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
@@ -527,7 +528,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public void errorEquipmentServerReport(String equipmentServer, Throwable exception) throws RemoteException, SQLException {
         DataSession session = createSession();
-        DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"), session.modifier);
+        DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"));
         Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
         retailLM.getLPByName("equipmentServerEquipmentServerError").execute(equipmentServerObject, session, errorObject);
         retailLM.getLPByName("dataEquipmentServerError").execute(exception.toString(), session, errorObject);

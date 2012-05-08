@@ -24,7 +24,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         ImportField invoiceSIDField = new ImportField(LM.sidDocument);
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField dateInvoiceField = new ImportField(LM.baseLM.date);
@@ -59,7 +59,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
         properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 1, '|');
 
             ImportTable table = new MexxPricesInvoiceImporter(inputTable, null, invoiceSIDField, dateInvoiceField, null, null, null, sidField, null, null,

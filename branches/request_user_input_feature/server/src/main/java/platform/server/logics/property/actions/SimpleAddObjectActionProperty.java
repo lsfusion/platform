@@ -4,11 +4,10 @@ import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
@@ -20,7 +19,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class SimpleAddObjectActionProperty extends CustomActionProperty {
+public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty {
     // обозначает класс объекта, который нужно добавить
     private CustomClass valueClass;
 
@@ -33,19 +32,18 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
         this.storeNewObjectProperty = storeNewObjectProperty;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    protected Type getReadType(ExecutionContext context) {
+        if(valueClass.hasChildren())
+            return valueClass.getActionClass(valueClass);
+        return null;
+    }
+
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         DataObject object;
         if (valueClass.hasChildren()) {
             // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()
-            boolean valueProvided = !getValueClass().getDefaultValue().equals(context.getValueObject());
-            if (context.isInFormSession()) {
-                FormInstance<?> formInstance = context.getFormInstance();
-                object = formInstance.addObject((ConcreteCustomClass) (valueProvided ? formInstance.getCustomClass((Integer) context.getValueObject()) : valueClass));
-            } else {
-                object = context.getSession().addObject(
-                        (ConcreteCustomClass) (valueProvided ? valueClass.findClassID((Integer) context.getValueObject()) : valueClass),
-                        context.getModifier());
-            }
+            boolean valueProvided = !getValueClass().getDefaultValue().equals(userValue);
+            object = context.addObject((ConcreteCustomClass) (valueProvided?context.getSession().baseClass.findClassID((Integer) userValue):valueClass));
         } else {
             object = context.addObject((ConcreteCustomClass) valueClass);
         }
@@ -56,15 +54,6 @@ public class SimpleAddObjectActionProperty extends CustomActionProperty {
             );
         }
     }
-
-    @Override
-    public DataClass getValueClass() {
-        if (valueClass.hasChildren())
-            return valueClass.getActionClass(valueClass);
-        else
-            return super.getValueClass();
-    }
-
 
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {

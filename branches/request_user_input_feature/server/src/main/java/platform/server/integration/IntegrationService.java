@@ -74,7 +74,7 @@ public class IntegrationService {
         
         System.gc();
 
-        session.execute(propertyChanges, null, null);
+        new ExecutionEnvironment(session).execute(propertyChanges, null);
 
         return importTable;
     }

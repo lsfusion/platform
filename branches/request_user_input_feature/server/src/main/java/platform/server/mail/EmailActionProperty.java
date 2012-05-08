@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import platform.base.ByteArray;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
+import platform.server.Context;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -238,9 +239,7 @@ public class EmailActionProperty extends CustomActionProperty {
             }
         }
 
-        return context.isInFormSession()
-               ? context.getRemoteForm().createForm(form, objectValues)
-               : BL.createForm(context.getSession(), form, objectValues);
+        return context.createReportForm(form, objectValues);
     }
 
     private String createReportFile(RemoteFormInterface remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {

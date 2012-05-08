@@ -27,6 +27,7 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -36,15 +37,13 @@ import platform.server.form.view.*;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
+import platform.server.logics.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.AttachmentFormat;
 import platform.server.session.DataSession;
@@ -7551,7 +7550,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             try {
                 DataObject voteObject = context.getKeyValue(voteInterface);
 
-                File tempFile = context.getRemoteForm().generateFileFromForm(BL, voteProtocolSimple, voteProtocolSimple.objVote, voteObject);
+                File tempFile = context.generateFileFromForm(BL, voteProtocolSimple, voteProtocolSimple.objVote, voteObject);
                 fileDecisionVote.execute(IOUtils.getFileBytes(tempFile), context, voteObject);
 
             } catch (IOException e) {
@@ -7873,7 +7872,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
 
-    public class ImportIPsExpertVoteActionProperty extends CustomActionProperty {
+    public class ImportIPsExpertVoteActionProperty extends CustomReadValueActionProperty {
 
         protected FileActionClass valueClass;
 
@@ -7887,12 +7886,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             throw new RuntimeException("no need");
         }
 
-        @Override
-        public void execute(ExecutionContext context) throws SQLException {
-            try {
-                DataSession session = context.getSession();
+        protected Type getReadType(ExecutionContext context) {
+            return DoubleClass.instance;
+        }
 
-                List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+            try {
+                List<byte[]> fileList = valueClass.getFiles(userValue);
+
+                DataSession session = context.getSession();
 
                 for(byte[] file : fileList) {
 
@@ -7921,11 +7923,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 
         }
-
-        @Override
-        public DataClass getValueClass() {
-            return valueClass;
-        }
     }
 
     public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign, boolean newRegulation, boolean complete) throws IOException, ClassNotFoundException, JRException, SQLException {
@@ -7933,10 +7930,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         File tempFile;
         if (newRegulation) {
             ProjectFullR2FormEntity applicationForm = foreign ? (complete ? projectCompleteR2Foreign : projectFullR2Foreign) : (complete ? projectCompleteR2Native : projectFullR2Native);
-            tempFile = context.getRemoteForm().generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
+            tempFile = context.generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
         } else {
             ProjectFullFormEntity applicationForm = foreign ? projectFullForeign : projectFullNative;
-            tempFile = context.getRemoteForm().generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
+            tempFile = context.generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
         }
         if (newRegulation) {
             byte[] descriptionFile;

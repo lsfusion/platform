@@ -25,13 +25,12 @@ public abstract class TNVEDImporter {
 
     protected List<String> category10sids;
 
-    public TNVEDImporter(RemoteForm executeForm, ObjectValue value, RomanLogicsModule LM, String classifierType) {
+    public TNVEDImporter(FormInstance executeForm, ObjectValue value, RomanLogicsModule LM, String classifierType) {
         this(executeForm, value, LM);
         this.classifierType = classifierType;
     }
 
-    public TNVEDImporter(RemoteForm executeForm, ObjectValue value, RomanLogicsModule LM) {
-        FormInstance<?> form = (FormInstance<?>) executeForm.form;
+    public TNVEDImporter(FormInstance<?> form, ObjectValue value, RomanLogicsModule LM) {
         session = form.session;
         this.value = value;
         this.LM = LM;

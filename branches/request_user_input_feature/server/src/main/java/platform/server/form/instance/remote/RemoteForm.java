@@ -1,10 +1,8 @@
 package platform.server.form.instance.remote;
 
 import com.google.common.base.Throwables;
-import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
@@ -16,7 +14,6 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
-import platform.interop.action.LogMessageClientAction;
 import platform.interop.form.*;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
@@ -584,7 +581,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-                actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), RemoteForm.this, all, aggValue));
+                actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), all, aggValue));
 
                 if (logger.isInfoEnabled()) {
                     logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
@@ -614,11 +611,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
                 PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
 
-                Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
-                Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
-                actions.addAll(
-                        form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, RemoteForm.this, true, false)
-                );
+                    Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
+                    Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
+                    actions.addAll(
+                            form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, true, false)
+                    );
 
                 if (logger.isInfoEnabled()) {
                     logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
@@ -812,30 +809,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.entity.getSID();
     }
 
-    public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) {
-
-        RemoteFormInterface remoteForm = createForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
-        try {
-            ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
-            JasperPrint print = report.createReport(false, false, new HashMap(), null);
-            File tempFile = File.createTempFile("lsfReport", ".pdf");
-
-            JRAbstractExporter exporter = new JRPdfExporter();
-            exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-            exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-            exporter.exportReport();
-
-            return tempFile;
-
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void refreshData() {
         emitExceptionIfHasActiveInvocation();
         try {
@@ -853,9 +826,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public ClientAction getClientActionOnApply() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         try {
-            String result = form.checkApply();
-            if (result != null) {
-                return new CheckFailed(result);
+            List<ClientAction> actions = new ArrayList<ClientAction>();
+            if (!form.checkApply(actions)) {
+                return new CheckFailed(actions);
             } else {
                 return form.entity.getClientActionOnApply(form);
             }
@@ -864,20 +837,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public RemoteChanges applyChanges(final Object clientResult) throws RemoteException {
+    public RemoteChanges applyChanges() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return executeWithRemoteChanges(new TRunnable() {
             @Override
             public void run() {
-                applyChanges(clientResult, actions);
+                applyChanges(actions);
             }
         });
     }
 
-    public void applyChanges(Object clientResult, List<ClientAction> actions) {
+    public void applyChanges(List<ClientAction> actions) {
         try {
-            actions.addAll(form.fireOnApply(this));
-            form.synchronizedApplyChanges(form.entity.checkClientApply(clientResult), actions);
+            form.apply(null, actions);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -889,14 +861,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 if (checkOnOk) {
-                    String checkResult = form.checkApply();
-                    if (checkResult != null) {
-                        actions.add(new LogMessageClientAction(checkResult, true));
+                    if (!form.checkApply(actions)) {
                         return;
                     }
                 }
 
-                actions.addAll(form.fireOnOk(RemoteForm.this));
+                actions.addAll(form.fireOnOk());
             }
         });
     }
@@ -906,7 +876,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return executeWithRemoteChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
-                actions.addAll(form.fireOnClose(RemoteForm.this));
+                actions.addAll(form.fireOnClose());
             }
         });
     }
@@ -916,7 +886,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return executeWithRemoteChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
-                actions.addAll(form.fireOnNull(RemoteForm.this));
+                actions.addAll(form.fireOnNull());
             }
         });
     }
@@ -936,7 +906,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public void cancelChanges() {
         emitExceptionIfHasActiveInvocation();
         try {
-            form.cancelChanges();
+            form.cancel();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -985,9 +955,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         assert false:"createObjectEditorDialog shouldn't be used anymore";
         try {
             DialogInstance<T> dialogForm = form.createObjectEditorDialog(form.getPropertyDraw(viewID));
-            return dialogForm == null
-                    ? null
-                    : new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
+            return dialogForm == null ? null : createRemoteDialog(dialogForm);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -997,7 +965,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         assert false:"createChangeEditorDialog shouldn't be used anymore";
         try {
             DialogInstance<T> dialogForm = form.createChangeEditorDialog(form.getPropertyDraw(viewID));
-            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
+            return createRemoteDialog(dialogForm);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1019,6 +987,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         try {
             return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener(), checkOnOk);
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RemoteDialog createRemoteDialog(DialogInstance dialogInstance) {
+        try {
+            return new RemoteDialog(dialogInstance, dialogInstance.entity.getRichDesign(), exportPort, getRemoteFormListener());
+        } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
     }
@@ -1094,7 +1071,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                     Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
-                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, RemoteForm.this, keys);
+                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, keys);
 
                     if (logger.isInfoEnabled()) {
                         logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));

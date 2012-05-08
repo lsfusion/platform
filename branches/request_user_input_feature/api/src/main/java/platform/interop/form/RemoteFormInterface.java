@@ -104,7 +104,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     RemoteChanges closedPressed() throws RemoteException;
     RemoteChanges nullPressed() throws RemoteException;
 
-    RemoteChanges applyChanges(Object clientResult) throws RemoteException;
+    RemoteChanges applyChanges() throws RemoteException;
 
     void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 

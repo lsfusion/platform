@@ -32,6 +32,7 @@ import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
@@ -849,14 +850,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null; // будем возвращать именно null, чтобы меньше данных передавалось        
     }
 
-    public String checkClientApply(Object clientResult) {
-        return null;
-    }
-
     public boolean isActionOnChange(Property property) {
         return false;
     }
-    public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier modifier) throws SQLException {
+    public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
     }
 
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {

@@ -4,6 +4,7 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.ObjectValue;
@@ -24,7 +25,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
     private ImportField countryNameField = new ImportField(LM.baseLM.name);
     private ImportField minPriceField = new ImportField(LM.minPriceCustomCategory10SubCategory);
 
-    public TNVEDMinPricesImporter(RemoteForm executeForm, ObjectValue value, RomanLogicsModule LM) {
+    public TNVEDMinPricesImporter(FormInstance executeForm, ObjectValue value, RomanLogicsModule LM) {
         super(executeForm, value, LM);
     }
 

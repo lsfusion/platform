@@ -68,7 +68,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return IsClassProperty.getProperty(getInterfaceClasses());
     }
 
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
         depends.add(getIsClassProperty().property);
     }
 

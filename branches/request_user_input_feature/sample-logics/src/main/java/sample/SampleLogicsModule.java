@@ -134,16 +134,14 @@ public class SampleLogicsModule extends LogicsModule {
 
         @Override
         public void execute(ExecutionContext context) throws SQLException {
-            final Context currentContext = Context.context.get();
-
             for (int i = 0; i < 5; ++i) {
-                if (JOptionPane.OK_OPTION != (Integer)currentContext.requestUserInteraction(new ConfirmClientAction("Попытка №" + i, "Вы уверены, что хотите изменить это свойство?"))) {
-                    currentContext.requestUserInteraction(new MessageClientAction("Too bad :(", ":("));
+                if (JOptionPane.OK_OPTION != (Integer)context.requestUserInteraction(new ConfirmClientAction("Попытка №" + i, "Вы уверены, что хотите изменить это свойство?"))) {
+                    context.requestUserInteraction(new MessageClientAction("Too bad :(", ":("));
                     return;
                 }
             }
 
-            UserInputResult result = currentContext.requestUserInput(IntegerClass.instance, null);
+            UserInputResult result = context.requestUserInput(IntegerClass.instance, null);
             if (!result.isCanceled()) {
                 Object value = result.getValue();
                 context.addActions(

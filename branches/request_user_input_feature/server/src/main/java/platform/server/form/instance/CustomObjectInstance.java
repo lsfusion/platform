@@ -1,10 +1,7 @@
 package platform.server.form.instance;
 
 import platform.interop.FormEventType;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.CustomClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -130,16 +127,15 @@ public class CustomObjectInstance extends ObjectInstance {
         return value;
     }
 
-    public void changeClass(SessionChanges session, DataObject change, int classID) throws SQLException {
+    public void changeClass(SessionChanges session, DataObject change, ConcreteObjectClass cls) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
-        if(classID==-1) {
-            session.changeClass(change,null);
+        session.changeClass(change,cls);
+
+        if(cls instanceof UnknownClass)
             groupTo.dropSeek(this);
-        } else {
-            session.changeClass(change, baseClass.findConcreteClassID(classID));
+        else
             updateCurrentClass(session);
-        }
     }
 
     public void changeGridClass(int classID) {

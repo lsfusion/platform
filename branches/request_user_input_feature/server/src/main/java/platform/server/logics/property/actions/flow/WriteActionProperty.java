@@ -30,9 +30,6 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
     public FlowResult flowExecute(ExecutionContext context) throws SQLException {
         Map<I, KeyExpr> allKeys = KeyExpr.getMapKeys(innerInterfaces);
         Map<I, DataObject> innerValues = crossJoin(mapInterfaces, context.getKeys());
-        Map<I, PropertyObjectInterfaceInstance> innerObjects = null;
-        if(context.isInFormSession())
-            innerObjects = rightCrossJoin(mapInterfaces, context.getObjectInstances());
 
         Map<P, KeyExpr> toKeys = new HashMap<P, KeyExpr>(); Map<P, DataObject> toValues = new HashMap<P, DataObject>();
         for(Map.Entry<P, I> map : writeTo.mapping.entrySet()) {
@@ -45,7 +42,7 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
 
         Map<I, Expr> innerExprs = BaseUtils.override(allKeys, DataObject.getMapExprs(innerValues)); // чисто оптимизационная вещь
         write(context, toValues, toKeys, where.mapExpr(innerExprs, context.getModifier()).getWhere(),
-                innerObjects, innerExprs); // для extend'утого контекста проверяем все ли ключи
+                rightNullCrossJoin(mapInterfaces, context.getObjectInstances()), innerExprs); // для extend'утого контекста проверяем все ли ключи
 
         return FlowResult.FINISH;
     }

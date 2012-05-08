@@ -104,7 +104,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
 
         for (Iterator<Map<P, DataObject>> iterator = noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet().iterator(); iterator.hasNext();) {
             Map<P, DataObject> noKeysRow = iterator.next();
-            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, session.modifier, false, !iterator.hasNext()), false, !iterator.hasNext());
+            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false, !iterator.hasNext()), false, !iterator.hasNext());
         }
 
         return propertyTable;

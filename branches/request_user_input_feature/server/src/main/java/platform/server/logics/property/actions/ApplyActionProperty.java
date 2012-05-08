@@ -19,9 +19,6 @@ public class ApplyActionProperty extends CustomActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
-        String result = context.applyChanges(BL);
-        if (result != null) {
-            context.addAction(new LogMessageClientAction(result, true));
-        }
+        context.apply(BL);
     }
 }

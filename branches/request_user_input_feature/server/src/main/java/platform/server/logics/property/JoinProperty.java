@@ -64,7 +64,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public void fillDepends(Set<Property> depends, boolean derived) {
+    public void fillDepends(Set<Property> depends, boolean events) {
         fillDepends(depends,implement.mapping.values());
         depends.add(implement.property);       
     }

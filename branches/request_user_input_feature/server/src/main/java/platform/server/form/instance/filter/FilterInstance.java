@@ -13,6 +13,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -71,7 +72,7 @@ public abstract class FilterInstance implements Updated {
 
     public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier);
 
-    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }
 
     public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {

@@ -81,7 +81,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         finalizeInit();
     }
 
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
         depends.add(onChange);
         depends.add(toChange);
     }

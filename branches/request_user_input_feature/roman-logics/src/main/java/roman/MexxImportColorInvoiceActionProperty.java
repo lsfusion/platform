@@ -24,7 +24,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         ImportField colorCodeField = new ImportField(LM.sidColorSupplier);
         ImportField colorNameField = new ImportField(LM.baseLM.name);
 
@@ -38,7 +38,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
         properties.add(new ImportProperty(colorNameField, LM.baseLM.name.getMapping(colorKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 

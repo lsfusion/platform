@@ -4,11 +4,9 @@ import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChanges;
-import platform.server.session.PropertySet;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -54,11 +52,12 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     }
 
     @Override
-    protected void proceedNotNull(PropertySet<Interface<T>> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+    protected void proceedNotNull(PropertySet<Interface<T>> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         if(notNull) {
             Map<PropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = BaseUtils.reverse(getMapInterfaces());
 
-            for(Map<Interface<T>, DataObject> row : set.executeClasses(session.sql, session.env, session.baseClass)) {
+            DataSession session = env.getSession();
+            for(Map<Interface<T>, DataObject> row : set.executeClasses(session)) {
                 DataObject aggrObject = session.addObject();
 
                 Map<PropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);
@@ -66,13 +65,13 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
                         BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(innerInterfaces, aggrInterface)));
 
                 if(whereProp instanceof PropertyMapImplement)
-                    ((PropertyMapImplement<?,T>)whereProp).mapNotNull(propValues, session, modifier, true, false); // потому как только что добавился объект
+                    ((PropertyMapImplement<?,T>)whereProp).mapNotNull(propValues, env, true, false); // потому как только что добавился объект
                 for(Map.Entry<PropertyInterfaceImplement<T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
                     if(propertyInterface.getKey() instanceof PropertyMapImplement)
-                        ((PropertyMapImplement<?,T>)propertyInterface.getKey()).execute(propValues, session, propertyInterface.getValue().object, modifier);
+                        ((PropertyMapImplement<?,T>)propertyInterface.getKey()).execute(propValues, env, propertyInterface.getValue(), null);
             }
         } else
-            super.proceedNotNull(set, session, modifier, notNull);
+            super.proceedNotNull(set, env, notNull);
     }
 
     @Override

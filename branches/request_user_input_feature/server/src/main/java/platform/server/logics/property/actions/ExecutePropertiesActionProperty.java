@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.join;
+import static platform.base.BaseUtils.nullJoin;
 import static platform.server.logics.PropertyUtils.getValueClasses;
 
 public class ExecutePropertiesActionProperty extends CustomActionProperty {
@@ -91,16 +92,13 @@ public class ExecutePropertiesActionProperty extends CustomActionProperty {
 
             Map<PropertyInterface, DataObject> mapKeys = join(mapPropInterfaces, context.getKeys());
 
-            boolean inForm = context.isInFormSession() && dataProperty.property instanceof UserProperty;
-            if (inForm) {
-                Map<PropertyInterface, PropertyObjectInterfaceInstance> mapObjects = join(mapPropInterfaces, context.getObjectInstances());
+            Map<PropertyInterface, PropertyObjectInterfaceInstance> mapObjects;
+            if((mapObjects=nullJoin(mapPropInterfaces, context.getObjectInstances()))!=null && dataProperty.property instanceof UserProperty) { // бред вообще говоря чисто обратная совместимость
                 context.addActions(
                         dataProperty.property.execute(
                                 mapKeys,
-                                context.getSession(),
+                                context.getEnv(),
                                 execValue,
-                                context.getModifier(),
-                                context.getRemoteForm(),
                                 mapObjects));
             } else {
                 context.addActions(dataProperty.execute(execValue, context, mapKeys));

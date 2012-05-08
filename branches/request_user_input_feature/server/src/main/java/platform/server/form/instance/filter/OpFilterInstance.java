@@ -8,8 +8,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.session.ExecutionEnvironment;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -60,9 +59,9 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
-        op1.resolveAdd(session, modifier, object, addObject);
-        op2.resolveAdd(session, modifier, object, addObject);
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
+        op1.resolveAdd(env, object, addObject);
+        op2.resolveAdd(env, object, addObject);
     }
 
     @Override

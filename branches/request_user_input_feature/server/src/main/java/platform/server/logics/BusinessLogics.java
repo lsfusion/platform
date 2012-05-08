@@ -55,6 +55,7 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
 import java.io.*;
@@ -214,7 +215,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (!skipLogging) {
                 DataSession session = createSession();
 
-                DataObject newConnection = session.addObject(LM.connection, session.modifier);
+                DataObject newConnection = session.addObject(LM.connection);
                 LM.connectionUser.execute(navigator.getUser().object, session, newConnection);
                 LM.connectionComputer.execute(navigator.getComputer().object, session, newConnection);
                 LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
@@ -326,8 +327,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Set<Map<String, Object>> keys = q.execute(session.sql, session.env).keySet();
             if (keys.size() == 0) {
-                DataObject addObject = session.addObject(LM.computer, session.modifier);
-                LM.hostname.execute(strHostName, session, session.modifier, addObject);
+                DataObject addObject = session.addObject(LM.computer);
+                LM.hostname.execute(strHostName, session, addObject);
 
                 result = (Integer) addObject.object;
                 session.apply(this);
@@ -393,9 +394,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         User user = readUser(login, session);
         if (user == null) {
-            DataObject addObject = session.addObject(LM.customUser, session.modifier);
-            LM.userLogin.execute(login, session, session.modifier, addObject);
-            LM.userPassword.execute(defaultPassword, session, session.modifier, addObject);
+            DataObject addObject = session.addObject(LM.customUser);
+            LM.userLogin.execute(login, session, addObject);
+            LM.userPassword.execute(defaultPassword, session, addObject);
             Integer userID = (Integer) addObject.object;
             session.apply(this);
             user = new User(userID);
@@ -642,9 +643,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Integer policyID = readPolicy(policyName, session);
         if (policyID == null) {
-            DataObject addObject = session.addObject(LM.policy, session.modifier);
-            LM.name.execute(policyName, session, session.modifier, addObject);
-            LM.policyDescription.execute(description, session, session.modifier, addObject);
+            DataObject addObject = session.addObject(LM.policy);
+            LM.name.execute(policyName, session, addObject);
+            LM.policyDescription.execute(description, session, addObject);
             policyID = (Integer) addObject.object;
             session.apply(this);
         }
@@ -871,7 +872,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             query.and(BaseUtils.singleValue(query.mapKeys).isClass(LM.systemUser));
             Set<Map<String, Object>> rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
             if (rows.size() == 0) { // если нету добавим
-                systemUserObject = (Integer) session.addObject(LM.systemUser, session.modifier).object;
+                systemUserObject = (Integer) session.addObject(LM.systemUser).object;
                 session.apply(this);
             } else
                 systemUserObject = (Integer) BaseUtils.single(rows).get("key");
@@ -880,9 +881,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             query.and(LM.hostname.getExpr(session.modifier, BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
             rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
             if (rows.size() == 0) { // если нету добавим
-                DataObject computerObject = session.addObject(LM.computer, session.modifier);
+                DataObject computerObject = session.addObject(LM.computer);
                 systemComputer = (Integer) computerObject.object;
-                LM.hostname.execute("systemhost", session, session.modifier, computerObject);
+                LM.hostname.execute("systemhost", session, computerObject);
                 session.apply(this);
             } else
                 systemComputer = (Integer) BaseUtils.single(rows).get("key");
@@ -957,7 +958,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        DataObject newLaunch = session.addObject(LM.launch, session.modifier);
+        DataObject newLaunch = session.addObject(LM.launch);
         LM.launchComputer.execute(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
         LM.launchTime.execute(LM.currentDateTime.read(session), session, newLaunch);
         LM.launchRevision.execute(getRevision(), session, newLaunch);
@@ -1294,7 +1295,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     LM.connectionCurrentStatus.property.getExpr(LM.connectionCurrentStatus.getMapKeys())
                             .compare(LM.connectionStatus.getDataObject("connectedConnection").getExpr(), Compare.EQUALS));
 
-            session.execute(LM.connectionCurrentStatus.property, statusChanges, session.modifier, null, null);
+            new ExecutionEnvironment(session).execute(LM.connectionCurrentStatus.property, statusChanges, null);
 
             if (session.hasChanges())
                 session.apply(this);
@@ -1499,7 +1500,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         java.sql.Date currentDate = (java.sql.Date)LM.currentDate.read(session);
         java.sql.Date newDate = DateConverter.dateToSql(new Date());
         if (currentDate == null || currentDate.getDay() != newDate.getDay() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
-            LM.currentDate.execute(newDate, session, session.modifier);
+            LM.currentDate.execute(newDate, session);
             session.apply(this);
         }
 
@@ -1712,7 +1713,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityLazy
-    private Map<Property, List<Property>>  getMapAppliedDepends() {
+    private Map<Property, List<Property>> getMapAppliedDepends() {
         Map<Property, Set<Property>> mapDepends = new HashMap<Property, Set<Property>>();
         for(Property property : getStoredProperties()) {
             mapDepends.put(property, new HashSet<Property>());
@@ -2019,7 +2020,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
         for (String sid : columnsToDrop.keySet()) {
-            DataObject object = session.addObject(LM.dropColumn, session);
+            DataObject object = session.addObject(LM.dropColumn);
             LM.sidDropColumn.execute(sid, session, object);
             LM.sidTableDropColumn.execute(columnsToDrop.get(sid), session, object);
             LM.timeDropColumn.execute(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
@@ -2651,12 +2652,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         DataSession session = createSession();
         DataObject exceptionObject;
         if (client) {
-            exceptionObject = session.addObject(LM.clientException, session.modifier);
+            exceptionObject = session.addObject(LM.clientException);
             LM.clientClientException.execute(clientName, session, exceptionObject);
             String userLogin = (String) LM.userLogin.read(session, user);
             LM.loginClientException.execute(userLogin, session, exceptionObject);
         } else {
-            exceptionObject = session.addObject(LM.serverException, session.modifier);
+            exceptionObject = session.addObject(LM.serverException);
         }
         LM.messageException.execute(message, session, exceptionObject);
         LM.typeException.execute(errorType, session, exceptionObject);
@@ -2759,7 +2760,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 return ServerResourceBundle.getString("logics.error.email.duplicate");
             }
 
-            DataObject userObject = session.addObject(LM.customUser, session.modifier);
+            DataObject userObject = session.addObject(LM.customUser);
             LM.userLogin.execute(username, session, userObject);
             LM.email.execute(email, session, userObject);
             LM.userPassword.execute(password, session, userObject);

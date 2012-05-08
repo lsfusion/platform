@@ -1,13 +1,14 @@
 package roman;
 
 import platform.interop.ClassViewType;
-import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
 import java.util.Iterator;
 
@@ -17,7 +18,7 @@ import java.util.Iterator;
  * Time: 15:40
  */
 
-public abstract class BaseImportActionProperty extends CustomActionProperty {
+public abstract class BaseImportActionProperty extends CustomReadValueActionProperty {
     protected final ClassPropertyInterface supplierInterface;
     protected RomanLogicsModule LM;
     protected FileActionClass valueClass;
@@ -51,8 +52,7 @@ public abstract class BaseImportActionProperty extends CustomActionProperty {
         entity.forceViewType = ClassViewType.PANEL;
     }
 
-    @Override
-    public DataClass getValueClass() {
+    protected Type getReadType(ExecutionContext context) {
         return valueClass;
     }
 }

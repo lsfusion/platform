@@ -94,6 +94,10 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
         return changes.keys();
     }
 
+    public Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> read(DataSession session) throws SQLException {
+        return read(session.sql, session.env, session.baseClass);
+    }
+    
     public Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> read(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
         Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> result = new HashMap<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>>();
         for(int i=0;i<changes.size;i++)

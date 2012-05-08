@@ -1,5 +1,11 @@
 package platform.server.form.instance;
 
+import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.JRAbstractExporter;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
@@ -10,7 +16,9 @@ import platform.interop.Scroll;
 import platform.interop.action.*;
 import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
+import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.UserInputResult;
+import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.auth.SecurityPolicy;
@@ -52,6 +60,7 @@ import platform.server.session.*;
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
@@ -73,7 +82,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier {
+public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier implements ExecutionEnvironmentInterface {
 
     public final T BL;
 
@@ -549,7 +558,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return null;
 
-        return session.addObject(cls, this);
+        return session.addObject(cls);
     }
 
     // временно
@@ -565,7 +574,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         // резолвим все фильтры
         assert checkFilters(object.groupTo);
         for (FilterInstance filter : object.groupTo.filters)
-            filter.resolveAdd(session, this, object, addObject);
+            filter.resolveAdd(new ExecutionEnvironment(this), object, addObject);
 
         for (LP lp : BL.LM.lproperties) {
             Property property = lp.property;
@@ -576,7 +585,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
                     Integer obj = getClassListener().getObject((CustomClass) propClasses.value);
                     if(obj!=null)
-                        lp.execute(obj, session, this, addObject);
+                        lp.execute(obj, new ExecutionEnvironment(this), addObject);
                 }
             }
         }
@@ -621,11 +630,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return addObject;
     }
 
-    public void changeClass(CustomObjectInstance object, DataObject change, int classID) throws SQLException {
-        if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
-            object.changeClass(session, change, classID);
-            dataChanged = true;
-        }
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls, boolean groupLast) throws SQLException {
+        if(objectInstance instanceof CustomObjectInstance) {
+            CustomObjectInstance object = (CustomObjectInstance) objectInstance;
+
+            if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
+                object.changeClass(session, dataObject, cls);
+                dataChanged = true;
+            }
+        } else
+            session.changeClass(objectInstance, dataObject, cls, groupLast);
     }
 
     public boolean canChangeClass(CustomObjectInstance object) {
@@ -633,28 +647,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, boolean aggValue) throws SQLException {
-        return changeProperty(property, value, null, false, aggValue);
+        return changeProperty(property, value, false, aggValue);
     }
 
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, new HashMap<ObjectInstance, DataObject>(), value, executeForm, all, aggValue);
+    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, boolean all, boolean aggValue) throws SQLException {
+        return changeProperty(property, new HashMap<ObjectInstance, DataObject>(), value, all, aggValue);
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues,
-                                             PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL, valueColumnKeys, this), executeForm, all, aggValue);
+                                             PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, boolean all, boolean aggValue) throws SQLException {
+        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL, valueColumnKeys, this), all, aggValue);
     }
 
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
+    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, boolean all, boolean aggValue) throws SQLException {
         assert !property.isReadOnly();
-        return changeProperty(property.getChangeInstance(aggValue, BL, mapDataValues, this), value, executeForm, all ? property.toDraw : null);
+        return changeProperty(property.getChangeInstance(aggValue, BL, mapDataValues, this), value, all ? property.toDraw : null);
     }
 
     @Message("message.form.change.property")
-    public List<ClientAction> changeProperty(@ParamMessage PropertyObjectInstance<?> property, Object value, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
+    public List<ClientAction> changeProperty(@ParamMessage PropertyObjectInstance<?> property, Object value, GroupObjectInstance groupObject) throws SQLException {
         if (securityPolicy.property.change.checkPermission(property.property)) {
             dataChanged = true;
-            return property.execute(session, value instanceof CompareValue ? (CompareValue) value : session.getObjectValue(value, property.getType()), this, executeForm, groupObject);
+            return property.execute(new ExecutionEnvironment(this), value instanceof CompareValue ? (CompareValue) value : session.getObjectValue(value, property.getType()), groupObject);
         } else {
             return null;
         }
@@ -693,22 +707,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return null;
     }
 
-    public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, RemoteForm executeForm, Map<ObjectInstance, DataObject> keys) throws SQLException {
+    public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
         PropertyObjectInstance editAction = property.getEditAction(editActionSID);
         if (editAction == null && (CHANGE.equals(editActionSID) || EDIT_OBJECT.equals(editActionSID) || GROUP_CHANGE.equals(editActionSID))) {
             //изменение через старый механизм
-            return executeChangeEditActionOldWayAdapter(property, editActionSID, executeForm, keys);
+            return executeChangeEditActionOldWayAdapter(property, editActionSID, keys);
         }
         editAction = editAction.getRemappedPropertyObject(keys);
-        return editAction.execute(session, ActionClass.TRUE, this, executeForm, null);
+        return editAction.execute(new ExecutionEnvironment(this), ActionClass.TRUE, null);
     }
 
-    private List<ClientAction> executeChangeEditActionOldWayAdapter(PropertyDrawInstance<?> property, String editActionSID, RemoteForm executeForm, Map<ObjectInstance, DataObject> keys) throws SQLException {
+    private List<ClientAction> executeChangeEditActionOldWayAdapter(PropertyDrawInstance<?> property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
         //todo: this need thoughtfull refactoring
 
         //todo: reimplement Ctrl+V
         boolean aggValue = true;
         boolean groupChange = GROUP_CHANGE.equals(editActionSID);
+
+        Context currentContext = Context.context.get();
 
         Type changeType = getPropertyChangeType(property, keys, aggValue);
         if (changeType != null) {
@@ -730,7 +746,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     msg += " \"" + caption + "\"?";
                 }
 
-                int result = (Integer)executeForm.requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
+                int result = (Integer)currentContext.requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
                 if (result != JOptionPane.YES_OPTION) {
                     return null;
                 }
@@ -739,7 +755,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         if (changeType instanceof ActionClass) {
             //сразу изменяем для action'ов
-            return changeProperty(property, keys, true, executeForm, groupChange, aggValue);
+            return changeProperty(property, keys, true, groupChange, aggValue);
         } else if (changeType instanceof DataClass) {
             Object oldValue = null;
             //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
@@ -747,27 +763,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 PropertyObjectInstance<?> change = property.getChangeInstance(aggValue, BL, keys, this);
                 oldValue = change.read(session, this);
             }
-            UserInputResult inputResult = executeForm.requestUserInput(changeType, oldValue);
+            UserInputResult inputResult = currentContext.requestUserInput(changeType, oldValue);
             if (!inputResult.isCanceled()) {
-                return changeProperty(property, keys, inputResult.getValue(), executeForm, groupChange, aggValue);
+                return changeProperty(property, keys, inputResult.getValue(), groupChange, aggValue);
             }
         } else if (changeType instanceof ObjectType) {
             try {
                 if (EDIT_OBJECT.equals(editActionSID)) {
                     DialogInstance<T> dialogInstance = createObjectEditorDialog(property);
-                    RemoteDialog dialog = new RemoteDialog<T>(dialogInstance, dialogInstance.entity.getRichDesign(), executeForm.getExportPort(), executeForm.getRemoteFormListener());
-                    executeForm.requestUserInteraction(new DialogClientAction(dialog));
+                    RemoteDialog dialog = currentContext.createRemoteDialog(dialogInstance);
+                    currentContext.requestUserInteraction(new DialogClientAction(dialog));
                     return new ArrayList<ClientAction>();
                 } else {
                     DialogInstance<T> dialogInstance = createChangeEditorDialog(property);
-                    RemoteDialog dialog = new RemoteDialog<T>(dialogInstance, dialogInstance.entity.getRichDesign(), executeForm.getExportPort(), executeForm.getRemoteFormListener());
-                    executeForm.requestUserInteraction(new DialogClientAction(dialog));
+                    RemoteDialog dialog = currentContext.createRemoteDialog(dialogInstance);
+                    currentContext.requestUserInteraction(new DialogClientAction(dialog));
                     if (dialogInstance.getFormResult() == FormCloseType.OK) {
                         Object newValue = dialogInstance.getDialogValue();
-                        return changeProperty(property, keys, newValue, executeForm, groupChange, aggValue);
+                        return changeProperty(property, keys, newValue, groupChange, aggValue);
                     }
                     if (dialogInstance.getFormResult() == FormCloseType.NULL) {
-                        return changeProperty(property, keys, null, executeForm, groupChange, aggValue);
+                        return changeProperty(property, keys, null, groupChange, aggValue);
                     }
                 }
             } catch (RemoteException e) {
@@ -809,7 +825,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         && !property.isReadOnly() && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
                     dataChanged = true;
                     Object value = row.get(propertyIndex);
-                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, value, this);
+                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), new ExecutionEnvironment(this), value);
                 }
             }
         }
@@ -838,7 +854,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }
-                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, parsedValue, this);
+                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), new ExecutionEnvironment(this), parsedValue);
                     dataChanged = true;
                 }
             }
@@ -991,17 +1007,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public String checkApply() throws SQLException {
-        return session.check(BL);
+    public boolean checkApply(List<ClientAction> actions) throws SQLException {
+        return session.check(BL, actions);
     }
 
-    public void synchronizedApplyChanges(String clientActionCheckResult, List<ClientAction> actions) throws SQLException {
+    public boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+        actions.addAll(fireOnApply());
+
         if (entity.isSynchronizedApply)
             synchronized (entity) {
-                applyChanges(clientActionCheckResult, actions);
+                return syncApply(actions);
             }
         else
-            applyChanges(clientActionCheckResult, actions);
+            return syncApply(actions);
     }
 
     private void fillHints(boolean restart) throws SQLException {
@@ -1018,15 +1036,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         noUpdate.addAll(hintsNoUpdate);
     }
     
-    public void applyChanges(String clientActionCheckResult, List<ClientAction> actions) throws SQLException {
-        String checkResult = clientActionCheckResult != null
-                             ? clientActionCheckResult
-                             : session.apply(BL, actions);
+    private boolean syncApply(List<ClientAction> actions) throws SQLException {
+        boolean succeeded = session.apply(BL, actions);
 
-        if (checkResult != null) {
-            actions.add(new LogMessageClientAction(checkResult, true));
-            return;
-        }
+        if (!succeeded)
+            return false;
 
         fillHints(true);
 
@@ -1036,9 +1050,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
         actions.add(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
+        return true;
     }
 
-    public void cancelChanges() throws SQLException {
+    public ExecutionEnvironmentInterface cancel() throws SQLException {
         session.restart(true);
 
         fillHints(true);
@@ -1050,6 +1065,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         addObjectOnTransaction(FormEventType.CANCEL);
 
         dataChanged = true;
+
+        return this;
     }
 
     // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- //
@@ -1165,10 +1182,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
-        seekObject(object, value);
-        // запускаем все Action'ы, которые следят за этим объектом
-        return fireObjectChanged(object, form);
+    public void changeObject(PropertyObjectInterfaceInstance objectInstance, ObjectValue objectValue, List<ClientAction> actions) throws SQLException {
+        if(objectInstance instanceof ObjectInstance) {
+            ObjectInstance object = (ObjectInstance) objectInstance;
+
+            seekObject(object, objectValue);
+            actions.addAll(fireObjectChanged(object)); // запускаем все Action'ы, которые следят за этим объектом
+        }
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
@@ -1530,30 +1550,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     // ---------------------------------------- Events ----------------------------------------
 
-    private List<ClientAction> fireObjectChanged(ObjectInstance object, RemoteForm form) throws SQLException {
-        return fireEvent(form, object.entity);
+    private List<ClientAction> fireObjectChanged(ObjectInstance object) throws SQLException {
+        return fireEvent(object.entity);
     }
 
-    public List<ClientAction> fireOnApply(RemoteForm form) throws SQLException {
-        return fireEvent(form, FormEventType.APPLY);
+    public List<ClientAction> fireOnApply() throws SQLException {
+        return fireEvent(FormEventType.APPLY);
     }
 
-    public List<ClientAction> fireOnOk(RemoteForm form) throws SQLException {
+    public List<ClientAction> fireOnOk() throws SQLException {
         formResult = FormCloseType.OK;
-        return fireEvent(form, FormEventType.OK);
+        return fireEvent(FormEventType.OK);
     }
 
-    public List<ClientAction> fireOnClose(RemoteForm form) throws SQLException {
+    public List<ClientAction> fireOnClose() throws SQLException {
         formResult = FormCloseType.CLOSE;
-        return fireEvent(form, FormEventType.CLOSE);
+        return fireEvent(FormEventType.CLOSE);
     }
 
-    public List<ClientAction> fireOnNull(RemoteForm form) throws SQLException {
+    public List<ClientAction> fireOnNull() throws SQLException {
         formResult = FormCloseType.NULL;
-        return fireEvent(form, FormEventType.NULL);
+        return fireEvent(FormEventType.NULL);
     }
 
-    private List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {
+    private List<ClientAction> fireEvent(Object eventObject) throws SQLException {
         List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
@@ -1561,7 +1581,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             for (PropertyObjectEntity autoAction : actionsOnEvent) {
                 PropertyObjectInstance autoActionInstance = instanceFactory.getInstance(autoAction);
                 if (autoActionInstance.isInInterface(null)) {
-                    List<ClientAction> actions = changeProperty(autoActionInstance, read(autoActionInstance) == null ? true : null, form, null);
+                    List<ClientAction> actions = changeProperty(autoActionInstance, read(autoActionInstance) == null ? true : null, null);
                     for (ClientAction clientAction : actions) {
                         clientActions.add(clientAction);
                         if (clientAction instanceof DenyCloseFormClientAction) {
@@ -1576,12 +1596,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public <P extends PropertyInterface> void fireChange(Property<P> property, PropertyChange<P> change) throws SQLException {
-        entity.onChange(property, change, session, this);
+        entity.onChange(property, change, new ExecutionEnvironment(session));
     }
 
     private FormCloseType formResult = FormCloseType.NULL;
 
     public FormCloseType getFormResult() {
         return formResult;
+    }
+
+    public DataSession getSession() {
+        return session;
+    }
+
+    public Modifier getModifier() {
+        return this;
+    }
+
+    public FormInstance getFormInstance() {
+        return this;
+    }
+
+    public boolean isInTransaction() {
+        return false;
     }
 }

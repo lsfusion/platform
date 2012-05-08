@@ -26,7 +26,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
         depends.add(property);
         depends.add(property.getOld());
     }

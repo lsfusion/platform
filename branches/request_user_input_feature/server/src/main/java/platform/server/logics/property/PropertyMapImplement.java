@@ -10,7 +10,6 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
@@ -70,8 +69,8 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return property.getJoinDataChanges(BaseUtils.join(mapping, mapKeys), expr, where, propChanges, changedWhere).map(mapping);
     }
 
-    public void mapNotNull(Map<T, DataObject> values, DataSession session, Modifier modifier, boolean notNull, boolean check) throws SQLException {
-        property.setNotNull(BaseUtils.join(mapping, values), session, modifier, notNull, check);
+    public void mapNotNull(Map<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
+        property.setNotNull(BaseUtils.join(mapping, values), env, notNull, check);
     }
 
     public PropertyMapImplement<?, T> mapChangeImplement(Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
@@ -89,16 +88,16 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return new PropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier modifier) throws SQLException {
-        return execute(keys, session, value, modifier, null, null);
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+        return execute(keys, env, value, null);
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        return execute(keys, session, session.getObjectValue(value, property.getType()), modifier, executeForm, mapObjects);
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return execute(keys, env, env.getSession().getObjectValue(value, property.getType()), mapObjects);
     }
 
-    private List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, ObjectValue objectValue, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        return session.execute(property, mapValues(keys).getPropertyChange(objectValue.getExpr()), modifier, executeForm, mapObjects);
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return env.execute(property, mapValues(keys).getPropertyChange(objectValue.getExpr()), mapObjects);
     }
 
     public void fill(Set<T> interfaces, Set<PropertyMapImplement<?, T>> properties) {

@@ -16,12 +16,11 @@ import platform.server.data.SQLSession;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
@@ -1513,7 +1512,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public static class LoadActionProperty extends CustomActionProperty {
+    public static class LoadActionProperty extends CustomReadValueActionProperty {
 
         LP fileProperty;
 
@@ -1523,18 +1522,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.fileProperty = fileProperty;
         }
 
-        @Override
-        public DataClass getValueClass() {
+        protected Type getReadType(ExecutionContext context) {
             FileClass fileClass = (FileClass) fileProperty.property.getType();
             return FileActionClass.getInstance(false, fileClass.isCustom(), fileClass.toString(), fileClass.getExtensions());
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
             DataObject[] objects = new DataObject[context.getKeyCount()];
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = context.getKeyValue(classInterface);
-            fileProperty.execute(context.getValueObject(), context, objects);
+            fileProperty.execute(userValue, context, objects);
         }
 
         @Override
@@ -1619,11 +1617,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         private ChangeUserActionProperty(String sID, ConcreteValueClass userClass) {
             super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
-        }
-
-        @Override
-        public DataClass getValueClass() {
-            return LogicalClass.instance;
         }
 
         public void execute(ExecutionContext context) throws SQLException {
@@ -1753,8 +1746,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             String tableName = (String) sidTableDropColumn.read(context, dropColumnObject);
             BL.dropColumn(tableName, columnName);
 
-            context.getFormInstance().changeClass((CustomObjectInstance) context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
-            context.applyChanges(BL);
+            context.changeClass(context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
+            context.apply(BL);
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
@@ -2300,10 +2293,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addRegularFilterGroup(filterGroup);
         }
 
-        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, RemoteForm executeForm, FormInstance selfFormInstance) {
+        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance) {
             for (FilterEntity filterEntity : remapFilters) {
                 selfFormInstance.addFixedFilter(
-                        filterEntity.getRemappedFilter(remapObject, selectionObject, executeForm.form.instanceFactory)
+                        filterEntity.getRemappedFilter(remapObject, selectionObject, executeForm.instanceFactory)
                 );
             }
         }

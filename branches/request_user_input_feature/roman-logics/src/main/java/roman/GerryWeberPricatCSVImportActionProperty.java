@@ -1,21 +1,20 @@
 package roman;
 
-import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.*;
 
-public class GerryWeberPricatCSVImportActionProperty extends CustomActionProperty {
+public class GerryWeberPricatCSVImportActionProperty extends CustomReadValueActionProperty {
     private RomanLogicsModule LM;
 
     private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.txt)", "txt");
@@ -27,12 +26,12 @@ public class GerryWeberPricatCSVImportActionProperty extends CustomActionPropert
 
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         ClassPropertyInterface supplierInterface = i.next();
         DataObject supplier = context.getKeyValue(supplierInterface);
 
-        List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+        List<byte[]> fileList = valueClass.getFiles(userValue);
 
         ImportField barcodeField = new ImportField(LM.barcodePricat);
         ImportField articleField = new ImportField(LM.articleNumberPricat);
@@ -84,7 +83,7 @@ public class GerryWeberPricatCSVImportActionProperty extends CustomActionPropert
     }
 
     @Override
-    public DataClass getValueClass() {
+    protected Type getReadType(ExecutionContext context) {
         return valueClass;
     }
 }

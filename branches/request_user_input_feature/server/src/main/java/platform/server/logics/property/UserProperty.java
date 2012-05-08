@@ -95,8 +95,6 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return false;
     }
 
-    public abstract void execute(ExecutionContext context) throws SQLException;
-
     // не сильно структурно поэтому вынесено в метод
     public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
         int i=0;

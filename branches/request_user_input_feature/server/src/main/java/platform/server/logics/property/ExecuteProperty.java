@@ -5,6 +5,7 @@ import platform.base.Pair;
 import platform.server.classes.ValueClass;
 import platform.server.session.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -45,4 +46,6 @@ public abstract class ExecuteProperty extends UserProperty {
     public PropertyChange<ClassPropertyInterface> getEventAction(PropertyChanges changes) {
         return event.getDataChanges(changes).get(this);
     }
+
+    public abstract void execute(ExecutionContext context) throws SQLException;
 }

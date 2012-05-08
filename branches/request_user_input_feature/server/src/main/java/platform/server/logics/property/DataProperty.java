@@ -42,10 +42,6 @@ public abstract class DataProperty extends UserProperty {
         return value;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
-        context.getSession().changeProperty(this, context.getKeys(), context.getValue(), context.isGroupLast());
-    }
-
     public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes) {
         PropertyChange<ClassPropertyInterface> result = null;
 
@@ -85,8 +81,8 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) { // для Action'а связь считается слабой
-        if(derived) depends.addAll(getEventDepends());
+    protected void fillDepends(Set<Property> depends, boolean events) { // для Action'а связь считается слабой
+        if(events) depends.addAll(getEventDepends());
     }
 
     @Override

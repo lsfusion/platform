@@ -11,7 +11,9 @@ import platform.interop.remote.RemoteObject;
 import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.instance.DialogInstance;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.remote.RemoteDialog;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
@@ -106,11 +108,15 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
-        throw new UnsupportedOperationException("requestUserInteraction is not supported");
+        throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
-        throw new UnsupportedOperationException("requestUserInteraction is not supported");
+        throw new UnsupportedOperationException("createRemoteForm is not supported");
+    }
+
+    public RemoteDialog createRemoteDialog(DialogInstance dialogInstance) {
+        throw new UnsupportedOperationException("createRemoteDialog is not supported");
     }
 
     public void killThreads() {

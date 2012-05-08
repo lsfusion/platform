@@ -273,9 +273,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.getClientActionOnApply();
     }
 
-    public RemoteChanges applyChanges(Object clientResult) throws RemoteException {
+    public RemoteChanges applyChanges() throws RemoteException {
         logRemoteMethodStartCall("applyChanges");
-        RemoteChanges result = target.applyChanges(clientResult);
+        RemoteChanges result = target.applyChanges();
         logRemoteMethodEndCall("applyChanges", result);
         return result;
     }

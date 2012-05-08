@@ -73,6 +73,10 @@ public class BaseUtils {
         return BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
     }
 
+    public static <K, VA, VB> Map<VA, VB> rightNullCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
+        return joinMap==null? null : BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
+    }
+
     public static <K, E, V> List<Map<K, V>> joinCol(Map<K, ? extends E> map, Collection<Map<E, V>> list) {
         List<Map<K, V>> result = new ArrayList<Map<K, V>>();
         for (Map<E, V> joinMap : list)
@@ -108,13 +112,17 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, E, V> Map<K, V> innerJoin(Map<K, E> map, Map<E, V> joinMap) {
+    public static <K, E, V> Map<K, V> innerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
         Map<K, V> result = new HashMap<K, V>();
-        for (Map.Entry<K, E> entry : map.entrySet()) {
+        for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
             V joinValue = joinMap.get(entry.getValue());
             if (joinValue != null) result.put(entry.getKey(), joinValue);
         }
         return result;
+    }
+
+    public static <K, E, V> Map<K, V> nullInnerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
+        return joinMap==null ? null : innerJoin(map, joinMap);
     }
 
     public static <K, E, V> OrderedMap<K, V> innerJoin(OrderedMap<K, E> map, Map<E, V> joinMap) {

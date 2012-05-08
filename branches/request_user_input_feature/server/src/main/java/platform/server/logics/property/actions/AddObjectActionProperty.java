@@ -4,9 +4,9 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.server.classes.*;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
@@ -20,7 +20,7 @@ import platform.server.logics.property.Property;
 import java.sql.SQLException;
 import java.util.*;
 
-public class AddObjectActionProperty extends CustomActionProperty {
+public class AddObjectActionProperty extends CustomReadValueActionProperty {
 
     // barcode != null, автоматически заполнять поле barcode значением префикс + 0000 + id
     private Property barcode;
@@ -79,7 +79,15 @@ public class AddObjectActionProperty extends CustomActionProperty {
         return "getAddObjectAction(" + valueClass.getSID() + ")";
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    protected Type getReadType(ExecutionContext context) {
+        if(dataClass!=null)
+            return dataClass;
+        if(valueClass.hasChildren())
+            return valueClass.getActionClass(valueClass);
+        return null;
+    }
+
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке
         if (quantity) {
@@ -89,22 +97,12 @@ public class AddObjectActionProperty extends CustomActionProperty {
         ArrayList<byte[]> values = null;
         if (dataClass instanceof FileActionClass) {
             FileActionClass clazz = (FileActionClass) dataClass;
-            values = clazz.getFiles(context.getValueObject());
+            values = clazz.getFiles(userValue);
             quantityAdd = values.size();
         }
 
-        FormInstance<?> form = context.getFormInstance();
         for (int k = 0; k < quantityAdd; k++) {
-            DataObject object;
-            if (valueClass.hasChildren()) {
-                if (context.isInFormSession())
-                    object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) context.getValueObject()));
-                else
-                    object = context.getSession().addObject((ConcreteCustomClass)valueClass.findClassID((Integer) context.getValueObject()), context.getModifier());
-            } else {
-                object = context.addObject((ConcreteCustomClass) valueClass);
-            }
-
+            DataObject object = context.addObject((ConcreteCustomClass)(valueClass.hasChildren()?context.getSession().baseClass.findClassID((Integer) userValue):valueClass));
             if (barcode != null) {
 
                 String prefix = null;
@@ -148,17 +146,6 @@ public class AddObjectActionProperty extends CustomActionProperty {
                 propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object), context, values.get(k));
             }
         }
-    }
-
-    @Override
-    public DataClass getValueClass() {
-        if (dataClass != null) {
-            return dataClass;
-        }
-        if (valueClass.hasChildren())
-            return valueClass.getActionClass(valueClass);
-        else
-            return super.getValueClass();
     }
 
     @Override

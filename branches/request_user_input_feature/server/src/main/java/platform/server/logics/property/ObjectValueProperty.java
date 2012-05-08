@@ -52,17 +52,9 @@ public class ObjectValueProperty extends ExecuteClassProperty {
     }
 
     public void execute(ExecutionContext context) throws SQLException {
-        if (context.isInFormSession()) {
-            if (context.getSingleObjectInstance() instanceof ObjectInstance) {
-                context.addActions(
-                        context.getFormInstance().changeObject(
-                                (ObjectInstance) context.getSingleObjectInstance(),
-                                context.getValue(),
-                                context.getRemoteForm()));
-            }
-        } else {
-            context.emitExceptionIfNotInFormSession();
-        }
+        context.emitExceptionIfNotInFormSession();
+
+        context.getFormInstance().changeObject(context.getSingleObjectInstance(), context.getValue(), context.getActions());
     }
 
     protected Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement) {

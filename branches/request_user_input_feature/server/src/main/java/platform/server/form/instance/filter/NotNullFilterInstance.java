@@ -9,7 +9,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -53,7 +53,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
 
         if(!resolveAdd)
             return;
@@ -63,6 +63,6 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
-        property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), session, modifier, true);
+        property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), env, true);
     }
 }

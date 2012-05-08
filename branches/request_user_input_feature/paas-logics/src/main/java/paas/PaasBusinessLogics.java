@@ -98,7 +98,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     private int generateDatabase() throws SQLException {
         DataSession session = createSession();
         try {
-            DataObject dbOjb = session.addObject(paasLM.database, session.modifier, false, true);
+            DataObject dbOjb = session.addObject(paasLM.database, false, true);
 
             //todo: возможно генерацию имени стоит переделать на что-нибудь более надёжное, типа зачитывания текущих значений и выбора MAX+1
             LM.name.execute("paas_generated_" + System.currentTimeMillis(), session, dbOjb);
@@ -161,7 +161,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 int userId = getUserId(userLogin);
 
-                DataObject projObj = session.addObject(paasLM.project, session.modifier, false, true);
+                DataObject projObj = session.addObject(paasLM.project, false, true);
 
                 LM.name.execute(newProject.name, session, projObj);
                 paasLM.projectDescription.execute(newProject.description, session, projObj);
@@ -431,7 +431,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                DataObject moduleObj = session.addObject(paasLM.module, session.modifier, false, true);
+                DataObject moduleObj = session.addObject(paasLM.module, false, true);
 
                 LM.name.execute(newModule.name, session, moduleObj);
 
@@ -483,7 +483,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                DataObject configObj = session.addObject(paasLM.configuration, session.modifier, false, true);
+                DataObject configObj = session.addObject(paasLM.configuration, false, true);
 
                 int databaseId = generateDatabase();
 

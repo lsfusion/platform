@@ -30,9 +30,6 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
     }
 
     protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, PropertyObjectInterfaceInstance> innerObjects, Map<I, Expr> innerExprs) throws SQLException {
-        Map<P, PropertyObjectInterfaceInstance> toObjects = null;
-        if(context.isInFormSession())
-            toObjects = innerJoin(writeTo.mapping, innerObjects);
 
         Expr writeExpr = writeFrom.mapExpr(innerExprs, context.getModifier());
 
@@ -41,9 +38,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
                     writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere()));
 
         PropertyChange<P> change = new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere);
-        context.addActions(
-                context.getSession().execute(writeTo.property, change, context.getModifier(), context.getRemoteForm(), toObjects)
-        );
+        context.addActions(context.getEnv().execute(writeTo.property, change, nullInnerJoin(writeTo.mapping, innerObjects)));
     }
 
     public Set<Property> getUsedProps() {

@@ -89,6 +89,6 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
         PropertyChanges changes = session.getPropertyChanges();
         for(ChangedProperty<T> changedProperty : where.property.getChangedDepends())
             changes = changes.add(new PropertyChanges(changedProperty, changedProperty.getFullChange(session)));
-        session.execute(getMapDataChanges(changes), null, new HashMap<C, PropertyObjectInterfaceInstance>());
+        new ExecutionEnvironment(session).execute(getMapDataChanges(changes), new HashMap<C, PropertyObjectInterfaceInstance>());
     }
 }

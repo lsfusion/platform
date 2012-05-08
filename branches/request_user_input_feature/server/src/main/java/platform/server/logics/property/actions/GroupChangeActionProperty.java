@@ -161,9 +161,7 @@ public class GroupChangeActionProperty extends CustomActionProperty {
 
         PropertyChange mainPropertyChange = new PropertyChange(mainKeys, setExpr, changeWhere);
 
-        context.addActions(
-                context.getSession().execute(mainProperty, mainPropertyChange, context.getModifier(), context.getRemoteForm(), mainMapObjects)
-        );
+        context.addActions(context.getEnv().execute(mainProperty, mainPropertyChange, mainMapObjects));
     }
 
     private Map<PropertyInterface, PropertyObjectInterfaceInstance> getMapObjectsForMainProperty(Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {

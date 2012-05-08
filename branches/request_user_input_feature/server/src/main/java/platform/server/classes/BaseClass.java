@@ -107,8 +107,8 @@ public class BaseClass extends AbstractCustomClass {
         if(classID==null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
-            name.execute(objectClass.caption, session, session.modifier, classObject);
-            classSID.execute(objectClass.sID, session, session.modifier, classObject);
+            name.execute(objectClass.caption, session, classObject);
+            classSID.execute(objectClass.sID, session, classObject);
         }
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);

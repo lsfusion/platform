@@ -3,6 +3,7 @@ package platform.server.logics.property.actions.flow;
 import platform.base.BaseUtils;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.mergeSet;
+import static platform.base.BaseUtils.nullInnerJoin;
 import static platform.base.BaseUtils.reverse;
 
 public class JoinActionProperty extends KeepContextActionProperty {
@@ -36,7 +38,8 @@ public class JoinActionProperty extends KeepContextActionProperty {
                 return FlowResult.FINISH;
             }
         }
-        ((ActionProperty) action.property).execute(context.override(readValues));
+        ((ActionProperty) action.property).execute(context.override(readValues,
+                                nullInnerJoin(action.mapping, context.getObjectInstances())));
         return FlowResult.FINISH;
     }
 
@@ -51,10 +54,5 @@ public class JoinActionProperty extends KeepContextActionProperty {
         for(PropertyInterfaceImplement<ClassPropertyInterface> value : action.mapping.values())
             value.mapFillDepends(result);
         return result;
-    }
-
-    @Override
-    public DataClass getValueClass() {
-        return ((ActionProperty) action.property).getValueClass();
     }
 }

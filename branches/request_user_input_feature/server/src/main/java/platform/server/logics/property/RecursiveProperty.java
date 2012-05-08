@@ -159,7 +159,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<Property> depends, boolean events) {
         initial.mapFillDepends(depends);
         step.mapFillDepends(depends);
     }

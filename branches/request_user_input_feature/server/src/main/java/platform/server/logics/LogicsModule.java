@@ -547,8 +547,13 @@ public abstract class LogicsModule {
         return addMFAProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
     }
 
+    protected LP addChangeClassAProp(String caption) {
+        return addAProp(new ChangeClassActionProperty(genSID(), caption, baseClass));
+    }
+
     protected LP addChangeClassAProp(String caption, ConcreteCustomClass cls) {
-        return addAProp(new ChangeClassActionProperty(genSID(), caption, cls, baseClass));
+        return addJoinAProp(null, genSID(), "sys", 2, new ValueClass[]{baseClass},
+                addChangeClassAProp(caption), 1, addCProp(baseClass.objectClass, cls.getSID()));
     }
 
     protected LP addStopActionProp(String caption, String header) {

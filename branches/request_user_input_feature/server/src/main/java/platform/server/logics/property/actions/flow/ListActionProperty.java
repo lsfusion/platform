@@ -1,8 +1,10 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
+import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -51,7 +53,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     @Override
     public FlowResult flowExecute(ExecutionContext context) throws SQLException {
         ExecutionContext innerContext = newSession
-                                        ? context.override(context.getSession().createSession())
+                                        ? context.override(new ExecutionEnvironment(context.getSession().createSession()))
                                         : context;
 
         FlowResult result = FlowResult.FINISH;
@@ -68,9 +70,10 @@ public class ListActionProperty extends KeepContextActionProperty {
             innerContext.getSession().close();
 
             context.addActions(innerContext.getActions());
-            if (context.getFormInstance() != null) {
-                context.getFormInstance().refreshData();
-            }
+
+            FormInstance<?> formInstance = context.getFormInstance();
+            if(formInstance!=null)
+                formInstance.refreshData();
         }
         return result;
     }

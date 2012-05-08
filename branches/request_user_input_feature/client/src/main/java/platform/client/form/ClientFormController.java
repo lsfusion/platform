@@ -872,7 +872,7 @@ public class ClientFormController {
             if (remoteForm.hasClientActionOnApply()) {
                 ClientAction actionOnApply = remoteForm.getClientActionOnApply();
                 if (actionOnApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
-                    Log.error(((CheckFailed) actionOnApply).message);
+                    actionOnApply.dispatch(actionDispatcher);
                     setCanClose(false);
                     return;
                 } else {
@@ -884,7 +884,7 @@ public class ClientFormController {
                 }
             }
 
-            processRemoteChanges(remoteForm.applyChanges(clientResult));
+            processRemoteChanges(remoteForm.applyChanges());
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.applying.changes"), e);
         }

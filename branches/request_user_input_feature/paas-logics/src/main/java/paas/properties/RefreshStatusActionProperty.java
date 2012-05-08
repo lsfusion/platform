@@ -21,9 +21,10 @@ public class RefreshStatusActionProperty extends CustomActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
         paas.refreshConfigurationStatuses(context.getSingleKeyValue());
-        if (context.isInFormSession()) {
-            context.getFormInstance().refreshData();
-        }
+
+        context.emitExceptionIfNotInFormSession();
+
+        context.getFormInstance().refreshData();
     }
 
     @Override

@@ -24,7 +24,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField countryField = new ImportField(LM.baseLM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
@@ -52,7 +52,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 

@@ -3,9 +3,9 @@ package tmc.integration.exp;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ListClientAction;
-import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.*;
@@ -14,6 +14,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import tmc.VEDLogicsModule;
 import tmc.integration.exp.FiscalRegister.*;
 
@@ -329,29 +330,6 @@ public class CashRegController {
         return result;
     }
 
-    public String checkCashRegApplyActions(Object result) {
-        /*
-        List<Object> listActions = (List<Object>) result;
-
-        if (!noBillTxt) {
-            ImportFileClientActionResult keyImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size() - 3));
-            ImportFileClientActionResult keyExImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size() - 2));
-
-            if (keyImpFileResult.fileExists && !keyExImpFileResult.fileExists) {
-                return "Произошла ошибка при записи в ФР : программа взаимодействия с регистратором не загружена.\n" +
-                        "Для ее загрузки нужно запустить на рабочем столе ярлык 'Гепард'.";
-            }
-
-            ImportFileClientActionResult errorImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size() - 1));
-
-            if (errorImpFileResult.fileExists) {
-                return (errorImpFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + errorImpFileResult.fileContent);
-            }
-        }
-        */
-        return null;
-    }
-
     public void addCashRegProperties() {
         // todo [dale]: надо бы переделать это на LogicsModule
 //       пока не поддерживается
@@ -446,7 +424,7 @@ public class CashRegController {
         }
     }
 
-    private class IntegerCashRegActionProperty extends CustomActionProperty {
+    private class IntegerCashRegActionProperty extends CustomReadValueActionProperty {
 
         int type;
 
@@ -455,8 +433,11 @@ public class CashRegController {
             this.type = command;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
-            Object countValue = context.getValueObject();
+        protected Type getReadType(ExecutionContext context) {
+            return DoubleClass.instance;
+        }
+
+        protected void executeRead(ExecutionContext context, Object countValue) throws SQLException {
             if (countValue instanceof Double) {
                 int comPort = getCashRegComPort(context.getFormInstance());
                 if (comPort == 0) {
@@ -464,11 +445,6 @@ public class CashRegController {
                 }
                 context.addAction(new MoneyOperationAction(type, comPort, (Double) countValue));
             }
-        }
-
-        @Override
-        public DataClass getValueClass() {
-            return DoubleClass.instance;
         }
     }
 
