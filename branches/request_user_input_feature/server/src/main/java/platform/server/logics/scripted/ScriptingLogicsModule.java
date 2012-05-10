@@ -230,7 +230,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkStaticClassConstraints(className, isStatic, isAbstract, instNames, instCaptions);
         checkClassParents(parentNames);
 
-        String caption = (captionStr == null ? className : transformStringLiteral(captionStr));
+        String caption = (captionStr == null ? className : captionStr);
 
         CustomClass[] parents;
         if (!isStatic && parentNames.isEmpty()) {
@@ -247,7 +247,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (isStatic) {
             String[] captions = new String[instCaptions.size()];
             for (int i = 0; i < instCaptions.size(); i++) {
-                captions[i] = (instCaptions.get(i) == null ? null : transformStringLiteral(instCaptions.get(i)));
+                captions[i] = (instCaptions.get(i) == null ? null : instCaptions.get(i));
             }
             addStaticClass(className, caption, instNames.toArray(new String[instNames.size()]), captions, parents);
         } else if (isAbstract) {
@@ -328,7 +328,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedGroup(String groupName, String captionStr, String parentName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGroup(" + groupName + ", " + (captionStr==null ? "" : captionStr) + ", " + (parentName == null ? "null" : parentName) + ");");
         checkDuplicateGroup(groupName);
-        String caption = (captionStr == null ? groupName : transformStringLiteral(captionStr));
+        String caption = (captionStr == null ? groupName : captionStr);
         AbstractGroup parentGroup = (parentName == null ? null : findGroupByCompoundName(parentName));
         addAbstractGroup(groupName, caption, parentGroup);
     }
@@ -336,7 +336,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ScriptingFormEntity createScriptedForm(String formName, String caption) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
         checkDuplicateNavigatorElement(formName);
-        caption = (caption == null ? formName : transformStringLiteral(caption));
+        caption = (caption == null ? formName : caption);
         return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
     }
 
@@ -461,7 +461,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         changePropertyName(property, name);
 
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
-        property.property.caption = (caption == null ? name : transformStringLiteral(caption));
+        property.property.caption = (caption == null ? name : caption);
         addPropertyToGroup(property.property, group);
 
         ImplementTable targetTable = null;
@@ -1092,14 +1092,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addDCCProp(index - 1), Arrays.asList(ccProp));
     }
 
-    public LP<?> addScriptedSFProp(String typeName, String formulaLiteral) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaLiteral + ");");
-        ValueClass cls = findClassByCompoundName(typeName);
-        checkFormulaClass(cls);
-        String formulaText = transformStringLiteral(formulaLiteral);
+    public LP<?> addScriptedSFProp(String typeName, String formulaText) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaText + ");");
         Set<Integer> params = findFormulaParameters(formulaText);
         checkFormulaParameters(params);
-        return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+        if (typeName != null) {
+            ValueClass cls = findClassByCompoundName(typeName);
+            checkFormulaClass(cls);
+            return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+        } else {
+            return addSFProp(transformFormulaText(formulaText), params.size());
+        }
     }
 
     private Set<Integer> findFormulaParameters(String text) {
@@ -1303,7 +1306,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (!property.property.check()) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
-        property.property.caption = transformStringLiteral(message);
+        property.property.caption = message;
         List<Property<?>> checkedProps = null;
         Property.CheckType type = (checked ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO);
         if (checked && propNames != null) {

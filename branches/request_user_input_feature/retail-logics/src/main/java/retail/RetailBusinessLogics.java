@@ -5,10 +5,10 @@ import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.interop.action.ClientAction;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.StaticCustomClass;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -18,6 +18,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
+import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 import retail.api.remote.*;
@@ -311,6 +312,50 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public List<TerminalDocumentTypeInfo> readTerminalDocumentTypeInfo() throws RemoteException, SQLException {
         DataSession session = createSession();
+
+        List<LegalEntityInfo> legalEntityInfoList = new ArrayList<LegalEntityInfo>();
+        LP isSupplier = LM.is(retailLM.getClassByName("supplier"));
+
+        Map<Object, KeyExpr> supplierKeys = isSupplier.getMapKeys();
+        KeyExpr supplierKey = BaseUtils.singleValue(supplierKeys);
+        Query<Object, Object> supplierQuery = new Query<Object, Object>(supplierKeys);
+
+        supplierQuery.properties.put("name", retailLM.baseLM.name.getExpr(supplierKey));
+        supplierQuery.and(isSupplier.property.getExpr(supplierKeys).getWhere());
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> supplierResult = supplierQuery.execute(session.sql);
+        try {
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : supplierResult.entrySet()) {
+                String id = String.valueOf(entry.getKey().values().iterator().next());
+                String name = (String) entry.getValue().get("name");
+                DataObject terminalHandbookTypeObject = ((StaticCustomClass) retailLM.findClassByCompoundName("terminalHandbookType")).getDataObject("supplier");
+                String type = (String) retailLM.getLPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
+                legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
+            }
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        LP isCustomer = LM.is(retailLM.getClassByName("customer"));
+
+        Map<Object, KeyExpr> customerKeys = isCustomer.getMapKeys();
+        KeyExpr customerKey = BaseUtils.singleValue(customerKeys);
+        Query<Object, Object> customerQuery = new Query<Object, Object>(customerKeys);
+
+        customerQuery.properties.put("name", retailLM.baseLM.name.getExpr(customerKey));
+        customerQuery.and(isCustomer.property.getExpr(customerKeys).getWhere());
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> customerResult = customerQuery.execute(session.sql);
+        try {
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : customerResult.entrySet()) {
+                String id = String.valueOf(entry.getKey().values().iterator().next());
+                String name = (String) entry.getValue().get("name");
+                DataObject terminalHandbookTypeObject = ((StaticCustomClass) retailLM.findClassByCompoundName("terminalHandbookType")).getDataObject("customer");
+                String type = (String) retailLM.getLPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
+                legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
+            }
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
         List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList = new ArrayList<TerminalDocumentTypeInfo>();
         LP isTerminalDocumentType = LM.is(retailLM.getClassByName("terminalDocumentType"));
 
@@ -327,227 +372,228 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
 
-        for (Map<Object, Object> values : terminalDocumentTypeResult.values()) {
+        for (Map<Object, Object > values:terminalDocumentTypeResult.values()){
             String id = (String) values.get("idTerminalDocumentType");
             String name = (String) values.get("nameTerminalDocumentType");
             String nameInHandbook1 = (String) values.get("nameInHandbook1TerminalDocumentType");
             String idTerminalHandbookType1 = (String) values.get("idTerminalHandbookType1TerminalDocumentType");
             String nameInHandbook2 = (String) values.get("nameInHandbook2TerminalDocumentType");
             String idTerminalHandbookType2 = (String) values.get("idTerminalHandbookType1TerminalDocumentType");
-            terminalDocumentTypeInfoList.add(new TerminalDocumentTypeInfo(id, name, nameInHandbook1, idTerminalHandbookType1,
-                    nameInHandbook2, idTerminalHandbookType2));
-        }
-        return terminalDocumentTypeInfoList;
+             terminalDocumentTypeInfoList.add(new TerminalDocumentTypeInfo(id, name, nameInHandbook1, idTerminalHandbookType1,
+                     nameInHandbook2, idTerminalHandbookType2, legalEntityInfoList));
     }
-
+    return terminalDocumentTypeInfoList;
+}
+                               
     @Override
     public String sendSalesInfo(List<SalesInfo> salesInfoList, String equipmentServer) throws IOException, SQLException {
 
-        DataSession session = createSession();
-        ImportField cashRegisterField = new ImportField(retailLM.getLPByName("numberCashRegister"));
-        ImportField zReportNumberField = new ImportField(retailLM.getLPByName("numberZReport"));
+            DataSession session = createSession();
+            ImportField cashRegisterField = new ImportField(retailLM.getLPByName("numberCashRegister"));
+            ImportField zReportNumberField = new ImportField(retailLM.getLPByName("numberZReport"));
 
-        ImportField numberBillField = new ImportField(retailLM.getLPByName("numberBill"));
-        ImportField dateField = new ImportField(retailLM.getLPByName("dateBill"));
-        ImportField timeField = new ImportField(retailLM.getLPByName("timeBill"));
+            ImportField numberBillField = new ImportField(retailLM.getLPByName("numberBill"));
+            ImportField dateField = new ImportField(retailLM.getLPByName("dateBill"));
+            ImportField timeField = new ImportField(retailLM.getLPByName("timeBill"));
 
-        ImportField numberBillDetailField = new ImportField(retailLM.getLPByName("numberBillDetail"));
-        ImportField barcodeExBillDetailField = new ImportField(retailLM.getLPByName("barcodeExBillDetail"));
+            ImportField numberBillDetailField = new ImportField(retailLM.getLPByName("numberBillDetail"));
+            ImportField barcodeExBillDetailField = new ImportField(retailLM.getLPByName("barcodeExBillDetail"));
 
-        ImportField quantityBillSaleDetailField = new ImportField(retailLM.getLPByName("quantityBillSaleDetail"));
-        ImportField priceBillSaleDetailField = new ImportField(retailLM.getLPByName("priceBillSaleDetail"));
-        ImportField sumBillSaleDetailField = new ImportField(retailLM.getLPByName("sumBillSaleDetail"));
-        ImportField discountSumBillSaleDetailField = new ImportField(retailLM.getLPByName("discountSumBillSaleDetail"));
+            ImportField quantityBillSaleDetailField = new ImportField(retailLM.getLPByName("quantityBillSaleDetail"));
+            ImportField priceBillSaleDetailField = new ImportField(retailLM.getLPByName("priceBillSaleDetail"));
+            ImportField sumBillSaleDetailField = new ImportField(retailLM.getLPByName("sumBillSaleDetail"));
+            ImportField discountSumBillSaleDetailField = new ImportField(retailLM.getLPByName("discountSumBillSaleDetail"));
 
-        ImportField quantityBillReturnDetailField = new ImportField(retailLM.getLPByName("quantityBillReturnDetail"));
-        ImportField priceBillReturnDetailField = new ImportField(retailLM.getLPByName("priceBillReturnDetail"));
-        ImportField sumBillReturnDetailField = new ImportField(retailLM.getLPByName("sumBillReturnDetail"));
-        ImportField discountSumBillReturnDetailField = new ImportField(retailLM.getLPByName("discountSumBillReturnDetail"));
+            ImportField quantityBillReturnDetailField = new ImportField(retailLM.getLPByName("quantityBillReturnDetail"));
+            ImportField priceBillReturnDetailField = new ImportField(retailLM.getLPByName("priceBillReturnDetail"));
+            ImportField sumBillReturnDetailField = new ImportField(retailLM.getLPByName("sumBillReturnDetail"));
+            ImportField discountSumBillReturnDetailField = new ImportField(retailLM.getLPByName("discountSumBillReturnDetail"));
 
-        ImportField sidTypePaymentField = new ImportField(retailLM.getLPByName("sidPaymentType"));
-        ImportField sumPaymentField = new ImportField(retailLM.getLPByName("sumPayment"));
-        ImportField numberPaymentField = new ImportField(retailLM.getLPByName("numberPayment"));
+            ImportField sidTypePaymentField = new ImportField(retailLM.getLPByName("sidPaymentType"));
+            ImportField sumPaymentField = new ImportField(retailLM.getLPByName("sumPayment"));
+            ImportField numberPaymentField = new ImportField(retailLM.getLPByName("numberPayment"));
 
-        List<ImportProperty<?>> saleProperties = new ArrayList<ImportProperty<?>>();
-        List<ImportProperty<?>> returnProperties = new ArrayList<ImportProperty<?>>();
-        List<ImportProperty<?>> paymentProperties = new ArrayList<ImportProperty<?>>();
+            List<ImportProperty<?>> saleProperties = new ArrayList<ImportProperty<?>>();
+            List<ImportProperty<?>> returnProperties = new ArrayList<ImportProperty<?>>();
+            List<ImportProperty<?>> paymentProperties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLPByName("numberToZReportPosted").getMapping(zReportNumberField));
-        ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
-        ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
-        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLPByName("skuBarcodeStringDate").getMapping(barcodeExBillDetailField, dateField));
+            ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLPByName("numberToZReportPosted").getMapping(zReportNumberField));
+            ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
+            ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLPByName("skuBarcodeStringDate").getMapping(barcodeExBillDetailField, dateField));
 
-        saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
-        saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
-                LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
-        saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateOpenZReport").getMapping(zReportKey)));
+            saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
+            saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
+                    LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
+            saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateOpenZReport").getMapping(zReportKey)));
 
-        saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
-        saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
-        saleProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
-        saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
-                LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
+            saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
+            saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
+            saleProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
+            saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
+                    LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
-        ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
-        saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(priceBillSaleDetailField, retailLM.getLPByName("priceBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(sumBillSaleDetailField, retailLM.getLPByName("sumBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(discountSumBillSaleDetailField, retailLM.getLPByName("discountSumBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billSaleDetailKey),
-                LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
+            ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
+            saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billSaleDetailKey)));
+            saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billSaleDetailKey)));
+            saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
+            saleProperties.add(new ImportProperty(priceBillSaleDetailField, retailLM.getLPByName("priceBillSaleDetail").getMapping(billSaleDetailKey)));
+            saleProperties.add(new ImportProperty(sumBillSaleDetailField, retailLM.getLPByName("sumBillSaleDetail").getMapping(billSaleDetailKey)));
+            saleProperties.add(new ImportProperty(discountSumBillSaleDetailField, retailLM.getLPByName("discountSumBillSaleDetail").getMapping(billSaleDetailKey)));
+            saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billSaleDetailKey),
+                    LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
-                LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
-
-
-        returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
-        returnProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
-                LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
-        returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateOpenZReport").getMapping(zReportKey)));
-
-        returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
-        returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
-        returnProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
-        returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
-                LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
-
-        ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
-        returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(priceBillReturnDetailField, retailLM.getLPByName("priceBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(sumBillReturnDetailField, retailLM.getLPByName("sumBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(discountSumBillReturnDetailField, retailLM.getLPByName("discountSumBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billReturnDetailKey),
-                LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
-
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
-                LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
-
-        List<List<Object>> dataSale = new ArrayList<List<Object>>();
-        List<List<Object>> dataReturn = new ArrayList<List<Object>>();
-
-        List<List<Object>> dataPayment = new ArrayList<List<Object>>();
-
-        for (SalesInfo sale : salesInfoList) {
-            if (sale.quantityBillDetail < 0)
-                dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
-                        sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                        sale.discountSumBillDetail));
-            else
-                dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
-                        sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                        sale.discountSumBillDetail));
-            dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
-        }
-
-        List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField,
-                priceBillSaleDetailField, sumBillSaleDetailField, discountSumBillSaleDetailField);
-
-        List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillReturnDetailField,
-                priceBillReturnDetailField, sumBillReturnDetailField, discountSumBillReturnDetailField);
+            saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
+                    LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
 
-        new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, billKey, billSaleDetailKey, itemKey),
-                saleProperties).synchronize(true);
+            returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
+            returnProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
+                    LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
+            returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateOpenZReport").getMapping(zReportKey)));
 
-        new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, billKey, billReturnDetailKey, itemKey),
-                returnProperties).synchronize(true);
+            returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
+            returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
+            returnProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
+            returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
+                    LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
-        ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("payment"), retailLM.getLPByName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField));
-        ImportKey<?> paymentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("paymentType"), retailLM.getLPByName("sidToTypePayment").getMapping(sidTypePaymentField));
-        paymentProperties.add(new ImportProperty(sumPaymentField, retailLM.getLPByName("sumPayment").getMapping(paymentKey)));
-        paymentProperties.add(new ImportProperty(numberPaymentField, retailLM.getLPByName("numberPayment").getMapping(paymentKey)));
-        paymentProperties.add(new ImportProperty(sidTypePaymentField, retailLM.getLPByName("paymentTypePayment").getMapping(paymentKey),
-                LM.baseLM.object(retailLM.getClassByName("paymentType")).getMapping(paymentTypeKey)));
-        paymentProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billPayment").getMapping(paymentKey),
-                LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
+            ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
+            returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billReturnDetailKey)));
+            returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billReturnDetailKey)));
+            returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
+            returnProperties.add(new ImportProperty(priceBillReturnDetailField, retailLM.getLPByName("priceBillReturnDetail").getMapping(billReturnDetailKey)));
+            returnProperties.add(new ImportProperty(sumBillReturnDetailField, retailLM.getLPByName("sumBillReturnDetail").getMapping(billReturnDetailKey)));
+            returnProperties.add(new ImportProperty(discountSumBillReturnDetailField, retailLM.getLPByName("discountSumBillReturnDetail").getMapping(billReturnDetailKey)));
+            returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billReturnDetailKey),
+                    LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, sidTypePaymentField,
-                sumPaymentField, numberPaymentField);
+            returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
+                    LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
-        if (salesInfoList.size() != 0) {
-            String message = "Загружено записей: " + (dataSale.size() + dataReturn.size());
-            List<String> cashRegisterNumbers = new ArrayList<String>();
-            List<String> fileNames = new ArrayList<String>();
-            for (SalesInfo salesInfo : salesInfoList) {
-                if (!cashRegisterNumbers.contains(salesInfo.cashRegisterNumber.trim()))
-                    cashRegisterNumbers.add(salesInfo.cashRegisterNumber.trim());
-                if (!fileNames.contains(salesInfo.filename.trim()))
-                    fileNames.add(salesInfo.filename.trim());
+            List<List<Object>> dataSale = new ArrayList<List<Object>>();
+            List<List<Object>> dataReturn = new ArrayList<List<Object>>();
+
+            List<List<Object>> dataPayment = new ArrayList<List<Object>>();
+
+            for (SalesInfo sale : salesInfoList) {
+                if (sale.quantityBillDetail < 0)
+                    dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
+                            sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
+                            sale.discountSumBillDetail));
+                else
+                    dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
+                            sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
+                            sale.discountSumBillDetail));
+                dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
             }
-            message += "\nИз касс: ";
-            for (String cashRegisterNumber : cashRegisterNumbers)
-                message += cashRegisterNumber + ", ";
-            message = message.substring(0, message.length() - 2);
 
-            message += "\nИз файлов: ";
-            for (String filename : fileNames)
-                message += filename + ", ";
-            message = message.substring(0, message.length() - 2);
+            List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
+                    numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField,
+                    priceBillSaleDetailField, sumBillSaleDetailField, discountSumBillSaleDetailField);
 
-            DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
-            Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-            retailLM.getLPByName("equipmentServerEquipmentServerLog").execute(equipmentServerObject, session, logObject);
-            retailLM.getLPByName("dataEquipmentServerLog").execute(message, session, logObject);
-            retailLM.getLPByName("dateEquipmentServerLog").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
+            List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
+                    numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillReturnDetailField,
+                    priceBillReturnDetailField, sumBillReturnDetailField, discountSumBillReturnDetailField);
+
+
+            new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, billKey, billSaleDetailKey, itemKey),
+                    saleProperties).synchronize(true);
+
+            new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, billKey, billReturnDetailKey, itemKey),
+                    returnProperties).synchronize(true);
+
+            ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("payment"), retailLM.getLPByName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField));
+            ImportKey<?> paymentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("paymentType"), retailLM.getLPByName("sidToTypePayment").getMapping(sidTypePaymentField));
+            paymentProperties.add(new ImportProperty(sumPaymentField, retailLM.getLPByName("sumPayment").getMapping(paymentKey)));
+            paymentProperties.add(new ImportProperty(numberPaymentField, retailLM.getLPByName("numberPayment").getMapping(paymentKey)));
+            paymentProperties.add(new ImportProperty(sidTypePaymentField, retailLM.getLPByName("paymentTypePayment").getMapping(paymentKey),
+                    LM.baseLM.object(retailLM.getClassByName("paymentType")).getMapping(paymentTypeKey)));
+            paymentProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billPayment").getMapping(paymentKey),
+                    LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
+
+            List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, sidTypePaymentField,
+                    sumPaymentField, numberPaymentField);
+
+            if (salesInfoList.size() != 0) {
+                String message = "Загружено записей: " + (dataSale.size() + dataReturn.size());
+                List<String> cashRegisterNumbers = new ArrayList<String>();
+                List<String> fileNames = new ArrayList<String>();
+                for (SalesInfo salesInfo : salesInfoList) {
+                    if (!cashRegisterNumbers.contains(salesInfo.cashRegisterNumber.trim()))
+                        cashRegisterNumbers.add(salesInfo.cashRegisterNumber.trim());
+                    if (!fileNames.contains(salesInfo.filename.trim()))
+                        fileNames.add(salesInfo.filename.trim());
+                }
+                message += "\nИз касс: ";
+                for (String cashRegisterNumber : cashRegisterNumbers)
+                    message += cashRegisterNumber + ", ";
+                message = message.substring(0, message.length() - 2);
+
+                message += "\nИз файлов: ";
+                for (String filename : fileNames)
+                    message += filename + ", ";
+                message = message.substring(0, message.length() - 2);
+
+                DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
+                Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+                retailLM.getLPByName("equipmentServerEquipmentServerLog").execute(equipmentServerObject, session, logObject);
+                retailLM.getLPByName("dataEquipmentServerLog").execute(message, session, logObject);
+                retailLM.getLPByName("dateEquipmentServerLog").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
+            }
+
+            new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
+                    paymentProperties).synchronize(true);
+
+            return session.apply(this);
         }
 
-        new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
-                paymentProperties).synchronize(true);
+        @Override
+        public void succeedTransaction (Integer transactionID)throws SQLException {
+            DataSession session = createSession();
+            retailLM.getLPByName("succeededMachineryPriceTransaction").execute(true, session,
+                    session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
+            session.apply(this);
+        }
 
-        return session.apply(this);
-    }
+        @Override
+        public void errorTransactionReport (Integer transactionID, Exception e)throws RemoteException, SQLException {
+            DataSession session = createSession();
+            DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"));
+            retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").execute(transactionID, session, errorObject);
+            retailLM.getLPByName("dataMachineryPriceTransactionError").execute(e.toString(), session, errorObject);
+            retailLM.getLPByName("dateMachineryPriceTransactionError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
+            OutputStream os = new ByteArrayOutputStream();
+            e.printStackTrace(new PrintStream(os));
+            retailLM.getLPByName("errorTraceMachineryPriceTransactionError").execute(os.toString(), session, errorObject);
 
-    @Override
-    public void succeedTransaction(Integer transactionID) throws SQLException {
-        DataSession session = createSession();
-        retailLM.getLPByName("succeededMachineryPriceTransaction").execute(true, session,
-                session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
-        session.apply(this);
-    }
+            session.apply(this);
+        }
 
-    @Override
-    public void errorTransactionReport(Integer transactionID, Exception e) throws RemoteException, SQLException {
-        DataSession session = createSession();
-        DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"));
-        retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").execute(transactionID, session, errorObject);
-        retailLM.getLPByName("dataMachineryPriceTransactionError").execute(e.toString(), session, errorObject);
-        retailLM.getLPByName("dateMachineryPriceTransactionError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
-        OutputStream os = new ByteArrayOutputStream();
-        e.printStackTrace(new PrintStream(os));
-        retailLM.getLPByName("errorTraceMachineryPriceTransactionError").execute(os.toString(), session, errorObject);
+        @Override
+        public void errorEquipmentServerReport (String equipmentServer, Throwable exception)throws
+        RemoteException, SQLException {
+            DataSession session = createSession();
+            DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"));
+            Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+            retailLM.getLPByName("equipmentServerEquipmentServerError").execute(equipmentServerObject, session, errorObject);
+            retailLM.getLPByName("dataEquipmentServerError").execute(exception.toString(), session, errorObject);
+            OutputStream os = new ByteArrayOutputStream();
+            exception.printStackTrace(new PrintStream(os));
+            retailLM.getLPByName("erTraceEquipmentServerError").execute(os.toString(), session, errorObject);
 
-        session.apply(this);
-    }
+            retailLM.getLPByName("dateEquipmentServerError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
 
-    @Override
-    public void errorEquipmentServerReport(String equipmentServer, Throwable exception) throws RemoteException, SQLException {
-        DataSession session = createSession();
-        DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"));
-        Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-        retailLM.getLPByName("equipmentServerEquipmentServerError").execute(equipmentServerObject, session, errorObject);
-        retailLM.getLPByName("dataEquipmentServerError").execute(exception.toString(), session, errorObject);
-        OutputStream os = new ByteArrayOutputStream();
-        exception.printStackTrace(new PrintStream(os));
-        retailLM.getLPByName("erTraceEquipmentServerError").execute(os.toString(), session, errorObject);
+            session.apply(this);
+        }
 
-        retailLM.getLPByName("dateEquipmentServerError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
-
-        session.apply(this);
-    }
-
-    @Override
-    public EquipmentServerSettings readEquipmentServerSettings(String equipmentServer) throws SQLException {
-        DataSession session = createSession();
-        Integer equipmentServerID = (Integer) retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-        Integer delay = (Integer) retailLM.getLPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
-        return new EquipmentServerSettings(delay);
-    }
+        @Override
+        public EquipmentServerSettings readEquipmentServerSettings (String equipmentServer)throws SQLException {
+            DataSession session = createSession();
+            Integer equipmentServerID = (Integer) retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+            Integer delay = (Integer) retailLM.getLPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
+            return new EquipmentServerSettings(delay);
+        }
 
     private String dateTimeCode(Timestamp timeStamp) {
         String result = "";

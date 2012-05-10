@@ -7,7 +7,6 @@ import retail.api.remote.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +62,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileBarcode.getField("ARTICUL").put(item.barcodeEx);
                         fileBarcode.getField("BARCODE").put(item.barcodeEx);
                         fileBarcode.write();
-                        fileBarcode.file.setLength(fileBarcode.file.length()-1);
+                        fileBarcode.file.setLength(fileBarcode.file.length() - 1);
                     }
                 }
                 fileBarcode.close();
@@ -97,7 +96,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.write();
-                        fileGoods.file.setLength(fileGoods.file.length()-1);
+                        fileGoods.file.setLength(fileGoods.file.length() - 1);
                     }
                 }
                 fileGoods.close();
@@ -147,13 +146,13 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 Index fileSPRDOCIndex = fileSPRDOC.createIndex(directory + "/" + "SPRDOC.NDX", "CODE", true, true);
 
                 for (TerminalDocumentTypeInfo docType : terminalDocumentTypeInfoList) {
-                    String id = docType.id!=null ? docType.id.trim() : "";
-                    String name = docType.name!=null ? docType.name.trim() : "";
+                    String id = docType.id != null ? docType.id.trim() : "";
+                    String name = docType.name != null ? docType.name.trim() : "";
 
-                    String nameInHandbook1 = docType.nameInHandbook1!=null ? docType.nameInHandbook1.trim() : "";
-                    String idTerminalHandbookType1 = docType.idTerminalHandbookType1!=null ? docType.idTerminalHandbookType1.trim() : "";
-                    String nameInHandbook2 = docType.nameInHandbook2!=null ? docType.nameInHandbook2.trim() : "";
-                    String idTerminalHandbookType2 = docType.idTerminalHandbookType2!=null ? docType.idTerminalHandbookType2.trim() : "";
+                    String nameInHandbook1 = docType.nameInHandbook1 != null ? docType.nameInHandbook1.trim() : "";
+                    String idTerminalHandbookType1 = docType.idTerminalHandbookType1 != null ? docType.idTerminalHandbookType1.trim() : "";
+                    String nameInHandbook2 = docType.nameInHandbook2 != null ? docType.nameInHandbook2.trim() : "";
+                    String idTerminalHandbookType2 = docType.idTerminalHandbookType2 != null ? docType.idTerminalHandbookType2.trim() : "";
 
                     if (fileSPRDOC.findExact(docType.id.trim())) {
                         fileSPRDOC.getField("CODE").put(id);
@@ -176,6 +175,41 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 fileSPRDOC.close();
                 if (!fileSPRDOCIndex.file.delete())
                     throw new RuntimeException("File" + fileSPRDOCIndex.file.getAbsolutePath() + " can not be deleted");
+
+
+                if (!new File(directory + "/SPRAV.MDX").exists()) {
+                    File fileSpravCDX = new File(directory + "/SPRAV.CDX");
+                    fileSpravCDX.renameTo(new File((directory + "/SPRAV.MDX")));
+                }
+
+                DBF fileSPRAV = new DBF(directory + "/SPRAV.DBF", "CP866");
+
+                Index fileSPRAVIndex = fileSPRAV.createIndex(directory + "/" + "SPRAV.NDX", "CODE", true, true);
+
+                for (TerminalDocumentTypeInfo docType : terminalDocumentTypeInfoList) {
+
+                    List<LegalEntityInfo> legalEntityInfoList = docType.legalEntityInfoList;
+
+                    for (LegalEntityInfo legalEntityInfo : legalEntityInfoList) {
+                        String id = legalEntityInfo.id != null ? legalEntityInfo.id.trim() : "";
+                        String name = legalEntityInfo.name != null ? legalEntityInfo.name.trim() : "";
+                        String type = legalEntityInfo.type != null ? legalEntityInfo.type.trim() : "";
+                        if (fileSPRAV.findExact(legalEntityInfo.id.trim())) {
+                            fileSPRAV.getField("CODE").put(id);
+                            fileSPRAV.getField("NAME").put(name);
+                            fileSPRAV.getField("VIDSPR").put(type);
+                            fileSPRAV.update();
+                        } else {
+                            fileSPRAV.getField("CODE").put(id);
+                            fileSPRAV.getField("NAME").put(name);
+                            fileSPRAV.getField("VIDSPR").put(type);
+                            fileSPRAV.write();
+                        }
+                    }
+                }
+                fileSPRAV.close();
+                if (!fileSPRAVIndex.file.delete())
+                    throw new RuntimeException("File" + fileSPRAVIndex.file.getAbsolutePath() + " can not be deleted");
             }
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());

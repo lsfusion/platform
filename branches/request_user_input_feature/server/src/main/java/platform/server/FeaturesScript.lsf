@@ -181,7 +181,7 @@ testAbstract(named) += 6 AND named IS store;
 
 // Formula property
 // Expression syntax:
-// FORMULA primitiveType 'formula text $1 + $2'
+// FORMULA [primitiveType] 'formula text $1 + $2'
 sum12 = FORMULA DOUBLE '($1)+($2)*2';
 testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuantity(store, article));
 

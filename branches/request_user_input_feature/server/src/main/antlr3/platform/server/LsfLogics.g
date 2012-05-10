@@ -1135,12 +1135,17 @@ specialPropertyName
 
 
 formulaPropertyDefinition returns [LP property]
+@init {
+	String className = null;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSFProp($className.sid, $formulaText.text);
+		$property = self.addScriptedSFProp(className, $formulaText.val);
 	}
 }
-	:	'FORMULA' className=classId formulaText=STRING_LITERAL
+	:	'FORMULA' 
+		(clsName=classId { className = $clsName.sid; })? 
+		formulaText=stringLiteral
 	;
 
 
@@ -1706,7 +1711,7 @@ constraintStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, checked, propNames, $message.text);
+		self.addScriptedConstraint($expr.property.property, checked, propNames, $message.val);
 	}
 }
 	:	'CONSTRAINT' 
@@ -1714,7 +1719,7 @@ constraintStatement
 		('CHECKED' { checked = true; } 
 			('BY' list=nonEmptyCompoundIdList { propNames = $list.ids; })? 
 		)?
-		'MESSAGE' message=STRING_LITERAL
+		'MESSAGE' message=stringLiteral
 		';'
 	;
 
@@ -2214,7 +2219,7 @@ parameter
 
 simpleNameWithCaption returns [String name, String caption] 
 	:	simpleName=ID { $name = $simpleName.text; }
-		(captionStr=STRING_LITERAL { $caption = $captionStr.text; })?
+		(captionStr=stringLiteral { $caption = $captionStr.val; })?
 	;
 	
 idList returns [List<String> ids] 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.1000000000000023"/>
-	<property name="ireport.x" value="284"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="354"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" forecolor="#FFFFFF" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -37,15 +37,15 @@
 	<field name="retail_dateShipment" class="java.util.Date"/>
 	<field name="retail_nameDepartmentStoreShipment" class="java.lang.String"/>
 	<field name="retail_nameSupplierShipment" class="java.lang.String"/>
-	<field name="retail_totalQuantityShipment" class="java.lang.Double"/>
-	<field name="retail_supportSumPriceShipment" class="java.lang.Double"/>
-	<field name="retail_totalSumSupplierVATShipment" class="java.lang.Double"/>
-	<field name="retail_totalSumWareShipment" class="java.lang.Double"/>
-	<field name="retail_totalSumVatWareShipment" class="java.lang.Double"/>
-	<field name="retail_exSumSupplierShipment" class="java.lang.Double"/>
-	<field name="retail_totalSumMarkupShipment" class="java.lang.Double"/>
-	<field name="retail_fullDetailVatShipment" class="java.lang.Double"/>
-	<field name="retail_retailSumShipment" class="java.lang.Double"/>
+	<field name="retail_quantityShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_supplierSumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_supplierVATISumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_wareSumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_wareVATSumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_invoiceSumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_markupSumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_retailVATSumShipmentDetailShipment" class="java.lang.Double"/>
+	<field name="retail_retailSumShipmentDetailShipment" class="java.lang.Double"/>
 	<field name="retail_nameRegisterCommitteeShipment" class="java.lang.String"/>
 	<field name="retail_nameFormedManShipment" class="java.lang.String"/>
 	<field name="retail_nameCheckedManShipment" class="java.lang.String"/>
@@ -63,23 +63,21 @@
 	<field name="retail_shortNameUnitOfMeasureItemShipmentDetail" class="java.lang.String"/>
 	<field name="retail_quantityShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_importerPriceShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_supportSumPriceShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_overSupplierMarkupShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumDetailSupplierVATShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_supplierSumShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_supplierMarkupShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_supplierVATISumShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_dataSuppliersRangeShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_overSumPriceWareShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_overPriceWareShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumDetailVatWareShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_wareSumShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_warePriceShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_wareVATSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_dataWareRangeShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_exSumSupplierShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_percMarkupShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumDetailMarkupShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_invoiceSumShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_importerMarkupShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_markupSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_dataRetailRangeShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_fullDetailVatShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_retailVATSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_retailPriceShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_retailSumShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_priceWareShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumPriceWareShipmentDetail" class="java.lang.Double"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
 		<groupFooter>
@@ -104,68 +102,68 @@
 					<textElement/>
 					<text><![CDATA[Static text]]></text>
 				</staticText>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="230" y="0" width="30" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalQuantityShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_quantityShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="315" y="0" width="60" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_supportSumPriceShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_supplierSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="375" y="0" width="50" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumSupplierVATShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_supplierVATISumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="425" y="0" width="55" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumWareShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_wareSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="480" y="0" width="55" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumVatWareShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_wareVATSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="535" y="0" width="50" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_exSumSupplierShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_invoiceSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="585" y="0" width="55" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumMarkupShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_markupSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="640" y="0" width="50" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_fullDetailVatShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_retailVATSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="###0" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="735" y="0" width="60" height="22"/>
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailSumShipment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_retailSumShipmentDetailShipment}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -178,7 +176,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" x="210" y="0" width="585" height="13"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН №"+$F{retail_numberObject}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateShipment})]]></textFieldExpression>
+				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{retail_numberObject}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateShipment})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="GroupCellStyle1" x="210" y="26" width="105" height="13"/>
@@ -259,7 +257,7 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["НДС стеклопосуды"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["НДС посуды, руб./%"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="535" y="1" width="50" height="18" backcolor="#FFFFFF"/>
@@ -321,7 +319,7 @@
 	</pageHeader>
 	<detail>
 		<band height="22">
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="55" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -334,7 +332,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_importerPriceShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="315" y="11" width="60" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
@@ -344,9 +342,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_overSupplierMarkupShipmentDetail}==0?"":$F{retail_overSupplierMarkupShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_supplierMarkupShipmentDetail}==0?"":$F{retail_supplierMarkupShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="375" y="0" width="50" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -356,9 +354,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumDetailSupplierVATShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_supplierVATISumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="375" y="11" width="50" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
@@ -370,7 +368,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_dataSuppliersRangeShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="480" y="0" width="55" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -380,9 +378,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumDetailVatWareShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_wareVATSumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="585" y="11" width="55" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
@@ -392,7 +390,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_percMarkupShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_importerMarkupShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="640" y="11" width="50" height="11" backcolor="#FFFFFF"/>
@@ -406,7 +404,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_dataRetailRangeShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -443,7 +441,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_barcodeExSkuShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -456,7 +454,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_quantityShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="585" y="0" width="55" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -466,9 +464,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumDetailMarkupShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_markupSumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="480" y="11" width="55" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
@@ -506,7 +504,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="315" y="0" width="60" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -516,9 +514,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supportSumPriceShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_supplierSumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="735" y="0" width="60" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -531,7 +529,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_retailSumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="535" y="0" width="50" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -542,7 +540,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_exSumSupplierShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_invoiceSumShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="640" y="0" width="50" height="11" backcolor="#FFFFFF"/>
@@ -554,9 +552,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_fullDetailVatShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_retailVATSumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0" isBlankWhenNull="true">
+			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" x="425" y="0" width="55" height="11"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -566,9 +564,9 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumPriceWareShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_wareSumShipmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0" isBlankWhenNull="true">
+			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="425" y="11" width="55" height="11"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
@@ -578,7 +576,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_priceWareShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_warePriceShipmentDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

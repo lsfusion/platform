@@ -12,6 +12,10 @@ public class SteilmannImportInvoiceActionProperty extends ImportBoxInvoiceAction
 
     private final RomanBusinessLogics BL;
 
+    @Override
+    protected boolean hasBarCodeKey() {
+        return false;
+    }
 
     public SteilmannImportInvoiceActionProperty(RomanBusinessLogics BL) {
         super(BL.RomanLM, BL.RomanLM.steilmannSupplier, "csv");
