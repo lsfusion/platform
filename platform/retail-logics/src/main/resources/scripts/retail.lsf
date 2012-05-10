@@ -647,32 +647,32 @@ META defineDocumentDetailAccountPrice (object)
 END
 
 META defineDocumentDetailInSum (object)
-    supplierSum###object##Detail 'Сумма поставщика без НДС' (detail) = quantity###object##Detail(detail) * supplierPrice###object##Detail(detail);
+    supplierISum###object##Detail 'Сумма поставщика без НДС' (detail) = round0(quantity###object##Detail(detail) * supplierPrice###object##Detail(detail));
 END
 
 META defineDocumentDetailShipSum (object)
-    supplierVAT###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
+    supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
         supplierPrice###object##Detail(detail), dataSuppliersRange###object##Detail(detail));
 
-    calcSupplierVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
-        quantity###object##Detail(detail) * supplierVAT###object##Detail(detail));
+    calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
+        quantity###object##Detail(detail) * supplierVATIPrice###object##Detail(detail));
 
-    supplierVATSum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    supplierVATSum###object##Detail(detail) <- calcSupplierVATSum###object##Detail(detail)
-                                                       WHEN CHANGED(calcSupplierVATSum###object##Detail(detail));
+    supplierVATISum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
+    supplierVATISum###object##Detail(detail) <- calcSupplierVATISum###object##Detail(detail)
+                                                       WHEN CHANGED(calcSupplierVATISum###object##Detail(detail));
 
-    calcShipSum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
-        supplierSum###object##Detail(detail) (+) supplierVATSum###object##Detail(detail);
+    calcInvoiceISum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
+        supplierISum###object##Detail(detail) (+) supplierVATISum###object##Detail(detail);
 
-    shipSum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    shipSum###object##Detail(detail) <- calcShipSum###object##Detail(detail)
-                                          WHEN CHANGED(calcShipSum###object##Detail(detail));
+    invoiceISum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
+    invoiceISum###object##Detail(detail) <- calcInvoiceISum###object##Detail(detail)
+                                          WHEN CHANGED(calcInvoiceISum###object##Detail(detail));
 
     invoiceSum###object##Detail 'Сумма поставщика с НДС' (detail) =
-        shipSum###object##Detail(detail) (+) wareSum###object##Detail(detail);
+        invoiceISum###object##Detail(detail) (+) wareSum###object##Detail(detail);
 
-    quoteSum###object##Detail 'Сумма поставщика без НДС' (detail) =
-        shipSum###object##Detail (detail) (-) supplierVATSum###object##Detail (detail) + wareSupplierSum###object##Detail(detail);
+    supplierSum###object##Detail 'Сумма поставщика без НДС' (detail) =
+        invoiceISum###object##Detail (detail) (-) supplierVATISum###object##Detail (detail) + wareSupplierSum###object##Detail(detail);
 END
 
 META defineDocumentDetailWareSum (object)
@@ -692,29 +692,27 @@ META defineDocumentDetailWareSum (object)
 END
 
 META defineDocumentDetailRetailSum (object)
-    retailSum###object##Detail 'Розничная сумма' (detail) = quantity###object##Detail(detail) * retailPrice###object##Detail(detail);
-    retailRndSum###object##Detail 'Розничная сумма (окр.)' (detail) = round0(retailSum###object##Detail(detail));
+    retailSum###object##Detail 'Розничная сумма' (detail) = round0(quantity###object##Detail(detail) * retailPrice###object##Detail(detail));
 END
 
 META defineDocumentDetailSum (object)
     @defineDocumentDetailRetailSum(object);
 
-    saleRndSum###object##Detail 'Розничная сумма (без посуды)' (detail) = retailRndSum###object##Detail(detail) (-) wareSum###object##Detail(detail);
+    retailISum###object##Detail 'Розничная сумма (без посуды)' (detail) = retailSum###object##Detail(detail) (-) wareSum###object##Detail(detail);
 
-    saleVATSum###object##Detail 'Сумма НДС (без посуды)' (detail) = [round0(X*Y/(100+Y))](
-                saleRndSum###object##Detail(detail), dataRetailRange###object##Detail(detail));
+    retailVATISum###object##Detail 'Сумма НДС (без посуды)' (detail) = [round0(X*Y/(100+Y))](
+                retailISum###object##Detail(detail), dataRetailRange###object##Detail(detail));
 
-    retailVATSum###object##Detail 'Сумма НДС' (detail) = saleVATSum###object##Detail(detail) (+) wareVATSum###object##Detail(detail);
+    retailVATSum###object##Detail 'Сумма НДС' (detail) = retailVATISum###object##Detail(detail) (+) wareVATSum###object##Detail(detail);
 
     markupSum###object##Detail 'Сумма надбавки' (detail) =
-        saleRndSum###object##Detail(detail) (-) saleVATSum###object##Detail(detail) (-) supplierSum###object##Detail(detail);
+        retailISum###object##Detail(detail) (-) retailVATISum###object##Detail(detail) (-) supplierISum###object##Detail(detail);
 END
 
 META defineDocumentDetailCalcVATSum (object)
-    calcVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = retailRndSum###object##Detail(detail) * dataCalcRange###object##Detail(detail) / 100;
-    calcVATRndSum###object##Detail 'Сумма НДС (расч., окр.)' (detail) = round0(calcVATSum###object##Detail(detail));
+    calcVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(retailSum###object##Detail(detail) * dataCalcRange###object##Detail(detail) / 100);
 
-    calcOutRndSum###object##Detail 'Сумма без НДС (расч., окр.)' (detail) = retailRndSum###object##Detail(detail) (-) calcVATRndSum###object##Detail(detail);
+    calcSaleSum###object##Detail 'Сумма без НДС (расч.)' (detail) = retailSum###object##Detail(detail) (-) calcVATSum###object##Detail(detail);
 END
 
 META defineDocumentDetailAccountSumCustom (object, detail)
@@ -769,19 +767,19 @@ META defineDocumentHeaderItemQuantity (object)
 END
 
 META defineDocumentHeaderShipSum (object)
-    supplierVATSum###object##Detail###object 'Сумма НДС поставщика (без посуды)' (object) =
-        GROUP SUM supplierVATSum###object##Detail(detail) BY object###object##Detail(detail);
+    supplierVATISum###object##Detail###object 'Сумма НДС поставщика (без посуды)' (object) =
+        GROUP SUM supplierVATISum###object##Detail(detail) BY object###object##Detail(detail);
 
-    shipSum###object##Detail###object 'Сумма поставщика с НДС (без посуды)' (object) =
-        GROUP SUM shipSum###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
+    invoiceISum###object##Detail###object 'Сумма поставщика с НДС (без посуды)' (object) =
+        GROUP SUM invoiceISum###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
 
     invoiceVATSum###object##Detail###object 'Сумма НДС поставщика' (object) =
-        supplierVATSum###object##Detail###object(object) (+) wareVATSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
+        supplierVATISum###object##Detail###object(object) (+) wareVATSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
 
     invoiceSum###object##Detail###object 'Сумма поставщика с НДС' (object) =
-        shipSum###object##Detail###object(object) (+) wareSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
+        invoiceISum###object##Detail###object(object) (+) wareSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
 
-    quoteSum###object##Detail###object 'Сумма поставщика без НДС' (object) =
+    supplierSum###object##Detail###object 'Сумма поставщика без НДС' (object) =
         invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object);
 END
 
@@ -800,14 +798,12 @@ END
 META defineDocumentHeaderRetailSumCustom (object, detail)
     retailSum###detail###object 'Розничная сумма' (object) =
         GROUP SUM retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-    retailRndSum###detail###object 'Розничная сумма (окр.)' (object) =
-        GROUP SUM retailRndSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 
-    retailRndSumItem###detail###object 'Розничная сумма (окр.), товар' (idetail) =
-        GROUP SUM retailRndSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
+    retailSumItem###detail###object 'Розничная сумма (окр.), товар' (idetail) =
+        GROUP SUM retailSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
-    retailRndSumContainer###detail###object 'Розничная сумма (окр.), тара' (idetail) =
-        GROUP SUM retailRndSum###detail(idetail) IF isContainerItem(item###detail(idetail))
+    retailSumContainer###detail###object 'Розничная сумма (окр.), тара' (idetail) =
+        GROUP SUM retailSum###detail(idetail) IF isContainerItem(item###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
 END
 
@@ -818,10 +814,10 @@ END
 META defineDocumentHeaderSumCustom (object, detail)
     @defineDocumentHeaderRetailSumCustom(object, detail);
 
-    saleVATSum###detail###object 'Сумма НДС (без посуды)' (object) =
-        GROUP SUM saleVATSum###detail(idetail) BY object###detail(idetail);
+    retailVATISum###detail###object 'Сумма НДС (без посуды)' (object) =
+        GROUP SUM retailVATISum###detail(idetail) BY object###detail(idetail);
 
-    retailVATSum###detail###object 'Сумма НДС' (detail) = saleVATSum###detail###object(detail) (+) wareVATSum###detail###object(detail);
+    retailVATSum###detail###object 'Сумма НДС' (detail) = retailVATISum###detail###object(detail) (+) wareVATSum###detail###object(detail);
 
     markupSum###detail###object 'Сумма надбавки' (object) =
         GROUP SUM markupSum###detail(idetail) BY object###detail(idetail);
@@ -842,9 +838,9 @@ META defineDocumentHeaderItemSum (object)
 END
 
 META defineDocumentHeaderCalcVATSumCustom (object, detail)
-    calcVATRndSum###detail###object 'Сумма НДС (расч., окр.)' (iobject) = GROUP SUM calcVATRndSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    calcVATSum###detail###object 'Сумма НДС (расч., окр.)' (iobject) = GROUP SUM calcVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 
-    calcOutRndSum###detail###object 'Сумма без НДС (расч., окр.)' (iobject) = retailRndSum###detail###object(iobject) (-) calcVATRndSum###detail###object(iobject) IN documentSumGroup;
+    calcSaleSum###detail###object 'Сумма без НДС (расч., окр.)' (iobject) = retailSum###detail###object(iobject) (-) calcVATSum###detail###object(iobject) IN documentSumGroup;
 END
 
 META defineDocumentHeaderCalcVATSum (object)
@@ -5700,10 +5696,8 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
         ADDOBJ statementDetail;
         FOR d == addedObject() DO {
             SET itemStatementDetail(d) <- itemSpecificationDetail(specificationDetail);
-            SET retailPriceStatementDetail(d) <- retailPriceSpecificationDetail(specificationDetail);
             SET quantityStatementDetail(d) <- quantitySpecificationDetail(specificationDetail);
-//            SET barcodeExSkuStatementDetail(d) <- barcodeExSkuSpecificationDetail(specificationDetail);   // может для ш-к по другому
-            SET retailRndSumStatementDetail(d) <- retailRndSumSpecificationDetail(specificationDetail);
+            SET retailPriceStatementDetail(d) <- retailPriceSpecificationDetail(specificationDetail);
             SET noteStatementDetail(d) <- descriptionSpecificationDetail(specificationDetail);
         };
     };
@@ -6684,7 +6678,7 @@ retailPriceReturnSupplierDetail (returnSupplierDetail) <- retailPriceShipmentDet
 @defineDocumentHeaderSum(returnSupplier);
 
 lossSumCleanSupplierReturnSupplier 'Сумма потерь при возврате (без НДС)' (returnSupplier) =
-    shipSumReturnSupplierDetailReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
+    invoiceISumReturnSupplierDetailReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
 
 lossSumIncVATReturnSupplier 'Сумма НДС по потерям при возврате' (returnSupplier) =
     invoiceVATSumReturnSupplierDetailReturnSupplier (returnSupplier) * returnLossSupplierReturnSupplier(returnSupplier);
@@ -7754,7 +7748,7 @@ descriptionSalesLedger 'Название документа' (ledger) = UNION EX
 quantitySalesLedger 'Кол-во' (ledger) = quantityBalanceItemLedger(ledger) AND ledger IS salesLedger;
 
 retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE sumBillSaleDetail(ledger),
-                                                                retailRndSumStatementDetail(ledger) PERSISTENT;
+                                                                retailSumStatementDetail(ledger) PERSISTENT;
 
 retailRangeSalesLedger 'НДС (ИД)' (ledger) = UNION EXCLUSIVE retailRangeBillSaleDetail(ledger),
                                                              retailRangeStatementDetail(ledger) PERSISTENT;
@@ -7897,7 +7891,7 @@ sumVatOrderSupplier 'Сумма НДС, за ед.' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, priceSupplierItemOrderSupplier(orderSupplier, item) *
      UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, dataSuppliersRangeOrderSupplier(orderSupplier, item))/100);
-saleVATSumOrderSupplier 'Сумма НДС по товару' (orderSupplier, item) =
+retailVATISumOrderSupplier 'Сумма НДС по товару' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                     sumQuantityItemOrderSupplier(orderSupplier, item) * sumVatOrderSupplier(orderSupplier, item)));
@@ -7906,18 +7900,18 @@ sumVatWareOrderSupplier 'Сумма НДС по посуде, за ед.' (order
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, warePriceOrderSupplier(orderSupplier, item) *
      UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, dataWareRangeOrderSupplier(orderSupplier, item))/100);
-saleVATSumWareOrderSupplier 'Сума НДС по посуде' (orderSupplier, item) =
+retailVATISumWareOrderSupplier 'Сума НДС по посуде' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                     sumQuantityItemOrderSupplier(orderSupplier, item) * sumVatWareOrderSupplier(orderSupplier, item)));
-saleVATSumItemOrderSupplier 'Сумма НДС' (orderSupplier, item) =
-    saleVATSumOrderSupplier(orderSupplier, item) (+) saleVATSumWareOrderSupplier(orderSupplier, item);
+retailVATISumItemOrderSupplier 'Сумма НДС' (orderSupplier, item) =
+    retailVATISumOrderSupplier(orderSupplier, item) (+) retailVATISumWareOrderSupplier(orderSupplier, item);
 
 totalSumVatOrderSupplier 'Общая сумма НДС' (orderSupplier) =
-    GROUP SUM saleVATSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
+    GROUP SUM retailVATISumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
 fullSumItemOrderSupplier 'Сумма заказа с НДС' (orderSupplier, item) =
-    sumItemOrderSupplier(orderSupplier, item) (+) saleVATSumOrderSupplier(orderSupplier, item) (+) sumWareOrderSupplier(orderSupplier, item);
+    sumItemOrderSupplier(orderSupplier, item) (+) retailVATISumOrderSupplier(orderSupplier, item) (+) sumWareOrderSupplier(orderSupplier, item);
 totalFullSumOrderSupplier 'Общая сумма заказа с НДС' (orderSupplier) =
     GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
@@ -8308,7 +8302,7 @@ FORM orderSupplier 'Заказ поставщику'
 
     PROPERTIES             currentBalanceOrderSupplierItem(o, i), quantityToSellNextOrder(o, i), minReserveItem(i), recommendCountOrderSupplier(o, i)
     PROPERTIES(o, i)       priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
-                           dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, saleVATSumItemOrderSupplier,
+                           dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
                            fullSumItemOrderSupplier
 
     PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
@@ -8407,7 +8401,7 @@ FORM orderSuppliers 'Заказы поставщику'
     PROPERTIES(i) READONLY     quantityPackItem, minQuantityOrderItem
 
     PROPERTIES(o, i) READONLY  priceSupplierItemOrderSupplier, numberSuppliersRangeOrderSupplier,
-                               dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, saleVATSumItemOrderSupplier,
+                               dataSuppliersRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
                                fullSumItemOrderSupplier
 
     FILTERS sumQuantityItemOrderSupplier(o, i)
@@ -9578,34 +9572,34 @@ priceConsignmentDetail 'Цена' (consignmentDetail) = UNION EXCLUSIVE retailPr
                                                                     supplierPriceReturnSupplierDetail (consignmentDetail),
                                                                     retailPriceInnerFlowDetail(consignmentDetail);
 
-costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
+costConsignmentDetail 'Стоимость' (consignmentDetail) = UNION EXCLUSIVE retailSumStatementDetail (consignmentDetail),
                                                                         supplierSumReturnSupplierDetail (consignmentDetail),
-                                                                        retailRndSumInnerFlowDetail (consignmentDetail);
+                                                                        retailSumInnerFlowDetail (consignmentDetail);
 
-sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement(consignment),
-                                                                           quoteSumReturnSupplierDetailReturnSupplier(consignment),
-                                                                           retailRndSumInnerFlowDetailInnerFlow(consignment) IN sumConsignmentGroup;
+sumCostConsignmentDetail 'Общая стоимость' (consignment) = UNION EXCLUSIVE retailSumStatementDetailStatement(consignment),
+                                                                           supplierSumReturnSupplierDetailReturnSupplier(consignment),
+                                                                           retailSumInnerFlowDetailInnerFlow(consignment) IN sumConsignmentGroup;
 
 vatConsignmentDetail 'Ставка НДС' (consignmentDetail) = UNION EXCLUSIVE dataCalcRangeStatementDetail (consignmentDetail),
                                                                                dataSuppliersRangeReturnSupplierDetail (consignmentDetail),
                                                                                dataRetailRangeInnerFlowDetail (consignmentDetail);
 
-sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE calcVATRndSumStatementDetail (consignmentDetail),
-                                                                          supplierVATSumReturnSupplierDetail (consignmentDetail),
-                                                                          saleVATSumInnerFlowDetail (consignmentDetail);
+sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = UNION EXCLUSIVE calcVATSumStatementDetail (consignmentDetail),
+                                                                          supplierVATISumReturnSupplierDetail (consignmentDetail),
+                                                                          retailVATISumInnerFlowDetail (consignmentDetail);
 
-totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE calcVATRndSumStatementDetailStatement (consignment),
+totalSumVATConsignmentDetail 'Общая сумма НДС' (consignment) = UNION EXCLUSIVE calcVATSumStatementDetailStatement (consignment),
                                                                                invoiceVATSumReturnSupplierDetailReturnSupplier (consignment),
                                                                                retailVATSumInnerFlowDetailInnerFlow (consignment) IN sumConsignmentGroup;
 
 
-costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE retailRndSumStatementDetail (consignmentDetail),
-                                                                                 shipSumReturnSupplierDetail (consignmentDetail),
-                                                                                 retailRndSumInnerFlowDetail (consignmentDetail);
+costWithVATConsignmentDetail 'Сумма с НДС' (consignmentDetail) = UNION EXCLUSIVE retailSumStatementDetail (consignmentDetail),
+                                                                                 invoiceISumReturnSupplierDetail (consignmentDetail),
+                                                                                 retailSumInnerFlowDetail (consignmentDetail);
 
-costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE retailRndSumStatementDetailStatement (consignment),
+costWithVATConsignment 'Сумма с НДС' (consignment) = UNION EXCLUSIVE retailSumStatementDetailStatement (consignment),
                                                                      invoiceSumReturnSupplierDetailReturnSupplier (consignment),
-                                                                     retailRndSumInnerFlowDetailInnerFlow (consignment) IN sumConsignmentGroup;
+                                                                     retailSumInnerFlowDetailInnerFlow (consignment) IN sumConsignmentGroup;
 
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = UNION EXCLUSIVE packQuantityStatementDetail(consignmentDetail),
@@ -9679,7 +9673,7 @@ META metaCodeTransportConsignment(prop, caption)
                        sumQuantityConsignment, sumPackQuantityConsignment, sumGrossWeightConsignmentDetail, sumKgGrossWeightConsignment,
                        sumCostConsignmentDetail, totalSumVATConsignmentDetail, costWithVATConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, quoteSumReturnSupplierDetailReturnSupplier,
+                       quantityConsignmentDetailsConsignment, sumWareReturnSupplier, supplierSumReturnSupplierDetailReturnSupplier,
                        seriesObject, numberObject, isReturnSupplierConsignment
 
         OBJECTS d=consignmentDetail
@@ -9732,18 +9726,18 @@ FORM pricesRegister 'Реестр цен' PRINT
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s)  SELECTOR numberObject, objectClassName, dateShipment, nameDepartmentStoreShipment,
                     numberContractShipment, dateContractShipment,  nameSupplierShipment, consigneeShipment,
-                    quantityShipmentDetailShipment, quoteSumShipmentDetailShipment, supplierVATSumShipmentDetailShipment,
+                    quantityShipmentDetailShipment, supplierSumShipmentDetailShipment, supplierVATISumShipmentDetailShipment,
                     wareSumShipmentDetailShipment, wareVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, markupSumShipmentDetailShipment,
-                    retailVATSumShipmentDetailShipment, retailRndSumShipmentDetailShipment, nameRegisterCommitteeShipment,
+                    retailVATSumShipmentDetailShipment, retailSumShipmentDetailShipment, nameRegisterCommitteeShipment,
                     nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
                     nameHeadManShipment
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
-                    importerPriceShipmentDetail, quoteSumShipmentDetail, supplierMarkupShipmentDetail, supplierVATSumShipmentDetail, dataSuppliersRangeShipmentDetail,
+                    importerPriceShipmentDetail, supplierSumShipmentDetail, supplierMarkupShipmentDetail, supplierVATISumShipmentDetail, dataSuppliersRangeShipmentDetail,
                     wareSumShipmentDetail, warePriceShipmentDetail, wareVATSumShipmentDetail, dataWareRangeShipmentDetail,
                     invoiceSumShipmentDetail, importerMarkupShipmentDetail, markupSumShipmentDetail, dataRetailRangeShipmentDetail,
-                    retailVATSumShipmentDetail, retailPriceShipmentDetail, retailRndSumShipmentDetail
+                    retailVATSumShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
 
     FILTERS inShipmentShipmentDetail(s, d)
 ;
@@ -10434,13 +10428,13 @@ FORM specificationPrint 'Счет-фактура' PRINT
                     dataAccountCompanySpecification, nameBankAccountCompanySpecification, addressBankAccountCompanySpecification,
                     MFOBankAccountCompanySpecification, departmentBankAccountCompanySpecification, CBUBankAccountCompanySpecification,
                     nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneCompanySpecification,
-                    quantitySpecificationDetailSpecification, calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
+                    quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                             shortNameUnitOfMeasureItemSpecificationDetail, quantitySpecificationDetail,
-                            retailPriceSpecificationDetail, calcOutRndSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
-                            calcVATRndSumSpecificationDetail, retailRndSumSpecificationDetail
+                            retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
+                            calcVATSumSpecificationDetail, retailSumSpecificationDetail
 
     FILTERS inSpecificationSpecificationDetail(sp, d)
 ;
@@ -10457,7 +10451,7 @@ FORM shipment 'Поставка'
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
                    nameSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
-                   carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailRndSumShipmentDetailShipment,
+                   carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
                    nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
 
@@ -10466,7 +10460,7 @@ FORM shipment 'Поставка'
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-                    supplierVATSumShipmentDetail, shipSumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
+                    supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
                     warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail,
                     numberCustomsCertificateShipmentDetail SHOWIF toShowPapersShipment(s),  numberCertificateGGRShipmentDetail SHOWIF toShowPapersShipment(s),
@@ -10550,8 +10544,8 @@ DESIGN shipment FROM DEFAULT{
 FORM shipments 'Поставки'
     OBJECTS s=shipment
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateShipment, timeShipment, nameDepartmentStoreShipment,
-                            nameSupplierShipment, countShipmentDetailShipment, quoteSumShipmentDetailShipment, invoiceVATSumShipmentDetailShipment,
-                            invoiceSumShipmentDetailShipment, retailRndSumShipmentDetailShipment,
+                            nameSupplierShipment, countShipmentDetailShipment, supplierSumShipmentDetailShipment, invoiceVATSumShipmentDetailShipment,
+                            invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                             statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionShipment(s),
                             statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionShipment(s)
 
@@ -10569,7 +10563,7 @@ FORM shipments 'Поставки'
     PROPERTIES (d) READONLY  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSuppliersRangeShipmentDetail, dataSuppliersRangeShipmentDetail,
-                             supplierVATSumShipmentDetail, shipSumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
+                             supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
                              numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail,
                              curRetailPriceShipmentDetail, retailPriceShipmentDetail
 
@@ -10642,7 +10636,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(d) indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
-                  dataSuppliersRangeReturnSupplierDetail, supplierVATSumReturnSupplierDetail, shipSumReturnSupplierDetail,
+                  dataSuppliersRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
                   nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                   retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
@@ -10682,7 +10676,7 @@ FORM returnSuppliers 'Возвраты поставщику'
     PROPERTIES(d) READONLY indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                            commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
-                           dataSuppliersRangeReturnSupplierDetail, supplierVATSumReturnSupplierDetail, shipSumReturnSupplierDetail,
+                           dataSuppliersRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
                            nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
                            retailMarkupReturnSupplierDetail, retailPriceReturnSupplierDetail
     FILTERS isReturnSupplier(r, d)
@@ -10911,23 +10905,23 @@ departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentSto
 
 nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
 
-sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailRndSumShipmentDetailShipment(ledger),
+sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailSumShipmentDetailShipment(ledger),
                                                                        accountSumInnerArrival(ledger),
                                                                        accountSumChangeDocument(ledger),
                                                                        retailSumParish(ledger) PERSISTENT IN ledgerGroup;
 
-sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailRndSumItemShipmentDetailShipment(ledger),
+sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailSumItemShipmentDetailShipment(ledger),
                                                                        accountSumByItemInnerArrival(ledger),
                                                                        accountSumByItemChangeDocument(ledger) PERSISTENT IN ledgerByItemGroup;//      subtotalByItemParish(ledger)
 
-sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailRndSumContainerShipmentDetailShipment(ledger),
+sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailSumContainerShipmentDetailShipment(ledger),
                                                                        accountSumByContainerInnerArrival(ledger),
                                                                        accountSumByContainerChangeDocument(ledger) PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
 
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOffDetailWriteOff(ledger),
                                                                        retailSumReturnSupplier(ledger),
-                                                                       retailRndSumInnerFlowDetailInnerFlow(ledger),
-                                                                       retailRndSumStatementDetailStatement(ledger),
+                                                                       retailSumInnerFlowDetailInnerFlow(ledger),
+                                                                       retailSumStatementDetailStatement(ledger),
                                                                        totalSumRetailByWastage(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
@@ -10937,16 +10931,16 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
 
 sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumItemWriteOffDetailWriteOff(ledger),
                                                                        retailSumByItemReturnSupplier(ledger),
-                                                                       retailRndSumItemInnerFlowDetailInnerFlow(ledger),
-                                                                       retailRndSumItemStatementDetailStatement(ledger),
+                                                                       retailSumItemInnerFlowDetailInnerFlow(ledger),
+                                                                       retailSumItemStatementDetailStatement(ledger),
                                                                        accountSumItemShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
                                                                        sumSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
 
 sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
                                                                        retailSumByContainerReturnSupplier(ledger),
-                                                                       retailRndSumContainerInnerFlowDetailInnerFlow(ledger),
-                                                                       retailRndSumContainerStatementDetailStatement(ledger),
+                                                                       retailSumContainerInnerFlowDetailInnerFlow(ledger),
+                                                                       retailSumContainerStatementDetailStatement(ledger),
                                                                        accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
 //                                                                       sumZReport(ledger),
 //                                                                       sumSaleDiscountDocument(ledger),
@@ -11711,7 +11705,7 @@ DESIGN userPriceChanges FROM DEFAULT {
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                   nameRecipientDepartmentInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow, retailRndSumInnerFlowDetailInnerFlow
+                   nameRecipientDepartmentInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow, retailSumInnerFlowDetailInnerFlow
 
     PROPERTIES (f) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -11726,7 +11720,7 @@ FORM innerFlow 'Расход в другой отдел'
     PROPERTIES (d) indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                    quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                    dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
-                   retailPriceInnerFlowDetail, retailRndSumInnerFlowDetail, ADDOBJ, delete
+                   retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d, cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
@@ -11796,7 +11790,7 @@ FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, countInnerFlowDetailInnerFlow,
-                            quantityInnerFlowDetailInnerFlow, retailRndSumInnerFlowDetailInnerFlow
+                            quantityInnerFlowDetailInnerFlow, retailSumInnerFlowDetailInnerFlow
 
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
@@ -11811,7 +11805,7 @@ FORM innerFlows 'Расходы в другие отделы'
     PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
-                            retailPriceInnerFlowDetail, retailRndSumInnerFlowDetail
+                            retailPriceInnerFlowDetail, retailSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
 
@@ -11879,13 +11873,13 @@ FORM innerFlowPosted 'Расходы в другие отделы'
     OBJECTS f=innerFlowPosted
     PROPERTIES (f) READONLY objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                             nameRecipientDepartmentInnerFlow, countInnerFlowDetailInnerFlow,
-                            quantityInnerFlowDetailInnerFlow, retailRndSumInnerFlowDetailInnerFlow
+                            quantityInnerFlowDetailInnerFlow, retailSumInnerFlowDetailInnerFlow
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
-                            retailPriceInnerFlowDetail, retailRndSumInnerFlowDetail
+                            retailPriceInnerFlowDetail, retailSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     DIALOG innerFlowPosted OBJECT f
@@ -12053,17 +12047,17 @@ FORM specificationForm 'Отгрузки по данной с/ф'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) READONLY seriesObject, numberObject, nameDepartmentStoreSpecification, dateSpecification, timeSpecification,
     dateToSpecification, nameCustomerSpecification, nameObjectiveAcquiringSpecification, noteSpecification,
-    quantitySpecificationDetailSpecification, calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
+    quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
     OBJECTS st=statement
     PROPERTIES (st) READONLY seriesNumberObject, dateStatement, nameCustomerStatement, nameDepartmentStoreStatement,
-                             noteStatement, quantityStatementDetailStatement, calcVATRndSumStatementDetailStatement, retailRndSumStatementDetailStatement
+                             noteStatement, quantityStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                             retailPriceStatementDetail, calcOutRndSumStatementDetail, numberCalcRangeStatementDetail,
-                             dataCalcRangeStatementDetail, calcVATRndSumStatementDetail,
-                             retailRndSumStatementDetail, noteStatementDetail
+                             retailPriceStatementDetail, calcSaleSumStatementDetail, numberCalcRangeStatementDetail,
+                             dataCalcRangeStatementDetail, calcVATSumStatementDetail,
+                             retailSumStatementDetail, noteStatementDetail
 
     FILTERS inStatementSpecification(st, sp),
             isPostedStatement(st),
@@ -12127,12 +12121,12 @@ FORM specification 'Счет-фактура'
     PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
                     dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
                     nameObjectiveAcquiringSpecification, noteSpecification,
-                    quantitySpecificationDetailSpecification, calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
+                    quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
-                   retailPriceSpecificationDetail, calcOutRndSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
-                   calcVATRndSumSpecificationDetail, retailRndSumSpecificationDetail,
+                   retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
+                   calcVATSumSpecificationDetail, retailSumSpecificationDetail,
                    ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
@@ -12190,7 +12184,7 @@ FORM specifications 'Счет-фактуры'
     OBJECTS sp=specification
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
                              nameCustomerSpecification, dateToSpecification, countSpecificationDetailSpecification, quantitySpecificationDetailSpecification,
-                             calcOutRndSumSpecificationDetailSpecification, calcVATRndSumSpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification
+                             calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
     PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  countStatementSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
@@ -12198,8 +12192,8 @@ FORM specifications 'Счет-фактуры'
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY  indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                              quantitySpecificationDetail, retailPriceSpecificationDetail,
-                             calcOutRndSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
-                             calcVATRndSumSpecificationDetail, retailRndSumSpecificationDetail
+                             calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
+                             calcVATSumSpecificationDetail, retailSumSpecificationDetail
 
     PROPERTIES      FORCE PANEL toPrintSpecification(sp) TODRAW d
     FILTERS         inSpecificationSpecificationDetail(sp, d)
@@ -12231,7 +12225,7 @@ FORM specificationsStatement 'Счета'
 
     PROPERTIES (st, sp) inStatementSpecification
     PROPERTIES (sp)     READONLY seriesNumberObject, dateSpecification, nameCustomerSpecification, nameDepartmentStoreSpecification,
-                                 dateToSpecification, quantitySpecificationDetailSpecification, retailRndSumSpecificationDetailSpecification, statusSpecification
+                                 dateToSpecification, quantitySpecificationDetailSpecification, retailSumSpecificationDetailSpecification, statusSpecification
     PROPERTIES (st, sp) statusStatementSpecification
 
     FILTERS customerStatement(st) == customerSpecification(sp),
@@ -12254,7 +12248,7 @@ FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
-                    noteStatement, quantityStatementDetailStatement, calcOutRndSumStatementDetailStatement, calcVATRndSumStatementDetailStatement, retailRndSumStatementDetailStatement,
+                    noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), nameRevaluationCommitteeStatement SHOWIF needToPriceChangeStatement(st)
 
     PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
@@ -12268,8 +12262,8 @@ FORM statement 'Отгрузка из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)  indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                    retailPriceStatementDetail, calcOutRndSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
-                    calcVATRndSumStatementDetail, retailRndSumStatementDetail,
+                    retailPriceStatementDetail, calcSaleSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
+                    calcVATSumStatementDetail, retailSumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, warePriceStatementDetail, dataRetailRangeStatementDetail,
@@ -12350,7 +12344,7 @@ FORM statements 'Отгрузки из розницы'
     OBJECTS st=statement
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
                      nameCustomerStatement, countStatementDetailStatement, quantityStatementDetailStatement,
-                     calcOutRndSumStatementDetailStatement, calcVATRndSumStatementDetailStatement, retailRndSumStatementDetailStatement
+                     calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement
     PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
                      toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
                      toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal,
@@ -12362,8 +12356,8 @@ FORM statements 'Отгрузки из розницы'
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
-                              retailPriceStatementDetail, calcOutRndSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
-                              calcVATRndSumStatementDetail, retailRndSumStatementDetail, noteStatementDetail
+                              retailPriceStatementDetail, calcSaleSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
+                              calcVATSumStatementDetail, retailSumStatementDetail, noteStatementDetail
 
     FILTERS          inStatementStatementDetail(st, d)
 ;
