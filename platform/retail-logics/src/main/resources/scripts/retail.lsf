@@ -1568,7 +1568,7 @@ coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDeg
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(CoolingDegree, 'Показывать степень охлаждения', displayGroup);
 
-residentCountry 'Отечественное производство' (country) = DATA BOOLEAN (country);
+residentCountry 'Отечественное производство' (country) = DATA BOOLEAN (country) IN baseGroup;
 
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
@@ -1684,11 +1684,22 @@ controlExpiryItem 'Контролировать сроки годности то
 daysExpiryItem 'Срок годности в днях' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
-
-rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
+//rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
 imageItem 'Изображение' = DATA IMAGEFILE (item);
 loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
+
+FORM country 'Страна'
+    OBJECTS c=country FIXED PANEL
+    PROPERTIES(c)      name, sidCountry, residentCountry
+
+    EDIT country OBJECT c
+;
+FORM countries 'Страны'
+    OBJECTS c=country
+    PROPERTIES(c) READONLY name, sidCountry, residentCountry
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
@@ -2117,7 +2128,7 @@ FORM officer 'Должность'
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
     PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee,
-                       shortNameLanguageEmployee, numberEmployee, passwordEmployee, dataEmployee
+                       userLogin, userPassword, email, nameUserMainRole
 
     TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
@@ -2131,6 +2142,34 @@ FORM employee 'Сотрудник'
     EDIT employee OBJECT e
 ;
 
+DESIGN employee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW oneCase BEFORE treeStore.box {
+            title = 'Сотрудник';
+            childConstraints = TO THE RIGHT;
+            NEW twoCase {
+                title = 'Личные данные';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(userFirstName(e));
+                ADD PROPERTY(userLastName(e));
+                ADD PROPERTY(nameOfficerEmployee(e));
+                ADD PROPERTY(phoneEmployee(e));
+            };
+            NEW threeCase {
+                title = 'Данные пользователя';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(userLogin(e));
+                ADD PROPERTY(userPassword(e));
+                ADD PROPERTY(email(e));
+                ADD PROPERTY(nameUserMainRole(e));
+            };
+
+        }
+        ADD functions.box;
+    }
+}
+
 FORM employees 'Сотрудники'
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName, nameOfficerEmployee
@@ -2143,8 +2182,7 @@ FORM employees 'Сотрудники'
 
 FORM employeeDialog 'Сотрудники'
     OBJECTS e=employee
-    PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee, shortNameLanguageEmployee,
-                       numberEmployee, dataEmployee, nameDepartmentByEmployee
+    PROPERTIES(e)      userFirstName, userLastName, nameOfficerEmployee, phoneEmployee
 
     DIALOG employee OBJECT e
 ;
@@ -5876,6 +5914,9 @@ GROUP pricingShipmentDetailInfo 'Дополнительные ценовые п�
 balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA NUMERIC[14,3] (shipmentDetail) IN baseGroup;
 
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
+
+CONSTRAINT controlExpiryShipmentDetail(shipmentDetail) AND NOT dateFitToShipmentDetail(shipmentDetail) MESSAGE 'Для товара не задан срок годности';
+//    CHECKED BY controlExpiryShipmentDetail MESSAGE 'Не задан для товара срок годности';
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN itemDetailGroup;
 isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
@@ -13119,7 +13160,7 @@ FORM statisticalReport '12-Торг (продажи) справочно'
     FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g)
+    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUnitOfMeasureStatisticGroup(g)
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
@@ -13515,6 +13556,7 @@ NAVIGATOR {
             ADD itemGroups;
             ADD statisticGroups;
             ADD unitsOfMeasure;
+            ADD countries;
             ADD assortments;
             ADD naturalLossItem;
             ADD papers;
@@ -13659,6 +13701,7 @@ NAVIGATOR {
             ADD barcodeInput;
             ADD employee;
             ADD employeeDialog;
+            ADD country;
             ADD officer;
             ADD groupUser;
             ADD tradingSquare;
