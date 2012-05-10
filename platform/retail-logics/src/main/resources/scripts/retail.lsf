@@ -649,7 +649,7 @@ META defineDocumentDetailInSum (object)
 END
 
 META defineDocumentDetailInvoiceSum (object)
-    supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
+    supplierVATIPrice###object##Detail 'НДС поставщика (без посуды)' (detail) = [X*Y/100](
         supplierPrice###object##Detail(detail), dataSuppliersRange###object##Detail(detail));
 
     calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
@@ -670,7 +670,7 @@ META defineDocumentDetailInvoiceSum (object)
         invoiceISum###object##Detail(detail) (+) wareSum###object##Detail(detail);
 
     supplierSum###object##Detail 'Сумма поставщика без НДС' (detail) =
-        invoiceISum###object##Detail (detail) (-) supplierVATISum###object##Detail (detail) + wareSupplierSum###object##Detail(detail);
+        invoiceISum###object##Detail (detail) (-) supplierVATISum###object##Detail (detail) (+) wareSupplierSum###object##Detail(detail);
 END
 
 META defineDocumentDetailWareSum (object)
