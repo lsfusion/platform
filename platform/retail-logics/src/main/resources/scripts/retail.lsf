@@ -877,6 +877,68 @@ META defineDocumentHeaderRevaluation (object)
         WHEN object IS object;
 END
 
+// ------------------------- Свойства для накладных ---------------------------------- //
+
+META defineDocumentPackAndWeightConsignment (object, detail)
+
+    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
+        UNION OVERRIDE 1 IF idetail IS detail, quantityPackItem(item###object##Detail(idetail)));
+
+    sumPackQuantity###object 'Общее количество грузовых мест' (object) = GROUP SUM packQuantity###object##Detail(idetail)
+        BY object###object##Detail(idetail) IN sumConsignmentGroup;
+
+    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round3(
+        grossWeightItem(item###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
+
+    sumGrossWeight###object 'Общая масса груза, т.' (object) = GROUP SUM grossWeight###object##Detail(idetail)
+        BY object###object##Detail(idetail) IN sumConsignmentGroup;
+
+END
+
+META defineDocumentHeaderConsignment (object)
+
+    car###object 'Автомобиль' (object) = DATA STRING[30] (object);
+    ownerCar###object 'Владелец автомобиля' (object) = DATA STRING[100] (object);
+    trailer###object 'Прицеп' (object) = DATA STRING[10] (object);
+    driverCar###object 'Водитель' (object) = DATA STRING[40] (object);
+    waybill###object 'Путевой лист' (object) = DATA STRING[20] (object);
+
+    transportPayer###object 'Заказчик перевозки (ИД)' (object) = DATA legalEntity (object);
+
+    shipmentBase###object 'Основание отпуска' (object) = DATA STRING[30] (object);
+
+    dataLoadingPlace###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
+    loadingPlace###object 'Пункт погрузки' (object) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStore###object(object))),
+                                                           dataLoadingPlace###object (object);
+
+    dataUnloadingPlace###object 'Пункт разгрузки' (object) = DATA STRING[50] (object);
+
+    readdressing###object 'Переадресовка' (object) = DATA STRING[50] (object);
+
+    issuanceAllowed###object 'Отпуск разрешил' (object) = DATA employee(object);
+    issuanceExecuted###object 'Отпуск произвел' (object) = DATA employee(object);
+
+    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = DATA STRING[40] (object);
+
+    warrant###object 'По доверенности (номер, дата)' (object) = DATA STRING[30](object);
+    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = DATA STRING[100](object);
+
+    goodsAccepted###object 'Принял грузополучатель' (object) = DATA STRING[40] (object);
+
+    loadingExecuter###object 'Исполнитель ПРР' (object) = DATA employee(object);
+
+    wayOfLoading###object 'Способ ПРР' (object) = DATA wayOfLoading(object);
+    codeLoading###object 'Код ПРР' (object) = DATA STRING[3] (object);
+
+    arrivalTime###object 'Время прибытия' (object) = DATA DATETIME(object);
+    departureTime###object 'Время убытия' (object) = DATA DATETIME(object);
+    downtime###object 'Время простоя' (object) = DATA STRING[10] (object);
+
+    raceQuantity###object 'Количество ездок' (object) = DATA INTEGER (object);
+
+    @defineDocumentPackAndWeightConsignment(object, object##Detail);
+
+END
 // ------------------------- Автоматическое изменение цен ---------------------------------- //
 
 META defineDocumentPriceChange (object)
@@ -5732,67 +5794,14 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 
 @metaCodeIsPriceChangeWrong(statement);
 
-// для накладной (шапка и хвост)
-carStatement 'Автомобиль' (statement) = DATA STRING[30] (statement);
-ownerCarStatement 'Владелец автомобиля' (statement) = DATA STRING[100] (statement);
-trailerStatement 'Прицеп' (statement) = DATA STRING[10] (statement);
-driverCarStatement 'Водитель' (statement) = DATA STRING[40] (statement);
-waybillStatement 'Путевой лист' (statement) = DATA STRING[20] (statement);
-
-UNPCustomerStatement 'УНП получателя' (statement) = UNPLegalEntity(customerStatement(statement));
-
-transportPayerStatement 'Заказчик перевозки (ИД)' (statement) = DATA legalEntity (statement);
-
-shipmentBaseStatement 'Основание отпуска' (statement) = DATA STRING[30] (statement);
-
-dataLoadingPlaceStatement 'Пункт погрузки' (statement) = DATA STRING[50] (statement);
-loadingPlaceStatement 'Пункт погрузки' (statement) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreStatement(statement))),
-                                                       dataLoadingPlaceStatement (statement);
-
-dataUnloadingPlaceStatement 'Пункт разгрузки' (statement) = DATA STRING[50] (statement);
-unloadingPlaceStatement 'Пункт разгрузки' (statement) = UNION OVERRIDE addressLegalEntity(customerStatement(statement)),
-                                                       dataUnloadingPlaceStatement (statement);
-
-readdressingStatement 'Переадресовка' (statement) = DATA STRING[50] (statement);
-
-issuanceAllowedStatement 'Отпуск разрешил' (statement) = DATA employee(statement);
-issuanceExecutedStatement 'Отпуск произвел' (statement) = DATA employee(statement);
-
-forwarderStatement 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (statement) = DATA STRING[40] (statement);
-
-warrantStatement 'По доверенности (номер, дата)' (statement) = DATA STRING[30](statement);
-warrantHolderStatement 'По доверенности выданной (наименование орг-ии)' (statement) = DATA STRING[100](statement);
-
-goodsAcceptedStatement 'Принял грузополучатель' (statement) = DATA STRING[40] (statement);
-
-loadingExecuterStatement 'Исполнитель ПРР' (statement) = DATA employee(statement);
-
 CLASS wayOfLoading 'Способ ПРР' : named;
 TABLE wayOfLoading (wayOfLoading);
 
 nameWayOfLoading 'Способ ПРР' (wayOfLoading) = name(wayOfLoading) IF wayOfLoading IS wayOfLoading IN baseGroup;
-//усложнение из-за бага
 
-wayOfLoadingStatement 'Способ ПРР' (statement) = DATA wayOfLoading(statement);
-codeLoadingStatement 'Код ПРР' (statement) = DATA STRING[3] (statement);
-
-arrivalTimeStatement 'Время прибытия' (statement) = DATA DATETIME(statement);
-departureTimeStatement 'Время убытия' (statement) = DATA DATETIME(statement);
-downtimeStatement 'Время простоя' (statement) = DATA STRING[10] (statement);
-
-raceQuantityStatement 'Количество ездок' (statement) = DATA INTEGER (statement);
-
-packQuantityStatementDetail 'Количество грузовых мест' (statementDetail) = round0(quantityStatementDetail(statementDetail)/
-    UNION OVERRIDE 1 IF statementDetail IS statementDetail, quantityPackItem(itemStatementDetail(statementDetail)));
-
-sumPackQuantityStatement 'Общее количество грузовых мест' (statement) = GROUP SUM packQuantityStatementDetail(statementDetail)
-    BY statementStatementDetail(statementDetail) IN sumConsignmentGroup;
-
-grossWeightStatementDetail 'Масса груза, т.' (statementDetail) = round3(
-    grossWeightItem(itemStatementDetail(statementDetail))*quantityStatementDetail(statementDetail)/1000);
-
-sumGrossWeightStatement 'Общая масса груза, т.' (statement) = GROUP SUM grossWeightStatementDetail(statementDetail)
-    BY statementStatementDetail(statementDetail) IN sumConsignmentGroup;
+@defineDocumentHeaderConsignment(statement);
+unloadingPlaceStatement 'Пункт разгрузки' (statement) = UNION OVERRIDE addressLegalEntity(customerStatement(statement)),
+                                                       dataUnloadingPlaceStatement (statement);
 
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
@@ -6127,60 +6136,10 @@ retailPriceItemInnerFlow 'Цена (максим.)' (item, innerFlow) = GROUP MA
     BY itemInnerFlowDetail(innerFlowDetail), innerFlowInnerFlowDetail(innerFlowDetail);
 
 // для накладной (шапка и хвост)
-carInnerFlow 'Автомобиль' (innerFlow) = DATA STRING[30] (innerFlow);
-ownerCarInnerFlow 'Владелец автомобиля' (innerFlow) = DATA STRING[100] (innerFlow);
-trailerInnerFlow 'Прицеп' (innerFlow) = DATA STRING[10] (innerFlow);
-driverCarInnerFlow 'Водитель' (innerFlow) = DATA STRING[40] (innerFlow);
-waybillInnerFlow 'Путевой лист' (innerFlow) = DATA STRING[20] (innerFlow);
 
-transportPayerInnerFlow 'Заказчик перевозки (ИД)' (innerFlow) = DATA legalEntity (innerFlow);
-
-shipmentBaseInnerFlow 'Основание отпуска' (innerFlow) = DATA STRING[30] (innerFlow);
-
-UNPRecipientInnerFlow 'УНП получателя' (innerFlow) = UNPDepartmentStore(recipientDepartmentInnerFlow(innerFlow));
-
-dataLoadingPlaceInnerFlow 'Пункт погрузки' (innerFlow) = DATA STRING[50] (innerFlow);
-loadingPlaceInnerFlow 'Пункт погрузки' (innerFlow) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreInnerFlow(innerFlow))),
-                                                       dataLoadingPlaceInnerFlow (innerFlow);
-
-dataUnloadingPlaceInnerFlow 'Пункт разгрузки' (innerFlow) = DATA STRING[50] (innerFlow);
+@defineDocumentHeaderConsignment(innerFlow);
 unloadingPlaceInnerFlow 'Пункт разгрузки' (innerFlow) = UNION OVERRIDE addressLegalEntity(recipientDepartmentInnerFlow(innerFlow)),
                                                        dataUnloadingPlaceInnerFlow (innerFlow);
-
-readdressingInnerFlow 'Переадресовка' (innerFlow) = DATA STRING[50] (innerFlow);
-
-issuanceAllowedInnerFlow 'Отпуск разрешил' (innerFlow) = DATA employee(innerFlow);
-issuanceExecutedInnerFlow 'Отпуск произвел' (innerFlow) = DATA employee(innerFlow);
-
-forwarderInnerFlow 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (innerFlow) = DATA STRING[40] (innerFlow);
-
-warrantInnerFlow 'По доверенности (номер, дата)' (innerFlow) = DATA STRING[30](innerFlow);
-warrantHolderInnerFlow 'По доверенности выданной (наименование орг-ии)' (innerFlow) = DATA STRING[100](innerFlow);
-
-goodsAcceptedInnerFlow 'Принял грузополучатель' (innerFlow) = DATA STRING[40] (innerFlow);
-
-loadingExecuterInnerFlow 'Исполнитель ПРР' (innerFlow) = DATA employee(innerFlow);
-
-wayOfLoadingInnerFlow 'Способ ПРР' (innerFlow) = DATA wayOfLoading(innerFlow);
-codeLoadingInnerFlow 'Код ПРР' (innerFlow) = DATA STRING[3] (innerFlow);
-
-arrivalTimeInnerFlow 'Время прибытия' (innerFlow) = DATA DATETIME(innerFlow);
-departureTimeInnerFlow 'Время убытия' (innerFlow) = DATA DATETIME(innerFlow);
-downtimeInnerFlow 'Время простоя' (innerFlow) = DATA STRING[10] (innerFlow);
-
-raceQuantityInnerFlow 'Количество ездок' (innerFlow) = DATA INTEGER (innerFlow);
-
-packQuantityInnerFlowDetail 'Количество грузовых мест' (innerFlowDetail) = round0(quantityInnerFlowDetail(innerFlowDetail)/
-    UNION OVERRIDE 1 IF innerFlowDetail IS innerFlowDetail, quantityPackItem(itemInnerFlowDetail(innerFlowDetail)));
-
-sumPackQuantityInnerFlow 'Общее количество грузовых мест' (innerFlow) = GROUP SUM packQuantityInnerFlowDetail(innerFlowDetail)
-    BY innerFlowInnerFlowDetail(innerFlowDetail);
-
-grossWeightInnerFlowDetail 'Масса груза, т.' (innerFlowDetail) = round3(
-    grossWeightItem(itemInnerFlowDetail(innerFlowDetail))*quantityInnerFlowDetail(innerFlowDetail)/1000);
-
-sumGrossWeightInnerFlow 'Общая масса груза, т.' (innerFlow) = GROUP SUM grossWeightInnerFlowDetail(innerFlowDetail)
-    BY innerFlowInnerFlowDetail(innerFlowDetail);
 
 supplierMarkupInnerFlowDetail 'Оптовая надбавка' (innerFlowDetail) =
     (supplierPriceInnerFlowDetail(innerFlowDetail)/importerPriceInnerFlowDetail(innerFlowDetail) - 1)*100;
@@ -6637,60 +6596,9 @@ sumQuantityItemShipment (departmentStore, supplier, item) =
 isSumQuantityItemShipment (departmentStore, supplier, item) = sumQuantityItemShipment(departmentStore, supplier, item) > 0;
 
 // для возвратной накладной (шапка и хвост)
-carReturnSupplier 'Автомобиль' (returnSupplier) = DATA STRING[30] (returnSupplier);
-ownerCarReturnSupplier 'Владелец автомобиля' (returnSupplier) = DATA STRING[100] (returnSupplier);
-trailerReturnSupplier 'Прицеп' (returnSupplier) = DATA STRING[10] (returnSupplier);
-driverCarReturnSupplier 'Водитель' (returnSupplier) = DATA STRING[40] (returnSupplier);
-waybillReturnSupplier 'Путевой лист' (returnSupplier) = DATA STRING[20] (returnSupplier);
-
-transportPayerReturnSupplier 'Заказчик перевозки (ИД)' (returnSupplier) = DATA legalEntity (returnSupplier);
-
-shipmentBaseReturnSupplier 'Основание отпуска' (returnSupplier) = DATA STRING[30] (returnSupplier);
-
-UNPSupplierReturnSupplier 'УНП получателя' (returnSupplier) = UNPLegalEntity(supplierReturnSupplier(returnSupplier));
-
-dataLoadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
-loadingPlaceReturnSupplier 'Пункт погрузки' (returnSupplier) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreReturnSupplier(returnSupplier))),
-                                                                              dataLoadingPlaceReturnSupplier (returnSupplier);
-
-dataUnloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = DATA STRING[50] (returnSupplier);
+@defineDocumentHeaderConsignment(returnSupplier);
 unloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = UNION OVERRIDE addressLegalEntity(supplierReturnSupplier(returnSupplier)),
                                                                                  dataUnloadingPlaceReturnSupplier (returnSupplier);
-
-readdressingReturnSupplier 'Переадресовка' (returnSupplier) = DATA STRING[50] (returnSupplier);
-
-issuanceAllowedReturnSupplier 'Отпуск разрешил' (returnSupplier) = DATA employee(returnSupplier);
-issuanceExecutedReturnSupplier 'Отпуск произвел' (returnSupplier) = DATA employee(returnSupplier);
-
-forwarderReturnSupplier 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (returnSupplier) = DATA STRING[40] (returnSupplier);
-
-warrantReturnSupplier 'По доверенности (номер, дата)' (returnSupplier) = DATA STRING[30](returnSupplier);
-warrantHolderReturnSupplier 'По доверенности выданной (наименование орг-ии)' (returnSupplier) = DATA STRING[100](returnSupplier);
-
-goodsAcceptedReturnSupplier 'Принял грузополучатель' (returnSupplier) = DATA STRING[40] (returnSupplier);
-
-loadingExecuterReturnSupplier 'Исполнитель ПРР' (returnSupplier) = DATA employee(returnSupplier);
-
-wayOfLoadingReturnSupplier 'Способ ПРР' (returnSupplier) = DATA wayOfLoading(returnSupplier);
-codeLoadingReturnSupplier 'Код ПРР' (returnSupplier) = DATA STRING[3] (returnSupplier);
-
-arrivalTimeReturnSupplier 'Время прибытия' (returnSupplier) = DATA DATETIME(returnSupplier);
-departureTimeReturnSupplier 'Время убытия' (returnSupplier) = DATA DATETIME(returnSupplier);
-downtimeReturnSupplier 'Время простоя' (returnSupplier) = DATA STRING[10] (returnSupplier);
-
-raceQuantityReturnSupplier 'Количество ездок' (returnSupplier) = DATA INTEGER (returnSupplier);
-
-packQuantityReturnSupplierDetail 'Количество грузовых мест' (returnSupplierDetail) = round0(quantityReturnSupplierDetail(returnSupplierDetail)/
-    UNION OVERRIDE 1 IF returnSupplierDetail IS returnSupplierDetail, quantityPackItem(itemReturnSupplierDetail(returnSupplierDetail)));
-
-sumPackQuantityReturnSupplier 'Общее количество грузовых мест' (returnSupplier) = GROUP SUM packQuantityReturnSupplierDetail(returnSupplierDetail)
-    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
-
-grossWeightReturnSupplierDetail 'Масса груза, т.' (returnSupplierDetail) = round3(
-    grossWeightItem(itemReturnSupplierDetail(returnSupplierDetail))*quantityReturnSupplierDetail(returnSupplierDetail)/1000);
-
-sumGrossWeightReturnSupplier 'Общее масса груза, т.' (returnSupplier) = GROUP SUM grossWeightReturnSupplierDetail(returnSupplierDetail)
-    BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN sumConsignmentGroup;
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -9322,10 +9230,6 @@ transportPayerConsignment 'Заказчик перевозки (ИД)' (consignm
 departmentStoreConsignment 'Отдел (ИД)' (consignment) = UNION EXCLUSIVE departmentStoreStatement (consignment),
                                                                         departmentStoreReturnSupplier (consignment),
                                                                         departmentStoreInnerFlow (consignment);
-
-//UNPRecipientConsignment 'УНП получателя' (consignment) = UNION EXCLUSIVE UNPCustomerStatement (consignment),
-//                                                                         UNPSupplierReturnSupplier (consignment),
-//                                                                         UNPRecipientInnerFlow (consignment);
 
 recipientConsignment 'Получатель (ИД)' (consignment) = UNION EXCLUSIVE   customerStatement(consignment),
                                                                          supplierReturnSupplier(consignment),
