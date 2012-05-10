@@ -11,6 +11,8 @@ import platform.client.form.*;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.dispatch.EditPropertyDispatcher;
+import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
@@ -20,7 +22,6 @@ import platform.client.logics.ClientTreeGroup;
 import platform.client.logics.classes.ClientType;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
-import platform.interop.form.EditActionResult;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -38,7 +39,7 @@ import java.util.List;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
-    private final SimpleEditPropertyDispatcher pasteDispatcher;
+    private final SimpleChangePropertyDispatcher pasteDispatcher;
 
     private final EditBindingMap editBindingMap = new EditBindingMap();
 
@@ -75,7 +76,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         form = iform;
         treeGroup = itreeGroup;
         plainTreeMode = itreeGroup.plainTreeMode;
-        pasteDispatcher = form.getSimpleDispatcher();
+        pasteDispatcher = form.getSimpleChangePropertyDispatcher();
 
         contextMenuHandler.install();
 
@@ -470,7 +471,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             if (property != null) {
                 try {
                     Object parsedValue = property.parseString(form, columnKey, table.get(0).get(0), false);
-                    pasteDispatcher.executePropertyEditAction(parsedValue, property, columnKey, EditActionResult.CHANGE);
+                    pasteDispatcher.changeProperty(parsedValue, property, columnKey);
                 } catch (ParseException ignored) {
                 }
             }

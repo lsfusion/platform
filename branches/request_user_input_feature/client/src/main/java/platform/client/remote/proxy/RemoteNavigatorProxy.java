@@ -2,7 +2,7 @@ package platform.client.remote.proxy;
 
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.navigator.NavigatorActionResult;
+import platform.interop.form.ServerResponse;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.MethodInvocation;
@@ -181,12 +181,12 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @Override
-    public NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException {
+    public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
         return target.executeNavigatorAction(navigatorActionSID);
     }
 
     @Override
-    public NavigatorActionResult continueNavigatorAction(Object[] actionResults) throws RemoteException {
+    public ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException {
         return target.continueNavigatorAction(actionResults);
     }
 }

@@ -9,6 +9,8 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.client.StartupProperties;
 import platform.client.SwingUtils;
+import platform.client.form.dispatch.ClientFormActionDispatcher;
+import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
@@ -41,7 +43,7 @@ import static platform.interop.Order.*;
 
 public class ClientFormController {
     private final TableManager tableManager = new TableManager(this);
-    private final SimpleEditPropertyDispatcher simpleDispatcher = new SimpleEditPropertyDispatcher(this);
+    private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
     private RemoteFormInterface remoteForm;
     private boolean busy = false;
@@ -97,7 +99,12 @@ public class ClientFormController {
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         this.clientNavigator = clientNavigator;
 
-        actionDispatcher = new ClientFormActionDispatcher(this);
+        actionDispatcher = new ClientFormActionDispatcher() {
+            @Override
+            public ClientFormController getFormController() {
+                return ClientFormController.this;
+            }
+        };
 
         form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 //        form = new ClientForm(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
@@ -117,11 +124,11 @@ public class ClientFormController {
         return ID;
     }
 
-    void setBusy(boolean busy) {
+    public void setBusy(boolean busy) {
         this.busy = busy;
     }
 
-    boolean isBusy() {
+    public boolean isBusy() {
         return busy;
     }
 
@@ -316,7 +323,7 @@ public class ClientFormController {
         return tableManager.isEditing();
     }
 
-    public SimpleEditPropertyDispatcher getSimpleDispatcher() {
+    public SimpleChangePropertyDispatcher getSimpleChangePropertyDispatcher() {
         return simpleDispatcher;
     }
 
@@ -474,37 +481,30 @@ public class ClientFormController {
         }
     }
 
-    private void processRemoteChanges(RemoteChanges remoteChanges) throws IOException {
-        if (remoteChanges == null) {
-            //ХАК: это теоретически возможно, при реконнекте, когда RMI-поток убивается и remote-method возвращает null
-            return;
+    private void processServerResponse(ServerResponse serverResponse) throws IOException {
+        //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
+        if (serverResponse != null) {
+            actionDispatcher.dispatchResponse(serverResponse);
         }
+    }
 
-        do {
-            if (remoteChanges.formChanges != null) {
-                applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.formChanges)), form, controllers));
-            }
-
-            if (clientNavigator != null) {
-                clientNavigator.relevantClassNavigator.updateCurrentClass(remoteChanges.classID);
-            }
-
-            Object[] actionResults = actionDispatcher.dispatchActions(remoteChanges.actions);
-
-            if (!remoteChanges.resumeInvocation) {
-                break;
-            }
-
-            remoteChanges = remoteForm.continueRemoteChanges(actionResults);
-            remoteForm.refreshData();
-        } while (true);
+    public void updateCurrentClass(int currentClassId) {
+        if (clientNavigator != null) {
+            clientNavigator.relevantClassNavigator.updateCurrentClass(currentClassId);
+        }
     }
 
     public void applyRemoteChanges() throws IOException {
-        processRemoteChanges(remoteForm.getRemoteChanges());
+        processServerResponse(remoteForm.getRemoteChanges());
     }
 
-    private void applyFormChanges(ClientFormChanges formChanges) {
+    public void applyFormChanges(byte[] bFormChanges) throws IOException {
+        if (bFormChanges == null) {
+            return;
+        }
+
+        ClientFormChanges formChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(bFormChanges)), form, controllers);
+
         if (formChanges.dataChanged != null) {
             dataChanged = formChanges.dataChanged;
             if (buttonApply != null) {
@@ -603,12 +603,12 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        processRemoteChanges(
+        processServerResponse(
                 remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(), BaseUtils.serializeObject(value), all, aggValue)
         );
     }
 
-    public EditActionResult executeEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
+    public ServerResponse executeEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
         commitOrCancelCurrentEditing();
 
         // для глобальных свойств пока не может быть отложенных действий
@@ -618,12 +618,8 @@ public class ClientFormController {
         return remoteForm.executeEditAction(property.getID(), columnKey.serialize(), actionSID);
     }
 
-    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException {
-        return remoteForm.continueExecuteEditAction(inputResult);
-    }
-
-    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException {
-        return remoteForm.continueExecuteEditAction(actionResults);
+    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
+        return remoteForm.continueServerInvocation(actionResults);
     }
 
     public RemoteDialogInterface createChangeEditorDialog(ClientPropertyDraw property) throws RemoteException {
@@ -678,7 +674,7 @@ public class ClientFormController {
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }
-        processRemoteChanges(remoteForm.pasteExternalTable(propertyIdList, table));
+        processServerResponse(remoteForm.pasteExternalTable(propertyIdList, table));
     }
 
     public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, Object value) throws IOException {
@@ -694,7 +690,7 @@ public class ClientFormController {
             }
             reCells.put(property.getID(), keys);
         }
-        processRemoteChanges(remoteForm.pasteMulticellValue(reCells, value));
+        processServerResponse(remoteForm.pasteMulticellValue(reCells, value));
     }
 
     public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
@@ -705,7 +701,7 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
         }
 
-        processRemoteChanges(
+        processServerResponse(
                 remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize())
         );
         refresh();
@@ -860,7 +856,7 @@ public class ClientFormController {
         }
     }
 
-    void apply(boolean needConfirm) {
+    public void apply(boolean needConfirm) {
         commitOrCancelCurrentEditing();
 
         try {
@@ -884,7 +880,7 @@ public class ClientFormController {
                 }
             }
 
-            processRemoteChanges(remoteForm.applyChanges());
+            processServerResponse(remoteForm.applyChanges());
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.applying.changes"), e);
         }
@@ -1015,7 +1011,7 @@ public class ClientFormController {
         setCanClose(true);
 
         try {
-            processRemoteChanges(remoteForm.okPressed());
+            processServerResponse(remoteForm.okPressed());
 
             if (isNewSession) {
                 apply(true);
@@ -1029,7 +1025,7 @@ public class ClientFormController {
 
     void closePressed() {
         try {
-            processRemoteChanges(remoteForm.closedPressed());
+            processServerResponse(remoteForm.closedPressed());
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
@@ -1037,7 +1033,7 @@ public class ClientFormController {
 
     void nullPressed() {
         try {
-            processRemoteChanges(remoteForm.nullPressed());
+            processServerResponse(remoteForm.nullPressed());
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }

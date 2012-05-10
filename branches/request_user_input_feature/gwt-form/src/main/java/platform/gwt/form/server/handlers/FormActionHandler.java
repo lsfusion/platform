@@ -2,7 +2,6 @@ package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.shared.Action;
 import platform.client.logics.ClientForm;
-import platform.client.logics.ClientFormChanges;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
@@ -23,12 +22,13 @@ public abstract class FormActionHandler<A extends Action<GetFormResult>> extends
     protected GetFormResult createResult(RemoteFormInterface remoteForm) throws IOException {
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-        ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().formChanges)), clientForm, null);
+        //todo:
+//        ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().formChanges)), clientForm, null);
 
         String formSessionID = generateRandomSID();
 
         GForm gwtForm = clientForm.getGwtForm();
-        gwtForm.changes = clientChanges.getGwtFormChangesDTO();
+//        gwtForm.changes = clientChanges.getGwtFormChangesDTO();
         gwtForm.sessionID = formSessionID;
 
         getSession().setAttribute(formSessionID, new FormSessionObject(clientForm, remoteForm));

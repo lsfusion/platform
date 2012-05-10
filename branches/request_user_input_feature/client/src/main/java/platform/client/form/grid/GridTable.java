@@ -17,7 +17,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.form.EditActionResult;
+import platform.interop.form.ServerResponse;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -278,7 +278,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     private void initializeActionMap() {
-        editBindingMap.setKeyAction(KeyStrokes.getGroupCorrectionKeyStroke(), EditActionResult.GROUP_CHANGE);
+        editBindingMap.setKeyAction(KeyStrokes.getGroupCorrectionKeyStroke(), ServerResponse.GROUP_CHANGE);
 
         final Action oldNextAction = getActionMap().get("selectNextColumnCell");
         final Action oldPrevAction = getActionMap().get("selectPreviousColumnCell");

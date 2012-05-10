@@ -13,7 +13,7 @@ import platform.base.WeakIdentityHashSet;
 import platform.interop.action.ClientAction;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.navigator.NavigatorActionResult;
+import platform.interop.form.ServerResponse;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.ClientCallBackInterface;
@@ -746,10 +746,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-    private RemotePausableInvocation<NavigatorActionResult> currentInvocation = null;
+    private RemotePausableInvocation<ServerResponse> currentInvocation = null;
 
     @Override
-    public NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException {
+    public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
         final NavigatorElement element = BL.LM.baseElement.getNavigatorElement(navigatorActionSID);
 
         if (!(element instanceof NavigatorAction)) {
@@ -761,24 +761,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
 
         final ActionProperty property = ((NavigatorAction) element).getProperty();
-        currentInvocation = new RemotePausableInvocation<NavigatorActionResult>(pausablesExecutor) {
+        currentInvocation = new RemotePausableInvocation<ServerResponse>(pausablesExecutor) {
             @Override
-            protected NavigatorActionResult callInvocation() throws Throwable {
+            protected ServerResponse callInvocation() throws Throwable {
                 threads.add(Thread.currentThread());
                 try {
                     DataSession session = createSession();
                     List<ClientAction> actions = property.execute(new ExecutionEnvironment(session), true);
                     session.apply(BL);
                     session.close();
-                    return new NavigatorActionResult(actions.toArray(new ClientAction[actions.size()]), false);
+                    return new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
                 } finally {
                     threads.remove(Thread.currentThread());
                 }
             }
 
             @Override
-            protected NavigatorActionResult handleUserInteractionRequest(ClientAction... actions) throws RemoteException {
-                return new NavigatorActionResult(actions);
+            protected ServerResponse handleUserInteractionRequest(ClientAction... actions) throws RemoteException {
+                return new ServerResponse(actions);
             }
         };
 
@@ -786,13 +786,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public NavigatorActionResult continueNavigatorAction(Object[] actionResults) throws RemoteException {
+    public ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException {
         return currentInvocation.resumeAfterUserInteraction(actionResults);
     }
 
     @Override
-    public Object[] requestUserInteraction(final ClientAction... acts) {
-        return currentInvocation.pauseForUserInteraction(acts);
+    public Object[] requestUserInteraction(final ClientAction... actions) {
+        return currentInvocation.pauseForUserInteraction(actions);
     }
 
     @Override

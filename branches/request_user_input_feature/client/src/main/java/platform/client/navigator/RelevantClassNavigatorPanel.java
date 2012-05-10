@@ -4,7 +4,6 @@ import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.List;
 
 import static platform.client.navigator.ClientNavigatorElement.BASE_ELEMENT_SID;
@@ -26,7 +25,7 @@ public class RelevantClassNavigatorPanel extends AbstractNavigatorPanel {
                 ));
     }
 
-    public void updateCurrentClass(int classID) throws RemoteException {
+    public void updateCurrentClass(int classID) {
         if (classID != 0 && this.currentClass != classID) {
             this.currentClass = classID;
             tree.createRootNode();

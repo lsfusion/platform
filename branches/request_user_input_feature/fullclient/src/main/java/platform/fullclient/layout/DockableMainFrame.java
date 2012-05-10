@@ -15,7 +15,7 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
 import platform.client.descriptor.view.LogicsDescriptorView;
-import platform.client.form.ClientFormActionDispatcher;
+import platform.client.form.dispatch.ClientNavigatorActionDispatcher;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientAbstractWindow;
 import platform.client.navigator.ClientNavigator;
@@ -26,7 +26,6 @@ import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.navigator.NavigatorActionResult;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -43,7 +42,7 @@ import static platform.base.BaseUtils.mergeLinked;
 import static platform.client.ClientResourceBundle.getString;
 
 public class DockableMainFrame extends MainFrame {
-    private final ClientFormActionDispatcher dispatcher = new ClientFormActionDispatcher();
+    private final ClientNavigatorActionDispatcher actionDispatcher;
 
     private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
     private final CControl mainControl;
@@ -76,6 +75,8 @@ public class DockableMainFrame extends MainFrame {
             }
         };
 
+        actionDispatcher = new ClientNavigatorActionDispatcher(mainNavigator);
+
         navigatorController = new NavigatorController(mainNavigator);
 
         mainControl = new CControl(this);
@@ -95,16 +96,7 @@ public class DockableMainFrame extends MainFrame {
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
         try {
-            NavigatorActionResult result = remoteNavigator.executeNavigatorAction(action.getSID());
-            do {
-                Object[] actionResults = dispatcher.dispatchActions(result.actions);
-
-                if (result.resumeInvocation) {
-                    result = remoteNavigator.continueNavigatorAction(actionResults);
-                } else {
-                    result = null;
-                }
-            } while (result != null);
+            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(action.getSID()));
         } catch (IOException e) {
             throw new RuntimeException(getString("errors.error.executing.action"), e);
         }

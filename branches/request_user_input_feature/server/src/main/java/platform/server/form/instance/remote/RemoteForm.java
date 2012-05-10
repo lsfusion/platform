@@ -1,7 +1,8 @@
 package platform.server.form.instance.remote;
 
 import com.google.common.base.Throwables;
-import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
@@ -14,12 +15,13 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ProcessFormChangesClientAction;
+import platform.interop.action.UpdateCurrentClassClientAction;
 import platform.interop.form.*;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
@@ -48,7 +50,6 @@ import java.util.concurrent.Executors;
 
 import static platform.base.BaseUtils.deserializeObject;
 import static platform.base.BaseUtils.serializeObject;
-import static platform.server.data.type.TypeSerializer.serializeType;
 import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 // фасад для работы с клиентом
@@ -441,25 +442,28 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return outStream.toByteArray();
     }
 
-    public RemoteChanges getRemoteChanges() {
+    public ServerResponse getRemoteChanges() {
         emitExceptionIfHasActiveInvocation();
-        return prepareRemoteChanges();
+        return prepareRemoteChangesResponse();
     }
 
-    private RemoteChanges prepareRemoteChanges() {
+    private ServerResponse prepareRemoteChangesResponse() {
         byte[] formChanges = getFormChangesByteArray();
 
-        int objectClassID = 0;
+        actions.add(0, new ProcessFormChangesClientAction(formChanges));
+
         if (updateCurrentClass != null) {
             ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
             RemoteFormListener remoteFormListener = getRemoteFormListener();
             if (currentClass != null && remoteFormListener != null && remoteFormListener.currentClassChanged(currentClass)) {
-                objectClassID = currentClass.ID;
+                actions.add(1, new UpdateCurrentClassClientAction(currentClass.ID));
             }
 
             updateCurrentClass = null;
         }
-        RemoteChanges result = new RemoteChanges(formChanges, actions.toArray(new ClientAction[actions.size()]), objectClassID, false);
+
+
+        ServerResponse result = new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
         actions.clear();
         return result;
     }
@@ -574,9 +578,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private List<ClientAction> actions = Collections.synchronizedList(new ArrayList<ClientAction>());
     private ObjectInstance updateCurrentClass = null;
 
-    public RemoteChanges changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {
+    public ServerResponse changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {
         assert false:"changePropertyDraw shouldn't be used anymore";
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
@@ -603,19 +607,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public RemoteChanges groupChangePropertyDraw(final int mainID, final byte[] mainColumnKey, final int getterID, final byte[] getterColumnKey) throws RemoteException {
+    public ServerResponse groupChangePropertyDraw(final int mainID, final byte[] mainColumnKey, final int getterID, final byte[] getterColumnKey) throws RemoteException {
         assert false:"groupChangePropertyDraw shouldn't be used anymore";
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
                 PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
 
-                    Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
-                    Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
-                    actions.addAll(
-                            form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, true, false)
-                    );
+                Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
+                Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
+                actions.addAll(
+                        form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, true, false)
+                );
 
                 if (logger.isInfoEnabled()) {
                     logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
@@ -646,9 +650,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public RemoteChanges pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 form.pasteExternalTable(propertyIDs, table);
@@ -656,9 +660,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public RemoteChanges pasteMulticellValue(final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
+    public ServerResponse pasteMulticellValue(final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 form.pasteMulticellValue(cells, value);
@@ -837,9 +841,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public RemoteChanges applyChanges() throws RemoteException {
+    public ServerResponse applyChanges() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() {
                 applyChanges(actions);
@@ -855,9 +859,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public RemoteChanges okPressed() throws RemoteException {
+    public ServerResponse okPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 if (checkOnOk) {
@@ -871,9 +875,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public RemoteChanges closedPressed() throws RemoteException {
+    public ServerResponse closedPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 actions.addAll(form.fireOnClose());
@@ -881,9 +885,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public RemoteChanges nullPressed() throws RemoteException {
+    public ServerResponse nullPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        return executeWithRemoteChanges(new TRunnable() {
+        return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 actions.addAll(form.fireOnNull());
@@ -1025,17 +1029,17 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-    private RemotePausableInvocation<?> currentInvocation = null;
+    private RemotePausableInvocation<ServerResponse> currentInvocation = null;
 
-    private <T> T executeInvocation(RemotePausableInvocation<T> invocation) throws RemoteException {
+    private ServerResponse executeServerInvocation(RemotePausableInvocation<ServerResponse> invocation) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
 
         currentInvocation = invocation;
         return invocation.execute();
     }
 
-    private RemoteChanges executeWithRemoteChanges(final TRunnable runnable) throws RemoteException {
-        return executeInvocation(new RemotePausableInvocation<RemoteChanges>(pausablesExecutor) {
+    private ServerResponse executeWithFormChanges(final TRunnable runnable) throws RemoteException {
+        return executeServerInvocation(new RemotePausableInvocation<ServerResponse>(pausablesExecutor) {
             @Override
             protected void runInvocation() throws Throwable {
                 threads.add(Thread.currentThread());
@@ -1047,25 +1051,21 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
 
             @Override
-            protected RemoteChanges handleUserInteractionRequest(ClientAction... acts) {
-                return new RemoteChanges(null, acts, 0, true);
+            protected ServerResponse handleUserInteractionRequest(ClientAction... actions) {
+                return new ServerResponse(actions);
             }
 
             @Override
-            protected RemoteChanges handleFinished() throws RemoteException {
-                return prepareRemoteChanges();
+            protected ServerResponse handleFinished() throws RemoteException {
+                return prepareRemoteChangesResponse();
             }
         });
     }
 
-    public RemoteChanges continueRemoteChanges(Object[] actionResults) throws RemoteException {
-        return (RemoteChanges) currentInvocation.resumeAfterUserInteraction(actionResults);
-    }
-
-    public EditActionResult executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
-        return executeInvocation(new RemotePausableInvocation<EditActionResult>(pausablesExecutor) {
+    public ServerResponse executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
+        return executeServerInvocation(new RemotePausableInvocation<ServerResponse>(pausablesExecutor) {
             @Override
-            protected EditActionResult callInvocation() throws Throwable {
+            protected ServerResponse callInvocation() throws Throwable {
                 threads.add(Thread.currentThread());
                 try {
                     PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
@@ -1094,39 +1094,25 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         RemoteForm.this.actions.addAll(actions);
                     }
 
-                    return actions != null ? EditActionResult.edited : EditActionResult.finished;
+                    return actions != null ? ServerResponse.edited : ServerResponse.finished;
                 } finally {
                     threads.remove(Thread.currentThread());
                 }
             }
 
             @Override
-            protected EditActionResult handleUserInteractionRequest(ClientAction... actions) {
-                return new EditActionResult(actions);
-            }
-
-            @Override
-            protected EditActionResult handleUserInputRequest(Type type, Object oldValue) throws Exception {
-                return new EditActionResult(serializeType(type), serializeObject(oldValue));
+            protected ServerResponse handleUserInteractionRequest(ClientAction... actions) {
+                return new ServerResponse(actions);
             }
         });
     }
 
-    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException {
-        return (EditActionResult) currentInvocation.resumeAfterUserInput(inputResult);
+    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
+        return currentInvocation.resumeAfterUserInteraction(actionResults);
     }
 
-    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException {
-        return (EditActionResult) currentInvocation.resumeAfterUserInteraction(actionResults);
-    }
-
-    public Object[] requestUserInteraction(ClientAction... acts) {
+    public Object[] requestUserInteraction(ClientAction... actions) {
         assert currentInvocation != null;
-        return currentInvocation.pauseForUserInteraction(acts);
-    }
-
-    public UserInputResult requestUserInput(Type type, Object oldValue) {
-        assert currentInvocation != null;
-        return currentInvocation.pauseForUserInput(type, oldValue);
+        return currentInvocation.pauseForUserInteraction(actions);
     }
 }

@@ -3,6 +3,7 @@ package platform.interop.navigator;
 import platform.interop.RemoteContextInterface;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ServerResponse;
 import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.PendingRemote;
 
@@ -62,7 +63,7 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
     
     Boolean getConfiguratorSecurityPolicy() throws RemoteException;
 
-    NavigatorActionResult executeNavigatorAction(String navigatorActionSID) throws RemoteException;
+    ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException;
 
-    NavigatorActionResult continueNavigatorAction(Object[] actionResults) throws RemoteException;
+    ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException;
 }

@@ -1,12 +1,15 @@
 package platform.client.form;
 
 import platform.interop.KeyStrokes;
-import platform.interop.form.EditActionResult;
+import platform.interop.form.ServerResponse;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class EditBindingMap {
     private Map<KeyStroke, String> keyBindingMap = new HashMap<KeyStroke, String>();
@@ -16,8 +19,8 @@ public class EditBindingMap {
     private String mouseBinding;
 
     public EditBindingMap() {
-        setKeyAction(KeyStrokes.getObjectEditorDialogEvent(), EditActionResult.EDIT_OBJECT);
-        setMouseAction(EditActionResult.CHANGE);
+        setKeyAction(KeyStrokes.getObjectEditorDialogEvent(), ServerResponse.EDIT_OBJECT);
+        setMouseAction(ServerResponse.CHANGE);
     }
 
     public String getAction(EventObject editEvent) {
@@ -39,7 +42,7 @@ public class EditBindingMap {
             return ((ContextMenuEvent) editEvent).action;
         }
 
-        return EditActionResult.CHANGE;
+        return ServerResponse.CHANGE;
     }
 
     public void setKeyAction(KeyStroke keyStroke, String actionSID) {

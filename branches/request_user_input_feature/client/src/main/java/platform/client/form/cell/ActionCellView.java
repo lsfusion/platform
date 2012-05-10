@@ -2,14 +2,17 @@ package platform.client.form.cell;
 
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
-import platform.client.form.*;
+import platform.client.form.ClientFormController;
+import platform.client.form.EditPropertyHandler;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.dispatch.EditPropertyDispatcher;
 import platform.client.form.editor.DialogBasedPropertyEditor;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;
 import platform.interop.ClassViewType;
-import platform.interop.form.EditActionResult;
+import platform.interop.form.ServerResponse;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,7 +57,7 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (form.commitCurrentEditing()) {
-                    editDispatcher.executePropertyEditAction(key, columnKey, EditActionResult.CHANGE);
+                    editDispatcher.executePropertyEditAction(key, columnKey, ServerResponse.CHANGE);
                 }
             }
         });

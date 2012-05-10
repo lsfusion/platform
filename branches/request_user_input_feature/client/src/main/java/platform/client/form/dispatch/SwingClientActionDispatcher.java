@@ -1,5 +1,6 @@
-package platform.client.form;
+package platform.client.form.dispatch;
 
+import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OSUtils;
@@ -7,11 +8,17 @@ import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
+import platform.client.form.ClientDialog;
+import platform.client.form.ClientModalForm;
+import platform.client.form.ClientNavigatorDialog;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.KeyStrokes;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
+import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteDialogInterface;
+import platform.interop.form.ServerResponse;
+import platform.interop.form.UserInputResult;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -20,51 +27,101 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 
-public class ClientFormActionDispatcher implements ClientActionDispatcher {
+public abstract class SwingClientActionDispatcher implements ClientActionDispatcher {
+    private boolean dispatchingPaused;
 
-    private final ClientFormController form;
+    private ServerResponse currentServerResponse = null;
+    Object[] currentActionResults = null;
+    private int currentActionIndex = -1;
 
-    public ClientFormActionDispatcher() {
-        this(null);
-    }
+    public void dispatchResponse(ServerResponse serverResponse) throws IOException {
+        assert serverResponse != null;
 
-    public ClientFormActionDispatcher(ClientFormController form) {
-        this.form = form;
-    }
+        try {
+            preDispatchResponse(serverResponse);
+            do {
+                Object[] actionResults = null;
+                ClientAction[] actions = serverResponse.actions;
+                if (actions != null) {
+                    int beginIndex;
+                    if (dispatchingPaused) {
+                        beginIndex = currentActionIndex + 1;
+                        actionResults = currentActionResults;
 
-    private Container getDialogParentContainer() {
-        return form == null ? Main.frame : form.getComponent();
-    }
+                        currentActionIndex = -1;
+                        currentActionResults = null;
+                        currentServerResponse = null;
+                        dispatchingPaused = false;
+                    } else {
+                        beginIndex = 0;
+                        actionResults = new Object[actions.length];
+                    }
 
-    public Object[] dispatchActions(ClientAction... actions) throws IOException {
-        if (actions == null) {
-            return null;
+                    for (int i = beginIndex; i < actions.length; i++) {
+                        ClientAction action = actions[i];
+                        Object dispatchResult = action.dispatch(this);
+
+                        if (dispatchingPaused) {
+                            currentServerResponse = serverResponse;
+                            currentActionResults = actionResults;
+                            currentActionIndex = i;
+                            return;
+                        }
+
+                        actionResults[i] = dispatchResult;
+                    }
+                }
+
+                if (!serverResponse.resumeInvocation) {
+                    break;
+                }
+
+                serverResponse = continueServerInvocation(actionResults);
+            } while (true);
+
+            postDispatchResponse(serverResponse);
+        } catch (Exception e) {
+            handleDispatchException(e);
         }
-
-        Object[] results = new Object[actions.length];
-        for (int i = 0; i < actions.length; i++) {
-            results[i] = actions[i].dispatch(this);
-        }
-        return results;
     }
 
-    public void execute(DenyCloseFormClientAction action) {
-        denyFormClose();
+    protected void preDispatchResponse(ServerResponse serverResponse) throws IOException {
     }
 
-    private void denyFormClose() {
-        if (form != null) {
-            form.setCanClose(false);
-        }
+    protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
+    }
+
+    protected void handleDispatchException(Exception e) throws IOException {
+        Throwables.propagateIfPossible(e, IOException.class);
+    }
+
+    public abstract ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
+
+    public void pauseDispatching() {
+        dispatchingPaused = true;
+    }
+
+    public void continueDispatching(Object currentActionResult) throws IOException {
+        currentActionResults[currentActionIndex] = currentActionResult;
+        dispatchResponse(currentServerResponse);
+    }
+
+    protected Container getDialogParentContainer() {
+        return Main.frame;
+    }
+
+    protected FormUserPreferences getFormUserPreferences() {
+        return null;
     }
 
     public void execute(FormClientAction action) {
         try {
             RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
             if (action.isPrintForm) {
-                Main.frame.runReport(remoteForm, action.isModal, form == null ? null : form.getUserPreferences());
+                Main.frame.runReport(remoteForm, action.isModal, getFormUserPreferences());
             } else {
                 if (!action.isModal) {
                     Main.frame.runForm(remoteForm);
@@ -93,9 +150,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public Object execute(RuntimeClientAction action) {
-
         try {
-
             Process p = Runtime.getRuntime().exec(action.command, action.environment, (action.directory == null ? null : new File(action.directory)));
 
             if (action.input != null && action.input.length > 0) {
@@ -310,15 +365,8 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     public void execute(LogMessageClientAction action) {
         if (action.failed) {
             Log.error(action.message);
-            denyFormClose();
         } else {
             Log.message(action.message);
-        }
-    }
-
-    public void execute(ApplyClientAction action) {
-        if (form != null) {
-            form.apply(false);
         }
     }
 
@@ -341,5 +389,22 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void execute(DenyCloseFormClientAction action) {
+    }
+
+    public void execute(ApplyClientAction action) {
+    }
+
+    public void execute(ProcessFormChangesClientAction action) {
+    }
+
+    public void execute(UpdateCurrentClassClientAction action) {
+    }
+
+    public Object execute(RequestUserInputClientAction action) {
+        //по умолчанию всегда canceled
+        return UserInputResult.canceled;
     }
 }

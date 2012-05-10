@@ -4,13 +4,12 @@ import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
-import platform.client.form.SimpleEditPropertyDispatcher;
+import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ClassViewType;
 import platform.interop.event.ValueEvent;
 import platform.interop.event.ValueEventListener;
-import platform.interop.form.EditActionResult;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +29,7 @@ public class DataCellView extends JPanel implements CellView {
     private ValueEventListener valueEventListener;
     private final ClientFormController form;
 
-    private final SimpleEditPropertyDispatcher dispatcher;
+    private final SimpleChangePropertyDispatcher simpleDispatcher;
 
     public DataCellView(final ClientFormController iform, final ClientPropertyDraw iproperty, ClientGroupObjectValue icolumnKey) {
         setOpaque(false);
@@ -38,7 +37,7 @@ public class DataCellView extends JPanel implements CellView {
         form = iform;
         property = iproperty;
         columnKey = icolumnKey;
-        dispatcher = form.getSimpleDispatcher();
+        simpleDispatcher = form.getSimpleChangePropertyDispatcher();
 
         setLayout(new BoxLayout(this, (property.panelLabelAbove ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS)));
 
@@ -96,7 +95,7 @@ public class DataCellView extends JPanel implements CellView {
 
     protected void forceChangeValue(Object value, boolean aggValue) {
         if (form.commitCurrentEditing()) {
-            dispatcher.executePropertyEditAction(value, table.getProperty(), columnKey, EditActionResult.CHANGE);
+            simpleDispatcher.changeProperty(value, table.getProperty(), columnKey);
         }
     }
 

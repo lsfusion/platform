@@ -30,7 +30,7 @@ public interface Context {
     RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 
+    UserInputResult requestUserInput(Type type, Object oldValue);
     Object requestUserInteraction(ClientAction action);
     Object[] requestUserInteraction(ClientAction... actions);
-    UserInputResult requestUserInput(Type type, Object oldValue);
 }

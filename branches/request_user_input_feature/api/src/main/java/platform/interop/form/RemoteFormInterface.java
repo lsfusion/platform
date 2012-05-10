@@ -23,16 +23,15 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
     Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
 
-    public RemoteChanges getRemoteChanges() throws RemoteException;
+    public ServerResponse getRemoteChanges() throws RemoteException;
 
     String getSID() throws RemoteException;
 
     // синхронная проверка на то можно ли менять свойство
     byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) throws RemoteException;
 
-    public EditActionResult executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
-    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException;
-    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException;
+    public ServerResponse executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
+    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 
     boolean canChangeClass(int objectID) throws RemoteException;
 
@@ -51,15 +50,13 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
+    ServerResponse changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
 
-    RemoteChanges continueRemoteChanges(Object[] actionResults) throws RemoteException;
+    ServerResponse groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 
-    RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
+    ServerResponse pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
 
-    RemoteChanges pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
-
-    RemoteChanges pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
+    ServerResponse pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
 
     boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
 
@@ -100,11 +97,11 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     ClientAction getClientActionOnApply() throws RemoteException;
 
-    RemoteChanges okPressed() throws RemoteException;
-    RemoteChanges closedPressed() throws RemoteException;
-    RemoteChanges nullPressed() throws RemoteException;
+    ServerResponse okPressed() throws RemoteException;
+    ServerResponse closedPressed() throws RemoteException;
+    ServerResponse nullPressed() throws RemoteException;
 
-    RemoteChanges applyChanges() throws RemoteException;
+    ServerResponse applyChanges() throws RemoteException;
 
     void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 

@@ -3,8 +3,6 @@ package platform.server.form.instance.remote;
 import com.google.common.base.Preconditions;
 import platform.base.ExceptionUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.form.UserInputResult;
-import platform.server.data.type.Type;
 
 import javax.mail.MethodNotSupportedException;
 import java.rmi.RemoteException;
@@ -20,19 +18,13 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
 
     private T invocationResult = null;
 
-    private boolean pausedForInteraction = true;
     private ClientAction[] actions;
-    private Type type;
-    private Object oldValue;
-
-    private UserInputResult userInputResult;
     private Object[] actionResults;
 
     /**
      * рабочий поток
      */
     public final Object[] pauseForUserInteraction(ClientAction... actions) {
-        pausedForInteraction = true;
         this.actions = actions;
 
         try {
@@ -45,37 +37,10 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
     }
 
     /**
-     * рабочий поток
-     */
-    public final UserInputResult pauseForUserInput(Type type, Object oldValue) {
-        pausedForInteraction = false;
-        this.type = type;
-        this.oldValue = oldValue;
-
-        try {
-            pause();
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Thread was interrupted");
-        }
-
-        return userInputResult;
-    }
-
-    /**
-     * основной поток
-     */
-    public final T resumeAfterUserInput(UserInputResult inputResult) throws RemoteException {
-        Preconditions.checkState(isPaused() && !pausedForInteraction, "can't resume after requesting user input - user input wasn't requested");
-
-        userInputResult = inputResult;
-        return resume();
-    }
-
-    /**
      * основной поток
      */
     public final T resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
-        Preconditions.checkState(isPaused() && pausedForInteraction, "can't resume after user interaction - wasn't paused for user interaction");
+        Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
 
         this.actionResults = actionResults;
         return resume();
@@ -119,13 +84,6 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
         throw new MethodNotSupportedException("User interation request isn't supported on this invocation");
     }
 
-    /**
-     * основной поток
-     */
-    protected T handleUserInputRequest(Type type, Object oldValue) throws Exception {
-        throw new MethodNotSupportedException("User input request isn't supported on this invocation");
-    }
-
     @Override
     protected T handleThrows(Throwable t) throws RemoteException {
         throw ExceptionUtils.propogateRemoteException(t);
@@ -137,11 +95,7 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
     @Override
     protected final T handlePaused() throws RemoteException {
         try {
-            if (pausedForInteraction) {
-                return handleUserInteractionRequest(actions);
-            } else {
-                return handleUserInputRequest(type, oldValue);
-            }
+            return handleUserInteractionRequest(actions);
         } catch (Exception e) {
             throw ExceptionUtils.propogateRemoteException(e);
         }

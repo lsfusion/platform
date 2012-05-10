@@ -8,9 +8,7 @@ import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
 import platform.interop.action.*;
-import platform.interop.form.FormColumnUserPreferences;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.UserInputResult;
+import platform.interop.form.*;
 import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
@@ -62,7 +60,6 @@ import java.util.Map.Entry;
 import static platform.base.BaseUtils.mergeSet;
 import static platform.interop.ClassViewType.*;
 import static platform.interop.Order.*;
-import static platform.interop.form.EditActionResult.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -700,7 +697,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
         PropertyObjectInstance editAction = property.getEditAction(editActionSID);
-        if (editAction == null && (CHANGE.equals(editActionSID) || EDIT_OBJECT.equals(editActionSID) || GROUP_CHANGE.equals(editActionSID))) {
+        if (editAction == null && (ServerResponse.CHANGE.equals(editActionSID) || ServerResponse.EDIT_OBJECT.equals(editActionSID) || ServerResponse.GROUP_CHANGE.equals(editActionSID))) {
             //изменение через старый механизм
             return executeChangeEditActionOldWayAdapter(property, editActionSID, keys);
         }
@@ -713,7 +710,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         //todo: reimplement Ctrl+V
         boolean aggValue = true;
-        boolean groupChange = GROUP_CHANGE.equals(editActionSID);
+        boolean groupChange = ServerResponse.GROUP_CHANGE.equals(editActionSID);
 
         Context currentContext = Context.context.get();
 
@@ -760,7 +757,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             }
         } else if (changeType instanceof ObjectType) {
             try {
-                if (EDIT_OBJECT.equals(editActionSID)) {
+                if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
                     DialogInstance<T> dialogInstance = createObjectEditorDialog(property);
                     RemoteDialog dialog = currentContext.createRemoteDialog(dialogInstance);
                     currentContext.requestUserInteraction(new DialogClientAction(dialog));

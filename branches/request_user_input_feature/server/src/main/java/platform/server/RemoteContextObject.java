@@ -1,11 +1,13 @@
 package platform.server;
 
+import com.google.common.base.Throwables;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.interop.RemoteContextInterface;
 import platform.interop.action.ClientAction;
+import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.UserInputResult;
 import platform.interop.remote.RemoteObject;
 import platform.server.data.type.Type;
@@ -18,12 +20,16 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+
+import static platform.base.BaseUtils.serializeObject;
+import static platform.server.data.type.TypeSerializer.serializeType;
 
 public abstract class RemoteContextObject extends RemoteObject implements Context, RemoteContextInterface {
 
@@ -93,6 +99,15 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     }
 
     @Override
+    public UserInputResult requestUserInput(Type type, Object oldValue) {
+        try {
+            return (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(type), serializeObject(oldValue)));
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
     public Object requestUserInteraction(ClientAction action) {
         return requestUserInteraction(new ClientAction[]{action})[0];
     }
@@ -100,11 +115,6 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     @Override
     public Object[] requestUserInteraction(ClientAction... actions) {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
-    }
-
-    @Override
-    public UserInputResult requestUserInput(Type type, Object oldValue) {
-        throw new UnsupportedOperationException("requestUserInput is not supported");
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {

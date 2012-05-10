@@ -34,4 +34,10 @@ public interface ClientActionDispatcher {
     public void execute(OpenFileClientAction action);
 
     public void execute(AudioClientAction action);
+
+    public void execute(ProcessFormChangesClientAction action);
+
+    public void execute(UpdateCurrentClassClientAction action);
+
+    public Object execute(RequestUserInputClientAction action);
 }

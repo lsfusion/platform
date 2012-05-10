@@ -5,6 +5,7 @@ import platform.client.SwingUtils;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.dispatch.EditPropertyDispatcher;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;

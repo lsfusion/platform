@@ -71,9 +71,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public RemoteChanges getRemoteChanges() throws RemoteException {
+    public ServerResponse getRemoteChanges() throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
-        RemoteChanges result = target.getRemoteChanges();
+        ServerResponse result = target.getRemoteChanges();
         logRemoteMethodEndCall("getRemoteChanges", result);
         return result;
     }
@@ -82,7 +82,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     public byte[] getRichDesignByteArray() throws RemoteException {
         logRemoteMethodStartCall("getRichDesignByteArray");
         byte[] result = target.getRichDesignByteArray();
-        logRemoteMethodEndCall("getRemoteChanges", result);
+        logRemoteMethodEndCall("getRichDesignByteArray", result);
         return result;
     }
 
@@ -114,37 +114,30 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("changeGroupObject");
     }
 
-    public RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException {
+    public ServerResponse changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException {
         logRemoteMethodStartCall("changePropertyDraw");
-        RemoteChanges result = target.changePropertyDraw(propertyID, columnKey, object, all, aggValue);
+        ServerResponse result = target.changePropertyDraw(propertyID, columnKey, object, all, aggValue);
         logRemoteMethodEndVoidCall("changePropertyDraw");
         return result;
     }
 
-    public RemoteChanges continueRemoteChanges(Object[] actionResults) throws RemoteException {
-        logRemoteMethodStartCall("continueRemoteChanges");
-        RemoteChanges result = target.continueRemoteChanges(actionResults);
-        logRemoteMethodEndCall("continueRemoteChanges", result);
-        return result;
-    }
-
-    public RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException {
+    public ServerResponse groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException {
         logRemoteMethodStartCall("groupChangePropertyDraw");
-        RemoteChanges result = target.groupChangePropertyDraw(mainID, mainColumnKey, getterID, getterColumnKey);
+        ServerResponse result = target.groupChangePropertyDraw(mainID, mainColumnKey, getterID, getterColumnKey);
         logRemoteMethodEndCall("groupChangePropertyDraw", result);
         return result;
     }
 
-    public RemoteChanges pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException {
+    public ServerResponse pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
-        RemoteChanges result = target.pasteExternalTable(propertyIDs, table);
+        ServerResponse result = target.pasteExternalTable(propertyIDs, table);
         logRemoteMethodEndCall("pasteExternalTable", result);
         return result;
     }
 
-    public RemoteChanges pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException {
+    public ServerResponse pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException {
         logRemoteMethodStartCall("pasteMulticellValue");
-        RemoteChanges result = target.pasteMulticellValue(cells, value);
+        ServerResponse result = target.pasteMulticellValue(cells, value);
         logRemoteMethodEndCall("pasteMulticellValue", result);
         return result;
     }
@@ -273,30 +266,30 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.getClientActionOnApply();
     }
 
-    public RemoteChanges applyChanges() throws RemoteException {
+    public ServerResponse applyChanges() throws RemoteException {
         logRemoteMethodStartCall("applyChanges");
-        RemoteChanges result = target.applyChanges();
+        ServerResponse result = target.applyChanges();
         logRemoteMethodEndCall("applyChanges", result);
         return result;
     }
 
-    public RemoteChanges okPressed() throws RemoteException {
+    public ServerResponse okPressed() throws RemoteException {
         logRemoteMethodStartCall("okPressed");
-        RemoteChanges result = target.okPressed();
+        ServerResponse result = target.okPressed();
         logRemoteMethodEndCall("okPressed", result);
         return result;
     }
 
-    public RemoteChanges closedPressed() throws RemoteException {
+    public ServerResponse closedPressed() throws RemoteException {
         logRemoteMethodStartCall("closedPressed");
-        RemoteChanges result = target.closedPressed();
+        ServerResponse result = target.closedPressed();
         logRemoteMethodEndCall("closedPressed", result);
         return result;
     }
 
-    public RemoteChanges nullPressed() throws RemoteException {
+    public ServerResponse nullPressed() throws RemoteException {
         logRemoteMethodStartCall("nullPressed");
-        RemoteChanges result = target.nullPressed();
+        ServerResponse result = target.nullPressed();
         logRemoteMethodEndCall("nullPressed", result);
         return result;
     }
@@ -345,24 +338,17 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public EditActionResult executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException {
+    public ServerResponse executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
-        EditActionResult result = target.executeEditAction(propertyID, columnKey, actionSID);
+        ServerResponse result = target.executeEditAction(propertyID, columnKey, actionSID);
         logRemoteMethodEndCall("getPropertyChangeType", result);
         return result;
     }
 
-    public EditActionResult continueExecuteEditAction(UserInputResult inputResult) throws RemoteException {
-        logRemoteMethodStartCall("continueExecuteEditAction");
-        EditActionResult result = target.continueExecuteEditAction(inputResult);
-        logRemoteMethodEndCall("continueExecuteEditAction", result);
-        return result;
-    }
-
-    public EditActionResult continueExecuteEditAction(Object[] actionResults) throws RemoteException {
-        logRemoteMethodStartCall("continueExecuteEditAction");
-        EditActionResult result = target.continueExecuteEditAction(actionResults);
-        logRemoteMethodEndCall("continueExecuteEditAction", result);
+    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
+        logRemoteMethodStartCall("continueServerInvocation");
+        ServerResponse result = target.continueServerInvocation(actionResults);
+        logRemoteMethodEndCall("continueServerInvocation", result);
         return result;
     }
 
