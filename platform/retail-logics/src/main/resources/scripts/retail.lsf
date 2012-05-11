@@ -6456,6 +6456,24 @@ descriptionReturnSupplierDetail 'Название документа' (returnSup
 unloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = UNION OVERRIDE addressLegalEntity(supplierReturnSupplier(returnSupplier)),
                                                                                  dataUnloadingPlaceReturnSupplier (returnSupplier);
 
+// ---------------------------------- Переоценка на возврате ------------------------------------------
+
+CLASS priceChangeReturnSupplier 'Переоценка на возврате' : priceChangeDocument;
+CLASS priceChangeReturnSupplierDetail 'Строка переоценки на возврате' : priceChangeDocumentDetail;
+
+needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = retailPriceReturnSupplierDetail(returnSupplierDetail) != curRetailPriceReturnSupplierDetail(returnSupplierDetail);
+
+@defineDocumentPriceChange(returnSupplier);
+@defineDocumentPriceChangeNumber(returnSupplier);
+@defineDocumentPriceChangeQuantity(returnSupplier);
+@defineDocumentPriceChangePrice(returnSupplier);
+@defineDocumentPriceChangeCurPrice(returnSupplier);
+
+supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSupplier) = name(supplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
+
+@metaCodeIsPriceChangeWrong(returnSupplier);
+
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
 CLASS bill 'Чек' : historyObject;
@@ -8273,106 +8291,6 @@ curWarePriceReturnSupplierDetail (returnSupplierDetail) <- warePriceBLedgerDateT
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
-retailSumReturnSupplier 'Розничная сумма' (returnSupplier) = GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail)
-                                                             BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
-
-retailSumByItemReturnSupplier 'Розничная сумма, товар' (returnSupplier) =
-    GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail) AND NOT isContainerItem(itemReturnSupplierDetail(returnSupplierDetail))
-        BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
-retailSumByContainerReturnSupplier 'Розничная сумма, тара' (returnSupplier) =
-    GROUP SUM retailSumReturnSupplierDetail(returnSupplierDetail) IF isContainerItem(itemReturnSupplierDetail(returnSupplierDetail))
-        BY returnSupplierReturnSupplierDetail(returnSupplierDetail) IN documentSumGroup;
-// ---------------------------------- Переоценка на возврате ------------------------------------------
-
-CLASS priceChangeReturnSupplier 'Переоценка на возврате' : priceChangeDocument;
-CLASS priceChangeReturnSupplierDetail 'Строка переоценки на возврате' : priceChangeDocumentDetail;
-
-needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = retailPriceReturnSupplierDetail(returnSupplierDetail) != curRetailPriceReturnSupplierDetail(returnSupplierDetail);
-
-needToPriceChangeReturnSupplier (returnSupplier) = GROUP SUM 1 IF needToPriceChangeReturnSupplierDetail(returnSupplierDetail)
-                                                   BY returnSupplierReturnSupplierDetail(returnSupplierDetail);
-
-@metaCodeDetailAggregation(returnSupplier, priceChangeReturnSupplier, needToPriceChangeReturnSupplier);
-
-// атрибуты документа переоценки
-
-dateTimePriceChangeReturnSupplier 'Дата/время' (priceChangeReturnSupplier) = dateTimeReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-datePriceChangeReturnSupplier 'Дата' (priceChangeReturnSupplier) = dateReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-isPostedPriceChangeReturnSupplier 'Закрыт' (priceChangeReturnSupplier) = isPostedReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-numberPriceChangeReturnSupplier 'Номер накладной' (priceChangeReturnSupplier) = numberObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-seriesPriceChangeReturnSupplier 'Серия накладной' (priceChangeReturnSupplier) = seriesObject(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-descriptionPriceChangeReturnSupplier 'Название документа' (priceChangeReturnSupplier) =  descriptionReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-
-numberDisposalPriceChangeReturnSupplier '№ распоряжения на переоценку' (priceChangeReturnSupplier) =numberDisposalReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-revaluationCommitteePriceChangeReturnSupplier 'Комиссия переоценки ИД' (priceChangeReturnSupplier) =revaluationCommitteeReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-
-supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSupplier) = name(supplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-
-departmentStorePriceChangeReturnSupplier (priceChangeReturnSupplier) = departmentStoreReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
-nameDepartmentStorePriceChangeReturnSupplier 'Отдел магазина' (priceChangeReturnSupplier) = name(departmentStorePriceChangeReturnSupplier(priceChangeReturnSupplier));
-
-// атрибуты детализации документа переоценки
-
-itemPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) =
-    itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-nameItemPriceChangReturnSupplierDetail 'Товар' (priceChangeReturnSupplierDetail) =
-    nameAttributeItem(itemPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-
-quantityPriceChangeReturnSupplierDetail 'Остаток' (priceChangeReturnSupplierDetail) =
-    quantityReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-
-curImporterPricePriceChangeReturnSupplierDetail 'Текущая цена изготовителя' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
-curImporterPricePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
-    priceImporterBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                                 departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                                 dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                                 WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-
-curSupplierPricePriceChangeReturnSupplierDetail 'Текущая цена поставщика' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
-curSupplierPricePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
-    priceSupplierBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                                 departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                                 dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                                 WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-
-
-importerPricePriceChangeReturnSupplierDetail 'Новая цена изготовителя' (priceChangeReturnSupplierDetail) =
-    importerPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-
-supplierPricePriceChangeReturnSupplierDetail 'Новая цена поставщика' (priceChangeReturnSupplierDetail) =
-    supplierPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-
-curDataRetailRangePriceChangeReturnSupplierDetail 'Текущий НДС, %' (priceChangeReturnSupplierDetail) =
-    curDataRetailRangeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-dataRetailRangePriceChangeReturnSupplierDetail 'Новый НДС, %' (priceChangeReturnSupplierDetail) =
-    dataRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-
-curRetailPricePriceChangeReturnSupplierDetail 'Текущая розничная цена' (priceChangeReturnSupplierDetail) =
-    curRetailPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-retailPricePriceChangeReturnSupplierDetail 'Новая розничная цена' (priceChangeReturnSupplierDetail) =
-    retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-
-warePriceChangeReturnSupplierDetail 'Новая посуда' (priceChangeReturnSupplierDetail) =
-    wareReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-warePricePriceChangeReturnSupplierDetail 'Новая цена посуды' (priceChangeReturnSupplierDetail) =
-    warePriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-
-curWarePriceChangeReturnSupplierDetail 'Текущая посуда' (priceChangeReturnSupplierDetail) = DATA ware (priceChangeReturnSupplierDetail);
-curWarePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
-    wareBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                        departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                        dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                        WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-
-curWarePricePriceChangeReturnSupplierDetail 'Текущая цена посуды' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
-curWarePricePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
-    warePriceBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                             departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
-                             dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
-                             WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
-
-@metaCodeIsPriceChangeWrong(returnSupplier);
 //----------------------------------- Подбор товаров -------------------------------------------------------
 
 quantityInputItem 'Кол-во' = SESSION DATA NUMERIC[14,3] (item);
@@ -10320,7 +10238,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier,
-                  retailSumReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
+                  retailSumReturnSupplierDetailReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
                   nameRevaluationCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
@@ -10359,7 +10277,7 @@ FORM returnSuppliers 'Возвраты поставщику'
     OBJECTS r=returnSupplier
     PROPERTIES(r) READONLY objectClassName, numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                            nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
-                           quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier, retailSumReturnSupplier
+                           quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier, retailSumReturnSupplierDetailReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES(r) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
@@ -10617,7 +10535,7 @@ sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (le
                                                                                         accountSumByContainerChangeDocument(ledger) PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
 
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOffDetailWriteOff(ledger),
-                                                                       retailSumReturnSupplier(ledger),
+                                                                       retailSumReturnSupplierDetailReturnSupplier(ledger),
                                                                        retailSumInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumStatementDetailStatement(ledger),
                                                                        retailSumWastageDetailWastage(ledger),
@@ -10628,7 +10546,7 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
 
 
 sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumItemWriteOffDetailWriteOff(ledger),
-                                                                       retailSumByItemReturnSupplier(ledger),
+                                                                       retailSumItemReturnSupplierDetailReturnSupplier(ledger),
                                                                        retailSumItemInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumItemStatementDetailStatement(ledger),
                                                                        accountSumItemShortageCollationSheet(ledger),
@@ -10636,7 +10554,7 @@ sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledge
                                                                        sumSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
 
 sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
-                                                                       retailSumByContainerReturnSupplier(ledger),
+                                                                       retailSumContainerReturnSupplierDetailReturnSupplier(ledger),
                                                                        retailSumContainerInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumContainerStatementDetailStatement(ledger),
                                                                        accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
