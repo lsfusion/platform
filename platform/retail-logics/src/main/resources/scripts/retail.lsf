@@ -150,28 +150,28 @@ setValueNumeratedObject(numeratedObject) WHEN CHANGED(numeratorObject(numeratedO
 META metaCodeObjectDateProperty(prop, object, caption, type, group)
 
     prop##Date caption = DATA type (object, DATE) IN group;
-    date##prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
-    prop##Val caption (object, date) = prop##Date(object, date##prop(object, date)) IN group;
-    prop caption (object) = prop##Date(object, date##prop(object, currentDate())) IN group;
+    date###prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    prop##Val caption (object, date) = prop##Date(object, date###prop(object, date)) IN group;
+    prop caption (object) = prop##Date(object, date###prop(object, currentDate())) IN group;
 
-    FORM add##prop caption
+    FORM add###prop caption
     OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
     PROPERTIES name(a) READONLY, OBJVALUE(d), prop##Date(a, d);
-    DESIGN add##prop FROM DEFAULT {
+    DESIGN add###prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showFormAdd##prop 'Добавить' (object) = ACTION FORM add##prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    showFormAdd###prop 'Добавить' (object) = ACTION FORM add###prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM prop caption
     OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAdd##prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, d)
+    PROPERTIES name(a) READONLY, showFormAdd###prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, d)
     FILTERS prop##Date(a, d);
     DESIGN prop FROM DEFAULT {
         PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    showForm##prop caption (object) = ACTION FORM prop OBJECTS a MODAL SHORTCUT prop DEFAULT;
+    showForm###prop caption (object) = ACTION FORM prop OBJECTS a MODAL SHORTCUT prop DEFAULT;
 
 END
 
@@ -2799,13 +2799,13 @@ showFormRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SH
 
 FORM ware 'Посуда'
 OBJECTS w=ware FIXED PANEL
-PROPERTIES(w) name, warePrice, showFormwarePrice
+PROPERTIES(w) name, warePrice, showFormWarePrice
 PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, showFormRangeWare
 EDIT ware OBJECT w;
 
 FORM wares 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, showFormwarePrice, dataRangeWare, dataActingRateRangeWare
+PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, showFormWarePrice, dataRangeWare, dataActingRateRangeWare
 PROPERTIES(w)          ADDFORM, EDITFORM, delete
 DIALOG ware OBJECT w;
 
@@ -2829,7 +2829,7 @@ FORM item 'Товар'
                   grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
                   nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
                   normOutItem SHOWIF isManufacturedItem(i), nameGroupMenuItem SHOWIF isManufacturedItem(i),
-                  isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormcoefficientNetGrossItem,
+                  isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormCoefficientNetGrossItem,
 
                   nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
 
@@ -2841,7 +2841,7 @@ FORM item 'Товар'
                   passScalesItem, isMarkItem, isLoafCutItem,
                   compositionScalesItem, storageTemperatureItem, banSailItem,
 
-                  importerPriceItem, showFormimporterPriceItem,
+                  importerPriceItem, showFormImporterPriceItem,
                   dataSupplierRangeItem, dataActingRateSupplierRangeItem, showFormSupplierRangeItem,
                   dataRetailRangeItem, dataActingRateRetailRangeItem, showFormRetailRangeItem,
                   percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem,
@@ -3501,7 +3501,7 @@ infoBank 'Дополнительные сведения' = DATA STRING[100] (ban
 
 FORM bank 'Банк'
 OBJECTS b=bank FIXED PANEL
-PROPERTIES(b)  name, addressBank, showFormaddressBank, MFOBank, departmentBank, CBUBank, infoBank
+PROPERTIES(b)  name, addressBank, showFormAddressBank, MFOBank, departmentBank, CBUBank, infoBank
 EDIT bank OBJECT b;
 
 FORM banks 'Банки'
@@ -3749,7 +3749,7 @@ equalsCompanySupplierContract 'Основной договор' (company, suppli
 FORM contract 'Договор'
     OBJECTS c=contract FIXED PANEL
     PROPERTIES(c) numberContract, nameCompanyContract, nameSupplierContract, nameTypeContract, nameformContract, showFormNameformContract,
-                   delayContract, showFormdelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
+                   delayContract, showFormDelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
                    requestContract, noteContract
 
     EDIT contract OBJECT c
@@ -3799,9 +3799,9 @@ FORM supplier 'Поставщик'
     PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
 
     OBJECTS s=supplier FIXED PANEL, dt=DATE FIXED PANEL
-    PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormaddressLegalEntity,
-                  postAddressLegalEntity, showFormpostAddressLegalEntity, managerLegalEntity, showFormmanagerLegalEntity,
-                  accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
+    PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormAddressLegalEntity,
+                  postAddressLegalEntity, showFormPostAddressLegalEntity, managerLegalEntity, showFormManagerLegalEntity,
+                  accountantLegalEntity, showFormAccountantLegalEntity, phoneLegalEntity, showFormPhoneLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                   residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
                   afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier,
@@ -3918,8 +3918,8 @@ FORM suppliers 'Поставщики'
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
     PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
-                   showFormaddressLegalEntity, postAddressLegalEntity, showFormpostAddressLegalEntity, managerLegalEntity,
-                   showFormmanagerLegalEntity, accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
+                   showFormAddressLegalEntity, postAddressLegalEntity, showFormPostAddressLegalEntity, managerLegalEntity,
+                   showFormManagerLegalEntity, accountantLegalEntity, showFormAccountantLegalEntity, phoneLegalEntity, showFormPhoneLegalEntity,
                    UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 
     OBJECTS a=account
@@ -3989,9 +3989,9 @@ FORM companies 'Компании'
 
 FORM customer 'Покупатель'
     OBJECTS cu=customer FIXED PANEL
-    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormaddressLegalEntity,
-                       postAddressLegalEntity, showFormpostAddressLegalEntity, managerLegalEntity, showFormmanagerLegalEntity,
-                       accountantLegalEntity, showFormaccountantLegalEntity, phoneLegalEntity, showFormphoneLegalEntity,
+    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormAddressLegalEntity,
+                       postAddressLegalEntity, showFormPostAddressLegalEntity, managerLegalEntity, showFormManagerLegalEntity,
+                       accountantLegalEntity, showFormAccountantLegalEntity, phoneLegalEntity, showFormPhoneLegalEntity,
                        UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                        residentLegalEntity
     OBJECTS a=account
@@ -13454,12 +13454,12 @@ NAVIGATOR {
             ADD nameisPortionBarItem;
             ADD addNamebanDiscountItem;
             ADD namebanDiscountItem;
-            ADD addcoefficientNetGrossItem;
+            ADD addCoefficientNetGrossItem;
             ADD coefficientNetGrossItem;
         //    ADD addrateNaturalLossItem;
         //    ADD rateNaturalLossItem;
             ADD genTimeTables;
-            ADD addwarePrice;
+            ADD addWarePrice;
             ADD warePrice;
             ADD rangeWare;
             ADD addRangeWare;
@@ -13467,7 +13467,7 @@ NAVIGATOR {
             ADD addSupplierRangeItem;
             ADD retailRangeItem;
             ADD addRetailRangeItem;
-            ADD addimporterPriceItem;
+            ADD addImporterPriceItem;
             ADD importerPriceItem;
             ADD addmaxReserveItemDepartment;
             ADD maxReserveItemDepartment;
@@ -13513,24 +13513,24 @@ NAVIGATOR {
             ADD groupTerminal;
             ADD groupTerminalDocumentType;
             ADD component;
-            ADD addaddressLegalEntity;
+            ADD addAddressLegalEntity;
             ADD addressLegalEntity;
-            ADD addpostAddressLegalEntity;
+            ADD addPostAddressLegalEntity;
             ADD postAddressLegalEntity;
-            ADD addmanagerLegalEntity;
+            ADD addManagerLegalEntity;
             ADD managerLegalEntity;
-            ADD addaccountantLegalEntity;
+            ADD addAccountantLegalEntity;
             ADD accountantLegalEntity;
-            ADD addphoneLegalEntity;
+            ADD addPhoneLegalEntity;
             ADD phoneLegalEntity;
             ADD addNamesureSupplierDepartmentStore;
             ADD namesureSupplierDepartmentStore;
             ADD addressBank;
-            ADD addaddressBank;
+            ADD addAddressBank;
             ADD nameformContract;
             ADD addNameformContract;
             ADD delayContract;
-            ADD adddelayContract;
+            ADD addDelayContract;
             ADD genTimeTable;
             ADD addNamediscount;
             ADD addtimeTable;
