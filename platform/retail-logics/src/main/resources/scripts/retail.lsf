@@ -758,7 +758,7 @@ META defineDocumentDetailCurBasePrice (object)
 END
 
 META defineDocumentHeaderQuantityCustom (object, detail)
-    quantity###detail###object 'Кол-во (всего)' (object) = GROUP SUM quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    quantity###detail###object 'Кол-во (всего)' (object) = GROUP SUM quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
 END
 
 META defineDocumentHeaderQuantity (object)
@@ -4409,8 +4409,10 @@ descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGr
 portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
 useMachinery 'Оборудование используется' = DATA BOOLEAN (machinery) IN baseGroup;
 
-cashRegisterModelCashRegister 'Модель ИД' = DATA cashRegisterModel (cashRegister) IN idGroup;
 numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
+numberCashRegisterToCashRegister (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
+
+cashRegisterModelCashRegister 'Модель ИД' = DATA cashRegisterModel (cashRegister) IN idGroup;
 directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
 nameCashRegisterModelCashRegister 'Модель кассы' (cashRegister) = name(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
 handlerCashRegisterModelCashRegister 'Обработчик кассы' (cashRegister) = handlerModel(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
@@ -5897,48 +5899,6 @@ nameWayOfLoading 'Способ ПРР' (wayOfLoading) = name(wayOfLoading) IF wa
 unloadingPlaceStatement 'Пункт разгрузки' (statement) = UNION OVERRIDE addressLegalEntity(customerStatement(statement)),
                                                        dataUnloadingPlaceStatement (statement);
 
-//---------------------------- Кассовые отчеты ----------------------------------------//
-CLASS cashReport 'Кассовый отчет' : transaction;
-TABLE cashReport (cashReport);
-
-CLASS cashDocument 'Кассовый документ';
-TABLE cashDocument (cashDocument);
-
-CLASS incomeCashOrder 'ПКО': cashDocument;
-CLASS outcomeCashOrder 'РКО': cashDocument;
-CLASS bankCardsReport 'Отчет по банковским карточкам': cashDocument;
-
-numberCashReport 'Номер кассового отчета' (cashReport) = DATA INTEGER (cashReport) IN baseGroup;
-startDateCashReport 'Дата начала' (cashReport) = DATA DATE (cashReport) IN baseGroup;
-endDateCashReport 'Дата окончания' (cashReport) = DATA DATE (cashReport) IN baseGroup;
-
-reportCashDocument 'Отчет документа (ИД)' (cashDocument) = DATA cashReport (cashDocument) IN idGroup;
-numberCashDocument 'Номер документа' (cashDocument) = DATA INTEGER (cashDocument) IN baseGroup;
-sumCashDocument 'Сумма документа' (cashDocument) = DATA NUMERIC[16,2] (cashDocument) IN baseGroup;
-cashRegisterIncomeCashOrder 'Выручка кассы (ИД)' (incomeCashOrder) = DATA cashRegister(incomeCashOrder) IN idGroup;
-numberCashRegisterIncomeCashOrder 'Выручка кассы' (incomeCashOrder) = numberCashRegister(cashRegisterIncomeCashOrder(incomeCashOrder)) IN baseGroup;
-dopInfoCashDocument 'Описание' (cashDocument) = DATA STRING[10] (cashDocument) IN baseGroup;
-infoCashDocument 'Основание документа' (cashDocument) = UNION EXCLUSIVE numberCashRegisterIncomeCashOrder(cashDocument) IF cashDocument IS incomeCashOrder, dopInfoCashDocument (cashDocument);
-
-inCashReportDocument 'Документ в текущем кассовом отчете' (cashReport, cashDocument) = reportCashDocument(cashDocument)==cashReport;
-
-FORM cashReport 'Кассовый отчет'
-    OBJECTS r=cashReport FIXED PANEL
-    OBJECTS d=cashDocument
-    PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
-    PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
-    FILTERS inCashReportDocument(r,d)
-    EDIT cashReport OBJECT r
-;
-
-FORM cashReports 'Кассовые отчеты'
-    OBJECTS r=cashReport, d=cashDocument
-    PROPERTIES (r) startDateCashReport, endDateCashReport
-    PROPERTIES (r) ADDFORM, EDITFORM, delete
-    PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
-    FILTERS inCashReportDocument(r,d)
-;
-
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
@@ -6497,218 +6457,126 @@ nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSup
 
 @metaCodeIsPriceChangeWrong(returnSupplier);
 
+// ----------------------------- Z - отчеты ---------------------------- //
+
+CLASS zReport 'Z-отчет (открытый)' : outAccountSumDocumentLedger, historyObject;
+CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
+
+TABLE zReport (zReport);
+
+@defineDocumentHeaderPosted(zReport);
+
+@defineDocumentHeaderTime(zReport);
+@defineDocumentHeaderDepartmentStore(zReport);
+
+numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport) IN documentPrmGroup;
+numberToZReportPosted (zReportPosted) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
+
+cashRegisterZReport (zReport) = DATA cashRegister(zReport);
+numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport)) IN documentPrmGroup;
+
+departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
+    WHEN CHANGED(cashRegisterZReport(zReport));
+
+descriptionZReport (zReport) =
+    [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
+    numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
+
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
 CLASS bill 'Чек' : historyObject;
-TABLE bill (bill);
 
 CLASS ABSTRACT billDetail 'Строка чека';
 CLASS billSaleDetail 'Строка продажи' : billDetail, outAutoBalanceItemLedger, salesLedger;
 CLASS billReturnDetail 'Строка возврата' : billDetail, inAutoBalanceItemLedger;
 
+TABLE bill (bill);
 TABLE billSaleDetail (billSaleDetail);
 TABLE billReturnDetail (billReturnDetail);
 
-dateBill 'Дата документа' (bill) = DATA DATE (bill) IN documentHeaderGroup;
-dateBill (bill) <- currentDate() WHEN ASSIGNED(bill AS bill);
+@defineDocumentRelationCustom(zReport, bill);
 
-timeBill 'Время документа' (bill) = DATA TIME (bill) IN documentHeaderGroup;
-timeBill (bill) <- currentTime() WHEN ASSIGNED(bill AS bill);
+@defineDocumentHeaderTime(bill);
 
-dateTimeBill 'Дата/время документа' (bill) = toDateTime(dateBill(bill), timeBill(bill));
+@defineDocumentDetailDepartmentStoreCustom(zReport, bill);
+@defineDocumentDetailPostedCustom(zReport, bill);
 
-departmentStoreBill 'Отдел документа (ИД)' (bill) = DATA departmentStore(bill) IN idGroup;
-nameDepartmentStoreBill 'Отдел документа' (bill) = name(departmentStoreBill(bill)) IN documentHeaderGroup
-    MINCHARWIDTH 20 PREFCHARWIDTH 40;
+@defineDocumentRelationCustom(bill, billSaleDetail);
+@defineDocumentRelationCustom(bill, billReturnDetail);
+billBillDetail (billDetail) = billBillReturnDetail(billDetail) OR billBillSaleDetail(billDetail);
 
-billBillSaleDetail 'Строка продажи' = DATA bill (billSaleDetail);
-billBillReturnDetail 'Строка возврата' = DATA bill (billReturnDetail);
+@defineDocumentDetailTimeCustom(bill, billSaleDetail);
+@defineDocumentDetailTimeCustom(bill, billReturnDetail);
+dateTimeBillDetail 'Дата/время' (billDetail) = dateTimeBillReturnDetail(billDetail) OR dateTimeBillSaleDetail(billDetail);
 
-billBillDetail 'Строка документа' (billDetail) = billBillReturnDetail(billDetail) OR billBillSaleDetail(billDetail);
+@defineDocumentDetailPostedCustom(bill, billSaleDetail);
+@defineDocumentDetailPostedCustom(bill, billReturnDetail);
+isPostedBillDetail 'Закрыт' (billDetail) = isPostedBillReturnDetail(billDetail) OR isPostedBillSaleDetail(billDetail);
 
-dateTimeBillSaleDetail (billDetail) = dateTimeBill(billBillSaleDetail(billDetail));
-dateTimeBillReturnDetail (billDetail) = dateTimeBill(billBillReturnDetail(billDetail));
-
-dateTimeBillDetail (billDetail) = dateTimeBillReturnDetail(billDetail) OR dateTimeBillSaleDetail(billDetail);
-
-departmentStoreBillSaleDetail (billDetail) = departmentStoreBill(billBillSaleDetail(billDetail));
-departmentStoreBillReturnDetail (billDetail) = departmentStoreBill(billBillReturnDetail(billDetail));
-
+@defineDocumentDetailDepartmentStoreCustom(bill, billSaleDetail);
+@defineDocumentDetailDepartmentStoreCustom(bill, billReturnDetail);
 departmentStoreBillDetail (billDetail) = departmentStoreBillReturnDetail(billDetail) OR departmentStoreBillSaleDetail(billDetail);
 
-numberPartBillDetail 'Номер строки' (billDetail) =
-    PARTITION SUM 1 IF billDetail IS billDetail BY billBillDetail(billDetail)
-    ORDER billDetail IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
-
-itemBillSaleDetail 'Товар (ИД)' = DATA item (billSaleDetail);
-itemBillReturnDetail 'Товар (ИД)' = DATA item (billReturnDetail);
-
+@defineDocumentDetailItem(billSale);
+@defineDocumentDetailItem(billReturn);
 itemBillDetail (billDetail) = itemBillReturnDetail(billDetail) OR itemBillSaleDetail(billDetail);
-
-nameAttributeItemBillDetail 'Товар' (billDetail) =
-    nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
+nameAttributeItemBillDetail 'Товар' (billDetail) = nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
+zReportBillToBill (zReport, bill) = GROUP UNIQUE bill BY numberZReport(zReportBill(bill)), numberBill(bill) WHERE bill IS bill;
+
+discountCardBill (bill) = DATA discountCard (bill);
+numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
+nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
+
+zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
 
 barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
 
 quantityBillSaleDetail 'Количество' (billDetail) = DATA NUMERIC[14,3] (billSaleDetail);
-priceBillSaleDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billSaleDetail);
-sumBillSaleDetail 'Сумма' (billDetail) = DATA NUMERIC[16,2] (billSaleDetail);
+retailPriceBillSaleDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billSaleDetail);
+retailSumBillSaleDetail 'Сумма' (billDetail) = DATA NUMERIC[16,2] (billSaleDetail);
 discountSumBillSaleDetail 'Сумма скидки' (billDetail) = DATA NUMERIC[16,2] (billSaleDetail);
 
 quantityBillReturnDetail 'Количество' (billDetail) = DATA NUMERIC[14,3] (billReturnDetail);
-priceBillReturnDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billReturnDetail);
-sumBillReturnDetail 'Сумма' (billDetail) = DATA NUMERIC[16,2] (billReturnDetail);
+retailPriceBillReturnDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billReturnDetail);
+retailSumBillReturnDetail 'Сумма' (billDetail) = DATA NUMERIC[16,2] (billReturnDetail);
 discountSumBillReturnDetail 'Сумма скидки' (billDetail) = DATA NUMERIC[16,2] (billReturnDetail);
 
 quantityBillDetail 'Количество' (billDetail) = quantityBillReturnDetail(billDetail) OR quantityBillSaleDetail(billDetail);
-priceBillDetail 'Цена' (billDetail) = priceBillReturnDetail(billDetail) OR priceBillSaleDetail(billDetail);
-sumBillDetail 'Сумма' (billDetail) = sumBillReturnDetail(billDetail) OR sumBillSaleDetail(billDetail);
+retailPriceBillDetail 'Цена' (billDetail) = retailPriceBillReturnDetail(billDetail) OR retailPriceBillSaleDetail(billDetail);
+retailSumBillDetail 'Сумма' (billDetail) = retailSumBillReturnDetail(billDetail) OR retailSumBillSaleDetail(billDetail);
 discountSumBillDetail 'Сумма скидки' (billDetail) = discountSumBillReturnDetail(billDetail) OR discountSumBillSaleDetail(billDetail);
 
-sumSaleBill 'Сумма продажи' (bill) = GROUP SUM sumBillSaleDetail(billDetail)
+retailSumSaleBillDetailSaleBill 'Сумма продажи' (bill) = GROUP SUM retailSumBillSaleDetail(billDetail)
     BY billBillSaleDetail (billDetail) IN documentSumGroup PERSISTENT;
 
-sumReturnBill 'Сумма возврата' (bill) = GROUP SUM sumBillReturnDetail(billDetail)
+retailSumReturnBillDetailReturnBill 'Сумма возврата' (bill) = GROUP SUM retailSumBillReturnDetail(billDetail)
     BY billBillReturnDetail (billDetail) IN documentSumGroup PERSISTENT;
 
-sumBill 'Сумма чека' (bill) = sumSaleBill(bill) (-) sumReturnBill(bill);
+retailSumBillDetailBill 'Сумма чека' (bill) = retailSumSaleBillDetailSaleBill(bill) (-) retailSumReturnBillDetailReturnBill(bill);
 
-discountSumSaleBill 'Сумма скидки (продажи)' (bill) = GROUP SUM discountSumBillSaleDetail(billDetail)
+discountSumSaleBillDetailSaleBill 'Сумма скидки (продажи)' (bill) = GROUP SUM discountSumBillSaleDetail(billDetail)
     BY billBillSaleDetail (billDetail) IN documentSumGroup;
 
-discountSumReturnBill 'Сумма скидки (возврат)' (bill) = GROUP SUM discountSumBillReturnDetail(billDetail)
+discountSumReturnBillDetailReturnBill 'Сумма скидки (возврат)' (bill) = GROUP SUM discountSumBillReturnDetail(billDetail)
     BY billBillReturnDetail (billDetail) IN documentSumGroup;
 
-discountSumBill 'Сумма скидки' (bill) = discountSumSaleBill(bill) (-) discountSumReturnBill(bill);
+discountSumBillDetailBill 'Сумма скидки' (bill) = discountSumSaleBillDetailSaleBill(bill) (-) discountSumReturnBillDetailReturnBill(bill);
 
-countBillDetailBill 'Количество строк в чеке' (bill) = GROUP SUM 1 IF billBillDetail (billDetail) == bill
-    BY billBillDetail (billDetail) IN documentSumGroup;
+@defineDocumentHeaderCount(bill);
 
+@defineDocumentHeaderQuantity(bill);
 @defineDocumentHeaderItemQuantity(bill);
 
-quantityPositionsBill 'Количество позиций в чеке' (bill) = GROUP SUM 1 IF quantityBillDetailItemBill (item, bill)
-    BY bill IN documentSumGroup;
-
-retailRangeBillSaleDetail 'Шкала (ИД)' = DATA range (billSaleDetail);
-retailRangeBillReturnDetail 'Шкала (ИД)' = DATA range (billReturnDetail);
-
+retailRangeBillSaleDetail = DATA range (billSaleDetail);
+retailRangeBillReturnDetail = DATA range (billReturnDetail);
 retailRangeBillDetail (billDetail) = retailRangeBillReturnDetail(billDetail) OR retailRangeBillSaleDetail(billDetail);
 
-CLASS payment 'Оплата по чеку';
-TABLE payment (payment);
-
-CLASS STATIC paymentMeans 'Форма оплаты'{
-    cash 'Наличные',
-    card 'Карточка'
-};
-CLASS paymentType 'Тип платежа' : named;
-TABLE paymentType (paymentType);
-
-paymentMeansPaymentType (paymentType) = DATA paymentMeans(paymentType);
-namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
-sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN baseGroup;
-sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
-
-billPayment 'Чек (ИД)' (payment) = DATA bill (payment);
-numberBillPayment 'Чек' (payment) = numberBill(billPayment(payment));
-
-discountCardBill (bill) = DATA discountCard(bill);
-numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
-nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
-
-sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
-numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
-
-totalSumPaymentBill (bill) = GROUP SUM sumPayment(payment)
-    BY billPayment(payment);
-
-CONSTRAINT sumBill (bill) != UNION OVERRIDE 0 IF bill IS bill, totalSumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
-
-// todo: проверить работает ли CONSTRAINT
-
-paymentTypePayment 'Тип платежа (ИД' (payment) = DATA paymentType(payment);
-namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
-
-paymentMeansPayment (payment) = paymentMeansPaymentType(paymentTypePayment(payment));
-namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansPayment(payment));
-
-castBillObjectsToString100=
-    FORMULA STRING[200] '\'Чек № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) ';
-
-descriptionBill 'Название документа' (bill) = castBillObjectsToString100(
-    numberBill(bill), dateTimeBill(bill));
-
-descriptionBillSaleDetail (billDetail) = [FORMULA STRING[200] '\'Продажа № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
-                                          numberBill(billBillSaleDetail(billDetail)), dateTimeBill(billBillSaleDetail(billDetail)));
-
-descriptionBillReturnDetail (billDetail) = [FORMULA STRING[200] '\'Возврат № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
-                                            numberBill(billBillReturnDetail(billDetail)), dateTimeBill(billBillReturnDetail(billDetail)));
-
-descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR descriptionBillSaleDetail(billDetail);
-
-CLASS zReport 'Z-отчет (открытый)' : outAccountSumDocumentLedger, historyObject;
-TABLE zReport (zReport);
-
-CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
-
-@defineDocumentHeaderPosted(zReport);
-
-dateOpenZReport 'Дата открытия Z-отчета' (zReport) = DATA DATE(zReport);
-numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport);
-
-zReportBill(bill) = DATA zReport(bill);
-numberZReportBill(bill) = numberZReport(zReportBill(bill));
-dateTimeZReport (zReport) = GROUP MAX dateTimeBill(bill) BY zReportBill(bill);
-
-zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
-
+// используется только для приема реализации из внешних касс
 numberBillDetail 'Номер позиции чека' = DATA INTEGER (billDetail);
 zReportBillBillDetailToBillDetail (zReport, bill, billDetail) = GROUP UNIQUE billDetail BY numberZReport(zReportBillDetail(billDetail)), numberBill(billBillDetail(billDetail)), numberBillDetail(billDetail) WHERE billDetail IS billDetail;
-zReportBillPaymentToPayment (zReport, bill, number) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment) WHERE payment IS payment;
-
-isPostedBill(bill) = isPostedZReport(zReportBill(bill));
-
-isPostedBillSaleDetail (billDetail) = isPostedBill(billBillSaleDetail(billDetail));
-isPostedBillReturnDetail (billDetail) = isPostedBill(billBillReturnDetail(billDetail));
-
-isPostedBillDetail (billDetail) = isPostedBillReturnDetail(billDetail) OR isPostedBillSaleDetail(billDetail);
-
-cashRegisterZReport (zReport) = DATA cashRegister(zReport);
-numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport));
-
-cashRegisterBill 'Касса (ИД)' (bill) = cashRegisterZReport(zReportBill(bill));
-numberCashRegisterBill 'Касса ' (bill) = numberCashRegister(cashRegisterBill(bill)) IN documentHeaderGroup;
-
-numberToZReportPosted (zReportPosted) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
-numberCashRegisterToCashRegister (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
-zReportBillToBill (zReport, bill) = GROUP UNIQUE bill BY numberZReportBill (bill), numberBill (bill) WHERE bill IS bill;
-
-departmentStoreZReport (zReport) = DATA departmentStore(zReport);
-nameDepartmentStoreZReport 'Отдел Z-отчета' (zReport) = name(departmentStoreZReport(zReport));
-
-departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
-    WHEN CHANGED(cashRegisterZReport(zReport));
-
-departmentStoreBill (bill) <- departmentStoreZReport(zReportBill(bill)) WHEN CHANGED(zReportBill(bill));
-
-castZReportObjectsToString100=
-    FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
-
-descriptionZReport (zReport) = castZReportObjectsToString100 (numberCashRegisterZReport(zReport),
-    nameDepartmentStoreZReport(zReport), dateOpenZReport(zReport));
-
-sumZReport 'Сумма Z-отчета' (zReport) = GROUP SUM sumBill(bill) BY zReportBill(bill) PERSISTENT;
-discountSumZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumBill(bill) BY zReportBill(bill) PERSISTENT;
-
-quantityBillsZReport 'Количество чеков' (zReport) = GROUP SUM 1 IF zReportBill(bill)==zReport BY zReportBill(bill);
-
-quantityZReportBill 'Количество по товару в Z-отчете' (item, zReport) = GROUP SUM quantityBillDetail(billDetail)
-    BY itemBillDetail(billDetail), zReportBillDetail(billDetail);
-
-quantityPositionsZReport 'Количество товаров в Z-отчете' (zReport) = GROUP SUM 1 IF quantityZReportBill (item, zReport)
-    BY zReport IN documentSumGroup;
+//
 
 addBillDetailBarcodeFill 'Добавить продажу по штрих-коду' = ACTION (bill) {
     FORM barcodeInput MODAL;
@@ -6727,38 +6595,125 @@ addBillDetailBarcodeFill 'Добавить продажу по штрих-код
         MESSAGE 'Не найден штрих-код';
     };
 
-}TOOLBAR EDITKEY 'F4';
+} TOOLBAR EDITKEY 'F4';
+
+descriptionBill 'Название документа' (bill) = [FORMULA STRING[200] '\'Чек № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '](
+                                               numberBill(bill), dateTimeBill(bill));
+
+descriptionBillSaleDetail (billDetail) = [FORMULA STRING[200] '\'Продажа № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
+                                          numberBill(billBillSaleDetail(billDetail)), dateTimeBill(billBillSaleDetail(billDetail)));
+
+descriptionBillReturnDetail (billDetail) = [FORMULA STRING[200] '\'Возврат № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '] (
+                                            numberBill(billBillReturnDetail(billDetail)), dateTimeBill(billBillReturnDetail(billDetail)));
+
+descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR descriptionBillSaleDetail(billDetail);
+
+// ----------------- Оплаты по чеку ------------------------------
+
+CLASS payment 'Оплата по чеку';
+TABLE payment (payment);
+
+CLASS STATIC paymentMeans 'Форма оплаты'{
+    cash 'Наличные',
+    card 'Карточка'
+};
+CLASS paymentType 'Тип платежа' : named;
+TABLE paymentType (paymentType);
+
+paymentMeansPaymentType (paymentType) = DATA paymentMeans (paymentType);
+namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
+
+sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN baseGroup;
+sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
+
+billPayment (payment) = DATA bill (payment);
+
+numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
+zReportBillPaymentToPayment (zReport, bill, number) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment) WHERE payment IS payment;
+
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+
+sumPaymentBill (bill) = GROUP SUM sumPayment(payment) BY billPayment(payment);
+
+CONSTRAINT bill IS bill AND NOT retailSumBillDetailBill(bill) == sumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
+
+// todo: проверить работает ли CONSTRAINT
+
+paymentTypePayment (payment) = DATA paymentType(payment);
+namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
+
+paymentMeansPayment (payment) = paymentMeansPaymentType(paymentTypePayment(payment));
+namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansPayment(payment));
+
+// Итоги по Z-отчету
+
+@defineDocumentHeaderQuantityCustom(zReport, billDetail);
+
+retailSumBillDetailZReport 'Сумма Z-отчета' (zReport) = GROUP SUM retailSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT;
+discountSumBillDetailZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT;
+
+//---------------------------- Кассовые отчеты ----------------------------------------//
+CLASS cashReport 'Кассовый отчет' : transaction;
+TABLE cashReport (cashReport);
+
+CLASS cashDocument 'Кассовый документ';
+TABLE cashDocument (cashDocument);
+
+CLASS incomeCashOrder 'ПКО': cashDocument;
+CLASS outcomeCashOrder 'РКО': cashDocument;
+CLASS bankCardsReport 'Отчет по банковским карточкам': cashDocument;
+
+numberCashReport 'Номер кассового отчета' (cashReport) = DATA INTEGER (cashReport) IN baseGroup;
+startDateCashReport 'Дата начала' (cashReport) = DATA DATE (cashReport) IN baseGroup;
+endDateCashReport 'Дата окончания' (cashReport) = DATA DATE (cashReport) IN baseGroup;
+
+reportCashDocument 'Отчет документа (ИД)' (cashDocument) = DATA cashReport (cashDocument) IN idGroup;
+numberCashDocument 'Номер документа' (cashDocument) = DATA INTEGER (cashDocument) IN baseGroup;
+sumCashDocument 'Сумма документа' (cashDocument) = DATA NUMERIC[16,2] (cashDocument) IN baseGroup;
+dopInfoCashDocument 'Описание' (cashDocument) = DATA STRING[10] (cashDocument) IN baseGroup;
 
 @metaCodeSingleAggregation(zReport, incomeCashOrder, isPostedZReport);
 
-sumCashDocument (incomeCashOrder) <- sumZReport(zReportIncomeCashOrder(incomeCashOrder)) WHEN ASSIGNED(incomeCashOrder IS incomeCashOrder);
-cashRegisterIncomeCashOrder (incomeCashOrder) <- cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder)) WHEN ASSIGNED(incomeCashOrder IS incomeCashOrder);
+retailSumIncomeCashOrder(incomeCashOrder) = retailSumBillDetailZReport(zReportIncomeCashOrder(incomeCashOrder));
+sumCashDocument (incomeCashOrder) <- retailSumIncomeCashOrder(incomeCashOrder) WHEN CHANGED(retailSumIncomeCashOrder(incomeCashOrder));
+
+cashRegisterIncomeCashOrder (incomeCashOrder) = cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder));
+numberCashRegisterIncomeCashOrder 'Номер кассы' (incomeCashOrder) = numberCashRegister(cashRegisterIncomeCashOrder(incomeCashOrder));
+
+infoCashDocument 'Основание документа' (cashDocument) = UNION EXCLUSIVE numberCashRegisterIncomeCashOrder(cashDocument), dopInfoCashDocument (cashDocument);
+
+FORM cashReport 'Кассовый отчет'
+    OBJECTS r=cashReport FIXED PANEL
+    OBJECTS d=cashDocument
+    PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
+    PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
+    FILTERS reportCashDocument(d) == r
+    EDIT cashReport OBJECT r
+;
+
+FORM cashReports 'Кассовые отчеты'
+    OBJECTS r=cashReport, d=cashDocument
+    PROPERTIES (r) startDateCashReport, endDateCashReport
+    PROPERTIES (r) ADDFORM, EDITFORM, delete
+    PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
+    FILTERS reportCashDocument(d) == r
+;
 
 // документ скидок для товарного отчета
 CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumDocumentLedger;
 TABLE saleDiscountDocument (saleDiscountDocument);
 
-needToSaleDiscountDocument (zReport) = TRUE IF discountSumZReport(zReport);
-
-@metaCodeSingleAggregation(zReport, saleDiscountDocument, needToSaleDiscountDocument);
-
-dateSaleDiscountDocument 'Дата' (saleDiscountDocument) = dateOpenZReport(zReportSaleDiscountDocument(saleDiscountDocument));
-dateTimeSaleDiscountDocument 'Дата/время' (saleDiscountDocument) = dateTimeZReport(zReportSaleDiscountDocument(saleDiscountDocument));
-
-departmentStoreSaleDiscountDocument (saleDiscountDocument) = departmentStoreZReport(zReportSaleDiscountDocument(saleDiscountDocument));
-nameDepartmentStoreSaleDiscountDocument 'Отдел' (saleDiscountDocument) = name(departmentStoreSaleDiscountDocument(saleDiscountDocument));
+@metaCodeSingleAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
+@defineDocumentHeaderAggregation(zReport, saleDiscountDocument);
 
 numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 
-sumSaleDiscountDocument (saleDiscountDocument) = discountSumZReport(zReportSaleDiscountDocument(saleDiscountDocument));
+discountSaleDiscountDocument (saleDiscountDocument) = discountSumBillDetailZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 
-castSaleDiscountDocumentObjectsToString100=
-    FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)';
+descriptionSaleDiscountDocument (saleDiscountDocument) =
+    [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
+    numberCashRegisterSaleDiscountDocument(saleDiscountDocument), nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
 
-descriptionSaleDiscountDocument (saleDiscountDocument) = castZReportObjectsToString100 (numberCashRegisterSaleDiscountDocument(saleDiscountDocument),
-    nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
-
-isPostedSaleDiscountDocument (saleDiscountDocument) = isPostedZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
@@ -7445,7 +7400,7 @@ descriptionSalesLedger 'Название документа' (ledger) = UNION EX
 
 quantitySalesLedger 'Кол-во' (ledger) = quantityBalanceItemLedger(ledger) AND ledger IS salesLedger;
 
-retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE sumBillSaleDetail(ledger),
+retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE retailSumBillSaleDetail(ledger),
                                                                 retailSumStatementDetail(ledger) PERSISTENT;
 
 retailRangeSalesLedger 'НДС (ИД)' (ledger) = UNION EXCLUSIVE retailRangeBillSaleDetail(ledger),
@@ -10572,8 +10527,8 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
                                                                        retailSumStatementDetailStatement(ledger),
                                                                        retailSumWastageDetailWastage(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
-                                                                       sumZReport(ledger),
-                                                                       sumSaleDiscountDocument(ledger),
+                                                                       retailSumBillDetailZReport(ledger),
+                                                                       discountSaleDiscountDocument(ledger),
                                                                        retailSumConsumption(ledger) PERSISTENT IN ledgerGroup;
 
 
@@ -10582,16 +10537,16 @@ sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledge
                                                                        retailSumItemInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumItemStatementDetailStatement(ledger),
                                                                        accountSumItemShortageCollationSheet(ledger),
-                                                                       sumZReport(ledger),
-                                                                       sumSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
+                                                                       retailSumBillDetailZReport(ledger),
+                                                                       discountSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
 
 sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
                                                                        retailSumContainerReturnSupplierDetailReturnSupplier(ledger),
                                                                        retailSumContainerInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumContainerStatementDetailStatement(ledger),
                                                                        accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
-//                                                                       sumZReport(ledger),
-//                                                                       sumSaleDiscountDocument(ledger),
+//                                                                       retailSumBillDetailZReport(ledger),
+//                                                                       discountSaleDiscountDocument(ledger),
 //                                                                       subtotalByContainerConsumption(ledger)
 //                                                                        totalSumByContainerWastage(ledger),
 quantityIncAccountSumDocumentLedger 'Количество приходных док-ов' (departmentStore, dtFrom, dtTo)=
@@ -12081,16 +12036,16 @@ DESIGN statements FROM DEFAULT {
 
 FORM bill 'Z-отчет'
     OBJECTS z=zReport FIXED PANEL
-    PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateOpenZReport, numberZReport,
-                    quantityBillsZReport, quantityPositionsZReport, sumZReport, discountSumZReport
+    PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateZReport, timeZReport, numberZReport,
+                    countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumBillDetailZReport
 
     OBJECTS b=bill
-    PROPERTIES(b) numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill READONLY,
-                  numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill, countBillDetailBill, quantityPositionsBill, ADDOBJ, delete
+    PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
+                  numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill, countBillDetailBill, quantityBillDetailBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, ADDOBJ, delete
+    PROPERTIES(d) barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail, retailSumBillDetail, discountSumBillDetail, ADDOBJ, delete
 
     FILTERS billBillDetail(d)==b
 
@@ -12118,21 +12073,21 @@ DESIGN bill FROM DEFAULT{
 
 FORM bills 'Чеки'
     OBJECTS z=zReport
-    PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateOpenZReport,
-                            numberZReport, quantityBillsZReport, quantityPositionsZReport, sumZReport, discountSumZReport
+    PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
+                            numberZReport, countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumBillDetailZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=bill
-    PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, numberCashRegisterBill, nameDepartmentStoreBill,
-                            numberDiscountCardBill, nameCustomerDiscountCardBill, sumBill, discountSumBill,
-                            countBillDetailBill, quantityPositionsBill
+    PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, nameDepartmentStoreBill,
+                            numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
+                            countBillDetailBill, quantityBillDetailBill
 
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY  barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, priceBillDetail,
-                            supplierSumBalanceItemLedger, sumBillDetail, discountSumBillDetail
+    PROPERTIES(d) READONLY  barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+                            supplierSumBalanceItemLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
 
@@ -12660,7 +12615,7 @@ retailSumCardDepartmentDateFromTo 'Продано с использование�
     AND dateBill(billPayment(payment)) >= (dateFrom AS DATE) AND dateBill(billPayment(payment)) <= (dateTo AS DATE) AND isPostedBill(billPayment(payment))
         BY departmentStoreBill(billPayment(payment)), dateFrom, dateTo;
 
-retailSumSaleDepartmentDateFromTo 'Продано по кассе' (departmentStore, dateFrom, dateTo) = GROUP SUM sumBill(bill)
+retailSumSaleDepartmentDateFromTo 'Продано по кассе' (departmentStore, dateFrom, dateTo) = GROUP SUM retailSumBillDetailBill(bill)
     AND dateBill(bill) >= (dateFrom AS DATE) AND dateBill(bill) <= (dateTo AS DATE) AND isPostedBill(bill)
         BY departmentStoreBill(bill), dateFrom, dateTo;
 
@@ -13249,7 +13204,6 @@ NAVIGATOR {
                 ADD handbooksTerminalDocumentType;
             }
             ADD stages;
-            ADD cashReports;
             ADD labelTypes;
             ADD equipmentServer;
         }
@@ -13289,6 +13243,7 @@ NAVIGATOR {
         }
         NEW retailSale 'Розничные продажи'{
             ADD bills;
+            ADD cashReports;
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
