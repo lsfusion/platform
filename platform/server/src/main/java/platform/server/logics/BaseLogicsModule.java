@@ -626,7 +626,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("dictionaryEntry", dictionaryEntry);
 
         addTable("session", session);
-        addTable("exception", exception);
         addTable("connection", connection);
         addTable("computer", computer);
 
@@ -646,7 +645,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         addTable("customUserRole", customUser, userRole);
         addTable("userRolePolicy", userRole, policy);
-        addTable("userRoleProperty", userRole, property);
 
         addTable("month", month);
         addTable("dow", DOW);
