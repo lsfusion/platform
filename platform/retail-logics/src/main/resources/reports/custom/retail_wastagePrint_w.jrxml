@@ -33,13 +33,13 @@
 	<field name="retail_nameDepartmentStoreWastage" class="java.lang.String"/>
 	<field name="retail_nameSupplierWastage" class="java.lang.String"/>
 	<field name="retail_countWastageDetailWastage" class="java.lang.Integer"/>
-	<field name="retail_quantityItemWastage" class="java.lang.Double"/>
+	<field name="retail_quantityItemWastageDetailWastage" class="java.lang.Double"/>
 	<field name="retail_quantityWastage" class="java.lang.Double"/>
 	<field name="retail_totalSumSupplierByWastage" class="java.lang.Double"/>
 	<field name="retail_totalSumMarkupByWastage" class="java.lang.Double"/>
 	<field name="retail_totalSumVATByWastage" class="java.lang.Double"/>
 	<field name="retail_totalSumRetailByWastage" class="java.lang.Double"/>
-	<field name="retail_isWastageCommitteeWastage" class="java.lang.Boolean"/>
+	<field name="retail_wastageCommitteeWastage" class="java.lang.Boolean"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{w})]]></groupExpression>
 		<groupHeader>
@@ -52,7 +52,7 @@
 				</subreport>
 			</band>
 			<band height="43">
-				<printWhenExpression><![CDATA[$F{retail_isWastageCommitteeWastage}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{retail_wastageCommitteeWastage}==null]]></printWhenExpression>
 				<line>
 					<reportElement x="0" y="13" width="270" height="1"/>
 				</line>
@@ -217,7 +217,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_quantityItemWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_quantityItemWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="298" y="0" width="35" height="14" backcolor="#FFFFFF"/>
@@ -306,7 +306,7 @@
 				</textField>
 			</band>
 			<band height="80">
-				<printWhenExpression><![CDATA[$F{retail_isWastageCommitteeWastage}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{retail_wastageCommitteeWastage}==null]]></printWhenExpression>
 				<textField>
 					<reportElement x="156" y="72" width="119" height="8"/>
 					<box>

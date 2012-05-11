@@ -286,12 +286,8 @@ END
 META metaCodeIsPriceChangeWrong(prop)
 
     isPriceChangeWrong###prop (priceChange###prop##Detail) =
-        retailPriceChange###prop##Detail(priceChange###prop##Detail) < curRetailPriceChange###prop##Detail(priceChange###prop##Detail)
+        retailPricePriceChange###prop##Detail(priceChange###prop##Detail) < curRetailPricePriceChange###prop##Detail(priceChange###prop##Detail)
           AND banMarkdownItem(itemPriceChange###prop##Detail(priceChange###prop##Detail));
-//        IF banRevaluationItemDepartmentVal(
-//            itemPriceChange###prop##Detail(priceChange###prop##Detail),
-//            departmentStorePriceChange###prop(priceChange###prop##PriceChange###prop##Detail(priceChange###prop##Detail)),
-//            datePriceChange###prop(priceChange###prop##PriceChange###prop##Detail(priceChange###prop##Detail))) == yesNo.yes;
 
 // todo : при изменении поставки начинает сильно тормозить
 //    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
@@ -393,14 +389,21 @@ META defineDocumentRelationCustom (object, detail)
     object###detail = DATA object (detail) IN idGroup;
     in###object###detail(iobject, idetail) = object###detail(idetail) == iobject;
 
-    count###detail###object 'Количество строк в документе' (iobject) =
-        GROUP SUM 1 IF in###object###detail(iobject, idetail) BY iobject PERSISTENT;
+    @defineDocumentHeaderCountCustom(object, detail);
 END
 
 META defineDocumentRelation (object)
     @defineDocumentRelationCustom(object, object##Detail);
 END
 
+META defineDocumentHeaderCountCustom (object, detail)
+    count###detail###object 'Количество строк в документе' (iobject) =
+        GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT;
+END
+
+META defineDocumentHeaderCount (object)
+    @defineDocumentHeaderCountCustom(object, object##Detail);
+END
 // Время
 
 META defineDocumentHeaderTime (object)
@@ -649,7 +652,7 @@ META defineDocumentDetailInSum (object)
 END
 
 META defineDocumentDetailInvoiceSum (object)
-    supplierVATIPrice###object##Detail 'НДС поставщика (без посуды)' (detail) = [X*Y/100](
+    supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
         supplierPrice###object##Detail(detail), dataSuppliersRange###object##Detail(detail));
 
     calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
@@ -801,6 +804,11 @@ META defineDocumentHeaderWareSum (object)
     @defineDocumentHeaderWareSumCustom(object, object##Detail);
 END
 
+META defineDocumentHeaderInSum (object)
+    supplierISum###object##Detail###object 'Сумма поставщика без НДС (без посуды)' (object) =
+        GROUP SUM supplierISum###object##Detail(idetail) BY object###object##Detail(idetail) IN documentSumGroup;
+END
+
 META defineDocumentHeaderRetailSumCustom (object, detail)
     retailSum###detail###object 'Розничная сумма' (object) =
         GROUP SUM retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
@@ -939,38 +947,81 @@ META defineDocumentHeaderConsignment (object)
     @defineDocumentPackAndWeightConsignment(object, object##Detail);
 
 END
+
+// ------------------------- Ссылка на "parent" объекты ---------------------------------- //
+
+META defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, suffix)
+    number###aggrObject 'Номер документа' (object) = number###suffix(primObject###aggrObject(object));
+    series###aggrObject 'Серия документа' (object) = series###suffix(primObject###aggrObject(object));
+    seriesNumber###aggrObject 'Серия/номер документ' (object) = seriesNumber###suffix(primObject###aggrObject(object));
+END
+
+META defineDocumentHeaderAggregationNumber (primObject, aggrObject)
+    @defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, Object);
+END
+
+META defineDocumentHeaderAggregationDescription (primObject, aggrObject)
+    description###aggrObject 'Название документа' (object) = description###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentHeaderAggregation (primObject, aggrObject)
+    date###aggrObject 'Дата' (object) = date###primObject(primObject###aggrObject(object));
+    time###aggrObject 'Время' (object) = time###primObject(primObject###aggrObject(object));
+    dateTime###aggrObject 'Дата/время' (object) = dateTime###primObject(primObject###aggrObject(object));
+
+    departmentStore###aggrObject (object) = departmentStore###primObject(primObject###aggrObject(object));
+    nameDepartmentStore###aggrObject 'Отдел документа' (object) = name(departmentStore###aggrObject(object));
+
+    isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentDetailAggregation (primObject, aggrObject)
+    item###aggrObject##Detail (detail) = item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    nameItem###aggrObject##Detail 'Товар' (detail) = nameAttributeItem(item###aggrObject##Detail(detail));
+    barcodeExSku###aggrObject##Detail 'Штрих-код' (detail) = barcodeEx(barcodeSku(item###aggrObject##Detail(detail)));
+
+    isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    departmentStore###aggrObject##Detail (detail) = departmentStore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
+META defineDocumentDetailAggregationPrice (primObject, aggrObject)
+    importerPrice###aggrObject##Detail 'Цена изготовителя' (detail) = importerPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    supplierPrice###aggrObject##Detail 'Цена поставщика' (detail) = supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    dataRetailRange###aggrObject##Detail 'НДС, %' (detail) = dataRetailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    ware###aggrObject##Detail 'Посуда' (detail) = ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    dataWareRange###aggrObject##Detail 'НДС посуды, %' (detail) =
+          dataActingRateRangeDate(rangeWareVal(ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
+                                                                       date###aggrObject##Detail(detail));
+
+    warePrice###aggrObject##Detail 'Цена посуды' (detail) =  warePrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    retailPrice###aggrObject##Detail 'Розничная цена' (detail) = retailPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
 // ------------------------- Автоматическое изменение цен ---------------------------------- //
 
 META defineDocumentPriceChange (object)
-
     needToPriceChange###object (object) = GROUP SUM 1 IF needToPriceChange###object##Detail(detail) BY object###object##Detail(detail);
 
     @metaCodeDetailAggregation(object, priceChange###object, needToPriceChange###object);
 
-    //// атрибуты документа переоценки
+    @defineDocumentHeaderAggregation(object, priceChange###object);
+    @defineDocumentHeaderAggregationDescription(object, priceChange###object);
 
-    dateTimePriceChange###object 'Дата/время' (object) = dateTime###object(object##PriceChange###object(object));
-    datePriceChange###object 'Дата' (object) = date###object(object##PriceChange###object(object));
-
-    departmentStorePriceChange###object (object) = departmentStore###object(object##PriceChange###object(object));
-    nameDepartmentStorePriceChange###object 'Отдел документа' (object) = name(departmentStorePriceChange###object(object));
-
-    isPostedPriceChange###object 'Закрыт' (object) = isPosted###object(object##PriceChange###object(object));
-    descriptionPriceChange###object 'Название документа' (object) = description###object(object##PriceChange###object(object));
+    @defineDocumentDetailAggregation(object, priceChange###object);
 
     numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
     revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = revaluationCommittee###object(object##PriceChange###object(object));
-
-    //// атрибуты детализации документа переоценки
-
-    itemPriceChange###object##Detail (detail) = item###object##Detail(object##DetailPriceChange###object##Detail(detail));
-    nameItemPriceChange###object##Detail 'Товар' (detail) = nameAttributeItem(itemPriceChange###object##Detail(detail));
 END
 
 META defineDocumentPriceChangeNumberCustom (object, suffix)
-    numberPriceChange###object 'Номер документа' (object) = number###suffix(object##PriceChange###object(object));
-    seriesPriceChange###object 'Серия документа' (object) = series###suffix(object##PriceChange###object(object));
-    seriesNumberPriceChange###object 'Серия/номер документ' (object) = seriesNumber###suffix(object##PriceChange###object(object));
+    @defineDocumentHeaderAggregationNumberCustom(object, priceChange###object, suffix);
 END
 
 META defineDocumentPriceChangeNumber (object)
@@ -982,25 +1033,17 @@ META defineDocumentPriceChangeQuantity (object)
 END
 
 META defineDocumentPriceChangePrice (object)
-    importerPriceChange###object##Detail 'Цена изготовителя' (detail) = importerPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
-    supplierPriceChange###object##Detail 'Цена поставщика' (detail) = supplierPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
-
-    dataRetailRangePriceChange###object##Detail 'НДС, %' (detail) = dataRetailRange###object##Detail(object##DetailPriceChange###object##Detail(detail));
-
-    warePriceChange###object##Detail 'Посуда' (detail) = ware###object##Detail(object##DetailPriceChange###object##Detail(detail));
-    warePricePriceChange###object##Detail 'Цена посуды' (detail) =  warePrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
-
-    retailPriceChange###object##Detail 'Розничная цена' (detail) = retailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    @defineDocumentDetailAggregationPrice(object, priceChange###object);
 END
 
 META defineDocumentPriceChangeCurRetailPrice (object)
-    curRetailPriceChange###object##Detail 'Старая розничная цена' (detail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    curRetailPricePriceChange###object##Detail 'Старая розничная цена' (detail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 END
 
 META defineDocumentPriceChangeCurPrice (object)
 
-    curImporterPriceChange###object##Detail 'Цена изготовителя' (detail) = curImporterPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
-    curSupplierPriceChange###object##Detail 'Цена поставщика' (detail) = curSupplierPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    curImporterPricePriceChange###object##Detail 'Цена изготовителя' (detail) = curImporterPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
+    curSupplierPricePriceChange###object##Detail 'Цена поставщика' (detail) = curSupplierPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 
     curDataRetailRangePriceChange###object##Detail 'НДС, %' (detail) = curDataRetailRange###object##Detail(object##DetailPriceChange###object##Detail(detail));
 
@@ -5945,19 +5988,6 @@ descriptionShipment 'Название документа' (shipment) =
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
-// ------------------------ Списание отходов --------------------------- //
-
-wastageCommitteeShipment (shipment) = DATA wastageCommittee (shipment) IN idGroup;
-nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
-wastageCommitteeShipment(shipment) <- wastageCommitteeDepartmentStore(departmentStoreShipment(shipment))
-    WHEN ASSIGNED(shipment IS shipment);
-
-percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
-
-percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-
 // ------ Запись значений по умолчанию ----- //
 
 supplierPriceShipmentDetail(shipmentDetail) <-
@@ -6058,6 +6088,73 @@ supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPri
 nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = name(supplierPriceChangeShipment(priceChangeShipment));
 
 @metaCodeIsPriceChangeWrong(shipment);
+
+//----------------------------------- Списание отходов по нормам -------------------------------------------------//
+percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
+
+percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
+    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+
+needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
+needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
+
+CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
+CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
+CLASS wastageDetail 'Строка документа': outAutoBalanceItemLedger;
+
+@metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
+
+@defineDocumentTables(wastage);
+@defineDocumentDetailIndex(wastage);
+@defineDocumentHeaderCount(wastage);
+
+@defineDocumentHeaderAggregation(shipment, wastage);
+@defineDocumentHeaderAggregationNumber(shipment, wastage);
+
+@defineDocumentDetailAggregation(shipment, wastage);
+
+quantityItemWastageDetail 'Количество' (wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+quantityItemWastageDetailWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
+
+percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
+
+quantityWastageDetail 'Количество для списания '(wastageDetail) = [round3(X*Y/100)](
+    quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
+
+@defineDocumentDetailAggregationPrice(shipment, wastage);
+
+@defineDocumentDetailWareSum(wastage);
+@defineDocumentDetailInSum(wastage);
+@defineDocumentDetailOutSum(wastage);
+
+@defineDocumentHeaderQuantity(wastage);
+
+@defineDocumentHeaderWareSum(wastage);
+@defineDocumentHeaderInSum(wastage);
+@defineDocumentHeaderOutSum(wastage);
+
+supplierWastage (wastage) = supplierShipment(shipmentWastage(wastage));
+nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
+
+nameCompanyWastage 'Компания' (wastage) = nameCompanyDepartmentStore(departmentStoreWastage(wastage));
+
+descriptionWastage 'Название документа' (wastage) =
+    [FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberWastage(wastage), dateWastage(wastage), nameSupplierWastage(wastage));
+
+descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
+
+//----------------------------------- Комиссия -------------------------------------------------//
+
+wastageCommitteeShipment (shipment) = DATA wastageCommittee (shipment) IN idGroup;
+nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
+wastageCommitteeShipment(shipment) <- wastageCommitteeDepartmentStore(departmentStoreShipment(shipment))
+    WHEN ASSIGNED(shipment IS shipment);
+
+wastageCommitteeWastage (wastage) = wastageCommitteeShipment(shipmentWastage(wastage));
+inWastageEmployee (wastage, employee) = inCommitteeEmployee(wastageCommitteeWastage(wastage), employee);
+nameWastageCommitteeWastage 'Комиссия' (wastage) = name(wastageCommitteeWastage(wastage));
+commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS employee;
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS reasonOff 'Причина списания' : named;
@@ -6251,142 +6348,6 @@ senderDepartmentPriceChangeInnerArrival (priceChangeInnerArrival) = senderDepart
 nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' (priceChangeInnerArrival) = name(senderDepartmentPriceChangeInnerArrival(priceChangeInnerArrival));
 
 @metaCodeIsPriceChangeWrong(innerArrival);
-
-//----------------------------------- Списание отходов по нормам -------------------------------------------------//
-needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
-needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
-
-CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
-TABLE wastage(wastage);
-
-CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
-
-CLASS wastageDetail 'Строка документа': outAutoBalanceItemLedger;
-TABLE wastageDetail(wastageDetail);
-
-@metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
-
-dateWastage 'Дата документа' (wastage) = dateShipment(shipmentWastage(wastage));
-timeWastage 'Время документа' (wastage) = timeShipment(shipmentWastage(wastage));
-numberWastage 'Номер документа' (wastage) = numberObject(shipmentWastage(wastage));
-seriesWastage 'Серия документа' (wastage) = seriesObject(shipmentWastage(wastage));
-seriesNumberWastage 'Серия/номер документа' (wastage) = seriesNumberObject(shipmentWastage(wastage));
-
-departmentStoreWastage 'Отдел документа (ИД)' (wastage) = departmentStoreShipment (shipmentWastage(wastage));
-nameDepartmentStoreWastage 'Отдел документа' (wastage) = name(departmentStoreWastage (wastage));
-nameCompanyWastage 'Компания' (wastage) = nameCompanyDepartmentStore(departmentStoreWastage(wastage));
-
-supplierWastage 'Поставщик (ИД)' (wastage) = supplierShipment(shipmentWastage(wastage));
-nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
-
-dateTimeWastageDetail (wastageDetail) = dateTimeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-dateTimeWastage 'Дата/время документа' (wastage) = dateTimeShipment(shipmentWastage(wastage));
-
-departmentStoreWastageDetail (wastageDetail) = departmentStoreShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-isPostedWastage 'Закрыт' (wastage) = isPostedShipment(shipmentWastage(wastage));
-isPostedWastageDetail 'Закрыт' (wastageDetail) = isPostedWastage(wastageWastageDetail(wastageDetail));
-
-itemWastageDetail 'Товар (ИД)' (wastageDetail) = itemShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-nameAttributeItemWastageDetail 'Товар' (wastageDetail) = nameAttributeItem (itemWastageDetail(wastageDetail));
-barcodeExSkuWastageDetail 'Штрих-код' (wastageDetail) = barcodeExSkuShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-@defineDocumentDetailIndex(wastage);
-
-quantityItemWastageDetail 'Количество'(wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-quantityItemWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-
-quantityWastageDetail 'Количество для списания '(wastageDetail) = [round3(X*Y/100)](
-    quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
-
-quantityWastage 'Общее количество для списания' (wastage) = GROUP SUM quantityWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail);
-
-countWastageDetailWastage 'Количество строк' (wastage) = GROUP SUM 1 IF wastageDetail IS wastageDetail BY wastageWastageDetail(wastageDetail);
-
-retailPriceWastageDetail 'Цена розничная' (wastageDetail) = retailPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-supplierPriceWastageDetail 'Цена поставщика' (wastageDetail) = supplierPriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-dataRetailRangeWastageDetail 'НДС розничный, %' (wastageDetail) = dataRetailRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-warePriceWastageDetail 'Цена посуды' (wastageDetail) = warePriceShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-dataWareRangeWastageDetail 'НДС по посуде' (wastageDetail) = dataWareRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-dataSuppliersRangeWastageDetail 'НДС поставщика,%' (wastageDetail) = dataSuppliersRangeShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-@defineDocumentDetailInSum(wastage);
-@defineDocumentDetailWareSum(wastage);
-@defineDocumentDetailOutSum(wastage);
-
-@defineDocumentHeaderWareSum(wastage);
-
-sumRetailByWastageDetail 'Сумма в розн. ценах' (wastageDetail) = round0(quantityWastageDetail(wastageDetail) * retailPriceWastageDetail(wastageDetail));
-sumSupplierByWastageDetail 'Сумма в ценах поставщика' (wastageDetail) = round0(quantityWastageDetail(wastageDetail) * supplierPriceWastageDetail(wastageDetail));
-sumVATByWastageDetail 'Сумма НДС' (wastageDetail) = [round0(X*Y/(100+Y))](
-    sumRetailByWastageDetail(wastageDetail), dataRetailRangeWastageDetail(wastageDetail));
-sumMarkupByWastageDetail 'Сумма надбавки' (wastageDetail) = sumRetailByWastageDetail(wastageDetail) (-) sumSupplierByWastageDetail(wastageDetail) (-)
-    sumVATByWastageDetail(wastageDetail);
-
-totalSumRetailByWastage 'Общая сумма, розничная' (wastage) = GROUP SUM sumRetailByWastageDetail (wastageDetail)
-    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-totalSumSupplierByWastage 'Общая сумма, в ценах поставщика' (wastage) = GROUP SUM sumSupplierByWastageDetail (wastageDetail)
-    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-totalSumVATByWastage 'Общая сумма НДС' (wastage) = GROUP SUM sumVATByWastageDetail (wastageDetail)
-    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-totalSumMarkupByWastage 'Общая сумма надбавки' (wastage) = GROUP SUM sumMarkupByWastageDetail (wastageDetail)
-    BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-
-castWastageObjectsToString100=
-    FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)';
-
-descriptionWastage 'Название документа' (wastage) = castWastageObjectsToString100(
-    seriesNumberWastage(wastage), dateWastage(wastage), nameSupplierWastage(wastage));
-
-descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
-
-inWastageEmployee (wastage, employee) = inCommitteeEmployee(wastageCommitteeShipment(shipmentWastage(wastage)), employee);
-nameWastageCommitteeWastage 'Комиссия' (wastage) = name(wastageCommitteeShipment(shipmentWastage(wastage)));
-isWastageCommitteeWastage 'Есть комиссия' (wastage) = wastage IS wastage AND wastageCommitteeShipment(shipmentWastage(wastage));
-commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS employee;
-
-//-------------------------------Печатная форма---------------------------------//
-FORM wastagePrint 'Списания отходов' PRINT
-
-    OBJECTS w=wastage FIXED PANEL
-    PROPERTIES (w) SELECTOR numberWastage, seriesWastage, dateWastage, timeWastage, nameCompanyWastage, nameDepartmentStoreWastage, nameSupplierWastage,
-                   countWastageDetailWastage, quantityItemWastage, quantityWastage, totalSumSupplierByWastage,
-                   totalSumMarkupByWastage, totalSumVATByWastage, totalSumRetailByWastage, isWastageCommitteeWastage
-
-    OBJECTS d=wastageDetail
-    PROPERTIES (d) SELECTOR indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
-                   sumSupplierByWastageDetail, sumMarkupByWastageDetail, sumVATByWastageDetail, sumRetailByWastageDetail
-
-    OBJECTS e=employee
-    PROPERTIES(e) SELECTOR   commonName, nameOfficerEmployee
-    OBJECTS a=employee
-    PROPERTIES(a) SELECTOR   commonNameEmployee, nameOfficerEmployee
-
-    FILTERS                  wastageWastageDetail(d)== w,
-                             inWastageEmployee(w, e),
-                             inWastageEmployee(w, a)
-;
-
-toPrintWastage 'Списание отходов' (wastage) = ACTION FORM wastagePrint OBJECTS w IMAGE 'print.png' IN printGroup CONFIRM;
-
-FORM wastages 'Списания отходов'
-
-    OBJECTS w=wastage
-    PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage,
-                   countWastageDetailWastage, quantityItemWastage, quantityWastage, totalSumSupplierByWastage, totalSumMarkupByWastage,
-                   totalSumVATByWastage, totalSumRetailByWastage, nameWastageCommitteeWastage
-
-    OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameAttributeItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
-                   sumSupplierByWastageDetail, sumMarkupByWastageDetail, sumVATByWastageDetail, sumRetailByWastageDetail
-
-    PROPERTIES     FORCE PANEL toPrintWastage(w) TODRAW d
-
-    FILTERS wastageWastageDetail(d)== w;
-;
-
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
@@ -8470,25 +8431,25 @@ nameItemPriceChangReturnSupplierDetail 'Товар' (priceChangeReturnSupplierDe
 quantityPriceChangeReturnSupplierDetail 'Остаток' (priceChangeReturnSupplierDetail) =
     quantityReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
-curImporterPriceChangeReturnSupplierDetail 'Текущая цена изготовителя' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
-curImporterPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
+curImporterPricePriceChangeReturnSupplierDetail 'Текущая цена изготовителя' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
+curImporterPricePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceImporterBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
                                  WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
-curSupplierPriceChangeReturnSupplierDetail 'Текущая цена поставщика' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
-curSupplierPriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
+curSupplierPricePriceChangeReturnSupplierDetail 'Текущая цена поставщика' (priceChangeReturnSupplierDetail) = DATA NUMERIC[14,2] (priceChangeReturnSupplierDetail);
+curSupplierPricePriceChangeReturnSupplierDetail (priceChangeReturnSupplierDetail) <-
     priceSupplierBLedgerDateTime(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  departmentStoreReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)),
                                  dateTimeReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)))
                                  WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
 
-importerPriceChangeReturnSupplierDetail 'Новая цена изготовителя' (priceChangeReturnSupplierDetail) =
+importerPricePriceChangeReturnSupplierDetail 'Новая цена изготовителя' (priceChangeReturnSupplierDetail) =
     importerPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
-supplierPriceChangeReturnSupplierDetail 'Новая цена поставщика' (priceChangeReturnSupplierDetail) =
+supplierPricePriceChangeReturnSupplierDetail 'Новая цена поставщика' (priceChangeReturnSupplierDetail) =
     supplierPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
 
 curDataRetailRangePriceChangeReturnSupplierDetail 'Текущий НДС, %' (priceChangeReturnSupplierDetail) =
@@ -8496,9 +8457,9 @@ curDataRetailRangePriceChangeReturnSupplierDetail 'Текущий НДС, %' (pr
 dataRetailRangePriceChangeReturnSupplierDetail 'Новый НДС, %' (priceChangeReturnSupplierDetail) =
     dataRetailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
-curRetailPriceChangeReturnSupplierDetail 'Текущая розничная цена' (priceChangeReturnSupplierDetail) =
+curRetailPricePriceChangeReturnSupplierDetail 'Текущая розничная цена' (priceChangeReturnSupplierDetail) =
     curRetailPriceReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail));
-retailPriceChangeReturnSupplierDetail 'Новая розничная цена' (priceChangeReturnSupplierDetail) =
+retailPricePriceChangeReturnSupplierDetail 'Новая розничная цена' (priceChangeReturnSupplierDetail) =
     retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetailPriceChangeReturnSupplierDetail(priceChangeReturnSupplierDetail)));
 
 warePriceChangeReturnSupplierDetail 'Новая посуда' (priceChangeReturnSupplierDetail) =
@@ -9870,26 +9831,26 @@ quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) =
                                                                                           quantityPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                           quantityUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
-oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE curImporterPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                              curImporterPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                              importerPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                              curImporterPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
+oldImporterPriceChangeDocumentDetail 'Старая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE curImporterPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                              curImporterPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                              importerPricePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                              curImporterPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                               curImporterPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
-importerPriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                          importerPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
+importerPricePriceChangeDocumentDetail 'Новая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                          importerPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                          importerPricePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                          importerPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                           importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
-oldSupplierPriceChangeDocumentDetail 'Старая цена поставщика' (priceChangeDocumentDetail) = UNION EXCLUSIVE curSupplierPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                            curSupplierPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                            supplierPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                            curSupplierPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
+oldSupplierPriceChangeDocumentDetail 'Старая цена поставщика' (priceChangeDocumentDetail) = UNION EXCLUSIVE curSupplierPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                            curSupplierPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                            supplierPricePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                            curSupplierPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                             curSupplierPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
-supplierPriceChangeDocumentDetail 'Новая цена поставщика' (priceChangeDocumentDetail) = UNION EXCLUSIVE supplierPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                        supplierPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                        supplierPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                        supplierPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
+supplierPricePriceChangeDocumentDetail 'Новая цена поставщика' (priceChangeDocumentDetail) = UNION EXCLUSIVE supplierPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                        supplierPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                        supplierPricePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                        supplierPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                         supplierPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 
@@ -9905,15 +9866,15 @@ dataRetailRangePriceChangeDocumentDetail 'Новый НДС, %' (priceChangeDocu
                                                                                                       dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 
-oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE curRetailPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                         curRetailPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                         curRetailPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                         curRetailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
+oldRetailPriceChangeDocumentDetail 'Старая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE curRetailPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                         curRetailPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                         curRetailPricePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                         curRetailPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                          curRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
-retailPriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPriceChangeShipmentDetail(priceChangeDocumentDetail),
-                                                                                                     retailPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
-                                                                                                     retailPriceChangeStatementDetail(priceChangeDocumentDetail),
-                                                                                                     retailPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
+retailPricePriceChangeDocumentDetail 'Новая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
+                                                                                                     retailPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
+                                                                                                     retailPricePriceChangeStatementDetail(priceChangeDocumentDetail),
+                                                                                                     retailPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
                                                                                                      retailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
 
 oldRetailSumChangeDocumentDetail 'Старая розничная сумма' (priceChangeDocumentDetail) =
@@ -9923,7 +9884,7 @@ oldRetailSumChangeDocument 'Старая розничная сумма' (priceCh
     BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 retailSumChangeDocumentDetail 'Новая розничная сумма' (priceChangeDocumentDetail) =
-                quantityPriceChangeDocumentDetail(priceChangeDocumentDetail) * retailPriceChangeDocumentDetail(priceChangeDocumentDetail);
+                quantityPriceChangeDocumentDetail(priceChangeDocumentDetail) * retailPricePriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 retailSumChangeDocument 'Новая розничная сумма' (priceChangeDocument) = GROUP SUM retailSumChangeDocumentDetail(priceChangeDocumentDetail)
     BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -9971,17 +9932,17 @@ oldWarePricePriceChangeDocumentDetail 'Старая цена посуды' (pric
 
 datePriceChangeDocumentDetail 'Дата' (priceChangeDocumentDetail) = datePriceChangeDocument(documentPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-withoutWarePricePriceChangeDocumentDetail 'Цена без посуды' (priceChangeDocumentDetail) = retailPriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
+withoutWarePricePriceChangeDocumentDetail 'Цена без посуды' (priceChangeDocumentDetail) = retailPricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
     warePricePriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 sumRetailVATPriceChangeDocumentDetail 'Сумма НДС за ед.' (priceChangeDocumentDetail) = [X*Y/(100+Y)](
     withoutWarePricePriceChangeDocumentDetail(priceChangeDocumentDetail), dataRetailRangePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 sumMarkupPriceChangeDocumentDetail 'Сумма надбавки' (priceChangeDocumentDetail) = withoutWarePricePriceChangeDocumentDetail(priceChangeDocumentDetail) (-)
-    sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) supplierPriceChangeDocumentDetail(priceChangeDocumentDetail);
+    sumRetailVATPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
-    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPriceChangeDocumentDetail(priceChangeDocumentDetail));
+    sumMarkupPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 dataWareRangePriceChangeDocumentDetail 'НДС по посуде' (priceChangeDocumentDetail) =
     dataActingRateRangeDate(rangeWareVal(warePriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)),
@@ -9995,12 +9956,12 @@ wareVATSumPriceChangeDocumentDetail 'Сумма НДС по посуде' (price
     sumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 totalSumImporterPricePriceChangeDocument 'Сумма изготовителя' (priceChangeDocument) = GROUP SUM
-    importerPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
+    importerPricePriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
 
 supplierSumPriceChangeDocumentDetail 'Новая сумма поставщика' (priceChangeDocumentDetail)= round0(
-    supplierPriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
+    supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail)* quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 supplierSumPriceChangeDocument 'Новая сумма поставщика' (priceChangeDocument) = GROUP SUM
     supplierSumPriceChangeDocumentDetail(priceChangeDocumentDetail)
         BY documentPriceChangeDocumentDetail(priceChangeDocumentDetail);
@@ -10069,7 +10030,7 @@ oldSumDetailVatWarePriceChangeDocumentDetail 'Сумма НДС по посуд�
     oldSumVatWarePriceChangeDocumentDetail(priceChangeDocumentDetail) * quantityPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 commonMarkupPriceChangeDocumentDetail 'Общий процент надбавки от цены изготовителя' (priceChangeDocumentDetail) = [(X/Y-1)*100](
-    supplierPriceChangeDocumentDetail(priceChangeDocumentDetail), importerPriceChangeDocumentDetail(priceChangeDocumentDetail));
+    supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail), importerPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 oldTotalSumImporterPricePriceChangeDocument 'Старая сумма изготовителя' (priceChangeDocument) = GROUP SUM
     oldImporterPriceChangeDocumentDetail(priceChangeDocumentDetail)*quantityPriceChangeDocumentDetail(priceChangeDocumentDetail)
@@ -10181,7 +10142,7 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              oldSumDetailVatWarePriceChangeDocumentDetail, oldRetailPriceChangeDocumentDetail, oldRetailSumChangeDocumentDetail,
                              supplierSumPriceChangeDocumentDetail, totalSumMarkupPriceChangeDocumentDetail,
                              totalSumRetailVATPriceChangeDocumentDetail, wareSumPriceChangeDocumentDetail,
-                             wareVATSumPriceChangeDocumentDetail, retailPriceChangeDocumentDetail, retailSumChangeDocumentDetail,
+                             wareVATSumPriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail, retailSumChangeDocumentDetail,
                              diffSupplierSumPriceChangeDocumentDetail, diffTotalSumMarkupPriceChangeDocumentDetail,
                              diffTotalSumRetailVATPriceChangeDocumentDetail, diffTotalSumWarePriceChangeDocumentDetail,
                              diffTotalSumVatWarePriceChangeDocumentDetail, accountSumChangeDocumentDetail
@@ -10206,10 +10167,10 @@ FORM priceChangeDocuments 'Акты переоценки'
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
-                             oldImporterPriceChangeDocumentDetail, importerPriceChangeDocumentDetail,
-                             oldSupplierPriceChangeDocumentDetail, supplierPriceChangeDocumentDetail,
+                             oldImporterPriceChangeDocumentDetail, importerPricePriceChangeDocumentDetail,
+                             oldSupplierPriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
                              oldDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
-                             oldRetailPriceChangeDocumentDetail, retailPriceChangeDocumentDetail,
+                             oldRetailPriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
                              oldWarePricePriceChangeDocumentDetail, warePricePriceChangeDocumentDetail
 
     PROPERTIES(pc) FORCE PANEL toPrintActOfRevaluation
@@ -10398,6 +10359,46 @@ DESIGN shipments FROM DEFAULT {
 
     ADD d.grid.box BEFORE s.historyGroup;
 }
+
+//-------------------------------Печатная форма---------------------------------//
+FORM wastagePrint 'Списания отходов' PRINT
+
+    OBJECTS w=wastage FIXED PANEL
+    PROPERTIES (w) SELECTOR numberWastage, seriesWastage, dateWastage, timeWastage, nameCompanyWastage, nameDepartmentStoreWastage, nameSupplierWastage,
+                   countWastageDetailWastage, quantityItemWastageDetailWastage, quantityWastageDetailWastage, supplierISumWastageDetailWastage,
+                   markupSumWastageDetailWastage, retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, wastageCommitteeWastage
+
+    OBJECTS d=wastageDetail
+    PROPERTIES (d) SELECTOR indexWastageDetail, barcodeExSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
+                   supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
+
+    OBJECTS e=employee
+    PROPERTIES(e) SELECTOR   commonName, nameOfficerEmployee
+    OBJECTS a=employee
+    PROPERTIES(a) SELECTOR   commonNameEmployee, nameOfficerEmployee
+
+    FILTERS                  wastageWastageDetail(d)== w,
+                             inWastageEmployee(w, e),
+                             inWastageEmployee(w, a)
+;
+
+toPrintWastage 'Списание отходов' (wastage) = ACTION FORM wastagePrint OBJECTS w IMAGE 'print.png' IN printGroup CONFIRM;
+
+FORM wastages 'Списания отходов'
+
+    OBJECTS w=wastage
+    PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage,
+                   countWastageDetailWastage, quantityItemWastageDetailWastage, quantityWastageDetailWastage, supplierISumWastageDetailWastage, markupSumWastageDetailWastage,
+                   retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, nameWastageCommitteeWastage
+
+    OBJECTS d=wastageDetail
+    PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
+                   supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
+
+    PROPERTIES     FORCE PANEL toPrintWastage(w) TODRAW d
+
+    FILTERS wastageWastageDetail(d)== w;
+;
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
@@ -10721,7 +10722,7 @@ sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSI
                                                                        retailSumReturnSupplier(ledger),
                                                                        retailSumInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumStatementDetailStatement(ledger),
-                                                                       totalSumRetailByWastage(ledger),
+                                                                       retailSumWastageDetailWastage(ledger),
                                                                        accountSumShortageCollationSheet(ledger),
                                                                        sumZReport(ledger),
                                                                        sumSaleDiscountDocument(ledger),
