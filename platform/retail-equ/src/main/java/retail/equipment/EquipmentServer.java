@@ -117,14 +117,14 @@ public class EquipmentServer {
     private void sendSalesInfo(RetailRemoteInterface remote, String equServerID) throws SQLException, IOException {
         List<CashRegisterInfo> cashRegisterInfoList = remote.readCashRegisterInfo(equServerID);
 
-        Map<String, List<MachineryInfo>> handlerModelMap = new HashMap<String, List<MachineryInfo>>();
+        Map<String, List<MachineryInfo>> handlerModelCashRegisterMap = new HashMap<String, List<MachineryInfo>>();
         for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
-            if (!handlerModelMap.containsKey(cashRegister.nameModel))
-                handlerModelMap.put(cashRegister.nameModel, new ArrayList());
-            handlerModelMap.get(cashRegister.nameModel).add(cashRegister);
+            if (!handlerModelCashRegisterMap.containsKey(cashRegister.nameModel))
+                handlerModelCashRegisterMap.put(cashRegister.nameModel, new ArrayList());
+            handlerModelCashRegisterMap.get(cashRegister.nameModel).add(cashRegister);
         }
 
-        for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelMap.entrySet()) {
+        for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelCashRegisterMap.entrySet()) {
             if (entry.getKey() != null) {
 
                 try {
@@ -135,6 +135,33 @@ public class EquipmentServer {
                         remote.errorEquipmentServerReport(equServerID, new Throwable(result));
                     else
                         ((CashRegisterHandler) clsHandler).finishReadingSalesInfo(salesBatch);
+                } catch (Exception e) {
+                    remote.errorEquipmentServerReport(equServerID, e.fillInStackTrace());
+                    return;
+                }
+            }
+        }
+
+        List<TerminalInfo> terminalInfoList = remote.readTerminalInfo(equServerID);
+
+        Map<String, List<MachineryInfo>> handlerModelTerminalMap = new HashMap<String, List<MachineryInfo>>();
+        for (TerminalInfo terminal : terminalInfoList) {
+            if (!handlerModelTerminalMap.containsKey(terminal.nameModel))
+                handlerModelTerminalMap.put(terminal.nameModel, new ArrayList());
+            handlerModelTerminalMap.get(terminal.nameModel).add(terminal);
+        }
+
+        for (Map.Entry<String, List<MachineryInfo>> entry : handlerModelTerminalMap.entrySet()) {
+            if (entry.getKey() != null) {
+
+                try {
+                    Object clsHandler = getHandler(entry.getValue().get(0).handlerModel.trim(), remote);
+                    List<TerminalDocumentInfo> terminalDocumentInfoList = ((TerminalHandler) clsHandler).readTerminalDocumentInfo(terminalInfoList);
+                    String result = remote.sendTerminalDocumentInfo(terminalDocumentInfoList, equServerID);
+                    if (result != null)
+                        remote.errorEquipmentServerReport(equServerID, new Throwable(result));
+                    else
+                        ((TerminalHandler) clsHandler).finishSendingTerminalDocumentInfo(terminalInfoList);
                 } catch (Exception e) {
                     remote.errorEquipmentServerReport(equServerID, e.fillInStackTrace());
                     return;

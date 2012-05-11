@@ -2,6 +2,7 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
 import org.xBaseJ.indexes.Index;
 import org.xBaseJ.xBaseJException;
+import platform.base.BaseUtils;
 import retail.api.remote.*;
 
 import java.io.File;
@@ -213,6 +214,125 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
             }
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
+        }
+    }
+
+    @Override
+    public List<TerminalDocumentInfo> readTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException {
+
+        try {
+
+            List<String> directoriesList = new ArrayList<String>();
+            for (TerminalInfo terminalInfo : terminalInfoList) {
+                if ((terminalInfo.port != null) && (!directoriesList.contains(terminalInfo.port.trim())))
+                    directoriesList.add(terminalInfo.port.trim());
+                if ((terminalInfo.directory != null) && (!directoriesList.contains(terminalInfo.directory.trim())))
+                    directoriesList.add(terminalInfo.directory.trim());
+            }
+            List<TerminalDocumentInfo> terminalDocumentInfoList = new ArrayList<TerminalDocumentInfo>();
+            List<TerminalDocumentDetailInfo> terminalDocumentDetailInfoList = new ArrayList<TerminalDocumentDetailInfo>();
+            for (String directory : directoriesList) {
+
+                Util.setxBaseJProperty("ignoreMissingMDX", "true");
+
+                if (!new File(directory + "/POS.MDX").exists()) {
+                    File filePOSCDX = new File(directory + "/POS.CDX");
+                    filePOSCDX.renameTo(new File((directory + "/POS.MDX")));
+                }
+
+                DBF importFilePos = new DBF(directory + "/Pos.DBF", "CP866");
+                int recordCountPos = importFilePos.getRecordCount();
+
+                for (int i = 0; i < recordCountPos; i++) {
+                    importFilePos.read();
+                    Integer id = new Integer(new String(importFilePos.getField("IDDOC").getBytes(), "Cp866").trim());
+                    String barcode = new String(importFilePos.getField("ARTICUL").getBytes(), "Cp866").trim();
+                    String name = new String(importFilePos.getField("NAME").getBytes(), "Cp866").trim();
+                    Double quantity = new Double(new String(importFilePos.getField("QUAN").getBytes(), "Cp866").trim());
+                    Double price = new Double(new String(importFilePos.getField("PRICE").getBytes(), "Cp866").trim());
+                    Double sum = price * quantity;
+                    Boolean isNew = barcode.contains("*") ? true : null;
+                    terminalDocumentDetailInfoList.add(new TerminalDocumentDetailInfo(id, barcode.replace("*", ""), name, isNew, quantity, price, sum));
+                }
+                importFilePos.close();
+
+                if (!new File(directory + "/DOC.MDX").exists()) {
+                    File fileDOCCDX = new File(directory + "/DOC.CDX");
+                    fileDOCCDX.renameTo(new File((directory + "/DOC.MDX")));
+                }
+
+                DBF importFile = new DBF(directory + "/Doc.DBF", "CP866");
+                int recordCount = importFile.getRecordCount();
+
+                for (int i = 0; i < recordCount; i++) {
+                    importFile.read();
+                    Integer accepted = new Integer(new String(importFile.getField("ACCEPTED").getBytes(), "Cp866").trim());
+                    if (accepted == 0) {
+                        Integer id = new Integer(new String(importFile.getField("IDDOC").getBytes(), "Cp866").trim());
+                        String type = new String(importFile.getField("CVIDDOC").getBytes(), "Cp866").trim();
+                        String handbook1 = new String(importFile.getField("CSPR1").getBytes(), "Cp866").trim();
+                        String handbook2 = new String(importFile.getField("CSPR2").getBytes(), "Cp866").trim();
+                        String title = new String(importFile.getField("TITLE").getBytes(), "Cp866").trim();
+                        Double quantity = new Double(new String(importFile.getField("QUANDOC").getBytes(), "Cp866").trim());
+                        List<TerminalDocumentDetailInfo> currentTerminalDocumentDetailInfoList = new ArrayList<TerminalDocumentDetailInfo>();
+                        for (TerminalDocumentDetailInfo terminalDocumentDetailInfo : terminalDocumentDetailInfoList) {
+                            if (terminalDocumentDetailInfo.id.equals(id))
+                                currentTerminalDocumentDetailInfoList.add(terminalDocumentDetailInfo);
+                        }
+                        terminalDocumentInfoList.add(new TerminalDocumentInfo(id, type,
+                                "".equals(handbook1) ? null : new Integer(handbook1), "".equals(handbook2) ? null : new Integer(handbook2),
+                                title, quantity, currentTerminalDocumentDetailInfoList));
+                    }
+                }
+                importFile.close();
+            }
+            return terminalDocumentInfoList;
+
+        } catch (xBaseJException e) {
+            throw new RuntimeException(e.toString(), e.getCause());
+        }
+    }
+
+    @Override
+    public void finishSendingTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException {
+
+        try {
+            List<String> directoriesList = new ArrayList<String>();
+            for (TerminalInfo terminalInfo : terminalInfoList) {
+                if ((terminalInfo.port != null) && (!directoriesList.contains(terminalInfo.port.trim())))
+                    directoriesList.add(terminalInfo.port.trim());
+                if ((terminalInfo.directory != null) && (!directoriesList.contains(terminalInfo.directory.trim())))
+                    directoriesList.add(terminalInfo.directory.trim());
+            }
+
+            for (String directory : directoriesList) {
+                File folder = new File(directory.trim());
+                if (!folder.exists() && !folder.mkdir())
+                    throw new RuntimeException("The folder " + folder.getAbsolutePath() + " can not be created");
+
+                Util.setxBaseJProperty("ignoreMissingMDX", "true");
+
+                if (!new File(directory + "/DOC.MDX").exists()) {
+                    File fileDOCCDX = new File(directory + "/DOC.CDX");
+                    fileDOCCDX.renameTo(new File((directory + "/DOC.MDX")));
+                }
+
+                DBF fileDOC = new DBF(directory + "/DOC.DBF", "CP866");
+                int recordCount = fileDOC.getRecordCount();
+
+                Index fileDOCIndex = fileDOC.createIndex(directory + "/" + "DOC.NDX", "IDDOC", true, true);
+
+                for (int i = 1; i <= recordCount; i++) {
+                    fileDOC.gotoRecord(i);
+                    fileDOC.getField("ACCEPTED").put("1");
+                    fileDOC.update();
+                }
+                fileDOC.close();
+                if (!fileDOCIndex.file.delete())
+                    throw new RuntimeException("File" + fileDOCIndex.file.getAbsolutePath() + " can not be deleted");
+            }
+        } catch (xBaseJException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 }
