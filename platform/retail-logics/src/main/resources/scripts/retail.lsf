@@ -1053,6 +1053,32 @@ META defineDocumentPriceChangeCurPrice (object)
     @defineDocumentPriceChangeCurRetailPrice (object);
 END
 
+// ----------------------------------- Поставщик ------------------------------------------ //
+
+META defineDocumentHeaderSupplierContract(object)
+    supplier###object 'Поставщик (ИД)' (object) = DATA supplier (object) IN idGroup;
+    nameSupplier###object 'Поставщик' (object) = name(supplier###object(object)) IN documentHeaderGroup
+        MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
+    supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
+
+    contract###object 'Договор' (object) = DATA contract (object) IN idGroup;
+
+    contract###object (object) <- overrideContractCompanySupplier(companyDepartmentStore(departmentStore###object(object)), supplier###object(object))
+                                   IF (countContracts(supplier###object(object), departmentStore###object(object)) == 1)
+                                   WHEN CHANGED(supplier###object(object));
+
+    numberContract###object 'Договор' (object) = numberContract(contract###object(object)) IN documentPrmGroup;
+
+    dateContract###object 'Договор от' (object) = dateFromContract(contract###object(object)) IN documentPrmGroup;
+
+    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContract(contract###object(object))
+        CHECKED BY contract###object MESSAGE 'Выберите договор данного поставщика';
+    CONSTRAINT contract###object(object) AND NOT companyDepartmentStore(departmentStore###object(object)) == companyContract(contract###object(object))
+        CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';
+    CONSTRAINT contract###object(object) AND NOT isOperatingContract(contract###object(object), date###object(object))
+        CHECKED BY contract###object MESSAGE 'Выберите действующий договор';
+END
+
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
 META defineDocumentDefaultProperties (object)
 
@@ -5900,6 +5926,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 
 @defineDocumentDefaultProperties(shipment);
 
+@defineDocumentHeaderSupplierContract(shipment);
 @defineDocumentHeaderRevaluation(shipment);
 
 @defineDocumentDetailItemExtra(shipment);
@@ -5931,28 +5958,6 @@ sidNumberSeriesToShipmentDetail (sid, number, series) = GROUP UNIQUE shipmentDet
             WHERE shipmentDetail IS shipmentDetail;
 
 numberSeriesToShipment (number, series) = GROUP UNIQUE shipment BY numberObject(shipment), seriesObject(shipment) WHERE shipment IS shipment;
-
-supplierShipment 'Поставщик (ИД)' (shipment) = DATA supplier (shipment) IN idGroup;
-nameSupplierShipment 'Поставщик' (shipment) = name(supplierShipment(shipment)) IN documentHeaderGroup
-    MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
-supplierShipmentDetail (shipmentDetail) = supplierShipment(shipmentShipmentDetail(shipmentDetail));
-
-contractShipment 'Договор' (shipment) = DATA contract (shipment) IN idGroup;
-
-contractShipment (shipment) <- overrideContractCompanySupplier(companyDepartmentStore(departmentStoreShipment(shipment)), supplierShipment(shipment))
-                               IF (countContracts(supplierShipment(shipment), departmentStoreShipment(shipment)) == 1)
-                               WHEN CHANGED(supplierShipment(shipment));
-
-numberContractShipment 'Договор' (shipment) = numberContract(contractShipment(shipment)) IN documentPrmGroup;
-
-dateContractShipment 'Договор от' (shipment) = dateFromContract(contractShipment(shipment)) IN documentPrmGroup;
-
-CONSTRAINT contractShipment(shipment) AND NOT supplierShipment(shipment) == supplierContract(contractShipment(shipment))
-    CHECKED BY contractShipment MESSAGE 'Выберите договор данного поставщика';
-CONSTRAINT contractShipment(shipment) AND NOT companyDepartmentStore(departmentStoreShipment(shipment)) == companyContract(contractShipment(shipment))
-    CHECKED BY contractShipment MESSAGE 'Выберите договор данного юр. лица';
-CONSTRAINT contractShipment(shipment) AND NOT isOperatingContract(contractShipment(shipment), dateShipment(shipment))
-    CHECKED BY contractShipment MESSAGE 'Выберите действующий договор';
 
 consigneeShipment 'Грузополучатель' (shipment) =
     [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
@@ -6359,6 +6364,7 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 
 @defineDocumentDefaultProperties(returnSupplier);
 
+@defineDocumentHeaderSupplierContract(returnSupplier);
 @defineDocumentHeaderRevaluation(returnSupplier);
 
 @defineDocumentDetailItemExtra(returnSupplier);
@@ -6380,28 +6386,6 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentHeaderWareSum(returnSupplier);
 @defineDocumentHeaderOutSum(returnSupplier);
 @defineDocumentHeaderInvoiceSum(returnSupplier);
-
-// шапка документа "Возврат поставщику"
-supplierReturnSupplier 'Поставщик (ИД)' (returnSupplier) = DATA supplier (returnSupplier) IN idGroup;
-nameSupplierReturnSupplier 'Поставщик' (returnSupplier) = name(supplierReturnSupplier(returnSupplier)) IN documentPrmGroup
-    MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
-supplierReturnSupplierDetail 'Поставщик (ИД)' (returnSupplierDetail) = supplierReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
-
-contractReturnSupplier 'Договор' (returnSupplier) = DATA contract (returnSupplier) IN idGroup;
-
-contractReturnSupplier (returnSupplier) <- overrideContractCompanySupplier(companyDepartmentStore(departmentStoreReturnSupplier(returnSupplier)), supplierReturnSupplier(returnSupplier))
-                               IF (countContracts(supplierReturnSupplier(returnSupplier), departmentStoreReturnSupplier(returnSupplier)) == 1)
-                               WHEN CHANGED(supplierReturnSupplier(returnSupplier));
-
-numberContractReturnSupplier 'Договор' (returnSupplier) = numberContract(contractReturnSupplier(returnSupplier)) IN documentPrmGroup;
-
-CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT supplierReturnSupplier(returnSupplier) == supplierContract(contractReturnSupplier(returnSupplier))
-    CHECKED BY contractReturnSupplier MESSAGE 'Выберите договор данного поставщика';
-CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT companyDepartmentStore(departmentStoreReturnSupplier(returnSupplier)) == companyContract(contractReturnSupplier(returnSupplier))
-    CHECKED BY contractReturnSupplier MESSAGE 'Выберите договор данного юр. лица';
-CONSTRAINT contractReturnSupplier(returnSupplier) AND NOT isOperatingContract(contractReturnSupplier(returnSupplier), dateReturnSupplier(returnSupplier))
-    CHECKED BY contractReturnSupplier MESSAGE 'Выберите действующий договор';
 
 // количество/цены по строкам
 
