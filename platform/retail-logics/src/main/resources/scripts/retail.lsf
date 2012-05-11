@@ -601,9 +601,9 @@ META defineDocumentDetailWare (object)
     ware###object##Detail = DATA ware(object##Detail);
     nameWare###object##Detail 'Посуда' (detail) = name(ware###object##Detail(detail)) IN priceDetailGroup;
 
-    dataWareRange###object##Detail 'НДС посуды, %' (detail) =
-        dataActingRateRangeDate(rangeWareVal(ware###object##Detail(detail), date###object##Detail(detail)),
-                                date###object##Detail(detail));
+    wareRange###object##Detail (detail) = rangeWareVal(ware###object##Detail(detail), date###object##Detail(detail));
+    numberWareRange###object##Detail 'НДС посуды, номер' (detail) = dataRange(wareRange###object##Detail(detail));
+    dataWareRange###object##Detail 'НДС посуды, %' (detail) = dataActingRateRangeDate(wareRange###object##Detail(detail), date###object##Detail(detail));
 
     inWare###object##Detail 'Товар в посуде' (detail) = inWareItem(item###object##Detail(detail));
 
@@ -731,6 +731,10 @@ END
 META defineDocumentDetailCurWare (object)
     curWare###object##Detail = DATA ware (object##Detail) IN idGroup;
     curNameWare###object##Detail 'Текущая посуда' (detail) = name(curWare###object##Detail(detail)) IN priceDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+    curWareRange###object##Detail (detail) = rangeWareVal(curWare###object##Detail(detail), date###object##Detail(detail));
+    curNumberWareRange###object##Detail 'Текущий НДС посуды, номер' (detail) = dataRange(curWareRange###object##Detail(detail));
+    curDataWareRange###object##Detail 'Текущий НДС посуды, %' (detail) = dataActingRateRangeDate(curWareRange###object##Detail(detail), date###object##Detail(detail));
 
     curWarePrice###object##Detail 'Текущая цена посуды' (detail) = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
 END
@@ -2730,6 +2734,7 @@ DESIGN naturalLossItems FROM DEFAULT {
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
 //inActionItemDepartmentDate 'Товар акции' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
 
+TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 @metaCodeDoubleObjectDateProperty(maxReserveItemDepartment, item, departmentStore, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], orderGroup);
@@ -6725,68 +6730,19 @@ CLASS userPriceChangePosted 'Закрытая переоценка товаро�
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
 
-quantityUserPriceChangeDetail 'Кол-во переоценки' = DATA NUMERIC[14,3] (userPriceChangeDetail);
+@defineDocumentDetailQuantity(userPriceChange);
+@defineDocumentDetailBasePrice(userPriceChange);
+@defineDocumentDetailCurBasePrice(userPriceChange);
+
 @defineDocumentHeaderItemQuantity(userPriceChange);
 
 @defineDocumentHeaderRevaluation(userPriceChange);
 
-importerPriceUserPriceChangeDetail 'Цена изготовителя' = DATA NUMERIC[14,2] (userPriceChangeDetail);
-supplierPriceUserPriceChangeDetail 'Цена поставщика' = DATA NUMERIC[14,2] (userPriceChangeDetail);
-retailRangeUserPriceChangeDetail 'НДС' = DATA range (userPriceChangeDetail);
-numberRetailRangeUserPriceChangeDetail 'НДС, номер' (userPriceChangeDetail) = dataRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail));
-dataRetailRangeUserPriceChangeDetail 'НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(retailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
-retailPriceUserPriceChangeDetail 'Новая розничная цена' = DATA NUMERIC[14,2] (userPriceChangeDetail);
-
-CONSTRAINT taxRange(retailRangeUserPriceChangeDetail(userPriceChangeDetail)) != tax.taxNDS CHECKED BY retailRangeUserPriceChangeDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-curImporterPriceUserPriceChangeDetail 'Текущая цена изготовителя' = DATA NUMERIC[14,2] (userPriceChangeDetail);
-curSupplierPriceUserPriceChangeDetail 'Текущая цена поставщика' = DATA NUMERIC[14,2] (userPriceChangeDetail);
-curRetailRangeUserPriceChangeDetail 'Текущий НДС' = DATA range (userPriceChangeDetail);
-curNumberRetailRangeUserPriceChangeDetail 'Текущий НДС, номер' (userPriceChangeDetail) = dataRange(curRetailRangeUserPriceChangeDetail(userPriceChangeDetail));
-curDataRetailRangeUserPriceChangeDetail 'Текущий НДС, %' (userPriceChangeDetail) = dataActingRateRangeDate(curRetailRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
-curRetailPriceUserPriceChangeDetail 'Текущая розничная цена' = DATA NUMERIC[14,2] (userPriceChangeDetail);
-
-castUserPriceChangeToString100=
-    FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
-
-descriptionUserPriceChange 'Название документа' (userPriceChange) = castUserPriceChangeToString100(
+descriptionUserPriceChange 'Название документа' (userPriceChange) =
+    [FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(userPriceChange), dateUserPriceChange(userPriceChange));
 
 descriptionUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
-
-wareUserPriceChangeDetail 'Посуда (ИД)' (userPriceChangeDetail) = DATA ware(userPriceChangeDetail) IN baseGroup;
-wareUserPriceChangeDetail(userPriceChangeDetail) <- wareItem(itemUserPriceChangeDetail(userPriceChangeDetail)) WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-warePriceUserPriceChangeDetail 'Цена посуды' (userPriceChangeDetail) = DATA NUMERIC[14,2] (userPriceChangeDetail) IN baseGroup;
-
-wareRangeUserPriceChangeDetail  (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
-wareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal(wareUserPriceChangeDetail(userPriceChangeDetail),
-    dateUserPriceChangeDetail(userPriceChangeDetail)) WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-numberWareRangeUserPriceChangeDetail 'НДС,номер по посуде' (userPriceChangeDetail) = dataRange(
-    wareRangeUserPriceChangeDetail(userPriceChangeDetail));
-
-dataWareRangeUserPriceChangeDetail 'НДС,% по посуде' (userPriceChangeDetail) = dataActingRateRangeDate(
-    wareRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
-
-curWareUserPriceChangeDetail 'Текущая посуда (ИД)' (userPriceChangeDetail) = DATA ware(userPriceChangeDetail) IN idGroup;
-
-curWarePriceUserPriceChangeDetail 'Текущая цена посуды' (userPriceChangeDetail) = DATA NUMERIC[14,2] (userPriceChangeDetail) IN baseGroup;
-
-curWareRangeUserPriceChangeDetail  (userPriceChangeDetail) = DATA range (userPriceChangeDetail);
-curWareRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeWareVal(curWareUserPriceChangeDetail(userPriceChangeDetail),
-    dateUserPriceChangeDetail(userPriceChangeDetail)) WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-curNumberWareRangeUserPriceChangeDetail 'Тек. НДС,номер по посуде' (userPriceChangeDetail) = dataRange(
-    curWareRangeUserPriceChangeDetail(userPriceChangeDetail));
-
-curDataWareRangeUserPriceChangeDetail 'Тек. НДС,% по посуде' (userPriceChangeDetail) = dataActingRateRangeDate(
-    curWareRangeUserPriceChangeDetail(userPriceChangeDetail), dateUserPriceChangeDetail(userPriceChangeDetail));
-
-
-isUserPriceChangeDetail(userPriceChangeDetail) = userPriceChangeDetail IS userPriceChangeDetail;
-
-TABLE itemDepartmentStore (item, departmentStore);
 
 //------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
 
@@ -11118,8 +11074,8 @@ showFormAddPercMarkupUserPriceChange 'Изменить наценку товар
                 SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
                 SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
                 SET retailRangeUserPriceChangeDetail(userPriceChangeDetail) <- curRetailRangeUserPriceChangeDetail(userPriceChangeDetail);
+                SET wareUserPriceChangeDetail(userPriceChangeDetail) <- curWareUserPriceChangeDetail(userPriceChangeDetail);
                 SET warePriceUserPriceChangeDetail(userPriceChangeDetail) <- curWarePriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET wareRangeUserPriceChangeDetail(userPriceChangeDetail) <- curWareRangeUserPriceChangeDetail(userPriceChangeDetail);
                 SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newMarkupRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
             }
         }
@@ -11146,8 +11102,8 @@ showFormAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceC
                 SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
                 SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
                 SET retailRangeUserPriceChangeDetail(userPriceChangeDetail) <- curRetailRangeUserPriceChangeDetail(userPriceChangeDetail);
+                SET wareUserPriceChangeDetail(userPriceChangeDetail) <- curWareUserPriceChangeDetail(userPriceChangeDetail);
                 SET warePriceUserPriceChangeDetail(userPriceChangeDetail) <- curWarePriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET wareRangeUserPriceChangeDetail(userPriceChangeDetail) <- curWareRangeUserPriceChangeDetail(userPriceChangeDetail);
                 SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newDiscountRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
             }
         }
