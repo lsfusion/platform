@@ -5,7 +5,6 @@ import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 
@@ -41,8 +40,7 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
         }
 
         Map<I, Expr> innerExprs = BaseUtils.override(allKeys, DataObject.getMapExprs(innerValues)); // чисто оптимизационная вещь
-        write(context, toValues, toKeys, where.mapExpr(innerExprs, context.getModifier()).getWhere(),
-                rightNullCrossJoin(mapInterfaces, context.getObjectInstances()), innerExprs); // для extend'утого контекста проверяем все ли ключи
+        write(context, toValues, toKeys, where.mapExpr(innerExprs, context.getModifier()).getWhere(), innerExprs); // для extend'утого контекста проверяем все ли ключи
 
         return FlowResult.FINISH;
     }
@@ -52,7 +50,7 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
         return where.mapIsFull(BaseUtils.filterNot(innerInterfaces, mapInterfaces.values()));
     }
 
-    protected abstract void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, PropertyObjectInterfaceInstance> innerObjects, Map<I, Expr> innerExprs) throws SQLException;
+    protected abstract void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException;
 
     protected abstract Collection<Property> getWriteProps();
 

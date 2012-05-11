@@ -1,9 +1,9 @@
 package roman;
 
 import platform.interop.ClassViewType;
+import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -52,7 +52,7 @@ public abstract class BaseImportActionProperty extends CustomReadValueActionProp
         entity.forceViewType = ClassViewType.PANEL;
     }
 
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
         return valueClass;
     }
 }

@@ -17,6 +17,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -140,8 +141,8 @@ public class SampleLogicsModule extends LogicsModule {
                 }
             }
 
-            UserInputResult result = context.requestUserInput(IntegerClass.instance, null);
-            if (!result.isCanceled()) {
+            ObjectValue result = context.requestUserData(IntegerClass.instance, null);
+            if (result!=null) {
                 Object value = result.getValue();
                 context.addActions(
                         articleDescription.execute(value == null ? null : "Descr # " + value, context.getSession(), context.getSingleKeyValue())

@@ -27,19 +27,12 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     String getSID() throws RemoteException;
 
-    // синхронная проверка на то можно ли менять свойство
-    byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) throws RemoteException;
-
     public ServerResponse executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 
     boolean canChangeClass(int objectID) throws RemoteException;
 
     boolean hasClientActionOnApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
-
-    RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException;
-
-    RemoteDialogInterface createChangeEditorDialog(int viewID) throws RemoteException;
 
     // операции без ответа, можно pendiть до первой операции с ответом
 
@@ -50,17 +43,11 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    ServerResponse changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
-
-    ServerResponse groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
-
     ServerResponse pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
 
     ServerResponse pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
 
     boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
-
-    Object getPropertyChangeValue(int propertyID) throws RemoteException;
 
     void switchClassView(int groupID) throws RemoteException;
 

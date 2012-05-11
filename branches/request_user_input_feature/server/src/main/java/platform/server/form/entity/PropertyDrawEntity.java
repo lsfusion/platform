@@ -33,7 +33,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String mouseBinding;
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
-    public Map<String, PropertyObjectEntity> editActions;
+    public Map<String, PropertyObjectEntity> editActions = new HashMap<String, PropertyObjectEntity>();
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
@@ -79,9 +79,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void setEditAction(String actionSID, PropertyObjectEntity editAction) {
-        if (editActions == null) {
-            editActions = new HashMap<String, PropertyObjectEntity>();
-        }
         editActions.put(actionSID, editAction);
     }
 

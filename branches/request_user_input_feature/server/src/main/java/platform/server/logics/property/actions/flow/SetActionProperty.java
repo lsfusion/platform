@@ -3,7 +3,6 @@ package platform.server.logics.property.actions.flow;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.PropertyChange;
@@ -29,7 +28,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     }
 
     @Override
-    protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, PropertyObjectInterfaceInstance> innerObjects, Map<I, Expr> innerExprs) throws SQLException {
+    protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException {
         if(!isWhereFull())
             changeWhere = changeWhere.and(writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere());
         writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);

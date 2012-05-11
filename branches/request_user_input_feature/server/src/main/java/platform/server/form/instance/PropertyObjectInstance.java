@@ -114,17 +114,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return new PropertyValueImplement<P>(property, getInterfaceValues());
     }
 
-    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, DataSession session, Modifier modifier) throws SQLException {
-        if(aggValue)
-            return property.getChangeImplement(aggProp, getInterfaceValues(), session, modifier).mapObjects(mapping);
-        else
-            return this;
-    }
-
-    public Type getEditorType() {
-        return property.getEditorType(mapping);
-    }
-
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException {
         return property.read(session, getInterfaceValues(), modifier, env);
     }
@@ -134,21 +123,25 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     }
 
     public List<ClientAction> execute(ExecutionEnvironment env, CompareValue getterValue, GroupObjectInstance groupObject) throws SQLException {
+        return env.execute(property, getPropertyChange(getterValue, groupObject, env.getModifier()), mapping);
+    }
+
+    private PropertyChange<P> getPropertyChange(CompareValue getterValue, GroupObjectInstance groupObject, Modifier modifier) {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        Modifier modifier = env.getModifier();
 
         Map<ObjectInstance, ? extends Expr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
-        Where changeWhere = Where.TRUE;
-        if (groupObject != null) { // в общем то replace потому как changeImplement может быть с меньшим количеством ключей, а для getWhere они все равно нужны
+        if (groupObject != null)  { // в общем то replace потому как changeImplement может быть с меньшим количеством ключей, а для getWhere они все равно нужны
             groupKeys = BaseUtils.replace(DataObject.getMapExprs(groupObject.getGroupObjectValue()), BaseUtils.crossJoin(mapping, mapKeys));
-            changeWhere = groupObject.getWhere(groupKeys, modifier);
-        }
+            Where changeWhere = groupObject.getWhere(groupKeys, modifier);
 
-        for (Map.Entry<P, PropertyObjectInterfaceInstance> mapObject : mapping.entrySet()) {
-            changeWhere = changeWhere.and(mapKeys.get(mapObject.getKey()).compare(mapObject.getValue().getExpr(groupKeys, modifier), Compare.EQUALS));
-        }
+            for (Map.Entry<P, PropertyObjectInterfaceInstance> mapObject : mapping.entrySet()) {
+                changeWhere = changeWhere.and(mapKeys.get(mapObject.getKey()).compare(mapObject.getValue().getExpr(groupKeys, modifier), Compare.EQUALS));
+            }
 
-        return env.execute(property, new PropertyChange<P>(mapKeys, getterValue.getExpr(groupKeys, modifier), changeWhere), mapping);
+            return new PropertyChange<P>(mapKeys, getterValue.getExpr(groupKeys, modifier), changeWhere);
+        } else {
+            return new PropertyChange<P>(getterValue.getExpr(new HashMap<ObjectInstance, Expr>(), modifier), getInterfaceValues());
+        }
     }
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
@@ -164,7 +157,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     }
 
     public CustomClass getDialogClass() {
-        return property.getDialogClass(getInterfaceValues(), getInterfaceClasses(), mapping);
+        return property.getDialogClass(getInterfaceValues(), getInterfaceClasses());
     }
 
     @IdentityLazy
@@ -185,5 +178,9 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     @Override
     public String toString() {
         return property.toString();
+    }
+    
+    public PropertyObjectInstance<?> getEditAction(String editActionSID) {
+        return property.getEditAction(editActionSID).mapObjects(mapping);
     }
 }

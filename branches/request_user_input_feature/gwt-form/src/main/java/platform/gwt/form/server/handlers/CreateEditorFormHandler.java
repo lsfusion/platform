@@ -20,8 +20,9 @@ public class CreateEditorFormHandler extends FormActionHandler<CreateEditorForm>
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         //пока пустой columnKey
-        RemoteDialogInterface remoteForm = form.remoteForm.createChangeEditorDialog(action.propertyId);
+//        RemoteDialogInterface remoteForm = form.remoteForm.createChangeEditorDialog(action.propertyId);
 
-        return createResult(remoteForm);
+//        return createResult(remoteForm);
+        return null;
     }
 }

@@ -1,8 +1,8 @@
 package roman;
 
+import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -83,7 +83,7 @@ public class GerryWeberPricatCSVImportActionProperty extends CustomReadValueActi
     }
 
     @Override
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
         return valueClass;
     }
 }

@@ -38,8 +38,7 @@ public class JoinActionProperty extends KeepContextActionProperty {
                 return FlowResult.FINISH;
             }
         }
-        ((ActionProperty) action.property).execute(context.override(readValues,
-                                nullInnerJoin(action.mapping, context.getObjectInstances())));
+        ((ActionProperty) action.property).execute(context.override(readValues, action.mapping));
         return FlowResult.FINISH;
     }
 

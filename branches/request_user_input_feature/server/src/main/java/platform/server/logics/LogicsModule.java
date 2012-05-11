@@ -588,10 +588,10 @@ public abstract class LogicsModule {
 
         if (readImplements.size() == 3) {
             return addProperty(group, new LP<ClassPropertyInterface>(new IfActionProperty(name, caption, listInterfaces, readImplements.get(0),
-                        (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(2))));
+                        (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1), (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(2), false)));
         } else {
             return addProperty(group, new LP<ClassPropertyInterface>(new IfActionProperty(name, caption, listInterfaces, readImplements.get(0),
-                        (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1))));
+                        (PropertyMapImplement<ClassPropertyInterface, PropertyInterface>)readImplements.get(1), false)));
         }
     }
 
@@ -2169,11 +2169,6 @@ public abstract class LogicsModule {
         return property;
     }
 
-    @IdentityLazy
-    protected LP getImportObjectAction(CustomClass cls) {
-        return addAProp(new ImportFromExcelActionProperty(genSID(), cls));
-    }
-
 
     protected LP addHideCaptionProp(LP original, LP hideProperty) {
         return addHideCaptionProp(original.property, hideProperty);
@@ -2483,8 +2478,6 @@ public abstract class LogicsModule {
 
     protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast, ObjectEntity checkObject, ValueClass checkObjectClass) {
         CustomClass objectClass = (CustomClass) object.baseClass;
-        if (actionImport)
-            form.addPropertyDraw(getImportObjectAction(objectClass)).toDraw = object.groupTo;
 
         PropertyDrawEntity actionAddPropertyDraw;
         if (checkObject == null) {

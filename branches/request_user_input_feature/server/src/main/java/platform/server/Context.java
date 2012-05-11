@@ -2,6 +2,7 @@ package platform.server;
 
 import platform.interop.action.ClientAction;
 import platform.interop.form.UserInputResult;
+import platform.server.classes.DataClass;
 import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -11,6 +12,8 @@ import platform.server.form.instance.remote.RemoteDialog;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -30,7 +33,9 @@ public interface Context {
     RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 
-    UserInputResult requestUserInput(Type type, Object oldValue);
+    ObjectValue requestUserObject(ExecutionContext.RequestDialog requestDialog) throws SQLException;
+    ObjectValue requestUserData(DataClass dataClass, Object oldValue);
+
     Object requestUserInteraction(ClientAction action);
     Object[] requestUserInteraction(ClientAction... actions);
 }

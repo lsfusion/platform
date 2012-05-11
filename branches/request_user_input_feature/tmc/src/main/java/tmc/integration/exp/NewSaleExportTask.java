@@ -24,6 +24,7 @@ public class NewSaleExportTask extends AbstractSaleExportTask {
     }
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
-        formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported), true, true, false);
+        PropertyDrawInstance propertyDraw = formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported);
+        formInstance.changeProperty(propertyDraw.propertyObject, true, propertyDraw.toDraw);
     }
 }

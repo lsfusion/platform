@@ -578,78 +578,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private List<ClientAction> actions = Collections.synchronizedList(new ArrayList<ClientAction>());
     private ObjectInstance updateCurrentClass = null;
 
-    public ServerResponse changePropertyDraw(final int propertyID, final byte[] columnKey, final byte[] object, final boolean all, final boolean aggValue) throws RemoteException {
-        assert false:"changePropertyDraw shouldn't be used anymore";
-        return executeWithFormChanges(new TRunnable() {
-            @Override
-            public void run() throws Exception {
-                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-                actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), all, aggValue));
-
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
-                    if (keys.size() > 0) {
-                        logger.info("   columnKeys: ");
-                        for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                        }
-                    }
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("   current object's values: ");
-                        for (ObjectInstance obj : form.getObjects()) {
-                            logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    public ServerResponse groupChangePropertyDraw(final int mainID, final byte[] mainColumnKey, final int getterID, final byte[] getterColumnKey) throws RemoteException {
-        assert false:"groupChangePropertyDraw shouldn't be used anymore";
-        return executeWithFormChanges(new TRunnable() {
-            @Override
-            public void run() throws Exception {
-                PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
-                PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
-
-                Map<ObjectInstance, DataObject> mainKeys = deserializePropertyKeys(mainProperty, mainColumnKey);
-                Map<ObjectInstance, DataObject> getterKeys = deserializePropertyKeys(getterProperty, getterColumnKey);
-                actions.addAll(
-                        form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, true, false)
-                );
-
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
-                                              mainProperty.getID(), mainProperty.getsID(),
-                                              getterProperty.getID(), getterProperty.getsID()));
-                    if (mainKeys.size() > 0) {
-                        logger.info("   mainColumnKeys: ");
-                        for (Map.Entry<ObjectInstance, DataObject> entry : mainKeys.entrySet()) {
-                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                        }
-                    }
-
-                    if (getterKeys.size() > 0) {
-                        logger.info("   getterColumnKeys: ");
-                        for (Map.Entry<ObjectInstance, DataObject> entry : getterKeys.entrySet()) {
-                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                        }
-                    }
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("   current object's values: ");
-                        for (ObjectInstance obj : form.getObjects()) {
-                            logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                        }
-                    }
-                }
-            }
-        });
-    }
-
     public ServerResponse pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return executeWithFormChanges(new TRunnable() {
@@ -672,29 +600,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
-        try {
-            Property mainProperty = form.getPropertyDraw(mainID).getChangeInstance(form.BL, form).property;
+//        try {
+//            Property mainProperty = form.getPropertyDraw(mainID).getChangeInstance(form.BL, form).property;
 
             int n = propertiesIDs.length;
             boolean result[] = new boolean[n];
-            for (int i = 0; i < n; ++i) {
+/*            for (int i = 0; i < n; ++i) {
                 Property property = form.getPropertyDraw(propertiesIDs[i]).getChangeInstance(form.BL, form).property;
                 result[i] = mainProperty.getType().isCompatible( property.getType() );
-            }
+            }*/
             return result;
-        } catch (SQLException e) {
-            return null;
-        }
-    }
-
-    @Override
-    public Object getPropertyChangeValue(int propertyID) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            return form.getPropertyDraw(propertyID).getChangeInstance(form.BL, form).read(form.session.sql, form, form.session.env);
-        } catch (SQLException e) {
-            return null;
-        }
+  //      } catch (SQLException e) {
+  //          return null;
+  //      }
     }
 
     public boolean canChangeClass(int objectID) throws RemoteException {
@@ -941,38 +859,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             throw new RuntimeException(e);
         }
         return outStream.toByteArray();
-    }
-
-    public byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) {
-        assert false:"getPropertyChangeType shouldn't be used anymore";
-        try {
-            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-
-            return form.serializePropertyChangeType(propertyDraw, keys, aggValue);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException {
-        assert false:"createObjectEditorDialog shouldn't be used anymore";
-        try {
-            DialogInstance<T> dialogForm = form.createObjectEditorDialog(form.getPropertyDraw(viewID));
-            return dialogForm == null ? null : createRemoteDialog(dialogForm);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public RemoteDialogInterface createChangeEditorDialog(int viewID) throws RemoteException {
-        assert false:"createChangeEditorDialog shouldn't be used anymore";
-        try {
-            DialogInstance<T> dialogForm = form.createChangeEditorDialog(form.getPropertyDraw(viewID));
-            return createRemoteDialog(dialogForm);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public RemoteFormInterface createForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {

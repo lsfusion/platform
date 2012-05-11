@@ -18,7 +18,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.PartitionType;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -4282,7 +4281,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
 
@@ -4343,7 +4342,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4403,7 +4402,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4476,7 +4475,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4494,7 +4493,7 @@ public class VEDLogicsModule extends LogicsModule {
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
             Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).diff(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey));
             PropertyChange change = articleQuantity.getChange(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), docKey, articleKey);
-            context.getEnv().execute(articleQuantity.property, change, null);
+            context.getEnv().execute(articleQuantity.property, change);
 
             context.addAction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }

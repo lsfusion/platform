@@ -2,13 +2,9 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
-import platform.base.Result;
-import platform.server.logics.DataObject;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.StructChanges;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
@@ -56,15 +52,19 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
     protected boolean checkWhere() {
         return true;
     }
+
     @Override
-    public PropertyMapImplement<?, Interface> modifyChangeImplement(Result<Property> aggProp, Map<Interface, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
-        for(Case propCase : getCases()) {
-            if(!checkWhere() || propCase.where.read(session, interfaceValues, modifier)!=null) {
-                PropertyMapImplement<?, Interface> operandImplement = propCase.property.mapChangeImplement(interfaceValues, session, modifier);
-                if(operandImplement!=null)
-                    return operandImplement;
-            }
+    public PropertyMapImplement<ClassPropertyInterface, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+        // нужно создать List - if(where[classes]) {getEditAction(); return;}
+        boolean ifClasses = !checkWhere();
+        PropertyMapImplement<ClassPropertyInterface, Interface> result = null;
+        for(Case propCase : BaseUtils.reverse(getCases())) {
+            PropertyMapImplement<ClassPropertyInterface, Interface> editAction = propCase.property.mapEditAction(editActionSID, filterProperty);
+            if(result==null && ifClasses)
+                result = editAction;
+            else
+                result = DerivedProperty.createIfAction(interfaces, propCase.where, editAction, result, ifClasses);
         }
-        return super.modifyChangeImplement(aggProp, interfaceValues, session, modifier);
+        return result;
     }
 }

@@ -5,6 +5,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
+import platform.interop.form.ServerResponse;
 import platform.server.Message;
 import platform.server.Settings;
 import platform.server.ThisMessage;
@@ -49,6 +50,7 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
+import platform.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import platform.server.logics.property.change.ActionPropertyChangeListener;
 import platform.server.logics.property.change.PropertyChangeListener;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -431,16 +433,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // получает базовый класс по сути нужен для определения класса фильтра
-    public CustomClass getDialogClass(Map<T, DataObject> mapValues, Map<T, ConcreteClass> mapClasses, Map<T, PropertyObjectInterfaceInstance> mapObjects) {
+    public CustomClass getDialogClass(Map<T, DataObject> mapValues, Map<T, ConcreteClass> mapClasses) {
         Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for (Map.Entry<T, DataObject> keyField : mapValues.entrySet())
             mapExprs.put(keyField.getKey(), new ValueExpr(keyField.getValue().object, mapClasses.get(keyField.getKey())));
         return (CustomClass) new Query<String, String>(new HashMap<String, KeyExpr>(), getClassExpr(mapExprs), "value").
                 getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
-    }
-
-    public Type getEditorType(Map<T, PropertyObjectInterfaceInstance> mapObjects) {
-        return getType();
     }
 
     @IdentityLazy
@@ -615,17 +613,46 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return BaseUtils.toMap(new HashSet<T>(interfaces));
     }
 
-    public PropertyMapImplement<?, T> modifyChangeImplement(Result<Property> aggProp, Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
-        if (new ClassWhere<T>(DataObject.getMapClasses(session.getCurrentObjects(interfaceValues))).means(getClassWhere()))
-            return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
-        return null;
+    public PropertyMapImplement<ClassPropertyInterface, T> getEditAction(String editActionSID) {
+        return getEditAction(editActionSID, null);
     }
-    // assert пока что aggrProps со свойствами с одним входом
-    public PropertyMapImplement<?, T> getChangeImplement(Result<Property> aggProp, Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
-        PropertyMapImplement<?, T> changedImplement;
-        if(interfaceValues==null || (changedImplement = modifyChangeImplement(aggProp, interfaceValues, session, modifier)) == null)
-            return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
-        return changedImplement;
+
+    private Map<String, PropertyMapImplement<ClassPropertyInterface, T>> editActions = new HashMap<String, PropertyMapImplement<ClassPropertyInterface, T>>();
+    public PropertyMapImplement<ClassPropertyInterface, T> getEditAction(String editActionSID, Property filterProperty) {
+        PropertyMapImplement<ClassPropertyInterface, T> editAction = editActions.get(editActionSID);
+        if(editAction!=null)
+            return editAction;
+
+        if(editActionSID.equals(ServerResponse.CHANGE_WYS)) {
+            PropertyMapImplement<ClassPropertyInterface, T> customChangeEdit = editActions.get(ServerResponse.CHANGE);// если перегружен
+            if(customChangeEdit!=null) // возвращаем customChangeEdit
+                return customChangeEdit;
+        }
+
+        if(editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
+            PropertyMapImplement<ClassPropertyInterface, T> customChangeEdit = editActions.get(ServerResponse.CHANGE);// если перегружен
+            if(customChangeEdit!=null) { // если перегружен, иначе пусть работает комбинаторная логика (в принципе можно потом по аналогии с PASTE делать)
+                return null;
+            }
+        }
+
+        if(editActionSID.equals(ServerResponse.PASTE)) {
+            PropertyMapImplement<ClassPropertyInterface, T> customChangeWYSEdit = getEditAction(ServerResponse.CHANGE_WYS);// если перегружен
+            return null;
+        }
+
+        return getDefaultEditAction(editActionSID, filterProperty);
+    }
+
+    public PropertyMapImplement<ClassPropertyInterface, T> getDefaultEditAction(String editActionSID, Property filterProperty) {
+        List<T> listInterfaces = new ArrayList<T>();
+        List<ValueClass> listValues = new ArrayList<ValueClass>();
+        for(Map.Entry<T, ValueClass> mapClass : getMapClasses().entrySet()) {
+            listInterfaces.add(mapClass.getKey());
+            listValues.add(mapClass.getValue());
+        }
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<T>("DE" + getSID() + "_" + editActionSID, "sys", this, listInterfaces, listValues, editActionSID, null);
+        return new PropertyMapImplement<ClassPropertyInterface, T>(changeActionProperty, changeActionProperty.getMapInterfaces());
     }
 
     public boolean checkEquals() {
@@ -853,7 +880,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
-        return getImplement().execute(keys, env, value);
+        return execute(keys, env, value, null);
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -1150,9 +1177,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if(notNull) {
             Expr defaultExpr = getDefaultExpr(set.getMapExprs());
             if(defaultExpr!=null)
-                env.execute(this, new PropertyChange<T>(set, defaultExpr), null);
+                env.execute(this, new PropertyChange<T>(set, defaultExpr));
         } else
-            env.execute(this, new PropertyChange<T>(set, CaseExpr.NULL), null);
+            env.execute(this, new PropertyChange<T>(set, CaseExpr.NULL));
     }
 
     protected boolean hasSet(boolean notNull) {

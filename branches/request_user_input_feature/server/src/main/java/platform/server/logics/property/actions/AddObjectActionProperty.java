@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.server.classes.*;
-import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
@@ -79,7 +78,7 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
         return "getAddObjectAction(" + valueClass.getSID() + ")";
     }
 
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
         if(dataClass!=null)
             return dataClass;
         if(valueClass.hasChildren())

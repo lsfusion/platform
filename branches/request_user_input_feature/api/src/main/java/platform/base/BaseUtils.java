@@ -161,6 +161,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <BK, K extends BK, V> Map<K, V> filterKeys(Iterable<BK> keys, Map<K, V> map) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (BK key : keys) {
+            V value = map.get(key);
+            if (value != null) result.put((K) key, value);
+        }
+        return result;
+    }
+
     public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Iterable<? extends K> keys) {
         Map<K, V> result = new HashMap<K, V>();
         for (K key : keys) {
@@ -229,7 +238,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> Collection<K> filterNot(Collection<K> col, Collection<K> filter) {
+    public static <BK,K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : col)
             if (!filter.contains(element))
@@ -309,6 +318,14 @@ public class BaseUtils {
 
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo) {
         return crossValues(map, mapTo, false);
+    }
+
+    public static <KA, KB, V> Map<KA, KB> rightCrossValues(Map<KA, V> map, Map<KB, V> mapTo) {
+        return rightJoin(map, reverse(mapTo));
+    }
+
+    public static <KA, KB, V> Map<KA, KB> crossInnerValues(Map<KA, V> map, Map<KB, V> mapTo) {
+        return innerJoin(map, reverse(mapTo));
     }
 
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo, boolean ignoreUnique) {
@@ -1385,6 +1402,17 @@ public class BaseUtils {
         return reverseThis(new ArrayList<K>(col));
     }
 
+    public static <K> List<K> toList(Iterable<K> col) {
+        List<K> result = new ArrayList<K>();
+        for(K element : col)
+            result.add(element);
+        return result;
+    }
+
+    public static <K> List<K> reverse(Iterable<K> col) {
+        return reverse(toList(col));
+    }
+
     public static <K> List<K> reverseThis(List<K> col) {
         Collections.reverse(col);
         return col;
@@ -1445,6 +1473,14 @@ public class BaseUtils {
     public static <K> List<K> toList(K... elements) {
         List<K> list = new ArrayList<K>();
         Collections.addAll(list, elements);
+        return list;
+    }
+
+    public static <K> List<K> toListNoNull(K... elements) {
+        List<K> list = new ArrayList<K>();
+        for(K element : elements)
+            if(element!=null)
+                list.add(element);
         return list;
     }
 

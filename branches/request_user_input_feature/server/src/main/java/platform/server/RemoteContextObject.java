@@ -7,17 +7,22 @@ import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.interop.RemoteContextInterface;
 import platform.interop.action.ClientAction;
+import platform.interop.action.DialogClientAction;
 import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.UserInputResult;
 import platform.interop.remote.RemoteObject;
-import platform.server.data.type.Type;
+import platform.server.classes.DataClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
+import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteDialog;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
@@ -98,10 +103,22 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         }
     }
 
+    public ObjectValue requestUserObject(ExecutionContext.RequestDialog dialog) throws SQLException { // null если canceled
+        DialogInstance<?> dialogInstance = dialog.createDialog();
+        RemoteDialog remoteDialog = createRemoteDialog(dialogInstance);
+        requestUserInteraction(new DialogClientAction(remoteDialog));
+        if(dialogInstance.getFormResult() == FormCloseType.CLOSE)
+            return null;
+        return dialogInstance.getFormResult() == FormCloseType.NULL ? NullValue.instance : dialogInstance.getDialogObjectValue();
+    }
+
     @Override
-    public UserInputResult requestUserInput(Type type, Object oldValue) {
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
         try {
-            return (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(type), serializeObject(oldValue)));
+            UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue)));
+            if(result.isCanceled())
+                return null;
+            return result.getValue()==null?NullValue.instance:new DataObject(result.getValue(), dataClass);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

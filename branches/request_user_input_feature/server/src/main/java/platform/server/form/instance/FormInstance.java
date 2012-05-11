@@ -74,7 +74,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public final T BL;
 
-    SecurityPolicy securityPolicy;
+    public SecurityPolicy securityPolicy;
 
     public CustomClass getCustomClass(int classID) {
         return BL.LM.baseClass.findClassID(classID);
@@ -634,24 +634,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return securityPolicy.cls.edit.change.checkPermission(object.currentClass);
     }
 
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, boolean aggValue) throws SQLException {
-        return changeProperty(property, value, false, aggValue);
-    }
-
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, new HashMap<ObjectInstance, DataObject>(), value, all, aggValue);
-    }
-
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues,
-                                             PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL, valueColumnKeys, this), all, aggValue);
-    }
-
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, boolean all, boolean aggValue) throws SQLException {
-        assert !property.isReadOnly();
-        return changeProperty(property.getChangeInstance(aggValue, BL, mapDataValues, this), value, all ? property.toDraw : null);
-    }
-
     @Message("message.form.change.property")
     public List<ClientAction> changeProperty(@ParamMessage PropertyObjectInstance<?> property, Object value, GroupObjectInstance groupObject) throws SQLException {
         if (securityPolicy.property.change.checkPermission(property.property)) {
@@ -662,68 +644,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public byte[] serializePropertyChangeType(PropertyDrawInstance<?> propertyDraw, Map<ObjectInstance, DataObject> keys, boolean aggValue) throws SQLException, IOException {
-        assert false:"not used anymore";
-
-        ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
-        DataOutputStream outStream = new DataOutputStream(dataStream);
-
-        Type type = getPropertyChangeType(propertyDraw, keys, aggValue);
-        if (type != null) {
-            outStream.writeBoolean(false);
-            TypeSerializer.serializeType(outStream, type);
-        } else {
-            outStream.writeBoolean(true);
-        }
-
-        return dataStream.toByteArray();
-    }
-
-    public Type getPropertyChangeType(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> keys, boolean aggValue) throws SQLException {
-        boolean isReadOnly = property.isReadOnly() ||
-                //не даём редактировать ObjectValueProperty в таблице - т.к. это бессмысленно
-                (property.toDraw!=null && property.toDraw.curClassView == ClassViewType.GRID && property.propertyObject.property instanceof ObjectValueProperty) ||
-                (property.propertyReadOnly != null && property.propertyReadOnly.read(session, this) != null);
-
-        if (!isReadOnly) {
-            PropertyObjectInstance<?> change = property.getChangeInstance(aggValue, BL, keys, this);
-            if (securityPolicy.property.change.checkPermission(change.property) &&
-                    (entity.isActionOnChange(change.property) || change.getValueImplement().canBeChanged(this))) {
-                return change.getEditorType();
-            }
-        }
-        return null;
-    }
-
     public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
-        PropertyObjectInstance editAction = property.getEditAction(editActionSID);
-        if (editAction == null && (ServerResponse.CHANGE.equals(editActionSID) || ServerResponse.EDIT_OBJECT.equals(editActionSID) || ServerResponse.GROUP_CHANGE.equals(editActionSID))) {
-            //изменение через старый механизм
-            return executeChangeEditActionOldWayAdapter(property, editActionSID, keys);
-        }
-        editAction = editAction.getRemappedPropertyObject(keys);
-        return editAction.execute(new ExecutionEnvironment(this), ActionClass.TRUE, null);
-    }
+        if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(session, this) != null)
+            return new ArrayList<ClientAction>();
 
-    private List<ClientAction> executeChangeEditActionOldWayAdapter(PropertyDrawInstance<?> property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
-        //todo: this need thoughtfull refactoring
-
-        //todo: reimplement Ctrl+V
-        boolean aggValue = true;
-        boolean groupChange = ServerResponse.GROUP_CHANGE.equals(editActionSID);
-
-        Context currentContext = Context.context.get();
-
-        Type changeType = getPropertyChangeType(property, keys, aggValue);
-        if (changeType != null) {
+        if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
             //ask confirm logics...
-            PropertyDrawView propertyView = entity.getRichDesign().get(property.entity);
-            boolean askConfirm = propertyView.askConfirm;
-            Type baseType = propertyView.getType();
-
-            if (askConfirm) {
+            PropertyDrawView propertyView = entity.getRichDesign().get(property.getEntity());
+            if (propertyView.askConfirm) {
                 String msg;
-                if (baseType instanceof ActionClass) {
+                if (property.propertyObject.getType() instanceof ActionClass) {
                     msg = getString("form.instance.do.you.really.want.to.take.action");
                 } else {
                     msg = getString("form.instance.do.you.really.want.to.edit.property");
@@ -734,52 +664,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     msg += " \"" + caption + "\"?";
                 }
 
-                int result = (Integer)currentContext.requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
+                int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
                 if (result != JOptionPane.YES_OPTION) {
-                    return null;
-                }
-            }
-        }
-
-        if (changeType instanceof ActionClass) {
-            //сразу изменяем для action'ов
-            return changeProperty(property, keys, true, groupChange, aggValue);
-        } else if (changeType instanceof DataClass) {
-            Object oldValue = null;
-            //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
-            if (!(changeType instanceof FileClass)) {
-                PropertyObjectInstance<?> change = property.getChangeInstance(aggValue, BL, keys, this);
-                oldValue = change.read(session, this);
-            }
-            UserInputResult inputResult = currentContext.requestUserInput(changeType, oldValue);
-            if (!inputResult.isCanceled()) {
-                return changeProperty(property, keys, inputResult.getValue(), groupChange, aggValue);
-            }
-        } else if (changeType instanceof ObjectType) {
-            try {
-                if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
-                    DialogInstance<T> dialogInstance = createObjectEditorDialog(property);
-                    RemoteDialog dialog = currentContext.createRemoteDialog(dialogInstance);
-                    currentContext.requestUserInteraction(new DialogClientAction(dialog));
                     return new ArrayList<ClientAction>();
-                } else {
-                    DialogInstance<T> dialogInstance = createChangeEditorDialog(property);
-                    RemoteDialog dialog = currentContext.createRemoteDialog(dialogInstance);
-                    currentContext.requestUserInteraction(new DialogClientAction(dialog));
-                    if (dialogInstance.getFormResult() == FormCloseType.OK) {
-                        Object newValue = dialogInstance.getDialogValue();
-                        return changeProperty(property, keys, newValue, groupChange, aggValue);
-                    }
-                    if (dialogInstance.getFormResult() == FormCloseType.NULL) {
-                        return changeProperty(property, keys, null, groupChange, aggValue);
-                    }
                 }
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
             }
         }
 
-        return null;
+        PropertyObjectInstance editAction = property.getEditAction(editActionSID);
+        if(editAction!=null)
+            return editAction.getRemappedPropertyObject(keys).
+                    execute(new ExecutionEnvironment(this), ActionClass.TRUE, null);
+        return new ArrayList<ClientAction>();
     }
 
     public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
@@ -811,9 +707,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 if (propertyIndex < row.size() //если вдруг копировали не таблицу - может быть разное кол-во значений в строках
                         && !(propertyObjectInstance.getType() instanceof ActionClass)
                         && !property.isReadOnly() && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
-                    dataChanged = true;
                     Object value = row.get(propertyIndex);
-                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), new ExecutionEnvironment(this), value);
+                    changeProperty(propertyObjectInstance.getRemappedPropertyObject(key), value, null);
+                    dataChanged = true;
                 }
             }
         }
@@ -842,7 +738,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }
-                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), new ExecutionEnvironment(this), parsedValue);
+                    changeProperty(propertyObjectInstance.getRemappedPropertyObject(key), parsedValue, null);
                     dataChanged = true;
                 }
             }
@@ -1320,7 +1216,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         final Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReaderInstance, Set<GroupObjectInstance>>();
 
         for (PropertyDrawInstance<?> drawProperty : properties) {
-            if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == HIDE) continue;
+            if (drawProperty.toDraw.curClassView == HIDE) continue;
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
             if (forceViewType != null && forceViewType == HIDE) continue;
@@ -1332,7 +1228,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
             Boolean inInterface = null;
             Set<GroupObjectInstance> drawGridObjects = null;
-            if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
+            if (drawProperty.toDraw.curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
                     drawProperty.propertyObject.isInInterface(drawGridObjects = BaseUtils.addSet(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) // в grid'е
                 inInterface = true;
             else if (drawProperty.propertyObject.isInInterface(drawGridObjects = columnGroupGrids, false)) // в панели
@@ -1459,28 +1355,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     // pullProps чтобы запретить hint'ить
-    public <P extends PropertyInterface, F extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject, Collection<PullChangeProperty> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, PropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Collection<PullChangeProperty> pullProps) {
         Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
 
-        PropertyValueImplement<P> implement = changeProperty.getValueImplement();
-
-        for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties(changeProperty))) {
+        for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties(implement.property))) {
             pullProps.add(constrainedProperty);
             fixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
                             constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object))));
         }
 
-        ObjectEntity object = editForm.object;
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
-                for (ObjectEntity filterObject : filterEntity.getObjects()) {
-                    //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
-                    if (filterObject.baseClass == object.baseClass) {
-                        fixedFilters.add(filterEntity.getRemappedFilter(filterObject, object, instanceFactory));
-                        break;
-                    }
-                }
                 for(PropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implement.property)) {
                     OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) filterImplement.property.getOnChangeProperty(implement.property);
                     pullProps.add(onChangeProperty);
@@ -1492,17 +1378,38 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return fixedFilters;
     }
 
+    public <P extends PropertyInterface, F extends PropertyInterface> Set<FilterEntity> getObjectFixedFilters(ClassFormEntity<T> editForm, GroupObjectInstance selectionGroupObject) {
+        Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
+        ObjectEntity object = editForm.object;
+        for (FilterEntity filterEntity : entity.fixedFilters) {
+            FilterInstance filter = filterEntity.getInstance(instanceFactory);
+            if (filter.getApplyObject() == selectionGroupObject) { // берем фильтры из этой группы
+                for (ObjectEntity filterObject : filterEntity.getObjects()) {
+                    //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
+                    if (filterObject.baseClass == object.baseClass) {
+                        fixedFilters.add(filterEntity.getRemappedFilter(filterObject, object, instanceFactory));
+                        break;
+                    }
+                }
+            }
+        }
+        return fixedFilters;
+    }
+
     public Object read(PropertyObjectInstance<?> property) throws SQLException {
         return property.read(session, this);
     }
 
-    public DialogInstance<T> createObjectEditorDialog(PropertyDrawInstance propertyDraw) throws RemoteException, SQLException {
-        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(BL, this);
+    public DialogInstance<T> createObjectDialog(CustomClass objectClass) throws SQLException {
+        ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
+        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer);
+    }
 
-        CustomClass objectClass = changeProperty.getDialogClass();
+    public DialogInstance<T> createObjectEditorDialog(PropertyValueImplement propertyValues) throws SQLException {
+        CustomClass objectClass = propertyValues.getDialogClass(session);
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
 
-        Object currentObject = read(changeProperty);
+        Object currentObject = propertyValues.read(session, this);
         if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
             currentObject = addObject((ConcreteCustomClass)objectClass).object;
         }
@@ -1512,18 +1419,32 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
     }
 
-    public DialogInstance<T> createChangeEditorDialog(PropertyDrawInstance propertyDraw) throws SQLException {
-        Result<Property> aggProp = new Result<Property>();
-        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL, this);
+    public DialogInstance<T> createChangeEditorDialog(PropertyValueImplement propertyValues, GroupObjectInstance groupObject, Property filterProperty) throws SQLException {
 
-        ClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
+        ClassFormEntity<T> formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
         Set<PullChangeProperty> pullProps = new HashSet<PullChangeProperty>();
-        Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw, pullProps);
+        Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer, additionalFilters, pullProps);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(session, this), instanceFactory.computer, additionalFilters, pullProps);
 
-        Property<PropertyInterface> filterProperty = aggProp.result;
+        if (filterProperty != null) {
+            dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
+        }
+
+        dialog.undecorated = BL.isDialogUndecorated();
+
+        return dialog;
+    }
+
+    public DialogInstance<T> createChangeObjectDialog(CustomClass dialogClass, Object dialogValue, GroupObjectInstance groupObject, Property filterProperty) throws SQLException {
+
+        ClassFormEntity<T> formEntity = dialogClass.getDialogForm(BL.LM);
+        Set<FilterEntity> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
+
+        ObjectEntity dialogObject = formEntity.object;
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, additionalFilters, new HashSet<PullChangeProperty>());
+
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
         }

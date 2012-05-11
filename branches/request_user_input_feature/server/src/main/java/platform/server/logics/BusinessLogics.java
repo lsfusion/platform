@@ -1295,7 +1295,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     LM.connectionCurrentStatus.property.getExpr(LM.connectionCurrentStatus.getMapKeys())
                             .compare(LM.connectionStatus.getDataObject("connectedConnection").getExpr(), Compare.EQUALS));
 
-            new ExecutionEnvironment(session).execute(LM.connectionCurrentStatus.property, statusChanges, null);
+            new ExecutionEnvironment(session).execute(LM.connectionCurrentStatus.property, statusChanges);
 
             if (session.hasChanges())
                 session.apply(this);
@@ -1768,11 +1768,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
     
-    public List<Property> getCheckConstrainedProperties(PropertyObjectInstance<?> changingProp) {
+    public List<Property> getCheckConstrainedProperties(Property<?> changingProp) {
         List<Property> result = new ArrayList<Property>();
         for (Property property : getCheckConstrainedProperties()) {
             if (property.checkChange == Property.CheckType.CHECK_ALL ||
-                property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp.property)) {
+                property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)) {
                 result.add(property);
             }
         }

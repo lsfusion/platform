@@ -10,6 +10,7 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PullChangeProperty;
@@ -77,8 +78,12 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
         return super.allowHintIncrement(property);
     }
 
+    public ObjectValue getDialogObjectValue() {
+        return dialogObject.getObjectValue();
+    }
+
     public Object getDialogValue() {
-        return dialogObject.getObjectValue().getValue();
+        return getDialogObjectValue().getValue();
     }
 
     public Object getCellDisplayValue() {

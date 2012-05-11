@@ -31,7 +31,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
     Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
     ObjectValue readClasses(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) throws SQLException;
 
-    public PropertyMapImplement<?, P> mapChangeImplement(Map<P, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException;
+    public PropertyMapImplement<ClassPropertyInterface, P> mapEditAction(String editActionSID, Property filterProperty);
 
     MapDataChanges<P> mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges);
 

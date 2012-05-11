@@ -1,19 +1,16 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.FormEnvironment;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static platform.base.BaseUtils.innerJoin;
-import static platform.base.BaseUtils.join;
-import static platform.base.BaseUtils.nullInnerJoin;
+import static platform.base.BaseUtils.*;
 
 public abstract class FlowActionProperty extends ActionProperty {
 
@@ -44,17 +41,17 @@ public abstract class FlowActionProperty extends ActionProperty {
 
     protected abstract FlowResult flowExecute(ExecutionContext context) throws SQLException;
 
-    protected static FlowResult execute(ExecutionContext context, PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> implement) throws SQLException {
+    public static FlowResult execute(ExecutionContext context, PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> implement) throws SQLException {
         FlowActionProperty property = (FlowActionProperty) implement.property;
         return property.flowExecute(
                 context.map(implement.mapping, property.getValueClass().getDefaultObjectValue())
         );
     }
 
-    protected static <M> FlowResult execute(ExecutionContext context, PropertyImplement<ClassPropertyInterface, M> implement, Map<M, DataObject> keys, Map<M, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public static <M> FlowResult execute(ExecutionContext context, PropertyImplement<ClassPropertyInterface, M> implement, Map<M, DataObject> keys, Map<ClassPropertyInterface, M> mapInterfaces) throws SQLException {
         FlowActionProperty property = (FlowActionProperty) implement.property;
         return property.flowExecute(
-                context.override(join(implement.mapping, keys), nullInnerJoin(implement.mapping, mapObjects))
+                context.override(join(implement.mapping, keys), crossInnerValues(mapInterfaces, implement.mapping))
         );
     }
 }

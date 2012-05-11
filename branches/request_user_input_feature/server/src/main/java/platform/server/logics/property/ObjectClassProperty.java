@@ -7,15 +7,11 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
-import platform.server.form.instance.CustomObjectInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
@@ -39,15 +35,6 @@ public class ObjectClassProperty extends ExecuteProperty {
 
     public ValueClass getValueClass() {
         return baseClass.objectClass;
-    }
-
-    @Override
-    public Type getEditorType(Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
-        if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance) {
-            CustomObjectInstance object = (CustomObjectInstance) BaseUtils.singleValue(mapObjects);
-            return object.baseClass.getActionClass(object.currentClass);
-        } else
-            return super.getEditorType(mapObjects);
     }
 
     public void execute(ExecutionContext context) throws SQLException {

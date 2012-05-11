@@ -93,11 +93,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType() {
-        try {
-            return entity.propertyObject.property.getChangeImplement(new Result<Property>(), null, null, null).property.getEditorType(new HashMap());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return getType();
     }
 
     public String getSID() {

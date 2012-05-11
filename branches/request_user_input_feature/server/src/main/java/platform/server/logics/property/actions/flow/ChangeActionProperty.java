@@ -3,7 +3,6 @@ package platform.server.logics.property.actions.flow;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.PropertyChange;
@@ -29,7 +28,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
         finalizeInit();
     }
 
-    protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, PropertyObjectInterfaceInstance> innerObjects, Map<I, Expr> innerExprs) throws SQLException {
+    protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException {
 
         Expr writeExpr = writeFrom.mapExpr(innerExprs, context.getModifier());
 
@@ -38,7 +37,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
                     writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere()));
 
         PropertyChange<P> change = new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere);
-        context.addActions(context.getEnv().execute(writeTo.property, change, nullInnerJoin(writeTo.mapping, innerObjects)));
+        context.addActions(context.getEnv().execute(writeTo.property, change));
     }
 
     public Set<Property> getUsedProps() {

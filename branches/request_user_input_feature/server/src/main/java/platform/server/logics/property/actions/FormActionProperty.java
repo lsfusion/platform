@@ -2,10 +2,10 @@ package platform.server.logics.property.actions;
 
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.classes.ActionClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
@@ -77,7 +77,9 @@ public class FormActionProperty extends CustomReadValueActionProperty {
         this.form = form;
     }
 
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
+        if(valueClass.equals(ActionClass.instance))
+            return null;
         return valueClass;
     }
 

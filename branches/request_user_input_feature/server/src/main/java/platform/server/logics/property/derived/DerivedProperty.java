@@ -8,6 +8,7 @@ import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.IfActionProperty;
 import platform.server.logics.property.actions.flow.SetActionProperty;
 
 import java.util.*;
@@ -104,7 +105,7 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createCompare(Collection<T> interfaces, PropertyInterfaceImplement<T> distribute, PropertyInterfaceImplement<T> previous, Compare compare) {
         return createCompare("sys", interfaces, distribute, previous, compare);
     }
-    
+
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, PropertyInterfaceImplement<T> object, List<PropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
         if(ands.size()==0 && object instanceof PropertyMapImplement)
             return (PropertyMapImplement<?,T>)object;
@@ -124,7 +125,9 @@ public class DerivedProperty {
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
-
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, List<PropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
+        return createAnd(genID(), "sys", interfaces, object, ands, nots);
+    }
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<? extends PropertyInterfaceImplement<T>> ands) {
         return createAnd(genID(), "sys", interfaces, object, ands);
     }
@@ -552,6 +555,12 @@ public class DerivedProperty {
         List<L> listInterfaces = new ArrayList<L>(property.interfaces);
         SetActionProperty<L, PropertyInterface, L> actionProperty = new SetActionProperty<L, PropertyInterface, L>(genID(), (notNull ? "Задать" : "Сбросить") + " " + property.caption,
                 property.interfaces, listInterfaces, (PropertyMapImplement<PropertyInterface,L>) DerivedProperty.createStatic(true, LogicalClass.instance), property.getImplement(), notNull, check);
+        return new PropertyMapImplement<ClassPropertyInterface, L>(actionProperty, actionProperty.getMapInterfaces(listInterfaces));
+    }
+
+    public static <L extends PropertyInterface> PropertyMapImplement<ClassPropertyInterface, L> createIfAction(Collection<L> innerInterfaces, PropertyMapImplement<?, L> where, PropertyMapImplement<ClassPropertyInterface, L> action, PropertyMapImplement<ClassPropertyInterface, L> elseAction, boolean ifClasses) {
+        List<L> listInterfaces = new ArrayList<L>(innerInterfaces);
+        IfActionProperty actionProperty = new IfActionProperty(genID(), "sys", listInterfaces, where, action, elseAction, ifClasses);
         return new PropertyMapImplement<ClassPropertyInterface, L>(actionProperty, actionProperty.getMapInterfaces(listInterfaces));
     }
 }

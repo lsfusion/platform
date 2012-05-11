@@ -4,8 +4,8 @@ import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
@@ -32,7 +32,7 @@ public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty
         this.storeNewObjectProperty = storeNewObjectProperty;
     }
 
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
         if(valueClass.hasChildren())
             return valueClass.getActionClass(valueClass);
         return null;

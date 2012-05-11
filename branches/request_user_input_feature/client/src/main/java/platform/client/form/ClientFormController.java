@@ -595,19 +595,6 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    public void changePropertyDraw(ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, boolean all, boolean aggValue) throws IOException {
-        assert false:"changePropertyDraw shouldn't be called";
-
-        // для глобальных свойств пока не может быть отложенных действий
-        if (property.getGroupObject() != null) {
-            SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
-        }
-
-        processServerResponse(
-                remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(), BaseUtils.serializeObject(value), all, aggValue)
-        );
-    }
-
     public ServerResponse executeEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
         commitOrCancelCurrentEditing();
 
@@ -624,28 +611,32 @@ public class ClientFormController {
 
     public RemoteDialogInterface createChangeEditorDialog(ClientPropertyDraw property) throws RemoteException {
         assert false;
-        return remoteForm.createChangeEditorDialog(property.getID());
+//        return remoteForm.createChangeEditorDialog(property.getID());
+        return null;
     }
 
     public RemoteDialogInterface createObjectEditorDialog(ClientPropertyDraw property) throws RemoteException {
         assert false;
-        return remoteForm.createObjectEditorDialog(property.getID());
+//        return remoteForm.createObjectEditorDialog(property.getID());
+        return null;
     }
 
     public Object getPropertyChangeValue(ClientPropertyDraw property) throws RemoteException {
         assert false;
-        return remoteForm.getPropertyChangeValue(property.getID());
+//        return remoteForm.getPropertyChangeValue(property.getID());
+        return null;
     }
 
     public boolean[] getCompatibleProperties(ClientPropertyDraw mainProperty, ClientPropertyDraw[] otherProperties) throws RemoteException {
         assert false;
-        int n = otherProperties.length;
+/*        int n = otherProperties.length;
         int propertiesIDs[] = new int[n];
         for (int i = 0; i < n; ++i) {
             propertiesIDs[i] = otherProperties[i].getID();
         }
 
-        return remoteForm.getCompatibleProperties(mainProperty.getID(), propertiesIDs);
+        return remoteForm.getCompatibleProperties(mainProperty.getID(), propertiesIDs);*/
+        return new boolean[0];
     }
 
     public void gainedFocus() {
@@ -701,9 +692,9 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
         }
 
-        processServerResponse(
-                remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize())
-        );
+//        processServerResponse(
+//                remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize())
+//        );
         refresh();
     }
 
@@ -906,7 +897,8 @@ public class ClientFormController {
 
     public byte[] getPropertyChangeType(ClientPropertyDraw property, ClientGroupObjectValue key, boolean aggValue) throws IOException {
         assert false;
-        return remoteForm.getPropertyChangeType(property.getID(), key.serialize(), aggValue);
+//        return remoteForm.getPropertyChangeType(property.getID(), key.serialize(), aggValue);
+        return new byte[0];
     }
 
     public void dropLayoutCaches() {

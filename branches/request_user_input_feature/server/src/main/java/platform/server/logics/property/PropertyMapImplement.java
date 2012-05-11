@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.crossJoin;
+import static platform.base.BaseUtils.nullJoin;
 import static platform.base.BaseUtils.reverse;
 
 public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyImplement<P, T> implements PropertyInterfaceImplement<T> {
@@ -73,13 +74,6 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         property.setNotNull(BaseUtils.join(mapping, values), env, notNull, check);
     }
 
-    public PropertyMapImplement<?, T> mapChangeImplement(Map<T, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
-        PropertyMapImplement<?, P> changeImplement = property.modifyChangeImplement(new Result<Property>(), BaseUtils.join(mapping, interfaceValues), session, modifier);
-        if(changeImplement!=null)
-            return changeImplement.map(mapping);
-        return null;
-    }
-
     public PropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
         return new PropertyObjectInstance<P>(property, BaseUtils.join(mapping, mapObjects));
     }
@@ -88,16 +82,16 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         return new PropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
-        return execute(keys, env, value, null);
-    }
-
-    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, Object value, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         return execute(keys, env, env.getSession().getObjectValue(value, property.getType()), mapObjects);
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        return env.execute(property, mapValues(keys).getPropertyChange(objectValue.getExpr()), mapObjects);
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return env.execute(property, mapValues(keys).getPropertyChange(objectValue.getExpr()), nullJoin(mapping, mapObjects));
+    }
+
+    public List<ClientAction> execute(PropertyChange<T> change, ExecutionEnvironment env, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return env.execute(property, change.map(mapping), nullJoin(mapping, mapObjects));
     }
 
     public void fill(Set<T> interfaces, Set<PropertyMapImplement<?, T>> properties) {
@@ -139,5 +133,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     
     public PropertyMapImplement<P, T> mapChanged(IncrementType type) {
         return new PropertyMapImplement<P, T>(property.getChanged(type), mapping);
+    }
+
+    @Override
+    public PropertyMapImplement<ClassPropertyInterface, T> mapEditAction(String editActionSID, Property filterProperty) {
+        return property.getEditAction(editActionSID, filterProperty).map(mapping);
     }
 }

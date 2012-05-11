@@ -13,6 +13,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.FormEnvironment;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,6 +43,10 @@ public class ExecutionEnvironment {
         return current.isInTransaction();
     }
 
+    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change) throws SQLException {
+        return execute(property, change, null);
+    }
+
     public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         current.fireChange(property, change);
 
@@ -64,7 +69,7 @@ public class ExecutionEnvironment {
                 if(property instanceof DataProperty)
                     getSession().changeProperty((DataProperty)property, row.getKey(), row.getValue().get("value"), !iterator.hasNext());
                 else
-                    ((ExecuteProperty)property).execute(new ExecutionContext(row.getKey(), row.getValue().get("value"), this, actions, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext()));
+                    ((ExecuteProperty)property).execute(new ExecutionContext(row.getKey(), row.getValue().get("value"), this, actions, mapInterfaces == null ? null : new FormEnvironment(BaseUtils.nullJoin(mapInterfaces, mapObjects), null), !iterator.hasNext()));
             }
         }
         return actions;

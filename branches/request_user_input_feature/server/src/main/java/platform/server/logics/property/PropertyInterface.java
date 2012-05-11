@@ -98,7 +98,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public PropertyMapImplement<?, P> mapChangeImplement(Map<P, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+    public PropertyMapImplement<ClassPropertyInterface, P> mapEditAction(String editActionSID, Property filterProperty) {
         return null;
     }
 

@@ -27,7 +27,6 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -7886,7 +7885,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             throw new RuntimeException("no need");
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             return DoubleClass.instance;
         }
 

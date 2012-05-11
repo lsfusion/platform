@@ -41,13 +41,13 @@ public class CustomerCheckRetailImportActionProperty extends CustomActionPropert
 
                 impFile.read();
 
-                formInstance.addObject(BL.VEDLM.customerCheckRetail);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.LM.barcode), new String(impFile.getField("barcode").getBytes(), "Cp1251"), false);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.LM.name), new String(impFile.getField("name").getBytes(), "Cp1251"), false);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()), false);
+                DataObject dataObject = context.addObject(BL.VEDLM.customerCheckRetail);
+                BL.LM.barcode.execute(new String(impFile.getField("barcode").getBytes(), "Cp1251"), context, dataObject);
+                BL.LM.name.execute(new String(impFile.getField("name").getBytes(), "Cp1251"), context, dataObject);
+                BL.VEDLM.clientInitialSum.execute(Double.parseDouble(impFile.getField("clientsum").get()), context, dataObject);
             }
 
-            formInstance.apply(null, context.getActions());
+            context.apply(BL);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

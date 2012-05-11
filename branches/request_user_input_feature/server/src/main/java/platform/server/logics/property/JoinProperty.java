@@ -2,10 +2,10 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
-import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.CustomClass;
+import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -18,10 +18,9 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.DataObject;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
@@ -172,22 +171,24 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public PropertyMapImplement<?, Interface> modifyChangeImplement(Result<Property> aggProp, Map<Interface, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+    public PropertyMapImplement<ClassPropertyInterface, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
         if(implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
+            List<PropertyInterfaceImplement<Interface>> ands = new ArrayList<PropertyInterfaceImplement<Interface>>();
+            List<Boolean> nots = new ArrayList<Boolean>();
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface) {
-                    Object read = implement.mapping.get(andInterface).read(session, interfaceValues, modifier);
-                    if((read!=null) == ((AndFormulaProperty.AndInterface)andInterface).not)
-                        return null; // не подходит
+                    ands.add(implement.mapping.get(andInterface));
+                    nots.add(((AndFormulaProperty.AndInterface)andInterface).not);
                 }
-            return implement.mapping.get(andProperty.objectInterface).mapChangeImplement(interfaceValues, session, modifier);
+            return DerivedProperty.createIfAction(interfaces, DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createStatic(true, LogicalClass.instance), ands, nots),
+                    implement.mapping.get(andProperty.objectInterface).mapEditAction(editActionSID, filterProperty), null, false);
         }
         if(implement.mapping.size()==1 && !implementChange) {
-            aggProp.set(implement.property);
-            return BaseUtils.singleValue(implement.mapping).mapChangeImplement(interfaceValues, session, modifier);
+            // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
+            return BaseUtils.singleValue(implement.mapping).mapEditAction(editActionSID, implement.property);
         }
-        return super.modifyChangeImplement(aggProp, interfaceValues, session, modifier);
+        return super.getDefaultEditAction(editActionSID, filterProperty);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     public boolean checkEquals() {

@@ -94,12 +94,9 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            Map<String, PropertyObjectInstance<?>> editActions = null;
-            if (entity.editActions != null) {
-                editActions = new HashMap<String, PropertyObjectInstance<?>>();
-                for (Map.Entry<String, PropertyObjectEntity> i : entity.editActions.entrySet()) {
-                    editActions.put(i.getKey(), getInstance(i.getValue()));
-                }
+            Map<String, PropertyObjectInstance<?>> editActions = new HashMap<String, PropertyObjectInstance<?>>();
+            for (Map.Entry<String, PropertyObjectEntity> i : entity.editActions.entrySet()) {
+                editActions.put(i.getKey(), getInstance(i.getValue()));
             }
 
             propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(

@@ -3,7 +3,6 @@ package roman;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
@@ -34,7 +33,7 @@ public class TNVEDImportActionProperty extends CustomReadValueActionProperty {
         return FileActionClass.getDefinedInstance(false, "Файл базы данных \"DBF\"", "dbf");
     }
 
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
         return getFileClass();
     }
 

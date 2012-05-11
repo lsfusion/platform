@@ -9,7 +9,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
@@ -41,14 +40,6 @@ public class ObjectValueProperty extends ExecuteClassProperty {
 
     public ValueClass getValueClass() {
         return typeClass;
-    }
-
-    @Override
-    public CustomClass getDialogClass(Map<ClassPropertyInterface, DataObject> mapValues, Map<ClassPropertyInterface, ConcreteClass> mapClasses, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
-        if (mapObjects.size() > 0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
-            return ((CustomObjectInstance) BaseUtils.singleValue(mapObjects)).getBaseClass();
-        else
-            return super.getDialogClass(mapValues, mapClasses, mapObjects);
     }
 
     public void execute(ExecutionContext context) throws SQLException {

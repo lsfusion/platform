@@ -2,8 +2,8 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.server.classes.BaseClass;
+import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -22,7 +22,7 @@ public class ChangeReadClassActionProperty extends CustomReadValueActionProperty
     }
 
     @Override
-    protected Type getReadType(ExecutionContext context) {
+    protected DataClass getReadType(ExecutionContext context) {
         Map<ClassPropertyInterface,PropertyObjectInterfaceInstance> mapObjects = context.getObjectInstances();
         if(mapObjects.size() > 0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) BaseUtils.singleValue(mapObjects);

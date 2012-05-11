@@ -16,7 +16,6 @@ import platform.server.data.SQLSession;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -1522,7 +1521,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.fileProperty = fileProperty;
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             FileClass fileClass = (FileClass) fileProperty.property.getType();
             return FileActionClass.getInstance(false, fileClass.isCustom(), fileClass.toString(), fileClass.getExtensions());
         }

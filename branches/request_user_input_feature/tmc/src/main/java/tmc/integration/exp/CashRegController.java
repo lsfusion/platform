@@ -3,9 +3,9 @@ package tmc.integration.exp;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ListClientAction;
+import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.*;
@@ -433,7 +433,7 @@ public class CashRegController {
             this.type = command;
         }
 
-        protected Type getReadType(ExecutionContext context) {
+        protected DataClass getReadType(ExecutionContext context) {
             return DoubleClass.instance;
         }
 
