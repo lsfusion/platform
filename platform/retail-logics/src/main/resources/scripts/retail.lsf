@@ -6960,8 +6960,6 @@ currentBalanceItemLedger 'Текущий остаток' (item, departmentStore)
 countBalanceItemLedger 'Кол-во движений' (item, departmentStore) = GROUP SUM 1 AND signedQuantityBalanceItemLedger (ledger) AND isPostedBalanceItemLedger(ledger)
                                                           BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger) PERSISTENT;
 
-TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
-
 quantityInItemDepartmentStoreDate (item, departmentStore, date) = GROUP SUM quantityInBalanceItemLedger(ledger) AND isPostedBalanceItemLedger(ledger)
                                                                         BY itemBalanceItemLedger(ledger), departmentStoreBalanceItemLedger(ledger), dateBalanceItemLedger(ledger) PERSISTENT;
 
