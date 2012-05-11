@@ -383,40 +383,40 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
-        baseLM.tableFactory.include("property", baseLM.property);
-        baseLM.tableFactory.include("multiLanguageNamed", multiLanguageNamed);
-        baseLM.tableFactory.include("project", project);
-        baseLM.tableFactory.include("expert", expert);
-        baseLM.tableFactory.include("cluster", cluster);
-        baseLM.tableFactory.include("claimer", claimer);
-        baseLM.tableFactory.include("vote", vote);
-        baseLM.tableFactory.include("patent", patent);
-        baseLM.tableFactory.include("academic", academic);
-        baseLM.tableFactory.include("nonRussianSpecialist", nonRussianSpecialist);
-        baseLM.tableFactory.include("documentAbstract", documentAbstract);
-        baseLM.tableFactory.include("document", document);
-        baseLM.tableFactory.include("expertVote", expert, vote);
-        baseLM.tableFactory.include("formalControl", formalControl);
-        baseLM.tableFactory.include("legalCheck", legalCheck);
-        baseLM.tableFactory.include("originalDocsCheck", originalDocsCheck);
-        baseLM.tableFactory.include("application", application);
-        baseLM.tableFactory.include("foresight", foresight);
-        baseLM.tableFactory.include("specialist", specialist);
-        baseLM.tableFactory.include("commercialization", commercialization);
-        baseLM.tableFactory.include("analogues", analogues);
-        baseLM.tableFactory.include("publications", publications);
-        baseLM.tableFactory.include("research", research);
-        baseLM.tableFactory.include("objectives", objectives);
-        baseLM.tableFactory.include("mileStone", mileStone);
-        baseLM.tableFactory.include("mileStoneYear", mileStoneYear);
-        baseLM.tableFactory.include("projectForesight", project, foresight);
-        baseLM.tableFactory.include("projectCluster", project, cluster);
-        baseLM.tableFactory.include("clusterExpert", cluster, expert);
-        baseLM.tableFactory.include("expertForesight", expert, foresight);
-        baseLM.tableFactory.include("expertConferenceExpert", expertConference, expert);
-        baseLM.tableFactory.include("typeMileStoneMileStoneMileStoneYear", typeMileStone, mileStone, mileStoneYear);
-        baseLM.tableFactory.include("projectLanguageDocumentType", project, language, documentType);
-        baseLM.tableFactory.include("languageDocumentType", language, documentType);
+        addTable("property", baseLM.property);
+        addTable("multiLanguageNamed", multiLanguageNamed);
+        addTable("project", project);
+        addTable("expert", expert);
+        addTable("cluster", cluster);
+        addTable("claimer", claimer);
+        addTable("vote", vote);
+        addTable("patent", patent);
+        addTable("academic", academic);
+        addTable("nonRussianSpecialist", nonRussianSpecialist);
+        addTable("documentAbstract", documentAbstract);
+        addTable("document", document);
+        addTable("expertVote", expert, vote);
+        addTable("formalControl", formalControl);
+        addTable("legalCheck", legalCheck);
+        addTable("originalDocsCheck", originalDocsCheck);
+        addTable("application", application);
+        addTable("foresight", foresight);
+        addTable("specialist", specialist);
+        addTable("commercialization", commercialization);
+        addTable("analogues", analogues);
+        addTable("publications", publications);
+        addTable("research", research);
+        addTable("objectives", objectives);
+        addTable("mileStone", mileStone);
+        addTable("mileStoneYear", mileStoneYear);
+        addTable("projectForesight", project, foresight);
+        addTable("projectCluster", project, cluster);
+        addTable("clusterExpert", cluster, expert);
+        addTable("expertForesight", expert, foresight);
+        addTable("expertConferenceExpert", expertConference, expert);
+        addTable("typeMileStoneMileStoneMileStoneYear", typeMileStone, mileStone, mileStoneYear);
+        addTable("projectLanguageDocumentType", project, language, documentType);
+        addTable("languageDocumentType", language, documentType);
 
     }
 

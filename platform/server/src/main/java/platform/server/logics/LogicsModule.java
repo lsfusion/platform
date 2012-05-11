@@ -98,7 +98,7 @@ public abstract class LogicsModule {
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
     private final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
-    private final Map<String, NavigatorElement<?>> moduleNavigatorActions = new HashMap<String, NavigatorElement<?>>();
+    private final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
     private final Map<String, MetaCodeFragment> metaCodeFragments = new HashMap<String, MetaCodeFragment>();
@@ -160,6 +160,19 @@ public abstract class LogicsModule {
     protected void addModuleClass(ValueClass valueClass) {
         assert !moduleClasses.containsKey(valueClass.getSID());
         moduleClasses.put(valueClass.getSID(), valueClass);
+    }
+
+    public ImplementTable getTableBySID(String sid) {
+        return moduleTables.get(sid);
+    }
+
+    public ImplementTable getTableByName(String name) {
+        return getTableBySID(transformNameToSID(name));
+    }
+
+    protected void addModuleTable(ImplementTable table) {
+        assert !moduleTables.containsKey(table.name);
+        moduleTables.put(table.name, table);
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {
@@ -295,6 +308,12 @@ public abstract class LogicsModule {
         storeCustomClass(customClass);
         customClass.dialogReadOnly = true;
         return customClass;
+    }
+
+    protected ImplementTable addTable(String name, ValueClass... classes) {
+        ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), classes);
+        addModuleTable(table);
+        return table;
     }
 
     //////////////////////////////////////////////////////////////////////////////

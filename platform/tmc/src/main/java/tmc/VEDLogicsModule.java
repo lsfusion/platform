@@ -559,23 +559,23 @@ public class VEDLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
-        baseLM.tableFactory.include("article", article);
-        baseLM.tableFactory.include("orders", order);
-        baseLM.tableFactory.include("store", store);
-        baseLM.tableFactory.include("localsupplier", localSupplier);
-        baseLM.tableFactory.include("importsupplier", importSupplier);
-        baseLM.tableFactory.include("customerwhole", customerWhole);
-        baseLM.tableFactory.include("customerretail", customerCheckRetail);
-        baseLM.tableFactory.include("articlestore", article, store);
-        baseLM.tableFactory.include("articleorder", article, order);
-        baseLM.tableFactory.include("articleaction", article, action);
-        baseLM.tableFactory.include("articlespecification", article, specification);
-        baseLM.tableFactory.include("rates", DateClass.instance);
-        baseLM.tableFactory.include("intervals", DoubleClass.instance);
-        baseLM.tableFactory.include("shoprates", DateClass.instance, shop);
+        addTable("article", article);
+        addTable("orders", order);
+        addTable("store", store);
+        addTable("localsupplier", localSupplier);
+        addTable("importsupplier", importSupplier);
+        addTable("customerwhole", customerWhole);
+        addTable("customerretail", customerCheckRetail);
+        addTable("articlestore", article, store);
+        addTable("articleorder", article, order);
+        addTable("articleaction", article, action);
+        addTable("articlespecification", article, specification);
+        addTable("rates", DateClass.instance);
+        addTable("intervals", DoubleClass.instance);
+        addTable("shoprates", DateClass.instance, shop);
 
-        baseLM.tableFactory.include("obligation", obligation);
-        baseLM.tableFactory.include("obligationorder", obligation, order);
+        addTable("obligation", obligation);
+        addTable("obligationorder", obligation, order);
     }
 
     @Override

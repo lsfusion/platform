@@ -1195,7 +1195,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 }
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
 		|	'PERSISTENT' { isPersistent = true; }
-		|	'TABLE' tbl = ID { table = $tbl.text; }
+		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	panelLocationSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]

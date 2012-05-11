@@ -68,6 +68,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<NavigatorElement> navigatorResolver = new NavigatorElementNameResolver();
     private final CompoundNameResolver<AbstractWindow> windowResolver = new WindowNameResolver();
     private final CompoundNameResolver<MetaCodeFragment> metaCodeFragmentResolver = new MetaCodeFragmentNameResolver();
+    private final CompoundNameResolver<ImplementTable> tableResolver = new TableNameResolver();
 
     private String code = null;
     private String filename = null;
@@ -297,6 +298,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return element;
     }
 
+    public ImplementTable findTableByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        ImplementTable table = tableResolver.resolve(name);
+        checkTable(table, name);
+        return table;
+    }
+
     public List<String> getNamedParamsList(String propertyName) throws ScriptingErrorLog.SemanticErrorException {
         List<String> paramList;
         int dotPosition = propertyName.indexOf('.');
@@ -452,9 +459,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String table) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
-                           namedParams + ", " + groupName + ", " + isPersistent  + ", " + table + ");");
+                           namedParams + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name);
         checkDistinctParameters(namedParams);
         checkNamedParams(property, namedParams);
@@ -465,13 +472,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         addPropertyToGroup(property.property, group);
 
         ImplementTable targetTable = null;
-        if (table != null) {
-            targetTable = baseLM.tableFactory.getImplementTable(table);
-            if (targetTable == null) {
-                errLog.emitNotFoundError(parser, "table", table);
-            } else if (!targetTable.equalClasses(property.property.getMapClasses())) {
+        if (tableName != null) {
+            targetTable = findTableByCompoundName(tableName);
+            if (!targetTable.equalClasses(property.property.getMapClasses())) {
                 // todo : проверка неправильная - должна быть на ClassWhere
-                //errLog.emitWrongClassesForTable(parser, name, table);
+                //errLog.emitWrongClassesForTable(parser, name, tableName);
             }
         }
         if (property.property instanceof StoredDataProperty) {
@@ -1366,12 +1371,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedTable(" + name + ", " + classIds + ");");
+        checkDuplicateTable(name);
 
         ValueClass[] classes = new ValueClass[classIds.size()];
         for (int i = 0; i < classIds.size(); i++) {
             classes[i] = findClassByCompoundName(classIds.get(i));
         }
-        baseLM.tableFactory.include(name, classes);
+        addTable(name, classes);
     }
 
     public void addScriptedIndices(List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
@@ -1627,6 +1633,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void checkTable(ImplementTable table, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (table == null) {
+            errLog.emitTableNotFoundError(parser, name);
+        }
+    }
+
     private void checkForm(NavigatorElement navElement, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (!(navElement instanceof FormEntity)) {
             errLog.emitFormNotFoundError(parser, name);
@@ -1684,6 +1696,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkDuplicateMetaCodeFragment(String name) throws ScriptingErrorLog.SemanticErrorException {
         if (getMetaCodeFragmentByName(name) != null) {
             errLog.emitAlreadyDefinedError(parser, "meta code", name);
+        }
+    }
+
+    private void checkDuplicateTable(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (getTableByName(name) != null) {
+            errLog.emitAlreadyDefinedError(parser, "table", name);
         }
     }
 
@@ -2065,6 +2083,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         @Override
         public MetaCodeFragment resolveInModule(LogicsModule module, String simpleName) {
             return module.getMetaCodeFragmentByName(simpleName);
+        }
+    }
+
+    private class TableNameResolver extends CompoundNameResolver<ImplementTable> {
+        @Override
+        public ImplementTable resolveInModule(LogicsModule module, String simpleName) {
+            return module.getTableByName(simpleName);
         }
     }
 }

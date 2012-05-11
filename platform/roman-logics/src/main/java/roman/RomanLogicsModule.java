@@ -1439,87 +1439,87 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
-        baseLM.tableFactory.include("customCategory4", customCategory4);
-        baseLM.tableFactory.include("customCategory6", customCategory6);
-        baseLM.tableFactory.include("customCategory9", customCategory9);
-        baseLM.tableFactory.include("customCategory10", customCategory10);
-        baseLM.tableFactory.include("customCategoryOrigin", customCategoryOrigin);
-        baseLM.tableFactory.include("customCategory10Origin", customCategory10, customCategoryOrigin);
-        baseLM.tableFactory.include("customCategory", customCategory);
-        baseLM.tableFactory.include("customCategory10STypeDuty", customCategory10, typeDuty);
-        baseLM.tableFactory.include("customCategory10SubCategory", customCategory10, subCategory);
-        baseLM.tableFactory.include("customCategory10SubCategoryCountry", customCategory10, subCategory, baseLM.country);
+        addTable("customCategory4", customCategory4);
+        addTable("customCategory6", customCategory6);
+        addTable("customCategory9", customCategory9);
+        addTable("customCategory10", customCategory10);
+        addTable("customCategoryOrigin", customCategoryOrigin);
+        addTable("customCategory10Origin", customCategory10, customCategoryOrigin);
+        addTable("customCategory", customCategory);
+        addTable("customCategory10STypeDuty", customCategory10, typeDuty);
+        addTable("customCategory10SubCategory", customCategory10, subCategory);
+        addTable("customCategory10SubCategoryCountry", customCategory10, subCategory, baseLM.country);
 
-        baseLM.tableFactory.include("colorSupplier", colorSupplier);
-        baseLM.tableFactory.include("sizeSupplier", sizeSupplier);
-        baseLM.tableFactory.include("country", baseLM.country);
-        baseLM.tableFactory.include("article", article);
-        baseLM.tableFactory.include("sku", sku);
-        baseLM.tableFactory.include("documentArticle", document, article);
-        baseLM.tableFactory.include("documentSku", document, sku);
-        baseLM.tableFactory.include("shipmentSku", shipment, sku);
-        baseLM.tableFactory.include("listSku", list, sku);
-        baseLM.tableFactory.include("listArticle", list, article);
+        addTable("colorSupplier", colorSupplier);
+        addTable("sizeSupplier", sizeSupplier);
+        addTable("country", baseLM.country);
+        addTable("article", article);
+        addTable("sku", sku);
+        addTable("documentArticle", document, article);
+        addTable("documentSku", document, sku);
+        addTable("shipmentSku", shipment, sku);
+        addTable("listSku", list, sku);
+        addTable("listArticle", list, article);
 
-        baseLM.tableFactory.include("importerFreightUnitSku", importer, freightUnit, sku);
-        baseLM.tableFactory.include("importerFreightSku", importer, freight, sku);
+        addTable("importerFreightUnitSku", importer, freightUnit, sku);
+        addTable("importerFreightSku", importer, freight, sku);
 
-        baseLM.tableFactory.include("articleColorSupplier", article, colorSupplier);
-        baseLM.tableFactory.include("articleSizeSupplier", article, sizeSupplier);
-        baseLM.tableFactory.include("listArticleColorSupplier", list, article, colorSupplier);
+        addTable("articleColorSupplier", article, colorSupplier);
+        addTable("articleSizeSupplier", article, sizeSupplier);
+        addTable("listArticleColorSupplier", list, article, colorSupplier);
 
-        baseLM.tableFactory.include("shipmentRoute", shipment, route);
+        addTable("shipmentRoute", shipment, route);
 
-        baseLM.tableFactory.include("stockSku", stock, sku);
-        baseLM.tableFactory.include("stockArticle", stock, article);
-        baseLM.tableFactory.include("importerStockSku", importer, stock, sku);
-        baseLM.tableFactory.include("importerStockArticle", importer, stock, article);
-        baseLM.tableFactory.include("importerFreightUnitArticle", importer, freightUnit, article);
-        baseLM.tableFactory.include("importerFreightBrandSupplier", importer, freight, brandSupplier);
-        baseLM.tableFactory.include("importerFreightArticle", importer, freight, article);
-        baseLM.tableFactory.include("importerFreightCustomCategory6", importer, freight, customCategory6);
-        baseLM.tableFactory.include("freightBrandSupplier", freight, brandSupplier);
-        baseLM.tableFactory.include("freightArticle", freight, article);
-        baseLM.tableFactory.include("freightCategory", freight, category);
-        baseLM.tableFactory.include("shipmentFreight", shipment, freight);
-        baseLM.tableFactory.include("invoiceShipment", invoice, shipment);
-        baseLM.tableFactory.include("shipmentStockSku", shipment, stock, sku);
-        baseLM.tableFactory.include("invoiceStockSku", invoice, stock, sku);
-        baseLM.tableFactory.include("importerFreightSupplier", importer, freight, supplier);
-        baseLM.tableFactory.include("importerFreightTypeInvoice", importer, freight, typeInvoice);
-        baseLM.tableFactory.include("importerFreightSupplierCustomCategory6", importer, freight, supplier, customCategory6);
+        addTable("stockSku", stock, sku);
+        addTable("stockArticle", stock, article);
+        addTable("importerStockSku", importer, stock, sku);
+        addTable("importerStockArticle", importer, stock, article);
+        addTable("importerFreightUnitArticle", importer, freightUnit, article);
+        addTable("importerFreightBrandSupplier", importer, freight, brandSupplier);
+        addTable("importerFreightArticle", importer, freight, article);
+        addTable("importerFreightCustomCategory6", importer, freight, customCategory6);
+        addTable("freightBrandSupplier", freight, brandSupplier);
+        addTable("freightArticle", freight, article);
+        addTable("freightCategory", freight, category);
+        addTable("shipmentFreight", shipment, freight);
+        addTable("invoiceShipment", invoice, shipment);
+        addTable("shipmentStockSku", shipment, stock, sku);
+        addTable("invoiceStockSku", invoice, stock, sku);
+        addTable("importerFreightSupplier", importer, freight, supplier);
+        addTable("importerFreightTypeInvoice", importer, freight, typeInvoice);
+        addTable("importerFreightSupplierCustomCategory6", importer, freight, supplier, customCategory6);
 
-        baseLM.tableFactory.include("supplierBoxBoxShipmentStockSku", supplierBox, boxShipment, stock, sku);
-        baseLM.tableFactory.include("boxInvoiceBoxShipmentStockSku", boxInvoice, boxShipment, stock, sku);
+        addTable("supplierBoxBoxShipmentStockSku", supplierBox, boxShipment, stock, sku);
+        addTable("boxInvoiceBoxShipmentStockSku", boxInvoice, boxShipment, stock, sku);
 
-        baseLM.tableFactory.include("palletSku", pallet, sku);
-        baseLM.tableFactory.include("palletBrandSupplier", pallet, brandSupplier);
-        baseLM.tableFactory.include("stockBrandSupplier", stock, brandSupplier);
-        baseLM.tableFactory.include("documentBrandSupplier", document, brandSupplier);
+        addTable("palletSku", pallet, sku);
+        addTable("palletBrandSupplier", pallet, brandSupplier);
+        addTable("stockBrandSupplier", stock, brandSupplier);
+        addTable("documentBrandSupplier", document, brandSupplier);
 
-        baseLM.tableFactory.include("freightSku", freight, sku);
-        baseLM.tableFactory.include("shipmentDetail", shipmentDetail);
-        baseLM.tableFactory.include("pallet", pallet);
-        baseLM.tableFactory.include("freight", freight);
-        baseLM.tableFactory.include("freightUnit", freightUnit);
-        baseLM.tableFactory.include("barcodeObject", baseLM.barcodeObject);
+        addTable("freightSku", freight, sku);
+        addTable("shipmentDetail", shipmentDetail);
+        addTable("pallet", pallet);
+        addTable("freight", freight);
+        addTable("freightUnit", freightUnit);
+        addTable("barcodeObject", baseLM.barcodeObject);
 
-        baseLM.tableFactory.include("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
-        baseLM.tableFactory.include("freightCategoryGenderCompositionTypeFabric", freight, category, gender, COMPOSITION_CLASS, typeFabric);
+        addTable("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
+        addTable("freightCategoryGenderCompositionTypeFabric", freight, category, gender, COMPOSITION_CLASS, typeFabric);
 
-        baseLM.tableFactory.include("sizeSupplierGenderCategory", sizeSupplier, gender, category);
+        addTable("sizeSupplierGenderCategory", sizeSupplier, gender, category);
 
-        baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
-        baseLM.tableFactory.include("pricat", pricat);
-        baseLM.tableFactory.include("strings", StringClass.get(10));
+        addTable("rateExchange", typeExchange, currency, DateClass.instance);
+        addTable("pricat", pricat);
+        addTable("strings", StringClass.get(10));
 
-        baseLM.tableFactory.include("subCategory", subCategory);
-        baseLM.tableFactory.include("stamp", stamp);
-        baseLM.tableFactory.include("secondNameClass", secondNameClass);
+        addTable("subCategory", subCategory);
+        addTable("stamp", stamp);
+        addTable("secondNameClass", secondNameClass);
 
-        baseLM.tableFactory.include("importerFreight", importer, freight);
+        addTable("importerFreight", importer, freight);
 
-        baseLM.tableFactory.include("simpleInvoiceSimpleShipmentStockSku", simpleInvoice, simpleShipment, stock, sku);
+        addTable("simpleInvoiceSimpleShipmentStockSku", simpleInvoice, simpleShipment, stock, sku);
     }
 
     @Override

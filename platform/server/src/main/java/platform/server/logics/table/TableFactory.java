@@ -2,14 +2,14 @@ package platform.server.logics.table;
 
 import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
-import platform.server.classes.BaseClass;
 import platform.server.data.KeyField;
-import platform.server.data.StructTable;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
+import platform.server.data.StructTable;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
@@ -29,8 +29,10 @@ public class TableFactory {
             implementTables[i] = new ArrayList<ImplementTable>();
     }
 
-    public void include(String name, ValueClass... classes) {
-        new ImplementTable(name,classes).include(implementTables[classes.length], true, new HashSet<ImplementTable>());
+    public ImplementTable include(String name, ValueClass... classes) {
+        ImplementTable newTable = new ImplementTable(name, classes);
+        newTable.include(implementTables[classes.length], true, new HashSet<ImplementTable>());
+        return newTable;
     }
 
     public Collection<DataTable> getDataTables(BaseClass baseClass) {
