@@ -5842,6 +5842,8 @@ TABLE wayOfLoading (wayOfLoading);
 
 nameWayOfLoading 'Способ ПРР' (wayOfLoading) = name(wayOfLoading) IF wayOfLoading IS wayOfLoading IN baseGroup;
 
+// для накладной (шапка и хвост)
+
 @defineDocumentHeaderConsignment(statement);
 unloadingPlaceStatement 'Пункт разгрузки' (statement) = UNION OVERRIDE addressLegalEntity(customerStatement(statement)),
                                                        dataUnloadingPlaceStatement (statement);
@@ -6557,6 +6559,7 @@ sumQuantityItemShipment (departmentStore, supplier, item) =
 isSumQuantityItemShipment (departmentStore, supplier, item) = sumQuantityItemShipment(departmentStore, supplier, item) > 0;
 
 // для возвратной накладной (шапка и хвост)
+
 @defineDocumentHeaderConsignment(returnSupplier);
 unloadingPlaceReturnSupplier 'Пункт разгрузки' (returnSupplier) = UNION OVERRIDE addressLegalEntity(supplierReturnSupplier(returnSupplier)),
                                                                                  dataUnloadingPlaceReturnSupplier (returnSupplier);
@@ -10178,6 +10181,15 @@ FORM priceChangeDocuments 'Акты переоценки'
     FILTERS documentPriceChangeDocumentDetail(pcd) == pc
 ;
 
+DESIGN priceChangeDocuments FROM DEFAULT{
+    main{
+        ADD pc.box;
+        ADD pcd.box;
+        ADD pc.printGroup;
+        ADD functions.box;
+    }
+}
+
 FORM specificationPrint 'Счет-фактура' PRINT
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) SELECTOR seriesNumberObject, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification,
@@ -11811,37 +11823,39 @@ FORM innerArrivals 'Приходы из других отделов'
 ;
 
 DESIGN innerArrivals FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
+    ADD a.box{
+        PROPERTY(objectClassName) {
+            preferredCharWidth = 15;
+        }
+
+        PROPERTY (delete(a)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        }
+
+    }
+    ADD d.box;
+    NEW row {
+        childConstraints = TO THE RIGHT;
+
+        ADD a.historyGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        ADD a.postedGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+
+        ADD a.printGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
     }
 
-    PROPERTY (delete(a)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-
-    a.printGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-
-    a.historyGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-
-    a.postedGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-
-    POSITION a.historyGroup TO THE LEFT a.postedGroup;
-    POSITION a.postedGroup TO THE LEFT a.printGroup;
-    POSITION a.historyGroup TO THE LEFT a.printGroup;
-
-    ADD d.grid.box BEFORE a.historyGroup;
+    ADD functions.box;
 }
-
 
 //------------------------------------формы: Отпуск из розницы-------------------------//
 
