@@ -5,7 +5,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
@@ -14,10 +13,10 @@ import java.util.*;
 
 public class ChangedProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
 
-    private final Property<T> property;
+    private final CalcProperty<T> property;
     private final IncrementType type;
 
-    public ChangedProperty(Property<T> property, IncrementType type) {
+    public ChangedProperty(CalcProperty<T> property, IncrementType type) {
         super("CHANGED_" + type + "_" + property.getSID(), property.caption + " (" + type + ")", (List<T>)property.interfaces);
         this.property = property;
         this.type = type;
@@ -26,7 +25,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean events) {
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
         depends.add(property);
         depends.add(property.getOld());
     }

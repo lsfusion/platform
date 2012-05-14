@@ -21,10 +21,10 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         super(sID, caption, interfaces);
     }
 
-    protected abstract Collection<PropertyMapImplement<?, Interface>> getOperands();
+    protected abstract Collection<CalcPropertyMapImplement<?, Interface>> getOperands();
 
     @Override
-    public void fillDepends(Set<Property> depends, boolean events) {
+    public void fillDepends(Set<CalcProperty> depends, boolean events) {
         fillDepends(depends,getOperands());
     }
 }

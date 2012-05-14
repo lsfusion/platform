@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 
 import java.util.Collection;
@@ -11,9 +12,9 @@ public interface Updated {
     boolean classUpdated(Set<GroupObjectInstance> gridGroups);
     // изменилось что-то использующее в getExpr конкретные value (один из верхних объектов)
     boolean objectUpdated(Set<GroupObjectInstance> gridGroups);
-    boolean dataUpdated(Collection<Property> changedProps);
+    boolean dataUpdated(Collection<CalcProperty> changedProps);
     
-    void fillProperties(Set<Property> properties);
+    void fillProperties(Set<CalcProperty> properties);
 
     boolean isInInterface(GroupObjectInstance classGroup);
 }

@@ -15,8 +15,8 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     private boolean notNull;
     private boolean check;
 
-    public SetActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, PropertyMapImplement<W, I> where, PropertyMapImplement<P, I> writeTo, boolean notNull, boolean check) {
-        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where, new ArrayList<PropertyInterfaceImplement<I>>());
+    public SetActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<W, I> where, CalcPropertyMapImplement<P, I> writeTo, boolean notNull, boolean check) {
+        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where, new ArrayList<CalcPropertyInterfaceImplement<I>>());
 
         this.notNull = notNull;
 
@@ -31,15 +31,15 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException {
         if(!isWhereFull())
             changeWhere = changeWhere.and(writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere());
-        writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
+        ((CalcProperty<P>)writeTo.property).setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
     }
 
-    protected Collection<Property> getWriteProps() {
-        return writeTo.property.getSetChangeProps(notNull, false);
+    public Set<CalcProperty> getChangeProps() {
+        return ((CalcProperty<P>)writeTo.property).getSetChangeProps(notNull, false);
     }
 
-    public Set<Property> getUsedProps() {
-        Set<Property> result = new HashSet<Property>();
+    public Set<CalcProperty> getUsedProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         where.mapFillDepends(result);
         return result;
     }

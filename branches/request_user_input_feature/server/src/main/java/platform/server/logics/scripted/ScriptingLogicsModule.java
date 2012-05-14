@@ -28,6 +28,7 @@ import platform.server.form.window.*;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
@@ -52,6 +53,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.getIntNum;
+import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.PropertyUtils.readImplements;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
@@ -490,7 +492,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         if (property.property instanceof StoredDataProperty) {
-            property.property.markStored(baseLM.tableFactory, targetTable);
+            ((StoredDataProperty)property.property).markStored(baseLM.tableFactory, targetTable);
         } else if (isPersistent && (property.property instanceof AggregateProperty)) {
             addPersistent(property, targetTable);
         }
@@ -567,7 +569,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setAggProp(LP<?> property) {
-        property.property.aggProp = true;
+        ((CalcProperty<?>)property.property).aggProp = true;
     }
 
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
@@ -734,14 +736,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP<ClassPropertyInterface> eaPropLP = addEAProp(null, "", "", eaClasses, null, null);
         EmailActionProperty eaProp = (EmailActionProperty) eaPropLP.property;
 
-        List<PropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readImplements(eaPropLP.listInterfaces, allParams);
+        List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
 
         int i = 0;
         if (fromProp != null) {
             eaProp.setFromAddress(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddress
-            eaProp.setFromAddress(new PropertyMapImplement(baseLM.fromAddress.property));
+            eaProp.setFromAddress(new CalcPropertyMapImplement((CalcProperty) baseLM.fromAddress.property));
         }
         eaProp.setSubject(allImplements.get(i++));
 
@@ -754,13 +756,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             FormStorageType formType = formTypes.get(j);
             FormEntity form = findFormByCompoundName(formName);
 
-            Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>();
+            Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>();
             for (Map.Entry<String, LPWithParams> entry : mapObjects.get(j).entrySet()) {
                 objectsImplements.put(findObjectEntity(form, entry.getKey()), allImplements.get(i++));
             }
 
             if (formType == FormStorageType.ATTACH) {
-                PropertyInterfaceImplement<ClassPropertyInterface> attachNameProp = attachNames.get(j) != null ? allImplements.get(i++) : null;
+                CalcPropertyInterfaceImplement<ClassPropertyInterface> attachNameProp = attachNames.get(j) != null ? allImplements.get(i++) : null;
                 eaProp.addAttachmentForm(form, attachFormats.get(j), objectsImplements, attachNameProp);
             } else {
                 eaProp.addInlineForm(form, objectsImplements);
@@ -841,7 +843,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
 
-        LP listLP = addListAProp(null, genSID(), "", usedParams.size(), resultParams.toArray());
+        LAP listLP = addListAProp(resultParams.toArray());
         for (String propName : localPropNames) {
             currentLocalProperties.remove(propName);
         }
@@ -936,7 +938,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramsList.add(whereProperty);
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LP result = addSetPropertyAProp(null, genSID(), "", allParams.size(), resultInterfaces.size(), whereProperty != null, resultParams.toArray());
+        LP result = addSetPropertyAProp(null, genSID(), "", resultInterfaces.size(), whereProperty != null, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 
@@ -947,7 +949,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             propParams.add(falseAction);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-        LP result = addIfAProp(null, genSID(), "", allParams.size(), getParamsPlainList(propParams).toArray());
+        LP result = addIfAProp(null, genSID(), "", getParamsPlainList(propParams).toArray());
         return new LPWithParams(result, allParams);
     }
 
@@ -978,7 +980,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(creationParams);
 
-        LP result = addForAProp(null, genSID(), "", !descending, recursive, elseAction != null, allParams.size(), usedParams.size(), getParamsPlainList(allCreationParams).toArray());
+        LP result = addForAProp(null, genSID(), "", !descending, recursive, elseAction != null, usedParams.size(), getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 
@@ -1343,16 +1345,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
         property.property.caption = message;
-        List<Property<?>> checkedProps = null;
-        Property.CheckType type = (checked ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO);
+        List<CalcProperty<?>> checkedProps = null;
+        CalcProperty.CheckType type = (checked ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO);
         if (checked && propNames != null) {
-            checkedProps = new ArrayList<Property<?>>();
+            checkedProps = new ArrayList<CalcProperty<?>>();
             for (String propName : propNames) {
-                checkedProps.add(findLPByCompoundName(propName).property);
+                checkedProps.add((CalcProperty<?>) findLPByCompoundName(propName).property);
             }
-            type = Property.CheckType.CHECK_SOME;
+            type = CalcProperty.CheckType.CHECK_SOME;
         }
-        addConstraint(property, type, checkedProps);
+        addConstraint(property, type, BaseUtils.<List<CalcProperty<?>>>immutableCast(checkedProps));
     }
 
     public LPWithParams addScriptedSpecialProp(String propType, LPWithParams property) {

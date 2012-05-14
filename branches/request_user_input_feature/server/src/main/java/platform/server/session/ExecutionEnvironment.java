@@ -2,11 +2,8 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
@@ -43,37 +40,48 @@ public class ExecutionEnvironment {
         return current.isInTransaction();
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change) throws SQLException {
-        return execute(property, change, null);
-    }
-
-    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
         current.fireChange(property, change);
 
-        MapDataChanges<P> userDataChanges = null;
-        if(property instanceof UserProperty) { // оптимизация
-            userDataChanges = (MapDataChanges<P>) current.getSession().getUserDataChanges((UserProperty)property, (PropertyChange<ClassPropertyInterface>) change);
-//            assert userDataChanges == null || BaseUtils.hashEquals(userDataChanges,property.getDataChanges(change, modifier));
-//            из-за того что DataSession знает конкретные значения, а в модифайере все прячется в таблицы, верхний assertion не работает
-        }
-        return execute(userDataChanges!=null?userDataChanges:property.getDataChanges(change, current.getModifier()), mapObjects);
+        DataChanges userDataChanges = null;
+        if(property instanceof DataProperty) // оптимизация
+            userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);
+        return change(userDataChanges != null ? userDataChanges : ((CalcProperty<P>)property).getDataChanges(change, current.getModifier()));
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> change(DataChanges mapChanges) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>(); // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов, потом изменяем
-        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.changes.read(current.getSession()).entrySet()) {
+        for(Map.Entry<DataProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.read(current.getSession()).entrySet()) {
             for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
-                UserProperty property = propRow.getKey();
-                Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
-                if(property instanceof DataProperty)
-                    getSession().changeProperty((DataProperty)property, row.getKey(), row.getValue().get("value"), !iterator.hasNext());
-                else
-                    ((ExecuteProperty)property).execute(new ExecutionContext(row.getKey(), row.getValue().get("value"), this, actions, mapInterfaces == null ? null : new FormEnvironment(BaseUtils.nullJoin(mapInterfaces, mapObjects), null), !iterator.hasNext()));
+                getSession().changeProperty(propRow.getKey(), row.getKey(), row.getValue().get("value"), !iterator.hasNext());
             }
         }
         return actions;
 
+    }
+
+    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty property, PropertySet<ClassPropertyInterface> set, FormEnvironment<ClassPropertyInterface> formEnv) throws SQLException {
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        for(Map<ClassPropertyInterface, DataObject> row : set.executeClasses(getSession()))
+            actions.addAll(execute(property, row, formEnv, null));
+        return actions;
+    }
+
+    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty property, Map<ClassPropertyInterface, DataObject> change, FormEnvironment<ClassPropertyInterface> formEnv, ObjectValue requestInput) throws SQLException {
+        if(!IsClassProperty.fitInterfaceClasses(getSession().getCurrentClasses(change)))
+            return new ArrayList<ClientAction>();
+
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        ExecutionContext context = new ExecutionContext(change, null, this, actions, BaseUtils.<FormEnvironment<ClassPropertyInterface>>immutableCast(formEnv), true);
+
+        if(requestInput!=null)
+            context.pushUserInput(requestInput);
+        property.execute(context);
+        if(requestInput!=null)
+            context.popUserInput(requestInput);
+
+        return actions;
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {

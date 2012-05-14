@@ -50,8 +50,8 @@ public class CaseUnionProperty extends AbstractCaseUnionProperty {
         return exprCases.getFinal();
     }
 
-    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        MapDataChanges<Interface> result = new MapDataChanges<Interface>();
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        DataChanges result = new DataChanges();
         for(Case operand : cases) {
             Where caseWhere = operand.where.mapExpr(change.getMapExprs(), propChanges).getWhere();
             result = result.add(operand.property.mapDataChanges(change.and(caseWhere), changedWhere, propChanges));

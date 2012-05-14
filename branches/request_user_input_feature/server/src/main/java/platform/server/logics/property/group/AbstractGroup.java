@@ -1,5 +1,6 @@
 package platform.server.logics.property.group;
 
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;

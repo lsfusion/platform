@@ -28,6 +28,8 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.AbstractWindow;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
@@ -46,9 +48,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
-import static platform.server.logics.PropertyUtils.getUParams;
-import static platform.server.logics.PropertyUtils.mapImplement;
-import static platform.server.logics.PropertyUtils.readImplements;
+import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 /**
@@ -115,334 +115,334 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractGroup historyGroup;
 
     // properties
-    public LP groeq2;
-    public LP lsoeq2;
-    public LP greater2, less2;
-    public LP greater22, less22;
-    public LP between;
-    protected LP betweenDate;
-    public LP betweenDates;
-    public LP object1, and1, andNot1;
-    public LP equals2, diff2;
-    public LP sum;
-    public LP subtract;
-    protected LP delta;
-    public LP multiply;
-    public LP subtractInteger;
-    public LP subtractIntegerIncl;
-    protected LP sqr;
-    protected LP sqrt;
-    public LP divide;
-    public LP divideInteger;
-    public LP divideIntegerNeg;
-    public LP divideIntegerRnd;
-    public LP sumDate;
-    public LP subtractDate;
-    public LP toDateTime;
-    public LP string2;
-    public LP insensitiveString2;
-    protected LP concat2;
-    public LP percent;
-    public LP percent2;
-    public LP share;
-    public LP weekInDate;
-    public LP numberDOWInDate;
-    public LP numberMonthInDate;
-    public LP yearInDate;
-    public LP dayInDate;
-    public LP dateInTime;
-    public LP timeInDateTime;
-    public LP jumpWorkdays;
-    public LP completeBarcode;
+    public LCP groeq2;
+    public LCP lsoeq2;
+    public LCP greater2, less2;
+    public LCP greater22, less22;
+    public LCP between;
+    protected LCP betweenDate;
+    public LCP betweenDates;
+    public LCP object1, and1, andNot1;
+    public LCP equals2, diff2;
+    public LCP sum;
+    public LCP subtract;
+    protected LCP delta;
+    public LCP multiply;
+    public LCP subtractInteger;
+    public LCP subtractIntegerIncl;
+    protected LCP sqr;
+    protected LCP sqrt;
+    public LCP divide;
+    public LCP divideInteger;
+    public LCP divideIntegerNeg;
+    public LCP divideIntegerRnd;
+    public LCP sumDate;
+    public LCP subtractDate;
+    public LCP toDateTime;
+    public LCP string2;
+    public LCP insensitiveString2;
+    protected LCP concat2;
+    public LCP percent;
+    public LCP percent2;
+    public LCP share;
+    public LCP weekInDate;
+    public LCP numberDOWInDate;
+    public LCP numberMonthInDate;
+    public LCP yearInDate;
+    public LCP dayInDate;
+    public LCP dateInTime;
+    public LCP timeInDateTime;
+    public LCP jumpWorkdays;
+    public LCP completeBarcode;
 
-    public LP numberMonth;
-    public LP numberToMonth;
-    public LP monthInDate;
+    public LCP numberMonth;
+    public LCP numberToMonth;
+    public LCP monthInDate;
 
-    public LP numberDOW;
-    public LP numberToDOW;
-    public LP DOWInDate;
+    public LCP numberDOW;
+    public LCP numberToDOW;
+    public LCP DOWInDate;
 
-    public LP vtrue, actionTrue, vzero;
-    public LP vnull;
-    public LP charLength;
-    public LP positive, negative;
+    public LCP vtrue, actionTrue, vzero;
+    public LCP vnull;
+    public LCP charLength;
+    public LCP positive, negative;
 
-    public LP round;
+    public LCP round;
 
-    public LP minusInteger;
-    public LP minus;
+    public LCP minusInteger;
+    public LCP minus;
 
-    public LP dumb1;
-    public LP dumb2;
+    public LCP dumb1;
+    public LCP dumb2;
 
-    protected LP castText;
+    protected LCP castText;
 
-    public LP<?> name;
-    public LP<?> date;
+    public LCP<?> name;
+    public LCP<?> date;
 
-    public LP redColor;
-    public LP yellowColor;
+    public LCP redColor;
+    public LCP yellowColor;
 
-    public LP daysInclBetweenDates;
-    public LP weeksInclBetweenDates;
-    public LP weeksNullInclBetweenDates;
+    public LCP daysInclBetweenDates;
+    public LCP weeksInclBetweenDates;
+    public LCP weeksNullInclBetweenDates;
 
-    public LP sumDateWeekFrom;
-    public LP sumDateWeekTo;
+    public LCP sumDateWeekFrom;
+    public LCP sumDateWeekTo;
 
-    protected LP transactionLater;
-    public LP currentDate;
-    public LP currentMonth;
-    public LP currentYear;
-    public LP currentHour;
-    public LP currentMinute;
-    protected LP currentEpoch;
-    protected LP currentDateTime;
-    protected LP currentTime;
-    public LP currentUser;
-    public LP currentSession;
-    public LP currentComputer;
-    public LP changeUser;
-    protected LP isServerRestarting;
-    public LP<PropertyInterface> barcode;
-    public LP barcodeToObject;
-    public LP barcodeObjectName;
-    public LP equalsObjectBarcode;
-    public LP barcodePrefix;
-    public LP seekBarcodeAction;
-    public LP barcodeNotFoundMessage;
-    public LP extSID, extSIDToObject;
-    public LP timeCreated, userCreated, nameUserCreated, computerCreated, hostnameComputerCreated;
-    public LP restartServerAction;
-    public LP runGarbageCollector;
-    public LP cancelRestartServerAction;
-    public LP reverseBarcode;
+    protected LCP transactionLater;
+    public LCP currentDate;
+    public LCP currentMonth;
+    public LCP currentYear;
+    public LCP currentHour;
+    public LCP currentMinute;
+    protected LCP currentEpoch;
+    protected LCP currentDateTime;
+    protected LCP currentTime;
+    public LCP currentUser;
+    public LCP currentSession;
+    public LCP currentComputer;
+    public LAP changeUser;
+    protected LCP isServerRestarting;
+    public LCP<PropertyInterface> barcode;
+    public LCP barcodeToObject;
+    public LCP barcodeObjectName;
+    public LCP equalsObjectBarcode;
+    public LCP barcodePrefix;
+    public LAP seekBarcodeAction;
+    public LCP barcodeNotFoundMessage;
+    public LCP extSID, extSIDToObject;
+    public LCP timeCreated, userCreated, nameUserCreated, computerCreated, hostnameComputerCreated;
+    public LCP restartServerAction;
+    public LAP runGarbageCollector;
+    public LCP cancelRestartServerAction;
+    public LCP reverseBarcode;
 
-    public LP userLogin;
-    public LP userPassword;
-    public LP userFirstName;
-    public LP userLastName;
-    public LP userMainRole;
-    public LP customUserMainRole;
-    public LP customUserSIDMainRole;
-    public LP nameUserMainRole;
-    public LP inUserMainRole;
-    public LP userRoleSID;
-    public LP userRoleDefaultForms;
-    public LP forbidAllUserRoleForms;
-    public LP forbidAllUserForm;
-    public LP allowAllUserRoleForms;
-    public LP allowAllUserForm;
-    public LP forbidViewAllUserRoleProperty;
-    public LP forbidViewAllUserForm;
-    public LP allowViewAllUserRoleProperty;
-    public LP allowViewAllUserForm;
-    public LP forbidChangeAllUserRoleProperty;
-    public LP forbidChangeAllUserForm;
-    public LP allowChangeAllUserRoleProperty;
-    public LP allowChangeAllUserForm;
+    public LCP userLogin;
+    public LCP userPassword;
+    public LCP userFirstName;
+    public LCP userLastName;
+    public LCP userMainRole;
+    public LCP customUserMainRole;
+    public LCP customUserSIDMainRole;
+    public LCP nameUserMainRole;
+    public LCP inUserMainRole;
+    public LCP userRoleSID;
+    public LCP userRoleDefaultForms;
+    public LCP forbidAllUserRoleForms;
+    public LCP forbidAllUserForm;
+    public LCP allowAllUserRoleForms;
+    public LCP allowAllUserForm;
+    public LCP forbidViewAllUserRoleProperty;
+    public LCP forbidViewAllUserForm;
+    public LCP allowViewAllUserRoleProperty;
+    public LCP allowViewAllUserForm;
+    public LCP forbidChangeAllUserRoleProperty;
+    public LCP forbidChangeAllUserForm;
+    public LCP allowChangeAllUserRoleProperty;
+    public LCP allowChangeAllUserForm;
 
-    public LP userDefaultForms;
-    public LP sidToRole;
-    public LP inUserRole;
-    public LP inLoginSID;
-    public LP currentUserName;
-    public LP<?> loginToUser;
+    public LCP userDefaultForms;
+    public LCP sidToRole;
+    public LCP inUserRole;
+    public LCP inLoginSID;
+    public LCP currentUserName;
+    public LCP<?> loginToUser;
 
-    public LP email;
-    public LP emailToObject;
-    public LP generateLoginPassword;
+    public LCP email;
+    public LCP emailToObject;
+    public LAP generateLoginPassword;
 
-    public LP emailUserPassUser;
+    public LAP emailUserPassUser;
 
-    public LP connectionUser;
-    public LP userNameConnection;
-    public LP connectionComputer;
-    public LP connectionCurrentStatus;
-    public LP connectionFormCount;
-    public LP connectionConnectTime;
-    public LP connectionDisconnectTime;
-    public LP disconnectConnection;
+    public LCP connectionUser;
+    public LCP userNameConnection;
+    public LCP connectionComputer;
+    public LCP connectionCurrentStatus;
+    public LCP connectionFormCount;
+    public LCP connectionConnectTime;
+    public LCP connectionDisconnectTime;
+    public LAP disconnectConnection;
 
-    public LP launchComputer;
-    public LP computerNameLaunch;
-    public LP launchTime;
-    public LP launchRevision;
+    public LCP launchComputer;
+    public LCP computerNameLaunch;
+    public LCP launchTime;
+    public LCP launchRevision;
 
-    public LP policyDescription;
-    protected LP<?> nameToPolicy;
-    public LP userRolePolicyOrder;
-    public LP userPolicyOrder;
+    public LCP policyDescription;
+    protected LCP<?> nameToPolicy;
+    public LCP userRolePolicyOrder;
+    public LCP userPolicyOrder;
 
-    public LP hostname;
-    public LP notZero;
-    public LP onlyNotZero;
+    public LCP hostname;
+    public LCP notZero;
+    public LCP onlyNotZero;
 
-    public LP delete;
+    public LAP delete;
 
-    public LP apply;
-    public LP cancel;
+    public LAP apply;
+    public LAP cancel;
 
-    public LP flowBreak;
-    public LP flowReturn;
+    public LAP flowBreak;
+    public LAP flowReturn;
 
-    public LP objectClass;
-    public LP objectClassName;
-    public LP classSID;
-    public LP dataName;
-    public LP navigatorElementSID;
-    public LP numberNavigatorElement;
-    public LP navigatorElementCaption;
+    public LCP objectClass;
+    public LCP objectClassName;
+    public LCP classSID;
+    public LCP dataName;
+    public LCP navigatorElementSID;
+    public LCP numberNavigatorElement;
+    public LCP navigatorElementCaption;
 
-    public LP propertyDrawSID;
-    public LP captionPropertyDraw;
-    public LP SIDToPropertyDraw;
-    public LP formPropertyDraw;
-    public LP SIDNavigatorElementSIDPropertyDrawToPropertyDraw;
-    public LP showPropertyDraw;
-    public LP nameShowPropertyDraw;
-    public LP showPropertyDrawCustomUser;
-    public LP nameShowPropertyDrawCustomUser;
-    public LP showOverridePropertyDrawCustomUser;
-    public LP nameShowOverridePropertyDrawCustomUser;
-    public LP columnWidthPropertyDrawCustomUser;
-    public LP columnWidthPropertyDraw;
-    public LP columnWidthOverridePropertyDrawCustomUser;
+    public LCP propertyDrawSID;
+    public LCP captionPropertyDraw;
+    public LCP SIDToPropertyDraw;
+    public LCP formPropertyDraw;
+    public LCP SIDNavigatorElementSIDPropertyDrawToPropertyDraw;
+    public LCP showPropertyDraw;
+    public LCP nameShowPropertyDraw;
+    public LCP showPropertyDrawCustomUser;
+    public LCP nameShowPropertyDrawCustomUser;
+    public LCP showOverridePropertyDrawCustomUser;
+    public LCP nameShowOverridePropertyDrawCustomUser;
+    public LCP columnWidthPropertyDrawCustomUser;
+    public LCP columnWidthPropertyDraw;
+    public LCP columnWidthOverridePropertyDrawCustomUser;
 
-    public LP messageException;
-    public LP dateException;
-    public LP erTraceException;
-    public LP typeException;
-    public LP clientClientException;
-    public LP loginClientException;
-    public LP captionAbstractGroup;
-    public LP parentAbstractGroup;
-    public LP numberAbstractGroup;
-    public LP SIDAbstractGroup;
-    public LP SIDToAbstractGroup;
-    public LP parentProperty;
-    public LP numberProperty;
-    public LP SIDProperty;
-    public LP loggableProperty;
-    public LP userLoggableProperty;
-    public LP storedProperty;
-    public LP isSetNotNullProperty;
-    public LP signatureProperty;
-    public LP returnProperty;
-    public LP classProperty;
-    public LP captionProperty;
-    public LP SIDToProperty;
-    public LP isEventNotification;
-    public LP emailFromNotification;
-    public LP emailToNotification;
-    public LP emailToCCNotification;
-    public LP emailToBCNotification;
-    public LP textNotification;
-    public LP subjectNotification;
-    public LP inNotificationProperty;
-    public LP permitViewUserRoleProperty;
-    public LP permitViewUserProperty;
-    public LP forbidViewUserRoleProperty;
-    public LP forbidViewUserProperty;
-    public LP permitChangeUserRoleProperty;
-    public LP permitChangeUserProperty;
-    public LP forbidChangeUserRoleProperty;
-    public LP forbidChangeUserProperty;
-    public LP permitViewProperty;
-    public LP forbidViewProperty;
-    public LP permitChangeProperty;
-    public LP forbidChangeProperty;
+    public LCP messageException;
+    public LCP dateException;
+    public LCP erTraceException;
+    public LCP typeException;
+    public LCP clientClientException;
+    public LCP loginClientException;
+    public LCP captionAbstractGroup;
+    public LCP parentAbstractGroup;
+    public LCP numberAbstractGroup;
+    public LCP SIDAbstractGroup;
+    public LCP SIDToAbstractGroup;
+    public LCP parentProperty;
+    public LCP numberProperty;
+    public LCP SIDProperty;
+    public LCP loggableProperty;
+    public LCP userLoggableProperty;
+    public LCP storedProperty;
+    public LCP isSetNotNullProperty;
+    public LCP signatureProperty;
+    public LCP returnProperty;
+    public LCP classProperty;
+    public LCP captionProperty;
+    public LCP SIDToProperty;
+    public LCP isEventNotification;
+    public LCP emailFromNotification;
+    public LCP emailToNotification;
+    public LCP emailToCCNotification;
+    public LCP emailToBCNotification;
+    public LCP textNotification;
+    public LCP subjectNotification;
+    public LCP inNotificationProperty;
+    public LCP permitViewUserRoleProperty;
+    public LCP permitViewUserProperty;
+    public LCP forbidViewUserRoleProperty;
+    public LCP forbidViewUserProperty;
+    public LCP permitChangeUserRoleProperty;
+    public LCP permitChangeUserProperty;
+    public LCP forbidChangeUserRoleProperty;
+    public LCP forbidChangeUserProperty;
+    public LCP permitViewProperty;
+    public LCP forbidViewProperty;
+    public LCP permitChangeProperty;
+    public LCP forbidChangeProperty;
 
-    public LP SIDToNavigatorElement;
-    public LP parentNavigatorElement;
-    public LP isNavigatorElement;
-    public LP isNavigatorAction;
-    public LP isForm;
-    public LP permitUserRoleForm;
-    public LP forbidUserRoleForm;
-    public LP permitUserForm;
-    public LP forbidUserForm;
-    public LP permitForm;
-    public LP forbidForm;
-    public LP userRoleFormDefaultNumber;
-    public LP userFormDefaultNumber;
+    public LCP SIDToNavigatorElement;
+    public LCP parentNavigatorElement;
+    public LCP isNavigatorElement;
+    public LCP isNavigatorAction;
+    public LCP isForm;
+    public LCP permitUserRoleForm;
+    public LCP forbidUserRoleForm;
+    public LCP permitUserForm;
+    public LCP forbidUserForm;
+    public LCP permitForm;
+    public LCP forbidForm;
+    public LCP userRoleFormDefaultNumber;
+    public LCP userFormDefaultNumber;
 
-    public LP sidTable;
-    public LP sidTableKey;
-    public LP nameTableKey;
-    public LP sidTableColumn;
-    public LP propertyTableColumn;
-    public LP propertyNameTableColumn;
-    public LP sidToTable;
-    public LP sidToTableKey;
-    public LP sidToTableColumn;
-    public LP tableTableKey;
-    public LP classTableKey;
-    public LP tableTableColumn;
-    public LP rowsTable;
-    public LP sparseColumnsTable;
-    public LP quantityTableKey;
-    public LP quantityTableColumn;
-    public LP notNullQuantityTableColumn;
-    public LP perCentNotNullTableColumn;
-    public LP recalculateAggregationTableColumn;
+    public LCP sidTable;
+    public LCP sidTableKey;
+    public LCP nameTableKey;
+    public LCP sidTableColumn;
+    public LCP propertyTableColumn;
+    public LCP propertyNameTableColumn;
+    public LCP sidToTable;
+    public LCP sidToTableKey;
+    public LCP sidToTableColumn;
+    public LCP tableTableKey;
+    public LCP classTableKey;
+    public LCP tableTableColumn;
+    public LCP rowsTable;
+    public LCP sparseColumnsTable;
+    public LCP quantityTableKey;
+    public LCP quantityTableColumn;
+    public LCP notNullQuantityTableColumn;
+    public LCP perCentNotNullTableColumn;
+    public LAP recalculateAggregationTableColumn;
 
-    public LP sidDropColumn;
-    public LP sidToDropColumn;
-    public LP sidTableDropColumn;
-    public LP timeDropColumn;
-    public LP revisionDropColumn;
-    public LP dropDropColumn;
+    public LCP sidDropColumn;
+    public LCP sidToDropColumn;
+    public LCP sidTableDropColumn;
+    public LCP timeDropColumn;
+    public LCP revisionDropColumn;
+    public LAP dropDropColumn;
 
-    public LP customID;
-    public LP stringID;
-    public LP integerID;
-    public LP dateID;
+    public LCP customID;
+    public LCP stringID;
+    public LCP integerID;
+    public LCP dateID;
 
-    public LP objectByName;
-    public LP seekObjectName;
+    public LCP objectByName;
+    public LAP seekObjectName;
 
-    public LP webHost;
+    public LCP webHost;
 
-    public LP encryptedConnectionType;
-    public LP nameEncryptedConnectionType;
-    public LP smtpHost;
-    public LP smtpPort;
-    public LP emailAccount;
-    public LP emailPassword;
-    public LP emailBlindCarbonCopy;
-    public LP fromAddress;
-    public LP disableEmail;
-    public LP defaultCountry;
-    public LP nameDefaultCountry;
+    public LCP encryptedConnectionType;
+    public LCP nameEncryptedConnectionType;
+    public LCP smtpHost;
+    public LCP smtpPort;
+    public LCP emailAccount;
+    public LCP emailPassword;
+    public LCP emailBlindCarbonCopy;
+    public LCP fromAddress;
+    public LCP disableEmail;
+    public LCP defaultCountry;
+    public LCP nameDefaultCountry;
 
-    public LP defaultBackgroundColor;
-    public LP defaultOverrideBackgroundColor;
-    public LP defaultForegroundColor;
-    public LP defaultOverrideForegroundColor;
+    public LCP defaultBackgroundColor;
+    public LCP defaultOverrideBackgroundColor;
+    public LCP defaultForegroundColor;
+    public LCP defaultOverrideForegroundColor;
 
-    public LP sidCountry;
-    protected LP generateDatesCountry;
-    public LP sidToCountry;
-    public LP nameToCountry;
-    protected LP nameToObject;
-    protected LP isDayOffCountryDate;
-    LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
+    public LCP sidCountry;
+    protected LCP generateDatesCountry;
+    public LCP sidToCountry;
+    public LCP nameToCountry;
+    protected LCP nameToObject;
+    protected LCP isDayOffCountryDate;
+    LCP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
 
-    protected LP termDictionary;
-    protected LP translationDictionary;
-    protected LP entryDictionary;
-    protected LP nameEntryDictionary;
-    public LP translationDictionaryTerm;
+    protected LCP termDictionary;
+    protected LCP translationDictionary;
+    protected LCP entryDictionary;
+    protected LCP nameEntryDictionary;
+    public LCP translationDictionaryTerm;
 
-    private LP selectRoleForms;
-    private LP selectUserRoles;
+    private LCP selectRoleForms;
+    private LAP selectUserRoles;
 
-    private LP<ClassPropertyInterface> checkAggregationsAction;
-    private LP<ClassPropertyInterface> recalculateAction;
-    private LP<ClassPropertyInterface> recalculateFollowsAction;
-    private LP<ClassPropertyInterface> packAction;
+    private LAP checkAggregationsAction;
+    private LAP recalculateAction;
+    private LAP recalculateFollowsAction;
+    private LAP packAction;
 
     public SelectionPropertySet selection;
     protected CompositeNamePropertySet compositeName;
@@ -660,7 +660,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
         dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
-        dataName.property.aggProp = true;
+        ((CalcProperty)dataName.property).aggProp = true;
 
         // математические св-ва
         equals2 = addCFProp("equals2", Compare.EQUALS);
@@ -705,7 +705,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
-        vnull = addProperty(privateGroup, new LP<PropertyInterface>(new NullValueProperty()));
+        vnull = addProperty(privateGroup, new LCP<PropertyInterface>(new NullValueProperty()));
 
         round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
 
@@ -748,8 +748,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         apply = addAProp(new ApplyActionProperty(BL));
         cancel = addAProp(new CancelActionProperty());
 
-        flowBreak = addProperty(null, new LP<ClassPropertyInterface>(new BreakActionProperty()));
-        flowReturn = addProperty(null, new LP<ClassPropertyInterface>(new ReturnActionProperty()));
+        flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
+        flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 
@@ -758,7 +758,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         notZero = addJProp(diff2, 1, vzero);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
-        onlyNotZero.property.isOnlyNotZero = true;
 
         daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractIntegerIncl, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
         weeksInclBetweenDates = addJProp("weeksInclBetweenDates", getString("logics.date.quantity.weeks"), divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
@@ -795,11 +794,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentEpoch = addTProp("currentEpoch", Time.EPOCH);
         currentDateTime = addTProp("currentDateTime", Time.DATETIME);
         currentTime = addJProp("currentTime", getString("logics.date.current.time"), timeInDateTime, currentDateTime);
-        currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
-        currentSession = addProperty(null, new LP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
-        currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
-        isServerRestarting = addProperty(null, new LP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
-        changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty("changeUser", customUser)));
+        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
+        currentSession = addProperty(null, new LCP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
+        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
+        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
+        changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
 
         userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
@@ -827,7 +826,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
-        name.property.aggProp = true;
+        ((CalcProperty)name.property).aggProp = true;
 
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
         addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
@@ -840,7 +839,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
         connectionDisconnectTime.setEventSet(currentDateTime,
                 addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
-        disconnectConnection = addProperty(null, new LP<ClassPropertyInterface>(new DisconnectActionProperty(BL, this, connection)));
+        disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(BL, this, connection)));
         addJProp(baseGroup, getString("logics.connection.disconnect"), andNot1, getUParams(new LP[]{disconnectConnection, connectionDisconnectTime}, 0));
 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
@@ -876,7 +875,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         barcodePrefix = addDProp(baseGroup, "barcodePrefix", getString("logics.barcode.prefix"), StringClass.get(13));
 
-        seekBarcodeAction = addJProp(true, getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
+        seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(getString("logics.barcode.not.found"), getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
@@ -898,16 +897,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         runGarbageCollector = addGarbageCollectorActionProp();
         cancelRestartServerAction = addJProp(getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
 
-        checkAggregationsAction = addProperty(null, new LP<ClassPropertyInterface>(new CheckAggregationsActionProperty(genSID(), getString("logics.check.aggregations"))));
-        recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
-        recalculateFollowsAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
-        packAction = addProperty(null, new LP<ClassPropertyInterface>(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
+        checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty(genSID(), getString("logics.check.aggregations"))));
+        recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
+        recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
+        packAction = addProperty(null, new LAP(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
 
         currentUserName = addJProp(getString("logics.user.current.user.name"), name, currentUser);
 
         reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
 
-        objectClass = addProperty(null, new LP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
+        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
         objectClassName.makeLoggable(this, true);
 
@@ -1051,7 +1050,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sessionDate.setEventChanged(currentDateTime, is(session), 1);
 
         objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
-        seekObjectName = addJProp(true, getString("logics.object.search"), addSAProp(null), objectByName, 1);
+        seekObjectName = addJoinAProp(getString("logics.object.search"), addSAProp(null), objectByName, 1);
 
         webHost = addDProp("webHost", getString("logics.host.webhost"), StringClass.get(50));
 
@@ -1098,7 +1097,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return idGenerator.idShift();
     }
 
-    <T extends LP<?>> void registerProperty(T lp) {
+    <T extends LP<?, ?>> void registerProperty(T lp) {
         lproperties.add(lp);     // todo [dale]: нужно?
         lp.property.ID = idGenerator.idShift();
     }
@@ -1221,7 +1220,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             }
 
             SelectionProperty property = new SelectionProperty(sid, classArray, baseLM);
-            LP lp = new LP<ClassPropertyInterface>(property);
+            LCP lp = new LCP<ClassPropertyInterface>(property);
             registerProperty(lp);
             selectionLP.put(sid, lp);
             setParent(property);
@@ -1277,8 +1276,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @IdentityLazy
-        private LP getStringConcatanationProperty(int intNum) {
-            return new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), getString("logics.join"), intNum, ", "));
+        private LCP getStringConcatanationProperty(int intNum) {
+            return new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), getString("logics.join"), intNum, ", "));
         }
 
         @Override
@@ -1295,12 +1294,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 joinParams[2 * i + 1] = i + 1;
             }
 
-            LP stringConcat = getStringConcatanationProperty(intNum);
+            LCP stringConcat = getStringConcatanationProperty(intNum);
 
             List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(intNum);
             JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, getString("logics.compound.name")+" (" + intNum + ")",
-                    listInterfaces, false, mapImplement(stringConcat, readImplements(listInterfaces, joinParams)));
-            LP listJoinProperty = new LP<JoinProperty.Interface>(joinProperty, listInterfaces);
+                    listInterfaces, false, mapCalcImplement(stringConcat, readCalcImplements(listInterfaces, joinParams)));
+            LCP listJoinProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
             registerProperty(listJoinProperty);
             setParent(joinProperty);
@@ -1350,19 +1349,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             String sid = prefix + valueClass.getSID();
             ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
-            LP prop = new LP<ClassPropertyInterface>(property);
+            LCP prop = new LCP<ClassPropertyInterface>(property);
             registerProperty(prop);
             sidToLP.put(sid, prop);
             setParent(property);
             return property;
         }
 
-        public LP getLP(ValueClass cls) {
+        public LCP getLP(ValueClass cls) {
             String sid = prefix + cls.getBaseClass().getSID();
             if (!sidToLP.containsKey(sid)) {
                 createProperty(new ValueClass[]{cls});
             }
-            return sidToLP.get(sid);
+            return (LCP) sidToLP.get(sid);
         }
     }
 
@@ -1448,39 +1447,39 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     @IdentityLazy
-    public LP is(ValueClass valueClass) {
-        return addProperty(null, new LP<ClassPropertyInterface>(valueClass.getProperty()));
+    public LCP is(ValueClass valueClass) {
+        return addProperty(null, new LCP<ClassPropertyInterface>(valueClass.getProperty()));
     }
     @Override
     @IdentityLazy
-    public LP object(ValueClass valueClass) {
+    public LCP object(ValueClass valueClass) {
         return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
     }
     @Override
     @IdentityLazy
-    public LP vdefault(ConcreteValueClass valueClass) {
-        return addProperty(null, new LP<PropertyInterface>(new DefaultValueProperty("default" + valueClass.getSID(), valueClass)));
+    public LCP vdefault(ConcreteValueClass valueClass) {
+        return addProperty(null, new LCP<PropertyInterface>(new DefaultValueProperty("default" + valueClass.getSID(), valueClass)));
     }
 
-    protected LP addRestartActionProp() {
+    protected LAP addRestartActionProp() {
         return BL.addRestartActionProp();
 //        return addProperty(null, new LP<ClassPropertyInterface>(new RestartActionProperty(genSID(), "")));
     }
 
-    protected LP addCancelRestartActionProp() {
+    protected LAP addCancelRestartActionProp() {
         return BL.addCancelRestartActionProp();
 //        return addProperty(null, new LP<ClassPropertyInterface>(new CancelRestartActionProperty(genSID(), "")));
     }
 
-    protected LP addGarbageCollectorActionProp() {
+    protected LAP addGarbageCollectorActionProp() {
         return BL.addGarbageCollectorActionProp();
     }
 
     public static class SeekActionProperty extends CustomActionProperty {
 
-        Property property;
+        CalcProperty property;
 
-        SeekActionProperty(String sID, String caption, ValueClass[] classes, Property property) {
+        SeekActionProperty(String sID, String caption, ValueClass[] classes, CalcProperty property) {
             super(sID, caption, classes);
             this.property = property;
         }
@@ -1527,7 +1526,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = context.getKeyValue(classInterface);
-            fileProperty.execute(userValue, context, objects);
+            fileProperty.change(userValue, context, objects);
         }
 
         @Override
@@ -1604,7 +1603,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 maxValue = 0;
             maxValue += 1;
 
-            dataProperty.execute(maxValue, context, dataPropertyInput);
+            dataProperty.change(maxValue, context, dataPropertyInput);
         }
     }
 
@@ -1754,9 +1753,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     class AddBarcodeActionProperty extends CustomActionProperty {
 
         ConcreteCustomClass customClass;
-        Property<?> addProperty;
+        CalcProperty<?> addProperty;
 
-        AddBarcodeActionProperty(ConcreteCustomClass customClass, Property addProperty, String sID) {
+        AddBarcodeActionProperty(ConcreteCustomClass customClass, CalcProperty addProperty, String sID) {
             super(sID, getString("logics.add")+" [" + customClass + "] " + getString("logics.add.by.barcode"), new ValueClass[]{StringClass.get(13)});
 
             this.customClass = customClass;
@@ -1767,8 +1766,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             if (addProperty.read(context) != null) {
                 String barString = (String) context.getSingleKeyObject();
                 if (barString.trim().length() != 0) {
-                    addProperty.execute(context, null);
-                    barcode.execute(barString, context, context.addObject(customClass));
+                    ((CalcProperty<?>)addProperty).change(context, null);
+                    barcode.change(barString, context, context.addObject(customClass));
                 }
             }
         }
@@ -1780,12 +1779,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
 
-    protected Map<List<? extends Property>, Boolean> indexes = new HashMap<List<? extends Property>, Boolean>();
+    protected Map<List<? extends CalcProperty>, Boolean> indexes = new HashMap<List<? extends CalcProperty>, Boolean>();
 
-    public void addIndex(LP<?>... lps) {
-        List<Property> index = new ArrayList<Property>();
-        for (LP<?> lp : lps)
-            index.add(lp.property);
+    public void addIndex(LCP<?>... lps) {
+        List<CalcProperty> index = new ArrayList<CalcProperty>();
+        for (LCP<?> lp : lps)
+            index.add((CalcProperty) lp.property);
         indexes.put(index, lps[0].property.getType() instanceof DataClass);
     }
 
@@ -1914,7 +1913,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             PropertyDrawEntity balanceDraw = getPropertyDraw(userRolePolicyOrder, objPolicy.groupTo);
             PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
             balanceDraw.addColumnGroupObject(objUserRole.groupTo);
-            balanceDraw.setPropertyCaption(sidDraw.propertyObject);
+            balanceDraw.setPropertyCaption((CalcPropertyObjectEntity) sidDraw.propertyObject);
 
             addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeForm.groupTo), true);
             addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeDefaultForm.groupTo), true);
@@ -2241,7 +2240,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private ObjectEntity remapObject;
         private final FilterEntity[] remapFilters;
 
-        SelectFromListFormEntity(ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+        SelectFromListFormEntity(ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
             this.remapObject = remapObject;
             this.remapFilters = remapFilters;
 
@@ -2268,8 +2267,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 selectionObjects[mainObjects.length] = selectionObject;
             }
 
-            PropertyDrawEntity selectionPropertyDraw = addPropertyDraw(selectionProperty, selectionObjects);
-            PropertyObjectEntity selectionPropertyObject = selectionPropertyDraw.propertyObject;
+            CalcPropertyObjectEntity selectionPropertyObject = addPropertyObject(selectionProperty, selectionObjects);
+            PropertyDrawEntity selectionPropertyDraw = addPropertyDraw(null, selectionPropertyObject);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(

@@ -1,21 +1,17 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
-import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
+import platform.interop.form.ServerResponse;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ObjectValueProperty;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.DialogChangeObjectActionProperty;
-import platform.server.logics.property.actions.flow.ListActionProperty;
+import platform.server.logics.property.actions.ChangeObjectActionProperty;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -23,23 +19,27 @@ import java.util.Map;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    private Map<String, PropertyObjectInstance<?>> editActions;
+    private Map<String, ActionPropertyObjectInstance> editActions;
 
-    public PropertyObjectInstance<?> getEditAction(String actionId) {
-        if(isReadOnly())
+    public ActionPropertyObjectInstance getEditAction(String actionId) {
+        if(isReadOnly()) // ?? тут или нет
             return null;
 
-        PropertyObjectInstance<?> editAction = editActions.get(actionId);
+        ActionPropertyObjectInstance editAction = editActions.get(actionId);
         if(editAction!=null)
             return editAction;
+
+        if(actionId.equals(ServerResponse.PASTE)) {
+//            sdds
+        }
 
         if(entity.isSelector()) {
             Map<P, ObjectInstance> groupObjects = BaseUtils.filterValues(propertyObject.mapping, toDraw.objects); // берем нижний объект в toDraw
             for(ObjectInstance objectInstance : groupObjects.values())
                 if(objectInstance instanceof CustomObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance)objectInstance;
-                    DialogChangeObjectActionProperty dialogAction = new DialogChangeObjectActionProperty(propertyObject.property, customObjectInstance.getBaseClass().getBaseClass());
-                    return new PropertyObjectInstance<ClassPropertyInterface>(dialogAction,
+                    ChangeObjectActionProperty dialogAction = new ChangeObjectActionProperty((CalcProperty) propertyObject.property, customObjectInstance.getBaseClass().getBaseClass());
+                    return new ActionPropertyObjectInstance(dialogAction,
                             Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), customObjectInstance));
                 }
         }
@@ -47,18 +47,18 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return propertyObject.getEditAction(actionId);
     }
 
-    public PropertyObjectInstance<P> propertyObject;
+    public PropertyObjectInstance<P, ?> propertyObject;
 
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw; // не null в FormInstance проставляется
     public List<GroupObjectInstance> columnGroupObjects;
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public final PropertyObjectInstance<?> propertyCaption;
-    public final PropertyObjectInstance<?> propertyReadOnly;
-    public final PropertyObjectInstance<?> propertyFooter;
-    public final PropertyObjectInstance<?> propertyBackground;
-    public final PropertyObjectInstance<?> propertyForeground;
+    public final CalcPropertyObjectInstance<?> propertyCaption;
+    public final CalcPropertyObjectInstance<?> propertyReadOnly;
+    public final CalcPropertyObjectInstance<?> propertyFooter;
+    public final CalcPropertyObjectInstance<?> propertyBackground;
+    public final CalcPropertyObjectInstance<?> propertyForeground;
 
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
@@ -67,15 +67,15 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ForegroundReaderInstance foregroundReader = new ForegroundReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
-                                PropertyObjectInstance<P> propertyObject,
+                                PropertyObjectInstance<P, ?> propertyObject,
                                 GroupObjectInstance toDraw,
-                                Map<String, PropertyObjectInstance<?>> editActions,
+                                Map<String, ActionPropertyObjectInstance> editActions,
                                 List<GroupObjectInstance> columnGroupObjects,
-                                PropertyObjectInstance<?> propertyCaption,
-                                PropertyObjectInstance<?> propertyReadOnly,
-                                PropertyObjectInstance<?> propertyFooter,
-                                PropertyObjectInstance<?> propertyBackground,
-                                PropertyObjectInstance<?> propertyForeground) {
+                                CalcPropertyObjectInstance<?> propertyCaption,
+                                CalcPropertyObjectInstance<?> propertyReadOnly,
+                                CalcPropertyObjectInstance<?> propertyFooter,
+                                CalcPropertyObjectInstance<?> propertyBackground,
+                                CalcPropertyObjectInstance<?> propertyForeground) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;

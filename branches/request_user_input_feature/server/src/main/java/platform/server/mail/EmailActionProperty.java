@@ -54,17 +54,17 @@ public class EmailActionProperty extends CustomActionProperty {
 
     private final BusinessLogics<?> BL; // для возможности работы с формами в автоматическом режиме
 
-    private PropertyInterfaceImplement<ClassPropertyInterface> fromAddress;
-    private PropertyInterfaceImplement<ClassPropertyInterface> subject;
+    private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddress;
+    private CalcPropertyInterfaceImplement<ClassPropertyInterface> subject;
 
-    private List<PropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<PropertyInterfaceImplement<ClassPropertyInterface>>();
+    private List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<CalcPropertyInterfaceImplement<ClassPropertyInterface>>();
     private List<Message.RecipientType> recipientTypes = new ArrayList<Message.RecipientType>();
 
     private final List<FormEntity> forms = new ArrayList<FormEntity>();
     private final List<AttachmentFormat> formats = new ArrayList<AttachmentFormat>();
     private final List<FormStorageType> storageTypes = new ArrayList<FormStorageType>();
-    private final List<Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>>>();
-    private final List<PropertyInterfaceImplement> attachmentProps = new ArrayList<PropertyInterfaceImplement>();
+    private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
+    private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
 
     public EmailActionProperty(String sID, String caption, BusinessLogics<?> BL, ValueClass[] classes) {
         super(sID, caption, classes);
@@ -75,20 +75,20 @@ public class EmailActionProperty extends CustomActionProperty {
         setImage("email.png");
     }
 
-    public void setFromAddress(PropertyInterfaceImplement<ClassPropertyInterface> fromAddress) {
+    public void setFromAddress(CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddress) {
         this.fromAddress = fromAddress;
     }
 
-    public void setSubject(PropertyInterfaceImplement<ClassPropertyInterface> subject) {
+    public void setSubject(CalcPropertyInterfaceImplement<ClassPropertyInterface> subject) {
         this.subject = subject;
     }
 
-    public <R extends PropertyInterface> void addRecipient(PropertyInterfaceImplement<ClassPropertyInterface> recipient, Message.RecipientType type) {
+    public <R extends PropertyInterface> void addRecipient(CalcPropertyInterfaceImplement<ClassPropertyInterface> recipient, Message.RecipientType type) {
         recipients.add(recipient);
         recipientTypes.add(type);
     }
 
-    public void addInlineForm(FormEntity form, Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objects) {
+    public void addInlineForm(FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objects) {
         forms.add(form);
         formats.add(AttachmentFormat.HTML);
         storageTypes.add(FormStorageType.INLINE);
@@ -96,7 +96,7 @@ public class EmailActionProperty extends CustomActionProperty {
         attachmentProps.add(null);
     }
 
-    public void addAttachmentForm(FormEntity form, AttachmentFormat format, Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objects, PropertyInterfaceImplement attachmentNameProp) {
+    public void addAttachmentForm(FormEntity form, AttachmentFormat format, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objects, CalcPropertyInterfaceImplement attachmentNameProp) {
         forms.add(form);
         formats.add(format);
         storageTypes.add(FormStorageType.ATTACH);
@@ -123,8 +123,8 @@ public class EmailActionProperty extends CustomActionProperty {
                 FormEntity form = forms.get(i);
                 FormStorageType storageType = storageTypes.get(i);
                 AttachmentFormat attachmentFormat = formats.get(i);
-                PropertyInterfaceImplement attachmentProp = attachmentProps.get(i);
-                Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = mapObjects.get(i);
+                CalcPropertyInterfaceImplement attachmentProp = attachmentProps.get(i);
+                Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = mapObjects.get(i);
 
                 RemoteFormInterface remoteForm = createReportForm(context, form, objectsImplements);
 
@@ -190,7 +190,7 @@ public class EmailActionProperty extends CustomActionProperty {
 
         Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
         for (int i = 0; i < recipients.size(); ++i) {
-            PropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
+            CalcPropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
             Message.RecipientType recipientType = recipientTypes.get(i);
 
             String recipientEmailList = (String) recipient.read(context, context.getKeys());
@@ -212,7 +212,7 @@ public class EmailActionProperty extends CustomActionProperty {
         return recipientEmails;
     }
 
-    private EmailSender.AttachmentProperties createAttachment(FormEntity form, AttachmentFormat attachmentFormat, PropertyInterfaceImplement attachmentNameProp, ExecutionContext context, String filePath) throws SQLException {
+    private EmailSender.AttachmentProperties createAttachment(FormEntity form, AttachmentFormat attachmentFormat, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, String filePath) throws SQLException {
         assert attachmentFormat != null;
 
         String attachmentName = null;
@@ -230,10 +230,10 @@ public class EmailActionProperty extends CustomActionProperty {
         return new EmailSender.AttachmentProperties(filePath, attachmentName, attachmentFormat);
     }
 
-    private RemoteFormInterface createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException {
+    private RemoteFormInterface createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException {
         Map<ObjectEntity, DataObject> objectValues = new HashMap<ObjectEntity, DataObject>();
-        for (Map.Entry<ObjectEntity, PropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet()) {
-            ObjectValue objectValue = objectImpl.getValue().readClasses(context.getSession(), context.getKeys(), context.getModifier());
+        for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet()) {
+            ObjectValue objectValue = objectImpl.getValue().readClasses(context, context.getKeys());
             if (objectValue instanceof DataObject) {
                 objectValues.put(objectImpl.getKey(), (DataObject) objectValue);
             }

@@ -12,6 +12,8 @@ import platform.server.data.query.IQuery;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyQueryType;
 import platform.server.session.Modifier;
@@ -28,7 +30,7 @@ public class AutoHintsAspect {
     public static ThreadLocal<FormInstance> catchAutoHint = new ThreadLocal<FormInstance>();
     
     public Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
-        if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
+        if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance && property instanceof CalcProperty) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             FormInstance formInstance = (FormInstance) modifier;
             catchAutoHint.set(formInstance);
             Object result;
@@ -42,7 +44,7 @@ public class AutoHintsAspect {
                 if(e.lowstat)
                     formInstance.addHintIncrement(e.property);
                 else
-                    formInstance.addHintNoUpdate(property);
+                    formInstance.addHintNoUpdate((CalcProperty) property);
                 result = ((MethodSignature)thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
             }
             return result;
@@ -54,12 +56,12 @@ public class AutoHintsAspect {
     public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map map, Modifier modifier) throws Throwable {
         return callAutoHint(thisJoinPoint, property, modifier);
     }
-    @Around("execution(* platform.server.logics.property.Property.getIncrementChange(platform.server.session.Modifier)) && target(property) && args(modifier)")
-    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
+    @Around("execution(* platform.server.logics.property.CalcProperty.getIncrementChange(platform.server.session.Modifier)) && target(property) && args(modifier)")
+    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Modifier modifier) throws Throwable {
         return callAutoHint(thisJoinPoint, property, modifier);
     }
 
-    private static boolean allowHint(Property property) {
+    private static boolean allowHint(CalcProperty property) {
         FormInstance catchHint = catchAutoHint.get();
         return catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
     } 
@@ -71,7 +73,9 @@ public class AutoHintsAspect {
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
-        if(allowHint(property)) { // неправильно так как может быть не changed
+        if(property instanceof CalcProperty && allowHint((CalcProperty) property)) { // неправильно так как может быть не changed
+            CalcProperty calcProperty = (CalcProperty) property;
+
             Expr expr = result.getExpr("value");
             long exprComplexity = expr.getComplexity(false);
 
@@ -82,16 +86,16 @@ public class AutoHintsAspect {
             }
 
             long complexity = max(exprComplexity, whereComplexity);
-            if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
+            if(complexity > Settings.instance.getLimitHintIncrementComplexity() && calcProperty.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
                 if(interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
                     Map<?, KeyExpr> mapKeys = result.getMapKeys();
                     Expr prevExpr = property.getExpr(mapKeys);
                     if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
                         if (changed.getStatKeys(mapKeys.values()).rows.lessEquals(new Stat(Settings.instance.getLimitHintIncrementStat())))
-                            throw new AutoHintException(property, true);
+                            throw new AutoHintException(calcProperty, true);
                         if(complexity > Settings.instance.getLimitHintNoUpdateComplexity()) {
                             System.out.println("AUTO HINT NOUPDATE" + property);
-                            throw new AutoHintException(property, false);
+                            throw new AutoHintException(calcProperty, false);
                         }
                     }
                 } else // запускаем getQuery уже без interfaceValues, соответственно уже оно если надо (в смысле что статистика будет нормальной) кинет exception
@@ -106,14 +110,14 @@ public class AutoHintsAspect {
             "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses,  Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        if(!property.isFull() || !allowHint(property))
+        if(!(property instanceof CalcProperty) || !property.isFull() || !allowHint((CalcProperty) property))
             return thisJoinPoint.proceed();
 
         WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
         Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, propClasses, joinExprs, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
-        if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
+        if(complexity > Settings.instance.getLimitHintIncrementComplexity() && ((CalcProperty)property).hasChanges(propChanges))
             property.getQuery(propClasses, propChanges, PropertyQueryType.FULLCHANGED, new HashMap()); // по аналогии с верхним
         
         if(changedWhere!=null) changedWhere.add(cascadeWhere.toWhere());
@@ -122,9 +126,9 @@ public class AutoHintsAspect {
 
     public static class AutoHintException extends RuntimeException {
 
-        public final Property property;
+        public final CalcProperty property;
         public final boolean lowstat; 
-        public AutoHintException(Property property, boolean lowstat) {
+        public AutoHintException(CalcProperty property, boolean lowstat) {
             this.property = property;
             this.lowstat = lowstat;
         }

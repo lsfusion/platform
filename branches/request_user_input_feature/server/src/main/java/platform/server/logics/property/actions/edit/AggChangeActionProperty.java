@@ -24,12 +24,12 @@ import java.util.Map;
 
 public class AggChangeActionProperty<P extends PropertyInterface> extends CustomActionProperty {
 
-    private final Property<P> aggProp; // assert что один интерфейс и aggProp
+    private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    private final PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> changeAction; // WYSAction
+    private final ActionPropertyMapImplement<ClassPropertyInterface> changeAction; // WYSAction
 
-    public AggChangeActionProperty(String sID, String caption, ValueClass[] classes, Property<P> aggProp, ValueClass aggClass, PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> changeAction) {
+    public AggChangeActionProperty(String sID, String caption, ValueClass[] classes, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<ClassPropertyInterface> changeAction) {
         super(sID, caption, classes);
         this.aggProp = aggProp;
         this.aggClass = aggClass;

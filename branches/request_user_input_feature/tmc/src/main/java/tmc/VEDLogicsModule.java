@@ -31,6 +31,7 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -3431,7 +3432,7 @@ public class VEDLogicsModule extends LogicsModule {
                 addFixedFilter(new NotNullFilterEntity(getPropertyObject(articleQuantity)));
             }
 
-            addMFAProp(getActionGroup(), caption, this, new ObjectEntity[]{objDoc});
+            addMFAProp(getActionGroup(), caption, this, new ObjectEntity[]{objDoc}, false);
         }
 
         protected ValueClass getDocClass() {
@@ -4111,8 +4112,8 @@ public class VEDLogicsModule extends LogicsModule {
             //To change body of implemented methods use File | Settings | File Templates.
             DataObject document = context.getSingleKeyValue();
             if(orderSalePayCash.read(context, document)==null && orderSalePayCard.read(context, document)==null) {
-                orderSalePayCash.execute(null, context, document);
-                orderSalePayCard.execute(sumWithDiscountObligationOrder.read(context, document), context, document);
+                orderSalePayCash.change(null, context, document);
+                orderSalePayCard.change(sumWithDiscountObligationOrder.read(context, document), context, document);
 
                 context.addAction(new ApplyClientAction());
             } else
@@ -4493,7 +4494,7 @@ public class VEDLogicsModule extends LogicsModule {
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
             Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).diff(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey));
             PropertyChange change = articleQuantity.getChange(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), docKey, articleKey);
-            context.getEnv().execute(articleQuantity.property, change);
+            context.getEnv().change((CalcProperty) articleQuantity.property, change);
 
             context.addAction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }

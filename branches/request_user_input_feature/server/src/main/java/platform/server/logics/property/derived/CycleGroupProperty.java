@@ -26,37 +26,37 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         return GroupType.ANY;
     }
 
-    final Property<P> toChange;
+    final CalcProperty<P> toChange;
 
-    public CycleGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property, Property<P> toChange) {
+    public CycleGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
         super(sID, caption, innerInterfaces, groupInterfaces, property, false);
         this.toChange = toChange;
     }
 
-    public CycleGroupProperty(String sID, String caption, Collection<PropertyInterfaceImplement<I>> interfaces, Property<I> property, Property<P> toChange) {
+    public CycleGroupProperty(String sID, String caption, Collection<CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, CalcProperty<P> toChange) {
         super(sID, caption, interfaces, property, false);
         this.toChange = toChange;
     }
 
     @IdentityLazy
-    public Property getConstrainedProperty() {
+    public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        Property constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance),
+        CalcProperty constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance),
                 getMapInterfaces().values(), groupProperty, new HashMap<I, JoinProperty.Interface>(), Compare.GREATER);
         constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
         return constraint;
     }
 
     @Override
-    public Set<Property> getDataChangeProps() {
+    public Set<CalcProperty> getDataChangeProps() {
         if(toChange!=null)
-            return Collections.<Property>singleton(toChange);
+            return Collections.<CalcProperty>singleton(toChange);
         return super.getDataChangeProps();
     }
 
     @Override
-    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         if(toChange!=null)
             return MaxChangeProperty.getUsedChanges(this,toChange, propChanges);
         else
@@ -64,21 +64,21 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     }
 
     @Override
-    protected MapDataChanges<Interface<I>> calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
 
         if(toChange!=null) {
             Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
             Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
-            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges).changes;
+            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges);
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())
                     getExpr(change.getMapExprs(), dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(change.where);
             }
-            return new MapDataChanges<Interface<I>>(dataChanges);
+            return dataChanges;
         } else
-            return new MapDataChanges<Interface<I>>();
+            return new DataChanges();
 
     }
 

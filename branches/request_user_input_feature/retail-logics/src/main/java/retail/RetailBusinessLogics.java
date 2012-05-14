@@ -588,9 +588,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
             Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-            retailLM.getLPByName("equipmentServerEquipmentServerLog").execute(equipmentServerObject, session, logObject);
-            retailLM.getLPByName("dataEquipmentServerLog").execute(message, session, logObject);
-            retailLM.getLPByName("dateEquipmentServerLog").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
+            retailLM.getLPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
+            retailLM.getLPByName("dataEquipmentServerLog").change(message, session, logObject);
+            retailLM.getLPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
         }
 
         new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
@@ -686,9 +686,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
             Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equServerID, StringClass.get(20)));
-            retailLM.getLPByName("equipmentServerEquipmentServerLog").execute(equipmentServerObject, session, logObject);
-            retailLM.getLPByName("dataEquipmentServerLog").execute(message, session, logObject);
-            retailLM.getLPByName("dateEquipmentServerLog").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
+            retailLM.getLPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
+            retailLM.getLPByName("dataEquipmentServerLog").change(message, session, logObject);
+            retailLM.getLPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
         }
 
         return session.apply(this);
@@ -697,7 +697,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public void succeedTransaction(Integer transactionID) throws SQLException {
         DataSession session = createSession();
-        retailLM.getLPByName("succeededMachineryPriceTransaction").execute(true, session,
+        retailLM.getLPByName("succeededMachineryPriceTransaction").change(true, session,
                 session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
         session.apply(this);
     }
@@ -706,12 +706,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public void errorTransactionReport(Integer transactionID, Exception e) throws RemoteException, SQLException {
         DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"));
-        retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").execute(transactionID, session, errorObject);
-        retailLM.getLPByName("dataMachineryPriceTransactionError").execute(e.toString(), session, errorObject);
-        retailLM.getLPByName("dateMachineryPriceTransactionError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
+        retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").change(transactionID, session, errorObject);
+        retailLM.getLPByName("dataMachineryPriceTransactionError").change(e.toString(), session, errorObject);
+        retailLM.getLPByName("dateMachineryPriceTransactionError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
-        retailLM.getLPByName("errorTraceMachineryPriceTransactionError").execute(os.toString(), session, errorObject);
+        retailLM.getLPByName("errorTraceMachineryPriceTransactionError").change(os.toString(), session, errorObject);
 
         session.apply(this);
     }
@@ -722,13 +722,13 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"));
         Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-        retailLM.getLPByName("equipmentServerEquipmentServerError").execute(equipmentServerObject, session, errorObject);
-        retailLM.getLPByName("dataEquipmentServerError").execute(exception.toString(), session, errorObject);
+        retailLM.getLPByName("equipmentServerEquipmentServerError").change(equipmentServerObject, session, errorObject);
+        retailLM.getLPByName("dataEquipmentServerError").change(exception.toString(), session, errorObject);
         OutputStream os = new ByteArrayOutputStream();
         exception.printStackTrace(new PrintStream(os));
-        retailLM.getLPByName("erTraceEquipmentServerError").execute(os.toString(), session, errorObject);
+        retailLM.getLPByName("erTraceEquipmentServerError").change(os.toString(), session, errorObject);
 
-        retailLM.getLPByName("dateEquipmentServerError").execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
+        retailLM.getLPByName("dateEquipmentServerError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
 
         session.apply(this);
     }

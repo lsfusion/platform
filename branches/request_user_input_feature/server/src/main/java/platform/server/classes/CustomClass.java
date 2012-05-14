@@ -18,8 +18,8 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.IsClassProperty;
-import platform.server.logics.property.Property;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -421,8 +421,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     @IdentityLazy
-    public Set<Property> getChildProps() {
-        Set<Property> result = new HashSet<Property>();
+    public Set<CalcProperty> getChildProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         for(CustomClass customClass : getChilds())
             result.add(customClass.getProperty());
         return result;

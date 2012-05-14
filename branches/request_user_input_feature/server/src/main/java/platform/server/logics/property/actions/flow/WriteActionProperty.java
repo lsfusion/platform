@@ -15,10 +15,10 @@ import static platform.base.BaseUtils.*;
 
 public abstract class WriteActionProperty<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
-    protected final PropertyMapImplement<P, I> writeTo;
-    protected final PropertyMapImplement<W, I> where;
+    protected final CalcPropertyMapImplement<P, I> writeTo;
+    protected final CalcPropertyMapImplement<W, I> where;
     
-    public WriteActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, PropertyMapImplement<P, I> writeTo, PropertyMapImplement<W, I> where, List<PropertyInterfaceImplement<I>> used) {
+    public WriteActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<P, I> writeTo, CalcPropertyMapImplement<W, I> where, List<CalcPropertyInterfaceImplement<I>> used) {
         super(sID, caption, innerInterfaces, mapInterfaces, addList(writeTo, addList(where, used)));
 
         this.writeTo = writeTo;
@@ -51,18 +51,4 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
     }
 
     protected abstract void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException;
-
-    protected abstract Collection<Property> getWriteProps();
-
-    public Set<Property> getChangeProps() {
-        Set<Property> result = new HashSet<Property>();
-        for(Property<?> property : getWriteProps()) {
-            assert !(property instanceof ActionProperty); // предполагается что exec'ом должен вызываться
-            if(property instanceof ObjectClassProperty)
-                result.addAll(((ObjectClassProperty) property).getChangeProps());
-            else
-                result.add(property);
-        }
-        return result;
-    }
 }

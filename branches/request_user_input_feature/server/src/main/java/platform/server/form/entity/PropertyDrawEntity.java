@@ -26,24 +26,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
 
-    public PropertyObjectEntity<P> propertyObject;
+    public PropertyObjectEntity<P, ?> propertyObject;
     
     public GroupObjectEntity toDraw;
 
     public String mouseBinding;
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
-    public Map<String, PropertyObjectEntity> editActions = new HashMap<String, PropertyObjectEntity>();
+    public Map<String, ActionPropertyObjectEntity> editActions = new HashMap<String, ActionPropertyObjectEntity>();
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public PropertyObjectEntity<?> propertyCaption;
-    public PropertyObjectEntity<?> propertyReadOnly;
-    public PropertyObjectEntity<?> propertyFooter;
-    public PropertyObjectEntity<?> propertyBackground;
-    public PropertyObjectEntity<?> propertyForeground;
+    public CalcPropertyObjectEntity<?> propertyCaption;
+    public CalcPropertyObjectEntity<?> propertyReadOnly;
+    public CalcPropertyObjectEntity<?> propertyFooter;
+    public CalcPropertyObjectEntity<?> propertyBackground;
+    public CalcPropertyObjectEntity<?> propertyForeground;
 
     public boolean shouldBeLast = false;
     public ClassViewType forceViewType = null;
@@ -52,7 +52,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyDrawEntity() {
     }
 
-    public PropertyDrawEntity(int ID, PropertyObjectEntity<P> propertyObject, GroupObjectEntity toDraw) {
+    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
         super(ID);
         setSID("propertyDraw" + ID);
         this.propertyObject = propertyObject;
@@ -78,7 +78,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         mouseBinding = actionSID;
     }
 
-    public void setEditAction(String actionSID, PropertyObjectEntity editAction) {
+    public void setEditAction(String actionSID, ActionPropertyObjectEntity editAction) {
         editActions.put(actionSID, editAction);
     }
 
@@ -90,17 +90,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setKeyEditAction(KeyStroke keyStroke, String actionSID, PropertyObjectEntity editAction) {
+    public void setKeyEditAction(KeyStroke keyStroke, String actionSID, ActionPropertyObjectEntity editAction) {
         setKeyAction(keyStroke, actionSID);
         setEditAction(actionSID, editAction);
     }
 
-    public void setMouseEditAction(String actionSID, PropertyObjectEntity editAction) {
+    public void setMouseEditAction(String actionSID, ActionPropertyObjectEntity editAction) {
         setMouseAction(actionSID);
         setEditAction(actionSID, editAction);
     }
 
-    public void setContextMenuEditAction(String caption, String actionSID, PropertyObjectEntity editAction) {
+    public void setContextMenuEditAction(String caption, String actionSID, ActionPropertyObjectEntity editAction) {
         setContextMenuAction(caption, actionSID);
         setEditAction(actionSID, editAction);
     }
@@ -109,19 +109,19 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         columnGroupObjects.add(columnGroupObject);
     }
 
-    public void setPropertyCaption(PropertyObjectEntity propertyCaption) {
+    public void setPropertyCaption(CalcPropertyObjectEntity propertyCaption) {
         this.propertyCaption = propertyCaption;
     }
 
-    public void setPropertyFooter(PropertyObjectEntity propertyFooter) {
+    public void setPropertyFooter(CalcPropertyObjectEntity propertyFooter) {
         this.propertyFooter = propertyFooter;
     }
 
-    public void setPropertyBackground(PropertyObjectEntity propertyBackground) {
+    public void setPropertyBackground(CalcPropertyObjectEntity propertyBackground) {
         this.propertyBackground = propertyBackground;
     }
 
-    public void setPropertyForeground(PropertyObjectEntity propertyForeground) {
+    public void setPropertyForeground(CalcPropertyObjectEntity propertyForeground) {
         this.propertyForeground = propertyForeground;
     }
 
@@ -181,14 +181,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        propertyObject = (PropertyObjectEntity<P>) pool.deserializeObject(inStream);
+        propertyObject = (PropertyObjectEntity<P, ?>) pool.deserializeObject(inStream);
         toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
-        propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyReadOnly = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyFooter = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyBackground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyForeground = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyCaption = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyReadOnly = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyFooter = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyBackground = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyForeground = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         if (inStream.readBoolean())

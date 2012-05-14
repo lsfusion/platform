@@ -6,21 +6,20 @@ import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.*;
-
 public class ChangeActionProperty<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends WriteActionProperty<P, W, I> {
 
-    private PropertyInterfaceImplement<I> writeFrom;
+    private CalcPropertyInterfaceImplement<I> writeFrom;
 
     public ChangeActionProperty(String sID,
                                 String caption,
                                 Collection<I> innerInterfaces,
-                                List<I> mapInterfaces, PropertyMapImplement<W, I> where, PropertyMapImplement<P, I> writeTo,
-                                PropertyInterfaceImplement<I> writeFrom) {
+                                List<I> mapInterfaces, CalcPropertyMapImplement<W, I> where, CalcPropertyMapImplement<P, I> writeTo,
+                                CalcPropertyInterfaceImplement<I> writeFrom) {
         super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where, Collections.singletonList(writeFrom));
 
         this.writeFrom = writeFrom;
@@ -37,17 +36,17 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
                     writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere()));
 
         PropertyChange<P> change = new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere);
-        context.addActions(context.getEnv().execute(writeTo.property, change));
+        context.addActions(context.getEnv().change(writeTo.property, change)); // нет FormEnvironment так как заведомо не action
     }
 
-    public Set<Property> getUsedProps() {
-        Set<Property> result = new HashSet<Property>();
+    public Set<CalcProperty> getUsedProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         writeFrom.mapFillDepends(result);
         where.mapFillDepends(result);
         return result;
     }
 
-    protected Collection<Property> getWriteProps() {
-        return new HashSet<Property>(writeTo.property.getDataChanges());
+    public Set<CalcProperty> getChangeProps() {
+        return new HashSet<CalcProperty>(writeTo.property.getDataChanges());
     }
 }

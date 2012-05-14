@@ -23,7 +23,6 @@ import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -1133,7 +1132,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                 if (email != null && getEmailRepeatings(data, elements, email.toString().trim()) == 1) {
                     String projectId = getProjectId(elements, email.toString().trim());
                     if (projectId != null) {
-                        LM.sidProject.execute(projectId, pInfo.session, pInfo.session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
+                        LM.sidProject.change(projectId, pInfo.session, pInfo.session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
                         pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
                                 project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString().trim().toLowerCase());
                     }
@@ -1384,7 +1383,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
 
                     ObjectValue expertObject = LM.emailToExpert.readClasses(pInfo.session, new DataObject(node.getChildText("emailProject")));
                     if (expertObject instanceof DataObject)
-                        LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, (DataObject) expertObject);
+                        LM.baseLM.objectClass.change(LM.claimerExpert.getSingleClass().ID, context, (DataObject) expertObject);
 
                     Date date = new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject")));
                     if (fillDate) {
@@ -1727,7 +1726,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
 
                     ObjectValue expertObject = LM.emailToExpert.readClasses(pInfo.session, new DataObject(node.getChildText("emailProject")));
                     if (expertObject instanceof DataObject)
-                        LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, (DataObject) expertObject);
+                        LM.baseLM.objectClass.change(LM.claimerExpert.getSingleClass().ID, context, (DataObject) expertObject);
 
                     Date date = new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject")));
                     if (fillDate) {

@@ -42,7 +42,7 @@ public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty
         DataObject object;
         if (valueClass.hasChildren()) {
             // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()
-            boolean valueProvided = !getValueClass().getDefaultValue().equals(userValue);
+            boolean valueProvided = true;//!getValueClass().getDefaultValue().equals(userValue);
             object = context.addObject((ConcreteCustomClass) (valueProvided?context.getSession().baseClass.findClassID((Integer) userValue):valueClass));
         } else {
             object = context.addObject((ConcreteCustomClass) valueClass);
@@ -50,7 +50,7 @@ public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty
 
         if (storeNewObjectProperty != null && object != null) {
             context.addActions(
-                    storeNewObjectProperty.execute(object.getValue(), context)
+                    storeNewObjectProperty.change(object.getValue(), context)
             );
         }
     }

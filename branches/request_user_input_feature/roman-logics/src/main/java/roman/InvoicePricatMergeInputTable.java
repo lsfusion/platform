@@ -13,6 +13,7 @@ import platform.server.integration.ImportInputTable;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.CalcPropertyImplement;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.SingleKeyTableUsage;
@@ -131,7 +132,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         query.and(table.join(BL.RomanLM.barcodePricat.property.getExpr(mapKeys)).getWhere());
 
         for (ResultField propertyName : propertyMap.keySet()) {
-            PropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));
+            CalcPropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));
             query.properties.put(propertyName, propertyMap.get(propertyName).property.getExpr(propertyImplement.mapping));
         }
 

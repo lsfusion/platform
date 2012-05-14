@@ -70,37 +70,37 @@ public class AnyValuePropertyHolder {
 
     public void write(Type valueType, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
         if (valueType instanceof ObjectType) {
-            objectProperty.execute(value, context, keys);
+            objectProperty.change(value, context, keys);
 
         } else if (valueType instanceof TextClass) {
-            textProperty.execute(value, context, keys);
+            textProperty.change(value, context, keys);
 
         } else if (valueType instanceof StringClass) {
-            stringProperty.execute(value, context, keys);
+            stringProperty.change(value, context, keys);
 
         } else if (valueType instanceof IntegerClass) {
-            intProperty.execute(value, context, keys);
+            intProperty.change(value, context, keys);
 
         } else if (valueType instanceof LongClass) {
-            longProperty.execute(value, context, keys);
+            longProperty.change(value, context, keys);
 
         } else if (valueType instanceof DoubleClass) {
-            doubleProperty.execute(value, context, keys);
+            doubleProperty.change(value, context, keys);
 
         } else if (valueType instanceof YearClass) {
-            yearProperty.execute(value, context, keys);
+            yearProperty.change(value, context, keys);
 
         } else if (valueType instanceof DateTimeClass) {
-            dateTimeProperty.execute(value, context, keys);
+            dateTimeProperty.change(value, context, keys);
 
         } else if (valueType instanceof LogicalClass) {
-            logicalProperty.execute(value, context, keys);
+            logicalProperty.change(value, context, keys);
 
         } else if (valueType instanceof DateClass) {
-            dateProperty.execute(value, context, keys);
+            dateProperty.change(value, context, keys);
 
         } else if (valueType instanceof TimeClass) {
-            timeProperty.execute(value, context, keys);
+            timeProperty.change(value, context, keys);
 
         } else if (valueType instanceof ColorClass) {
             colorProperty.execute(value, context, keys);

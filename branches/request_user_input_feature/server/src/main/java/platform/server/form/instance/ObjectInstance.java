@@ -1,6 +1,5 @@
 package platform.server.form.instance;
 
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
@@ -8,7 +7,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 
@@ -67,7 +66,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException;
 
-    public abstract boolean classChanged(Collection<Property> changedProps);
+    public abstract boolean classChanged(Collection<CalcProperty> changedProps);
 
     public abstract Type getType();
 
@@ -76,8 +75,8 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
-    public boolean dataUpdated(Collection<Property> changedProps) { return false; }
-    public void fillProperties(Set<Property> properties) { }
+    public boolean dataUpdated(Collection<CalcProperty> changedProps) { return false; }
+    public void fillProperties(Set<CalcProperty> properties) { }
 
     protected Expr getExpr() {
         return getObjectValue().getExpr();

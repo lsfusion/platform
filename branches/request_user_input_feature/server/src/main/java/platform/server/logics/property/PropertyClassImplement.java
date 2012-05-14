@@ -16,8 +16,4 @@ public class PropertyClassImplement<P extends PropertyInterface> extends Propert
     public PropertyClassImplement(Property<P> property, List<ValueClassWrapper> classes, List<P> interfaces) {
         super(property, BaseUtils.toMap(interfaces, classes));
     }
-
-    public PropertyClassImplement(Property<P> property, ValueClassWrapper vClass, P iFace) {
-        super(property, Collections.singletonMap(iFace, vClass));
-    }
 }

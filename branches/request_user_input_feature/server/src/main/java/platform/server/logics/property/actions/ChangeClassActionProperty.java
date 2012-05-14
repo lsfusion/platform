@@ -1,13 +1,15 @@
 package platform.server.logics.property.actions;
 
 import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * User: DAle
@@ -25,6 +27,15 @@ public class ChangeClassActionProperty extends CustomActionProperty {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         objectInterface = i.next();
         classInterface = i.next();
+    }
+
+    @Override
+    public Set<CalcProperty> getChangeProps() {
+        return ((BaseClass)objectInterface.interfaceClass).getChildProps();
+    }
+
+    public Set<CalcProperty> getUsedProps() {
+        return new HashSet<CalcProperty>();
     }
 
     @Override

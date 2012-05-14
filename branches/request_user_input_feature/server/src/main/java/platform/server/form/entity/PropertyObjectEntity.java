@@ -1,11 +1,10 @@
 package platform.server.form.entity;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+import platform.base.TwinImmutableInterface;
 import platform.server.form.instance.InstanceFactory;
-import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyImplement;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.serialization.ServerCustomSerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
@@ -17,24 +16,35 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<P, PropertyObjectInterfaceEntity> implements OrderEntity<PropertyObjectInstance>, ServerCustomSerializable {
+public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends PropertyImplement<P, PropertyObjectInterfaceEntity> implements ServerCustomSerializable {
 
-    public PropertyObjectEntity() {
+    public T property;
+    public Map<P, PropertyObjectInterfaceEntity> mapping;
+
+    public String toString() {
+        return property.toString();
+    }
+
+    public boolean twins(TwinImmutableInterface o) {
+        return property.equals(((PropertyObjectEntity) o).property) && mapping.equals(((PropertyObjectEntity) o).mapping);
+    }
+
+    public int immutableHashCode() {
+        return property.hashCode() * 31 + mapping.hashCode();
     }
 
     public PropertyObjectEntity(LP<P> property, PropertyObjectInterfaceEntity... objects) {
-        super(property.property);
-        setCreationScript(property.getCreationScript());
-        for(int i=0;i<property.listInterfaces.size();i++)
-            mapping.put(property.listInterfaces.get(i),objects[i]);
+        this((T) property.property, property.getMap(objects), property.getCreationScript());
     }
 
-    public PropertyObjectEntity(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
-        super(property, mapping);
+    public PropertyObjectEntity(T property, Map<P, PropertyObjectInterfaceEntity> mapping) {
+        this(property, mapping, null);
     }
 
-    public PropertyObjectInstance getInstance(InstanceFactory instanceFactory) {
-        return instanceFactory.getInstance(this);
+    public PropertyObjectEntity(T property, Map<P, PropertyObjectInterfaceEntity> mapping, String creationScript) {
+        this.property = property;
+        this.mapping = mapping;
+        this.creationScript = creationScript;
     }
 
     public GroupObjectEntity getApplyObject(List<GroupObjectEntity> groupList) {
@@ -62,11 +72,6 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         objects.addAll(getObjectInstances());
     }
 
-    @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) throws SQLException {
-        return factory.getInstance(this).read(session, modifier);
-    }
-
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, property);
 
@@ -80,7 +85,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         String propertySID = inStream.readUTF();
 
-        property = pool.context.BL.getProperty(propertySID);
+        property = (T) pool.context.BL.getProperty(propertySID);
         mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
 
         int size = inStream.readInt();
@@ -93,23 +98,16 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         }
     }
 
-    public PropertyObjectEntity<P> getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
-        Map<P, PropertyObjectInterfaceEntity> nmapping = new HashMap<P, PropertyObjectInterfaceEntity>();
-
-        for (P iFace : property.interfaces) {
-            nmapping.put(iFace, mapping.get(iFace).getRemappedEntity(oldObject, newObject, instanceFactory));
-        }
-
-        return new PropertyObjectEntity<P>(property, nmapping);
-    }
-
-    private String creationScript;
+    protected final String creationScript;
 
     public String getCreationScript() {
         return creationScript;
     }
 
-    public void setCreationScript(String creationScript) {
-        this.creationScript = creationScript;
+    public static <T extends PropertyInterface> PropertyObjectEntity<T, ?> create(Property<T> property, Map<T, PropertyObjectInterfaceEntity> map, String creationScript) {
+        if(property instanceof CalcProperty)
+            return new CalcPropertyObjectEntity<T>((CalcProperty<T>)property, map, creationScript);
+        else
+            return (PropertyObjectEntity<T, ?>) new ActionPropertyObjectEntity((ActionProperty) property, ActionProperty.cast(map), creationScript);
     }
 }

@@ -29,7 +29,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
 
-    public PropertyObjectEntity<?> reportPathProp;
+    public CalcPropertyObjectEntity<?> reportPathProp;
 
     public GroupObjectEntity() {
     }
@@ -60,8 +60,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
 
-    public PropertyObjectEntity<?> propertyBackground;
-    public PropertyObjectEntity<?> propertyForeground;
+    public CalcPropertyObjectEntity<?> propertyBackground;
+    public CalcPropertyObjectEntity<?> propertyForeground;
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);

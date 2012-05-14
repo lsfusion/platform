@@ -12,6 +12,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
@@ -29,7 +30,7 @@ public interface ExecutionEnvironmentInterface {
 
     boolean isInTransaction();
 
-    <P extends PropertyInterface> void fireChange(Property<P> property, PropertyChange<P> change) throws SQLException;
+    <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException;
 
     DataObject addObject(ConcreteCustomClass cls) throws SQLException;
 

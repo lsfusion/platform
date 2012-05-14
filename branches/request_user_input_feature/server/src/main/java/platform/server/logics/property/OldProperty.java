@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class OldProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
-    public final Property<T> property;
+    public final CalcProperty<T> property;
 
-    public OldProperty(Property<T> property) {
+    public OldProperty(CalcProperty<T> property) {
         super("OLD_" + property.getSID(), property.caption + " (в БД)", (List<T>)property.interfaces);
         this.property = property;
     }

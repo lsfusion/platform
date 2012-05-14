@@ -13,21 +13,13 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
-import java.io.*;
-import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 public class CopyProjectActionProperty extends CustomActionProperty {
 
@@ -125,14 +117,14 @@ public class CopyProjectActionProperty extends CustomActionProperty {
         for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
             DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), LM.cluster);
             for (LP prop : propertiesClusterProjectToCopy)
-                prop.execute(rows.getValue().get(prop.toString()), context, projectCopy, clusterObject);
+                prop.change(rows.getValue().get(prop.toString()), context, projectCopy, clusterObject);
             for (LP prop : propertiesClusterToCopy)
-                prop.execute(rows.getValue().get(prop.toString()), context, clusterObject);
+                prop.change(rows.getValue().get(prop.toString()), context, clusterObject);
         }
     }
 
     private void copyProperty(LP prop, ExecutionContext context, DataObject projectObject, DataObject objectCopy) throws SQLException {
-        prop.execute(prop.read(context, projectObject), context, objectCopy);
+        prop.change(prop.read(context, projectObject), context, objectCopy);
     }
 
     private void copyObject(ConcreteCustomClass copyingCustomClass, List<LP> propertiesToCopy, ExecutionContext context, LP projectCopyingCustomClass, DataObject projectObject, DataObject projectCopy) throws SQLException {
@@ -148,9 +140,9 @@ public class CopyProjectActionProperty extends CustomActionProperty {
 
         for (Map<Object, Object> values : result.values()) {
             DataObject copy = context.addObject(copyingCustomClass);
-            projectCopyingCustomClass.execute(projectCopy.getValue(), context, copy);
+            projectCopyingCustomClass.change(projectCopy.getValue(), context, copy);
             for (LP prop : propertiesToCopy)
-                prop.execute(values.get(prop.toString()), context, copy);
+                prop.change(values.get(prop.toString()), context, copy);
         }
     }
 }

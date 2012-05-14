@@ -14,7 +14,8 @@ import platform.server.logics.property.*;
 import java.util.Arrays;
 import java.util.List;
 
-import static platform.server.logics.PropertyUtils.mapImplement;
+import static platform.server.logics.PropertyUtils.mapCalcImplement;
+import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.PropertyUtils.readImplements;
 
 /**
@@ -99,13 +100,13 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
                 params[i+1] = i+1;
             }
             JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.getSID(), impl.property.caption,
-                    listInterfaces, false, mapImplement(lpMainProp, readImplements(listInterfaces, params)));
+                    listInterfaces, false, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
             jProp.inheritFixedCharWidth(impl.property);
             LP<?> ljProp = new LP<JoinProperty.Interface>(jProp, listInterfaces);
             addPropertyDraw(ljProp, entities);
         }
 
-        addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)));
+        addFixedFilter(new NotNullFilterEntity((CalcPropertyObjectEntity) addPropertyObject(logProperty, entities)));
 
         setEditType(PropertyEditType.READONLY);
     }

@@ -3,34 +3,72 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.QuickSet;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.add;
 
-public abstract class DataProperty extends UserProperty {
+public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
 
     public ValueClass value;
-    
+
     public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
-        super(sID, caption, classes);        
+        super(sID, caption, IsClassProperty.getInterfaces(classes));
         this.value = value;
     }
 
-    public static List<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
-        List<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
-        for(ValueClass interfaceClass : classes)
-            interfaces.add(new ClassPropertyInterface(interfaces.size(),interfaceClass));
-        return interfaces;
+    @Override
+    public ClassWhere<Object> getClassValueWhere() {
+        return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", getValueClass()), true);
     }
 
-    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public Event<?,?> event = null;
+
+    protected Set<CalcProperty> getEventDepends() {
+        return event !=null ? event.getDepends(true) : new HashSet<CalcProperty>();
+    }
+
+    protected boolean useSimpleIncrement() {
+        return false;
+    }
+
+    @IdentityLazy
+    protected CalcPropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+        return IsClassProperty.getProperty(interfaces);
+    }
+
+    @IdentityLazy
+    protected CalcPropertyImplement<?, String> getValueClassProperty() {
+        return IsClassProperty.getProperty(getValueClass(), "value");
+    }
+
+    protected Set<CalcProperty> getClassDepends() {
+        return BaseUtils.toSet((CalcProperty)getInterfaceClassProperty().property, (CalcProperty)getValueClassProperty().property);
+    }
+
+    @Override
+    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+        return propChanges.getUsedChanges(getClassDepends());
+    }
+
+    @Override
+    protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        change = change.and(getInterfaceClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(Collections.singletonMap("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
+        if(change.where.isFalse()) // чтобы не плодить пустые change'и
+            return new DataChanges();
+
+        if(changedWhere !=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
+        return new DataChanges(this, change);
+    }
+
+    public QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 
@@ -71,8 +109,8 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
-    public QuickSet<Property> getUsedEventChange(StructChanges propChanges, boolean cascade) {
-        QuickSet<Property> result = super.getUsedEventChange(propChanges, cascade).merge(value.getProperty().getUsedChanges(propChanges, cascade));
+    public QuickSet<CalcProperty> getUsedEventChange(StructChanges propChanges, boolean cascade) {
+        QuickSet<CalcProperty> result = super.getUsedEventChange(propChanges, cascade).merge(value.getProperty().getUsedChanges(propChanges, cascade));
         for(ClassPropertyInterface remove : interfaces)
             result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges, cascade));
         if(event !=null && event.hasEventChanges(propChanges, cascade))
@@ -81,15 +119,28 @@ public abstract class DataProperty extends UserProperty {
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean events) { // для Action'а связь считается слабой
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) { // для Action'а связь считается слабой
         if(events) depends.addAll(getEventDepends());
     }
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
-        for(Property property : getClassDepends())
+        for(CalcProperty property : getClassDepends())
             result.add(new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION));
         return BaseUtils.merge(super.calculateLinks(), result); // чтобы удаления классов зацеплять
+    }
+
+    // не сильно структурно поэтому вынесено в метод
+    public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
+        int i=0;
+        Map<ClassPropertyInterface, V> result = new HashMap<ClassPropertyInterface, V>();
+        for(ClassPropertyInterface propertyInterface : interfaces)
+            result.put(propertyInterface, list.get(i++));
+        return result;
+    }
+
+    public <V extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, V> getImplement(List<V> list) {
+        return new CalcPropertyMapImplement<ClassPropertyInterface, V>(this, getMapInterfaces(list));
     }
 }

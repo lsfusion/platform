@@ -15,8 +15,8 @@ import java.util.Map;
 
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
-    private final List<PropertyInterfaceImplement<I>> props;
-    protected List<PropertyInterfaceImplement<I>> getProps() {
+    private final List<CalcPropertyInterfaceImplement<I>> props;
+    protected List<CalcPropertyInterfaceImplement<I>> getProps() {
         return props;
     }
 
@@ -25,12 +25,12 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return groupType;
     }
 
-    private final OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders;
-    protected OrderedMap<PropertyInterfaceImplement<I>, Boolean> getOrders() {
+    private final OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders;
+    protected OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
         return orders;
     }
 
-    public OrderGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, List<PropertyInterfaceImplement<I>> props, GroupType groupType, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders) {
+    public OrderGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, List<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders) {
         super(sID, caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;
@@ -39,7 +39,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         finalizeInit();
     }
 
-    public OrderGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, List<PropertyInterfaceImplement<I>> extras, GroupType groupType, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders) {
+    public OrderGroupProperty(String sID, String caption, Collection<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, List<CalcPropertyInterfaceImplement<I>> extras, GroupType groupType, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders) {
         this(sID, caption, property.interfaces, interfaces, BaseUtils.addList(property.getImplement(), extras), groupType, orders);
     }
 

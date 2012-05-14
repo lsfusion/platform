@@ -1,11 +1,11 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -14,19 +14,19 @@ import java.util.*;
 public class Event<D extends PropertyInterface, C extends PropertyInterface> {
 
     private final Property<C> writeTo; // что меняем
-    private final PropertyInterfaceImplement<C> writeFrom;
-    private final PropertyMapImplement<?, C> where;
+    private final CalcPropertyInterfaceImplement<C> writeFrom;
+    private final CalcPropertyMapImplement<?, C> where;
 
-    public Event(Property<C> writeTo, PropertyInterfaceImplement<C> writeFrom, PropertyMapImplement<?, C> where, int options) {
-        assert where.property.noDB();
+    public Event(Property<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where, int options) {
+        assert ((CalcProperty)where.property).noDB();
         this.writeTo = writeTo;
         this.writeFrom = writeFrom;
         this.where = where;
         this.options = options;
     }
 
-    public Set<Property> getDepends(boolean includeValue) {
-        Set<Property> used = new HashSet<Property>();
+    public Set<CalcProperty> getDepends(boolean includeValue) {
+        Set<CalcProperty> used = new HashSet<CalcProperty>();
         where.mapFillDepends(used);
         if(includeValue)
             writeFrom.mapFillDepends(used);
@@ -53,12 +53,12 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
         return changes.hasChanges(changes.getUsedChanges(getDepends(cascade), cascade)); // ради этого все и делается
     }
 
-    public QuickSet<Property> getUsedDataChanges(StructChanges changes, boolean cascade) {
+    public QuickSet<CalcProperty> getUsedDataChanges(StructChanges changes, boolean cascade) {
         assert hasEventChanges(changes, cascade);
-        return QuickSet.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends(true), cascade));
+        return QuickSet.add(((CalcProperty<C>)writeTo).getUsedDataChanges(changes), changes.getUsedChanges(getDepends(true), cascade));
     }
 
-    private PropertyChange<C> getChange(PropertyChanges changes) {
+    public PropertyChange<C> getChange(PropertyChanges changes) {
         Map<C,KeyExpr> mapKeys = writeTo.getMapKeys();
         Where changeWhere = where.mapExpr(mapKeys, changes).getWhere();
         if(changeWhere.isFalse()) // для оптимизации
@@ -71,12 +71,8 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
         return new PropertyChange<C>(mapKeys, writeExpr, changeWhere);
     }
 
-    public MapDataChanges<C> getMapDataChanges(PropertyChanges changes) {
-        return writeTo.getDataChanges(getChange(changes), changes);
-    }
-
     public DataChanges getDataChanges(PropertyChanges changes) {
-        return getMapDataChanges(changes).changes;
+        return ((CalcProperty<C>)writeTo).getDataChanges(getChange(changes), changes);
     }
 
     public final static int RESOLVE = 1; // обозначает что where - SET или DROP свойства, и выполнение этого event'а не имеет смысла
@@ -89,6 +85,6 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
         PropertyChanges changes = session.getPropertyChanges();
         for(ChangedProperty<T> changedProperty : where.property.getChangedDepends())
             changes = changes.add(new PropertyChanges(changedProperty, changedProperty.getFullChange(session)));
-        new ExecutionEnvironment(session).execute(getMapDataChanges(changes), new HashMap<C, PropertyObjectInterfaceInstance>());
+        new ExecutionEnvironment(session).execute((ActionProperty)writeTo, BaseUtils.<PropertySet<ClassPropertyInterface>>immutableCast(new PropertySet<C>(getChange(changes))), null);
     }
 }

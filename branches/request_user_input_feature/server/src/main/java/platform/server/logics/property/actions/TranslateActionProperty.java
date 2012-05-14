@@ -6,7 +6,6 @@ import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -61,7 +60,7 @@ public class TranslateActionProperty extends CustomActionProperty {
                     result += token;
                 }
             }
-            targetProperty.execute(result, context, inputObjects.toArray(new DataObject[inputObjects.size()]));
+            targetProperty.change(result, context, inputObjects.toArray(new DataObject[inputObjects.size()]));
         }
     }
 }

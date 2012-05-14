@@ -39,9 +39,9 @@ public class ExecutionContext {
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
     private final ExecutionEnvironment env;
-    private final FormEnvironment form;
+    private final FormEnvironment<ClassPropertyInterface> form;
 
-    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment form, boolean groupLast) {
+    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment<ClassPropertyInterface> form, boolean groupLast) {
         this.keys = keys;
         this.value = value;
         this.env = env;
@@ -163,13 +163,18 @@ public class ExecutionContext {
         return new ExecutionContext(keys, value, newEnv, new ArrayList<ClientAction>(), form, groupLast);
     }
 
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, Map<ClassPropertyInterface, ? extends PropertyInterfaceImplement<ClassPropertyInterface>> mapInterfaces) {
-        return override(keys, form!=null ? form.map(mapInterfaces) : null, value);
+    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, Map<ClassPropertyInterface, ? extends CalcPropertyInterfaceImplement<ClassPropertyInterface>> mapInterfaces) {
+        return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, value);
     }
 
-    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> mapping, ObjectValue value) {
+    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> mapping) {
         return override(join(mapping, keys), form!=null ? form.map(mapping) : null, value);
     }
+
+    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
+        return override(keys, form, value);
+    }
+
 
     public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, FormEnvironment form, ObjectValue value) {
         return new ExecutionContext(keys, value, env, actions, form, groupLast);
@@ -239,7 +244,7 @@ public class ExecutionContext {
         }
     }
 
-    public FormEnvironment getForm() {
+    public FormEnvironment<ClassPropertyInterface> getForm() {
         return form;
     }
 

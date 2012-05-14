@@ -14,12 +14,12 @@ public abstract class FunctionProperty<T extends PropertyInterface> extends Aggr
         super(sID, caption, interfaces);
     }
 
-    public static void fillDepends(Set<Property> depends, Collection<? extends PropertyInterfaceImplement> propImplements) {
-        for(PropertyInterfaceImplement propImplement : propImplements)
+    public static void fillDepends(Set<CalcProperty> depends, Collection<? extends CalcPropertyInterfaceImplement> propImplements) {
+        for(CalcPropertyInterfaceImplement propImplement : propImplements)
             propImplement.mapFillDepends(depends);
     }
 
-    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return propChanges.getUsedChanges(getDepends(), cascade);
     }
 }

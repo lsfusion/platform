@@ -2,7 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,11 +17,11 @@ public abstract class CustomActionProperty extends ActionProperty {
         super(sID, caption, classes);
     }
 
-    public Set<Property> getChangeProps() {
-        return new HashSet<Property>();
+    public Set<CalcProperty> getChangeProps() {
+        return new HashSet<CalcProperty>();
     }
 
-    public Set<Property> getUsedProps() {
-        return new HashSet<Property>();
+    public Set<CalcProperty> getUsedProps() {
+        return new HashSet<CalcProperty>();
     }
 }

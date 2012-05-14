@@ -13,7 +13,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.LogFormEntity;
+import platform.server.form.entity.*;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -21,28 +21,22 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.session.DataSession;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import javax.swing.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static platform.server.logics.PropertyUtils.mapImplement;
-import static platform.server.logics.PropertyUtils.readImplements;
+import static platform.server.logics.PropertyUtils.mapCalcImplement;
+import static platform.server.logics.PropertyUtils.readCalcImplements;
 
-public class LP<T extends PropertyInterface> {
+public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
 
-    public Property<T> property;
+    public P property;
     public List<T> listInterfaces;
     private String creationScript = null;
 
-    public <IT extends PropertyInterface> boolean intersect(LP<IT> lp) {
+    public <IT extends PropertyInterface> boolean intersect(LP<IT, ?> lp) {
         assert listInterfaces.size()==lp.listInterfaces.size();
         Map<IT,T> map = new HashMap<IT,T>();
         for(int i=0;i<listInterfaces.size();i++)
@@ -50,12 +44,12 @@ public class LP<T extends PropertyInterface> {
         return property.intersect(lp.property,map);
     }
 
-    public LP(Property<T> property) {
+    public LP(P property) {
         this.property = property;
         listInterfaces = new ArrayList<T>(property.interfaces);
     }
 
-    public LP(Property<T> property, List<T> listInterfaces) {
+    public LP(P property, List<T> listInterfaces) {
         this.property = property;
         this.listInterfaces = listInterfaces;
     }
@@ -82,7 +76,7 @@ public class LP<T extends PropertyInterface> {
     }
 
     public void setEventSetAction(Object... params) {
-        assert property instanceof ActionProperty || property instanceof JoinProperty; // там все еще местами Join на Action используется
+        assert property instanceof ActionProperty; // там все еще местами Join на Action используется
         setEventSet(new LP(DerivedProperty.createStatic(true, ActionClass.instance).property), params);
     }
 
@@ -113,16 +107,16 @@ public class LP<T extends PropertyInterface> {
     }
     private <D extends PropertyInterface> void setEvent(boolean valueChanged, boolean setChanged, LP<D> valueProperty, int whereNum, Object... params) {
         int intValue = valueProperty.listInterfaces.size();
-        List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
+        List<CalcPropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
-        property.setEvent(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapImplement(valueProperty, defImplements.subList(0, intValue)),
-                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
-                BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
+        property.setEvent(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapCalcImplement(valueProperty, defImplements.subList(0, intValue)),
+                BaseUtils.<CalcPropertyInterfaceImplement<T>, CalcPropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
+                BaseUtils.<CalcPropertyInterfaceImplement<T>, CalcPropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
     }
 
     public <D extends PropertyInterface> void setEvent(Object... params) {
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(listInterfaces, params);
-        property.setEvent(listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
+        List<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
+        property.setEvent(listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
     public List<T> listGroupInterfaces;
@@ -130,15 +124,15 @@ public class LP<T extends PropertyInterface> {
         setDG(ascending, false, params);
     }
     public void setDG(boolean ascending, boolean over, Object... params) {
-        setDG(ascending, over, readImplements(listGroupInterfaces, params));
+        setDG(ascending, over, readCalcImplements(listGroupInterfaces, params));
     }
-    public <T extends PropertyInterface> void setDG(boolean ascending, boolean over, List<PropertyInterfaceImplement<T>> listImplements) {
-        ((SumGroupProperty<T>)property).setDataChanges(new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),
-                (PropertyMapImplement<?, T>) listImplements.get(0), over);
+    public <T extends PropertyInterface> void setDG(boolean ascending, boolean over, List<CalcPropertyInterfaceImplement<T>> listImplements) {
+        ((SumGroupProperty<T>)property).setDataChanges(new OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),
+                (CalcPropertyMapImplement<?, T>) listImplements.get(0), over);
     }
 
     public void addOperand(Object... params) {
-        PropertyMapImplement<?, UnionProperty.Interface> operand = (PropertyMapImplement<?, UnionProperty.Interface>) readImplements(listInterfaces, params).get(0);
+        CalcPropertyMapImplement<?, UnionProperty.Interface> operand = (CalcPropertyMapImplement<?, UnionProperty.Interface>) readCalcImplements(listInterfaces, params).get(0);
         ((ExclusiveUnionProperty)property).addOperand(operand);
     }
 
@@ -193,7 +187,7 @@ public class LP<T extends PropertyInterface> {
 
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
         Map<T, DataObject> mapValues = getMapValues(objects);
-        return property.read(session, mapValues, modifier, env);
+        return ((CalcProperty<T>)property).read(session, mapValues, modifier, env);
     }
 
     public Object read(ExecutionContext context, DataObject... objects) throws SQLException {
@@ -210,7 +204,7 @@ public class LP<T extends PropertyInterface> {
 
     public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
         Map<T, DataObject> mapValues = getMapValues(objects);
-        return property.readClasses(session, mapValues, modifier, env);
+        return ((CalcProperty<T>)property).readClasses(session, mapValues, modifier, env);
     }
 
     public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException {
@@ -226,28 +220,35 @@ public class LP<T extends PropertyInterface> {
     }
 
     // execute'ы без Form'
-    public List<ClientAction> execute(Object value, DataSession session, DataObject... objects) throws SQLException {
-        return execute(value, new ExecutionEnvironment(session), objects);
+    public List<ClientAction> change(Object value, DataSession session, DataObject... objects) throws SQLException {
+        assert property instanceof CalcProperty;
+        return change(value, new ExecutionEnvironment(session), objects);
     }
 
-    public List<ClientAction> execute(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
-        return execute(value, context.getEnv(), objects);
+    public List<ClientAction> change(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
+        assert property instanceof CalcProperty;
+        return change(value, context.getEnv(), objects);
     }
 
-    public List<ClientAction> execute(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
-        return execute(value, context.getEnv(), keys);
+    public List<ClientAction> change(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
+        assert property instanceof CalcProperty;
+        return change(value, context.getEnv(), keys);
     }
 
-    public List<ClientAction> execute(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
-        return execute(value, env, getMapValues(objects));
+    public List<ClientAction> change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
+        return change(value, env, getMapValues(objects));
     }
 
-    public List<ClientAction> execute(Object value, ExecutionEnvironment env, Map<T, DataObject> keys) throws SQLException {
+    public List<ClientAction> change(Object value, ExecutionEnvironment env, Map<T, DataObject> keys) throws SQLException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
         }
-        return property.execute(keys, env, value);
+        return ((CalcProperty)property).change(keys, env, value);
+    }
+
+    public List<ClientAction> execute(DataSession session, DataObject... objects) throws SQLException {
+        return ((ActionProperty)property).execute(ActionProperty.cast(getMapValues(objects)), new ExecutionEnvironment(session), null);
     }
 
     public static List<Property> toPropertyArray(LP[] properties) {
@@ -269,11 +270,15 @@ public class LP<T extends PropertyInterface> {
         property.maximumCharWidth = charWidth;
     }
 
-    public <U> PropertyImplement<T, U> getMapping(U... mapping) {
+    public <U> CalcPropertyImplement<T, U> getMapping(U... mapping) {
+        return new CalcPropertyImplement<T, U>((CalcProperty<T>)property, getMap(mapping));
+    }
+
+    public <U> Map<T, U> getMap(U... mapping) {
         Map<T,U> propertyMapping = new HashMap<T, U>();
         for(int i=0;i<listInterfaces.size();i++)
             propertyMapping.put(listInterfaces.get(i), mapping[i]);
-        return new PropertyImplement<T, U>(property, propertyMapping);
+        return propertyMapping;
     }
 
     public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {
@@ -287,7 +292,7 @@ public class LP<T extends PropertyInterface> {
         Map<L, T> mapInterfaces = new HashMap<L, T>();
         for(int i=0;i<lp.listInterfaces.size();i++)
             mapInterfaces.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
-        property.addFollows(new PropertyMapImplement<L, T>(lp.property, mapInterfaces));
+        property.addFollows(new CalcPropertyMapImplement<L, T>(lp.property, mapInterfaces));
     }
 
     public void followed(LP... lps) {
@@ -350,9 +355,8 @@ public class LP<T extends PropertyInterface> {
         makeUserLoggable(LM, lazyInit);
     }
 
-    public LP setImage(String name) {
+    public void setImage(String name) {
         property.setImage(name);
-        return this;
     }
 
     public void setEditKey(KeyStroke editKey) {
@@ -403,4 +407,9 @@ public class LP<T extends PropertyInterface> {
     public void setCreationScript(String creationScript) {
         this.creationScript = creationScript;
     }
+    
+    public PropertyObjectEntity<T, ?> createObjectEntity(PropertyObjectInterfaceEntity... objects) {
+        return PropertyObjectEntity.create(property, getMap(objects), creationScript);
+    }
+
 }

@@ -19,7 +19,7 @@ public class OverrideModifier extends MutableModifier {
         lateInit(modifiers);
     }
 
-    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(Property<P> property) {
+    public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property) {
         ModifyChange<P> result = null;
         for (MutableModifier modifier : modifiers)
             result = ModifyChange.addNull(result, modifier.getPropertyChanges().getModify(property));

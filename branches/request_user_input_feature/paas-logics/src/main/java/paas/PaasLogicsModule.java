@@ -17,8 +17,9 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 
 public class PaasLogicsModule extends LogicsModule {
@@ -30,31 +31,31 @@ public class PaasLogicsModule extends LogicsModule {
     public ConcreteCustomClass database;
     public StaticCustomClass status;
 
-    public LP loginToUser;
+    public LCP loginToUser;
 
-    public LP projectDescription;
-    public LP projectOwnerName;
-    public LP projectOwnerUserLogin;
-    public LP projectOwner;
+    public LCP projectDescription;
+    public LCP projectOwnerName;
+    public LCP projectOwnerUserLogin;
+    public LCP projectOwner;
 
-    public LP moduleInProject;
-    public LP moduleSource;
-    public LP moduleOrder;
-    public LP selectProjectModules;
+    public LCP moduleInProject;
+    public LCP moduleSource;
+    public LCP moduleOrder;
+    public LAP selectProjectModules;
 
-    public LP configurationProject;
-    public LP configurationDatabase;
-    public LP configurationDatabaseName;
-    public LP configurationPort;
-    public LP configurationStatus;
-    public LP configurationStatusName;
-    public LP configurationStart;
-    public LP configurationStop;
-    public LP conditionalDelete;
+    public LCP configurationProject;
+    public LCP configurationDatabase;
+    public LCP configurationDatabaseName;
+    public LCP configurationPort;
+    public LCP configurationStatus;
+    public LCP configurationStatusName;
+    public LAP configurationStart;
+    public LAP configurationStop;
+    public LAP conditionalDelete;
 
-    public LP databaseConfiguration;
+    public LCP databaseConfiguration;
 
-    public LP refreshStatus;
+    public LAP refreshStatus;
     private final PaasBusinessLogics paas;
 
     public PaasLogicsModule(BaseLogicsModule<PaasBusinessLogics> baseLM, PaasBusinessLogics paas) {
@@ -118,33 +119,30 @@ public class PaasLogicsModule extends LogicsModule {
         configurationStatus = addDProp("configurationStatus", "Статус", status, configuration);
         configurationStatusName = addJProp(baseGroup, "configurationStatusName", "Статус", baseLM.name, configurationStatus, 1);
 
-        refreshStatus = addJProp("Обновить", baseLM.and1, addRefreshStatusProperty(), 1, baseLM.vtrue);
+        refreshStatus = addIfAProp("Обновить", baseLM.vtrue, addRefreshStatusProperty(), 1);
 
-        configurationStart = addJProp("Запустить", baseLM.and1,
-                                      addStartConfigurationProperty(), 1,
-                                      addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1);
-        configurationStop = addJProp("Остановить", baseLM.and1,
-                                      addStopConfigurationProperty(), 1,
-                                      addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "stopped")), 1);
-        conditionalDelete = addJProp(baseLM.delete.property.caption, baseLM.and1,
-                                      baseLM.delete, 1,
-                                      addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1);
+        configurationStart = addIfAProp("Запустить", addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1,
+                                        addStartConfigurationProperty(), 1);
+        configurationStop = addIfAProp("Остановить", addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "stopped")), 1,
+                                        addStopConfigurationProperty(), 1);
+        conditionalDelete = addIfAProp(baseLM.delete.property.caption, addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1,
+                                    baseLM.delete, 1);
 
         databaseConfiguration = addAGProp("databaseConfiguration", "Конфигурация", configurationDatabase);
 
         initNavigators();
     }
 
-    public LP addRefreshStatusProperty() {
-        return addProperty(baseLM.baseGroup, new LP<ClassPropertyInterface>(new RefreshStatusActionProperty(paas, baseLM.genSID(), "")));
+    public LAP addRefreshStatusProperty() {
+        return addProperty(baseLM.baseGroup, new LAP(new RefreshStatusActionProperty(paas, baseLM.genSID(), "")));
     }
 
-    public LP addStartConfigurationProperty() {
-        return addProperty(baseLM.baseGroup, new LP<ClassPropertyInterface>(new StartConfigurationActionProperty(paas, baseLM.genSID(), "")));
+    public LAP addStartConfigurationProperty() {
+        return addProperty(baseLM.baseGroup, new LAP(new StartConfigurationActionProperty(paas, baseLM.genSID(), "")));
     }
 
-    public LP addStopConfigurationProperty() {
-        return addProperty(baseLM.baseGroup, new LP<ClassPropertyInterface>(new StopConfigurationActionProperty(paas, baseLM.genSID(), "")));
+    public LAP addStopConfigurationProperty() {
+        return addProperty(baseLM.baseGroup, new LAP(new StopConfigurationActionProperty(paas, baseLM.genSID(), "")));
     }
 
     @Override
@@ -240,7 +238,7 @@ public class PaasLogicsModule extends LogicsModule {
     }
 
     @Override
-    protected <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
+    protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, T lp) {
         return super.addProperty(group, lp);
     }
 }

@@ -3,12 +3,10 @@ package platform.server.data.expr;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.DataClass;
 import platform.server.classes.InsensitiveStringClass;
-import platform.server.classes.StringClass;
+import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.FormulaUnionProperty;
-import platform.server.logics.property.PropertyMapImplement;
-import platform.server.logics.property.UnionProperty;
+import platform.server.logics.property.CalcPropertyMapImplement;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +14,9 @@ import java.util.Map;
 public class StringAggUnionProperty extends FormulaUnionProperty {
 
     private final String delimiter;
-    private final List<PropertyMapImplement<?, Interface>> operands;
+    private final List<CalcPropertyMapImplement<?, Interface>> operands;
 
-    public StringAggUnionProperty(String sID, String caption, List<Interface> interfaces, List<PropertyMapImplement<?, Interface>> operands, String delimiter) {
+    public StringAggUnionProperty(String sID, String caption, List<Interface> interfaces, List<CalcPropertyMapImplement<?, Interface>> operands, String delimiter) {
         super(sID, caption, interfaces);
         this.delimiter = delimiter;
         this.operands = operands;
@@ -42,8 +40,8 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @IdentityLazy
-    protected Map<String, PropertyMapImplement<?, Interface>> getParams() {
-        Map<String, PropertyMapImplement<?, Interface>> params = new HashMap<String, PropertyMapImplement<?, Interface>>();
+    protected Map<String, CalcPropertyMapImplement<?, Interface>> getParams() {
+        Map<String, CalcPropertyMapImplement<?, Interface>> params = new HashMap<String, CalcPropertyMapImplement<?, Interface>>();
         for(int i=0;i<operands.size();i++)
             params.put("prm"+(i+1), operands.get(i));
         return params;

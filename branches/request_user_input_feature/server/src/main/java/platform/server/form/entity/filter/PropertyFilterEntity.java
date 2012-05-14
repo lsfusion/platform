@@ -1,5 +1,6 @@
 package platform.server.form.entity.filter;
 
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.logics.property.PropertyInterface;
@@ -12,14 +13,14 @@ import java.util.Set;
 
 public abstract class PropertyFilterEntity<P extends PropertyInterface> extends FilterEntity {
 
-    public PropertyObjectEntity<P> property;
+    public CalcPropertyObjectEntity<P> property;
     public boolean resolveAdd;
 
     // нельзя удалять - используется при сериализации
     protected PropertyFilterEntity() {
     }
 
-    public PropertyFilterEntity(PropertyObjectEntity<P> property, boolean resolveAdd) {
+    public PropertyFilterEntity(CalcPropertyObjectEntity<P> property, boolean resolveAdd) {
         this.property = property;
         this.resolveAdd = resolveAdd;
     }

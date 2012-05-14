@@ -104,10 +104,10 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                             }
                         }
                     }
-                    LM.mexxImportInvoice.execute(outputListInOrder[0], context, supplier);
-                    LM.mexxImportArticleInfoInvoice.execute(outputListInOrder[1], context, supplier);
-                    LM.mexxImportColorInvoice.execute(outputListInOrder[2], context, supplier);
-                    LM.mexxImportPricesInvoice.execute(outputListInOrder[3], context, supplier);
+                    LM.mexxImportInvoice.change(outputListInOrder[0], context, supplier);
+                    LM.mexxImportArticleInfoInvoice.change(outputListInOrder[1], context, supplier);
+                    LM.mexxImportColorInvoice.change(outputListInOrder[2], context, supplier);
+                    LM.mexxImportPricesInvoice.change(outputListInOrder[3], context, supplier);
                 }
             }
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));

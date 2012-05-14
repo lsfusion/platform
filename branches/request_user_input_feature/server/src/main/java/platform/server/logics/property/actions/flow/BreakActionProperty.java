@@ -1,8 +1,8 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.classes.ValueClass;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.Property;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -15,12 +15,12 @@ public class BreakActionProperty extends KeepContextActionProperty {
         finalizeInit();
     }
 
-    public Set<Property> getChangeProps() {
-        return new HashSet<Property>();
+    public Set<CalcProperty> getChangeProps() {
+        return new HashSet<CalcProperty>();
     }
 
-    public Set<Property> getUsedProps() {
-        return new HashSet<Property>();
+    public Set<CalcProperty> getUsedProps() {
+        return new HashSet<CalcProperty>();
     }
 
     public FlowResult flowExecute(ExecutionContext context) throws SQLException {

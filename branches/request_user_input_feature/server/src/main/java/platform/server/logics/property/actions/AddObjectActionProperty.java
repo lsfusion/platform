@@ -11,10 +11,7 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.IsClassProperty;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -22,8 +19,8 @@ import java.util.*;
 public class AddObjectActionProperty extends CustomReadValueActionProperty {
 
     // barcode != null, автоматически заполнять поле barcode значением префикс + 0000 + id
-    private Property barcode;
-    private Property barcodePrefix;
+    private CalcProperty barcode;
+    private CalcProperty barcodePrefix;
 
     // quantity = true значит, что первым в интерфейсе идет количество объектов, которые нужно добавить
     private boolean quantity;
@@ -32,13 +29,13 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
     private CustomClass valueClass;
 
     // автоматически заполнить указанные свойства из входов этого свойства
-    private List<Property> properties;
+    private List<CalcProperty> properties;
 
-    private Property propertyValue;
+    private CalcProperty propertyValue;
     private DataClass dataClass;
 
     @Override
-    public Set<Property> getChangeProps() {
+    public Set<CalcProperty> getChangeProps() {
         return IsClassProperty.getParentProps(valueClass);
     }
 
@@ -46,22 +43,22 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
         this(sID, null, null, false, valueClass, null, null, null);
     }
 
-    public AddObjectActionProperty(String sID, CustomClass valueClass, Property propertyValue, DataClass dataClass) {
+    public AddObjectActionProperty(String sID, CustomClass valueClass, CalcProperty propertyValue, DataClass dataClass) {
         this(sID, null, null, false, valueClass, null, propertyValue, dataClass);
     }
 
-    private static ValueClass[] getValueClassList(boolean quantity, List<Property> properties) {
+    private static ValueClass[] getValueClassList(boolean quantity, List<CalcProperty> properties) {
         List<ValueClass> result = new ArrayList<ValueClass>();
         if (quantity)
             result.add(IntegerClass.instance);
         if (properties != null)
-            for (Property property : properties) {
+            for (CalcProperty property : properties) {
                 result.add(property.getCommonClasses().value);
             }
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public AddObjectActionProperty(String sID, Property barcode, Property barcodePrefix, boolean quantity, CustomClass valueClass, List<Property> properties, Property propertyValue, DataClass dataClass) {
+    public AddObjectActionProperty(String sID, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties, CalcProperty propertyValue, DataClass dataClass) {
         super(sID, ServerResourceBundle.getString("logics.add"), getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.barcode = barcode;
@@ -123,7 +120,7 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
                 }
                 int checkDigit = (evenSum * 3 + oddSum) % 10 == 0 ? 0 : 10 - (evenSum * 3 + oddSum) % 10;
 
-                barcode.execute(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), context, barcode12 + checkDigit);
+                ((CalcProperty)barcode).change(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), context, barcode12 + checkDigit);
             }
 
             // меняем все свойства на значения входов
@@ -136,13 +133,13 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
                         first = false;
                         continue;
                     }
-                    Property property = properties.get(i++);
-                    property.execute(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
+                    CalcProperty property = properties.get(i++);
+                    ((CalcProperty)property).change(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
                 }
             }
 
             if (propertyValue != null) {
-                propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object), context, values.get(k));
+                ((CalcProperty)propertyValue).change(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object), context, values.get(k));
             }
         }
     }

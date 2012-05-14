@@ -10,8 +10,9 @@ import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.util.Collection;
@@ -19,16 +20,16 @@ import java.util.Map;
 
 public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 
-    protected static class Changes extends QuickMap<Property, ModifyChange> {
+    protected static class Changes extends QuickMap<CalcProperty, ModifyChange> {
 
         private Changes() {
         }
 
-        private Changes(QuickMap<? extends Property, ? extends ModifyChange> set) {
+        private Changes(QuickMap<? extends CalcProperty, ? extends ModifyChange> set) {
             super(set);
         }
 
-        protected ModifyChange<PropertyInterface> addValue(Property key, ModifyChange prevValue, ModifyChange newValue) {
+        protected ModifyChange<PropertyInterface> addValue(CalcProperty key, ModifyChange prevValue, ModifyChange newValue) {
             return prevValue.add(newValue);
         }
 
@@ -45,24 +46,24 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
     private final Changes changes;
 
-    private <P extends PropertyInterface> void addChange(Property<P> property, PropertyChange<P> propertyChange) {
+    private <P extends PropertyInterface> void addChange(CalcProperty<P> property, PropertyChange<P> propertyChange) {
         addChange(property, new ModifyChange<P>(propertyChange, true));
     }
 
-    private <P extends PropertyInterface> void addChange(Property<P> property, ModifyChange<P> modifyChange) {
+    private <P extends PropertyInterface> void addChange(CalcProperty<P> property, ModifyChange<P> modifyChange) {
         if(modifyChange.isFinal || !modifyChange.isEmpty()) // в общем-то почти никогда не срабатывает, на всякий случай
             changes.add(property, modifyChange);
     }
 
-    private void addChanges(PropertyChanges propChanges, QuickSet<Property> skip) {
+    private void addChanges(PropertyChanges propChanges, QuickSet<CalcProperty> skip) {
         changes.addAll(propChanges.changes, skip);
     }
 
-    public PropertyChanges replace(Map<Property, ModifyChange> replace) {
-        QuickSet<Property> reallyChanged = new QuickSet<Property>();
+    public PropertyChanges replace(Map<CalcProperty, ModifyChange> replace) {
+        QuickSet<CalcProperty> reallyChanged = new QuickSet<CalcProperty>();
         PropertyChanges result = new PropertyChanges();
-        for(Map.Entry<Property, ModifyChange> change : replace.entrySet()) {
-            Property property = change.getKey();
+        for(Map.Entry<CalcProperty, ModifyChange> change : replace.entrySet()) {
+            CalcProperty property = change.getKey();
             ModifyChange modifyChange = change.getValue();
 
             ModifyChange<PropertyInterface> prevChange = getModify(property);
@@ -80,9 +81,9 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
 
     @IdentityLazy
-    public PropertyChanges filter(Collection<? extends Property> properties) {
+    public PropertyChanges filter(Collection<? extends CalcProperty> properties) {
         PropertyChanges result = new PropertyChanges();
-        for(Property property : properties) {
+        for(CalcProperty property : properties) {
             ModifyChange<PropertyInterface> change = getModify(property);
             if(change!=null)
                 result.changes.add(property, change);
@@ -91,10 +92,10 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
 
     @IdentityLazy
-    public PropertyChanges filter(QuickSet<? extends Property> properties) {
+    public PropertyChanges filter(QuickSet<? extends CalcProperty> properties) {
         PropertyChanges result = new PropertyChanges();
         for(int i=0;i<properties.size;i++) {
-            Property property = properties.get(i);
+            CalcProperty property = properties.get(i);
             ModifyChange<PropertyInterface> change = getModify(property);
             if(change!=null)
                 result.changes.add(property, change);
@@ -107,22 +108,22 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
     public final static PropertyChanges EMPTY = new PropertyChanges();
 
-    public <T extends PropertyInterface> PropertyChanges(Property<T> property, PropertyChange<T> change) {
+    public <T extends PropertyInterface> PropertyChanges(CalcProperty<T> property, PropertyChange<T> change) {
         this(property, new ModifyChange<T>(change, true));
     }
 
-    public <T extends PropertyInterface> PropertyChanges(Property<T> property, ModifyChange<T> change) {
+    public <T extends PropertyInterface> PropertyChanges(CalcProperty<T> property, ModifyChange<T> change) {
         this();
         addChange(property, change);
     }
 
-    public PropertyChanges(QuickMap<? extends Property, ? extends PropertyChange> mapChanges) {
+    public PropertyChanges(QuickMap<? extends CalcProperty, ? extends PropertyChange> mapChanges) {
         this();
         for(int i=0;i<mapChanges.size;i++)
             addChange(mapChanges.getKey(i), mapChanges.getValue(i));
     }
 
-    public PropertyChanges(QuickMap<? extends Property, ? extends PropertyChange> mapChanges, boolean isFinal) {
+    public PropertyChanges(QuickMap<? extends CalcProperty, ? extends PropertyChange> mapChanges, boolean isFinal) {
         this();
         for(int i=0;i<mapChanges.size;i++)
             addChange(mapChanges.getKey(i), new ModifyChange(mapChanges.getValue(i), isFinal));
@@ -146,17 +147,17 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return changes.isEmpty();
     }
 
-    public <P extends PropertyInterface> ModifyChange<P> getModify(Property<P> property) {
+    public <P extends PropertyInterface> ModifyChange<P> getModify(CalcProperty<P> property) {
         return (ModifyChange<P>)changes.getObject(property);
     }
 
-    public <P extends PropertyInterface> PropertyChange<P> getChange(Property<P> property) {
+    public <P extends PropertyInterface> PropertyChange<P> getChange(CalcProperty<P> property) {
         ModifyChange<P> propChange = getModify(property);
         return PropertyChange.addNull(propChange == null ? null : propChange.change, !(property instanceof DataProperty) ||
                 (propChange != null && propChange.isFinal) ? null : (PropertyChange<P>) ((DataProperty)property).getEventChange(this));
     }
 
-    public <P extends PropertyInterface> Expr getChangeExpr(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
+    public <P extends PropertyInterface> Expr getChangeExpr(CalcProperty<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
         PropertyChange<P> propChange = getChange(property);
         if(propChange!=null)
             return propChange.getExpr(joinImplement, changedWhere);
@@ -191,7 +192,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return changes.equals(((PropertyChanges)o).changes);
     }
 
-    public Collection<Property> getProperties() {
+    public Collection<CalcProperty> getProperties() {
         return changes.keys();
     }
 }

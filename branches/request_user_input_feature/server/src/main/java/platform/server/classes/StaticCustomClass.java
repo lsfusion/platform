@@ -78,8 +78,8 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
             OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session.sql, session.env);
             if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
                 DataObject classObject = session.addObject(this);
-                name.execute(names[i], session, classObject);
-                classSID.execute(sidObject, session, classObject);
+                name.change(names[i], session, classObject);
+                classSID.change(sidObject, session, classObject);
                 ids[i] = (Integer) classObject.object;
             } else { // assert'ся что класс 1
                 if (names[i] != null && !names[i].equals(((String) BaseUtils.singleValue(result).get("name")).trim())) {

@@ -10,19 +10,19 @@ import static platform.base.BaseUtils.reverse;
 import static platform.base.BaseUtils.toListNoNull;
 
 public abstract class AroundAspectActionProperty extends KeepContextActionProperty {
-    private final PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> aspectActionImplement;
+    private final ActionPropertyMapImplement<ClassPropertyInterface> aspectActionImplement;
 
-    public <I extends PropertyInterface> AroundAspectActionProperty(String sID, String caption, List<I> innerInterfaces, PropertyMapImplement<ClassPropertyInterface, I> action) {
+    public <I extends PropertyInterface> AroundAspectActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<I> action) {
         super(sID, caption, innerInterfaces, toListNoNull((PropertyInterfaceImplement<I>) action));
 
         this.aspectActionImplement = action.map(reverse(getMapInterfaces(innerInterfaces)));
     }
 
-    public Set<Property> getChangeProps() {
+    public Set<CalcProperty> getChangeProps() {
         return ((FlowActionProperty) aspectActionImplement.property).getChangeProps();
     }
 
-    public Set<Property> getUsedProps() {
+    public Set<CalcProperty> getUsedProps() {
         return ((FlowActionProperty) aspectActionImplement.property).getUsedProps();
     }
 

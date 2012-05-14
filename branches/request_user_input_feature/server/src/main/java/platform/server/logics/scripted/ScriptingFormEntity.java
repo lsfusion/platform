@@ -13,6 +13,7 @@ import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.FormView;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.CalcProperty;
 
 import javax.swing.*;
 import java.util.*;
@@ -81,7 +82,7 @@ public class ScriptingFormEntity extends FormEntity {
 
         for (int i = 0; i < groupObjects.size(); i++) {
             if (groupObjects.get(i).reportPathPropName != null) {
-                groups.get(i).reportPathProp = addPropertyObject(groupObjects.get(i).reportPathPropName, groupObjects.get(i).reportPathMapping);
+                groups.get(i).reportPathProp = (CalcPropertyObjectEntity<?>) addPropertyObject(groupObjects.get(i).reportPathPropName, groupObjects.get(i).reportPathMapping);
             }
         }
         return groups;
@@ -238,14 +239,14 @@ public class ScriptingFormEntity extends FormEntity {
         property.propertyCaption = options.getHeader();
         property.propertyFooter = options.getFooter();
 
-        PropertyObjectEntity backgroundProperty = options.getBackground();
+        CalcPropertyObjectEntity backgroundProperty = options.getBackground();
         if (backgroundProperty != null && !backgroundProperty.property.getType().equals(ColorClass.instance)) {
             property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);
         } else {
             property.propertyBackground = backgroundProperty;
         }
 
-        PropertyObjectEntity foregroundProperty = options.getForeground();
+        CalcPropertyObjectEntity foregroundProperty = options.getForeground();
         if (foregroundProperty != null && !foregroundProperty.property.getType().equals(ColorClass.instance)) {
             property.propertyForeground = addGroundPropertyObject(foregroundProperty, false);
         } else {
@@ -266,16 +267,16 @@ public class ScriptingFormEntity extends FormEntity {
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            addHintsNoUpdate(property.propertyObject.property);
+            addHintsNoUpdate((CalcProperty) property.propertyObject.property);
         }
         
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            addHintsIncrementTable(property.propertyObject.property);
+            addHintsIncrementTable((CalcProperty)property.propertyObject.property);
         }
     }
 
-    private PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity groundProperty, boolean back) {
+    private CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity groundProperty, boolean back) {
         LP backgroundLP = LM.getLPBySID(groundProperty.property.getSID());
         Object[] params = new Object[backgroundLP.listInterfaces.size() + 2];
         params[0] = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
@@ -284,7 +285,7 @@ public class ScriptingFormEntity extends FormEntity {
             params[i + 2] = i + 1;
         }
         Collection<ObjectEntity> objects = groundProperty.getObjectInstances();
-        return addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+        return (CalcPropertyObjectEntity) addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
     private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
@@ -326,7 +327,7 @@ public class ScriptingFormEntity extends FormEntity {
     public void addScriptedFilters(List<LP<?>> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
+            addFixedFilter(new NotNullFilterEntity((CalcPropertyObjectEntity) addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
         }
     }
 
@@ -359,7 +360,7 @@ public class ScriptingFormEntity extends FormEntity {
             }
 
             regularFilterGroup.addFilter(
-                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
+                    new RegularFilterEntity(genID(), new NotNullFilterEntity((CalcPropertyObjectEntity) addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
                     setDefault
             );
         }

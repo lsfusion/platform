@@ -12,6 +12,7 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
@@ -223,7 +224,8 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(askConfirm);
         outStream.writeBoolean(clearText);
 
-        MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property.mapTable;
+        MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property instanceof CalcProperty ?
+                        ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
         Iterator<ValueClass> classesIt = entity.propertyObject.property.getCommonClasses().interfaces.values().iterator();

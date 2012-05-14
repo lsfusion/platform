@@ -10,6 +10,7 @@ import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.CalcPropertyImplement;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
@@ -68,13 +69,13 @@ public class IntegrationService {
         for (ImportKey<?> key : keys)
             addedKeys.put(key, key.synchronize(session, importTable));
 
-        MapDataChanges<PropertyInterface> propertyChanges = new MapDataChanges<PropertyInterface>();
+        DataChanges propertyChanges = new DataChanges();
         for (ImportProperty<?> property : properties)
-            propertyChanges = propertyChanges.add((MapDataChanges<PropertyInterface>) property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
+            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
         
         System.gc();
 
-        new ExecutionEnvironment(session).execute(propertyChanges, null);
+        new ExecutionEnvironment(session).change(propertyChanges);
 
         return importTable;
     }
@@ -97,7 +98,7 @@ public class IntegrationService {
             Map<P, KeyExpr> intraKeyExprs = delete.deleteProperty.property.getMapKeys(); // генерим ключи (использовать будем только те, что не в DataObject
             Map<P, Expr> deleteExprs = new HashMap<P, Expr>();
             KeyExpr groupExpr = null;
-            for (Map.Entry<P, ImportDeleteInterface> entry : ((PropertyImplement<P, ImportDeleteInterface>)delete.deleteProperty).mapping.entrySet()) {
+            for (Map.Entry<P, ImportDeleteInterface> entry : ((CalcPropertyImplement<P, ImportDeleteInterface>)delete.deleteProperty).mapping.entrySet()) {
                 P propInt = entry.getKey();
                 KeyExpr intraKeyExpr = intraKeyExprs.get(propInt);
                 if (delete.key.equals(entry.getValue())) {

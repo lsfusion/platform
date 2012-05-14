@@ -3,6 +3,7 @@ package platform.server.form.instance.filter;
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
+import platform.server.form.instance.CalcPropertyObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInstance;
@@ -18,7 +19,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
 
     final CustomClass isClass;
 
-    public IsClassFilterInstance(PropertyObjectInstance<P> property, CustomClass isClass, boolean resolveAdd) {
+    public IsClassFilterInstance(CalcPropertyObjectInstance<P> property, CustomClass isClass, boolean resolveAdd) {
         super(property, resolveAdd);
         this.isClass = isClass;
     }

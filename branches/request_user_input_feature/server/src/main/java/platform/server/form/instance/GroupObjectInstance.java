@@ -30,6 +30,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
@@ -259,7 +260,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     // с активным интерфейсом, assertion что содержит все ObjectInstance
     OrderedMap<OrderInstance,Boolean> orders = new OrderedMap<OrderInstance, Boolean>();
 
-    public void fillUpdateProperties(Set<Property> properties) {
+    public void fillUpdateProperties(Set<CalcProperty> properties) {
         for(FilterInstance filter : filters)
             filter.fillProperties(properties);
         for(OrderInstance order : orders.keySet())
@@ -490,7 +491,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps) throws SQLException {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<CalcProperty> changedProps) throws SQLException {
         if ((updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }
@@ -701,8 +702,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true);
     }
 
-    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException {
-        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> resultMap = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
+    public List<Map<ObjectInstance, DataObject>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException {
+        List<Map<ObjectInstance, DataObject>> resultMap = new ArrayList<Map<ObjectInstance, DataObject>>();
         if (objects.size() > 1) {
             return resultMap;
         }
@@ -714,7 +715,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     objectKeys.put(objectInstance, object);
                 }
             }
-            resultMap.put(objectKeys, null);
+            resultMap.add(objectKeys);
         }
         return resultMap;
     }

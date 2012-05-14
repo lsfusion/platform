@@ -5,10 +5,9 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.Property;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -51,12 +50,12 @@ public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
             password += chars.charAt(rand.nextInt(chars.length()));
 
         if (userLogin.read(context, userObject) == null)
-            userLogin.execute(login, context, userObject);
-        userPassword.execute(password, context, userObject);
+            userLogin.change(login, context, userObject);
+        userPassword.change(password, context, userObject);
     }
 
     @Override
-    public Set<Property> getChangeProps() {
-        return BaseUtils.toSet(userLogin.property, userPassword.property);
+    public Set<CalcProperty> getChangeProps() {
+        return BaseUtils.toSet((CalcProperty)userLogin.property, (CalcProperty)userPassword.property);
     }
 }

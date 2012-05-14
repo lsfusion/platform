@@ -920,11 +920,11 @@ public class BaseUtils {
         return result;
     }
 
-    public static <T> List<T> orderList(Set<T> map, Iterable<T> list) {
+    public static <BT, T extends BT> List<T> orderList(Set<T> map, Iterable<BT> list) {
         List<T> result = new ArrayList<T>();
-        for (T element : list)
+        for (BT element : list)
             if(map.contains(element))
-                result.add(element);
+                result.add((T) element);
         return result;
     }
 

@@ -1,7 +1,8 @@
 package platform.server.session;
 
 import platform.server.data.SQLSession;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
@@ -14,17 +15,17 @@ public class IncrementProps extends BaseMutableModifier {
     public IncrementProps() {
     }
 
-    public <P extends PropertyInterface> IncrementProps(Property<P> property, SinglePropertyTableUsage<P> table) {
+    public <P extends PropertyInterface> IncrementProps(CalcProperty<P> property, SinglePropertyTableUsage<P> table) {
         add(property, table);
     }
 
-    private Map<Property, SinglePropertyTableUsage<PropertyInterface>> tables = new HashMap<Property, SinglePropertyTableUsage<PropertyInterface>>();
+    private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
 
-    public Collection<Property> getProperties() {
+    public Collection<CalcProperty> getProperties() {
         return tables.keySet();
     }
 
-    public <P extends PropertyInterface> SinglePropertyTableUsage<P> getTable(Property<P> property) {
+    public <P extends PropertyInterface> SinglePropertyTableUsage<P> getTable(CalcProperty<P> property) {
         return (SinglePropertyTableUsage<P>)tables.get(property);
     }
 
@@ -32,20 +33,20 @@ public class IncrementProps extends BaseMutableModifier {
         return true;
     }
 
-    protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
+    protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
         SinglePropertyTableUsage<P> table = getTable(property);
         if(table!=null)
             return SinglePropertyTableUsage.getChange(table);
         return null;
     }
 
-    public <P extends PropertyInterface> void add(Property<P> property, SinglePropertyTableUsage<P> changeTable) {
+    public <P extends PropertyInterface> void add(CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
         tables.put(property, (SinglePropertyTableUsage<PropertyInterface>) changeTable);
 
         addChange(property);
     }
 
-    public void remove(Property property, SQLSession session) throws SQLException {
+    public void remove(CalcProperty property, SQLSession session) throws SQLException {
         SinglePropertyTableUsage<PropertyInterface> table = tables.remove(property);
         if(table!=null) {
             table.drop(session);
@@ -54,14 +55,14 @@ public class IncrementProps extends BaseMutableModifier {
     }
 
     public void cleanIncrementTables(SQLSession session) throws SQLException {
-        for (Map.Entry<Property, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet()) {
+        for (Map.Entry<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet()) {
             addTable.getValue().drop(session);
             addChange(addTable.getKey());
         }
-        tables = new HashMap<Property, SinglePropertyTableUsage<PropertyInterface>>();
+        tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
     }
 
-    protected Collection<Property> calculateProperties() {
+    protected Collection<CalcProperty> calculateProperties() {
         return tables.keySet();
     }
 }

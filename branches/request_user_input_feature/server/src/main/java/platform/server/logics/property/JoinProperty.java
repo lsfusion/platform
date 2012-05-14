@@ -24,7 +24,7 @@ import platform.server.session.*;
 import java.util.*;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
-    public final PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
+    public final CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement;
 
     public static class Interface extends PropertyInterface<Interface> {
         Interface(int ID) {
@@ -39,7 +39,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return interfaces;
     }
 
-    public JoinProperty(String sID, String caption, List<Interface> interfaces, boolean implementChange, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
+    public JoinProperty(String sID, String caption, List<Interface> interfaces, boolean implementChange, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         super(sID, caption, interfaces);
         this.implement = implement;
         this.implementChange = implementChange;
@@ -53,7 +53,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Map<T, Expr> result = new HashMap<T, Expr>();
-        for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceImplement : implement.mapping.entrySet())
+        for(Map.Entry<T,CalcPropertyInterfaceImplement<Interface>> interfaceImplement : implement.mapping.entrySet())
             result.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, propClasses, propChanges, changedWhere));
         return result;
     }
@@ -63,19 +63,19 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public void fillDepends(Set<Property> depends, boolean events) {
+    public void fillDepends(Set<CalcProperty> depends, boolean events) {
         fillDepends(depends,implement.mapping.values());
-        depends.add(implement.property);       
+        depends.add((CalcProperty) implement.property);
     }
 
     // разрешить менять основное свойство
     public final boolean implementChange;
     
     @Override
-    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
-            QuickSet<Property> result = new QuickSet<Property>();
-            for(Property<?> property : getDepends()) {
+            QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+            for(CalcProperty<?> property : getDepends()) {
                 result.addAll(property.getUsedDataChanges(propChanges));
                 result.addAll(property.getUsedChanges(propChanges));
             }
@@ -84,32 +84,30 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
-            Set<Property> depends = new HashSet<Property>();
+            Set<CalcProperty> depends = new HashSet<CalcProperty>();
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface)
                     implement.mapping.get(andInterface).mapFillDepends(depends);
-            Set<Property> implementDepends = new HashSet<Property>();
+            Set<CalcProperty> implementDepends = new HashSet<CalcProperty>();
             implement.mapping.get(andProperty.objectInterface).mapFillDepends(implementDepends);
             return QuickSet.add(propChanges.getUsedDataChanges(implementDepends), propChanges.getUsedChanges(depends));
         }
 
-        if(implement.property.isOnlyNotZero)
-            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).property.getUsedDataChanges(propChanges);
-
+        CalcProperty<T> implementProperty = (CalcProperty<T>) implement.property;
         if(implementChange) {
-            Set<Property> implementProps = new HashSet<Property>();
+            Set<CalcProperty> implementProps = new HashSet<CalcProperty>();
             fillDepends(implementProps,implement.mapping.values());
-            return QuickSet.add(implement.property.getUsedDataChanges(propChanges), propChanges.getUsedChanges(implementProps));
+            return QuickSet.add(implementProperty.getUsedDataChanges(propChanges), propChanges.getUsedChanges(implementProps));
         }
-        if(implement.mapping.size()==1 && !implementChange && implement.property.aggProp) {
+        if(implement.mapping.size()==1 && !implementChange && implementProperty.aggProp) {
             // пока тупо MGProp'им назад
-            return QuickSet.add(((PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property.getUsedDataChanges(propChanges), implement.property.getUsedChanges(propChanges));
+            return QuickSet.add(((CalcProperty<?>)((CalcPropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property).getUsedDataChanges(propChanges), implementProperty.getUsedChanges(propChanges));
         }
 
         return super.calculateUsedDataChanges(propChanges);
     }
 
-    private static MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
+    private static DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges, CalcPropertyInterfaceImplement<Interface> changeImp, CalcPropertyInterfaceImplement<Interface> valueImp) {
         Map<Interface, Expr> mapExprs = change.getMapExprs();
         Expr toChangeExpr = valueImp.mapExpr(mapExprs, propChanges);
         Where toChangeWhere = change.expr.getWhere();
@@ -118,16 +116,16 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
-            Iterator<PropertyInterfaceImplement<Interface>> i = implement.mapping.values().iterator();
-            PropertyInterfaceImplement<Interface> op1 = i.next();
-            PropertyInterfaceImplement<Interface> op2 = i.next();
+            Iterator<CalcPropertyInterfaceImplement<Interface>> i = implement.mapping.values().iterator();
+            CalcPropertyInterfaceImplement<Interface> op1 = i.next();
+            CalcPropertyInterfaceImplement<Interface> op2 = i.next();
 
             // сначала первый на второй пытаемся изменить, затем для оставшихся второй на первый второй
             WhereBuilder changedWhere1 = new WhereBuilder();
-            MapDataChanges<Interface> result1 = getDataChanges(change, changedWhere1, propChanges, op1, op2);
+            DataChanges result1 = getDataChanges(change, changedWhere1, propChanges, op1, op2);
             if(changedWhere!=null) changedWhere.add(changedWhere1.toWhere());
 
             return result1.add(getDataChanges(change.and(changedWhere1.toWhere().not()), changedWhere, propChanges, op2, op1));
@@ -147,21 +145,19 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return implement.mapping.get(andProperty.objectInterface).mapJoinDataChanges(mapExprs, change.expr, change.where.and(where), changedWhere, propChanges);
         }
 
-        if(implement.property.isOnlyNotZero)
-            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapDataChanges(change, changedWhere, propChanges);
-
+        CalcProperty<T> implementProperty = (CalcProperty<T>) implement.property;
         if(implementChange) { // groupBy'им выбирая max
             Map<T, Interface> mapInterfaces = new HashMap<T, Interface>();
-            for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceMap : implement.mapping.entrySet())
+            for(Map.Entry<T,CalcPropertyInterfaceImplement<Interface>> interfaceMap : implement.mapping.entrySet())
                 if(interfaceMap.getValue() instanceof Interface)
                     mapInterfaces.put(interfaceMap.getKey(), (Interface) interfaceMap.getValue());
-            return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, propChanges, changedWhere).map(mapInterfaces);
+            return implementProperty.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, propChanges, changedWhere); //.map(mapInterfaces)
         }
-        if(implement.mapping.size()==1 && !implementChange && implement.property.aggProp) {
+        if(implement.mapping.size()==1 && !implementChange && implementProperty.aggProp) {
             // пока тупо MGProp'им назад
-            PropertyMapImplement<?, Interface> implementSingle = (PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping);
+            CalcPropertyMapImplement<?, Interface> implementSingle = (CalcPropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping);
             KeyExpr keyExpr = new KeyExpr("key");
-            Expr groupExpr = GroupExpr.create(Collections.singletonMap(0, implement.property.getExpr(Collections.singletonMap(BaseUtils.single(implement.property.interfaces), keyExpr), propChanges)),
+            Expr groupExpr = GroupExpr.create(Collections.singletonMap(0, implementProperty.getExpr(Collections.singletonMap(BaseUtils.single(implementProperty.interfaces), keyExpr), propChanges)),
                     keyExpr, keyExpr.isClass(implementSingle.property.getCommonClasses().value.getUpSet()), GroupType.ANY, Collections.singletonMap(0, change.expr));
             return implementSingle.mapDataChanges(
                     new PropertyChange<Interface>(change, groupExpr), changedWhere, propChanges);
@@ -171,18 +167,20 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public PropertyMapImplement<ClassPropertyInterface, Interface> getDefaultEditAction(String editActionSID, Property filterProperty) {
+    public ActionPropertyMapImplement<Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         if(implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
-            List<PropertyInterfaceImplement<Interface>> ands = new ArrayList<PropertyInterfaceImplement<Interface>>();
+            List<CalcPropertyInterfaceImplement<Interface>> ands = new ArrayList<CalcPropertyInterfaceImplement<Interface>>();
             List<Boolean> nots = new ArrayList<Boolean>();
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface) {
                     ands.add(implement.mapping.get(andInterface));
                     nots.add(((AndFormulaProperty.AndInterface)andInterface).not);
                 }
-            return DerivedProperty.createIfAction(interfaces, DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createStatic(true, LogicalClass.instance), ands, nots),
-                    implement.mapping.get(andProperty.objectInterface).mapEditAction(editActionSID, filterProperty), null, false);
+            ActionPropertyMapImplement<Interface> implementEdit = implement.mapping.get(andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
+            if(implementEdit!=null)
+                return DerivedProperty.createIfAction(interfaces, DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createStatic(true, LogicalClass.instance), ands, nots),
+                    implementEdit, null, false);
         }
         if(implement.mapping.size()==1 && !implementChange) {
             // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
@@ -194,12 +192,12 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public boolean checkEquals() {
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
-            PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>> andImplement
-                    = (PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>>) implement;
+            CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>> andImplement
+                    = (CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>>) implement;
 
-            PropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
-            if (objectIface instanceof PropertyMapImplement) {
-                return ((PropertyMapImplement) objectIface).property.checkEquals();
+            CalcPropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
+            if (objectIface instanceof CalcPropertyMapImplement) {
+                return ((CalcPropertyMapImplement) objectIface).property.checkEquals();
             }
         }
 
@@ -209,7 +207,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
-        if (implement.mapping.size() == 1 && ((PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property instanceof ObjectClassProperty) {
+        if (implement.mapping.size() == 1 && ((CalcPropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property instanceof ObjectClassProperty) {
             PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
             if (mapObject instanceof ObjectEntity && !((CustomClass) ((ObjectEntity) mapObject).baseClass).hasChildren())
                 entity.forceViewType = ClassViewType.HIDE;
@@ -222,12 +220,12 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
-            PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>> andImplement
-                    = (PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>>) implement;
+            CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>> andImplement
+                    = (CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<Interface>>) implement;
 
-            PropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
-            if (objectIface instanceof PropertyMapImplement) {
-                ((PropertyMapImplement) objectIface).property.proceedDefaultDesign(propertyView, view);
+            CalcPropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
+            if (objectIface instanceof CalcPropertyMapImplement) {
+                ((CalcPropertyMapImplement) objectIface).property.proceedDefaultDesign(propertyView, view);
             }
         }
     }

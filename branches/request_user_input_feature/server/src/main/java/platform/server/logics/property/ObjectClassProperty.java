@@ -16,32 +16,21 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
-import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-public class ObjectClassProperty extends ExecuteProperty {
+public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     private final BaseClass baseClass;
 
     public ObjectClassProperty(String SID, BaseClass baseClass) {
-        super(SID, ServerResourceBundle.getString("classes.object.class"), new ValueClass[]{baseClass});
+        super(SID, ServerResourceBundle.getString("classes.object.class"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
 
         this.baseClass = baseClass;
 
         finalizeInit();
     }
 
-    public ValueClass getValueClass() {
-        return baseClass.objectClass;
-    }
-
-    public void execute(ExecutionContext context) throws SQLException {
-        context.changeClass(context.getSingleObjectInstance(), context.getSingleKeyValue(), (Integer) context.getValueObject());
-    }
-
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 
@@ -50,19 +39,15 @@ public class ObjectClassProperty extends ExecuteProperty {
     }
 
     @Override
+    protected boolean useSimpleIncrement() {
+        return true;
+    }
+
+    @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
         if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
             entity.forceViewType = ClassViewType.HIDE;
-    }
-
-    @Override
-    public Set<Property> getChangeProps() {
-        return baseClass.getChildProps();
-    }
-
-    public Set<Property> getUsedProps() {
-        return new HashSet<Property>();
     }
 }

@@ -2,6 +2,7 @@ package platform.server.form.entity.filter;
 
 import platform.interop.Compare;
 import platform.server.classes.DataClass;
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.OrderEntity;
 import platform.server.form.entity.PropertyObjectEntity;
@@ -26,15 +27,15 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
     public CompareFilterEntity() {
     }
 
-    public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value) {
+    public CompareFilterEntity(CalcPropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value) {
         this(property, compare, value, true);
     }
 
-    public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, Object value) {
+    public CompareFilterEntity(CalcPropertyObjectEntity<P> property, Compare compare, Object value) {
         this(property, compare, new DataObject(value, (DataClass) property.property.getType()));
     }
 
-    public CompareFilterEntity(PropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value, boolean resolveAdd) {
+    public CompareFilterEntity(CalcPropertyObjectEntity<P> property, Compare compare, OrderEntity<?> value, boolean resolveAdd) {
         super(property, resolveAdd);
         this.value = value;
         this.compare = compare;

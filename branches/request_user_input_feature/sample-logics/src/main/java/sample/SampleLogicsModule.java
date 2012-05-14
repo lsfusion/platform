@@ -3,7 +3,6 @@ package sample;
 import platform.interop.Compare;
 import platform.interop.action.ConfirmClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.interop.form.UserInputResult;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
@@ -145,7 +144,7 @@ public class SampleLogicsModule extends LogicsModule {
             if (result!=null) {
                 Object value = result.getValue();
                 context.addActions(
-                        articleDescription.execute(value == null ? null : "Descr # " + value, context.getSession(), context.getSingleKeyValue())
+                        articleDescription.change(value == null ? null : "Descr # " + value, context.getSession(), context.getSingleKeyValue())
                 );
             }
         }

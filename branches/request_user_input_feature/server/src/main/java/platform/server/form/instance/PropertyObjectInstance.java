@@ -1,8 +1,7 @@
 package platform.server.form.instance;
 
-import platform.base.BaseUtils;
-import platform.base.Result;
-import platform.interop.Compare;
+import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
@@ -11,27 +10,34 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
-import platform.server.data.where.Where;
-import platform.server.form.instance.filter.CompareValue;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyImplement;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.*;
+import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
 import java.util.*;
 
-public class PropertyObjectInstance<P extends PropertyInterface> extends PropertyImplement<P, PropertyObjectInterfaceInstance> implements OrderInstance {
+public abstract class PropertyObjectInstance<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject implements Updated {
 
-    public PropertyObjectInstance(Property<P> property,Map<P,? extends PropertyObjectInterfaceInstance> mapping) {
-        super(property, (Map<P, PropertyObjectInterfaceInstance>) mapping);
+    public T property;
+    public Map<P, PropertyObjectInterfaceInstance> mapping;
+
+    public boolean twins(TwinImmutableInterface o) {
+        return property.equals(((PropertyObjectInstance) o).property) && mapping.equals(((PropertyObjectInstance) o).mapping);
+    }
+
+    public int immutableHashCode() {
+        return property.hashCode() * 31 + mapping.hashCode();
+    }
+
+    public PropertyObjectInstance(T property,Map<P,? extends PropertyObjectInterfaceInstance> mapping) {
+        this.property = property;
+        this.mapping = (Map<P, PropertyObjectInterfaceInstance>) mapping;
     }
 
     // получает GRID в котором рисоваться
@@ -54,7 +60,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
 
     // в интерфейсе
     public boolean isInInterface(GroupObjectInstance classGroup) {
-        return isInInterface(classGroup==null?new HashSet<GroupObjectInstance>():Collections.singleton(classGroup), false);
+        return isInInterface(classGroup == null ? new HashSet<GroupObjectInstance>() : Collections.singleton(classGroup), false);
     }
 
     public boolean isInInterface(Set<GroupObjectInstance> classGroups, boolean any) {
@@ -81,12 +87,12 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return false;
     }
 
-    public boolean dataUpdated(Collection<Property> changedProps) {
+    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
         return changedProps.contains(property);
     }
 
-    public void fillProperties(Set<Property> properties) {
-        properties.add(property);
+    public void fillProperties(Set<CalcProperty> properties) {
+        properties.add((CalcProperty) property);
     }
 
     public Map<P, ConcreteClass> getInterfaceClasses(P overrideInterface, ConcreteClass overrideClass) {
@@ -97,10 +103,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
             else
                 mapInterface.put(implement.getKey(),implement.getValue().getCurrentClass());
         return mapInterface;
-    }
-
-    public Map<P, ConcreteClass> getInterfaceClasses() {
-        return getInterfaceClasses(null, null);
     }
 
     public Map<P, DataObject> getInterfaceValues() {
@@ -115,33 +117,15 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     }
 
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException {
-        return property.read(session, getInterfaceValues(), modifier, env);
+        return ((CalcProperty<P>)property).read(session, getInterfaceValues(), modifier, env);
     }
 
     public Object read(DataSession session, Modifier modifier) throws SQLException {
         return read(session.sql, modifier, session.env);
     }
 
-    public List<ClientAction> execute(ExecutionEnvironment env, CompareValue getterValue, GroupObjectInstance groupObject) throws SQLException {
-        return env.execute(property, getPropertyChange(getterValue, groupObject, env.getModifier()), mapping);
-    }
-
-    private PropertyChange<P> getPropertyChange(CompareValue getterValue, GroupObjectInstance groupObject, Modifier modifier) {
-        Map<P, KeyExpr> mapKeys = property.getMapKeys();
-
-        Map<ObjectInstance, ? extends Expr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
-        if (groupObject != null)  { // в общем то replace потому как changeImplement может быть с меньшим количеством ключей, а для getWhere они все равно нужны
-            groupKeys = BaseUtils.replace(DataObject.getMapExprs(groupObject.getGroupObjectValue()), BaseUtils.crossJoin(mapping, mapKeys));
-            Where changeWhere = groupObject.getWhere(groupKeys, modifier);
-
-            for (Map.Entry<P, PropertyObjectInterfaceInstance> mapObject : mapping.entrySet()) {
-                changeWhere = changeWhere.and(mapKeys.get(mapObject.getKey()).compare(mapObject.getValue().getExpr(groupKeys, modifier), Compare.EQUALS));
-            }
-
-            return new PropertyChange<P>(mapKeys, getterValue.getExpr(groupKeys, modifier), changeWhere);
-        } else {
-            return new PropertyChange<P>(getterValue.getExpr(new HashMap<ObjectInstance, Expr>(), modifier), getInterfaceValues());
-        }
+    public List<ClientAction> execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw) throws SQLException {
+        return env.execute((ActionProperty) property, ActionProperty.cast(getInterfaceValues()), new FormEnvironment<ClassPropertyInterface>(ActionProperty.cast(mapping), propertyDraw), requestValue);
     }
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
@@ -149,19 +133,14 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)
             joinImplement.put(propertyInterface, mapping.get(propertyInterface).getExpr(classSource, modifier));
-        return property.getExpr(joinImplement,modifier);
+        return property.getExpr(joinImplement, modifier);
     }
 
     public Type getType() {
         return property.getType();
     }
 
-    public CustomClass getDialogClass() {
-        return property.getDialogClass(getInterfaceValues(), getInterfaceClasses());
-    }
-
-    @IdentityLazy
-    public PropertyObjectInstance getRemappedPropertyObject(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    protected Map<P, PropertyObjectInterfaceInstance> remap(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
         Map<P, PropertyObjectInterfaceInstance> remapping = new HashMap<P, PropertyObjectInterfaceInstance>();
         remapping.putAll(mapping);
         for (P propertyInterface : property.interfaces) {
@@ -171,8 +150,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
                 remapping.put(propertyInterface, dataObject);
             }
         }
-
-        return new PropertyObjectInstance<P>(property, remapping);
+        return remapping;
     }
 
     @Override
@@ -180,7 +158,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.toString();
     }
     
-    public PropertyObjectInstance<?> getEditAction(String editActionSID) {
+    public ActionPropertyObjectInstance getEditAction(String editActionSID) {
         return property.getEditAction(editActionSID).mapObjects(mapping);
     }
 }

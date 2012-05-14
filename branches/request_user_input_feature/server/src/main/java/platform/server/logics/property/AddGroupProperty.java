@@ -13,23 +13,23 @@ import java.util.Map;
 
 public abstract class AddGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
-    protected final PropertyInterfaceImplement<I> groupProperty;
+    protected final CalcPropertyInterfaceImplement<I> groupProperty;
 
-    protected AddGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> groupProperty) {
+    protected AddGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> groupProperty) {
         super(sID, caption, innerInterfaces, groupInterfaces);
         this.groupProperty = groupProperty;
     }
 
-    protected AddGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property) {
+    protected AddGroupProperty(String sID, String caption, Collection<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
         this(sID, caption, property.interfaces, interfaces, property.getImplement());
     }
 
-    protected List<PropertyInterfaceImplement<I>> getProps() {
+    protected List<CalcPropertyInterfaceImplement<I>> getProps() {
         return Collections.singletonList(groupProperty);
     }
 
-    protected OrderedMap<PropertyInterfaceImplement<I>, Boolean> getOrders() {
-        return new OrderedMap<PropertyInterfaceImplement<I>, Boolean>();
+    protected OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
+        return new OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean>();
     }
 
     protected Expr calculateIncrementExpr(Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {

@@ -169,30 +169,30 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     throw new RuntimeException("Эксперт уже голосовал по этому заседанию.");
                 }
 
-                SkolkovoLM.dateExpertVote.execute(DateConverter.dateToSql(new Date()), session, vo.expertObj, vo.voteObj);
-                SkolkovoLM.voteResultExpertVote.execute(SkolkovoLM.voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
-                SkolkovoLM.ipExpertVote.execute(voteInfo.expertIP, session, vo.expertObj, vo.voteObj);
+                SkolkovoLM.dateExpertVote.change(DateConverter.dateToSql(new Date()), session, vo.expertObj, vo.voteObj);
+                SkolkovoLM.voteResultExpertVote.change(SkolkovoLM.voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
+                SkolkovoLM.ipExpertVote.change(voteInfo.expertIP, session, vo.expertObj, vo.voteObj);
                 if (voteInfo.voteResult.equals("voted")) {
-                    SkolkovoLM.inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.innovativeCommentExpertVote.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.foreignExpertVote.execute(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.competentExpertVote.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.completeExpertVote.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.inClusterExpertVote.change(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.innovativeExpertVote.change(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.innovativeCommentExpertVote.change(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.foreignExpertVote.change(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.competentExpertVote.change(voteInfo.competent, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.completeExpertVote.change(voteInfo.complete, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.completeCommentExpertVote.change(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
 
-                    SkolkovoLM.competitiveAdvantagesExpertVote.execute(voteInfo.competitiveAdvantages, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commentCompetitiveAdvantagesExpertVote.execute(voteInfo.competitiveAdvantagesComment, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commercePotentialExpertVote.execute(voteInfo.commercePotential, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commentCommercePotentialExpertVote.execute(voteInfo.commercePotentialComment, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.canBeImplementedExpertVote.execute(voteInfo.implement, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commentCanBeImplementedExpertVote.execute(voteInfo.implementComment, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.haveExpertiseExpertVote.execute(voteInfo.expertise, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commentHaveExpertiseExpertVote.execute(voteInfo.expertiseComment, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.internationalExperienceExpertVote.execute(voteInfo.internationalExperience, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commentInternationalExperienceExpertVote.execute(voteInfo.internationalExperienceComment, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.enoughDocumentsExpertVote.execute(voteInfo.enoughDocuments, session, vo.expertObj, vo.voteObj);
-                    SkolkovoLM.commentEnoughDocumentsExpertVote.execute(voteInfo.enoughDocumentsComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.competitiveAdvantagesExpertVote.change(voteInfo.competitiveAdvantages, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentCompetitiveAdvantagesExpertVote.change(voteInfo.competitiveAdvantagesComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commercePotentialExpertVote.change(voteInfo.commercePotential, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentCommercePotentialExpertVote.change(voteInfo.commercePotentialComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.canBeImplementedExpertVote.change(voteInfo.implement, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentCanBeImplementedExpertVote.change(voteInfo.implementComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.haveExpertiseExpertVote.change(voteInfo.expertise, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentHaveExpertiseExpertVote.change(voteInfo.expertiseComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.internationalExperienceExpertVote.change(voteInfo.internationalExperience, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentInternationalExperienceExpertVote.change(voteInfo.internationalExperienceComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.enoughDocumentsExpertVote.change(voteInfo.enoughDocuments, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentEnoughDocumentsExpertVote.change(voteInfo.enoughDocumentsComment, session, vo.expertObj, vo.voteObj);
                 }
 
                 String result = session.apply(this);
@@ -406,22 +406,22 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 }
                 DataObject expertObj = new DataObject(expertId, SkolkovoLM.expert);
 
-                SkolkovoLM.isScientificExpert.execute(profileInfo.scientific, session, expertObj);
-                SkolkovoLM.isTechnicalExpert.execute(profileInfo.technical, session, expertObj);
-                SkolkovoLM.isBusinessExpert.execute(profileInfo.business, session, expertObj);
+                SkolkovoLM.isScientificExpert.change(profileInfo.scientific, session, expertObj);
+                SkolkovoLM.isTechnicalExpert.change(profileInfo.technical, session, expertObj);
+                SkolkovoLM.isBusinessExpert.change(profileInfo.business, session, expertObj);
 
-                SkolkovoLM.commentScientificExpert.execute(profileInfo.commentScientific, session, expertObj);
-                SkolkovoLM.commentTechnicalExpert.execute(profileInfo.commentTechnical, session, expertObj);
-                SkolkovoLM.commentBusinessExpert.execute(profileInfo.commentBusiness, session, expertObj);
+                SkolkovoLM.commentScientificExpert.change(profileInfo.commentScientific, session, expertObj);
+                SkolkovoLM.commentTechnicalExpert.change(profileInfo.commentTechnical, session, expertObj);
+                SkolkovoLM.commentBusinessExpert.change(profileInfo.commentBusiness, session, expertObj);
 
-                SkolkovoLM.expertiseExpert.execute(profileInfo.expertise, session, expertObj);
-                SkolkovoLM.grantExpert.execute(profileInfo.grant, session, expertObj);
-                SkolkovoLM.profileUpdateDateExpert.execute(DateConverter.dateToStamp(new Date()), session, expertObj);
+                SkolkovoLM.expertiseExpert.change(profileInfo.expertise, session, expertObj);
+                SkolkovoLM.grantExpert.change(profileInfo.grant, session, expertObj);
+                SkolkovoLM.profileUpdateDateExpert.change(DateConverter.dateToStamp(new Date()), session, expertObj);
 
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
                     DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));
-                    SkolkovoLM.inExpertForesight.execute(foresightInfo.selected, session, expertObj, foresightObj);
-                    SkolkovoLM.commentExpertForesight.execute(foresightInfo.comment, session, expertObj, foresightObj);
+                    SkolkovoLM.inExpertForesight.change(foresightInfo.selected, session, expertObj, foresightObj);
+                    SkolkovoLM.commentExpertForesight.change(foresightInfo.comment, session, expertObj, foresightObj);
                 }
 
                 String result = session.apply(this);
@@ -447,7 +447,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }
 
-                SkolkovoLM.allowedEmailLetterExpertVote.execute(true, session, new DataObject(expertId,  SkolkovoLM.expert), session.getDataObject(voteId, ObjectType.instance));
+                SkolkovoLM.allowedEmailLetterExpertVote.change(true, session, new DataObject(expertId, SkolkovoLM.expert), session.getDataObject(voteId, ObjectType.instance));
             } finally {
                 session.close();
             }
@@ -548,9 +548,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 DataObject confObj = session.getDataObject(ids[0], ObjectType.instance);
                 DataObject expertObj = session.getDataObject(ids[1], ObjectType.instance);
                 if(result)
-                    SkolkovoLM.confirmedConferenceExpert.execute(true, session, confObj, expertObj);
+                    SkolkovoLM.confirmedConferenceExpert.change(true, session, confObj, expertObj);
                 else
-                    SkolkovoLM.rejectedConferenceExpert.execute(true, session, confObj, expertObj);
+                    SkolkovoLM.rejectedConferenceExpert.change(true, session, confObj, expertObj);
                 String apply = session.apply(this);
                 if (apply != null) {
                     throw new RuntimeException("Не удалось сохранить информацию о участии : " + apply);

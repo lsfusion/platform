@@ -107,8 +107,8 @@ public class BaseClass extends AbstractCustomClass {
         if(classID==null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
-            name.execute(objectClass.caption, session, classObject);
-            classSID.execute(objectClass.sID, session, classObject);
+            name.change(objectClass.caption, session, classObject);
+            classSID.change(objectClass.sID, session, classObject);
         }
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
@@ -135,7 +135,7 @@ public class BaseClass extends AbstractCustomClass {
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
         for (Object object : modifiedNames.keySet()) {
             logger.info("renaming class with id " + object + " to " + modifiedNames.get(object));
-            name.execute(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
+            name.change(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
         }
     }
 

@@ -42,9 +42,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.instance.remote.RemotePausableInvocation;
 import platform.server.form.view.FormView;
 import platform.server.logics.*;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
@@ -104,10 +102,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     public void changeCurrentUser(DataObject user) throws SQLException {
         this.user = user;
         this.securityPolicy = getUserSecurityPolicy();
-        updateEnvironmentProperty(BL.LM.currentUser.property, user);
+        updateEnvironmentProperty((CalcProperty) BL.LM.currentUser.property, user);
     }
 
-    public void updateEnvironmentProperty(Property property, ObjectValue value) throws SQLException {
+    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         PropertyChanges userChange = new PropertyChanges(property, new PropertyChange<PropertyInterface>(
                 new HashMap<PropertyInterface, KeyExpr>(), value.getExpr(), Where.TRUE));
         for (DataSession session : sessions)
@@ -145,7 +143,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     public void changePassword(String login, String newPassword) throws RemoteException {
         try {
             DataSession session = createSession();
-            BL.LM.userPassword.execute(newPassword, session, getCurrentUser(login));
+            BL.LM.userPassword.change(newPassword, session, getCurrentUser(login));
             session.apply(BL);
             session.close();
         } catch (Exception e) {
@@ -394,7 +392,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 DataObject formObject = new DataObject(formId, BL.LM.navigatorElement);
 
                 int count = 1 + nvl((Integer) BL.LM.connectionFormCount.read(session, connection, formObject), 0);
-                BL.LM.connectionFormCount.execute(count, session, connection, formObject);
+                BL.LM.connectionFormCount.change(count, session, connection, formObject);
 
                 session.apply(BL);
                 session.close();
@@ -767,7 +765,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 threads.add(Thread.currentThread());
                 try {
                     DataSession session = createSession();
-                    List<ClientAction> actions = property.execute(new ExecutionEnvironment(session), true);
+                    List<ClientAction> actions = property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
                     session.apply(BL);
                     session.close();
                     return new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);

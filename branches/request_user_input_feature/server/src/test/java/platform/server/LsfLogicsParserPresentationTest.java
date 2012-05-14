@@ -106,11 +106,11 @@ public class LsfLogicsParserPresentationTest {
 
         AndFormulaProperty andProp = (AndFormulaProperty) captionProp.implement.property;
 
-        PropertyInterfaceImplement<JoinProperty.Interface> andMappedImplement = captionProp.implement.mapping.get(single(andProp.andInterfaces));
+        CalcPropertyInterfaceImplement<JoinProperty.Interface> andMappedImplement = captionProp.implement.mapping.get(single(andProp.andInterfaces));
 
-        assertTrue(andMappedImplement instanceof PropertyMapImplement);
+        assertTrue(andMappedImplement instanceof CalcPropertyMapImplement);
 
-        return ((PropertyMapImplement) andMappedImplement).property;
+        return ((CalcPropertyMapImplement) andMappedImplement).property;
     }
 
     @Test

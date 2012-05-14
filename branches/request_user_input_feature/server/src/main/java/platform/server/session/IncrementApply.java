@@ -62,10 +62,10 @@ public class IncrementApply extends OverrideModifier implements ExecutionEnviron
         tableUsage.drop(session.sql);
     }
 
-    public Map<ImplementTable, Collection<Property>> groupPropertiesByTables() {
+    public Map<ImplementTable, Collection<CalcProperty>> groupPropertiesByTables() {
         return BaseUtils.group(
-               new BaseUtils.Group<ImplementTable, Property>() {
-                   public ImplementTable group(Property key) {
+               new BaseUtils.Group<ImplementTable, CalcProperty>() {
+                   public ImplementTable group(CalcProperty key) {
                        if(key.isStored())
                            return key.mapTable.table;
                        assert key instanceof OldProperty;
@@ -75,21 +75,21 @@ public class IncrementApply extends OverrideModifier implements ExecutionEnviron
     }
 
     @Message("message.increment.read.properties")
-    public <P extends PropertyInterface> SessionTableUsage<KeyField, Property> readSave(ImplementTable table, @ParamMessage Collection<Property> properties) throws SQLException {
+    public <P extends PropertyInterface> SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, @ParamMessage Collection<CalcProperty> properties) throws SQLException {
         assert !rollbacked;
 
-        SessionTableUsage<KeyField, Property> changeTable =
-                new SessionTableUsage<KeyField, Property>(table.keys, new ArrayList<Property>(properties), Field.<KeyField>typeGetter(),
-                                                          new Type.Getter<Property>() {
-                                                              public Type getType(Property key) {
+        SessionTableUsage<KeyField, CalcProperty> changeTable =
+                new SessionTableUsage<KeyField, CalcProperty>(table.keys, new ArrayList<CalcProperty>(properties), Field.<KeyField>typeGetter(),
+                                                          new Type.Getter<CalcProperty>() {
+                                                              public Type getType(CalcProperty key) {
                                                                   return key.getType();
                                                               }
                                                           });
 
         // подготавливаем запрос
-        Query<KeyField, Property> changesQuery = new Query<KeyField, Property>(table.keys);
+        Query<KeyField, CalcProperty> changesQuery = new Query<KeyField, CalcProperty>(table.keys);
         WhereBuilder changedWhere = new WhereBuilder();
-        for (Property<P> property : properties)
+        for (CalcProperty<P> property : properties)
             changesQuery.properties.put(property, property.getIncrementExpr(BaseUtils.join(property.mapTable.mapKeys, changesQuery.mapKeys), this, changedWhere));
         changesQuery.and(changedWhere.toWhere());
 
@@ -136,7 +136,7 @@ public class IncrementApply extends OverrideModifier implements ExecutionEnviron
         return true;
     }
 
-    public <P extends PropertyInterface> void fireChange(Property<P> property, PropertyChange<P> change) throws SQLException {
+    public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {

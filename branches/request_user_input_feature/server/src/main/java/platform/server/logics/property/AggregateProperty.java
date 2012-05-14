@@ -6,14 +6,11 @@ import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.ValueClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslator;
-import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.logics.table.MapKeysTable;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -21,7 +18,7 @@ import java.util.*;
 
 import static java.util.Collections.singletonMap;
 
-public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
+public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
 
     public boolean isStored() {
         assert (field!=null) == (mapTable!=null);

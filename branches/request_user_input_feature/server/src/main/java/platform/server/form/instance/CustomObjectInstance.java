@@ -10,7 +10,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
@@ -108,7 +108,7 @@ public class CustomObjectInstance extends ObjectInstance {
         }
     }
 
-    public boolean classChanged(Collection<Property> changedProps) {
+    public boolean classChanged(Collection<CalcProperty> changedProps) {
         return changedProps.contains(gridClass.getProperty());
     }
 

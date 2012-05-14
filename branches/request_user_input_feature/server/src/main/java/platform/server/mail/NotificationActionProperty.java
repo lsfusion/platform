@@ -12,7 +12,7 @@ import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyMapImplement;
+import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.actions.CustomActionProperty;
 
 import javax.mail.Message;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class NotificationActionProperty extends CustomActionProperty {
     private final static Logger logger = Logger.getLogger(NotificationActionProperty.class);
 
-    private final LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
+    private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
 
     private final String subjectNotification;
     private final String textNotification;

@@ -101,7 +101,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             DataObject dbOjb = session.addObject(paasLM.database, false, true);
 
             //todo: возможно генерацию имени стоит переделать на что-нибудь более надёжное, типа зачитывания текущих значений и выбора MAX+1
-            LM.name.execute("paas_generated_" + System.currentTimeMillis(), session, dbOjb);
+            LM.name.change("paas_generated_" + System.currentTimeMillis(), session, dbOjb);
 
             session.apply(this);
 
@@ -163,9 +163,9 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
                 DataObject projObj = session.addObject(paasLM.project, false, true);
 
-                LM.name.execute(newProject.name, session, projObj);
-                paasLM.projectDescription.execute(newProject.description, session, projObj);
-                paasLM.projectOwner.execute(userId, session, projObj);
+                LM.name.change(newProject.name, session, projObj);
+                paasLM.projectDescription.change(newProject.description, session, projObj);
+                paasLM.projectOwner.change(userId, session, projObj);
 
                 session.apply(this);
             } finally {
@@ -189,8 +189,8 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
                 DataObject projObj = new DataObject(project.id, paasLM.project);
 
-                LM.name.execute(project.name, session, projObj);
-                paasLM.projectDescription.execute(project.description, session, projObj);
+                LM.name.change(project.name, session, projObj);
+                paasLM.projectDescription.change(project.description, session, projObj);
 
                 session.apply(this);
 
@@ -388,7 +388,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             DataSession session = createSession();
             try {
                 for (int i = 0; i < moduleIds.length; i++) {
-                    paasLM.moduleSource.execute(moduleTexts[i], session, new DataObject(moduleIds[i], paasLM.module));
+                    paasLM.moduleSource.change(moduleTexts[i], session, new DataObject(moduleIds[i], paasLM.module));
                 }
 
                 session.apply(this);
@@ -433,7 +433,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
                 DataObject moduleObj = session.addObject(paasLM.module, false, true);
 
-                LM.name.execute(newModule.name, session, moduleObj);
+                LM.name.change(newModule.name, session, moduleObj);
 
                 addModuleToProject(session, new DataObject(projectId, paasLM.project), moduleObj);
 
@@ -456,7 +456,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                paasLM.moduleInProject.execute(null, session, new DataObject(projectId, paasLM.project), new DataObject(moduleId, paasLM.module));
+                paasLM.moduleInProject.change(null, session, new DataObject(projectId, paasLM.project), new DataObject(moduleId, paasLM.module));
 
                 session.apply(this);
             } finally {
@@ -487,10 +487,10 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
                 int databaseId = generateDatabase();
 
-                LM.name.execute("Configuration " + configObj.object, session, configObj);
-                paasLM.configurationStatus.execute(paasLM.status.getID("stopped"), session, configObj);
-                paasLM.configurationProject.execute(projectId, session, configObj);
-                paasLM.configurationDatabase.execute(databaseId, session, configObj);
+                LM.name.change("Configuration " + configObj.object, session, configObj);
+                paasLM.configurationStatus.change(paasLM.status.getID("stopped"), session, configObj);
+                paasLM.configurationProject.change(projectId, session, configObj);
+                paasLM.configurationDatabase.change(databaseId, session, configObj);
 
                 session.apply(this);
             } finally {
@@ -594,8 +594,8 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     private void updateConfiguration(DataSession session, DataObject confObj, ConfigurationDTO configuration) throws SQLException {
         PaasUtils.checkPortExceptionally(configuration.port);
 
-        paasLM.configurationPort.execute(configuration.port, session, confObj);
-        LM.name.execute(configuration.name, session, confObj);
+        paasLM.configurationPort.change(configuration.port, session, confObj);
+        LM.name.change(configuration.name, session, confObj);
     }
 
     private String waitForStarted(int configurationId) throws RemoteException {
@@ -680,7 +680,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
-                paasLM.configurationStop.execute(true, session, confObj);
+                paasLM.configurationStop.change(true, session, confObj);
 
                 String errorMsg = waitForStopped(configurationId);
                 if (errorMsg != null) {
@@ -731,7 +731,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     }
 
     private void addModuleToProject(DataSession session, DataObject projectId, DataObject moduleId) throws SQLException {
-        paasLM.moduleInProject.execute(true, session, projectId, moduleId);
+        paasLM.moduleInProject.change(true, session, projectId, moduleId);
     }
 
     public void refreshConfigurationStatuses(DataObject projId) {
@@ -792,7 +792,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 session = createSession();
             }
 
-            paasLM.configurationStatus.execute(paasLM.status.getID(statusStr), session, confId);
+            paasLM.configurationStatus.change(paasLM.status.getID(statusStr), session, confId);
 
             if (apply) {
                 session.apply(this);

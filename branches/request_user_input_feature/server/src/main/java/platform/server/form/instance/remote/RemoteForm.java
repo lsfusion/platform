@@ -34,7 +34,6 @@ import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
@@ -645,7 +644,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
         try {
             Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
-            propertyDraw.toDraw.changeOrder(propertyDraw.propertyObject.getRemappedPropertyObject(keys), Order.deserialize(modiType));
+            propertyDraw.toDraw.changeOrder(((CalcPropertyObjectInstance<?>)propertyDraw.propertyObject).getRemappedPropertyObject(keys), Order.deserialize(modiType));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -957,7 +956,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                     Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
-                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, keys);
+                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, keys, null);
 
                     if (logger.isInfoEnabled()) {
                         logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));

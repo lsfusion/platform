@@ -5,6 +5,7 @@ import platform.server.data.type.Type;
 import platform.server.form.instance.FormCloseType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 
@@ -24,9 +25,9 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     private final StaticCustomClass formResultClass;
     private final LP formResultProperty;
 
-    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, PropertyMapImplement<ClassPropertyInterface, I> action,
+    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<I> action,
                                                                         Type requestValueType, String chosenKey,
-                                                                        LP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
+                                                                        LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
                                                                         AnyValuePropertyHolder chosenValueProperty, StaticCustomClass formResultClass, LP formResultProperty) {
         super(sID, caption, innerInterfaces, action);
 
@@ -59,7 +60,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                     Object chosenValue = chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey));
                     updateRequestedValue(context, chosenValue);
                 } else {
-                    requestCanceledProperty.execute(true, context);
+                    requestCanceledProperty.change(true, context);
                 }
             }
         } else {
@@ -71,6 +72,6 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     private void updateRequestedValue(ExecutionContext context, Object requestedValue) throws SQLException {
         requestedValueProperty.write(requestValueType, requestedValue, context);
-        requestCanceledProperty.execute(null, context);
+        requestCanceledProperty.change(null, context);
     }
 }

@@ -2,8 +2,6 @@ package platform.server.logics.property;
 
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -32,15 +30,15 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
     }
 
     public boolean canBeChanged(Modifier modifier) throws SQLException {
-        return !property.getDataChanges(getPropertyChange(property.changeExpr), modifier).changes.isEmpty();
+        return !((CalcProperty<P>)property).getDataChanges(getPropertyChange(((CalcProperty<P>)property).changeExpr), modifier).isEmpty();
     }
     
     public Object read(DataSession session, Modifier modifier) throws SQLException {
-        return property.read(session, mapping, modifier);
+        return ((CalcProperty<P>)property).read(session, mapping, modifier);
     }
 
     public CustomClass getDialogClass(DataSession session) {
-        return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
+        return ((CalcProperty<P>)property).getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
 
 }

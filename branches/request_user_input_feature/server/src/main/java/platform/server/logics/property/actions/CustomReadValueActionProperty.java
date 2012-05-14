@@ -22,7 +22,7 @@ public abstract class CustomReadValueActionProperty extends CustomActionProperty
         DataClass readType = getReadType(context);
         if(readType!=null) {
             userValue = context.requestUserData(readType, null);
-            if(userValue!=null)
+            if(userValue==null)
                 return;
         }
         executeRead(context, userValue);

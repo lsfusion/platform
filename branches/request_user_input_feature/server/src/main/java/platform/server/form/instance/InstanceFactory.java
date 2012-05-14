@@ -73,17 +73,36 @@ public class InstanceFactory {
         return treeInstances.get(entity);
     }
 
-    public <P extends PropertyInterface> PropertyObjectInstance getInstance(PropertyObjectEntity<P> entity) {
-
-        if (!propertyObjectInstances.containsKey(entity)) {
-            Map<P, PropertyObjectInterfaceInstance> propertyMap = new HashMap<P, PropertyObjectInterfaceInstance>();
-            for (Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet()) {
-                propertyMap.put(propertyImplement.getKey(), propertyImplement.getValue().getInstance(this));
-            }
-            propertyObjectInstances.put(entity, new PropertyObjectInstance<P>(entity.property, propertyMap));
+    private <P extends PropertyInterface> Map<P, PropertyObjectInterfaceInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
+        Map<P, PropertyObjectInterfaceInstance> propertyMap = new HashMap<P, PropertyObjectInterfaceInstance>();
+        for (Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet()) {
+            propertyMap.put(propertyImplement.getKey(), propertyImplement.getValue().getInstance(this));
         }
+        return propertyMap;
+    }
 
-        return propertyObjectInstances.get(entity);
+    public <P extends PropertyInterface> CalcPropertyObjectInstance<P> getInstance(CalcPropertyObjectEntity<P> entity) {
+
+        if (!propertyObjectInstances.containsKey(entity))
+            propertyObjectInstances.put(entity, new CalcPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+
+        return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
+    }
+
+    // временно
+    public <P extends PropertyInterface> PropertyObjectInstance<P, ?> getInstance(PropertyObjectEntity<P, ?> entity) {
+        if(entity instanceof CalcPropertyObjectEntity)
+            return getInstance((CalcPropertyObjectEntity)entity);
+        else
+            return (PropertyObjectInstance<P, ?>) getInstance((ActionPropertyObjectEntity)entity);
+    }
+
+    public <P extends PropertyInterface> ActionPropertyObjectInstance getInstance(ActionPropertyObjectEntity entity) {
+
+        if (!propertyObjectInstances.containsKey(entity))
+            propertyObjectInstances.put(entity, new ActionPropertyObjectInstance(entity.property, getInstanceMap(entity)));
+
+        return (ActionPropertyObjectInstance) propertyObjectInstances.get(entity);
     }
 
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
@@ -94,8 +113,8 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            Map<String, PropertyObjectInstance<?>> editActions = new HashMap<String, PropertyObjectInstance<?>>();
-            for (Map.Entry<String, PropertyObjectEntity> i : entity.editActions.entrySet()) {
+            Map<String, ActionPropertyObjectInstance> editActions = new HashMap<String, ActionPropertyObjectInstance>();
+            for (Map.Entry<String, ActionPropertyObjectEntity> i : entity.editActions.entrySet()) {
                 editActions.put(i.getKey(), getInstance(i.getValue()));
             }
 

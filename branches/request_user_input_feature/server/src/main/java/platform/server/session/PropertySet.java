@@ -35,6 +35,10 @@ public class PropertySet<T extends PropertyInterface> {
         this.where = where;
     }
 
+    public PropertySet(PropertyChange<T> change) { // assert что Expr ActionClass, временное решение пока нет EventChange, EventAction
+        this(change.getMapValues(), change.getMapKeys(), change.where);
+    }
+
     public Collection<Map<T, DataObject>> executeClasses(DataSession session) throws SQLException {
         return executeClasses(session.sql, session.env, session.baseClass);
     }

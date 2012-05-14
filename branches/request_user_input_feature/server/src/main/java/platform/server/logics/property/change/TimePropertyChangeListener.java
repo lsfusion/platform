@@ -13,12 +13,12 @@ public class TimePropertyChangeListener<P extends PropertyInterface> extends Pro
     private final Time time;
     public final DataProperty timeProperty;
 
-    public TimePropertyChangeListener(Property<P> property, boolean isStored, Time time, String sID, String caption, ValueClass[] classes, List<P> propInterfaces) {
+    public TimePropertyChangeListener(CalcProperty<P> property, boolean isStored, Time time, String sID, String caption, ValueClass[] classes, List<P> propInterfaces) {
         this(property, time, createTimeProperty(isStored, time, sID, caption, classes), propInterfaces);
     }
 
-    private TimePropertyChangeListener(Property<P> property, Time time, DataProperty timeProperty, List<P> propInterfaces) {
-        super(property, new PropertyImplement<ClassPropertyInterface, P>(timeProperty, timeProperty.getMapInterfaces(propInterfaces)));
+    private TimePropertyChangeListener(CalcProperty<P> property, Time time, DataProperty timeProperty, List<P> propInterfaces) {
+        super(property, new CalcPropertyMapImplement<ClassPropertyInterface, P>(timeProperty, timeProperty.getMapInterfaces(propInterfaces)));
 
         this.time = time;
         this.timeProperty = timeProperty;

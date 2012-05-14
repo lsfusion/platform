@@ -9,9 +9,10 @@ import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -31,7 +32,7 @@ public interface SessionChanges {
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;
 
     // узнает список изменений произошедших без него
-    public Collection<Property> update(FormInstance<?> toUpdate) throws SQLException;
+    public Collection<CalcProperty> update(FormInstance<?> toUpdate) throws SQLException;
 
     public String apply(BusinessLogics<?> BL) throws SQLException;
 }

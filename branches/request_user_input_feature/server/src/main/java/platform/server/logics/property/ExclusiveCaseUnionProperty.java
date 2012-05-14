@@ -4,7 +4,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
-import platform.server.session.MapDataChanges;
+import platform.server.session.DataChanges;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
@@ -47,8 +47,8 @@ public abstract class ExclusiveCaseUnionProperty extends AbstractCaseUnionProper
         super(sID, caption, interfaces);
     }
 
-    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        MapDataChanges<Interface> result = new MapDataChanges<Interface>();
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        DataChanges result = new DataChanges();
         for(Case operand : getCases())
             result = result.add(operand.property.mapDataChanges(
                     change.and(operand.where.mapExpr(change.getMapExprs(), propChanges).getWhere()), changedWhere, propChanges));

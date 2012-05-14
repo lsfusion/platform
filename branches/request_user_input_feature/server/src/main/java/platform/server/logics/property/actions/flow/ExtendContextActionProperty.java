@@ -13,7 +13,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
     protected final Collection<I> innerInterfaces;
     protected final Map<ClassPropertyInterface, I> mapInterfaces;
 
-    public ExtendContextActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, Collection<PropertyInterfaceImplement<I>> used) {
+    public ExtendContextActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, Collection<? extends PropertyInterfaceImplement<I>> used) {
         super(sID, caption, mapInterfaces, used);
 
         this.innerInterfaces = innerInterfaces;
