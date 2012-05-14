@@ -7512,7 +7512,7 @@ toFillNaturalLossDetail 'Заполнить ведомость естестве�
 @defineDocumentHeaderRetailSum(naturalLoss);
 @defineDocumentHeaderQuantity(naturalLoss);
 
-FORM naturalLossPrint 'Ведомость естественной убыли'
+FORM naturalLossPrint 'Ведомость естественной убыли' PRINT
     OBJECTS s=naturalLoss FIXED PANEL
     PROPERTIES(s) READONLY SELECTOR numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
                            dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
@@ -7585,7 +7585,8 @@ FORM naturalLosses 'Ведомости естественной убыли'
     PROPERTIES(s) READONLY numberObject, seriesObject, dateNaturalLoss, timeNaturalLoss,
                            nameDepartmentStoreNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
                            quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
-                           retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss, toPrintNaturalLoss FORCE PANEL
+                           retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+    PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
     PROPERTIES(s) ADDFORM, EDITFORM SHOWIF isDraftNaturalLoss(s), delete FORCE PANEL SHOWIF isDraftNaturalLoss(s),
                   postNaturalLoss SHOWIF isDraftNaturalLoss(s), unpostNaturalLoss SHOWIF isPostedNaturalLoss(s)
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

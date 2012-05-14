@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="s" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="19"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle3" hAlign="Center" vAlign="Middle"/>
+	<field name="s" class="java.lang.Integer"/>
+	<field name="retail_numberObject" class="java.lang.String"/>
+	<field name="retail_nameDepartmentStoreNaturalLoss" class="java.lang.String"/>
+	<field name="retail_timeNaturalLoss" class="java.sql.Time"/>
+	<field name="retail_seriesObject" class="java.lang.String"/>
+	<field name="retail_dateNaturalLoss" class="java.util.Date"/>
+	<field name="retail_dateFromNaturalLoss" class="java.util.Date"/>
+	<field name="retail_dateToNaturalLoss" class="java.util.Date"/>
+	<field name="retail_quantityNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
+	<field name="retail_invoiceSumNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
+	<field name="retail_retailSumNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
+	<field name="retail_noteNaturalLoss" class="java.lang.String"/>
+	<field name="d" class="java.lang.Integer"/>
+	<field name="retail_indexNaturalLossDetail" class="java.lang.Integer"/>
+	<field name="retail_nameAttributeItemNaturalLossDetail" class="java.lang.String"/>
+	<field name="retail_codeNaturalLossDetail" class="java.lang.String"/>
+	<field name="retail_shortNameUnitOfMeasureItemNaturalLossDetail" class="java.lang.String"/>
+	<field name="retail_quantityLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_supplierPriceNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_retailPriceNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_supplierSumLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_retailSumLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_nameSubNaturalLossItemGroupNaturalLossDetail" class="java.lang.String"/>
+	<field name="retail_percentNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_quantityNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_supplierSumNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retail_retailSumNaturalLossDetail" class="java.lang.Double"/>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
+	</group>
+	<group name="textGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
+	</group>
+	<title>
+		<band height="80">
+			<staticText>
+				<reportElement x="455" y="0" width="140" height="20"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top"/>
+				<text><![CDATA[Утверждаю]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="455" y="20" width="140" height="20"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top"/>
+				<text><![CDATA[Руководитель предприятия]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="110" y="40" width="345" height="20"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top"/>
+				<text><![CDATA[ВЕДОМОСТЬ РАСЧЕТА ЕСТЕСТВЕННОЙ УБЫЛИ ПО НОРМАМ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="170" y="60" width="285" height="20"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression><![CDATA["за период с " + $F{retail_dateFromNaturalLoss}+" по "+$F{retail_dateToNaturalLoss}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="30">
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="21" y="0" width="27" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Код нормы"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="345" y="0" width="20" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ед. изм."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="315" y="0" width="30" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Кол-во"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="365" y="0" width="40" height="30"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Норма ест. убыли, %"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="405" y="0" width="50" height="30"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Кол-во ест. убыли"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="250" y="0" width="65" height="30"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Сумма поставщика, руб."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="185" y="0" width="65" height="30"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Розничная сумма, руб."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="48" y="0" width="137" height="30"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Группа естественной убыли"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="455" y="0" width="65" height="30"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Розничная сумма, руб."]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToBandHeight" x="520" y="0" width="65" height="30"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Сумма поставщика, руб."]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="40">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="21" y="0" width="564" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="21" y="20" width="27" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_codeNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="48" y="20" width="137" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_nameSubNaturalLossItemGroupNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="185" y="20" width="65" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_retailSumLossNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="250" y="20" width="65" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_supplierSumLossNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="315" y="20" width="30" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_quantityLossNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="345" y="20" width="20" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="365" y="20" width="40" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_percentNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="405" y="20" width="50" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_quantityNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="455" y="20" width="65" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_retailSumNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="520" y="20" width="65" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_supplierSumNaturalLossDetail}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
