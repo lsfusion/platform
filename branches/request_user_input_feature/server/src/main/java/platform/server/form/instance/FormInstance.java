@@ -1466,7 +1466,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     private List<ClientAction> fireEvent(Object eventObject) throws SQLException {
-        List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
+        List<ActionPropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
             AUTOACTIONS:

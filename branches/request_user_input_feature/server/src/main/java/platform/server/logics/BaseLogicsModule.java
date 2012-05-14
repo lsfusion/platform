@@ -1102,7 +1102,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         lp.property.ID = idGenerator.idShift();
     }
 
-    public abstract class MapClassesPropertySet<K, V extends Property> extends PropertySet {
+    public abstract class MapClassesPropertySet<K, V extends CalcProperty> extends PropertySet {
         protected LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
 
         @Override
@@ -1111,12 +1111,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
+        protected List<CalcPropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
             ValueClass[] valueClasses = getClasses(classes);
             V property = getProperty(valueClasses);
 
             List<?> interfaces = getPropertyInterfaces(property, valueClasses);
-            return Collections.singletonList(new PropertyClassImplement(property, classes, interfaces));
+            return Collections.singletonList(new CalcPropertyClassImplement(property, classes, interfaces));
         }
 
         private ValueClass[] getClasses(List<ValueClassWrapper> classes) {

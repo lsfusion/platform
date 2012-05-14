@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends PropertyImplement<P, PropertyObjectInterfaceEntity> implements ServerCustomSerializable {
+public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> implements ServerCustomSerializable {
 
     public T property;
     public Map<P, PropertyObjectInterfaceEntity> mapping;

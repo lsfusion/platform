@@ -139,4 +139,8 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
     public ActionPropertyMapImplement<ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return getImplement();
     }
+
+    protected PropertyClassImplement<ClassPropertyInterface, ?> createClassImplement(List<ValueClassWrapper> classes, List<ClassPropertyInterface> mapping) {
+        return new ActionPropertyClassImplement(this, classes, mapping);
+    }
 }

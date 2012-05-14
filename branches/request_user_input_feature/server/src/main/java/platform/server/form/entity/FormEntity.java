@@ -46,7 +46,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
-    public Map<Object, List<ActionPropertyObjectEntity>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity>>();
+    public HashMap<Object, List<ActionPropertyObjectEntity>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity>>();
 
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
@@ -378,13 +378,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
 
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
-            List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
-            Map<ObjectEntity, PropertyInterface> objectToInterface =
-                    BaseUtils.<ObjectEntity, ValueClassWrapper, PropertyInterface>join(objectToClass, BaseUtils.reverse(implement.mapping));
+            List<ValueClassWrapper> interfaces = new ArrayList<ValueClassWrapper>();
             for (ObjectEntity object : objects) {
-                interfaces.add(objectToInterface.get(object));
+                interfaces.add(objectToClass.get(object));
             }
-            propertyDraws.add(addPropertyDraw(new LP(implement.property, interfaces), groupObject, objects));
+            propertyDraws.add(addPropertyDraw(implement.createLP(interfaces), groupObject, objects));
         }
 
         return propertyDraws;
@@ -413,7 +411,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
 
         return addPropertyDraw(groupObject, property.createObjectEntity(objects));
     }
@@ -484,7 +482,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyDraws.remove(property);
     }
 
-    protected <P extends PropertyInterface> void removePropertyDraw(LP<P> property) {
+    protected <P extends PropertyInterface> void removePropertyDraw(LP<P, ?> property) {
         removePropertyDraw(property.property);
     }
 
@@ -497,11 +495,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    public CalcPropertyObjectEntity addPropertyObject(LCP property, PropertyObjectInterfaceEntity... objects) {
-        return property.createObjectEntity(objects); еше с action
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, PropertyObjectInterfaceEntity... objects) {
+        return new CalcPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
     }
     public ActionPropertyObjectEntity addPropertyObject(LAP property, PropertyObjectInterfaceEntity... objects) {
-        return property.createObjectEntity(objects); еше с action
+        return new ActionPropertyObjectEntity(property.property, property.getMap(objects), property.getCreationScript());
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
@@ -552,23 +550,23 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return list;
     }
 
-    protected PropertyObjectEntity getPropertyObject(LP<?> lp) {
+    protected PropertyObjectEntity getPropertyObject(LP<?, ?> lp) {
         return getPropertyDraw(lp).propertyObject;
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(LP<?> lp) {
+    public PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp) {
         return getPropertyDraw(lp.property);
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, int index) {
+    public PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp, int index) {
         return getPropertyDraw(lp.property, index);
     }
 
-    protected PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, ObjectEntity object) {
+    protected PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp, ObjectEntity object) {
         return getPropertyDraw(lp.property, object.groupTo);
     }
 
-    protected PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, GroupObjectEntity groupObject) {
+    protected PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp, GroupObjectEntity groupObject) {
         return getPropertyDraw(lp.property, groupObject);
     }
 
@@ -678,12 +676,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             }
     }
 
-    public void addHintsNoUpdate(LP... props) {
-        for (LP prop : props)
+    public void addHintsNoUpdate(LCP... props) {
+        for (LCP prop : props)
             addHintsNoUpdate(prop);
     }
 
-    protected void addHintsNoUpdate(LP<?> prop) {
+    protected void addHintsNoUpdate(LCP prop) {
         addHintsNoUpdate((CalcProperty) prop.property);
     }
 
@@ -753,7 +751,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         outStream.writeInt(eventActions.size());
-        for (Map.Entry<Object, List<PropertyObjectEntity>> entry : eventActions.entrySet()) {
+        for (Map.Entry<Object, List<ActionPropertyObjectEntity>> entry : eventActions.entrySet()) {
             Object event = entry.getKey();
 
             //пока предполагаем, что евент либо String, либо CustomSerializable!
@@ -787,14 +785,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             defaultOrders.put(order, inStream.readBoolean());
         }
 
-        eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
+        eventActions = new HashMap<Object, List<ActionPropertyObjectEntity>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
             Object event = inStream.readBoolean()
                     ? pool.readString(inStream)
                     : pool.deserializeObject(inStream);
 
-            List<PropertyObjectEntity> actions = pool.deserializeList(inStream);
+            List<ActionPropertyObjectEntity> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);
         }
     }
@@ -823,16 +821,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addActionsOnEvent(Object eventObject, boolean drop, ActionPropertyObjectEntity... actions) {
-        List<PropertyObjectEntity> thisEventActions = eventActions.get(eventObject);
+        List<ActionPropertyObjectEntity> thisEventActions = eventActions.get(eventObject);
         if (thisEventActions == null || drop) {
-            thisEventActions = new ArrayList<PropertyObjectEntity>();
+            thisEventActions = new ArrayList<ActionPropertyObjectEntity>();
             eventActions.put(eventObject, thisEventActions);
         }
 
         thisEventActions.addAll(Arrays.asList(actions));
     }
 
-    public List<PropertyObjectEntity> getActionsOnEvent(Object eventObject) {
+    public List<ActionPropertyObjectEntity> getActionsOnEvent(Object eventObject) {
         return eventActions.get(eventObject);
     }
 

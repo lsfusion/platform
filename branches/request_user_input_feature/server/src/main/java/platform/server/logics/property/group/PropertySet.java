@@ -1,6 +1,7 @@
 package platform.server.logics.property.group;
 
 import platform.server.classes.ValueClass;
+import platform.server.logics.property.CalcPropertyClassImplement;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
@@ -47,7 +48,7 @@ public abstract class PropertySet extends AbstractNode {
         return groupsList;
     }
 
-    protected abstract List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes);
+    protected abstract List<CalcPropertyClassImplement> getProperties(List<ValueClassWrapper> classes);
 
     protected abstract boolean isInInterface(List<ValueClassWrapper> classes);
 

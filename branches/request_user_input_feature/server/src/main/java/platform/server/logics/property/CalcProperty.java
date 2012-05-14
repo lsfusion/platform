@@ -651,4 +651,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public boolean setNotNull;
+
+    protected PropertyClassImplement<T, ?> createClassImplement(List<ValueClassWrapper> classes, List<T> mapping) {
+        return new CalcPropertyClassImplement<T>(this, classes, mapping);
+    }
 }

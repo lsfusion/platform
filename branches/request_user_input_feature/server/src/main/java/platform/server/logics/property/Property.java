@@ -557,7 +557,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                         }
 
                         if (isInInterface(propertyInterface, anyInInterface)) {
-                            resultList.add(new PropertyClassImplement<T>(this, classes, mapping));
+                            resultList.add(createClassImplement(classes, mapping));
                         }
                     }
                 }
@@ -565,6 +565,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
         return resultList;
     }
+    
+    protected abstract PropertyClassImplement<T, ?> createClassImplement(List<ValueClassWrapper> classes, List<T> mapping);
 
     @Override
     public Property getProperty(String sid) {
