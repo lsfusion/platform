@@ -7500,7 +7500,8 @@ toFillNaturalLossDetail 'Заполнить ведомость естестве�
     FOR quantitySoldItemDepartmentStoreDateFromTo(item AS item,
                                                   departmentStoreNaturalLoss(naturalLoss),
                                                   dateFromNaturalLoss(naturalLoss),
-                                                  dateToNaturalLoss(naturalLoss)) DO {
+                                                  dateToNaturalLoss(naturalLoss))
+        AND groupNaturalLossItem(item) DO {
         ADDOBJ naturalLossDetail;
         FOR d == addedObject() DO {
             SET itemNaturalLossDetail(d) <- item AS item;
