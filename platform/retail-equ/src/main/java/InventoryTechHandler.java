@@ -19,6 +19,11 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
     @Override
     public void sendTransaction(TransactionTerminalInfo transactionInfo, List<TerminalInfo> machineryInfoList) throws IOException {
 
+        DBF fileBarcode = null;
+        Index fileBarcodeIndex = null;
+        DBF fileGoods = null;
+        Index fileGoodsIndex = null;
+
         try {
 
             List<String> directoriesList = new ArrayList<String>();
@@ -41,7 +46,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     fileBarcodeCDX.renameTo(new File((directory + "/BARCODE.MDX")));
                 }
 
-                DBF fileBarcode = new DBF(directory + "/BARCODE.DBF", "CP866");
+                fileBarcode = new DBF(directory + "/BARCODE.DBF", "CP866");
 
                 if (transactionInfo.snapshot) {
                     for (int i = 0; i < fileBarcode.getRecordCount(); i++) {
@@ -50,7 +55,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     }
                     fileBarcode.pack();
                 }
-                Index fileBarcodeIndex = fileBarcode.createIndex(directory + "/" + transactionInfo.dateTimeCode + "B.NDX", "BARCODE", true, true);
+                fileBarcodeIndex = fileBarcode.createIndex(directory + "/" + transactionInfo.dateTimeCode + "B.NDX", "BARCODE", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
                     if (fileBarcode.findExact(item.barcodeEx.trim())) {
@@ -66,16 +71,13 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileBarcode.file.setLength(fileBarcode.file.length() - 1);
                     }
                 }
-                fileBarcode.close();
-                if (!fileBarcodeIndex.file.delete())
-                    throw new RuntimeException("File" + fileBarcodeIndex.file.getAbsolutePath() + " can not be deleted");
 
                 if (!new File(directory + "/GOODS.MDX").exists()) {
                     File fileGoodsCDX = new File(directory + "/GOODS.CDX");
                     fileGoodsCDX.renameTo(new File(directory + "/GOODS.MDX"));
                 }
 
-                DBF fileGoods = new DBF(directory + "/GOODS.DBF", "CP866");
+                fileGoods = new DBF(directory + "/GOODS.DBF", "CP866");
 
                 if (transactionInfo.snapshot) {
                     for (int i = 0; i < fileGoods.getRecordCount(); i++) {
@@ -84,7 +86,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     }
                     fileGoods.pack();
                 }
-                Index fileGoodsIndex = fileGoods.createIndex(directory + "/" + transactionInfo.dateTimeCode + "G.NDX", "ARTICUL", true, true);
+                fileGoodsIndex = fileGoods.createIndex(directory + "/" + transactionInfo.dateTimeCode + "G.NDX", "ARTICUL", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
                     if (fileGoods.findExact(item.barcodeEx.trim())) {
@@ -100,10 +102,6 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileGoods.file.setLength(fileGoods.file.length() - 1);
                     }
                 }
-                fileGoods.close();
-                if (!fileGoodsIndex.file.delete())
-                    throw new RuntimeException("File" + fileGoodsIndex.file.getAbsolutePath() + " can not be deleted");
-                fileGoodsIndex.file = null;
             }
 
             sendTerminalDocumentTypes(machineryInfoList, remote.readTerminalDocumentTypeInfo());
@@ -114,12 +112,24 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
             throw new RuntimeException(e.toString(), e.getCause());
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } finally {
+            fileBarcode.close();
+            if (fileBarcodeIndex != null && !fileBarcodeIndex.file.delete())
+                throw new RuntimeException("File" + fileBarcodeIndex.file.getAbsolutePath() + " can not be deleted");
+            fileGoods.close();
+            if (fileGoodsIndex != null && !fileGoodsIndex.file.delete())
+                throw new RuntimeException("File" + fileGoodsIndex.file.getAbsolutePath() + " can not be deleted");
         }
     }
 
     @Override
     public void sendTerminalDocumentTypes(List<TerminalInfo> terminalInfoList,
                                           List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList) throws IOException {
+
+        DBF fileSPRDOC = null;
+        Index fileSPRDOCIndex = null;
+        DBF fileSPRAV = null;
+        Index fileSPRAVIndex = null;
         try {
 
             List<String> directoriesList = new ArrayList<String>();
@@ -142,9 +152,8 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     fileBarcodeCDX.renameTo(new File((directory + "/SPRDOC.MDX")));
                 }
 
-                DBF fileSPRDOC = new DBF(directory + "/SPRDOC.DBF", "CP866");
-
-                Index fileSPRDOCIndex = fileSPRDOC.createIndex(directory + "/" + "SPRDOC.NDX", "CODE", true, true);
+                fileSPRDOC = new DBF(directory + "/SPRDOC.DBF", "CP866");
+                fileSPRDOCIndex = fileSPRDOC.createIndex(directory + "/" + "SPRDOC.NDX", "CODE", true, true);
 
                 for (TerminalDocumentTypeInfo docType : terminalDocumentTypeInfoList) {
                     String id = docType.id != null ? docType.id.trim() : "";
@@ -173,19 +182,14 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         fileSPRDOC.write();
                     }
                 }
-                fileSPRDOC.close();
-                if (!fileSPRDOCIndex.file.delete())
-                    throw new RuntimeException("File" + fileSPRDOCIndex.file.getAbsolutePath() + " can not be deleted");
-
 
                 if (!new File(directory + "/SPRAV.MDX").exists()) {
                     File fileSpravCDX = new File(directory + "/SPRAV.CDX");
                     fileSpravCDX.renameTo(new File((directory + "/SPRAV.MDX")));
                 }
 
-                DBF fileSPRAV = new DBF(directory + "/SPRAV.DBF", "CP866");
-
-                Index fileSPRAVIndex = fileSPRAV.createIndex(directory + "/" + "SPRAV.NDX", "CODE", true, true);
+                fileSPRAV = new DBF(directory + "/SPRAV.DBF", "CP866");
+                fileSPRAVIndex = fileSPRAV.createIndex(directory + "/" + "SPRAV.NDX", "CODE", true, true);
 
                 for (TerminalDocumentTypeInfo docType : terminalDocumentTypeInfoList) {
 
@@ -208,17 +212,25 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         }
                     }
                 }
-                fileSPRAV.close();
-                if (!fileSPRAVIndex.file.delete())
-                    throw new RuntimeException("File" + fileSPRAVIndex.file.getAbsolutePath() + " can not be deleted");
             }
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
+        } finally {
+            fileSPRDOC.close();
+            if (fileSPRDOCIndex != null && !fileSPRDOCIndex.file.delete())
+                throw new RuntimeException("File" + fileSPRDOCIndex.file.getAbsolutePath() + " can not be deleted");
+            fileSPRAV.close();
+            if (fileSPRAVIndex != null && !fileSPRAVIndex.file.delete())
+                throw new RuntimeException("File" + fileSPRAVIndex.file.getAbsolutePath() + " can not be deleted");
+
         }
     }
 
     @Override
     public List<TerminalDocumentInfo> readTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException {
+
+        DBF importFilePos = null;
+        DBF importFile = null;
 
         try {
 
@@ -240,7 +252,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     filePOSCDX.renameTo(new File((directory + "/POS.MDX")));
                 }
 
-                DBF importFilePos = new DBF(directory + "/Pos.DBF", "CP866");
+                importFilePos = new DBF(directory + "/Pos.DBF", "CP866");
                 int recordCountPos = importFilePos.getRecordCount();
 
                 for (int i = 0; i < recordCountPos; i++) {
@@ -254,14 +266,13 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     Boolean isNew = barcode.contains("*") ? true : null;
                     terminalDocumentDetailInfoList.add(new TerminalDocumentDetailInfo(id, barcode.replace("*", ""), name, isNew, quantity, price, sum));
                 }
-                importFilePos.close();
 
                 if (!new File(directory + "/DOC.MDX").exists()) {
                     File fileDOCCDX = new File(directory + "/DOC.CDX");
                     fileDOCCDX.renameTo(new File((directory + "/DOC.MDX")));
                 }
 
-                DBF importFile = new DBF(directory + "/Doc.DBF", "CP866");
+                importFile = new DBF(directory + "/Doc.DBF", "CP866");
                 int recordCount = importFile.getRecordCount();
 
                 for (int i = 0; i < recordCount; i++) {
@@ -284,17 +295,22 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                                 title, quantity, currentTerminalDocumentDetailInfoList));
                     }
                 }
-                importFile.close();
             }
             return terminalDocumentInfoList;
 
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
+        } finally {
+            importFilePos.close();
+            importFile.close();
         }
     }
 
     @Override
     public void finishSendingTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException {
+
+        DBF fileDOC = null;
+        Index fileDOCIndex = null;
 
         try {
             List<String> directoriesList = new ArrayList<String>();
@@ -317,22 +333,23 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     fileDOCCDX.renameTo(new File((directory + "/DOC.MDX")));
                 }
 
-                DBF fileDOC = new DBF(directory + "/DOC.DBF", "CP866");
+                fileDOC = new DBF(directory + "/DOC.DBF", "CP866");
                 int recordCount = fileDOC.getRecordCount();
 
-                Index fileDOCIndex = fileDOC.createIndex(directory + "/" + "DOC.NDX", "IDDOC", true, true);
+                fileDOCIndex = fileDOC.createIndex(directory + "/" + "DOC.NDX", "IDDOC", true, true);
 
                 for (int i = 1; i <= recordCount; i++) {
                     fileDOC.gotoRecord(i);
                     fileDOC.getField("ACCEPTED").put("1");
                     fileDOC.update();
                 }
-                fileDOC.close();
-                if (!fileDOCIndex.file.delete())
-                    throw new RuntimeException("File" + fileDOCIndex.file.getAbsolutePath() + " can not be deleted");
             }
         } catch (xBaseJException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } finally {
+            fileDOC.close();
+            if (fileDOCIndex != null && !fileDOCIndex.file.delete())
+                throw new RuntimeException("File" + fileDOCIndex.file.getAbsolutePath() + " can not be deleted");
         }
     }
 }
