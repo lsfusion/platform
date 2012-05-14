@@ -284,7 +284,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP apply;
     public LP cancel;
 
-    public LP flowApply;
     public LP flowBreak;
     public LP flowReturn;
 
@@ -751,7 +750,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         apply = addAProp(new ApplyActionProperty(BL));
         cancel = addAProp(new CancelActionProperty());
 
-        flowApply = addJoinAProp(null, "", "", 0, apply);
         flowBreak = addProperty(null, new LP<ClassPropertyInterface>(new BreakActionProperty()));
         flowReturn = addProperty(null, new LP<ClassPropertyInterface>(new ReturnActionProperty()));
 
