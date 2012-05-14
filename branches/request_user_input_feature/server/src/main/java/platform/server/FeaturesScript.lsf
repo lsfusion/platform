@@ -457,10 +457,21 @@ scustom 'Custom file' (store) = DATA CUSTOMFILE (store) IN base;
 sexcel 'Excel' (store) = DATA EXCELFILE (store) IN base;
 scolor 'Color' (store) = DATA COLOR (store) IN base;
 
+testRequestInput 'Тестование REQUEST input' = ACTION(s) {
+    REQUEST COLOR {
+        REQUEST COLOR INPUT;
+        IF (requestedColor() == #FF0000) THEN {
+            SET requestedColor() <- #00FF00;
+        }
+    };
+
+    SET scolor(s) IF s IS store <- requestedColor();
+};
+
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
-PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm()
+PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm(), testRequestInput(s)
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
 PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, sword, simage, spdf, scustom, sexcel, scolor
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula

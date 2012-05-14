@@ -28,10 +28,10 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
 
     @Override
     public final FlowResult flowExecute(ExecutionContext context) throws SQLException {
-        return executeAspect(context);
+        return aroundAspect(context);
     }
 
-    protected FlowResult executeAspect(ExecutionContext context) throws SQLException {
+    protected FlowResult aroundAspect(ExecutionContext context) throws SQLException {
         ExecutionContext innerContext = beforeAspect(context);
 
         FlowResult result = proceed(innerContext);

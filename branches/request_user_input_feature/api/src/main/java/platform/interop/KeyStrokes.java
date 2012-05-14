@@ -177,7 +177,6 @@ public class KeyStrokes {
     public static boolean isSuitableStartFilteringEvent(EventObject event) {
         if (event instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) event;
-            isSuitableEditKeyEvent(event);
             return isSuitableEditKeyEvent(event) &&
                     !isBackSpaceEvent(keyEvent) &&
                     !isDeleteEvent(keyEvent);
@@ -202,6 +201,6 @@ public class KeyStrokes {
     public static KeyStroke getKeyStrokeForEvent(KeyEvent e) {
         return e.getID() == KeyEvent.KEY_TYPED
                ? KeyStroke.getKeyStroke(e.getKeyChar())
-               : KeyStroke.getKeyStroke(e.getKeyCode(), e.getModifiers(), e.getID() != KeyEvent.KEY_PRESSED);
+               : KeyStroke.getKeyStroke(e.getKeyCode(), e.getModifiers(), e.getID() == KeyEvent.KEY_RELEASED);
     }
 }

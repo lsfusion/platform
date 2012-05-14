@@ -14,6 +14,7 @@ import platform.server.data.Union;
 import platform.server.data.expr.StringAggUnionProperty;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
+import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
@@ -531,7 +532,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenObjectProperty())));
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -553,7 +554,7 @@ public abstract class LogicsModule {
 
     protected LP addChangeClassAProp(String caption, ConcreteCustomClass cls) {
         return addJoinAProp(null, genSID(), "sys", 2, new ValueClass[]{baseClass},
-                addChangeClassAProp(caption), 1, addCProp(baseClass.objectClass, cls.getSID()));
+                            addChangeClassAProp(caption), 1, addCProp(baseClass.objectClass, cls.getSID()));
     }
 
     protected LP addStopActionProp(String caption, String header) {
@@ -567,18 +568,14 @@ public abstract class LogicsModule {
         PropertyMapImplement<W, PropertyInterface> conditionalPart = (PropertyMapImplement<W, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createStatic(true, LogicalClass.instance));
         return addProperty(group, new LP<ClassPropertyInterface>(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
-                                                                                                             innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
-                                                                                                             (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
+                                                                                                                   innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
+                                                                                                                   (PropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
 
     protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
-        return addListAProp(group, name, caption, interfaces, true, true, params);
-    }
-
-    protected LP addListAProp(AbstractGroup group, String name, String caption, int interfaces, boolean newSession, boolean doApply, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
         return addProperty(group, new LP<ClassPropertyInterface>(new ListActionProperty(name, caption, listInterfaces,
-                (List) readImplements(listInterfaces, params), newSession, doApply, baseLM.BL)));
+                                                                                        (List) readImplements(listInterfaces, params), baseLM.BL)));
     }
 
     protected LP addIfAProp(AbstractGroup group, String name, String caption, int interfaces, Object... params) {
@@ -626,6 +623,29 @@ public abstract class LogicsModule {
         List<PropertyInterface> listInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         return addProperty(group, new LP<ClassPropertyInterface>(new JoinActionProperty(name, caption, listInterfaces, mapImplement(action, readImplements), classes)));
+    }
+
+    protected LP addNewSessionAProp(AbstractGroup group, String name, String caption, LP action, boolean doApply) {
+        List<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
+        PropertyMapImplement<ClassPropertyInterface, PropertyInterface> actionImplement = mapListImplement(action, listInterfaces);
+
+        return addProperty(group, new LP<ClassPropertyInterface>(new NewSessionActionProperty(name, caption, listInterfaces, actionImplement, doApply, baseLM.BL)));
+    }
+
+    protected LP addRequestUserInputAProp(AbstractGroup group, String name, String caption, LP action, Type requestValueType, String chosenKey) {
+        List<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
+        PropertyMapImplement<ClassPropertyInterface, PropertyInterface> actionImplement = mapListImplement(action, listInterfaces);
+
+        return addProperty(group, new LP<ClassPropertyInterface>(
+                new RequestUserInputActionProperty(name, caption, listInterfaces, actionImplement,
+                                                   requestValueType, chosenKey,
+                                                   baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty(),
+                                                   baseLM.getChosenValueProperty(), baseLM.formResult, baseLM.getFormResultProperty()))
+        );
+    }
+
+    protected LP addRequestUserDataAProp(AbstractGroup group, String name, String caption, DataClass dataClass) {
+        return addAProp(group, new RequestUserDataActionProperty(name, caption, dataClass, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty()));
     }
 
     protected LP addEAProp(ValueClass... params) {
@@ -2098,20 +2118,40 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    public AnyValuePropertyHolder getChosenObjectProperty() {
+    public AnyValuePropertyHolder getChosenValueProperty() {
+        return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
+    }
+
+    @IdentityLazy
+    public AnyValuePropertyHolder getRequestedValueProperty() {
+        return addAnyValuePropertyHolder("requested", "Requested");
+    }
+
+    public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
         return new AnyValuePropertyHolder(
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenObject", "Chosen Object", new ValueClass[]{StringClass.get(100)}, baseLM.baseClass))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenText", "Chosen Text", new ValueClass[]{StringClass.get(100)}, TextClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenString", "Chosen String", new ValueClass[]{StringClass.get(100)}, StringClass.get(2000)))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenInt", "Chosen Int", new ValueClass[]{StringClass.get(100)}, IntegerClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenLong", "Chosen Long", new ValueClass[]{StringClass.get(100)}, LongClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDouble", "Chosen Double", new ValueClass[]{StringClass.get(100)}, DoubleClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenYear", "Chosen Year", new ValueClass[]{StringClass.get(100)}, YearClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDateTime", "Chosen DateTime", new ValueClass[]{StringClass.get(100)}, DateTimeClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenLogical", "Chosen Logical", new ValueClass[]{StringClass.get(100)}, LogicalClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenDate", "Chosen Date", new ValueClass[]{StringClass.get(100)}, DateClass.instance))),
-                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("chosenTime", "Chosen Time", new ValueClass[]{StringClass.get(100)}, TimeClass.instance)))
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Object", captionPrefix + " Object", classes, baseLM.baseClass))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Text", captionPrefix + " Text", classes, TextClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "String", captionPrefix + " String", classes, StringClass.get(2000)))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Int", captionPrefix + " Int", classes, IntegerClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Long", captionPrefix + " Long", classes, LongClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Double", captionPrefix + " Double", classes, DoubleClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Year", captionPrefix + " Year", classes, YearClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "DateTime", captionPrefix + " DateTime", classes, DateTimeClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Logical", captionPrefix + " Logical", classes, LogicalClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Date", captionPrefix + " Date", classes, DateClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Time", captionPrefix + " Time", classes, TimeClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Color", captionPrefix + " Color", classes, ColorClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "WordFile", captionPrefix + " Word file", classes, WordClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ImageFile", captionPrefix + " Image file", classes, ImageClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "PdfFile", captionPrefix + " Pdf file", classes, PDFClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, CustomFileClass.instance))),
+                addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel fil", classes, ExcelClass.instance)))
         );
+    }
+
+    @IdentityLazy
+    public LP getRequestCanceledProperty() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new SessionDataProperty("requestCanceled", "Request Input Canceled", LogicalClass.instance)));
     }
 
     @IdentityLazy
@@ -2338,14 +2378,18 @@ public abstract class LogicsModule {
 
         LP<C> checkProp = addCProp(LogicalClass.instance, true, values);
 
-        Map<P,C> mapInterfaces = new HashMap<P,C>();
-        for (int i = 0; i < property.listInterfaces.size(); i++) {
-            mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
-        }
         checkProp.property.addFollows(
-                new PropertyMapImplement<P, C>(property.property, mapInterfaces),
+                mapListImplement(property, checkProp.listInterfaces),
                 ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
                 resolve, this);
+    }
+
+    public static <P extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<P, T> mapListImplement(LP<P> property, List<T> mapList) {
+        Map<P,T> mapInterfaces = new HashMap<P,T>();
+        for (int i = 0; i < property.listInterfaces.size(); i++) {
+            mapInterfaces.put(property.listInterfaces.get(i), mapList.get(i));
+        }
+        return new PropertyMapImplement<P, T>(property.property, mapInterfaces);
     }
 
     protected void makeUserLoggable(LP... lps) {

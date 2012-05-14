@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.classes.*;
 import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 
@@ -19,8 +20,16 @@ public class AnyValuePropertyHolder {
     private final LP logicalProperty;
     private final LP dateProperty;
     private final LP timeProperty;
+    private final LP colorProperty;
+    private final LP wordFileProperty;
+    private final LP imageFileProperty;
+    private final LP pdfFileProperty;
+    private final LP customFileProperty;
+    private final LP excelFileProperty;
 
-    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty, LP dateTimeProperty, LP logicalProperty, LP dateProperty, LP timeProperty) {
+    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty,
+                                  LP dateTimeProperty, LP logicalProperty, LP dateProperty, LP timeProperty, LP colorProperty, LP wordFileProperty, LP imageFileProperty,
+                                  LP pdfFileProperty, LP customFileProperty, LP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && textProperty.property.getType() == TextClass.instance
                 && stringProperty.property.getType().isCompatible(StringClass.get(0))
@@ -32,6 +41,12 @@ public class AnyValuePropertyHolder {
                 && logicalProperty.property.getType() == LogicalClass.instance
                 && dateProperty.property.getType() == DateClass.instance
                 && timeProperty.property.getType() == TimeClass.instance
+                && colorProperty.property.getType() == ColorClass.instance
+                && wordFileProperty.property.getType() == WordClass.instance
+                && imageFileProperty.property.getType() == ImageClass.instance
+                && pdfFileProperty.property.getType() == PDFClass.instance
+                && customFileProperty.property.getType() == CustomFileClass.instance
+                && excelFileProperty.property.getType() == ExcelClass.instance
                 ;
 
         this.objectProperty = objectProperty;
@@ -45,44 +60,124 @@ public class AnyValuePropertyHolder {
         this.logicalProperty = logicalProperty;
         this.dateProperty = dateProperty;
         this.timeProperty = timeProperty;
+        this.colorProperty = colorProperty;
+        this.wordFileProperty = wordFileProperty;
+        this.imageFileProperty = imageFileProperty;
+        this.pdfFileProperty = pdfFileProperty;
+        this.customFileProperty = customFileProperty;
+        this.excelFileProperty = excelFileProperty;
     }
 
-    public void write(ValueClass valueClass, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
-        if (valueClass instanceof CustomClass) {
+    public void write(Type valueType, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
+        if (valueType instanceof ObjectType) {
             objectProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof TextClass) {
+        } else if (valueType instanceof TextClass) {
             textProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof StringClass) {
+        } else if (valueType instanceof StringClass) {
             stringProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof IntegerClass) {
+        } else if (valueType instanceof IntegerClass) {
             intProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof LongClass) {
+        } else if (valueType instanceof LongClass) {
             longProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof DoubleClass) {
+        } else if (valueType instanceof DoubleClass) {
             doubleProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof YearClass) {
+        } else if (valueType instanceof YearClass) {
             yearProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof DateTimeClass) {
+        } else if (valueType instanceof DateTimeClass) {
             dateTimeProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof LogicalClass) {
+        } else if (valueType instanceof LogicalClass) {
             logicalProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof DateClass) {
+        } else if (valueType instanceof DateClass) {
             dateProperty.execute(value, context, keys);
 
-        } else if (valueClass instanceof TimeClass) {
+        } else if (valueType instanceof TimeClass) {
             timeProperty.execute(value, context, keys);
 
+        } else if (valueType instanceof ColorClass) {
+            colorProperty.execute(value, context, keys);
+
+        } else if (valueType instanceof WordClass) {
+            wordFileProperty.execute(value, context, keys);
+
+        } else if (valueType instanceof ImageClass) {
+            imageFileProperty.execute(value, context, keys);
+
+        } else if (valueType instanceof PDFClass) {
+            pdfFileProperty.execute(value, context, keys);
+
+        } else if (valueType instanceof CustomFileClass) {
+            customFileProperty.execute(value, context, keys);
+
+        } else if (valueType instanceof ExcelClass) {
+            excelFileProperty.execute(value, context, keys);
+
         } else {
-            assert false:valueClass + " is not supported by AnyValueProperty";
+            throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
+        }
+    }
+    public Object read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
+        if (valueType instanceof CustomClass) {
+            return objectProperty.read(context, keys);
+
+        } else if (valueType instanceof TextClass) {
+            return textProperty.read(context, keys);
+
+        } else if (valueType instanceof StringClass) {
+            return stringProperty.read(context, keys);
+
+        } else if (valueType instanceof IntegerClass) {
+            return intProperty.read(context, keys);
+
+        } else if (valueType instanceof LongClass) {
+            return longProperty.read(context, keys);
+
+        } else if (valueType instanceof DoubleClass) {
+            return doubleProperty.read(context, keys);
+
+        } else if (valueType instanceof YearClass) {
+            return yearProperty.read(context, keys);
+
+        } else if (valueType instanceof DateTimeClass) {
+            return dateTimeProperty.read(context, keys);
+
+        } else if (valueType instanceof LogicalClass) {
+            return logicalProperty.read(context, keys);
+
+        } else if (valueType instanceof DateClass) {
+            return dateProperty.read(context, keys);
+
+        } else if (valueType instanceof TimeClass) {
+            return timeProperty.read(context, keys);
+
+        } else if (valueType instanceof ColorClass) {
+            return colorProperty.read(context, keys);
+
+        } else if (valueType instanceof WordClass) {
+            return wordFileProperty.read(context, keys);
+
+        } else if (valueType instanceof ImageClass) {
+            return imageFileProperty.read(context, keys);
+
+        } else if (valueType instanceof PDFClass) {
+            return pdfFileProperty.read(context, keys);
+
+        } else if (valueType instanceof CustomFileClass) {
+            return customFileProperty.read(context, keys);
+
+        } else if (valueType instanceof ExcelClass) {
+            return excelFileProperty.read(context, keys);
+
+        } else {
+            throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }
     }
 }

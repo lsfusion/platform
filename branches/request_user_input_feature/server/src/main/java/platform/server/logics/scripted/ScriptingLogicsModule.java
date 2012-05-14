@@ -18,6 +18,7 @@ import platform.server.data.Union;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.type.ConcatenateType;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
@@ -47,6 +48,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.getIntNum;
@@ -88,9 +90,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private State currentState = null;
 
-    private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
+    private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
-            Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
+            Arrays.<DataClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
                     DateTimeClass.instance, TextClass.instance, TimeClass.instance, WordClass.instance, ImageClass.instance, PDFClass.instance,
                     CustomFileClass.instance, ExcelClass.instance, ColorClass.instance)
     );
@@ -151,7 +153,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return caption.substring(1, caption.length()-1);
     }
 
-    private ValueClass getPredefinedClass(String name) {
+    private DataClass getPredefinedClass(String name) {
         if (primitiveTypeAliases.containsKey(name)) {
             return primitiveTypeAliases.get(name);
         } else if (name.startsWith("STRING[")) {
@@ -166,6 +168,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             return NumericClass.get(Integer.parseInt(length), Integer.parseInt(precision));
         }
         return null;
+    }
+
+    private Type getPredefinedType(String name) {
+        if ("OBJECT".equals(name)) {
+            return ObjectType.instance;
+        } else {
+            return getPredefinedClass(name);
+        }
     }
 
     public ObjectEntity[] getMappingObjectsArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -822,13 +832,34 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<LPWithParams> properties, List<String> localPropNames) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
+
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
-        LP prop = addListAProp(null, genSID(), "", usedParams.size(), newSession, doApply, resultParams.toArray());
+
+        LP listLP = addListAProp(null, genSID(), "", usedParams.size(), resultParams.toArray());
         for (String propName : localPropNames) {
             currentLocalProperties.remove(propName);
         }
-        return new LPWithParams(prop, usedParams);
+
+        return !newSession
+               ? new LPWithParams(listLP, usedParams)
+               : new LPWithParams(addNewSessionAProp(null, genSID(), "", listLP, doApply), usedParams);
+    }
+
+    public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
+        Type requestValueType = getPredefinedType(typeId);
+
+        LPWithParams prop;
+        if (action == null) {
+            if (!(requestValueType instanceof DataClass)) {
+                errLog.emitNotDataTypeError(parser, typeId);
+            }
+
+            prop = wrapWithFlowAction(new LPWithParams(addRequestUserDataAProp(null, genSID(), "", (DataClass) requestValueType), new ArrayList<Integer>()));
+        } else {
+            prop = new LPWithParams(addRequestUserInputAProp(null, genSID(), "", action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
+        }
+        return prop;
     }
 
     public LP<?> addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames) throws ScriptingErrorLog.SemanticErrorException {

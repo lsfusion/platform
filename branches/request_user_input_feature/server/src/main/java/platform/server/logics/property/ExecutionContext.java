@@ -196,7 +196,8 @@ public class ExecutionContext {
 
     // для подмены ввода и обеспечания WYSIWYG механизмов
     public ObjectValue getLastUserInput() {
-        throw new RuntimeException("not implemented yet");
+        return null;
+//        throw new RuntimeException("not implemented yet");
     }
     public void pushUserInput(ObjectValue value) {
         // todo;

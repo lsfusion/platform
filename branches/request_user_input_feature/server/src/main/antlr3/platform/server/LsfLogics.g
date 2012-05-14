@@ -1404,6 +1404,7 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 	
 keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
+	|	reqeustInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $reqeustInputPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
@@ -1575,6 +1576,25 @@ changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 }
 	:	'CHANGECLASS' param=singleParameter[context, dynamic] 'TO' className=classId 
 	;  
+
+
+requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<String> localPropNames = new ArrayList<String>();
+	boolean newSession = false;
+	boolean doApply = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedRequestUserInputAProp($tid.sid, $objID.text, $PDB.property);
+	}
+}
+	:	'REQUEST' tid=typeId
+		(	'INPUT'
+		|	(objID=ID)? PDB=actionPropertyDefinitionBody[context, dynamic]
+		)
+	;
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -2309,6 +2329,11 @@ classId returns [String sid]
 	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
 	;
 
+typeId returns [String sid]
+	:	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
+	|	obj='OBJECT' { $sid = $obj.text; }
+	;
+	
 compoundID returns [String sid]
 	:	firstPart=ID { $sid = $firstPart.text; } ('.' secondPart=ID { $sid = $sid + '.' + $secondPart.text; })?
 	;

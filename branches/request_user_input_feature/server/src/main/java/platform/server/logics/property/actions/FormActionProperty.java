@@ -78,7 +78,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
     }
 
     protected DataClass getReadType(ExecutionContext context) {
-        if(valueClass.equals(ActionClass.instance))
+        if(valueClass == null || valueClass.equals(ActionClass.instance))
             return null;
         return valueClass;
     }
@@ -124,7 +124,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
                 for (GroupObjectEntity group : form.groups) {
                     for (ObjectEntity object : group.objects) {
                         chosenValueProperty.write(
-                                object.baseClass, newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
+                                object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
                         );
                     }
                 }

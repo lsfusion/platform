@@ -370,6 +370,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("property '%s' is not ABSTRACT", propName));
     }
 
+    public void emitNotDataTypeError(LsfLogicsParser parser, String typeName) throws SemanticErrorException {
+        emitSimpleError(parser, "");
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
