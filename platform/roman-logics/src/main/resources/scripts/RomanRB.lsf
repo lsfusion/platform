@@ -50,6 +50,29 @@ META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, a
 END
 
 
+META metaCodePriceBaseDiscount(document, caption)
+
+    priceData###document##Article caption = DATA NUMERIC[14,2](document, article) IN baseGroup;
+
+    order###document = LIST(dateTimePriceChangeDocument(document), document) PERSISTENT;
+
+    concat###document##ArticleDateTime (article, dateTime) = GROUP MAX order###document(document) AND
+                                                                       priceData###document##Article(document, article) AND
+                                                                       dateTimePriceChangeDocument(document) < (dateTime AS DATETIME)
+                                                                    BY article, dateTime;
+
+    document##ArticleDateTime (article, dateTime) = concat###document##ArticleDateTime(article, dateTime)[2];
+
+    price###document##ArticleDateTime(article, dateTime) = priceData###document##Article(document##ArticleDateTime(article, dateTime), article);
+    priceIn###document##ArticleDateTime(article, dateTime) = priceInPriceChangeDocumentArticle(document##ArticleDateTime(article, dateTime), article);
+    RRP###document##ArticleDateTime(article, dateTime) = RRPPriceChangeDocumentArticle(document##ArticleDateTime(article, dateTime), article);
+
+    priceB###document##Article 'Предыдущая цена'(document, article) = price###document##ArticleDateTime(article, dateTimePriceChangeDocument(document));
+    priceInB###document##Article 'Предыдущая поставщика'(document, article) = priceIn###document##ArticleDateTime(article, dateTimePriceChangeDocument(document));
+    RRPB###document##Article 'Предыдущая рекомендуемая'(document, article) = RRP###document##ArticleDateTime(article, dateTimePriceChangeDocument(document));
+
+END
+
 //--------------------------------- Сертификаты --------------------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
 CLASS temporalCertificate 'Временный сертификат' : certificate;
@@ -112,9 +135,6 @@ dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE date
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                        freightFormedInvoice(formedInvoice)) IN idGroup;
-
-//sidContractFormedInvoice 'Договор инвойса' (formedInvoice) = sidContractFormedInvoice(contractFormedInvoice(formedInvoice));
-
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                    freightFormedInvoice(formedInvoice),
@@ -661,10 +681,19 @@ FORM innerInvoices 'Инвойсы РБ'
 ;
 
 // документы расценки
+CLASS STATIC methodPrice 'Метод расчёта'
+{
+    coefficient 'С надбавкой',
+    RRP 'Рекомендемая',
+    previous 'Предыдущая'
+};
+
+
+
 CLASS ABSTRACT priceChangeDocument 'Документ изменения цен' : transaction;
 CLASS basePriceChangeDocument 'Изменение базовой цены' : priceChangeDocument;
 CLASS discountPriceChangeDocument 'Изменение цены продажи' : priceChangeDocument;
-CLASS mixPriceChangeDocument 'Изменение базовой и продажи' : priceChangeDocument;
+CLASS mixPriceChangeDocument 'Изменение базовой и продажи' : basePriceChangeDocument, discountPriceChangeDocument;
 
 CLASS coefficientRetail 'Коэффициент надбавки';
 
@@ -692,11 +721,8 @@ keepDiscountPriceChangeDocument 'Учитывать скидки' = DATA BOOLEAN
 freightPriceChangeDocument 'Фрахт документа (ИД)' = DATA freight(basePriceChangeDocument) IN idGroup;
 
 quantityFreightPriceChangeDocument (freight) = GROUP SUM 1 IF basePriceChangeDocument BY freightPriceChangeDocument(basePriceChangeDocument);
-////inFreightPriceChangeDocument (freight) = TRUE IF quantityFreightPriceChangeDocument (freight) != 1;
-
 
 priceInPriceChangeDocumentArticle 'Цена первого поставщика' = DATA NUMERIC[14,2](basePriceChangeDocument, article) IN baseGroup;
-
 RRPPriceChangeDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceChangeDocument, article) IN baseGroup;
 
 ratePriceChangeDocument 'Обменный курс' (priceChangeDocument, article) = nearestRateExchange(typeExchangeRetail(),
@@ -708,9 +734,6 @@ rateDataPriceChangeDocumentArticle 'Обменный курс' = DATA NUMERIC[14
 ratePriceChangeDocumentArticle 'Обменный курс' (basePriceChangeDocument, article) = UNION OVERRIDE ratePriceChangeDocument(basePriceChangeDocument, article),
                                                                                                    rateDataPriceChangeDocumentArticle(basePriceChangeDocument, article);
 
-
-percentMarkupPriceChangeDocumentSku 'Надбавка (%)' = DATA NUMERIC[14,2](basePriceChangeDocument, sku) IN baseGroup;
-
 coefficientRetailDate(coefficientRetail, date) = coefficientRetail IF dateCoefficientRetail(coefficientRetail) <= date AND date AS DATE;
 actingCoefficientRetailDate(date) = GROUP MAX dateCoefficientRetail(coefficientRetailDate(coefficientRetail, date)) BY date;
 
@@ -718,41 +741,62 @@ coefficientRetailPriceChangeDocument 'Коэффициент документа'
 markupCoefficientRetailPriceChangeDocumentArticle 'Коэффициент документа' (basePriceChangeDocument, article) = markupCoefficientRetail(coefficientRetailPriceChangeDocument(basePriceChangeDocument))
                                                                                                                AND article IS article IN baseGroup;
 
-priceOutPriceChangeDocumentArticle 'Базовая цена' (basePriceChangeDocument, article) = round2(priceInPriceChangeDocumentArticle(basePriceChangeDocument, article) *
-                                                                                              markupCoefficientRetailPriceChangeDocumentArticle(basePriceChangeDocument, article));
+priceOutPriceChangeDocumentArticle 'Цена с надбавкой' (basePriceChangeDocument, article) = round2(priceInPriceChangeDocumentArticle(basePriceChangeDocument, article) *
+                                                                                                  markupCoefficientRetailPriceChangeDocumentArticle(basePriceChangeDocument, article));
 
-priceArticleDate 'Предыдущая цена' (article, dateTime) = GROUP MAX priceOutPriceChangeDocumentArticle(priceChangeDocument, article)
-                                                                IF dateTimePriceChangeDocument(priceChangeDocument) < dateTime AND dateTime IS DATETIME BY article, dateTime;
-
-previousPriceChangeDocumentArticle 'Предыдущая цена' (priceChangeDocument, article) = priceArticleDate(article, dateTimePriceChangeDocument(priceChangeDocument)) AND
-                                                                                      priceChangeDocument IS priceChangeDocument;
-
-isPreviousPriceChangeDocumentArticle 'Взять предыдущую' = DATA BOOLEAN (basePriceChangeDocument, article);
 isRRPPriceChangeDocumentArticle 'Взять рекомендованную' = DATA BOOLEAN (basePriceChangeDocument, article);
+isPreviousPriceChangeDocumentArticle 'Взять предыдущую' = DATA BOOLEAN (basePriceChangeDocument, article);
 
-priceRetailVarPriceChangeDocumentArticle 'Цена продажи' = IF isRRPPriceChangeDocumentArticle(basePriceChangeDocument, article) THEN
-                                                             RRPPriceChangeDocumentArticle(basePriceChangeDocument, article)
-                                                        ELSE (IF isPreviousPriceChangeDocumentArticle(basePriceChangeDocument, article) THEN
-                                                                 previousPriceChangeDocumentArticle(basePriceChangeDocument, article)
-                                                            ELSE priceOutPriceChangeDocumentArticle(basePriceChangeDocument, article));
+@metaCodePriceBaseDiscount(basePriceChangeDocument, 'Базовая цена');
+@metaCodePriceBaseDiscount(discountPriceChangeDocument, 'Предыдущая уценка');
 
-priceRetailRatePriceChangeDocumentArticle 'Цена продажи (руб.)' (basePriceChangeDocument, article) = round0(priceRetailVarPriceChangeDocumentArticle(basePriceChangeDocument, article) *
-                                                                                                              ratePriceChangeDocumentArticle(basePriceChangeDocument, article));
+methodPriceChangeDocumentArticle 'Метод расчёта (ИД)' = DATA methodPrice(basePriceChangeDocument, article);
+nameMethodPriceChangeDocumentArticle 'Метод расчёта' (basePriceChangeDocument, article) = name(methodPriceChangeDocumentArticle(basePriceChangeDocument, article));
 
-priceRetailDataPriceChangeDocumentArticle 'Цена продажи (руб.)' = DATA NUMERIC[14,2](priceChangeDocument, article) IN baseGroup;
+RRPRatePriceChangeDocumentArticle 'Рекомендуемая (руб.)' (basePriceChangeDocument, article) = round0(RRPPriceChangeDocumentArticle(basePriceChangeDocument, article) *
+                                                                                                     ratePriceChangeDocumentArticle(basePriceChangeDocument, article));
 
-priceRetailPriceChangeDocumentArticle 'Цена продажи (руб.)' (priceChangeDocument, article) = UNION OVERRIDE priceRetailRatePriceChangeDocumentArticle(priceChangeDocument, article),
-                                                                                                            priceRetailDataPriceChangeDocumentArticle(priceChangeDocument, article);
+priceOutRatePriceChangeDocumentArticle 'С надбавкой (руб.)' (basePriceChangeDocument, article) = round0(priceOutPriceChangeDocumentArticle(basePriceChangeDocument, article) *
+                                                                                                        ratePriceChangeDocumentArticle(basePriceChangeDocument, article));
+
+
+priceRetailPriceChangeDocumentArticle 'Цена розничная' (basePriceChangeDocument, article) =
+           CASE
+               WHEN methodPriceChangeDocumentArticle(basePriceChangeDocument, article) == methodPrice.coefficient THEN priceOutRatePriceChangeDocumentArticle(basePriceChangeDocument, article)
+               WHEN methodPriceChangeDocumentArticle(basePriceChangeDocument, article) == methodPrice.RRP THEN RRPRatePriceChangeDocumentArticle(basePriceChangeDocument, article)
+               WHEN methodPriceChangeDocumentArticle(basePriceChangeDocument, article) == methodPrice.previous THEN PREV(priceBBasePriceChangeDocumentArticle(basePriceChangeDocument, article))
+               DEFAULT 0 AND basePriceChangeDocument IS basePriceChangeDocument AND article IS article
+           END;
+
+
+//pricePrevRetailPriceChangeDocumentArticle 'Цена' = IF isPreviousPriceChangeDocumentArticle(basePriceChangeDocument, article) THEN
+//                                                      PREV(priceBBasePriceChangeDocumentArticle(basePriceChangeDocument, article))
+//                                                 ELSE priceRetailRatePriceChangeDocumentArticle(basePriceChangeDocument, article);
+
+priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article) <- priceRetailPriceChangeDocumentArticle(basePriceChangeDocument, article)
+                            WHEN CHANGED (methodPriceChangeDocumentArticle(basePriceChangeDocument, article)) OR
+                                 CHANGED (priceOutRatePriceChangeDocumentArticle(basePriceChangeDocument, article)) OR
+                                 CHANGED (RRPRatePriceChangeDocumentArticle(basePriceChangeDocument, article));
+
+
+//setPreviousPriceChangeDocumentArticle 'Цена в документе' = ACTION (basePriceChangeDocument, article) {
+//    SET priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article) <- priceRetailPriceChangeDocumentArticle(basePriceChangeDocument, article);
+//} IN baseGroup;
+
+//priceRetailPriceChangeDocumentArticle 'Новая цена' = UNION OVERRIDE priceRetailRatePriceChangeDocumentArticle(basePriceChangeDocument, article),
+//                                                                    priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article);
 
 percentNDSPriceChangeDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceChangeDocument, article) IN baseGroup;
-sumNDSPriceChangeDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceRetailPriceChangeDocumentArticle(basePriceChangeDocument, article),
+sumNDSPriceChangeDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article),
                                                                       percentNDSPriceChangeDocumentArticle(basePriceChangeDocument, article));
-
 
 // для уценки
 basePriceDiscountPriceChangeDocumentArticle 'Цена без уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
+
 percentDiscountPriceChangeDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
-markdownDiscountPriceChangeDocumentArticle 'Цена с уценкой' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
+
+//priceDataDiscountPriceChangeDocumentArticle 'Цена с уценкой' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
+
 
 rateExchangeFreightSku 'Курс обмена' (freight, sku) = nearestRateExchange(typeExchangeRetail(),
                                                                           currencyFreight(freight),
@@ -760,8 +804,10 @@ rateExchangeFreightSku 'Курс обмена' (freight, sku) = nearestRateExcha
 
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
 inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
+
 inArticleCategory (category, article) = UNION OVERRIDE categoryArticle(article) == category,
                                                        article == article AND NOT category;
+
 inArticlePriceChangeDocument 'Артикул в документе' = DATA BOOLEAN(priceChangeDocument, article);
 inArticleFreight (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
@@ -770,6 +816,13 @@ stringEqualsAll(string) = string == 'Все';
 inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierArticle(article) == brand AND supplier,
                                                                   supplierArticle(article) == supplier AND NOT brand,
                                                                   article == article AND NOT supplier AND NOT brand;
+
+toSetPricesPriceChangeDocument 'Взять цены' =  ACTION (basePriceChangeDocument) {
+    FOR p == basePriceChangeDocument AND inArticlePriceChangeDocument(p, article) DO {
+        SET priceInPriceChangeDocumentArticle(p, article) <- priceInBBasePriceChangeDocumentArticle (p, article);
+        SET RRPPriceChangeDocumentArticle(p, article) <- RRPBBasePriceChangeDocumentArticle (p, article);
+    };
+};
 
 
 FORM coefficientRetail 'Коэффициент надбавки'
@@ -791,7 +844,7 @@ FORM coefficientRetails 'История коэффициентов'
 FORM priceChangeDocument 'Документ изменений цен'
 
     OBJECTS p=basePriceChangeDocument FIXED PANEL
-    PROPERTIES(p) sidPriceChangeDocument, date, timePriceChangeDocument
+    PROPERTIES(p) sidPriceChangeDocument, date, timePriceChangeDocument, toSetPricesPriceChangeDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -807,12 +860,17 @@ FORM priceChangeDocument 'Документ изменений цен'
 
     OBJECTS a=article
     PROPERTIES(a)  sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (p, a) inArticlePriceChangeDocument, priceInPriceChangeDocumentArticle,
-                      RRPPriceChangeDocumentArticle, previousPriceChangeDocumentArticle, priceOutPriceChangeDocumentArticle,
-                      isRRPPriceChangeDocumentArticle, isPreviousPriceChangeDocumentArticle, ratePriceChangeDocumentArticle,
-                      priceRetailPriceChangeDocumentArticle, percentNDSPriceChangeDocumentArticle, sumNDSPriceChangeDocumentArticle
+    PROPERTIES (p, a) priceInPriceChangeDocumentArticle,
+                      RRPPriceChangeDocumentArticle, priceOutPriceChangeDocumentArticle,
+                      ratePriceChangeDocumentArticle, RRPRatePriceChangeDocumentArticle, priceOutRatePriceChangeDocumentArticle,
+                      priceBBasePriceChangeDocumentArticle, nameMethodPriceChangeDocumentArticle, priceRetailPriceChangeDocumentArticle,
+                      priceDataBasePriceChangeDocumentArticle, percentNDSPriceChangeDocumentArticle, sumNDSPriceChangeDocumentArticle
 
     FILTERS inArticlePriceChangeDocument(p, a)
+    FILTERGROUP filters1
+        FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
+        FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
+
     EDIT basePriceChangeDocument OBJECT p
 ;
 
@@ -823,6 +881,7 @@ DESIGN priceChangeDocument FROM DEFAULT {
     treeSupplierBrand.tree {
         fillHorizontal = 1.5;
     }
+
 }
 
 FORM priceChangeDocuments 'Документы изменений цен'
@@ -834,10 +893,10 @@ FORM priceChangeDocuments 'Документы изменений цен'
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, a) READONLY priceInPriceChangeDocumentArticle,
-                               RRPPriceChangeDocumentArticle, previousPriceChangeDocumentArticle, priceOutPriceChangeDocumentArticle,
-                               isRRPPriceChangeDocumentArticle, isPreviousPriceChangeDocumentArticle,
-                               ratePriceChangeDocumentArticle,
-                               priceRetailPriceChangeDocumentArticle, percentNDSPriceChangeDocumentArticle, sumNDSPriceChangeDocumentArticle
+                               RRPPriceChangeDocumentArticle,  priceOutPriceChangeDocumentArticle,
+                               isRRPPriceChangeDocumentArticle, ratePriceChangeDocumentArticle,
+                               priceBBasePriceChangeDocumentArticle, priceRetailPriceChangeDocumentArticle,
+                               priceDataBasePriceChangeDocumentArticle, percentNDSPriceChangeDocumentArticle, sumNDSPriceChangeDocumentArticle
 
     FILTERS inArticlePriceChangeDocument(p, a)
 ;
@@ -849,19 +908,35 @@ FORM discountPriceChangeDocument 'Уценка'
     OBJECTS d=discountPriceChangeDocument FIXED PANEL
     PROPERTIES(d) sidPriceChangeDocument, date, timePriceChangeDocument
 
-    TREE treeArticle s=supplier, b=brandSupplier, aa=article
-    PROPERTIES READONLY name(s), name(b), sidArticle(aa)
+    TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
+    PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
+
+    TREE treeCategory vv=STRING[3], c=category
+    PROPERTIES READONLY OBJVALUE(vv), name(c)
+
+    OBJECTS aa=article
+    PROPERTIES READONLY sidArticle(aa)
     PROPERTIES (d, aa) inArticlePriceChangeDocument
 
-    FILTERS inBrandSupplier(s, b), inArticleBrand(b, aa)
+    FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
 
     OBJECTS a=article
-    PROPERTIES(a)  sidArticle, nameBrandSupplierArticle
-    PROPERTIES (d, a) inArticlePriceChangeDocument, basePriceDiscountPriceChangeDocumentArticle, previousPriceChangeDocumentArticle, priceRetailDataPriceChangeDocumentArticle
+    PROPERTIES(a)  sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES (d, a) priceBBasePriceChangeDocumentArticle, priceBDiscountPriceChangeDocumentArticle, priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
 
     FILTERS inArticlePriceChangeDocument(d, a)
     EDIT discountPriceChangeDocument OBJECT d
 ;
+
+DESIGN discountPriceChangeDocument FROM DEFAULT {
+    POSITION treeSupplierBrand.box TO THE LEFT treeCategory.box;
+    POSITION treeCategory.box TO THE LEFT aa.box;
+
+    treeSupplierBrand.tree {
+        fillHorizontal = 1.5;
+    }
+}
+
 
 FORM discountPriceChangeDocuments 'Уценки'
 
@@ -870,11 +945,13 @@ FORM discountPriceChangeDocuments 'Уценки'
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
-    PROPERTIES(a) READONLY sidArticle, nameBrandSupplierArticle
-    PROPERTIES (d, a) READONLY basePriceDiscountPriceChangeDocumentArticle, previousPriceChangeDocumentArticle, priceRetailDataPriceChangeDocumentArticle
+    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES (d, a) READONLY priceBBasePriceChangeDocumentArticle, priceBDiscountPriceChangeDocumentArticle, priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
 
     FILTERS inArticlePriceChangeDocument(d, a)
 ;
+
+
 
 toCreatePriceChangeDocument 'Заполнить документ из фрахта' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceChangeDocument;
