@@ -18,14 +18,14 @@
 	<field name="d" class="java.lang.Integer"/>
 	<field name="retail_indexWastageDetail" class="java.lang.Integer"/>
 	<field name="retail_barcodeExSkuWastageDetail" class="java.lang.String"/>
-	<field name="retail_nameAttributeItemWastageDetail" class="java.lang.String"/>
+	<field name="retail_nameItemWastageDetail" class="java.lang.String"/>
 	<field name="retail_quantityItemWastageDetail" class="java.lang.Double"/>
 	<field name="retail_quantityWastageDetail" class="java.lang.Double"/>
 	<field name="retail_percentRateWasteWastageDetail" class="java.lang.Double"/>
-	<field name="retail_sumSupplierByWastageDetail" class="java.lang.Double"/>
-	<field name="retail_sumMarkupByWastageDetail" class="java.lang.Double"/>
-	<field name="retail_sumVATByWastageDetail" class="java.lang.Double"/>
-	<field name="retail_sumRetailByWastageDetail" class="java.lang.Double"/>
+	<field name="retail_supplierISumWastageDetail" class="java.lang.Double"/>
+	<field name="retail_markupSumWastageDetail" class="java.lang.Double"/>
+	<field name="retail_retailVATSumWastageDetail" class="java.lang.Double"/>
+	<field name="retail_retailSumWastageDetail" class="java.lang.Double"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -51,7 +51,7 @@
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemWastageDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_nameItemWastageDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="228" y="0" width="35" height="12"/>
@@ -79,28 +79,28 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_sumSupplierByWastageDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_supplierISumWastageDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="388" y="0" width="55" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_sumMarkupByWastageDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_markupSumWastageDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="443" y="0" width="55" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_sumVATByWastageDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_retailVATSumWastageDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="498" y="0" width="56" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_sumRetailByWastageDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_retailSumWastageDetail},0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

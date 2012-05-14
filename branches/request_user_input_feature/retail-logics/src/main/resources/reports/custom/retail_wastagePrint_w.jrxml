@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="w" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="20">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="186"/>
+	<property name="ireport.x" value="236"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -33,13 +33,13 @@
 	<field name="retail_nameDepartmentStoreWastage" class="java.lang.String"/>
 	<field name="retail_nameSupplierWastage" class="java.lang.String"/>
 	<field name="retail_countWastageDetailWastage" class="java.lang.Integer"/>
-	<field name="retail_quantityItemWastage" class="java.lang.Double"/>
-	<field name="retail_quantityWastage" class="java.lang.Double"/>
-	<field name="retail_totalSumSupplierByWastage" class="java.lang.Double"/>
-	<field name="retail_totalSumMarkupByWastage" class="java.lang.Double"/>
-	<field name="retail_totalSumVATByWastage" class="java.lang.Double"/>
-	<field name="retail_totalSumRetailByWastage" class="java.lang.Double"/>
-	<field name="retail_isWastageCommitteeWastage" class="java.lang.Boolean"/>
+	<field name="retail_quantityItemWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retail_quantityWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retail_supplierISumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retail_markupSumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retail_retailVATSumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retail_retailSumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retail_wastageCommitteeWastage" class="java.lang.Integer"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{w})]]></groupExpression>
 		<groupHeader>
@@ -52,7 +52,7 @@
 				</subreport>
 			</band>
 			<band height="43">
-				<printWhenExpression><![CDATA[$F{retail_isWastageCommitteeWastage}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{retail_wastageCommitteeWastage}==null]]></printWhenExpression>
 				<line>
 					<reportElement x="0" y="13" width="270" height="1"/>
 				</line>
@@ -217,7 +217,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_quantityItemWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_quantityItemWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="298" y="0" width="35" height="14" backcolor="#FFFFFF"/>
@@ -231,14 +231,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumRetailByWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_retailSumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="443" y="0" width="55" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumVATByWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_retailVATSumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="228" height="14" backcolor="#FFFFFF"/>
@@ -259,14 +259,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumMarkupByWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_markupSumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="333" y="0" width="55" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumSupplierByWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_supplierISumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement positionType="Float" x="0" y="19" width="260" height="12"/>
@@ -292,7 +292,7 @@
 					<textElement>
 						<font size="10" isItalic="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_totalSumRetailByWastage}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_retailSumWastageDetailWastage}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="18">
@@ -306,7 +306,7 @@
 				</textField>
 			</band>
 			<band height="80">
-				<printWhenExpression><![CDATA[$F{retail_isWastageCommitteeWastage}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{retail_wastageCommitteeWastage}==null]]></printWhenExpression>
 				<textField>
 					<reportElement x="156" y="72" width="119" height="8"/>
 					<box>

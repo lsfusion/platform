@@ -66,7 +66,7 @@
 	<field name="retail_supplierSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_supplierMarkupShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_supplierVATISumShipmentDetail" class="java.lang.Double"/>
-	<field name="retail_dataSuppliersRangeShipmentDetail" class="java.lang.Double"/>
+	<field name="retail_dataSupplierRangeShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_wareSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_warePriceShipmentDetail" class="java.lang.Double"/>
 	<field name="retail_wareVATSumShipmentDetail" class="java.lang.Double"/>
@@ -366,7 +366,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_dataSuppliersRangeShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_dataSupplierRangeShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="480" y="0" width="55" height="11" backcolor="#FFFFFF"/>

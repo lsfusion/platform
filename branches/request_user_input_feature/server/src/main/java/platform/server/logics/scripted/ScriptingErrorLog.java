@@ -118,6 +118,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "navigator element", name);
     }
 
+    public void emitTableNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "table", name);
+    }
+
     public void emitWindowNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "window", name);
     }

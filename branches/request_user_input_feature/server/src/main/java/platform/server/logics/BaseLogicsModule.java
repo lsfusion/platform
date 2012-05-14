@@ -594,59 +594,57 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             CustomClass[] baseClasses = new CustomClass[i];
             for (int j = 0; j < i; j++)
                 baseClasses[j] = baseClass;
-            tableFactory.include("base_" + i, baseClasses);
+            addTable("base_" + i, baseClasses);
         }
 
-        tableFactory.include("userTable", user);
-        tableFactory.include("customUser", customUser);
-        tableFactory.include("userRole", userRole);
-        tableFactory.include("policy", policy);
-        tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
-        tableFactory.include("countryDate", country, DateClass.instance);
-        tableFactory.include("objectObjectDate", baseClass, baseClass, DateClass.instance);
-        tableFactory.include("country", country);
-        tableFactory.include("navigatorElement", navigatorElement);
-        tableFactory.include("abstractGroup", abstractGroup);
-        tableFactory.include("property", property);
-        tableFactory.include("propertyDraw", propertyDraw);
-        tableFactory.include("exception", exception);
-        tableFactory.include("notification", notification);
-        tableFactory.include("launch", launch);
-        tableFactory.include("transaction", transaction);
-        tableFactory.include("named", baseClass.named);
-        tableFactory.include("sidClass", baseClass.sidClass);
-        tableFactory.include("barcodeObject", barcodeObject);
-        tableFactory.include("emailObject", emailObject);
-        tableFactory.include("externalObject", externalObject);
-        tableFactory.include("historyObject", historyObject);
-        tableFactory.include("dictionary", dictionary);
-        tableFactory.include("dictionaryEntry", dictionaryEntry);
+        addTable("userTable", user);
+        addTable("customUser", customUser);
+        addTable("userRole", userRole);
+        addTable("policy", policy);
+        addTable("loginSID", StringClass.get(30), StringClass.get(30));
+        addTable("countryDate", country, DateClass.instance);
+        addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
+        addTable("country", country);
+        addTable("navigatorElement", navigatorElement);
+        addTable("abstractGroup", abstractGroup);
+        addTable("property", property);
+        addTable("propertyDraw", propertyDraw);
+        addTable("exception", exception);
+        addTable("notification", notification);
+        addTable("launch", launch);
+        addTable("transaction", transaction);
+        addTable("named", baseClass.named);
+        addTable("sidClass", baseClass.sidClass);
+        addTable("barcodeObject", barcodeObject);
+        addTable("emailObject", emailObject);
+        addTable("externalObject", externalObject);
+        addTable("historyObject", historyObject);
+        addTable("dictionary", dictionary);
+        addTable("dictionaryEntry", dictionaryEntry);
 
-        tableFactory.include("session", session);
-        tableFactory.include("exception", exception);
-        tableFactory.include("connection", connection);
-        tableFactory.include("computer", computer);
+        addTable("session", session);
+        addTable("connection", connection);
+        addTable("computer", computer);
 
-        tableFactory.include("sessionObject", session, baseClass);
+        addTable("sessionObject", session, baseClass);
 
-        tableFactory.include("connectionNavigatorElement", connection, navigatorElement);
-        tableFactory.include("userRoleNavigatorElement", userRole, navigatorElement);
-        tableFactory.include("userRoleProperty", userRole, property);
-        tableFactory.include("notificationProperty", notification, property);
-        tableFactory.include("propertyDrawCustomUser", propertyDraw, customUser);
-        tableFactory.include("formPropertyDraw", form, propertyDraw);
+        addTable("connectionNavigatorElement", connection, navigatorElement);
+        addTable("userRoleNavigatorElement", userRole, navigatorElement);
+        addTable("userRoleProperty", userRole, property);
+        addTable("notificationProperty", notification, property);
+        addTable("propertyDrawCustomUser", propertyDraw, customUser);
+        addTable("formPropertyDraw", form, propertyDraw);
 
-        tableFactory.include("tables", table);
-        tableFactory.include("tableKey", tableKey);
-        tableFactory.include("tableColumn", tableColumn);
-        tableFactory.include("dropColumn", dropColumn);
+        addTable("tables", table);
+        addTable("tableKey", tableKey);
+        addTable("tableColumn", tableColumn);
+        addTable("dropColumn", dropColumn);
 
-        tableFactory.include("customUserRole", customUser, userRole);
-        tableFactory.include("userRolePolicy", userRole, policy);
-        tableFactory.include("userRoleProperty", userRole, property);
+        addTable("customUserRole", customUser, userRole);
+        addTable("userRolePolicy", userRole, policy);
 
-        tableFactory.include("month", month);
-        tableFactory.include("dow", DOW);
+        addTable("month", month);
+        addTable("dow", DOW);
     }
 
     @Override

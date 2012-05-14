@@ -103,15 +103,15 @@ public class BudgetLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
-        baseLM.tableFactory.include("salary", person, absMonth, YearClass.instance);
-        baseLM.tableFactory.include("currency", person, absMonth, YearClass.instance);
-        baseLM.tableFactory.include("hour", person, absMonth, YearClass.instance);
-        baseLM.tableFactory.include("extraSum", extraSection, absMonth, YearClass.instance, department);
-        baseLM.tableFactory.include("extraCurrency", extraSection, absMonth, YearClass.instance, department);
-        baseLM.tableFactory.include("isAddToSum", person, extraPersonSection, absMonth, YearClass.instance);
-        baseLM.tableFactory.include("workDays", absMonth, YearClass.instance);
-        baseLM.tableFactory.include("adminExtra", department, absMonth, YearClass.instance);
-        baseLM.tableFactory.include("exchangeRate", currency, currency, DateClass.instance);
+        addTable("salary", person, absMonth, YearClass.instance);
+        addTable("currency", person, absMonth, YearClass.instance);
+        addTable("hour", person, absMonth, YearClass.instance);
+        addTable("extraSum", extraSection, absMonth, YearClass.instance, department);
+        addTable("extraCurrency", extraSection, absMonth, YearClass.instance, department);
+        addTable("isAddToSum", person, extraPersonSection, absMonth, YearClass.instance);
+        addTable("workDays", absMonth, YearClass.instance);
+        addTable("adminExtra", department, absMonth, YearClass.instance);
+        addTable("exchangeRate", currency, currency, DateClass.instance);
     }
 
     @Override
