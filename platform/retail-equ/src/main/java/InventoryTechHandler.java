@@ -113,10 +113,12 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
-            fileBarcode.close();
+            if (fileBarcode != null)
+                fileBarcode.close();
             if (fileBarcodeIndex != null && !fileBarcodeIndex.file.delete())
                 throw new RuntimeException("File" + fileBarcodeIndex.file.getAbsolutePath() + " can not be deleted");
-            fileGoods.close();
+            if (fileGoods != null)
+                fileGoods.close();
             if (fileGoodsIndex != null && !fileGoodsIndex.file.delete())
                 throw new RuntimeException("File" + fileGoodsIndex.file.getAbsolutePath() + " can not be deleted");
         }
@@ -164,7 +166,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                     String nameInHandbook2 = docType.nameInHandbook2 != null ? docType.nameInHandbook2.trim() : "";
                     String idTerminalHandbookType2 = docType.idTerminalHandbookType2 != null ? docType.idTerminalHandbookType2.trim() : "";
 
-                    if (fileSPRDOC.findExact(docType.id.trim())) {
+                    if (fileSPRDOC.findExact(id)) {
                         fileSPRDOC.getField("CODE").put(id);
                         fileSPRDOC.getField("NAME").put(name);
                         fileSPRDOC.getField("SPRT1").put(nameInHandbook1);
@@ -199,7 +201,7 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                         String id = legalEntityInfo.id != null ? legalEntityInfo.id.trim() : "";
                         String name = legalEntityInfo.name != null ? legalEntityInfo.name.trim() : "";
                         String type = legalEntityInfo.type != null ? legalEntityInfo.type.trim() : "";
-                        if (fileSPRAV.findExact(legalEntityInfo.id.trim())) {
+                        if (fileSPRAV.findExact(id)) {
                             fileSPRAV.getField("CODE").put(id);
                             fileSPRAV.getField("NAME").put(name);
                             fileSPRAV.getField("VIDSPR").put(type);
@@ -216,10 +218,12 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
         } finally {
-            fileSPRDOC.close();
+            if (fileSPRDOC != null)
+                fileSPRDOC.close();
             if (fileSPRDOCIndex != null && !fileSPRDOCIndex.file.delete())
                 throw new RuntimeException("File" + fileSPRDOCIndex.file.getAbsolutePath() + " can not be deleted");
-            fileSPRAV.close();
+            if (fileSPRAV != null)
+                fileSPRAV.close();
             if (fileSPRAVIndex != null && !fileSPRAVIndex.file.delete())
                 throw new RuntimeException("File" + fileSPRAVIndex.file.getAbsolutePath() + " can not be deleted");
 
@@ -301,8 +305,12 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
         } finally {
-            importFilePos.close();
-            importFile.close();
+            if (importFilePos != null) {
+                importFilePos.close();
+            }
+            if (importFile != null) {
+                importFile.close();
+            }
         }
     }
 
@@ -347,7 +355,8 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
         } catch (xBaseJException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
-            fileDOC.close();
+            if (fileDOC != null)
+                fileDOC.close();
             if (fileDOCIndex != null && !fileDOCIndex.file.delete())
                 throw new RuntimeException("File" + fileDOCIndex.file.getAbsolutePath() + " can not be deleted");
         }
