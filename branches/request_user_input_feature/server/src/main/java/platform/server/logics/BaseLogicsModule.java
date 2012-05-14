@@ -211,7 +211,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP equalsObjectBarcode;
     public LCP barcodePrefix;
     public LAP seekBarcodeAction;
-    public LCP barcodeNotFoundMessage;
+    public LAP barcodeNotFoundMessage;
     public LCP extSID, extSIDToObject;
     public LCP timeCreated, userCreated, nameUserCreated, computerCreated, hostnameComputerCreated;
     public LCP restartServerAction;

@@ -550,6 +550,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return list;
     }
 
+    protected CalcPropertyObjectEntity getCalcPropertyObject(LCP<?> lp) {
+        return (CalcPropertyObjectEntity) getPropertyDraw(lp).propertyObject;
+    }
+
     protected PropertyObjectEntity getPropertyObject(LP<?, ?> lp) {
         return getPropertyDraw(lp).propertyObject;
     }
