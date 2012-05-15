@@ -9,6 +9,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -32,7 +33,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
 
-        LP isExpert = LM.is(LM.expert);
+        LCP isExpert = LM.is(LM.expert);
         Map<Object, KeyExpr> keys = isExpert.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);

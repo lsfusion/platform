@@ -33,8 +33,8 @@ public class PrevGroupChangeActionProperty extends CustomActionProperty {
     private Map<ClassPropertyInterface, ClassPropertyInterface> mapMainToThis;
     private boolean removeGroupingInterfaces;
 
-    public static ValueClass[] getValueClasses(LP mainLP, int[] mainInts, int[] groupInts, boolean removeGroupingInterfaces) {
-        ValueClass[] fullClasses = PropertyUtils.getValueClasses(false, new LP[]{mainLP}, new int[][]{mainInts});
+    public static ValueClass[] getValueClasses(LAP mainLP, int[] mainInts, int[] groupInts, boolean removeGroupingInterfaces) {
+        ValueClass[] fullClasses = PropertyUtils.getValueClasses(new LAP[]{mainLP}, new int[][]{mainInts});
 
         if (!removeGroupingInterfaces) {
             return fullClasses;

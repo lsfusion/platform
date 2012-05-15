@@ -501,6 +501,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public ActionPropertyObjectEntity addPropertyObject(LAP property, PropertyObjectInterfaceEntity... objects) {
         return new ActionPropertyObjectEntity(property.property, property.getMap(objects), property.getCreationScript());
     }
+    public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
+        if(property instanceof LCP)
+            return addPropertyObject((LCP)property, objects);
+        else
+            return addPropertyObject((LAP)property, objects);
+    }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
         for (PropertyDrawEntity propertyDraw : propertyDraws) {

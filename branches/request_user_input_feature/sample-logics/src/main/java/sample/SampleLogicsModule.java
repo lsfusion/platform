@@ -17,7 +17,8 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -34,8 +35,8 @@ import java.sql.SQLException;
 
 public class SampleLogicsModule extends LogicsModule {
 
-//    private LP inGroup;
-//    private LP inRecGroup;
+//    private LCP inGroup;
+//    private LCP inRecGroup;
 
     public SampleLogicsModule(BaseLogicsModule<SampleBusinessLogics> baseLM) {
         super("SampleLogicsModule");
@@ -74,17 +75,17 @@ public class SampleLogicsModule extends LogicsModule {
         initBaseGroupAliases();
     }
 
-    private LP documentsCount;
-    private LP itemsCount;
-    private LP articleDescription;
-    private LP articleGroupDescription;
-    private LP storeDescription;
+    private LCP documentsCount;
+    private LCP itemsCount;
+    private LCP articleDescription;
+    private LCP articleGroupDescription;
+    private LCP storeDescription;
 
-    protected LP quantity, documentStore;
-    protected LP balanceQuantity, incQuantity;
-    protected LP inStore, parentGroup, articleToGroup;
+    protected LCP quantity, documentStore;
+    protected LCP balanceQuantity, incQuantity;
+    protected LCP inStore, parentGroup, articleToGroup;
 
-    private LP annoyingChangeArticleDescriptionAction;
+    private LAP annoyingChangeArticleDescriptionAction;
 
     @Override
     public void initProperties() {
@@ -95,21 +96,21 @@ public class SampleLogicsModule extends LogicsModule {
         documentStore = addDProp(baseGroup, "store", "Склад док-та", store, document);
         quantity = addDProp(baseGroup, "quantity", "Кол-во", DoubleClass.instance, document, article);
 
-        LP storeName = addJProp(baseGroup, "Имя склада", baseLM.name, documentStore, 1);
+        LCP storeName = addJProp(baseGroup, "Имя склада", baseLM.name, documentStore, 1);
 
         incQuantity = addJProp("Кол-во прихода", baseLM.and1, quantity, 1, 2, is(incomeDocument), 1);
-        LP outQuantity = addJProp("Кол-во расхода", baseLM.and1, quantity, 1, 2, is(outcomeDocument), 1);
+        LCP outQuantity = addJProp("Кол-во расхода", baseLM.and1, quantity, 1, 2, is(outcomeDocument), 1);
 
-        LP incStoreQuantity = addSGProp(baseGroup, "Прих. по скл.", incQuantity, documentStore, 1, 2);
-        LP outStoreQuantity = addSGProp(baseGroup, "Расх. по скл.", outQuantity, documentStore, 1, 2);
+        LCP incStoreQuantity = addSGProp(baseGroup, "Прих. по скл.", incQuantity, documentStore, 1, 2);
+        LCP outStoreQuantity = addSGProp(baseGroup, "Расх. по скл.", outQuantity, documentStore, 1, 2);
 
         balanceQuantity = addDUProp(baseGroup, "Ост. по скл.", incStoreQuantity, outStoreQuantity);
 
         addConstraint(addJProp("Остаток должен быть положительным", baseLM.greater2, baseLM.vzero, balanceQuantity, 1, 2), false);
 
         addJProp(baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
-        LP vone = addCProp("1", IntegerClass.instance, 1);
-        LP oneProp = addJProp(baseGroup, "Единица", baseLM.and1, vone, is(document), 1);
+        LCP vone = addCProp("1", IntegerClass.instance, 1);
+        LCP oneProp = addJProp(baseGroup, "Единица", baseLM.and1, vone, is(document), 1);
         documentsCount = addSGProp(baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
         itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
 
@@ -121,7 +122,7 @@ public class SampleLogicsModule extends LogicsModule {
 //        inGroup = addDProp(baseGroup, "inGroup", "Входит", LogicalClass.instance, articleGroup, articleGroup);
 //        inRecGroup = addRProp(baseGroup, "inRecGroup", true, "Входит (рек)", Cycle.NO, 2, addJProp(baseLM.and1, is(articleGroup), 1, baseLM.equals2, 1, 2), 1, 2, inGroup, 3, 2);
 
-        annoyingChangeArticleDescriptionAction = addProperty(null, new LP(new AnnoyingChangeArticleDescriptionAction(genSID())));
+        annoyingChangeArticleDescriptionAction = addProperty(null, new LAP(new AnnoyingChangeArticleDescriptionAction(genSID())));
 
         initNavigators();
     }
@@ -192,7 +193,7 @@ public class SampleLogicsModule extends LogicsModule {
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotNullFilterEntity(getPropertyObject(quantity)),
+                                  new NotNullFilterEntity(getCalcPropertyObject(quantity)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
@@ -221,9 +222,9 @@ public class SampleLogicsModule extends LogicsModule {
             descriptionDraw.setContextMenuAction("Annoying change", "annoyingChange");
             descriptionDraw.setContextMenuAction("Change annoyingly", "annoyingChange");
 
-            addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
-            addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
-            addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
+            addFixedFilter(new NotNullFilterEntity(getCalcPropertyObject(quantity)));
+            addFixedFilter(new NotNullFilterEntity(getCalcPropertyObject(balanceQuantity)));
+            addFixedFilter(new CompareFilterEntity(getCalcPropertyObject(documentStore), Compare.EQUALS, objStore));
         }
     }
 
@@ -246,9 +247,9 @@ public class SampleLogicsModule extends LogicsModule {
 //            addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
 //            addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
 
-            addFixedFilter(new NotNullFilterEntity(getPropertyObject(inStore)));
+            addFixedFilter(new NotNullFilterEntity(getCalcPropertyObject(inStore)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleToGroup, objArt), Compare.EQUALS, objArtGroup));
-            addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
+            addFixedFilter(new CompareFilterEntity(getCalcPropertyObject(documentStore), Compare.EQUALS, objStore));
         }
 
         @Override

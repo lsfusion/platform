@@ -13,6 +13,7 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -23,9 +24,9 @@ public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty
     // обозначает класс объекта, который нужно добавить
     private CustomClass valueClass;
 
-    private LP storeNewObjectProperty;
+    private LCP storeNewObjectProperty;
 
-    public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, LP storeNewObjectProperty) {
+    public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, LCP storeNewObjectProperty) {
         super(sID, ServerResourceBundle.getString("logics.add"), new ValueClass[0]);
         this.valueClass = valueClass;
 

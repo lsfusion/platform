@@ -4,32 +4,33 @@ import platform.server.classes.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
+import platform.server.logics.linear.LCP;
 
 import java.sql.SQLException;
 
 public class AnyValuePropertyHolder {
-    private final LP objectProperty;
-    private final LP textProperty;
-    private final LP stringProperty;
-    private final LP intProperty;
-    private final LP longProperty;
-    private final LP doubleProperty;
-    private final LP yearProperty;
-    private final LP dateTimeProperty;
-    private final LP logicalProperty;
-    private final LP dateProperty;
-    private final LP timeProperty;
-    private final LP colorProperty;
-    private final LP wordFileProperty;
-    private final LP imageFileProperty;
-    private final LP pdfFileProperty;
-    private final LP customFileProperty;
-    private final LP excelFileProperty;
+    private final LCP objectProperty;
+    private final LCP textProperty;
+    private final LCP stringProperty;
+    private final LCP intProperty;
+    private final LCP longProperty;
+    private final LCP doubleProperty;
+    private final LCP yearProperty;
+    private final LCP dateTimeProperty;
+    private final LCP logicalProperty;
+    private final LCP dateProperty;
+    private final LCP timeProperty;
+    private final LCP colorProperty;
+    private final LCP wordFileProperty;
+    private final LCP imageFileProperty;
+    private final LCP pdfFileProperty;
+    private final LCP customFileProperty;
+    private final LCP excelFileProperty;
 
-    public AnyValuePropertyHolder(LP objectProperty, LP textProperty, LP stringProperty, LP intProperty, LP longProperty, LP doubleProperty, LP yearProperty,
-                                  LP dateTimeProperty, LP logicalProperty, LP dateProperty, LP timeProperty, LP colorProperty, LP wordFileProperty, LP imageFileProperty,
-                                  LP pdfFileProperty, LP customFileProperty, LP excelFileProperty) {
+    public AnyValuePropertyHolder(LCP objectProperty, LCP textProperty, LCP stringProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP yearProperty,
+                                  LCP dateTimeProperty, LCP logicalProperty, LCP dateProperty, LCP timeProperty, LCP colorProperty, LCP wordFileProperty, LCP imageFileProperty,
+                                  LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && textProperty.property.getType() == TextClass.instance
                 && stringProperty.property.getType().isCompatible(StringClass.get(0))
@@ -103,22 +104,22 @@ public class AnyValuePropertyHolder {
             timeProperty.change(value, context, keys);
 
         } else if (valueType instanceof ColorClass) {
-            colorProperty.execute(value, context, keys);
+            colorProperty.change(value, context, keys);
 
         } else if (valueType instanceof WordClass) {
-            wordFileProperty.execute(value, context, keys);
+            wordFileProperty.change(value, context, keys);
 
         } else if (valueType instanceof ImageClass) {
-            imageFileProperty.execute(value, context, keys);
+            imageFileProperty.change(value, context, keys);
 
         } else if (valueType instanceof PDFClass) {
-            pdfFileProperty.execute(value, context, keys);
+            pdfFileProperty.change(value, context, keys);
 
         } else if (valueType instanceof CustomFileClass) {
-            customFileProperty.execute(value, context, keys);
+            customFileProperty.change(value, context, keys);
 
         } else if (valueType instanceof ExcelClass) {
-            excelFileProperty.execute(value, context, keys);
+            excelFileProperty.change(value, context, keys);
 
         } else {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");

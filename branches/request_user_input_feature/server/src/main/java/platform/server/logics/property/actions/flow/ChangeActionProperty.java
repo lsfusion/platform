@@ -47,6 +47,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
     }
 
     public Set<CalcProperty> getChangeProps() {
-        return new HashSet<CalcProperty>(writeTo.property.getDataChanges());
+        return Collections.singleton((CalcProperty)writeTo.property);
+//        return new HashSet<CalcProperty>(writeTo.property.getDataChanges());
     }
 }

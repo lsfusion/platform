@@ -13,6 +13,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -79,7 +80,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                 putFileIfNotNull(files, LM.fileNativeTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания" ,true);
                 putFileIfNotNull(files, LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)" ,true);
 
-                LP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
+                LCP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
                 Map<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
                 KeyExpr key = BaseUtils.singleValue(keys);
                 Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -100,7 +101,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                     putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), fullName + " statement" ,true);
                 }
 
-                LP isAcademic = LM.is(LM.academic);
+                LCP isAcademic = LM.is(LM.academic);
                 keys = isAcademic.getMapKeys();
                 key = BaseUtils.singleValue(keys);
                 query = new Query<Object, Object>(keys);
@@ -117,7 +118,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                 }
             } else {
 
-                LP isSpecialist = LM.is(LM.specialist);
+                LCP isSpecialist = LM.is(LM.specialist);
                 Map<Object, KeyExpr> keys = isSpecialist.getMapKeys();
                 KeyExpr key = BaseUtils.singleValue(keys);
                 Query<Object, Object> query = new Query<Object, Object>(keys);

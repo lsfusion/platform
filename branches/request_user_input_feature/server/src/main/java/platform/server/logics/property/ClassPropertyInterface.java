@@ -5,8 +5,8 @@ import platform.server.classes.ValueClass;
 public class ClassPropertyInterface extends PropertyInterface<ClassPropertyInterface> {
     public ValueClass interfaceClass;
 
-    public ClassPropertyInterface(int ID, ValueClass iClass) {
+    public ClassPropertyInterface(int ID, ValueClass interfaceClass) {
         super(ID);
-        interfaceClass = iClass;
+        this.interfaceClass = interfaceClass;
     }
 }

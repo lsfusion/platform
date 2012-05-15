@@ -9,6 +9,7 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -35,7 +36,7 @@ public class NotificationActionProperty extends CustomActionProperty {
 
     private final BusinessLogics<?> BL;
 
-    public NotificationActionProperty(String sID, String caption, LP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
+    public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
         super(sID, caption, getValueClasses(targetProperty));
 
         this.subjectNotification = subjectNotification;
@@ -50,7 +51,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         setImage("email.png");
     }
 
-    private static ValueClass[] getValueClasses(LP sourceProperty) {
+    private static ValueClass[] getValueClasses(LCP sourceProperty) {
         return sourceProperty.getCommonClasses(new Result<ValueClass>() {
         });
     }
@@ -86,7 +87,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         while (m.find()) {
             String propertySID = m.group(1);
             int interfacesCount = m.group(2).split(",").length;
-            LP replaceProperty = BL.LM.getLP(propertySID.trim());
+            LCP replaceProperty = (LCP) BL.LM.getLP(propertySID.trim());
             Object replacePropertyValue;
             if (!"".equals(m.group(2))) {
                 DataObject[] objects = new DataObject[interfacesCount];

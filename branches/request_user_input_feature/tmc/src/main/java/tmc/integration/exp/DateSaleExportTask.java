@@ -3,6 +3,7 @@ package tmc.integration.exp;
 import platform.base.DateConverter;
 import platform.interop.Compare;
 import platform.server.classes.DateClass;
+import platform.server.form.instance.CalcPropertyObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.instance.filter.CompareFilterInstance;
@@ -40,7 +41,7 @@ public class DateSaleExportTask extends AbstractSaleExportTask {
     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
 
         PropertyDrawInstance<?> date = formInstance.getPropertyDraw(BL.VEDLM.baseLM.date);
-        date.toDraw.addTempFilter(new CompareFilterInstance(date.propertyObject, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
+        date.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) date.propertyObject, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
     }
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {

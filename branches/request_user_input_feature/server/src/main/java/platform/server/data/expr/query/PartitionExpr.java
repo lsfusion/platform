@@ -165,6 +165,15 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return BaseExpr.create(new PartitionExpr(partitionType, restGroup, exprs, orders, restPartitions));
     }
 
+    public static Expr create(final PartitionType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group, PullExpr noPull) {
+        Map<KeyExpr, Expr> pullGroup = new HashMap<KeyExpr, Expr>(group);
+        for(KeyExpr key : getOuterKeys(exprs).merge(getOuterKeys(orders.keySet())).merge(getOuterKeys(partitions)))
+            if(key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull))
+                pullGroup.put(key, key);
+
+        return create(partitionType, exprs, orders, partitions, pullGroup);
+    }
+
     public static Expr create(final PartitionType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {

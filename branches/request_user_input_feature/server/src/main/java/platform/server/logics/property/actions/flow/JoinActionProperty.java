@@ -16,7 +16,7 @@ public class JoinActionProperty extends KeepContextActionProperty {
     private final ActionPropertyImplement<CalcPropertyInterfaceImplement<ClassPropertyInterface>> action; // action + mapping на calculate
 
     public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, ActionPropertyImplement<CalcPropertyInterfaceImplement<I>> implement, ValueClass[] classes) {
-        super(sID, caption, classes != null ? classes : getClasses(listInterfaces, implement.mapping.values()));
+        super(sID, caption, classes != null ? classes : getClasses(listInterfaces, implement));
 
         action = DerivedProperty.mapActionImplements(implement, reverse(getMapInterfaces(listInterfaces)));
 

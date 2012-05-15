@@ -12,6 +12,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.PullExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.query.innerjoins.GroupJoinsWhere;
@@ -29,6 +30,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.filterKeys;
 import static platform.base.BaseUtils.immutableCast;
+import static platform.base.BaseUtils.join;
 
 // запрос JoinSelect
 public class Query<K,V> extends IQuery<K,V> {
@@ -150,7 +152,7 @@ public class Query<K,V> extends IQuery<K,V> {
     public static <K> Map<K, KeyExpr> getMapKeys(Map<K, ? extends Expr> joinImplement) {
         QuickSet<KeyExpr> checked = new QuickSet<KeyExpr>();
         for(Expr joinExpr : joinImplement.values()) {
-            if(!(joinExpr instanceof KeyExpr) || checked.contains((KeyExpr) joinExpr))
+            if(!(joinExpr instanceof KeyExpr && !(joinExpr instanceof PullExpr)) || checked.contains((KeyExpr) joinExpr))
                 return null;
             checked.add((KeyExpr) joinExpr);
         }

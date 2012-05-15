@@ -12,7 +12,8 @@ import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.CalcPropertyImplement;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
@@ -49,7 +50,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         assert invoiceFieldsPos.containsKey(ResultField.BARCODE) && invoiceFieldsPos.containsKey(ResultField.INVOICE) &&
                invoiceFieldsPos.containsKey(ResultField.BOXNUMBER);
 
-        Map<ResultField, LP<?>> propertyMap = createPricatFieldsMap();
+        Map<ResultField, LCP> propertyMap = createPricatFieldsMap();
 
         try {
             Map<String, Map<ResultField, Object>> pricatData = getDataFromPricat(invoiceFieldsList, propertyMap);
@@ -80,8 +81,8 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         }
     }
 
-    private Map<ResultField, LP<?>> createPricatFieldsMap() {
-        Map<ResultField, LP<?>> propertyMap = new OrderedMap<ResultField, LP<?>>();
+    private Map<ResultField, LCP> createPricatFieldsMap() {
+        Map<ResultField, LCP> propertyMap = new OrderedMap<ResultField, LCP>();
 
         propertyMap.put(ResultField.BARCODE, BL.RomanLM.barcodePricat);
         propertyMap.put(ResultField.ARTICLE, BL.RomanLM.articleNumberPricat);
@@ -112,7 +113,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
     }
 
     private Map<String, Map<ResultField, Object>> getDataFromPricat(List<ResultField> invoiceFields,
-                                                                     Map<ResultField, LP<?>> propertyMap) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+                                                                     Map<ResultField, LCP> propertyMap) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         SQLSession sqlSession = BL.createSQL();
 

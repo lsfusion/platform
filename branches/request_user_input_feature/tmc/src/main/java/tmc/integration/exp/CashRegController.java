@@ -167,7 +167,7 @@ public class CashRegController {
             obligationProperties.add(obligationBarcodeDraw);
         }
 
-        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
+        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) quantityDraw.propertyObject));
 
         try {
             data = formInstance.getFormData(formProperties, classGroups);
@@ -285,7 +285,7 @@ public class CashRegController {
         PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
         formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, barcodeDraw));
 
-        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
+        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) quantityDraw.propertyObject));
 
         try {
             data = formInstance.getFormData(formProperties, classGroups);

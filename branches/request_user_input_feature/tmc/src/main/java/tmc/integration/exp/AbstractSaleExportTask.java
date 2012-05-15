@@ -115,10 +115,10 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         // записываем фильтр на этот склад
         PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.VEDLM.subjectOutOrder);
-        outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
+        outStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
 
         PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.VEDLM.articleQuantity);
-        quantity.toDraw.addTempFilter(new NotNullFilterInstance(quantity.propertyObject));
+        quantity.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) quantity.propertyObject));
 
         ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objDoc);
         ObjectInstance art = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objArt);
@@ -147,10 +147,10 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         // записываем фильтр на этот склад
         PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.VEDLM.subjectOutOrder);
-        outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
+        outStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
 
         PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.VEDLM.issueObligation);
-        issued.toDraw.addTempFilter(new NotNullFilterInstance(issued.propertyObject));
+        issued.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) issued.propertyObject));
 
         ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objDoc);
         ObjectInstance obligation = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objObligation);
@@ -176,7 +176,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         setRemoteFormFilter(formInstance);
 
         PropertyDrawInstance returnQuantity = formInstance.getPropertyDraw(BL.VEDLM.returnInnerQuantity);
-        returnQuantity.toDraw.addTempFilter(new NotNullFilterInstance(returnQuantity.propertyObject));
+        returnQuantity.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) returnQuantity.propertyObject));
 
         ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.returnSaleCheckRetailBrowse.objDoc);
         ObjectInstance inner = formInstance.instanceFactory.getInstance(BL.VEDLM.returnSaleCheckRetailBrowse.objInner);
@@ -184,7 +184,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         // записываем фильтр на этот склад
         PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.VEDLM.subjectIncOrder, doc.groupTo);
-        incStore.toDraw.addTempFilter(new CompareFilterInstance(incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
+        incStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
 
         map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));

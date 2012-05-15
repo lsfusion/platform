@@ -11,6 +11,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -95,6 +96,18 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
         return result;
     }
 
+    public static <I extends PropertyInterface> ValueClass[] getClasses(List<I> mapInterfaces, ActionPropertyImplement<? extends PropertyInterfaceImplement<I>> implement) {
+        ValueClass[] result = new ValueClass[mapInterfaces.size()];
+        System.arraycopy(getClasses(mapInterfaces, implement.mapping.values()), 0, result, 0, result.length);
+        Map<ClassPropertyInterface, ValueClass> mapClasses = implement.property.getMapClasses();
+        for(Map.Entry<ClassPropertyInterface, ? extends PropertyInterfaceImplement<I>> actInt : implement.mapping.entrySet())
+            if(actInt.getValue() instanceof PropertyInterface) {
+                int i = mapInterfaces.indexOf(actInt.getValue());
+                result[i] = or(result[i], mapClasses.get(actInt.getKey()));
+            }
+        return result;
+    }
+
     // не сильно структурно поэтому вынесено в метод
     public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
         int i=0;
@@ -130,12 +143,6 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
     }
 
     @Override
-    protected <D extends PropertyInterface, W extends PropertyInterface> void addEvent(CalcPropertyInterfaceImplement<ClassPropertyInterface> valueImplement, CalcPropertyMapImplement<W, ClassPropertyInterface> whereImplement, int options) {
-        // assert что valueImplement ActionClass
-        event = new Event<D,ClassPropertyInterface>(this, valueImplement, whereImplement, options);
-    }
-
-    @Override
     public ActionPropertyMapImplement<ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return getImplement();
     }
@@ -143,4 +150,12 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
     protected PropertyClassImplement<ClassPropertyInterface, ?> createClassImplement(List<ValueClassWrapper> classes, List<ClassPropertyInterface> mapping) {
         return new ActionPropertyClassImplement(this, classes, mapping);
     }
+
+    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, ClassPropertyInterface> whereImplement, int options) {
+        if(!((CalcProperty)whereImplement.property).noDB())
+            whereImplement = whereImplement.mapChanged(IncrementType.SET);
+
+        event = new Event<D,ClassPropertyInterface>(this, DerivedProperty.<ClassPropertyInterface>createStatic(true, ActionClass.instance), whereImplement, options);
+    }
+
 }

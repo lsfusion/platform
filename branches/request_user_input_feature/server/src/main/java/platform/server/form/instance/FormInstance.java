@@ -37,6 +37,7 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
@@ -557,15 +558,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             filter.resolveAdd(new ExecutionEnvironment(this), object, addObject);
 
         for (LP lp : BL.LM.lproperties) {
-            Property property = lp.property;
-            if (property.autoset) {
-                Property.CommonClasses<?> propClasses = property.getCommonClasses();
-                ValueClass interfaceClass = BaseUtils.singleValue(propClasses.interfaces);
-                if (propClasses.value instanceof CustomClass && interfaceClass instanceof CustomClass&&
-                        cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
-                    Integer obj = getClassListener().getObject((CustomClass) propClasses.value);
-                    if(obj!=null)
-                        lp.change(obj, new ExecutionEnvironment(this), addObject);
+            if(lp instanceof LCP) {
+                LCP<?> lcp = (LCP<?>) lp;
+                CalcProperty property = lcp.property;
+                if (property.autoset) {
+                    Property.CommonClasses<?> propClasses = property.getCommonClasses();
+                    ValueClass interfaceClass = BaseUtils.singleValue(propClasses.interfaces);
+                    if (propClasses.value instanceof CustomClass && interfaceClass instanceof CustomClass&&
+                            cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
+                        Integer obj = getClassListener().getObject((CustomClass) propClasses.value);
+                        if(obj!=null)
+                            lcp.change(obj, new ExecutionEnvironment(this), addObject);
+                    }
                 }
             }
         }
@@ -624,14 +628,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public boolean canChangeClass(CustomObjectInstance object) {
         return securityPolicy.cls.edit.change.checkPermission(object.currentClass);
-    }
-
-    @Message("message.form.change.property")
-    public List<ClientAction> changeProperty(@ParamMessage PropertyObjectInstance<?, ?> property, Object value) throws SQLException {
-        ActionPropertyObjectInstance editAction = property.getEditAction(ServerResponse.CHANGE);
-        if(editAction!=null)
-            return editAction.execute(new ExecutionEnvironment(this), session.getObjectValue(value, property.getType()), null);
-        return new ArrayList<ClientAction>();
     }
 
     public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
@@ -1470,10 +1466,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
             AUTOACTIONS:
-            for (PropertyObjectEntity autoAction : actionsOnEvent) {
-                PropertyObjectInstance autoActionInstance = instanceFactory.getInstance(autoAction);
+            for (ActionPropertyObjectEntity autoAction : actionsOnEvent) {
+                ActionPropertyObjectInstance autoActionInstance = instanceFactory.getInstance(autoAction);
                 if (autoActionInstance.isInInterface(null)) {
-                    List<ClientAction> actions = changeProperty(autoActionInstance, read(autoActionInstance) == null ? true : null);
+                    List<ClientAction> actions = autoActionInstance.execute(new ExecutionEnvironment(this), null, null);
                     for (ClientAction clientAction : actions) {
                         clientActions.add(clientAction);
                         if (clientAction instanceof DenyCloseFormClientAction) {

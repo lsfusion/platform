@@ -17,6 +17,7 @@ import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -69,17 +70,17 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         DataSession session = createSession();
         List<TransactionInfo> transactionList = new ArrayList<TransactionInfo>();
 
-        LP isMachineryPriceTransaction = retailLM.is(retailLM.getClassByName("machineryPriceTransaction"));
+        LCP isMachineryPriceTransaction = retailLM.is(retailLM.getClassByName("machineryPriceTransaction"));
         Map<Object, KeyExpr> keys = isMachineryPriceTransaction.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
 
-        query.properties.put("dateTimeMPT", retailLM.getLPByName("dateTimeMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
-        query.properties.put("groupMachineryMPT", retailLM.getLPByName("groupMachineryMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
-        query.properties.put("snapshotMPT", retailLM.getLPByName("snapshotMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
+        query.properties.put("dateTimeMPT", retailLM.getLCPByName("dateTimeMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
+        query.properties.put("groupMachineryMPT", retailLM.getLCPByName("groupMachineryMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
+        query.properties.put("snapshotMPT", retailLM.getLCPByName("snapshotMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
 
-        query.and(retailLM.getLPByName("sidEquipmentServerMachineryPriceTransaction").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
-        query.and(retailLM.getLPByName("processMachineryPriceTransaction").getExpr(key).getWhere());
+        query.and(retailLM.getLCPByName("sidEquipmentServerMachineryPriceTransaction").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
+        query.and(retailLM.getLCPByName("processMachineryPriceTransaction").getExpr(key).getWhere());
 
         OrderedMap<Map<Object, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
         List<Object[]> transactionObjects = new ArrayList<Object[]>();
@@ -105,11 +106,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             itemKeys.put("barcode", barcodeExpr);
 
             Query<Object, Object> itemQuery = new Query<Object, Object>(itemKeys);
-            itemQuery.properties.put("barcodeEx", retailLM.getLPByName("barcodeEx").getExpr(barcodeExpr));
-            itemQuery.properties.put("nameMachineryPriceTransactionBarcode", retailLM.getLPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("priceMachineryPriceTransactionBarcode", retailLM.getLPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("barcodeEx", retailLM.getLCPByName("barcodeEx").getExpr(barcodeExpr));
+            itemQuery.properties.put("nameMachineryPriceTransactionBarcode", retailLM.getLCPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("priceMachineryPriceTransactionBarcode", retailLM.getLCPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
 
-            itemQuery.and(retailLM.getLPByName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
+            itemQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> itemResult = itemQuery.execute(session.sql);
 
@@ -122,23 +123,23 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {
                 List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
-                LP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
+                LCP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
 
                 Map<Object, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
                 KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
                 Query<Object, Object> cashRegisterQuery = new Query<Object, Object>(cashRegisterKeys);
 
-                cashRegisterQuery.properties.put("directoryCashRegister", retailLM.getLPByName("directoryCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("numberCashRegister", retailLM.getLPByName("numberCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("nameCashRegisterModelCashRegister", retailLM.getLPByName("nameCashRegisterModelCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("directoryCashRegister", retailLM.getLCPByName("directoryCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("numberCashRegister", retailLM.getLCPByName("numberCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("nameCashRegisterModelCashRegister", retailLM.getLCPByName("nameCashRegisterModelCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLCPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
 
                 cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
-                cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(groupObject, Compare.EQUALS));
+                cashRegisterQuery.and(retailLM.getLCPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(groupObject, Compare.EQUALS));
                 if (snapshotTransaction)
-                    cashRegisterQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), cashRegisterKey).getWhere());
+                    cashRegisterQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), cashRegisterKey).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
@@ -158,22 +159,22 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("scalesPriceTransaction"))) {
                 List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
-                String directory = (String) retailLM.getLPByName("directoryGroupScales").read(session, groupObject);
+                String directory = (String) retailLM.getLCPByName("directoryGroupScales").read(session, groupObject);
 
-                LP isScales = LM.is(retailLM.getClassByName("scales"));
+                LCP isScales = LM.is(retailLM.getClassByName("scales"));
 
                 Map<Object, KeyExpr> scalesKeys = isScales.getMapKeys();
                 KeyExpr scalesKey = BaseUtils.singleValue(scalesKeys);
                 Query<Object, Object> scalesQuery = new Query<Object, Object>(scalesKeys);
 
-                scalesQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(scalesKey));
-                scalesQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(scalesKey));
-                scalesQuery.properties.put("nameScalesModelScales", retailLM.getLPByName("nameScalesModelScales").getExpr(scalesKey));
-                scalesQuery.properties.put("handlerScalesModelScales", retailLM.getLPByName("handlerScalesModelScales").getExpr(scalesKey));
+                scalesQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(scalesKey));
+                scalesQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(scalesKey));
+                scalesQuery.properties.put("nameScalesModelScales", retailLM.getLCPByName("nameScalesModelScales").getExpr(scalesKey));
+                scalesQuery.properties.put("handlerScalesModelScales", retailLM.getLCPByName("handlerScalesModelScales").getExpr(scalesKey));
                 scalesQuery.and(isScales.property.getExpr(scalesKeys).getWhere());
-                scalesQuery.and(retailLM.getLPByName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
+                scalesQuery.and(retailLM.getLCPByName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
                 if (snapshotTransaction)
-                    scalesQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
+                    scalesQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
 
@@ -190,21 +191,21 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("checkPriceTransaction"))) {
                 List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
-                LP isCheck = LM.is(retailLM.getClassByName("check"));
+                LCP isCheck = LM.is(retailLM.getClassByName("check"));
 
                 Map<Object, KeyExpr> checkKeys = isCheck.getMapKeys();
                 KeyExpr checkKey = BaseUtils.singleValue(checkKeys);
                 Query<Object, Object> checkQuery = new Query<Object, Object>(checkKeys);
 
-                checkQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(checkKey));
-                checkQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(checkKey));
-                checkQuery.properties.put("nameCheckModelCheck", retailLM.getLPByName("nameCheckModelCheck").getExpr(checkKey));
-                //checkQuery.properties.put("handlerCheckModelCheck", retailLM.getLPByName("handlerCheckModelCheck").getExpr(checkKey));
+                checkQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(checkKey));
+                checkQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(checkKey));
+                checkQuery.properties.put("nameCheckModelCheck", retailLM.getLCPByName("nameCheckModelCheck").getExpr(checkKey));
+                //checkQuery.properties.put("handlerCheckModelCheck", retailLM.getLCPByName("handlerCheckModelCheck").getExpr(checkKey));
                 checkQuery.and(isCheck.property.getExpr(checkKeys).getWhere());
-                checkQuery.and(retailLM.getLPByName("groupCheckCheck").getExpr(checkKey).compare(groupObject, Compare.EQUALS));
+                checkQuery.and(retailLM.getLCPByName("groupCheckCheck").getExpr(checkKey).compare(groupObject, Compare.EQUALS));
 
                 if (snapshotTransaction)
-                    checkQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), checkKey).getWhere());
+                    checkQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), checkKey).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> checkResult = checkQuery.execute(session.sql);
 
@@ -222,19 +223,19 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("terminalPriceTransaction"))) {
                 List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
-                LP isTerminal = LM.is(retailLM.getClassByName("terminal"));
+                LCP isTerminal = LM.is(retailLM.getClassByName("terminal"));
 
                 Map<Object, KeyExpr> terminalKeys = isTerminal.getMapKeys();
                 KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
                 Query<Object, Object> terminalQuery = new Query<Object, Object>(terminalKeys);
 
-                terminalQuery.properties.put("directoryTerminal", retailLM.getLPByName("directoryTerminal").getExpr(terminalKey));
-                terminalQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(terminalKey));
-                terminalQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(terminalKey));
-                terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLPByName("nameTerminalModelTerminal").getExpr(terminalKey));
-                terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
+                terminalQuery.properties.put("directoryTerminal", retailLM.getLCPByName("directoryTerminal").getExpr(terminalKey));
+                terminalQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(terminalKey));
+                terminalQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(terminalKey));
+                terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLCPByName("nameTerminalModelTerminal").getExpr(terminalKey));
+                terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLCPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
                 terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
-                terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
+                terminalQuery.and(retailLM.getLCPByName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
@@ -258,12 +259,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         DataSession session = createSession();
         List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
 
-        LP isGroupMachinery = retailLM.is(retailLM.getClassByName("groupMachinery"));
+        LCP isGroupMachinery = retailLM.is(retailLM.getClassByName("groupMachinery"));
         Map<Object, KeyExpr> keys = isGroupMachinery.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("roundSalesGroupMachinery", retailLM.getLPByName("roundSalesGroupMachinery").getExpr(key));
-        query.and(retailLM.getLPByName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
+        query.properties.put("roundSalesGroupMachinery", retailLM.getLCPByName("roundSalesGroupMachinery").getExpr(key));
+        query.and(retailLM.getLCPByName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
 
         OrderedMap<Map<Object, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
         List<Object[]> groupMachineryObjects = new ArrayList<Object[]>();
@@ -277,21 +278,21 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             DataObject groupMachineryObject = (DataObject) groupMachinery[0];
             Integer roundSalesGroupMachinery = (Integer) groupMachinery[1];
 
-            LP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
+            LCP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
 
             Map<Object, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
             KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
             Query<Object, Object> cashRegisterQuery = new Query<Object, Object>(cashRegisterKeys);
 
-            cashRegisterQuery.properties.put("directoryCashRegister", retailLM.getLPByName("directoryCashRegister").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("numberCashRegister", retailLM.getLPByName("numberCashRegister").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("nameCashRegisterModelCashRegister", retailLM.getLPByName("nameCashRegisterModelCashRegister").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("directoryCashRegister", retailLM.getLCPByName("directoryCashRegister").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("numberCashRegister", retailLM.getLCPByName("numberCashRegister").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("nameCashRegisterModelCashRegister", retailLM.getLCPByName("nameCashRegisterModelCashRegister").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLCPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
 
             cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
-            cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
+            cashRegisterQuery.and(retailLM.getLCPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
@@ -314,11 +315,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         DataSession session = createSession();
         List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
 
-        LP isGroupMachinery = retailLM.is(retailLM.getClassByName("groupMachinery"));
+        LCP isGroupMachinery = retailLM.is(retailLM.getClassByName("groupMachinery"));
         Map<Object, KeyExpr> keys = isGroupMachinery.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.and(retailLM.getLPByName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
+        query.and(retailLM.getLCPByName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
 
         OrderedMap<Map<Object, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
         List<Object> groupMachineryObjects = new ArrayList<Object>();
@@ -330,20 +331,20 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         for (Object groupMachinery : groupMachineryObjects) {
             DataObject groupMachineryObject = (DataObject) groupMachinery;
 
-            LP isTerminal = LM.is(retailLM.getClassByName("terminal"));
+            LCP isTerminal = LM.is(retailLM.getClassByName("terminal"));
 
             Map<Object, KeyExpr> terminalKeys = isTerminal.getMapKeys();
             KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
             Query<Object, Object> terminalQuery = new Query<Object, Object>(terminalKeys);
 
-            terminalQuery.properties.put("directoryTerminal", retailLM.getLPByName("directoryTerminal").getExpr(terminalKey));
-            terminalQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(terminalKey));
-            terminalQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(terminalKey));
-            terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLPByName("nameTerminalModelTerminal").getExpr(terminalKey));
-            terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
+            terminalQuery.properties.put("directoryTerminal", retailLM.getLCPByName("directoryTerminal").getExpr(terminalKey));
+            terminalQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(terminalKey));
+            terminalQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(terminalKey));
+            terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLCPByName("nameTerminalModelTerminal").getExpr(terminalKey));
+            terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLCPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
 
             terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
-            terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
+            terminalQuery.and(retailLM.getLCPByName("groupTerminalTerminal").getExpr(terminalKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
@@ -365,7 +366,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         DataSession session = createSession();
 
         List<LegalEntityInfo> legalEntityInfoList = new ArrayList<LegalEntityInfo>();
-        LP isSupplier = LM.is(retailLM.getClassByName("supplier"));
+        LCP isSupplier = LM.is(retailLM.getClassByName("supplier"));
 
         Map<Object, KeyExpr> supplierKeys = isSupplier.getMapKeys();
         KeyExpr supplierKey = BaseUtils.singleValue(supplierKeys);
@@ -379,14 +380,14 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
                 DataObject terminalHandbookTypeObject = ((StaticCustomClass) retailLM.findClassByCompoundName("terminalHandbookType")).getDataObject("supplier");
-                String type = (String) retailLM.getLPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
+                String type = (String) retailLM.getLCPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-        LP isCustomer = LM.is(retailLM.getClassByName("customer"));
+        LCP isCustomer = LM.is(retailLM.getClassByName("customer"));
 
         Map<Object, KeyExpr> customerKeys = isCustomer.getMapKeys();
         KeyExpr customerKey = BaseUtils.singleValue(customerKeys);
@@ -400,7 +401,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
                 DataObject terminalHandbookTypeObject = ((StaticCustomClass) retailLM.findClassByCompoundName("terminalHandbookType")).getDataObject("customer");
-                String type = (String) retailLM.getLPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
+                String type = (String) retailLM.getLCPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -408,17 +409,17 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         }
 
         List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList = new ArrayList<TerminalDocumentTypeInfo>();
-        LP isTerminalDocumentType = LM.is(retailLM.getClassByName("terminalDocumentType"));
+        LCP isTerminalDocumentType = LM.is(retailLM.getClassByName("terminalDocumentType"));
 
         Map<Object, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
         KeyExpr terminalDocumentTypeKey = BaseUtils.singleValue(terminalDocumentTypeKeys);
         Query<Object, Object> terminalDocumentTypeQuery = new Query<Object, Object>(terminalDocumentTypeKeys);
-        terminalDocumentTypeQuery.properties.put("idTerminalDocumentType", retailLM.getLPByName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
-        terminalDocumentTypeQuery.properties.put("nameTerminalDocumentType", retailLM.getLPByName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
-        terminalDocumentTypeQuery.properties.put("nameInHandbook1TerminalDocumentType", retailLM.getLPByName("nameInHandbook1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
-        terminalDocumentTypeQuery.properties.put("idTerminalHandbookType1TerminalDocumentType", retailLM.getLPByName("idTerminalHandbookType1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
-        terminalDocumentTypeQuery.properties.put("nameInHandbook2TerminalDocumentType", retailLM.getLPByName("nameInHandbook2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
-        terminalDocumentTypeQuery.properties.put("idTerminalHandbookType2TerminalDocumentType", retailLM.getLPByName("idTerminalHandbookType2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("idTerminalDocumentType", retailLM.getLCPByName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameTerminalDocumentType", retailLM.getLCPByName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameInHandbook1TerminalDocumentType", retailLM.getLCPByName("nameInHandbook1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("idTerminalHandbookType1TerminalDocumentType", retailLM.getLCPByName("idTerminalHandbookType1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("nameInHandbook2TerminalDocumentType", retailLM.getLCPByName("nameInHandbook2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+        terminalDocumentTypeQuery.properties.put("idTerminalHandbookType2TerminalDocumentType", retailLM.getLCPByName("idTerminalHandbookType2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
         terminalDocumentTypeQuery.and(isTerminalDocumentType.property.getExpr(terminalDocumentTypeKeys).getWhere());
 
         OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
@@ -440,86 +441,86 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public String sendSalesInfo(List<SalesInfo> salesInfoList, String equipmentServer) throws IOException, SQLException {
 
         DataSession session = createSession();
-        ImportField cashRegisterField = new ImportField(retailLM.getLPByName("numberCashRegister"));
-        ImportField zReportNumberField = new ImportField(retailLM.getLPByName("numberZReport"));
+        ImportField cashRegisterField = new ImportField(retailLM.getLCPByName("numberCashRegister"));
+        ImportField zReportNumberField = new ImportField(retailLM.getLCPByName("numberZReport"));
 
-        ImportField numberBillField = new ImportField(retailLM.getLPByName("numberBill"));
-        ImportField dateField = new ImportField(retailLM.getLPByName("dateBill"));
-        ImportField timeField = new ImportField(retailLM.getLPByName("timeBill"));
+        ImportField numberBillField = new ImportField(retailLM.getLCPByName("numberBill"));
+        ImportField dateField = new ImportField(retailLM.getLCPByName("dateBill"));
+        ImportField timeField = new ImportField(retailLM.getLCPByName("timeBill"));
 
-        ImportField numberBillDetailField = new ImportField(retailLM.getLPByName("numberBillDetail"));
-        ImportField barcodeExBillDetailField = new ImportField(retailLM.getLPByName("barcodeExBillDetail"));
+        ImportField numberBillDetailField = new ImportField(retailLM.getLCPByName("numberBillDetail"));
+        ImportField barcodeExBillDetailField = new ImportField(retailLM.getLCPByName("barcodeExBillDetail"));
 
-        ImportField quantityBillSaleDetailField = new ImportField(retailLM.getLPByName("quantityBillSaleDetail"));
-        ImportField retailPriceBillSaleDetailField = new ImportField(retailLM.getLPByName("retailPriceBillSaleDetail"));
-        ImportField retailSumBillSaleDetailField = new ImportField(retailLM.getLPByName("retailSumBillSaleDetail"));
-        ImportField discountSumBillSaleDetailField = new ImportField(retailLM.getLPByName("discountSumBillSaleDetail"));
+        ImportField quantityBillSaleDetailField = new ImportField(retailLM.getLCPByName("quantityBillSaleDetail"));
+        ImportField retailPriceBillSaleDetailField = new ImportField(retailLM.getLCPByName("retailPriceBillSaleDetail"));
+        ImportField retailSumBillSaleDetailField = new ImportField(retailLM.getLCPByName("retailSumBillSaleDetail"));
+        ImportField discountSumBillSaleDetailField = new ImportField(retailLM.getLCPByName("discountSumBillSaleDetail"));
 
-        ImportField quantityBillReturnDetailField = new ImportField(retailLM.getLPByName("quantityBillReturnDetail"));
-        ImportField retailPriceBillReturnDetailField = new ImportField(retailLM.getLPByName("retailPriceBillReturnDetail"));
-        ImportField retailSumBillReturnDetailField = new ImportField(retailLM.getLPByName("retailSumBillReturnDetail"));
-        ImportField discountSumBillReturnDetailField = new ImportField(retailLM.getLPByName("discountSumBillReturnDetail"));
+        ImportField quantityBillReturnDetailField = new ImportField(retailLM.getLCPByName("quantityBillReturnDetail"));
+        ImportField retailPriceBillReturnDetailField = new ImportField(retailLM.getLCPByName("retailPriceBillReturnDetail"));
+        ImportField retailSumBillReturnDetailField = new ImportField(retailLM.getLCPByName("retailSumBillReturnDetail"));
+        ImportField discountSumBillReturnDetailField = new ImportField(retailLM.getLCPByName("discountSumBillReturnDetail"));
 
-        ImportField sidTypePaymentField = new ImportField(retailLM.getLPByName("sidPaymentType"));
-        ImportField sumPaymentField = new ImportField(retailLM.getLPByName("sumPayment"));
-        ImportField numberPaymentField = new ImportField(retailLM.getLPByName("numberPayment"));
+        ImportField sidTypePaymentField = new ImportField(retailLM.getLCPByName("sidPaymentType"));
+        ImportField sumPaymentField = new ImportField(retailLM.getLCPByName("sumPayment"));
+        ImportField numberPaymentField = new ImportField(retailLM.getLCPByName("numberPayment"));
 
         List<ImportProperty<?>> saleProperties = new ArrayList<ImportProperty<?>>();
         List<ImportProperty<?>> returnProperties = new ArrayList<ImportProperty<?>>();
         List<ImportProperty<?>> paymentProperties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLPByName("numberToZReportPosted").getMapping(zReportNumberField));
-        ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
-        ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
-        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLPByName("skuBarcodeStringDate").getMapping(barcodeExBillDetailField, dateField));
+        ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLCPByName("numberToZReportPosted").getMapping(zReportNumberField));
+        ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLCPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
+        ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLCPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
+        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLCPByName("skuBarcodeStringDate").getMapping(barcodeExBillDetailField, dateField));
 
-        saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
-        saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
+        saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("numberZReport").getMapping(zReportKey)));
+        saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLCPByName("cashRegisterZReport").getMapping(zReportKey),
                 LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
-        saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateZReport").getMapping(zReportKey)));
+        saleProperties.add(new ImportProperty(dateField, retailLM.getLCPByName("dateZReport").getMapping(zReportKey)));
 
-        saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
-        saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
-        saleProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
-        saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
+        saleProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("numberBill").getMapping(billKey)));
+        saleProperties.add(new ImportProperty(dateField, retailLM.getLCPByName("dateBill").getMapping(billKey)));
+        saleProperties.add(new ImportProperty(timeField, retailLM.getLCPByName("timeBill").getMapping(billKey)));
+        saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("zReportBill").getMapping(billKey),
                 LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
-        ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
-        saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(retailPriceBillSaleDetailField, retailLM.getLPByName("retailPriceBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(retailSumBillSaleDetailField, retailLM.getLPByName("retailSumBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(discountSumBillSaleDetailField, retailLM.getLPByName("discountSumBillSaleDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billSaleDetailKey),
+        ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
+        saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLCPByName("numberBillDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("barcodeExBillDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLCPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(retailPriceBillSaleDetailField, retailLM.getLCPByName("retailPriceBillSaleDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(retailSumBillSaleDetailField, retailLM.getLCPByName("retailSumBillSaleDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(discountSumBillSaleDetailField, retailLM.getLCPByName("discountSumBillSaleDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("billBillDetail").getMapping(billSaleDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
+        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
 
-        returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
-        returnProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
+        returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("numberZReport").getMapping(zReportKey)));
+        returnProperties.add(new ImportProperty(cashRegisterField, retailLM.getLCPByName("cashRegisterZReport").getMapping(zReportKey),
                 LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
-        returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateZReport").getMapping(zReportKey)));
+        returnProperties.add(new ImportProperty(dateField, retailLM.getLCPByName("dateZReport").getMapping(zReportKey)));
 
-        returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
-        returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
-        returnProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
-        returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
+        returnProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("numberBill").getMapping(billKey)));
+        returnProperties.add(new ImportProperty(dateField, retailLM.getLCPByName("dateBill").getMapping(billKey)));
+        returnProperties.add(new ImportProperty(timeField, retailLM.getLCPByName("timeBill").getMapping(billKey)));
+        returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("zReportBill").getMapping(billKey),
                 LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
-        ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
-        returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(retailPriceBillReturnDetailField, retailLM.getLPByName("retailPriceBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(retailSumBillReturnDetailField, retailLM.getLPByName("retailSumBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(discountSumBillReturnDetailField, retailLM.getLPByName("discountSumBillReturnDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billReturnDetailKey),
+        ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
+        returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLCPByName("numberBillDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("barcodeExBillDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLCPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(retailPriceBillReturnDetailField, retailLM.getLCPByName("retailPriceBillReturnDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(retailSumBillReturnDetailField, retailLM.getLCPByName("retailSumBillReturnDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(discountSumBillReturnDetailField, retailLM.getLCPByName("discountSumBillReturnDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("billBillDetail").getMapping(billReturnDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
+        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
         List<List<Object>> dataSale = new ArrayList<List<Object>>();
@@ -554,13 +555,13 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, billKey, billReturnDetailKey, itemKey),
                 returnProperties).synchronize(true);
 
-        ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("payment"), retailLM.getLPByName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField));
-        ImportKey<?> paymentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("paymentType"), retailLM.getLPByName("sidToTypePayment").getMapping(sidTypePaymentField));
-        paymentProperties.add(new ImportProperty(sumPaymentField, retailLM.getLPByName("sumPayment").getMapping(paymentKey)));
-        paymentProperties.add(new ImportProperty(numberPaymentField, retailLM.getLPByName("numberPayment").getMapping(paymentKey)));
-        paymentProperties.add(new ImportProperty(sidTypePaymentField, retailLM.getLPByName("paymentTypePayment").getMapping(paymentKey),
+        ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("payment"), retailLM.getLCPByName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField));
+        ImportKey<?> paymentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("paymentType"), retailLM.getLCPByName("sidToTypePayment").getMapping(sidTypePaymentField));
+        paymentProperties.add(new ImportProperty(sumPaymentField, retailLM.getLCPByName("sumPayment").getMapping(paymentKey)));
+        paymentProperties.add(new ImportProperty(numberPaymentField, retailLM.getLCPByName("numberPayment").getMapping(paymentKey)));
+        paymentProperties.add(new ImportProperty(sidTypePaymentField, retailLM.getLCPByName("paymentTypePayment").getMapping(paymentKey),
                 LM.baseLM.object(retailLM.getClassByName("paymentType")).getMapping(paymentTypeKey)));
-        paymentProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billPayment").getMapping(paymentKey),
+        paymentProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("billPayment").getMapping(paymentKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
         List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, sidTypePaymentField,
@@ -587,10 +588,10 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             message = message.substring(0, message.length() - 2);
 
             DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
-            Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-            retailLM.getLPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
-            retailLM.getLPByName("dataEquipmentServerLog").change(message, session, logObject);
-            retailLM.getLPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
+            Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+            retailLM.getLCPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
+            retailLM.getLCPByName("dataEquipmentServerLog").change(message, session, logObject);
+            retailLM.getLCPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
         }
 
         new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
@@ -603,50 +604,50 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public String sendTerminalDocumentInfo(List<TerminalDocumentInfo> terminalDocumentInfoList, String equServerID) throws IOException, SQLException {
 
         DataSession session = createSession();
-        ImportField idTerminalDocumentField = new ImportField(retailLM.getLPByName("idTerminalDocument"));
-        ImportField typeTerminalDocumentField = new ImportField(retailLM.getLPByName("idTerminalDocumentTypeTerminalDocument"));
-        ImportField idTerminalHandbookType1TerminalDocumentField = new ImportField(retailLM.getLPByName("idTerminalHandbookType1TerminalDocument"));
-        ImportField idTerminalHandbookType2TerminalDocumentField = new ImportField(retailLM.getLPByName("idTerminalHandbookType2TerminalDocument"));
-        ImportField titleTerminalDocumentField = new ImportField(retailLM.getLPByName("titleTerminalDocument"));
-        ImportField quantityTerminalDocumentField = new ImportField(retailLM.getLPByName("quantityTerminalDocument"));
+        ImportField idTerminalDocumentField = new ImportField(retailLM.getLCPByName("idTerminalDocument"));
+        ImportField typeTerminalDocumentField = new ImportField(retailLM.getLCPByName("idTerminalDocumentTypeTerminalDocument"));
+        ImportField idTerminalHandbookType1TerminalDocumentField = new ImportField(retailLM.getLCPByName("idTerminalHandbookType1TerminalDocument"));
+        ImportField idTerminalHandbookType2TerminalDocumentField = new ImportField(retailLM.getLCPByName("idTerminalHandbookType2TerminalDocument"));
+        ImportField titleTerminalDocumentField = new ImportField(retailLM.getLCPByName("titleTerminalDocument"));
+        ImportField quantityTerminalDocumentField = new ImportField(retailLM.getLCPByName("quantityTerminalDocument"));
 
-        ImportField numberTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("numberTerminalDocumentDetail"));
-        ImportField barcodeTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("barcodeTerminalDocumentDetail"));
-        ImportField nameTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("nameTerminalDocumentDetail"));
-        ImportField quantityTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("quantityTerminalDocumentDetail"));
-        ImportField priceTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("priceTerminalDocumentDetail"));
-        ImportField sumTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("sumTerminalDocumentDetail"));
+        ImportField numberTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("numberTerminalDocumentDetail"));
+        ImportField barcodeTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("barcodeTerminalDocumentDetail"));
+        ImportField nameTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("nameTerminalDocumentDetail"));
+        ImportField quantityTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("quantityTerminalDocumentDetail"));
+        ImportField priceTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("priceTerminalDocumentDetail"));
+        ImportField sumTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("sumTerminalDocumentDetail"));
 
-        ImportField isNewTerminalDocumentDetailField = new ImportField(retailLM.getLPByName("isNewTerminalDocumentDetail"));
+        ImportField isNewTerminalDocumentDetailField = new ImportField(retailLM.getLCPByName("isNewTerminalDocumentDetail"));
 
         List<ImportProperty<?>> terminalDocumentProperties = new ArrayList<ImportProperty<?>>();
         List<ImportProperty<?>> terminalDocumentDetailProperties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> terminalDocumentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocument"), retailLM.getLPByName("idToTerminalDocument").getMapping(idTerminalDocumentField));
+        ImportKey<?> terminalDocumentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocument"), retailLM.getLCPByName("idToTerminalDocument").getMapping(idTerminalDocumentField));
 
-        terminalDocumentProperties.add(new ImportProperty(idTerminalDocumentField, retailLM.getLPByName("idTerminalDocument").getMapping(terminalDocumentKey)));
-        //terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLPByName("typeTerminalDocument").getMapping(terminalDocumentKey)));
-        terminalDocumentProperties.add(new ImportProperty(titleTerminalDocumentField, retailLM.getLPByName("titleTerminalDocument").getMapping(terminalDocumentKey)));
-        terminalDocumentProperties.add(new ImportProperty(idTerminalHandbookType1TerminalDocumentField, retailLM.getLPByName("idTerminalHandbookType1TerminalDocument").getMapping(terminalDocumentKey)));
-        terminalDocumentProperties.add(new ImportProperty(idTerminalHandbookType2TerminalDocumentField, retailLM.getLPByName("idTerminalHandbookType2TerminalDocument").getMapping(terminalDocumentKey)));
-        terminalDocumentProperties.add(new ImportProperty(quantityTerminalDocumentField, retailLM.getLPByName("quantityTerminalDocument").getMapping(terminalDocumentKey)));
+        terminalDocumentProperties.add(new ImportProperty(idTerminalDocumentField, retailLM.getLCPByName("idTerminalDocument").getMapping(terminalDocumentKey)));
+        //terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLCPByName("typeTerminalDocument").getMapping(terminalDocumentKey)));
+        terminalDocumentProperties.add(new ImportProperty(titleTerminalDocumentField, retailLM.getLCPByName("titleTerminalDocument").getMapping(terminalDocumentKey)));
+        terminalDocumentProperties.add(new ImportProperty(idTerminalHandbookType1TerminalDocumentField, retailLM.getLCPByName("idTerminalHandbookType1TerminalDocument").getMapping(terminalDocumentKey)));
+        terminalDocumentProperties.add(new ImportProperty(idTerminalHandbookType2TerminalDocumentField, retailLM.getLCPByName("idTerminalHandbookType2TerminalDocument").getMapping(terminalDocumentKey)));
+        terminalDocumentProperties.add(new ImportProperty(quantityTerminalDocumentField, retailLM.getLCPByName("quantityTerminalDocument").getMapping(terminalDocumentKey)));
 
-        ImportKey<?> terminalDocumentDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentDetail"), retailLM.getLPByName("idTerminalDocumentNumberToTerminalDocumentDetail").getMapping(idTerminalDocumentField, numberTerminalDocumentDetailField));
+        ImportKey<?> terminalDocumentDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentDetail"), retailLM.getLCPByName("idTerminalDocumentNumberToTerminalDocumentDetail").getMapping(idTerminalDocumentField, numberTerminalDocumentDetailField));
 
-        terminalDocumentDetailProperties.add(new ImportProperty(numberTerminalDocumentDetailField, retailLM.getLPByName("numberTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(barcodeTerminalDocumentDetailField, retailLM.getLPByName("barcodeTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(nameTerminalDocumentDetailField, retailLM.getLPByName("nameTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(quantityTerminalDocumentDetailField, retailLM.getLPByName("quantityTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(priceTerminalDocumentDetailField, retailLM.getLPByName("priceTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(sumTerminalDocumentDetailField, retailLM.getLPByName("sumTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(isNewTerminalDocumentDetailField, retailLM.getLPByName("isNewTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
-        terminalDocumentDetailProperties.add(new ImportProperty(idTerminalDocumentField, retailLM.getLPByName("terminalDocumentTerminalDocumentDetail").getMapping(terminalDocumentDetailKey),
+        terminalDocumentDetailProperties.add(new ImportProperty(numberTerminalDocumentDetailField, retailLM.getLCPByName("numberTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(barcodeTerminalDocumentDetailField, retailLM.getLCPByName("barcodeTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(nameTerminalDocumentDetailField, retailLM.getLCPByName("nameTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(quantityTerminalDocumentDetailField, retailLM.getLCPByName("quantityTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(priceTerminalDocumentDetailField, retailLM.getLCPByName("priceTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(sumTerminalDocumentDetailField, retailLM.getLCPByName("sumTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(isNewTerminalDocumentDetailField, retailLM.getLCPByName("isNewTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
+        terminalDocumentDetailProperties.add(new ImportProperty(idTerminalDocumentField, retailLM.getLCPByName("terminalDocumentTerminalDocumentDetail").getMapping(terminalDocumentDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("terminalDocument")).getMapping(terminalDocumentKey)));
 
 
-        ImportKey<?> terminalDocumentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentType"), retailLM.getLPByName("idToTerminalDocumentType").getMapping(typeTerminalDocumentField));
-        terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLPByName("idTerminalDocumentType").getMapping(terminalDocumentTypeKey)));
-        terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLPByName("terminalDocumentTypeTerminalDocument").getMapping(terminalDocumentKey),
+        ImportKey<?> terminalDocumentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentType"), retailLM.getLCPByName("idToTerminalDocumentType").getMapping(typeTerminalDocumentField));
+        terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLCPByName("idTerminalDocumentType").getMapping(terminalDocumentTypeKey)));
+        terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLCPByName("terminalDocumentTypeTerminalDocument").getMapping(terminalDocumentKey),
                 LM.baseLM.object(retailLM.getClassByName("terminalDocumentType")).getMapping(terminalDocumentTypeKey)));
 
         List<List<Object>> dataTerminalDocument = new ArrayList<List<Object>>();
@@ -685,10 +686,10 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             String message = "Загружено записей: " + dataTerminalDocument.size();
 
             DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
-            Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equServerID, StringClass.get(20)));
-            retailLM.getLPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
-            retailLM.getLPByName("dataEquipmentServerLog").change(message, session, logObject);
-            retailLM.getLPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
+            Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equServerID, StringClass.get(20)));
+            retailLM.getLCPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
+            retailLM.getLCPByName("dataEquipmentServerLog").change(message, session, logObject);
+            retailLM.getLCPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
         }
 
         return session.apply(this);
@@ -697,7 +698,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public void succeedTransaction(Integer transactionID) throws SQLException {
         DataSession session = createSession();
-        retailLM.getLPByName("succeededMachineryPriceTransaction").change(true, session,
+        retailLM.getLCPByName("succeededMachineryPriceTransaction").change(true, session,
                 session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
         session.apply(this);
     }
@@ -706,12 +707,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public void errorTransactionReport(Integer transactionID, Exception e) throws RemoteException, SQLException {
         DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("machineryPriceTransactionError"));
-        retailLM.getLPByName("machineryPriceTransactionMachineryPriceTransactionError").change(transactionID, session, errorObject);
-        retailLM.getLPByName("dataMachineryPriceTransactionError").change(e.toString(), session, errorObject);
-        retailLM.getLPByName("dateMachineryPriceTransactionError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
+        retailLM.getLCPByName("machineryPriceTransactionMachineryPriceTransactionError").change(transactionID, session, errorObject);
+        retailLM.getLCPByName("dataMachineryPriceTransactionError").change(e.toString(), session, errorObject);
+        retailLM.getLCPByName("dateMachineryPriceTransactionError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
-        retailLM.getLPByName("errorTraceMachineryPriceTransactionError").change(os.toString(), session, errorObject);
+        retailLM.getLCPByName("errorTraceMachineryPriceTransactionError").change(os.toString(), session, errorObject);
 
         session.apply(this);
     }
@@ -721,14 +722,14 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             RemoteException, SQLException {
         DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"));
-        Object equipmentServerObject = retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-        retailLM.getLPByName("equipmentServerEquipmentServerError").change(equipmentServerObject, session, errorObject);
-        retailLM.getLPByName("dataEquipmentServerError").change(exception.toString(), session, errorObject);
+        Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+        retailLM.getLCPByName("equipmentServerEquipmentServerError").change(equipmentServerObject, session, errorObject);
+        retailLM.getLCPByName("dataEquipmentServerError").change(exception.toString(), session, errorObject);
         OutputStream os = new ByteArrayOutputStream();
         exception.printStackTrace(new PrintStream(os));
-        retailLM.getLPByName("erTraceEquipmentServerError").change(os.toString(), session, errorObject);
+        retailLM.getLCPByName("erTraceEquipmentServerError").change(os.toString(), session, errorObject);
 
-        retailLM.getLPByName("dateEquipmentServerError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
+        retailLM.getLCPByName("dateEquipmentServerError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
 
         session.apply(this);
     }
@@ -736,8 +737,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public EquipmentServerSettings readEquipmentServerSettings(String equipmentServer) throws SQLException {
         DataSession session = createSession();
-        Integer equipmentServerID = (Integer) retailLM.getLPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-        Integer delay = (Integer) retailLM.getLPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
+        Integer equipmentServerID = (Integer) retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+        Integer delay = (Integer) retailLM.getLCPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
         return new EquipmentServerSettings(delay);
     }
 

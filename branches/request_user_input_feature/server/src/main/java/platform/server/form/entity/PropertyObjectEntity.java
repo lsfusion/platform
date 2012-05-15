@@ -33,10 +33,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public PropertyObjectEntity(LP<P> property, PropertyObjectInterfaceEntity... objects) {
-        this((T) property.property, property.getMap(objects), property.getCreationScript());
-    }
-
     public PropertyObjectEntity(T property, Map<P, PropertyObjectInterfaceEntity> mapping) {
         this(property, mapping, null);
     }

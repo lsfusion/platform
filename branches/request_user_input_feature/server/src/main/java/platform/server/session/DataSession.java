@@ -24,6 +24,7 @@ import platform.server.form.navigator.ComputerController;
 import platform.server.form.navigator.IsServerRestartingController;
 import platform.server.form.navigator.UserController;
 import platform.server.logics.*;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
@@ -255,13 +256,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
     public final BaseClass baseClass;
     public final CustomClass namedObject;
-    public final LP<?> name;
+    public final LCP<?> name;
     public final AbstractGroup recognizeGroup;
     public final CustomClass transaction;
-    public final LP<?> date;
+    public final LCP<?> date;
     public final ConcreteCustomClass sessionClass;
-    public final LP<?> currentDate;
-    public final LP<?> currentSession;
+    public final LCP<?> currentDate;
+    public final LCP<?> currentSession;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -272,7 +273,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, LP<?> currentSession, SQLSession idSession) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LCP name, AbstractGroup recognizeGroup, CustomClass transaction, LCP date, LCP currentDate, LCP currentSession, SQLSession idSession) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 

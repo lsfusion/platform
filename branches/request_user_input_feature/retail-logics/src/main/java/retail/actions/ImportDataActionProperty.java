@@ -3,6 +3,7 @@ package retail.actions;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -35,9 +36,9 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
 
         try {
             // Get a connection to the database
-            conn = DriverManager.getConnection(((String) retailLM.getLPByName("importUrl").read(context)).trim(),
-                    ((String) retailLM.getLPByName("importLogin").read(context)).trim(),
-                    ((String) retailLM.getLPByName("importPassword").read(context)).trim());
+            conn = DriverManager.getConnection(((String) retailLM.getLCPByName("importUrl").read(context)).trim(),
+                    ((String) retailLM.getLCPByName("importLogin").read(context)).trim(),
+                    ((String) retailLM.getLCPByName("importPassword").read(context)).trim());
 
             importItemGroup(context, conn);
 
@@ -67,7 +68,7 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
         ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("itemGroup"),
                 BL.LM.extSIDToObject.getMapping(parentGroupID));
 
-        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, retailLM.getLPByName("parentItemGroup").getMapping(itemGroupKey),
+        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, retailLM.getLCPByName("parentItemGroup").getMapping(itemGroupKey),
                 BL.LM.object((ConcreteCustomClass) retailLM.getClassByName("itemGroup")).getMapping(parentGroupKey));
 
         Collection<? extends ImportKey<?>> keys = Arrays.asList(itemGroupKey, parentGroupKey);

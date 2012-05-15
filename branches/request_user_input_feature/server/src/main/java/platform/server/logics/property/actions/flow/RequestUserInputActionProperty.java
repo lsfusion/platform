@@ -17,18 +17,18 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     private final String chosenKey;
 
-    private final LP requestCanceledProperty;
+    private final LCP requestCanceledProperty;
     private final AnyValuePropertyHolder requestedValueProperty;
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
     private final StaticCustomClass formResultClass;
-    private final LP formResultProperty;
+    private final LCP formResultProperty;
 
     public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<I> action,
                                                                         Type requestValueType, String chosenKey,
                                                                         LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
-                                                                        AnyValuePropertyHolder chosenValueProperty, StaticCustomClass formResultClass, LP formResultProperty) {
+                                                                        AnyValuePropertyHolder chosenValueProperty, StaticCustomClass formResultClass, LCP formResultProperty) {
         super(sID, caption, innerInterfaces, action);
 
         this.requestValueType = requestValueType;

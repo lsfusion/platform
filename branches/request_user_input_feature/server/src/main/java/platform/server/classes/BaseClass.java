@@ -22,6 +22,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ObjectClassProperty;
 import platform.server.logics.table.ObjectTable;
@@ -89,7 +90,7 @@ public class BaseClass extends AbstractCustomClass {
         objectClass = new StaticCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClass, sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]));
     }
 
-    public void fillIDs(DataSession session, LP name, LP classSID) throws SQLException {
+    public void fillIDs(DataSession session, LCP name, LCP classSID) throws SQLException {
         Set<CustomClass> allClasses = new HashSet<CustomClass>();
         fillChilds(allClasses);
         allClasses.remove(objectClass);

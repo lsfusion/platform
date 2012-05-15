@@ -32,6 +32,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import platform.server.logics.property.change.PropertyChangeListener;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -576,7 +577,43 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
     public final Expr changeExpr;
 
-    protected <D extends PropertyInterface, W extends PropertyInterface> void addEvent(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement, int options) {
+    public <D extends PropertyInterface> void setEventChange(boolean valueChanged, IncrementType incrementType, CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>> valueImplement, List<CalcPropertyMapImplement<?, T>> whereImplements, Collection<CalcPropertyMapImplement<?, T>> onChangeImplements) {
+        // нужно onChange обернуть в getChange, and where, and change implement'ы
+        if(!valueChanged)
+            valueImplement = new CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>>(valueImplement.property.getOld(), valueImplement.mapping);
+
+        List<CalcPropertyMapImplement<?, T>> onChangeWhereImplements = new ArrayList<CalcPropertyMapImplement<?, T>>();
+        for(CalcPropertyMapImplement<?, T> onChangeImplement : onChangeImplements)
+            onChangeWhereImplements.add(onChangeImplement.mapChanged(incrementType));
+        for(CalcPropertyInterfaceImplement<T> mapping : valueImplement.mapping.values())
+            if(mapping instanceof CalcPropertyMapImplement)
+                onChangeWhereImplements.add(((CalcPropertyMapImplement<?, T>) mapping).mapChanged(IncrementType.CHANGE));
+
+        CalcPropertyMapImplement<?, T> where;
+        if(onChangeWhereImplements.size() > 0) {
+            CalcPropertyMapImplement<?, T> onChangeWhere;
+            if(onChangeWhereImplements.size()==1)
+                where = BaseUtils.single(onChangeWhereImplements);
+            else
+                where = DerivedProperty.createUnion(interfaces, onChangeWhereImplements);
+            if(whereImplements.size()>0)
+                where = DerivedProperty.createAnd(interfaces, where, whereImplements);
+        } else { // по сути новая ветка, assert что whereImplements > 0
+            where = whereImplements.get(0);
+            if(whereImplements.size() > 1)
+                where = DerivedProperty.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()));
+        }
+        setEventChange(DerivedProperty.createJoin(valueImplement), where);
+    }
+
+    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {
+        setEventChange(valueImplement, whereImplement, 0);
+    }
+
+    private <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement, int options) {
+        if(!((CalcProperty)whereImplement.property).noDB())
+            whereImplement = whereImplement.mapChanged(IncrementType.SET);
+
         Event<D,T> event = new Event<D,T>(this, valueImplement, whereImplement, options);
         // запишем в DataProperty
         for(DataProperty dataProperty : getDataChanges())
@@ -655,4 +692,17 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     protected PropertyClassImplement<T, ?> createClassImplement(List<ValueClassWrapper> classes, List<T> mapping) {
         return new CalcPropertyClassImplement<T>(this, classes, mapping);
     }
+
+    private LCP logProperty;
+
+    public LCP getLogProperty() {
+        return logProperty;
+    }
+
+    public void setLogProperty(LCP logProperty) {
+        this.logProperty = logProperty;
+    }
+
+    public boolean autoset;
+
 }

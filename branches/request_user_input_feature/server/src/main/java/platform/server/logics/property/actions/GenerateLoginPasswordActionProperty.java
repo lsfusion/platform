@@ -4,6 +4,8 @@ import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -14,13 +16,13 @@ import java.util.*;
 
 public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
 
-    private LP email;
-    private LP userLogin;
-    private LP userPassword;
+    private LCP email;
+    private LCP userLogin;
+    private LCP userPassword;
 
     private final ClassPropertyInterface customUserInterface;
 
-    public GenerateLoginPasswordActionProperty(LP email, LP userLogin, LP userPassword, ValueClass customUser) {
+    public GenerateLoginPasswordActionProperty(LCP email, LCP userLogin, LCP userPassword, ValueClass customUser) {
         super("generateLoginPassword", ServerResourceBundle.getString("logics.property.actions.generate.login.and.password"), new ValueClass[]{customUser});
 
         this.email = email;

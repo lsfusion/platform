@@ -1001,7 +1001,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         synchronizePropertyDraws();
     }
 
-    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LP deleteLP) {
+    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
         ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
 
@@ -1323,7 +1323,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void fillDaysOff() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        LP generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
+        LCP generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
 
         Map<Object, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
 
@@ -2362,7 +2362,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LP isProperty = LM.is(LM.property);
+        LCP isProperty = LM.is(LM.property);
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2374,7 +2374,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (Map<Object, Object> values : result.values()) {
             Object userLoggable = values.get("userLoggableProperty");
             if (userLoggable != null) {
-                LM.makeUserLoggable(getLP(values.get("SIDProperty").toString().trim()));
+                LM.makeUserLoggable((LCP)getLP(values.get("SIDProperty").toString().trim()));
             }
         }
 
@@ -2384,7 +2384,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LP isNotification = LM.is(LM.notification);
+        LCP isNotification = LM.is(LM.notification);
         Map<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2411,12 +2411,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             query2.and(LM.inNotificationProperty.getExpr(session.modifier, notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
-            List<LP> listInNotificationProperty = new ArrayList();
+            List<LCP> listInNotificationProperty = new ArrayList();
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows2 : result2.entrySet()) {
-                listInNotificationProperty.add(getLP(rows2.getValue().get("SIDProperty").toString().trim()));
+                listInNotificationProperty.add((LCP) getLP(rows2.getValue().get("SIDProperty").toString().trim()));
             }
 
-            for (LP prop : listInNotificationProperty) {
+            for (LCP prop : listInNotificationProperty) {
                 Map<Object, Object> rowValue = rows.getValue();
                 boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
                 String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
@@ -2427,14 +2427,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
                 LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, LM.BL)));
 
-                Object[] params = new Object[prop.listInterfaces.size() + 1];
-                params[0] = prop;
-                for (int i = 1; i <= prop.listInterfaces.size(); i++)
-                    params[i] = i;
+                Integer[] params = new Integer[prop.listInterfaces.size()];
+                for (int i = 0; i < prop.listInterfaces.size(); i++)
+                    params[i] = i+1;
                 if (isDerivedChange)
-                    emailNotificationProperty.setEventAction(params);
+                    emailNotificationProperty.setEventAction(prop, params);
                 else
-                    emailNotificationProperty.setEventSetAction(params);
+                    emailNotificationProperty.setEventSetAction(prop, params);
             }
         }
     }
@@ -2443,7 +2442,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LP isProperty = LM.is(LM.property);
+        LCP isProperty = LM.is(LM.property);
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2734,7 +2733,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @Override
     public byte[] readFile(String sid, String... params) throws RemoteException {
-        LP property = getLP(sid);
+        LCP property = (LCP) getLP(sid);
         List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>(property.listInterfaces);
         DataObject[] objects = new DataObject[interfaces.size()];
         byte[] fileBytes;

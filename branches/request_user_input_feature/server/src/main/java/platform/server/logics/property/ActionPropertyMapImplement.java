@@ -31,7 +31,7 @@ public class ActionPropertyMapImplement<T extends PropertyInterface> extends Act
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, FormEnvironment<T> formEnv) throws SQLException {
-        return env.execute(property, BaseUtils.join(mapping, keys), formEnv == null ? null : formEnv.map(ActionProperty.cast(mapping)), null);
+        return env.execute(property, BaseUtils.join(mapping, keys), formEnv == null ? null : formEnv.map(mapping), null);
     }
 
     public <L extends PropertyInterface> void mapEventAction(CalcPropertyMapImplement<L, T> where, int options) {
@@ -44,7 +44,6 @@ public class ActionPropertyMapImplement<T extends PropertyInterface> extends Act
 
     // дублирующие Calc
     public Map<T,ValueClass> mapCommonInterfaces() {
-        return crossJoin(mapping, property.getCommonClasses().interfaces);
+        return crossJoin(mapping, property.getMapClasses());
     }
-
 }

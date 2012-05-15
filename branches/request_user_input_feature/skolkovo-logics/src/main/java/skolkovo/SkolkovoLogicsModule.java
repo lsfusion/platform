@@ -854,8 +854,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LCP dateResultNoticedLegalCheck;
     LAP setCurrentDateResultNoticedLegalCheck;
     LCP emailClaimerHeaderLegalCheck;
-    LCP emailClaimerLegalCheck;
-    LCP emailClaimerLegalCheckProject;
+    LAP emailClaimerLegalCheck;
+    LAP emailClaimerLegalCheckProject;
     LCP needNoticeNegativeLegalCheck, needNoticeChangeLegalCheck, needNoticeLegalCheck;
     LAP emailFondFormalControlEA;
     LCP emailFondHeaderFormalControl;
@@ -2800,7 +2800,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", sumDate, dateStartVote, 1, requiredPeriod);
         aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.sumDate, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
-        dateEndVote.setEventChangedSet(aggrDateEndVote, 1, dateStartVote, 1);
+        dateEndVote.setEventChangeNewSet(aggrDateEndVote, 1, dateStartVote, 1);
 
         weekStartVote = addJProp("weekStartVote", true, "Неделя начала", baseLM.weekInDate, dateStartVote, 1);
         quantityNewExpertWeek = addSGProp("quantityNewExpertWeek", "Кол-во заседаний", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1, weekStartVote, 2);
@@ -3266,7 +3266,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateFormalControl = addJProp("updateDateFormalControl", "Дата изменения проекта", updateDateProject, projectFormalControl, 1);
 
         dateTimeSubmitFormalControl = addDProp("dateTimeSubmitFormalControl", "Дата/время отправки проекта", DateTimeClass.instance, formalControl);
-        dateTimeSubmitFormalControl.setEventChangedSet(updateDateFormalControl, 1, is(formalControl), 1);
+        dateTimeSubmitFormalControl.setEventChangeNewSet(updateDateFormalControl, 1, is(formalControl), 1);
         dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitFormalControl, 1);
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
@@ -3300,7 +3300,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateLegalCheck = addJProp("updateDateLegalCheck", "Дата изменения проекта", updateDateProject, projectLegalCheck, 1);
 
         dateTimeSubmitLegalCheck = addDProp("dateTimeSubmitLegalCheck", "Дата/время отправки проекта", DateTimeClass.instance, legalCheck);
-        dateTimeSubmitLegalCheck.setEventChangedSet(updateDateLegalCheck, 1, is(legalCheck), 1);
+        dateTimeSubmitLegalCheck.setEventChangeNewSet(updateDateLegalCheck, 1, is(legalCheck), 1);
         dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitLegalCheck, 1);
 
         resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
@@ -3313,7 +3313,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionLegalCheck = addDProp(idGroup, "projectActionLegalCheck", "Тип заявки (ИД)", projectAction, legalCheck);
         nameProjectActionLegalCheck = addJProp(baseGroup, "nameProjectActionLegalCheck", "Тип заявки", baseLM.name, projectActionLegalCheck, 1);
         nameProjectActionLegalCheck.setPreferredCharWidth(20);
-        projectActionLegalCheck.setEventChanged(addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
+        projectActionLegalCheck.setEventChangeNew(addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
 
         maxForesightLegalChek = addJProp("maxForesightLegalChek", maxForesightProjectCluster, projectLegalCheck, 1, addJProp(firstClusterProject, projectLegalCheck, 1), 1);
         nameMaxForesightLegalChek = addJProp("nameMaxForesightLegalChek", "Форсайт", nameNative, maxForesightLegalChek, 1);
@@ -3342,7 +3342,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionFormalControl = addDProp(idGroup, "projectActionFormalControl", "Тип заявки (ИД)", projectAction, formalControl);
         nameProjectActionFormalControl = addJProp(baseGroup, "nameProjectActionFormalControl", "Тип заявки", baseLM.name, projectActionFormalControl, 1);
         nameProjectActionFormalControl.setPreferredCharWidth(20);
-        projectActionFormalControl.setEventChanged(addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
+        projectActionFormalControl.setEventChangeNew(addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
 
         executeFormalControlProject = addJProp("executeFormalControlProject", true, "Действующая", and(false, false),
                 currentFormalControlProject, 1,
@@ -3472,7 +3472,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 needTranslationProject, 1);
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
-        sentForTranslationProject.setEventChangedSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
+        sentForTranslationProject.setEventChangeNewSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
 
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
         dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", baseLM.jumpWorkdays, baseLM.defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
@@ -3940,13 +3940,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerHeaderLegalCheck = addJProp("emailClaimerHeaderLegalCheck", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerLegalCheck, 1);
 
-        emailClaimerLegalCheck = addJProp(actionGroup, true, "emailClaimerLegalCheck", "Письмо о формальной экспертизе", baseLM.and1,
+        emailClaimerLegalCheck = addIfAProp(actionGroup, true, "emailClaimerLegalCheck", "Письмо о формальной экспертизе", object(legalCheck), 1,
                 addListAProp(
                         setCurrentDateResultNoticedLegalCheck, 1, // записываем дату отсылки
                         addJoinAProp(emailClaimerLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), 1, // отсылаем письмо
                         addSetPropertyAProp(resultNoticedLegalCheck, 1, baseLM.vtrue), 1 // пишем, что отослано
-                ), 1,
-        object(legalCheck), 1);
+                ), 1);
         emailClaimerLegalCheck.setImage("email.png");
         emailClaimerLegalCheck.property.askConfirm = true;
 
@@ -3967,7 +3966,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerChangeLegalCheck.setImage("email.png");
         emailClaimerChangeLegalCheck.property.askConfirm = true;
 
-        emailClaimerLegalCheckProject = addJProp(actionGroup, true, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
+        emailClaimerLegalCheckProject = addJoinAProp(actionGroup, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
         emailClaimerLegalCheckProject.setEventSetAction(positiveResultForesightCheckProject, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", baseLM.equals2, languageExpert, 1, addCProp(language, "english"));

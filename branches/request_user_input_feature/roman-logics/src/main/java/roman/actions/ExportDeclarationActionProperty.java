@@ -10,6 +10,7 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -119,14 +120,14 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 writerTSDocs44.println("");
             }
 
-            LP isGroupDeclaration = BL.LM.is(romanRB.getClassByName("groupDeclaration"));
+            LCP isGroupDeclaration = BL.LM.is(romanRB.getClassByName("groupDeclaration"));
             Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<Object, Object> query = new Query<Object, Object>(keys);
             for (String propertySID : exportProperties)
-                query.properties.put(propertySID, romanRB.getLPByName(propertySID).getExpr(context.getModifier(), key));
+                query.properties.put(propertySID, romanRB.getLCPByName(propertySID).getExpr(context.getModifier(), key));
             query.and(isGroupDeclaration.getExpr(key).getWhere());
-            query.and(romanRB.getLPByName("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
+            query.and(romanRB.getLCPByName("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
 
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
@@ -148,10 +149,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 innerInvoiceKeys.put("innerInvoice", innerInvoiceExpr);
 
                 Query<Object, Object> innerInvoiceQuery = new Query<Object, Object>(innerInvoiceKeys);
-                innerInvoiceQuery.properties.put("sidInnerInvoice", romanRB.getLPByName("sidInnerInvoice").getExpr(innerInvoiceExpr));
-                innerInvoiceQuery.properties.put("dateInnerInvoice", romanRB.getLPByName("dateInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("sidInnerInvoice", romanRB.getLCPByName("sidInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("dateInnerInvoice", romanRB.getLCPByName("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
-                innerInvoiceQuery.and(romanRB.getLPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+                innerInvoiceQuery.and(romanRB.getLCPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 

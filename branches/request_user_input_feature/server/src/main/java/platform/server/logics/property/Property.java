@@ -15,18 +15,13 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.PullExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
@@ -35,12 +30,9 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.PanelLocationView;
 import platform.server.form.view.panellocation.ShortcutPanelLocationView;
-import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
-import platform.server.logics.property.actions.edit.DefaultChangeActionProperty;
-import platform.server.logics.property.change.PropertyChangeListener;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
@@ -53,7 +45,6 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
@@ -69,7 +60,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int preferredCharWidth;
 
     public boolean loggable;
-    private LP logProperty;
     public LP logFormProperty;
 
     public void setFixedCharWidth(int charWidth) {
@@ -112,8 +102,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Boolean askConfirm;
 
-    public boolean autoset;
-
     public String toString() {
         return caption;
     }
@@ -134,14 +122,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void setID(int iID) {
         ID = iID;
-    }
-
-    public LP getLogProperty() {
-        return logProperty;
-    }
-
-    public void setLogProperty(LP logProperty) {
-        this.logProperty = logProperty;
     }
 
     public LP getLogFormProperty() {
@@ -599,53 +579,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
     }
-
-    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, T> whereImplement, int options) {
-        assert this instanceof ActionProperty;
-        setEvent(DerivedProperty.<T>createStatic(true, ActionClass.instance), whereImplement, options);
-    }
-
-    public <D extends PropertyInterface> void setEvent(boolean valueChanged, IncrementType incrementType, CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>> valueImplement, List<CalcPropertyMapImplement<?, T>> whereImplements, Collection<CalcPropertyMapImplement<?, T>> onChangeImplements) {
-        // нужно onChange обернуть в getChange, and where, and change implement'ы
-        if(!valueChanged)
-            valueImplement = new CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>>(valueImplement.property.getOld(), valueImplement.mapping);
-
-        List<CalcPropertyMapImplement<?, T>> onChangeWhereImplements = new ArrayList<CalcPropertyMapImplement<?, T>>();
-        for(CalcPropertyMapImplement<?, T> onChangeImplement : onChangeImplements)
-            onChangeWhereImplements.add(onChangeImplement.mapChanged(incrementType));
-        for(CalcPropertyInterfaceImplement<T> mapping : valueImplement.mapping.values())
-            if(mapping instanceof CalcPropertyMapImplement)
-                onChangeWhereImplements.add(((CalcPropertyMapImplement<?, T>) mapping).mapChanged(IncrementType.CHANGE));
-
-        CalcPropertyMapImplement<?, T> where;
-        if(onChangeWhereImplements.size() > 0) {
-            CalcPropertyMapImplement<?, T> onChangeWhere;
-            if(onChangeWhereImplements.size()==1)
-                where = BaseUtils.single(onChangeWhereImplements);
-            else
-                where = DerivedProperty.createUnion(interfaces, onChangeWhereImplements);
-            if(whereImplements.size()>0)
-                where = DerivedProperty.createAnd(interfaces, where, whereImplements);
-        } else { // по сути новая ветка, assert что whereImplements > 0
-            where = whereImplements.get(0);
-            if(whereImplements.size() > 1)
-                where = DerivedProperty.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()));
-        }
-        setEvent(DerivedProperty.createJoin(valueImplement), where);
-    }
-
-    public <D extends PropertyInterface, W extends PropertyInterface> void setEvent(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {
-        setEvent(valueImplement, whereImplement, 0);
-    }
-
-    private <D extends PropertyInterface, W extends PropertyInterface> void setEvent(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement, int options) {
-        if(!((CalcProperty)whereImplement.property).noDB())
-            whereImplement = whereImplement.mapChanged(IncrementType.SET);
-
-        addEvent(valueImplement, whereImplement, options);
-    }
-
-    protected abstract <D extends PropertyInterface, W extends PropertyInterface> void addEvent(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement, int options);
 
     @Override
     public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {

@@ -680,7 +680,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
-                paasLM.configurationStop.change(true, session, confObj);
+                paasLM.configurationStop.execute(session, confObj);
 
                 String errorMsg = waitForStopped(configurationId);
                 if (errorMsg != null) {

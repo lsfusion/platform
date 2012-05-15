@@ -12,6 +12,8 @@ import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.FormView;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
 
@@ -201,7 +203,7 @@ public class ScriptingFormEntity extends FormEntity {
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LP<?> addObjAction = LM.getSimpleAddObjectAction((CustomClass)obj[0].baseClass);
+                LAP addObjAction = LM.getSimpleAddObjectAction((CustomClass)obj[0].baseClass);
                 property = addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
                 if (mapping.size() != 1) {
@@ -262,7 +264,7 @@ public class ScriptingFormEntity extends FormEntity {
         }
         MappedProperty showIf = options.getShowIf();
         if (showIf != null) {
-            LM.showIf(this, property, showIf.property, showIf.mapping);
+            LM.showIf(this, property, (LCP) showIf.property, showIf.mapping);
         }
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
@@ -285,7 +287,7 @@ public class ScriptingFormEntity extends FormEntity {
             params[i + 2] = i + 1;
         }
         Collection<ObjectEntity> objects = groundProperty.getObjectInstances();
-        return (CalcPropertyObjectEntity) addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+        return addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
     private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
@@ -324,17 +326,17 @@ public class ScriptingFormEntity extends FormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<LP<?>> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<LP> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            addFixedFilter(new NotNullFilterEntity((CalcPropertyObjectEntity) addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject((LCP) properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
         }
     }
 
     public void addScriptedHints(boolean isHintNoUpdate, List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?>[] properties = new LP<?>[propNames.size()];
+        LCP[] properties = new LCP[propNames.size()];
         for (int i = 0; i < propNames.size(); i++) {
-            properties[i] = LM.findLPByCompoundName(propNames.get(i));
+            properties[i] = (LCP) LM.findLPByCompoundName(propNames.get(i));
         }
 
         if (isHintNoUpdate) {
@@ -344,7 +346,7 @@ public class ScriptingFormEntity extends FormEntity {
         }
     }
     
-    public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<LP<?>> properties, List<List<String>> mappings, List<Boolean> defaults) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<LP> properties, List<List<String>> mappings, List<Boolean> defaults) throws ScriptingErrorLog.SemanticErrorException {
         assert captions.size() == mappings.size() && keystrokes.size() == mappings.size() && properties.size() == mappings.size();
 
         RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(genID());
@@ -360,7 +362,7 @@ public class ScriptingFormEntity extends FormEntity {
             }
 
             regularFilterGroup.addFilter(
-                    new RegularFilterEntity(genID(), new NotNullFilterEntity((CalcPropertyObjectEntity) addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
+                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject((LCP) properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
                     setDefault
             );
         }

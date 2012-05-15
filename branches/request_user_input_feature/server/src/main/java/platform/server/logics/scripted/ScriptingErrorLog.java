@@ -217,7 +217,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("static сlass '%s' should have instances", className));
     }
 
-    public void emitParamCountError(LsfLogicsParser parser, LP<?> property, int paramCount) throws SemanticErrorException {
+    public void emitParamCountError(LsfLogicsParser parser, LP property, int paramCount) throws SemanticErrorException {
         int interfacesCount = property.property.interfaces.size();
         emitParamCountError(parser, interfacesCount, paramCount);
     }

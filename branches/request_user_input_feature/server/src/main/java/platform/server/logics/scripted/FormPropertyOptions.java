@@ -52,40 +52,40 @@ public class FormPropertyOptions {
         return readOnlyIf;
     }
 
-    public void setReadOnlyIf(CalcPropertyObjectEntity readOnlyIf) {
-        this.readOnlyIf = readOnlyIf;
+    public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
+        this.readOnlyIf = (CalcPropertyObjectEntity) readOnlyIf;
     }
 
     public CalcPropertyObjectEntity getBackground() {
         return background;
     }
 
-    public void setBackground(CalcPropertyObjectEntity background) {
-        this.background = background;
+    public void setBackground(PropertyObjectEntity background) {
+        this.background = (CalcPropertyObjectEntity) background;
     }
 
     public CalcPropertyObjectEntity getForeground() {
         return foreground;
     }
 
-    public void setForeground(CalcPropertyObjectEntity foreground) {
-        this.foreground = foreground;
+    public void setForeground(PropertyObjectEntity foreground) {
+        this.foreground = (CalcPropertyObjectEntity) foreground;
     }
 
     public CalcPropertyObjectEntity getHeader() {
         return header;
     }
 
-    public void setHeader(CalcPropertyObjectEntity header) {
-        this.header = header;
+    public void setHeader(PropertyObjectEntity header) {
+        this.header = (CalcPropertyObjectEntity) header;
     }
 
     public CalcPropertyObjectEntity getFooter() {
         return footer;
     }
 
-    public void setFooter(CalcPropertyObjectEntity footer) {
-        this.footer = footer;
+    public void setFooter(PropertyObjectEntity footer) {
+        this.footer = (CalcPropertyObjectEntity) footer;
     }
 
     public void setForceViewType(ClassViewType forceViewType) {

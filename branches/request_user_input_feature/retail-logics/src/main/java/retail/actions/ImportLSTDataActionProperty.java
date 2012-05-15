@@ -37,55 +37,55 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     @Override
     public void execute(ExecutionContext context) throws SQLException {
 
-        String path = retailLM.getLPByName("importLSTDirectory").read(context).toString().trim();
+        String path = retailLM.getLCPByName("importLSTDirectory").read(context).toString().trim();
         if (!"".equals(path)) {
-            Boolean importInactive = retailLM.getLPByName("importInactive").read(context) != null;
-            if (retailLM.getLPByName("importGroupItems").read(context) != null) {
+            Boolean importInactive = retailLM.getLCPByName("importInactive").read(context) != null;
+            if (retailLM.getLCPByName("importGroupItems").read(context) != null) {
                 importItemGroups(path + "//_sprgrt.dbf", context);
                 importParentGroups(path + "//_sprgrt.dbf", context);
             }
 
-            if (retailLM.getLPByName("importBanks").read(context) != null)
+            if (retailLM.getLCPByName("importBanks").read(context) != null)
                 importBanks(path + "//_sprbank.dbf", context);
 
-            if (retailLM.getLPByName("importCompanies").read(context) != null)
+            if (retailLM.getLCPByName("importCompanies").read(context) != null)
                 importCompanies(path + "//_sprana.dbf", importInactive, context);
 
-            if (retailLM.getLPByName("importSuppliers").read(context) != null)
+            if (retailLM.getLCPByName("importSuppliers").read(context) != null)
                 importSuppliers(path + "//_sprana.dbf", importInactive, context);
 
-            if (retailLM.getLPByName("importCustomers").read(context) != null)
+            if (retailLM.getLCPByName("importCustomers").read(context) != null)
                 importCustomers(path + "//_sprana.dbf", importInactive, context);
 
-            if (retailLM.getLPByName("importStores").read(context) != null)
+            if (retailLM.getLCPByName("importStores").read(context) != null)
                 importStores(path + "//_sprana.dbf", importInactive, context);
 
-            if (retailLM.getLPByName("importDepartmentStores").read(context) != null)
+            if (retailLM.getLCPByName("importDepartmentStores").read(context) != null)
                 importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", importInactive, context);
 
-            if (retailLM.getLPByName("importRateWastes").read(context) != null)
+            if (retailLM.getLCPByName("importRateWastes").read(context) != null)
                 importRateWastes(path + "//_sprvgrt.dbf", context);
 
-            if (retailLM.getLPByName("importWares").read(context) != null) {
+            if (retailLM.getLCPByName("importWares").read(context) != null) {
                 importWares(path + "//_sprgrm.dbf", context);
             }
 
-            if (retailLM.getLPByName("importItems").read(context) != null) {
-                Object numberOfItems = retailLM.getLPByName("importNumberItems").read(context);
-                Object numberOfItemsAtATime = retailLM.getLPByName("importNumberItemsAtATime").read(context);
+            if (retailLM.getLCPByName("importItems").read(context) != null) {
+                Object numberOfItems = retailLM.getLCPByName("importNumberItems").read(context);
+                Object numberOfItemsAtATime = retailLM.getLCPByName("importNumberItemsAtATime").read(context);
                 importItems(path + "//_sprgrm.dbf", path + "//_postvar.dbf", path + "//_grmcen.dbf", importInactive, context,
                         numberOfItems == null ? 0 : (Integer) numberOfItems, numberOfItemsAtATime == null ? 5000 : (Integer) numberOfItemsAtATime);
             }
 
-            if (retailLM.getLPByName("importPrices").read(context) != null) {
+            if (retailLM.getLCPByName("importPrices").read(context) != null) {
                 importPrices(path + "//_grmcen.dbf", context);
             }
 
-            if (retailLM.getLPByName("importAssortment").read(context) != null) {
+            if (retailLM.getLCPByName("importAssortment").read(context) != null) {
                 importAssortment(path + "//_strvar.dbf", context);
             }
 
-            if (retailLM.getLPByName("importShipment").read(context) != null) {
+            if (retailLM.getLCPByName("importShipment").read(context) != null) {
                 importShipment(path + "//_ostn.dbf", context);
             }
         }
@@ -105,7 +105,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(parentGroupID));
 
             List<ImportProperty<?>> propsParent = new ArrayList<ImportProperty<?>>();
-            propsParent.add(new ImportProperty(parentGroupID, retailLM.getLPByName("parentItemGroup").getMapping(itemGroupKey),
+            propsParent.add(new ImportProperty(parentGroupID, retailLM.getLCPByName("parentItemGroup").getMapping(itemGroupKey),
                     BL.LM.object(retailLM.getClassByName("itemGroup")).getMapping(parentGroupKey)));
             ImportTable table = new ImportTable(Arrays.asList(itemGroupID, parentGroupID), data);
 
@@ -233,22 +233,22 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField nameUnitOfMeasureField = new ImportField(BL.LM.name);
         ImportField brandIDField = new ImportField(BL.LM.name);
         ImportField nameBrandField = new ImportField(BL.LM.name);
-        ImportField countryIDField = new ImportField(retailLM.getLPByName("extSIDCountry"));
+        ImportField countryIDField = new ImportField(retailLM.getLCPByName("extSIDCountry"));
         ImportField nameCountryField = new ImportField(BL.LM.name);
-        ImportField barcodeField = new ImportField(retailLM.getLPByName("barcodeEx"));
+        ImportField barcodeField = new ImportField(retailLM.getLCPByName("barcodeEx"));
         ImportField dateField = new ImportField(BL.LM.date);
-        ImportField importerPriceField = new ImportField(retailLM.getLPByName("importerPriceItemDate"));
-        ImportField percentWholesaleMarkItemField = new ImportField(retailLM.getLPByName("percentWholesaleMarkItem"));
-        ImportField isFixPriceItemField = new ImportField(retailLM.getLPByName("isFixPriceItem"));
-        ImportField isLoafCutItemField = new ImportField(retailLM.getLPByName("isLoafCutItem"));
-        ImportField isWeightItemField = new ImportField(retailLM.getLPByName("isWeightItem"));
-        ImportField compositionField = new ImportField(retailLM.getLPByName("compositionScalesItem"));
-        ImportField dataSuppliersRangeItemField = new ImportField(retailLM.getLPByName("dataRate"));
-        ImportField dataRetailRangeItemField = new ImportField(retailLM.getLPByName("dataRate"));
-        ImportField quantityPackItemField = new ImportField(retailLM.getLPByName("quantityPackItem"));
+        ImportField importerPriceField = new ImportField(retailLM.getLCPByName("importerPriceItemDate"));
+        ImportField percentWholesaleMarkItemField = new ImportField(retailLM.getLCPByName("percentWholesaleMarkItem"));
+        ImportField isFixPriceItemField = new ImportField(retailLM.getLCPByName("isFixPriceItem"));
+        ImportField isLoafCutItemField = new ImportField(retailLM.getLCPByName("isLoafCutItem"));
+        ImportField isWeightItemField = new ImportField(retailLM.getLCPByName("isWeightItem"));
+        ImportField compositionField = new ImportField(retailLM.getLCPByName("compositionScalesItem"));
+        ImportField dataSuppliersRangeItemField = new ImportField(retailLM.getLCPByName("dataRate"));
+        ImportField dataRetailRangeItemField = new ImportField(retailLM.getLCPByName("dataRate"));
+        ImportField quantityPackItemField = new ImportField(retailLM.getLCPByName("quantityPackItem"));
         ImportField wareIDField = new ImportField(BL.LM.extSID);
-        ImportField priceWareField = new ImportField(retailLM.getLPByName("priceWareDate"));
-        ImportField ndsWareField = new ImportField(retailLM.getLPByName("dataRate"));
+        ImportField priceWareField = new ImportField(retailLM.getLCPByName("priceWareDate"));
+        ImportField ndsWareField = new ImportField(retailLM.getLCPByName("dataRate"));
         ImportField rateWasteIDField = new ImportField(BL.LM.extSID);
 
         ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"),
@@ -264,77 +264,77 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 BL.LM.extSIDToObject.getMapping(brandIDField));
 
         ImportKey<?> countryKey = new ImportKey(BL.LM.country,
-                retailLM.getLPByName("extSIDToCountry").getMapping(countryIDField));
+                retailLM.getLCPByName("extSIDToCountry").getMapping(countryIDField));
 
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("barcode"),
-                retailLM.getLPByName("barcodeToDate").getMapping(barcodeField, dateField));
+                retailLM.getLCPByName("barcodeToDate").getMapping(barcodeField, dateField));
 
         ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("range"),
-                retailLM.getLPByName("dataActingRateRangeToRange").getMapping(dataSuppliersRangeItemField));
+                retailLM.getLCPByName("dataActingRateRangeToRange").getMapping(dataSuppliersRangeItemField));
 
         ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("range"),
-                retailLM.getLPByName("dataActingRateRangeToRange").getMapping(dataRetailRangeItemField));
+                retailLM.getLCPByName("dataActingRateRangeToRange").getMapping(dataRetailRangeItemField));
 
         ImportKey<?> wareKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("ware"),
                 BL.LM.extSIDToObject.getMapping(wareIDField));
 
         ImportKey<?> rangeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("range"),
-                retailLM.getLPByName("dataActingRateRangeToRange").getMapping(ndsWareField));
+                retailLM.getLCPByName("dataActingRateRangeToRange").getMapping(ndsWareField));
 
         ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("rateWaste"),
                 BL.LM.extSIDToObject.getMapping(rateWasteIDField));
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-        props.add(new ImportProperty(itemGroupIDField, retailLM.getLPByName("itemGroupSku").getMapping(itemKey),
+        props.add(new ImportProperty(itemGroupIDField, retailLM.getLCPByName("itemGroupSku").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("itemGroup")).getMapping(itemGroupKey)));
 
         props.add(new ImportProperty(itemIDField, BL.LM.extSID.getMapping(itemKey)));
-        props.add(new ImportProperty(itemCaptionField, retailLM.getLPByName("captionItem").getMapping(itemKey)));
+        props.add(new ImportProperty(itemCaptionField, retailLM.getLCPByName("captionItem").getMapping(itemKey)));
 
         props.add(new ImportProperty(unitOfMeasureIDField, BL.LM.extSID.getMapping(unitOfMeasureKey)));
         props.add(new ImportProperty(nameUnitOfMeasureField, BL.LM.name.getMapping(unitOfMeasureKey)));
-        props.add(new ImportProperty(nameUnitOfMeasureField, retailLM.getLPByName("shortName").getMapping(unitOfMeasureKey)));
-        props.add(new ImportProperty(unitOfMeasureIDField, retailLM.getLPByName("unitOfMeasureItem").getMapping(itemKey),
+        props.add(new ImportProperty(nameUnitOfMeasureField, retailLM.getLCPByName("shortName").getMapping(unitOfMeasureKey)));
+        props.add(new ImportProperty(unitOfMeasureIDField, retailLM.getLCPByName("unitOfMeasureItem").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("unitOfMeasure")).getMapping(unitOfMeasureKey)));
 
         props.add(new ImportProperty(nameBrandField, BL.LM.name.getMapping(brandKey)));
         props.add(new ImportProperty(brandIDField, BL.LM.extSID.getMapping(brandKey)));
-        props.add(new ImportProperty(brandIDField, retailLM.getLPByName("brandItem").getMapping(itemKey),
+        props.add(new ImportProperty(brandIDField, retailLM.getLCPByName("brandItem").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("brand")).getMapping(brandKey)));
 
-        props.add(new ImportProperty(countryIDField, retailLM.getLPByName("extSIDCountry").getMapping(countryKey)));
+        props.add(new ImportProperty(countryIDField, retailLM.getLCPByName("extSIDCountry").getMapping(countryKey)));
         props.add(new ImportProperty(nameCountryField, BL.LM.name.getMapping(countryKey)));
-        props.add(new ImportProperty(countryIDField, retailLM.getLPByName("countryItem").getMapping(itemKey),
+        props.add(new ImportProperty(countryIDField, retailLM.getLCPByName("countryItem").getMapping(itemKey),
                 BL.LM.object(BL.LM.country).getMapping(countryKey)));
 
-        props.add(new ImportProperty(barcodeField, retailLM.getLPByName("barcodeEx").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
-        props.add(new ImportProperty(dateField, retailLM.getLPByName("dateUserBarcode").getMapping(barcodeKey)));
+        props.add(new ImportProperty(barcodeField, retailLM.getLCPByName("barcodeEx").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
+        props.add(new ImportProperty(dateField, retailLM.getLCPByName("dateUserBarcode").getMapping(barcodeKey)));
 
-        props.add(new ImportProperty(itemIDField, retailLM.getLPByName("skuBarcode").getMapping(barcodeKey),
+        props.add(new ImportProperty(itemIDField, retailLM.getLCPByName("skuBarcode").getMapping(barcodeKey),
                 BL.LM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
-        props.add(new ImportProperty(importerPriceField, retailLM.getLPByName("importerPriceItemDate").getMapping(itemKey, dateField)));
-        props.add(new ImportProperty(percentWholesaleMarkItemField, retailLM.getLPByName("percentWholesaleMarkItem").getMapping(itemKey)));
-        props.add(new ImportProperty(isFixPriceItemField, retailLM.getLPByName("isFixPriceItem").getMapping(itemKey)));
-        props.add(new ImportProperty(isLoafCutItemField, retailLM.getLPByName("isLoafCutItem").getMapping(itemKey)));
-        props.add(new ImportProperty(isWeightItemField, retailLM.getLPByName("isWeightItem").getMapping(itemKey)));
-        props.add(new ImportProperty(compositionField, retailLM.getLPByName("compositionScalesItem").getMapping(itemKey)));
-        props.add(new ImportProperty(dataSuppliersRangeItemField, retailLM.getLPByName("suppliersRangeItemDate").getMapping(itemKey, dateField, supplierRangeKey),
+        props.add(new ImportProperty(importerPriceField, retailLM.getLCPByName("importerPriceItemDate").getMapping(itemKey, dateField)));
+        props.add(new ImportProperty(percentWholesaleMarkItemField, retailLM.getLCPByName("percentWholesaleMarkItem").getMapping(itemKey)));
+        props.add(new ImportProperty(isFixPriceItemField, retailLM.getLCPByName("isFixPriceItem").getMapping(itemKey)));
+        props.add(new ImportProperty(isLoafCutItemField, retailLM.getLCPByName("isLoafCutItem").getMapping(itemKey)));
+        props.add(new ImportProperty(isWeightItemField, retailLM.getLCPByName("isWeightItem").getMapping(itemKey)));
+        props.add(new ImportProperty(compositionField, retailLM.getLCPByName("compositionScalesItem").getMapping(itemKey)));
+        props.add(new ImportProperty(dataSuppliersRangeItemField, retailLM.getLCPByName("suppliersRangeItemDate").getMapping(itemKey, dateField, supplierRangeKey),
                 BL.LM.object(retailLM.getClassByName("range")).getMapping(supplierRangeKey)));
-        props.add(new ImportProperty(dataRetailRangeItemField, retailLM.getLPByName("retailRangeItemDate").getMapping(itemKey, dateField, retailRangeKey),
+        props.add(new ImportProperty(dataRetailRangeItemField, retailLM.getLCPByName("retailRangeItemDate").getMapping(itemKey, dateField, retailRangeKey),
                 BL.LM.object(retailLM.getClassByName("range")).getMapping(retailRangeKey)));
-        props.add(new ImportProperty(quantityPackItemField, retailLM.getLPByName("quantityPackItem").getMapping(itemKey)));
+        props.add(new ImportProperty(quantityPackItemField, retailLM.getLCPByName("quantityPackItem").getMapping(itemKey)));
 
-        props.add(new ImportProperty(wareIDField, retailLM.getLPByName("wareItem").getMapping(itemKey),
+        props.add(new ImportProperty(wareIDField, retailLM.getLCPByName("wareItem").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("ware")).getMapping(wareKey)));
 
         props.add(new ImportProperty(wareIDField, BL.LM.extSID.getMapping(wareKey)));
-        props.add(new ImportProperty(priceWareField, retailLM.getLPByName("priceWareDate").getMapping(wareKey, dateField)));
-        props.add(new ImportProperty(ndsWareField, retailLM.getLPByName("rangeWareDate").getMapping(wareKey, dateField, rangeKey),
+        props.add(new ImportProperty(priceWareField, retailLM.getLCPByName("priceWareDate").getMapping(wareKey, dateField)));
+        props.add(new ImportProperty(ndsWareField, retailLM.getLCPByName("rangeWareDate").getMapping(wareKey, dateField, rangeKey),
                 BL.LM.object(retailLM.getClassByName("range")).getMapping(rangeKey)));
 
-        props.add(new ImportProperty(rateWasteIDField, retailLM.getLPByName("rateWasteItem").getMapping(itemKey),
+        props.add(new ImportProperty(rateWasteIDField, retailLM.getLCPByName("rateWasteItem").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("rateWaste")).getMapping(rateWasteKey)));
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField,
@@ -368,8 +368,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField itemIDField = new ImportField(BL.LM.extSID);
                 ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
                 ImportField dateField = new ImportField(BL.LM.date);
-                ImportField priceField = new ImportField(retailLM.getLPByName("retailPriceItemDepartmentOver"));
-                ImportField markupField = new ImportField(retailLM.getLPByName("markupItemDepartmentOver"));
+                ImportField priceField = new ImportField(retailLM.getLCPByName("retailPriceItemDepartmentOver"));
+                ImportField markupField = new ImportField(retailLM.getLCPByName("markupItemDepartmentOver"));
 
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"),
                         BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -379,8 +379,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-                props.add(new ImportProperty(priceField, retailLM.getLPByName("retailPriceItemDepartmentOver").getMapping(itemKey, departmentStoreKey, dateField)));
-                props.add(new ImportProperty(markupField, retailLM.getLPByName("markupItemDepartmentOver").getMapping(itemKey, departmentStoreKey, dateField)));
+                props.add(new ImportProperty(priceField, retailLM.getLCPByName("retailPriceItemDepartmentOver").getMapping(itemKey, departmentStoreKey, dateField)));
+                props.add(new ImportProperty(markupField, retailLM.getLCPByName("markupItemDepartmentOver").getMapping(itemKey, departmentStoreKey, dateField)));
 
                 ImportTable table = new ImportTable(Arrays.asList(itemIDField, departmentStoreIDField, dateField, priceField, markupField/*priceWareField, ndsWareField*/), data);
 
@@ -417,22 +417,22 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
                 ImportField supplierIDField = new ImportField(BL.LM.extSID);
 
-                ImportField waybillShipmentField = new ImportField(retailLM.getLPByName("numberObject"));
-                ImportField seriesWaybillShipmentField = new ImportField(retailLM.getLPByName("seriesObject"));
-                ImportField dateShipmentField = new ImportField(retailLM.getLPByName("dateShipment"));
+                ImportField waybillShipmentField = new ImportField(retailLM.getLCPByName("numberObject"));
+                ImportField seriesWaybillShipmentField = new ImportField(retailLM.getLCPByName("seriesObject"));
+                ImportField dateShipmentField = new ImportField(retailLM.getLCPByName("dateShipment"));
 
                 ImportField itemIDField = new ImportField(BL.LM.extSID);
                 ImportField shipmentDetailIDField = new ImportField(BL.LM.extSID);
-                ImportField quantityShipmentDetailField = new ImportField(retailLM.getLPByName("quantityShipmentDetail"));
-                ImportField supplierPriceShipmentDetail = new ImportField(retailLM.getLPByName("supplierPriceShipmentDetail"));
-                ImportField importerPriceShipmentDetail = new ImportField(retailLM.getLPByName("importerPriceShipmentDetail"));
-                ImportField retailPriceShipmentDetailField = new ImportField(retailLM.getLPByName("retailPriceShipmentDetail"));
-                ImportField retailMarkupShipmentDetailField = new ImportField(retailLM.getLPByName("retailMarkupShipmentDetail"));
-                ImportField dataSuppliersRangeField = new ImportField(retailLM.getLPByName("dataRate"));
-                ImportField dataRetailRangeField = new ImportField(retailLM.getLPByName("dataRate"));
+                ImportField quantityShipmentDetailField = new ImportField(retailLM.getLCPByName("quantityShipmentDetail"));
+                ImportField supplierPriceShipmentDetail = new ImportField(retailLM.getLCPByName("supplierPriceShipmentDetail"));
+                ImportField importerPriceShipmentDetail = new ImportField(retailLM.getLCPByName("importerPriceShipmentDetail"));
+                ImportField retailPriceShipmentDetailField = new ImportField(retailLM.getLCPByName("retailPriceShipmentDetail"));
+                ImportField retailMarkupShipmentDetailField = new ImportField(retailLM.getLCPByName("retailMarkupShipmentDetail"));
+                ImportField dataSuppliersRangeField = new ImportField(retailLM.getLCPByName("dataRate"));
+                ImportField dataRetailRangeField = new ImportField(retailLM.getLCPByName("dataRate"));
 
                 ImportKey<?> shipmentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("shipment"),
-                        retailLM.getLPByName("numberSeriesToShipment").getMapping(waybillShipmentField, seriesWaybillShipmentField));
+                        retailLM.getLCPByName("numberSeriesToShipment").getMapping(waybillShipmentField, seriesWaybillShipmentField));
 
                 ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("supplier"),
                         BL.LM.extSIDToObject.getMapping(supplierIDField));
@@ -441,44 +441,44 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         BL.LM.extSIDToObject.getMapping(departmentStoreIDField));
 
                 ImportKey<?> shipmentDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("shipmentDetail"),
-                        retailLM.getLPByName("sidNumberSeriesToShipmentDetail").getMapping(shipmentDetailIDField, waybillShipmentField, seriesWaybillShipmentField));
+                        retailLM.getLCPByName("sidNumberSeriesToShipmentDetail").getMapping(shipmentDetailIDField, waybillShipmentField, seriesWaybillShipmentField));
 
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"),
                         BL.LM.extSIDToObject.getMapping(itemIDField));
 
                 ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("range"),
-                        retailLM.getLPByName("dataActingRateRangeToRange").getMapping(dataSuppliersRangeField));
+                        retailLM.getLCPByName("dataActingRateRangeToRange").getMapping(dataSuppliersRangeField));
 
                 ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("range"),
-                        retailLM.getLPByName("dataActingRateRangeToRange").getMapping(dataRetailRangeField));
+                        retailLM.getLCPByName("dataActingRateRangeToRange").getMapping(dataRetailRangeField));
 
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-                props.add(new ImportProperty(waybillShipmentField, retailLM.getLPByName("numberObject").getMapping(shipmentKey)));
-                props.add(new ImportProperty(seriesWaybillShipmentField, retailLM.getLPByName("seriesObject").getMapping(shipmentKey)));
-                props.add(new ImportProperty(dateShipmentField, retailLM.getLPByName("dateShipment").getMapping(shipmentKey)));
-                props.add(new ImportProperty(departmentStoreIDField, retailLM.getLPByName("departmentStoreShipment").getMapping(shipmentKey),
+                props.add(new ImportProperty(waybillShipmentField, retailLM.getLCPByName("numberObject").getMapping(shipmentKey)));
+                props.add(new ImportProperty(seriesWaybillShipmentField, retailLM.getLCPByName("seriesObject").getMapping(shipmentKey)));
+                props.add(new ImportProperty(dateShipmentField, retailLM.getLCPByName("dateShipment").getMapping(shipmentKey)));
+                props.add(new ImportProperty(departmentStoreIDField, retailLM.getLCPByName("departmentStoreShipment").getMapping(shipmentKey),
                         BL.LM.object(retailLM.getClassByName("departmentStore")).getMapping(departmentStoreKey)));
-                props.add(new ImportProperty(supplierIDField, retailLM.getLPByName("supplierShipment").getMapping(shipmentKey),
+                props.add(new ImportProperty(supplierIDField, retailLM.getLCPByName("supplierShipment").getMapping(shipmentKey),
                         BL.LM.object(retailLM.getClassByName("supplier")).getMapping(supplierKey)));
 
-                props.add(new ImportProperty(shipmentDetailIDField, retailLM.getLPByName("sidShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(quantityShipmentDetailField, retailLM.getLPByName("quantityShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(supplierPriceShipmentDetail, retailLM.getLPByName("supplierPriceShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(importerPriceShipmentDetail, retailLM.getLPByName("importerPriceShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(retailPriceShipmentDetailField, retailLM.getLPByName("retailPriceShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(retailMarkupShipmentDetailField, retailLM.getLPByName("retailMarkupShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(shipmentDetailIDField, retailLM.getLCPByName("sidShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(quantityShipmentDetailField, retailLM.getLCPByName("quantityShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(supplierPriceShipmentDetail, retailLM.getLCPByName("supplierPriceShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(importerPriceShipmentDetail, retailLM.getLCPByName("importerPriceShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(retailPriceShipmentDetailField, retailLM.getLCPByName("retailPriceShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(retailMarkupShipmentDetailField, retailLM.getLCPByName("retailMarkupShipmentDetail").getMapping(shipmentDetailKey)));
 
-                props.add(new ImportProperty(dataSuppliersRangeField, retailLM.getLPByName("suppliersRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierRangeKey),
+                props.add(new ImportProperty(dataSuppliersRangeField, retailLM.getLCPByName("suppliersRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierRangeKey),
                         BL.LM.object(retailLM.getClassByName("range")).getMapping(supplierRangeKey)));
-                props.add(new ImportProperty(dataRetailRangeField, retailLM.getLPByName("retailRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */retailRangeKey),
+                props.add(new ImportProperty(dataRetailRangeField, retailLM.getLCPByName("retailRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */retailRangeKey),
                         BL.LM.object(retailLM.getClassByName("range")).getMapping(retailRangeKey)));
 
-                props.add(new ImportProperty(itemIDField, retailLM.getLPByName("itemShipmentDetail").getMapping(shipmentDetailKey),
+                props.add(new ImportProperty(itemIDField, retailLM.getLCPByName("itemShipmentDetail").getMapping(shipmentDetailKey),
                         BL.LM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
-                props.add(new ImportProperty(shipmentField, retailLM.getLPByName("shipmentShipmentDetail").getMapping(shipmentDetailKey),
+                props.add(new ImportProperty(shipmentField, retailLM.getLCPByName("shipmentShipmentDetail").getMapping(shipmentDetailKey),
                         BL.LM.object(retailLM.getClassByName("shipment")).getMapping(shipmentKey)));
 
                 ImportTable table = new ImportTable(Arrays.asList(waybillShipmentField, seriesWaybillShipmentField,
@@ -525,7 +525,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField supplierIDField = new ImportField(BL.LM.extSID);
                 ImportField departmentStoreIDField = new ImportField(BL.LM.extSID);
                 ImportField isSupplierItemDepartmentField = new ImportField(BL.LM.name);
-                ImportField priceSupplierItemDepartmentField = new ImportField(retailLM.getLPByName("priceSupplierItemDepartmentOver"));
+                ImportField priceSupplierItemDepartmentField = new ImportField(retailLM.getLCPByName("priceSupplierItemDepartmentOver"));
 
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"),
                         BL.LM.extSIDToObject.getMapping(itemIDField));
@@ -537,12 +537,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         BL.LM.extSIDToObject.getMapping(departmentStoreIDField));
 
                 ImportKey<?> logicalKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("yesNo"),
-                        retailLM.getLPByName("classSIDToYesNo").getMapping(isSupplierItemDepartmentField));
+                        retailLM.getLCPByName("classSIDToYesNo").getMapping(isSupplierItemDepartmentField));
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-                props.add(new ImportProperty(priceSupplierItemDepartmentField, retailLM.getLPByName("priceSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate)));
-                props.add(new ImportProperty(isSupplierItemDepartmentField, retailLM.getLPByName("isSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate),
+                props.add(new ImportProperty(priceSupplierItemDepartmentField, retailLM.getLCPByName("priceSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate)));
+                props.add(new ImportProperty(isSupplierItemDepartmentField, retailLM.getLCPByName("isSupplierItemDepartmentOver").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate),
                         BL.LM.object(retailLM.getClassByName("yesNo")).getMapping(logicalKey)));
 
                 ImportTable table = new ImportTable(Arrays.asList(itemIDField, supplierIDField, departmentStoreIDField, isSupplierItemDepartmentField, priceSupplierItemDepartmentField), data);
@@ -575,13 +575,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField companyIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
             ImportField legalAddressField = new ImportField(BL.LM.name);
-            ImportField unpField = new ImportField(retailLM.getLPByName("UNPLegalEntity"));
-            ImportField okpoField = new ImportField(retailLM.getLPByName("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(retailLM.getLPByName("phoneLegalEntityDate"));
+            ImportField unpField = new ImportField(retailLM.getLCPByName("UNPLegalEntity"));
+            ImportField okpoField = new ImportField(retailLM.getLCPByName("OKPOLegalEntity"));
+            ImportField phoneField = new ImportField(retailLM.getLCPByName("phoneLegalEntityDate"));
             ImportField emailField = new ImportField(BL.LM.name);
             ImportField nameOwnershipField = new ImportField(BL.LM.name);
-            ImportField shortNameOwnershipField = new ImportField(retailLM.getLPByName("shortNameOwnership"));
-            ImportField accountField = new ImportField(retailLM.getLPByName("dataAccount"));
+            ImportField shortNameOwnershipField = new ImportField(retailLM.getLCPByName("shortNameOwnership"));
+            ImportField accountField = new ImportField(retailLM.getLCPByName("dataAccount"));
 
             ImportField tradingNetworkIDField = new ImportField(BL.LM.extSID);
             ImportField nameTradingNetworkField = new ImportField(BL.LM.name);
@@ -592,10 +592,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(companyIDField));
 
             ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("ownership"),
-                    retailLM.getLPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
+                    retailLM.getLCPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
 
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("account"),
-                    retailLM.getLPByName("dataAccountToAccount").getMapping(accountField));
+                    retailLM.getLCPByName("dataAccountToAccount").getMapping(accountField));
 
             ImportKey<?> tradingNetworkKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("tradingNetwork"),
                     BL.LM.extSIDToObject.getMapping(tradingNetworkIDField));
@@ -604,20 +604,20 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(companyIDField, BL.LM.extSID.getMapping(companyKey)));
             props.add(new ImportProperty(nameLegalEntityField, BL.LM.name.getMapping(companyKey)));
-            props.add(new ImportProperty(nameLegalEntityField, retailLM.getLPByName("fullNameLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(legalAddressField, retailLM.getLPByName("addressLegalEntityDate").getMapping(companyKey, defaultDate)));
-            props.add(new ImportProperty(unpField, retailLM.getLPByName("UNPLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(okpoField, retailLM.getLPByName("OKPOLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(phoneField, retailLM.getLPByName("phoneLegalEntityDate").getMapping(companyKey, defaultDate)));
-            props.add(new ImportProperty(emailField, retailLM.getLPByName("emailLegalEntity").getMapping(companyKey)));
+            props.add(new ImportProperty(nameLegalEntityField, retailLM.getLCPByName("fullNameLegalEntity").getMapping(companyKey)));
+            props.add(new ImportProperty(legalAddressField, retailLM.getLCPByName("addressLegalEntityDate").getMapping(companyKey, defaultDate)));
+            props.add(new ImportProperty(unpField, retailLM.getLCPByName("UNPLegalEntity").getMapping(companyKey)));
+            props.add(new ImportProperty(okpoField, retailLM.getLCPByName("OKPOLegalEntity").getMapping(companyKey)));
+            props.add(new ImportProperty(phoneField, retailLM.getLCPByName("phoneLegalEntityDate").getMapping(companyKey, defaultDate)));
+            props.add(new ImportProperty(emailField, retailLM.getLCPByName("emailLegalEntity").getMapping(companyKey)));
 
             props.add(new ImportProperty(nameOwnershipField, BL.LM.name.getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLPByName("shortNameOwnership").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLPByName("ownershipLegalEntity").getMapping(companyKey),
+            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLCPByName("shortNameOwnership").getMapping(ownershipKey)));
+            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLCPByName("ownershipLegalEntity").getMapping(companyKey),
                     BL.LM.object(retailLM.getClassByName("ownership")).getMapping(ownershipKey)));
 
-            props.add(new ImportProperty(accountField, retailLM.getLPByName("dataAccount").getMapping(accountKey)));
-            props.add(new ImportProperty(companyIDField, retailLM.getLPByName("legalEntityAccount").getMapping(accountKey),
+            props.add(new ImportProperty(accountField, retailLM.getLCPByName("dataAccount").getMapping(accountKey)));
+            props.add(new ImportProperty(companyIDField, retailLM.getLCPByName("legalEntityAccount").getMapping(accountKey),
                     BL.LM.object(retailLM.getClassByName("company")).getMapping(companyKey)));
 
             props.add(new ImportProperty(tradingNetworkIDField, BL.LM.extSID.getMapping(tradingNetworkKey)));
@@ -655,13 +655,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField supplierIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
             ImportField legalAddressField = new ImportField(BL.LM.name);
-            ImportField unpField = new ImportField(retailLM.getLPByName("UNPLegalEntity"));
-            ImportField okpoField = new ImportField(retailLM.getLPByName("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(retailLM.getLPByName("phoneLegalEntityDate"));
+            ImportField unpField = new ImportField(retailLM.getLCPByName("UNPLegalEntity"));
+            ImportField okpoField = new ImportField(retailLM.getLCPByName("OKPOLegalEntity"));
+            ImportField phoneField = new ImportField(retailLM.getLCPByName("phoneLegalEntityDate"));
             ImportField emailField = new ImportField(BL.LM.name);
             ImportField nameOwnershipField = new ImportField(BL.LM.name);
-            ImportField shortNameOwnershipField = new ImportField(retailLM.getLPByName("shortNameOwnership"));
-            ImportField accountField = new ImportField(retailLM.getLPByName("dataAccount"));
+            ImportField shortNameOwnershipField = new ImportField(retailLM.getLCPByName("shortNameOwnership"));
+            ImportField accountField = new ImportField(retailLM.getLCPByName("dataAccount"));
             ImportField bankIDField = new ImportField(BL.LM.extSID);
 
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
@@ -670,10 +670,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(supplierIDField));
 
             ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("ownership"),
-                    retailLM.getLPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
+                    retailLM.getLCPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
 
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("account"),
-                    retailLM.getLPByName("dataAccountToAccount").getMapping(accountField));
+                    retailLM.getLCPByName("dataAccountToAccount").getMapping(accountField));
 
             ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bank"),
                     BL.LM.extSIDToObject.getMapping(bankIDField));
@@ -682,22 +682,22 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(supplierIDField, BL.LM.extSID.getMapping(supplierKey)));
             props.add(new ImportProperty(nameLegalEntityField, BL.LM.name.getMapping(supplierKey)));
-            props.add(new ImportProperty(nameLegalEntityField, retailLM.getLPByName("fullNameLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(legalAddressField, retailLM.getLPByName("addressLegalEntityDate").getMapping(supplierKey, defaultDate)));
-            props.add(new ImportProperty(unpField, retailLM.getLPByName("UNPLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(okpoField, retailLM.getLPByName("OKPOLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(phoneField, retailLM.getLPByName("phoneLegalEntityDate").getMapping(supplierKey, defaultDate)));
-            props.add(new ImportProperty(emailField, retailLM.getLPByName("emailLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(nameLegalEntityField, retailLM.getLCPByName("fullNameLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(legalAddressField, retailLM.getLCPByName("addressLegalEntityDate").getMapping(supplierKey, defaultDate)));
+            props.add(new ImportProperty(unpField, retailLM.getLCPByName("UNPLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(okpoField, retailLM.getLCPByName("OKPOLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(phoneField, retailLM.getLCPByName("phoneLegalEntityDate").getMapping(supplierKey, defaultDate)));
+            props.add(new ImportProperty(emailField, retailLM.getLCPByName("emailLegalEntity").getMapping(supplierKey)));
 
             props.add(new ImportProperty(nameOwnershipField, BL.LM.name.getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLPByName("shortNameOwnership").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLPByName("ownershipLegalEntity").getMapping(supplierKey),
+            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLCPByName("shortNameOwnership").getMapping(ownershipKey)));
+            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLCPByName("ownershipLegalEntity").getMapping(supplierKey),
                     BL.LM.object(retailLM.getClassByName("ownership")).getMapping(ownershipKey)));
 
-            props.add(new ImportProperty(accountField, retailLM.getLPByName("dataAccount").getMapping(accountKey)));
-            props.add(new ImportProperty(supplierIDField, retailLM.getLPByName("legalEntityAccount").getMapping(accountKey),
+            props.add(new ImportProperty(accountField, retailLM.getLCPByName("dataAccount").getMapping(accountKey)));
+            props.add(new ImportProperty(supplierIDField, retailLM.getLCPByName("legalEntityAccount").getMapping(accountKey),
                     BL.LM.object(retailLM.getClassByName("supplier")).getMapping(supplierKey)));
-            props.add(new ImportProperty(bankIDField, retailLM.getLPByName("bankAccount").getMapping(accountKey),
+            props.add(new ImportProperty(bankIDField, retailLM.getLCPByName("bankAccount").getMapping(accountKey),
                     BL.LM.object(retailLM.getClassByName("bank")).getMapping(bankKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(supplierIDField, nameLegalEntityField, legalAddressField,
@@ -731,13 +731,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField customerIDField = new ImportField(BL.LM.extSID);
             ImportField nameLegalEntityField = new ImportField(BL.LM.name);
             ImportField legalAddressField = new ImportField(BL.LM.name);
-            ImportField unpField = new ImportField(retailLM.getLPByName("UNPLegalEntity"));
-            ImportField okpoField = new ImportField(retailLM.getLPByName("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(retailLM.getLPByName("phoneLegalEntityDate"));
+            ImportField unpField = new ImportField(retailLM.getLCPByName("UNPLegalEntity"));
+            ImportField okpoField = new ImportField(retailLM.getLCPByName("OKPOLegalEntity"));
+            ImportField phoneField = new ImportField(retailLM.getLCPByName("phoneLegalEntityDate"));
             ImportField emailField = new ImportField(BL.LM.name);
             ImportField nameOwnershipField = new ImportField(BL.LM.name);
-            ImportField shortNameOwnershipField = new ImportField(retailLM.getLPByName("shortNameOwnership"));
-            ImportField accountField = new ImportField(retailLM.getLPByName("dataAccount"));
+            ImportField shortNameOwnershipField = new ImportField(retailLM.getLCPByName("shortNameOwnership"));
+            ImportField accountField = new ImportField(retailLM.getLCPByName("dataAccount"));
             ImportField bankIDField = new ImportField(BL.LM.extSID);
 
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
@@ -746,10 +746,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(customerIDField));
 
             ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("ownership"),
-                    retailLM.getLPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
+                    retailLM.getLCPByName("shortNameToOwnership").getMapping(shortNameOwnershipField));
 
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("account"),
-                    retailLM.getLPByName("dataAccountToAccount").getMapping(accountField));
+                    retailLM.getLCPByName("dataAccountToAccount").getMapping(accountField));
 
             ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bank"),
                     BL.LM.extSIDToObject.getMapping(bankIDField));
@@ -758,22 +758,22 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(customerIDField, BL.LM.extSID.getMapping(customerKey)));
             props.add(new ImportProperty(nameLegalEntityField, BL.LM.name.getMapping(customerKey)));
-            props.add(new ImportProperty(nameLegalEntityField, retailLM.getLPByName("fullNameLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(legalAddressField, retailLM.getLPByName("addressLegalEntityDate").getMapping(customerKey, defaultDate)));
-            props.add(new ImportProperty(unpField, retailLM.getLPByName("UNPLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(okpoField, retailLM.getLPByName("OKPOLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(phoneField, retailLM.getLPByName("phoneLegalEntityDate").getMapping(customerKey, defaultDate)));
-            props.add(new ImportProperty(emailField, retailLM.getLPByName("emailLegalEntity").getMapping(customerKey)));
+            props.add(new ImportProperty(nameLegalEntityField, retailLM.getLCPByName("fullNameLegalEntity").getMapping(customerKey)));
+            props.add(new ImportProperty(legalAddressField, retailLM.getLCPByName("addressLegalEntityDate").getMapping(customerKey, defaultDate)));
+            props.add(new ImportProperty(unpField, retailLM.getLCPByName("UNPLegalEntity").getMapping(customerKey)));
+            props.add(new ImportProperty(okpoField, retailLM.getLCPByName("OKPOLegalEntity").getMapping(customerKey)));
+            props.add(new ImportProperty(phoneField, retailLM.getLCPByName("phoneLegalEntityDate").getMapping(customerKey, defaultDate)));
+            props.add(new ImportProperty(emailField, retailLM.getLCPByName("emailLegalEntity").getMapping(customerKey)));
 
             props.add(new ImportProperty(nameOwnershipField, BL.LM.name.getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLPByName("shortNameOwnership").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLPByName("ownershipLegalEntity").getMapping(customerKey),
+            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLCPByName("shortNameOwnership").getMapping(ownershipKey)));
+            props.add(new ImportProperty(shortNameOwnershipField, retailLM.getLCPByName("ownershipLegalEntity").getMapping(customerKey),
                     BL.LM.object(retailLM.getClassByName("ownership")).getMapping(ownershipKey)));
 
-            props.add(new ImportProperty(accountField, retailLM.getLPByName("dataAccount").getMapping(accountKey)));
-            props.add(new ImportProperty(customerIDField, retailLM.getLPByName("legalEntityAccount").getMapping(accountKey),
+            props.add(new ImportProperty(accountField, retailLM.getLCPByName("dataAccount").getMapping(accountKey)));
+            props.add(new ImportProperty(customerIDField, retailLM.getLCPByName("legalEntityAccount").getMapping(accountKey),
                     BL.LM.object(retailLM.getClassByName("customer")).getMapping(customerKey)));
-            props.add(new ImportProperty(bankIDField, retailLM.getLPByName("bankAccount").getMapping(accountKey),
+            props.add(new ImportProperty(bankIDField, retailLM.getLCPByName("bankAccount").getMapping(accountKey),
                     BL.LM.object(retailLM.getClassByName("bank")).getMapping(bankKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(customerIDField, nameLegalEntityField, legalAddressField,
@@ -821,20 +821,20 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     BL.LM.extSIDToObject.getMapping(tradingNetworkIDField));
 
             ImportKey<?> storeTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("storeType"),
-                    retailLM.getLPByName("nameToStoreType").getMapping(storeTypeField, tradingNetworkIDField));
+                    retailLM.getLCPByName("nameToStoreType").getMapping(storeTypeField, tradingNetworkIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
             props.add(new ImportProperty(storeIDField, BL.LM.extSID.getMapping(storeKey)));
             props.add(new ImportProperty(nameStoreField, BL.LM.name.getMapping(storeKey)));
-            props.add(new ImportProperty(addressStoreField, retailLM.getLPByName("addressStore").getMapping(storeKey)));
-            props.add(new ImportProperty(companyIDField, retailLM.getLPByName("companyStore").getMapping(storeKey),
+            props.add(new ImportProperty(addressStoreField, retailLM.getLCPByName("addressStore").getMapping(storeKey)));
+            props.add(new ImportProperty(companyIDField, retailLM.getLCPByName("companyStore").getMapping(storeKey),
                     BL.LM.object(retailLM.getClassByName("company")).getMapping(companyKey)));
 
             props.add(new ImportProperty(storeTypeField, BL.LM.name.getMapping(storeTypeKey)));
-            props.add(new ImportProperty(storeTypeField, retailLM.getLPByName("storeTypeStore").getMapping(storeKey),
+            props.add(new ImportProperty(storeTypeField, retailLM.getLCPByName("storeTypeStore").getMapping(storeKey),
                     BL.LM.object(retailLM.getClassByName("storeType")).getMapping(storeTypeKey)));
-            props.add(new ImportProperty(tradingNetworkIDField, retailLM.getLPByName("tradingNetworkStoreType").getMapping(storeTypeKey),
+            props.add(new ImportProperty(tradingNetworkIDField, retailLM.getLCPByName("tradingNetworkStoreType").getMapping(storeTypeKey),
                     BL.LM.object(retailLM.getClassByName("tradingNetwork")).getMapping(tradingNetworkKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField, storeTypeField, tradingNetworkIDField), data);
@@ -877,7 +877,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(departmentStoreIDField, BL.LM.extSID.getMapping(departmentStoreKey)));
             props.add(new ImportProperty(nameDepartmentStoreField, BL.LM.name.getMapping(departmentStoreKey)));
-            props.add(new ImportProperty(storeIDField, retailLM.getLPByName("storeDepartmentStore").getMapping(departmentStoreKey),
+            props.add(new ImportProperty(storeIDField, retailLM.getLCPByName("storeDepartmentStore").getMapping(departmentStoreKey),
                     BL.LM.object(retailLM.getClassByName("store")).getMapping(storeKey)));
 
 
@@ -910,9 +910,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField bankIDField = new ImportField(BL.LM.extSID);
             ImportField nameBankField = new ImportField(BL.LM.name);
             ImportField addressBankField = new ImportField(BL.LM.name);
-            ImportField departmentBankField = new ImportField(retailLM.getLPByName("departmentBank"));
-            ImportField mfoBankField = new ImportField(retailLM.getLPByName("MFOBank"));
-            ImportField cbuBankField = new ImportField(retailLM.getLPByName("CBUBank"));
+            ImportField departmentBankField = new ImportField(retailLM.getLCPByName("departmentBank"));
+            ImportField mfoBankField = new ImportField(retailLM.getLCPByName("MFOBank"));
+            ImportField cbuBankField = new ImportField(retailLM.getLCPByName("CBUBank"));
 
             ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bank"),
                     BL.LM.extSIDToObject.getMapping(bankIDField));
@@ -923,10 +923,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(bankIDField, BL.LM.extSID.getMapping(bankKey)));
             props.add(new ImportProperty(nameBankField, BL.LM.name.getMapping(bankKey)));
-            props.add(new ImportProperty(addressBankField, retailLM.getLPByName("addressBankDate").getMapping(bankKey, defaultDate)));
-            props.add(new ImportProperty(departmentBankField, retailLM.getLPByName("departmentBank").getMapping(bankKey)));
-            props.add(new ImportProperty(mfoBankField, retailLM.getLPByName("MFOBank").getMapping(bankKey)));
-            props.add(new ImportProperty(cbuBankField, retailLM.getLPByName("CBUBank").getMapping(bankKey)));
+            props.add(new ImportProperty(addressBankField, retailLM.getLCPByName("addressBankDate").getMapping(bankKey, defaultDate)));
+            props.add(new ImportProperty(departmentBankField, retailLM.getLCPByName("departmentBank").getMapping(bankKey)));
+            props.add(new ImportProperty(mfoBankField, retailLM.getLCPByName("MFOBank").getMapping(bankKey)));
+            props.add(new ImportProperty(cbuBankField, retailLM.getLCPByName("CBUBank").getMapping(bankKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(bankIDField, nameBankField, addressBankField, departmentBankField, mfoBankField, cbuBankField), data);
 
@@ -956,7 +956,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             ImportField rateWasteIDField = new ImportField(BL.LM.extSID);
             ImportField nameRateWasteField = new ImportField(BL.LM.name);
-            ImportField percentRateWasteField = new ImportField(retailLM.getLPByName("percentRateWaste"));
+            ImportField percentRateWasteField = new ImportField(retailLM.getLCPByName("percentRateWaste"));
 
             ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("rateWaste"),
                     BL.LM.extSIDToObject.getMapping(rateWasteIDField));
@@ -965,7 +965,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(rateWasteIDField, BL.LM.extSID.getMapping(rateWasteKey)));
             props.add(new ImportProperty(nameRateWasteField, BL.LM.name.getMapping(rateWasteKey)));
-            props.add(new ImportProperty(percentRateWasteField, retailLM.getLPByName("percentRateWaste").getMapping(rateWasteKey)));
+            props.add(new ImportProperty(percentRateWasteField, retailLM.getLCPByName("percentRateWaste").getMapping(rateWasteKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(rateWasteIDField, nameRateWasteField, percentRateWasteField), data);
 

@@ -130,6 +130,10 @@ public abstract class LogicsModule {
         return getLPBySID(transformNameToSID(name));
     }
 
+    public LCP<?> getLCPByName(String name) {
+        return (LCP<?>) getLPByName(name);
+    }
+
     protected void addModuleLP(LP<?, ?> lp) {
         assert !moduleProperties.containsKey(lp.property.getSID());
         moduleProperties.put(lp.property.getSID(), lp);
@@ -466,9 +470,9 @@ public abstract class LogicsModule {
         // выполняем само создание свойства
         LCP derDataProp = addDProp(group, name, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
         if (forced)
-            derDataProp.setEventSet(defaultChanged, whereNum, derivedProp, params);
+            derDataProp.setEventChangeSet(defaultChanged, whereNum, derivedProp, params);
         else
-            derDataProp.setEvent(defaultChanged, whereNum, derivedProp, params);
+            derDataProp.setEventChange(defaultChanged, whereNum, derivedProp, params);
         return derDataProp;
     }
 
@@ -525,11 +529,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] setProperties, boolean newSession) {
-        return addMFAProp(group, caption, form, objectsToSet, setProperties, newSession);
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, setProperties, newSession);
     }
 
     protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, boolean newSession) {
-        return addMFAProp(group, sID, caption, form, objectsToSet, startProperties, newSession);
+        return addMFAProp(group, sID, caption, form, objectsToSet, startProperties, null, newSession);
     }
 
     protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, DataClass valueClass, boolean newSession) {
@@ -541,7 +545,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, boolean newSession, boolean isModal) {
-        return addFAProp(group, caption, form, objectsToSet, startProperties, newSession, isModal);
+        return addFAProp(group, caption, form, objectsToSet, startProperties, null, newSession, isModal);
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, DataClass valueClass, boolean newSession, boolean isModal) {
@@ -573,7 +577,7 @@ public abstract class LogicsModule {
         return addAProp(new ChangeClassActionProperty(genSID(), caption, baseClass));
     }
 
-    protected LP addChangeClassAProp(String caption, ConcreteCustomClass cls) {
+    protected LAP addChangeClassAProp(String caption, ConcreteCustomClass cls) {
         return addJoinAProp(new ValueClass[]{baseClass},
                             addChangeClassAProp(caption), 1, addCProp(baseClass.objectClass, cls.getSID()));
     }
@@ -600,7 +604,7 @@ public abstract class LogicsModule {
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, Object... params) {
         int resInterfaces = getIntNum(params);
-        return addSetPropertyAProp(group, name, caption, resInterfaces, false, BaseUtils.add(BaseUtils.consecutiveList(resInterfaces), params));
+        return addSetPropertyAProp(group, name, caption, resInterfaces, false, BaseUtils.add(BaseUtils.consecutiveList(resInterfaces).toArray(), params));
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, int resInterfaces,
@@ -639,10 +643,13 @@ public abstract class LogicsModule {
         return addIfAProp(null, genSID(), caption, not, params);
     }
     protected LAP addIfAProp(AbstractGroup group, String caption, Object... params) {
-        return addIfAProp(group, genSID(), caption, params);
+        return addIfAProp(group, caption, false, params);
     }
     protected LAP addIfAProp(AbstractGroup group, String name, String caption, Object... params) {
         return addIfAProp(group, name, caption, false, params);
+    }
+    protected LAP addIfAProp(AbstractGroup group, String caption, boolean not, Object... params) {
+        return addIfAProp(group, genSID(), caption, not, params);
     }
     protected LAP addIfAProp(AbstractGroup group, String name, String caption, boolean not, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -2420,8 +2427,8 @@ public abstract class LogicsModule {
         return mapInterfaces;
     }
 
-    protected void makeUserLoggable(LP... lps) {
-        for (LP lp : lps)
+    protected void makeUserLoggable(LCP... lps) {
+        for (LCP lp : lps)
             lp.makeUserLoggable(baseLM);
     }
 
@@ -2431,15 +2438,15 @@ public abstract class LogicsModule {
 
     protected void makeUserLoggable(AbstractGroup group, boolean dataPropertiesOnly) {
         for (Property property : group.getProperties()) {
-            if (!dataPropertiesOnly || property instanceof DataProperty) {
-                baseLM.getLP(property.getSID()).makeUserLoggable(baseLM);
+            if (property instanceof CalcProperty && (!dataPropertiesOnly || property instanceof DataProperty)) {
+                ((LCP)baseLM.getLP(property.getSID())).makeUserLoggable(baseLM);
             }
         }
     }
 
 
-    protected void makeLoggable(LP... lps) {
-        for (LP lp : lps)
+    protected void makeLoggable(LCP... lps) {
+        for (LCP lp : lps)
             lp.makeLoggable(baseLM);
     }
 
@@ -2449,8 +2456,8 @@ public abstract class LogicsModule {
 
     protected void makeLoggable(AbstractGroup group, boolean dataPropertiesOnly) {
         for (Property property : group.getProperties()) {
-            if (!dataPropertiesOnly || property instanceof DataProperty) {
-                baseLM.getLP(property.getSID()).makeLoggable(baseLM);
+            if (property instanceof CalcProperty && (!dataPropertiesOnly || property instanceof DataProperty)) {
+                ((LCP)baseLM.getLP(property.getSID())).makeLoggable(baseLM);
             }
         }
     }

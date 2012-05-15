@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExprPullWheres;
@@ -12,7 +13,9 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
 
@@ -88,11 +91,20 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     }
 
     public static Expr create(Expr expr) {
-        return createBase(expr, BaseUtils.<Map<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()));
+        return create(expr, BaseUtils.<Map<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()), null);
     }
 
     public static Where create(Where where) {
         return create(ValueExpr.get(where)).getWhere();
+    }
+
+    public static Expr create(final Expr expr, Map<KeyExpr, ? extends Expr> group, PullExpr noPull) {
+        Map<KeyExpr, Expr> pullGroup = new HashMap<KeyExpr, Expr>(group);
+        for(KeyExpr key : getOuterKeys(expr))
+            if(key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull))
+                pullGroup.put(key, key);
+
+        return create(expr, pullGroup);
     }
 
     public static Expr create(final Expr expr, Map<KeyExpr, ? extends Expr> group) {

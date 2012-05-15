@@ -22,6 +22,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -980,7 +981,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
             pInfo.responseContents = null;
 
-            LP isProject = LM.is(LM.project);
+            LCP isProject = LM.is(LM.project);
             Map<Object, KeyExpr> keys = isProject.getMapKeys();
             Query<Object, Object> query = new Query<Object, Object>(keys);
             query.properties.put("id", LM.sidProject.getExpr(BaseUtils.singleValue(keys)));
@@ -1322,7 +1323,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     row.add(node.getChildText("emailProject"));
 
 
-                    LP isCluster = LM.is(LM.cluster);
+                    LCP isCluster = LM.is(LM.cluster);
                     Map<Object, KeyExpr> keys = isCluster.getMapKeys();
                     Query<Object, Object> query = new Query<Object, Object>(keys);
                     query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
@@ -1664,7 +1665,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     row.add(node.getChildText("emailProject"));
 
 
-                    LP isCluster = LM.is(LM.cluster);
+                    LCP isCluster = LM.is(LM.cluster);
                     Map<Object, KeyExpr> keys = isCluster.getMapKeys();
                     Query<Object, Object> query = new Query<Object, Object>(keys);
                     query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));

@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
@@ -9,13 +10,8 @@ import platform.server.session.PropertyChanges;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Hp
- * Date: 13.05.12
- * Time: 11:38
- * To change this template use File | Settings | File Templates.
- */
+import static platform.base.BaseUtils.crossJoin;
+
 public class ActionPropertyImplement<T> {
     public ActionProperty property;
     public Map<ClassPropertyInterface, T> mapping;

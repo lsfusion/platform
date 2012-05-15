@@ -11,6 +11,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.session.DataSession;
 
@@ -61,7 +62,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         throw new RuntimeException("id not found");
     }
 
-    public Map<Object, String> fillIDs(DataSession session, LP name, LP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds) throws SQLException {
+    public Map<Object, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds) throws SQLException {
         StaticCustomClass usedClass;
         ids = new Integer[sids.length];
         Map<Object, String> modifiedNames = new HashMap<Object, String>();

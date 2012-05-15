@@ -12,6 +12,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AnyValuePropertyHolder;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -37,7 +38,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
     private final boolean isModal;
 
     private final StaticCustomClass formResultClass;
-    private final LP formResultProperty;
+    private final LCP formResultProperty;
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
@@ -53,7 +54,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
     //assert getProperties и startProperties одинаковой длины
     //startProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] setProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk, StaticCustomClass formResultClass, LP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] setProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.valueClass = valueClass;

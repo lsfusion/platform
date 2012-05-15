@@ -6,6 +6,7 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
+import platform.server.classes.ByteArrayClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ExecutionContext;
 
@@ -104,10 +105,21 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                             }
                         }
                     }
-                    LM.mexxImportInvoice.change(outputListInOrder[0], context, supplier);
-                    LM.mexxImportArticleInfoInvoice.change(outputListInOrder[1], context, supplier);
-                    LM.mexxImportColorInvoice.change(outputListInOrder[2], context, supplier);
-                    LM.mexxImportPricesInvoice.change(outputListInOrder[3], context, supplier);
+                    context.pushUserInput(new DataObject(outputListInOrder[0], ByteArrayClass.instance));
+                    LM.mexxImportInvoice.property.execute(context.override(LM.mexxImportInvoice.getMapValues(supplier), null, null)); // последний может и надо
+                    context.popUserInput(new DataObject(outputListInOrder[0], ByteArrayClass.instance));
+
+                    context.pushUserInput(new DataObject(outputListInOrder[1], ByteArrayClass.instance));
+                    LM.mexxImportArticleInfoInvoice.property.execute(context.override(LM.mexxImportArticleInfoInvoice.getMapValues(supplier), null, null)); // последний может и надо
+                    context.popUserInput(new DataObject(outputListInOrder[1], ByteArrayClass.instance));
+
+                    context.pushUserInput(new DataObject(outputListInOrder[2], ByteArrayClass.instance));
+                    LM.mexxImportColorInvoice.property.execute(context.override(LM.mexxImportColorInvoice.getMapValues(supplier), null, null)); // последний может и надо
+                    context.popUserInput(new DataObject(outputListInOrder[2], ByteArrayClass.instance));
+
+                    context.pushUserInput(new DataObject(outputListInOrder[3], ByteArrayClass.instance));
+                    LM.mexxImportPricesInvoice.property.execute(context.override(LM.mexxImportPricesInvoice.getMapValues(supplier), null, null)); // последний может и надо
+                    context.popUserInput(new DataObject(outputListInOrder[3], ByteArrayClass.instance));
                 }
             }
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));

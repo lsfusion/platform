@@ -8,6 +8,7 @@ import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 
@@ -36,11 +37,11 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     BaseLogicsModule<?> LM;
     ObjectEntity[] entities;
     ObjectEntity objSession;
-    LP<?> logProperty;
-    LP<?> property;
+    LCP<?> logProperty;
+    LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String sID, String caption, LP<?> property, LP<?> logProperty, BaseLogicsModule<?> LM, boolean lazyInit) {
+    public LogFormEntity(String sID, String caption, LCP<?> property, LCP<?> logProperty, BaseLogicsModule<?> LM, boolean lazyInit) {
         super(sID, caption);
         this.LM = LM;
         this.logProperty = logProperty;
@@ -89,29 +90,32 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
                 LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), true);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
-            int paramCnt = logProperty.property.interfaces.size();
-            List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
+            if(impl instanceof CalcPropertyClassImplement) {
+                CalcPropertyClassImplement<?> calcImpl = ((CalcPropertyClassImplement)impl);
+                int paramCnt = logProperty.property.interfaces.size();
+                List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
-            LP lpMainProp = new LP(impl.property);
+                LCP lpMainProp = new LCP(calcImpl.property);
 
-            Object[] params = new Object[paramCnt + 1];
-            params[0] = logProperty;
-            for (int i = 0; i < paramCnt; i++) {
-                params[i+1] = i+1;
+                Object[] params = new Object[paramCnt + 1];
+                params[0] = logProperty;
+                for (int i = 0; i < paramCnt; i++) {
+                    params[i+1] = i+1;
+                }
+                JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.getSID(), impl.property.caption,
+                        listInterfaces, false, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
+                jProp.inheritFixedCharWidth(impl.property);
+                LCP<?> ljProp = new LCP<JoinProperty.Interface>(jProp, listInterfaces);
+                addPropertyDraw(ljProp, entities);
             }
-            JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.getSID(), impl.property.caption,
-                    listInterfaces, false, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
-            jProp.inheritFixedCharWidth(impl.property);
-            LP<?> ljProp = new LP<JoinProperty.Interface>(jProp, listInterfaces);
-            addPropertyDraw(ljProp, entities);
         }
 
-        addFixedFilter(new NotNullFilterEntity((CalcPropertyObjectEntity) addPropertyObject(logProperty, entities)));
+        addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)));
 
         setEditType(PropertyEditType.READONLY);
     }
 
-    private static ValueClass[] getValueClassesList(LP<?> property) {
+    private static ValueClass[] getValueClassesList(LCP<?> property) {
         Property.CommonClasses<?> commonClasses = property.property.getCommonClasses();
         ValueClass[] classes = new ValueClass[commonClasses.interfaces.size()];
         int index = 0;

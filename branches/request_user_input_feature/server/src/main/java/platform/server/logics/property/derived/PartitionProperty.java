@@ -124,7 +124,7 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
                     getExprImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), mapExprs));
         }
 
-        return PartitionExpr.create(partitionType, exprs, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);
+        return PartitionExpr.create(partitionType, exprs, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs, null);
     }
 
     private Where getPartitionWhere(Where where, Map<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Map<KeyExpr, Expr> mapExprs) {

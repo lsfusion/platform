@@ -214,9 +214,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP barcodeNotFoundMessage;
     public LCP extSID, extSIDToObject;
     public LCP timeCreated, userCreated, nameUserCreated, computerCreated, hostnameComputerCreated;
-    public LCP restartServerAction;
+    public LAP restartServerAction;
     public LAP runGarbageCollector;
-    public LCP cancelRestartServerAction;
+    public LAP cancelRestartServerAction;
     public LCP reverseBarcode;
 
     public LCP userLogin;
@@ -837,10 +837,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
         connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime.setEventSet(currentDateTime,
+        connectionDisconnectTime.setEventChangePrevSet(currentDateTime,
                 addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
         disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(BL, this, connection)));
-        addJProp(baseGroup, getString("logics.connection.disconnect"), andNot1, getUParams(new LP[]{disconnectConnection, connectionDisconnectTime}, 0));
+        addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, connectionDisconnectTime, 1, disconnectConnection, 1);
 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
 
@@ -876,7 +876,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         barcodePrefix = addDProp(baseGroup, "barcodePrefix", getString("logics.barcode.prefix"), StringClass.get(13));
 
         seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
-        barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(getString("logics.barcode.not.found"), getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
+        barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
 
         extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
         extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
@@ -889,13 +889,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
         hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
         
-        timeCreated.setEventChanged(currentDateTime, is(historyObject), 1);
-        userCreated.setEventChanged(currentUser, is(historyObject), 1);
-        computerCreated.setEventChanged(currentComputer, is(historyObject), 1);
+        timeCreated.setEventChangeNew(currentDateTime, is(historyObject), 1);
+        userCreated.setEventChangeNew(currentUser, is(historyObject), 1);
+        computerCreated.setEventChangeNew(currentComputer, is(historyObject), 1);
 
-        restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
+        restartServerAction = addIfAProp(getString("logics.server.stop"), true, isServerRestarting, addRestartActionProp());
         runGarbageCollector = addGarbageCollectorActionProp();
-        cancelRestartServerAction = addJProp(getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
+        cancelRestartServerAction = addIfAProp(getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
 
         checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty(genSID(), getString("logics.check.aggregations"))));
         recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
@@ -1043,11 +1043,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dropDropColumn.setAskConfirm(true);
 
         // заполним сессии
-        LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
-        sessionUser.setEventChanged(currentUser, is(session), 1);
+        LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
+        sessionUser.setEventChangeNew(currentUser, is(session), 1);
         addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
-        LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
-        sessionDate.setEventChanged(currentDateTime, is(session), 1);
+        LCP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
+        sessionDate.setEventChangeNew(currentDateTime, is(session), 1);
 
         objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
         seekObjectName = addJoinAProp(getString("logics.object.search"), addSAProp(null), objectByName, 1);
@@ -1508,9 +1508,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public static class LoadActionProperty extends CustomReadValueActionProperty {
 
-        LP fileProperty;
+        LCP fileProperty;
 
-        LoadActionProperty(String sID, String caption, LP fileProperty) {
+        LoadActionProperty(String sID, String caption, LCP fileProperty) {
             super(sID, caption, fileProperty.getMapClasses());
 
             this.fileProperty = fileProperty;
@@ -1538,9 +1538,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public static class OpenActionProperty extends CustomActionProperty {
 
-        LP fileProperty;
+        LCP fileProperty;
 
-        OpenActionProperty(String sID, String caption, LP fileProperty) {
+        OpenActionProperty(String sID, String caption, LCP fileProperty) {
             super(sID, caption, fileProperty.getMapClasses());
 
             this.fileProperty = fileProperty;
@@ -1571,11 +1571,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public static class IncrementActionProperty extends CustomActionProperty {
 
-        LP dataProperty;
-        LP maxProperty;
+        LCP dataProperty;
+        LCP maxProperty;
         List<Integer> params;
 
-        IncrementActionProperty(String sID, String caption, LP dataProperty, LP maxProperty, Integer[] params) {
+        IncrementActionProperty(String sID, String caption, LCP dataProperty, LCP maxProperty, Integer[] params) {
             super(sID, caption, dataProperty.getMapClasses());
 
             this.dataProperty = dataProperty;

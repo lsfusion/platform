@@ -583,7 +583,7 @@ formPropertyName returns [String name]
 
 formFiltersList
 @init {
-	List<LP<?>> properties = new ArrayList<LP<?>>();
+	List<LP> properties = new ArrayList<LP>();
 	List<List<String>> propertyMappings = new ArrayList<List<String>>();
 }
 @after {
@@ -614,7 +614,7 @@ filterGroupDeclaration
 	String filterGroupSID = null;
 	List<String> captions = new ArrayList<String>();
 	List<String> keystrokes = new ArrayList<String>();
-	List<LP<?>> properties = new ArrayList<LP<?>>();
+	List<LP> properties = new ArrayList<LP>();
 	List<List<String>> mappings = new ArrayList<List<String>>();
 	List<Boolean> defaults = new ArrayList<Boolean>();
 }
@@ -681,7 +681,7 @@ formPropertyWithOrder returns [String id, boolean order = true]
 
 propertyStatement
 @init {
-	LP<?> property = null;
+	LP property = null;
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
 }
@@ -760,7 +760,7 @@ equalityPE[List<String> context, boolean dynamic] returns [LPWithParams property
 relationalPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
-	LP<?> mainProp = null;
+	LP mainProp = null;
 	String op = null;
 }
 @after {
@@ -957,7 +957,7 @@ groupingType returns [GroupingType type]
 partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> paramProps = new ArrayList<LPWithParams>();
-	LP<?> ungroupProp = null;
+	LP ungroupProp = null;
 	PartitionType type = null;
 	int groupExprCnt;
 	boolean strict = false;

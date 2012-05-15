@@ -3,10 +3,7 @@ package tmc.integration.exp;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.ActionClass;
 import platform.server.classes.LogicalClass;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyDrawInstance;
-import platform.server.form.instance.PropertyObjectInstance;
+import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotFilterInstance;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.logics.DataObject;
@@ -28,7 +25,7 @@ public class NewSaleExportTask extends AbstractSaleExportTask {
 
     protected void setRemoteFormFilter(FormInstance formInstance) {
         PropertyDrawInstance<?> exported = formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported);
-        exported.toDraw.addTempFilter(new NotFilterInstance(new NotNullFilterInstance(exported.propertyObject)));
+        exported.toDraw.addTempFilter(new NotFilterInstance(new NotNullFilterInstance((CalcPropertyObjectInstance) exported.propertyObject)));
     }
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
