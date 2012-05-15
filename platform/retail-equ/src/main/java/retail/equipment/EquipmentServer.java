@@ -161,7 +161,7 @@ public class EquipmentServer {
                     if (result != null)
                         remote.errorEquipmentServerReport(equServerID, new Throwable(result));
                     else
-                        ((TerminalHandler) clsHandler).finishSendingTerminalDocumentInfo(terminalInfoList);
+                        ((TerminalHandler) clsHandler).finishSendingTerminalDocumentInfo(terminalInfoList, terminalDocumentInfoList);
                 } catch (Exception e) {
                     remote.errorEquipmentServerReport(equServerID, e.fillInStackTrace());
                     return;

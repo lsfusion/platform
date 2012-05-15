@@ -10,6 +10,7 @@ public abstract class TerminalHandler<S extends SalesBatch> extends MachineryHan
 
     public abstract List<TerminalDocumentInfo> readTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException;
 
-    public abstract void finishSendingTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException;
+    public abstract void finishSendingTerminalDocumentInfo(List<TerminalInfo> terminalInfoList,
+                                                           List<TerminalDocumentInfo> terminalDocumentInfoList) throws IOException;
 
 }
