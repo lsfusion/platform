@@ -33,7 +33,7 @@ public class LsfLogicsParserDesignTest {
 
     private ScriptingLogicsModule LM;
 
-    private ScriptingFormEntity entity;
+    private FormEntity entity;
 
     private ScriptingFormView design;
 
@@ -311,7 +311,7 @@ public class LsfLogicsParserDesignTest {
 
         FormEntity form = (FormEntity) LM.findNavigatorElementByName("dictionariesForm");
 
-        ScriptingFormView design = (ScriptingFormView) form.richDesign;
+        ScriptingFormView design = (ScriptingFormView) form.getRichDesign();
         assertNotNull(design);
 
         ComponentView some = design.getComponentBySID("some");
@@ -409,10 +409,10 @@ public class LsfLogicsParserDesignTest {
         LM = (ScriptingLogicsModule) bl.findModule("testDesign");
         assertNotNull(LM);
 
-        entity = (ScriptingFormEntity) LM.findNavigatorElementByName("storeArticle");
+        entity = (FormEntity) LM.findNavigatorElementByName("storeArticle");
         assertNotNull(entity);
 
-        design = (ScriptingFormView) entity.richDesign;
+        design = (ScriptingFormView) entity.getRichDesign();
         assertNotNull(design);
 
         if (hasDefault) {
