@@ -9437,7 +9437,7 @@ END
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Пересортица' : historyObject, numberedObject;    // incAccountSumDocumentLedger
+CLASS disparity 'Пересортица' : historyObject, numeratedObject;    // incAccountSumDocumentLedger
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 TABLE disparity (disparity);
 
@@ -9585,11 +9585,11 @@ FORM disparity 'Пересортица'
 
     OBJECTS d=disparityDetail
 
-    PROPERTIES(d) indexDisparityDetail,
-                   barcodeExSkuOutputDisparityDetail, nameAttributeItemOutputDisparityDetail, shortNameUnitOfMeasureItemOutputDisparityDetail,
-                   quantityOutputDisparityDetail, retailPriceOutputDisparityDetail, retailSumOutputDisparityDetail,
-                   barcodeExSkuInputDisparityDetail, nameAttributeItemInputDisparityDetail, shortNameUnitOfMeasureItemInputDisparityDetail,
-                   quantityInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
+    PROPERTIES(d)   indexDisparityDetail,
+                    barcodeExSkuOutputDisparityDetail, nameAttributeItemOutputDisparityDetail, shortNameUnitOfMeasureItemOutputDisparityDetail,
+                    quantityOutputDisparityDetail, retailPriceOutputDisparityDetail, retailSumOutputDisparityDetail,
+                    barcodeExSkuInputDisparityDetail, nameAttributeItemInputDisparityDetail, shortNameUnitOfMeasureItemInputDisparityDetail,
+                    quantityInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
     PROPERTIES(d) ADDOBJ, delete
 
     PROPERTIES (d)  FORCE PANEL importerPriceOutputDisparityDetail, supplierPriceOutputDisparityDetail, nameWareOutputDisparityDetail,
@@ -9613,6 +9613,7 @@ DESIGN disparity FROM DEFAULT {
             ADD dis.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
                 ADD PROPERTY(nameDepartmentStoreDisparity);
+                ADD PROPERTY(nameNumeratorObject);
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
                 ADD PROPERTY(dateDisparity);
@@ -9660,10 +9661,10 @@ FORM disparities 'Пересортицы'
                               countDisparityDetailDisparity, quantityOutputDetailDisparity, retailSumOutputDisparityDetailDisparity,
                               quantityInputDetailDisparity, retailSumInputDisparityDetailDisparity
 
-    PROPERTIES(dis) READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES(dis)  READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
 
-    PROPERTIES (dis)          ADDFORM, EDITFORM SHOWIF isDraftDisparity(dis), delete FORCE PANEL SHOWIF isDraftDisparity(dis),
+    PROPERTIES (dis) ADDFORM, EDITFORM SHOWIF isDraftDisparity(dis), delete FORCE PANEL SHOWIF isDraftDisparity(dis),
                             postDisparity SHOWIF isDraftDisparity(dis), unpostDisparity SHOWIF isPostedDisparity(dis)
 
 ;
@@ -9736,12 +9737,54 @@ FORM pricesRegister 'Реестр цен' PRINT
 ;
 
 // --------------------------- Формы списания ---------------------------------
+companyWriteOff (writeOff) = companyDepartmentStore(departmentStoreWriteOff(writeOff));
+nameCompanyWriteOff 'Компания' (writeOff) = name(companyWriteOff(writeOff));
+nameStoreWriteOff 'Магазин' (writeOff) = nameStoreDepartmentStore(departmentStoreWriteOff(writeOff));
+addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityVal(companyWriteOff(writeOff), dateWriteOff(writeOff));
+UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
+
+wastageCommitteeWriteOff (writeOff) = DATA wastageCommittee (writeOff) IN idGroup;
+nameWastageCommitteeWriteOff 'Комиссия для списания' (writeOff) = name(wastageCommitteeWriteOff(writeOff)) IN documentPrmGroup;
+wastageCommitteeWriteOff(writeOff) <- wastageCommitteeDepartmentStore(departmentStoreWriteOff(writeOff))
+    WHEN ASSIGNED(writeOff IS writeOff);
+
+inWriteOffEmployee (writeOff, employee) = inCommitteeEmployee(wastageCommitteeWriteOff(writeOff), employee);
+nameOfficerEmployeeWriteOff 'Члены комиссии' (writeOff) = nameOfficerEmployeeCommittee(wastageCommitteeWriteOff(writeOff)) MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+FORM writeOffPrint 'Списание' PRINT
+    OBJECTS w=writeOff FIXED PANEL
+    PROPERTIES (w)  SELECTOR numberObject, seriesObject, nameDepartmentStoreWriteOff,
+                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, accountSumWriteOffDetailWriteOff,
+                   nameCompanyWriteOff, nameStoreWriteOff, addressLegalEntityWriteOff, UNPLegalEntityWriteOff, nameWastageCommitteeWriteOff,
+                   nameOfficerEmployeeWriteOff, wastageCommitteeWriteOff
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, shortNameUnitOfMeasureItemWriteOffDetail,
+                   quantityWriteOffDetail, accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
+
+    PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
+                                    balanceDepartmentStoreItemWriteOff(d)
+
+    OBJECTS e=employee
+
+    PROPERTIES(e) SELECTOR   commonName, nameOfficerEmployee
+
+    FILTERS inWriteOffWriteOffDetail(w, d),
+            inWriteOffEmployee(w, e)
+
+    EDIT writeOff OBJECT w
+;
+
+toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup CONFIRM;
+
+
 @metaCodeInputMultipleItems(writeOff);
 
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
-                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, accountSumWriteOffDetailWriteOff
+                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff,
+                   accountSumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
@@ -9802,7 +9845,8 @@ DESIGN writeOff FROM DEFAULT{
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameDepartmentStoreWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff, accountSumWriteOffDetailWriteOff
+                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
+                            accountSumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
                    postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
@@ -9812,17 +9856,24 @@ FORM writeOffs 'Списания'
     PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail
 
+    PROPERTIES(w) FORCE PANEL toPrintWriteOff
+
     FILTERS inWriteOffWriteOffDetail(w, d)
 ;
 
 DESIGN writeOffs FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
+    ADD w.box {
+        PROPERTY(objectClassName) {
+            preferredCharWidth = 15;
+        }
+        PROPERTY (delete(w)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        }
     }
-    PROPERTY (delete(w)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
+    ADD d.box;
+    ADD w.printGroup;
+    ADD functions.box;
 }
 
 // --------------------------- Использование регистров (автоматическое заполнение): выписка из розницы-------------//
@@ -13779,6 +13830,7 @@ NAVIGATOR {
         ADD sumAccountDocumentLedgerPrint;
         ADD wastagePrint;
         ADD naturalLossPrint;
+        ADD writeOffPrint;
     }
 
     ADD adminElement TO formsTree {

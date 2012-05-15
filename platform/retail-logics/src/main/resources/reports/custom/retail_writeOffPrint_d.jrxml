@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="d" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="107"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="d" class="java.lang.Integer"/>
+	<field name="retail_indexWriteOffDetail" class="java.lang.Integer"/>
+	<field name="retail_barcodeExSkuWriteOffDetail" class="java.lang.String"/>
+	<field name="retail_nameAttributeItemWriteOffDetail" class="java.lang.String"/>
+	<field name="retail_quantityWriteOffDetail" class="java.lang.Double"/>
+	<field name="retail_accountPriceWriteOffDetail" class="java.lang.Double"/>
+	<field name="retail_accountSumWriteOffDetail" class="java.lang.Double"/>
+	<field name="retail_articleItemWriteOffDetail" class="java.lang.String"/>
+	<field name="retail_nameCountryItemWriteOffDetail" class="java.lang.String"/>
+	<field name="retail_retailPriceWriteOffDetail" class="java.lang.Double"/>
+	<field name="retail_balanceDepartmentStoreItemWriteOff" class="java.lang.Double"/>
+	<field name="retail_shortNameUnitOfMeasureItemWriteOffDetail" class="java.lang.String"/>
+	<detail>
+		<band height="12">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="189" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemWriteOffDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="373" y="0" width="82" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_accountPriceWriteOffDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="321" y="0" width="52" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_quantityWriteOffDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="296" y="0" width="25" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemWriteOffDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="214" y="0" width="82" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_barcodeExSkuWriteOffDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_indexWriteOffDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="455" y="0" width="82" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_accountSumWriteOffDetail}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
