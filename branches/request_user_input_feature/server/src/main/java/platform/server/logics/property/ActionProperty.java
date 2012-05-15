@@ -7,6 +7,7 @@ import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
@@ -58,7 +59,11 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
     }
 
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return ActionClass.TRUE.getExpr().and(getInterfaceClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
+        return ActionClass.TRUE.getExpr().and(calculateWhere(joinImplement, propClasses, propChanges, changedWhere));
+    }
+
+    protected Where calculateWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return getInterfaceClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere();
     }
 
     @Override

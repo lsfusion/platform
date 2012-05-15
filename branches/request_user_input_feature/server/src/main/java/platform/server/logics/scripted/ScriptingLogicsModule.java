@@ -22,7 +22,10 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.*;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.*;
 import platform.server.logics.BaseLogicsModule;
@@ -35,7 +38,6 @@ import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
-import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
@@ -53,9 +55,7 @@ import java.util.regex.Pattern;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
-import static platform.server.logics.PropertyUtils.getIntNum;
-import static platform.server.logics.PropertyUtils.readCalcImplements;
-import static platform.server.logics.PropertyUtils.readImplements;
+import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -882,7 +882,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedJoinAProp(" + mainProp + ", " + properties + ", " + ");");
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
-        LP prop = addJoinAProp(null, genSID(), "", usedParams.size(), mainProp, resultParams.toArray());
+        LP prop = addJoinAProp(null, genSID(), "", (LAP) mainProp, resultParams.toArray());
         return new LPWithParams(prop, usedParams);
     }
 
@@ -1878,7 +1878,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property.property instanceof ActionProperty)) {
+        if (!(property instanceof LAP)) {
             errLog.emitNotActionExecutedPropertyError(parser);
         }
     }
@@ -2088,7 +2088,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private class LPNameResolver extends CompoundNameResolver<LP<?, ?>> {
         @Override
         public LP<?, ?> resolveInModule(LogicsModule module, String simpleName) {
-            return module.getLCPByName(simpleName);
+            return module.getLPByName(simpleName);
         }
     }
 
