@@ -75,7 +75,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         this(null, sID, caption, iisPrintForm);
     }
 
-    protected FormEntity(NavigatorElement<T> parent, String sID, String caption) {
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption) {
         this(parent, sID, caption, false);
     }
 
@@ -262,7 +262,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addSingleGroupObject(ID, sID, baseClass, null, groups);
     }
 
-    protected TreeGroupEntity addTreeGroupObject(GroupObjectEntity... tGroups) {
+    public TreeGroupEntity addTreeGroupObject(GroupObjectEntity... tGroups) {
         TreeGroupEntity treeGroup = new TreeGroupEntity(genID());
         for (GroupObjectEntity group : tGroups) {
             if (!groups.contains(group)) {
@@ -275,7 +275,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return treeGroup;
     }
 
-    protected void addGroup(GroupObjectEntity group) {
+    public void addGroup(GroupObjectEntity group) {
         // регистрируем ID'шники, чтобы случайно не пересеклись заданные вручную и сгенерированные ID'шники
         idGenerator.idRegister(group.getID());
         for (ObjectEntity obj : group.objects) {
@@ -343,7 +343,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
+    public List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
         return addPropertyDraw(group, upClasses, null, false, objects);
     }
 
@@ -692,7 +692,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         addHintsNoUpdate(prop.property);
     }
 
-    protected void addHintsNoUpdate(Property prop) {
+    public void addHintsNoUpdate(Property prop) {
         if (!hintsNoUpdate.contains(prop))
             hintsNoUpdate.add(prop);
     }
@@ -701,14 +701,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return new DefaultFormView(this);
     }
 
-    public FormView richDesign;
+    private FormView richDesign;
 
     public FormView getRichDesign() {
         if (richDesign == null) {
-            return createDefaultRichDesign();
-        } else {
-            return richDesign;
+            richDesign = createDefaultRichDesign();
         }
+        return richDesign;
+    }
+
+    public void setRichDesign(FormView view) {
+        richDesign = view;
     }
 
     private GroupObjectHierarchy groupHierarchy;
@@ -1034,9 +1037,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setNeedVerticalScroll(boolean scroll) {
-        FormView view = richDesign;
         for (GroupObjectEntity entity : groups) {
-            view.get(entity).needVerticalScroll = scroll;
+            getRichDesign().get(entity).needVerticalScroll = scroll;
         }
     }
 

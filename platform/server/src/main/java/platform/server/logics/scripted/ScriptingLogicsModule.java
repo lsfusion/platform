@@ -344,7 +344,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
-        return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
+        return new ScriptingFormEntity(this, new FormEntity(baseLM.baseElement, formName, caption));
     }
 
     public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
@@ -357,14 +357,19 @@ public class ScriptingLogicsModule extends LogicsModule {
             formView.caption = caption;
         }
 
-        form.richDesign = formView;
+        form.setRichDesign(formView);
 
         return formView;
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {
         scriptLogger.info("addScriptedForm(" + form + ");");
-        addFormEntity(form);
+        addFormEntity(form.getForm());
+    }
+
+    public ScriptingFormEntity getFormForExtending(String name) throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = findFormByCompoundName(name);
+        return new ScriptingFormEntity(this, form);
     }
 
     public LP<?> addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp) throws ScriptingErrorLog.SemanticErrorException {

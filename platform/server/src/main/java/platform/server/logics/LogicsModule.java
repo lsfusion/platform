@@ -2463,7 +2463,6 @@ public abstract class LogicsModule {
 
     public <T extends FormEntity> T addFormEntity(T form) {
         form.setSID(transformNameToSID(form.getSID()));
-        form.richDesign = form.createDefaultRichDesign();
         addModuleNavigator(form);
         return form;
     }

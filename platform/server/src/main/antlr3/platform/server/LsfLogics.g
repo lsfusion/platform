@@ -13,6 +13,7 @@ grammar LsfLogics;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
+	import platform.server.form.entity.FormEntity;
 	import platform.server.form.navigator.NavigatorElement;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
@@ -263,12 +264,17 @@ formStatement
 scope {
 	ScriptingFormEntity form;
 }
+@init {
+	boolean initialDeclaration = false;
+}
 @after {
-	if (inPropParseState()) {
+	if (inPropParseState() && initialDeclaration) {
 		self.addScriptedForm($formStatement::form);
 	}
 }
-	:	declaration=formDeclaration { $formStatement::form = $declaration.form; }
+	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
+		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
+		)
 		(	formGroupObjectsList
 		|	formTreeGroupObjectList
 		|	formFiltersList
@@ -326,6 +332,15 @@ formDeclaration returns [ScriptingFormEntity form]
 		formNameCaption=simpleNameWithCaption
 		('PRINT' { isPrint = true; })?
 		(type = formShowTypeSetting { showType = $type.value; })?
+	;
+
+extendingFormDeclaration returns [ScriptingFormEntity form]
+@after {
+	if (inPropParseState()) {
+		$form = self.getFormForExtending($formName.sid);
+	}
+}
+	:	'EXTEND' 'FORM' formName=compoundID
 	;
 
 formShowTypeSetting returns [FormShowType value = null]

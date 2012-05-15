@@ -10,8 +10,6 @@ import platform.server.form.entity.*;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.FormView;
 import platform.server.logics.linear.LP;
 
 import javax.swing.*;
@@ -25,25 +23,26 @@ import static platform.base.BaseUtils.nvl;
  * Time: 19:27
  */
 
-public class ScriptingFormEntity extends FormEntity {
+public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;
+    private FormEntity form;
 
     private Map<String, PropertyDrawEntity> aliasToPropertyMap = new HashMap<String, PropertyDrawEntity>();
 
-    public ScriptingFormEntity(NavigatorElement parent, ScriptingLogicsModule LM, String sID, String caption) {
-        super(parent, sID, caption);
+    public ScriptingFormEntity(ScriptingLogicsModule LM, FormEntity form) {
+        assert form != null && LM != null;
         this.LM = LM;
+        this.form = form;
     }
 
-    @Override
-    public FormView createDefaultRichDesign() {
-        return new ScriptingFormView(this, true, LM);
+    public FormEntity getForm() {
+        return form;
     }
 
     public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
         for (ScriptingGroupObject groupObject : groupObjects) {
-            GroupObjectEntity groupObj = new GroupObjectEntity(genID());
+            GroupObjectEntity groupObj = new GroupObjectEntity(form.genID());
 
             for (int j = 0; j < groupObject.objects.size(); j++) {
                 String className = groupObject.classes.get(j);
@@ -51,7 +50,7 @@ public class ScriptingFormEntity extends FormEntity {
                 String objectName = nvl(groupObject.objects.get(j), className);
                 String objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
-                addObjectEntity(objectName, new ObjectEntity(genID(), cls, objectCaption), groupObj);
+                addObjectEntity(objectName, new ObjectEntity(form.genID(), cls, objectCaption), groupObj);
             }
 
             String groupName = groupObject.groupName;
@@ -103,28 +102,28 @@ public class ScriptingFormEntity extends FormEntity {
                 List<PropertyObjectEntity> propertyObjects = new ArrayList<PropertyObjectEntity>();
                 for (String sid : properties) {
                     if (sid != null)
-                        propertyObjects.add(addPropertyObject(LM.findLPByCompoundName(sid), groupObj.objects.toArray(new ObjectEntity[groupObj.objects.size()])));
+                        propertyObjects.add(form.addPropertyObject(LM.findLPByCompoundName(sid), groupObj.objects.toArray(new ObjectEntity[groupObj.objects.size()])));
                 }
 
                 if (!propertyObjects.isEmpty())
                     groupObj.setIsParents(propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
             }
         }
-        TreeGroupEntity tree = addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));
+        TreeGroupEntity tree = form.addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));
         if (treeSID != null)
             tree.setSID(treeSID);
     }
 
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
-        if (getGroupObject(groupName) != null) {
+        if (form.getGroupObject(groupName) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
         group.setSID(groupName);
-        addGroup(group);
+        form.addGroup(group);
     }
 
     private void addObjectEntity(String name, ObjectEntity object, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
-        if (getObject(name) != null) {
+        if (form.getObject(name) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "object", name);
         }
         object.setSID(name);
@@ -132,21 +131,21 @@ public class ScriptingFormEntity extends FormEntity {
     }
 
     private ObjectEntity[] getMappingObjectsArray(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.getMappingObjectsArray(this, mapping);
+        return LM.getMappingObjectsArray(form, mapping);
     }
 
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.getObjectEntityByName(this, name);
+        return LM.getObjectEntityByName(form, name);
     }
 
     public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.getPropertyWithMapping(this, name, mapping);
+        return LM.getPropertyWithMapping(form, name, mapping);
     }
 
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groupObjects = new ArrayList<GroupObjectEntity>();
         for (String groupName : mapping) {
-            GroupObjectEntity groupObject = getGroupObject(groupName);
+            GroupObjectEntity groupObject = form.getGroupObject(groupName);
             if (groupObject == null) {
                 LM.getErrLog().emitParamNotFoundError(LM.getParser(), groupName);
             } else {
@@ -158,10 +157,10 @@ public class ScriptingFormEntity extends FormEntity {
     }
 
     public GroupObjectEntity getGroupObjectEntity(String objectSID) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity groupObject = getGroupObject(objectSID);
+        GroupObjectEntity groupObject = form.getGroupObject(objectSID);
         if (groupObject != null)
             return groupObject;
-        ObjectEntity objectEntity = getObject(objectSID);
+        ObjectEntity objectEntity = form.getObject(objectSID);
         GroupObjectEntity groupObjectEntity = null;
         if (objectEntity == null) {
             LM.getErrLog().emitComponentNotFoundError(LM.getParser(), objectSID);
@@ -187,12 +186,12 @@ public class ScriptingFormEntity extends FormEntity {
 
                 //assertion, что создастся только один PropertyDrawEntity
                 property = BaseUtils.<PropertyDrawEntity>single(
-                        addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping))
+                        form.addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping))
                 );
             } else if (propertyName.equals("SELECTION")) {
                 //assertion, что создастся только один PropertyDrawEntity
                 property = BaseUtils.<PropertyDrawEntity>single(
-                        addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping))
+                        form.addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping))
                 );
             } else if (propertyName.equals("ADDOBJ")) {
                 if (mapping.size() != 1) {
@@ -201,24 +200,24 @@ public class ScriptingFormEntity extends FormEntity {
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 LP<?> addObjAction = LM.getSimpleAddObjectAction((CustomClass)obj[0].baseClass);
-                property = addPropertyDraw(addObjAction);
+                property = form.addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addAddFormAction(this, obj[0], propertyName.equals("ADDSESSIONFORM"));
+                property = LM.addAddFormAction(form, obj[0], propertyName.equals("ADDSESSIONFORM"));
             } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                property = LM.addEditFormAction(this, obj[0], propertyName.equals("EDITSESSIONFORM"));
+                property = LM.addEditFormAction(form, obj[0], propertyName.equals("EDITSESSIONFORM"));
             } else {
                 MappedProperty prop = getPropertyWithMapping(propertyName, mapping);
-                property = addPropertyDraw(prop.property, prop.mapping);
+                property = form.addPropertyDraw(prop.property, prop.mapping);
             }
             applyPropertyOptions(property, commonOptions.overrideWith(options.get(i)));
 
@@ -261,17 +260,17 @@ public class ScriptingFormEntity extends FormEntity {
         }
         MappedProperty showIf = options.getShowIf();
         if (showIf != null) {
-            LM.showIf(this, property, showIf.property, showIf.mapping);
+            LM.showIf(form, property, showIf.property, showIf.mapping);
         }
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            addHintsNoUpdate(property.propertyObject.property);
+            form.addHintsNoUpdate(property.propertyObject.property);
         }
         
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            addHintsIncrementTable(property.propertyObject.property);
+            form.addHintsIncrementTable(property.propertyObject.property);
         }
     }
 
@@ -284,7 +283,7 @@ public class ScriptingFormEntity extends FormEntity {
             params[i + 2] = i + 1;
         }
         Collection<ObjectEntity> objects = groundProperty.getObjectInstances();
-        return addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+        return form.addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
     private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
@@ -300,12 +299,12 @@ public class ScriptingFormEntity extends FormEntity {
 
         aliasToPropertyMap.put(alias, property);
 
-        PropertyDrawEntity oldSIDOwner = getPropertyDraw(alias);
+        PropertyDrawEntity oldSIDOwner = form.getPropertyDraw(alias);
 
         property.setSID(alias);
 
         if (oldSIDOwner != null && oldSIDOwner != property) {
-            setPropertyDrawGeneratedSID(oldSIDOwner, alias);
+            form.setPropertyDrawGeneratedSID(oldSIDOwner, alias);
         }
     }
 
@@ -315,7 +314,7 @@ public class ScriptingFormEntity extends FormEntity {
             return property;
         }
 
-        property = getPropertyDraw(LM.findLPByCompoundName(alias));
+        property = form.getPropertyDraw(LM.findLPByCompoundName(alias));
         if (property == null) {
             LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), alias);
         }
@@ -326,7 +325,7 @@ public class ScriptingFormEntity extends FormEntity {
     public void addScriptedFilters(List<LP<?>> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
+            form.addFixedFilter(new NotNullFilterEntity(form.addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true));
         }
     }
 
@@ -337,16 +336,16 @@ public class ScriptingFormEntity extends FormEntity {
         }
 
         if (isHintNoUpdate) {
-            addHintsNoUpdate(properties);
+            form.addHintsNoUpdate(properties);
         } else {
-            addHintsIncrementTable(properties);
+            form.addHintsIncrementTable(properties);
         }
     }
     
     public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<LP<?>> properties, List<List<String>> mappings, List<Boolean> defaults) throws ScriptingErrorLog.SemanticErrorException {
         assert captions.size() == mappings.size() && keystrokes.size() == mappings.size() && properties.size() == mappings.size();
 
-        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(genID());
+        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID());
         regularFilterGroup.setSID(sid);
 
         for (int i = 0; i < properties.size(); i++) {
@@ -359,17 +358,17 @@ public class ScriptingFormEntity extends FormEntity {
             }
 
             regularFilterGroup.addFilter(
-                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
+                    new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject(properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
                     setDefault
             );
         }
 
-        addRegularFilterGroup(regularFilterGroup);
+        form.addRegularFilterGroup(regularFilterGroup);
     }
 
     public PropertyObjectEntity addPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = getPropertyWithMapping(property, mapping);
-        return addPropertyObject(prop.property, prop.mapping);
+        return form.addPropertyObject(prop.property, prop.mapping);
     }
 
     public void addScriptedDefaultOrder(List<String> properties, List<Boolean> orders) throws ScriptingErrorLog.SemanticErrorException {
@@ -377,29 +376,29 @@ public class ScriptingFormEntity extends FormEntity {
             String alias = properties.get(i);
             Boolean order = orders.get(i);
 
-            addDefaultOrder(getPropertyDrawByName(alias), order);
+            form.addDefaultOrder(getPropertyDrawByName(alias), order);
         }
     }
 
     public void setAsDialogForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
-        findCustomClassForFormSetup(className).setDialogForm(this, getObjectEntity(objectID));
+        findCustomClassForFormSetup(className).setDialogForm(form, getObjectEntity(objectID));
     }
 
     public void setAsEditForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
-        findCustomClassForFormSetup(className).setEditForm(this, getObjectEntity(objectID));
+        findCustomClassForFormSetup(className).setEditForm(form, getObjectEntity(objectID));
     }
 
     public void setAsListForm(String className, String objectID) throws ScriptingErrorLog.SemanticErrorException {
-        findCustomClassForFormSetup(className).setListForm(this, getObjectEntity(objectID));
+        findCustomClassForFormSetup(className).setListForm(form, getObjectEntity(objectID));
     }
 
     public void setIsPrintForm(boolean isPrintForm) {
-        this.isPrintForm = isPrintForm;
+        form.isPrintForm = isPrintForm;
     }
 
     public void setShowType(FormShowType showType) {
         if (showType != null)
-            this.showType = showType;
+            form.showType = showType;
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
@@ -409,5 +408,9 @@ public class ScriptingFormEntity extends FormEntity {
         }
 
         return (CustomClass) valueClass;
+    }
+
+    public List<String> getObjectsNames() {
+        return form.getObjectsNames();
     }
 }
