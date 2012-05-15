@@ -2201,8 +2201,8 @@ metaCodeIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:		( firstId=metaCodeId { ids.add($firstId.sid); }
-			( ',' nextId=metaCodeId { ids.add($nextId.sid); })* )?
+	:		firstId=metaCodeId { ids.add($firstId.sid); }
+			( ',' nextId=metaCodeId { ids.add($nextId.sid); })* 
 	;
 
 
@@ -2210,6 +2210,7 @@ metaCodeId returns [String sid]
 	:	id=compoundID 			{ $sid = $id.sid; }
 	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
 	|	str=STRING_LITERAL 		{ $sid = $str.text; }
+	|							{ $sid = ""; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

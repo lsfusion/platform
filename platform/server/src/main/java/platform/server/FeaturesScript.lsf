@@ -333,7 +333,7 @@ CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
-// FORM name ['caption'] [PRINT] [DOCKING | MODAL | FULLSCREEN]
+// FORM name ['caption'] [PRINT] [DOCKING | MODAL | FULLSCREEN] | EXTEND FORM name
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)]
 // ...
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)];
