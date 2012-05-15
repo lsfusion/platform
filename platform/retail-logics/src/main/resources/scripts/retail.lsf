@@ -1069,17 +1069,19 @@ META defineDocumentHeaderAggregation (primObject, aggrObject)
     isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
 END
 
-META defineDocumentDetailAggregation (primObject, aggrObject)
-    item###aggrObject##Detail (detail) = item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    nameItem###aggrObject##Detail 'Товар' (detail) = nameAttributeItem(item###aggrObject##Detail(detail));
-    barcodeExSku###aggrObject##Detail 'Штрих-код' (detail) = barcodeEx(barcodeSku(item###aggrObject##Detail(detail)));
-
+META defineDocumentDetailAggregationHeader (primObject, aggrObject)
     isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
     date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
     departmentStore###aggrObject##Detail (detail) = departmentStore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
+META defineDocumentDetailAggregationItem (primObject, aggrObject)
+    item###aggrObject##Detail (detail) = item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    nameItem###aggrObject##Detail 'Товар' (detail) = nameAttributeItem(item###aggrObject##Detail(detail));
+    barcodeExSku###aggrObject##Detail 'Штрих-код' (detail) = barcodeEx(barcodeSku(item###aggrObject##Detail(detail)));
 END
 
 META defineDocumentDetailAggregationPrice (primObject, aggrObject)
@@ -1108,7 +1110,8 @@ META defineDocumentPriceChange (object)
     @defineDocumentHeaderAggregation(object, priceChange###object);
     @defineDocumentHeaderAggregationDescription(object, priceChange###object);
 
-    @defineDocumentDetailAggregation(object, priceChange###object);
+    @defineDocumentDetailAggregationHeader(object, priceChange###object);
+    @defineDocumentDetailAggregationItem(object, priceChange###object);
 
     numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
     revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = revaluationCommittee###object(object##PriceChange###object(object));
@@ -6199,7 +6202,8 @@ CLASS wastageDetail 'Строка документа': outAutoBalanceItemLedger;
 @defineDocumentHeaderAggregation(shipment, wastage);
 @defineDocumentHeaderAggregationNumber(shipment, wastage);
 
-@defineDocumentDetailAggregation(shipment, wastage);
+@defineDocumentDetailAggregationHeader(shipment, wastage);
+@defineDocumentDetailAggregationItem(shipment, wastage);
 
 quantityItemWastageDetail 'Количество' (wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 quantityItemWastageDetailWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
