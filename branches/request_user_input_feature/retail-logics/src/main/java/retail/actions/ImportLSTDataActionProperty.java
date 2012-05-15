@@ -3,7 +3,6 @@ package retail.actions;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
-import platform.base.Words;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
@@ -35,7 +34,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
 
         String path = retailLM.getLCPByName("importLSTDirectory").read(context).toString().trim();
         if (!"".equals(path)) {

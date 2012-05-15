@@ -29,7 +29,7 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
         return "delete";
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         // после удаления выбираем соседний объект
         DataObject nearObject = null;
         PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();

@@ -10,7 +10,6 @@ import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import skolkovo.SkolkovoLogicsModule;
@@ -31,7 +30,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
 
         LCP isExpert = LM.is(LM.expert);
         Map<Object, KeyExpr> keys = isExpert.getMapKeys();

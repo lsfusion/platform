@@ -1,6 +1,5 @@
 package platform.server.logics.property.actions;
 
-import platform.interop.action.LogMessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ExecutionContext;
@@ -18,7 +17,7 @@ public class ApplyActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         context.apply(BL);
     }
 }

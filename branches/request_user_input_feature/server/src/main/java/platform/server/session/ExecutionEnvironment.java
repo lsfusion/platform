@@ -69,9 +69,6 @@ public class ExecutionEnvironment {
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty property, Map<ClassPropertyInterface, DataObject> change, FormEnvironment<ClassPropertyInterface> formEnv, ObjectValue requestInput) throws SQLException {
-        if(!IsClassProperty.fitInterfaceClasses(getSession().getCurrentClasses(change)))
-            return new ArrayList<ClientAction>();
-
         List<ClientAction> actions = new ArrayList<ClientAction>();
         ExecutionContext context = new ExecutionContext(change, null, this, actions, BaseUtils.<FormEnvironment<ClassPropertyInterface>>immutableCast(formEnv), true);
 

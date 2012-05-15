@@ -20,6 +20,7 @@ import java.util.Map;
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
     private Map<String, ActionPropertyObjectInstance> editActions;
+    private ClassViewType curClassView;
 
     public ActionPropertyObjectInstance getEditAction(String actionId) {
         if(isReadOnly()) // ?? тут или нет
@@ -50,7 +51,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public PropertyObjectInstance<P, ?> propertyObject;
 
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
-    public GroupObjectInstance toDraw; // не null в FormInstance проставляется
+    public GroupObjectInstance toDraw; // не null, кроме когда без параметров в FormInstance проставляется
+
+    public ClassViewType getCurClassView() {
+        return toDraw != null ? toDraw.curClassView : ClassViewType.PANEL;
+    }
+
     public List<GroupObjectInstance> columnGroupObjects;
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
@@ -97,15 +103,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public boolean isReadOnly() {
-        return entity.isReadOnly() || (entity.isSelector() && !isSingleSimplePanel());
-    }
-
-    private boolean isSingleSimplePanel() { // дебильновато но временно так
-        return !(propertyObject.property instanceof ObjectValueProperty)
-                && toDraw.curClassView == ClassViewType.PANEL && toDraw.objects.size() == 1
-                && propertyObject.mapping.values().size() == 1
-                && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
-                && toDraw.objects.iterator().next().entity.addOnEvent.isEmpty();
+        return entity.isReadOnly();
     }
 
     public ClassViewType getForceViewType() {

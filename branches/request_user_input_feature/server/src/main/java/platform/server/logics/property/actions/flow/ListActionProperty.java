@@ -39,7 +39,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
+    public FlowResult execute(ExecutionContext context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
         for (ActionPropertyMapImplement<ClassPropertyInterface> action : actions) {

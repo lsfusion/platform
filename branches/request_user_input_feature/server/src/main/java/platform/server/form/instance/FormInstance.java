@@ -1197,7 +1197,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         final Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReaderInstance, Set<GroupObjectInstance>>();
 
         for (PropertyDrawInstance<?> drawProperty : properties) {
-            if (drawProperty.toDraw.curClassView == HIDE) continue;
+            ClassViewType curClassView = drawProperty.getCurClassView();
+            if (curClassView == HIDE) continue;
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
             if (forceViewType != null && forceViewType == HIDE) continue;
@@ -1209,7 +1210,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
             Boolean inInterface = null;
             Set<GroupObjectInstance> drawGridObjects = null;
-            if (drawProperty.toDraw.curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
+            if (curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
                     drawProperty.propertyObject.isInInterface(drawGridObjects = BaseUtils.addSet(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) // в grid'е
                 inInterface = true;
             else if (drawProperty.propertyObject.isInInterface(drawGridObjects = columnGroupGrids, false)) // в панели

@@ -25,7 +25,6 @@ import platform.server.form.navigator.IsServerRestartingController;
 import platform.server.form.navigator.UserController;
 import platform.server.logics.*;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.IDTable;

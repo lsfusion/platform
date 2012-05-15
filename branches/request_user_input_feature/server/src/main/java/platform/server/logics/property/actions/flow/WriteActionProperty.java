@@ -26,7 +26,7 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
     }
 
     @Override
-    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
+    public FlowResult execute(ExecutionContext context) throws SQLException {
         Map<I, KeyExpr> allKeys = KeyExpr.getMapKeys(innerInterfaces);
         Map<I, DataObject> innerValues = crossJoin(mapInterfaces, context.getKeys());
 

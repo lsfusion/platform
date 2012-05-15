@@ -356,7 +356,7 @@ public class CashRegController {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
@@ -374,7 +374,7 @@ public class CashRegController {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
@@ -409,7 +409,7 @@ public class CashRegController {
             this.mask = mask;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             //пока отключен, чтобы не вылетал exception
 
             /*

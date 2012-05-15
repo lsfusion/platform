@@ -10,7 +10,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.CalcPropertyMapImplement;
@@ -56,7 +55,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         });
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
 
         if (BL.LM.disableEmail.read(context) != null) {
             logger.error(ServerResourceBundle.getString("mail.sending.disabled"));

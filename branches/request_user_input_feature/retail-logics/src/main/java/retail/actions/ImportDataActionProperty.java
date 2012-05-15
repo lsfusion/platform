@@ -3,7 +3,6 @@ package retail.actions;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
-import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -30,7 +29,7 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
 
         Connection conn = null;
 

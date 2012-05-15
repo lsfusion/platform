@@ -17,7 +17,7 @@ public abstract class CustomReadValueActionProperty extends CustomActionProperty
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         Object userValue = null;
         DataClass readType = getReadType(context);
         if(readType!=null) {

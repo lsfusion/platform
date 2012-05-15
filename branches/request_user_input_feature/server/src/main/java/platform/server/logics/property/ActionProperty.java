@@ -11,6 +11,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
@@ -121,7 +122,7 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
         return new ActionPropertyMapImplement<V>(this, getMapInterfaces(list));
     }
 
-    public abstract void execute(ExecutionContext context) throws SQLException;
+    public abstract FlowResult execute(ExecutionContext context) throws SQLException;
 
     public ActionPropertyMapImplement<ClassPropertyInterface> getImplement() {
         return new ActionPropertyMapImplement<ClassPropertyInterface>(this, getIdentityInterfaces());

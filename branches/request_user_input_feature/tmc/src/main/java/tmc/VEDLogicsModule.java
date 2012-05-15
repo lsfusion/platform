@@ -4131,7 +4131,7 @@ public class VEDLogicsModule extends LogicsModule {
             askConfirm = true;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
             DataObject document = context.getSingleKeyValue();
             if(orderSalePayCash.read(context, document)==null && orderSalePayCard.read(context, document)==null) {
@@ -4156,7 +4156,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Печать", new ValueClass[]{orderSaleRetail});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             FormInstance<?> remoteForm = context.getFormInstance();
             context.addAction(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
         }
@@ -4183,7 +4183,7 @@ public class VEDLogicsModule extends LogicsModule {
             dateTo = i.next();
         }
 
-        public void execute(final ExecutionContext context) throws SQLException {
+        public void executeCustom(final ExecutionContext context) throws SQLException {
             Integer shopID = (Integer) context.getKeyObject(shopInterface);
             try {
                 new AbstractSaleExportTask(VEDBL, ((SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID), shopID) {
@@ -4511,7 +4511,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Обнулить остатки", new ValueClass[]{order});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             DataObject documentObject = context.getSingleKeyValue();
 
             // сколько в документе, сколько на остатках, уменьшаем на разницу

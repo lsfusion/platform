@@ -1484,7 +1484,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.property = property;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             FormInstance<?> form = context.getFormInstance();
@@ -1550,7 +1550,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return (FileClass) fileProperty.property.getType();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             DataObject[] objects = new DataObject[context.getKeyCount()];
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
@@ -1583,7 +1583,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.params = Arrays.asList(params);
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
 
             // здесь опять учитываем, что порядок тот же
             int i = 0;
@@ -1613,7 +1613,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject user = context.getSingleKeyValue();
@@ -1632,7 +1632,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
@@ -1649,7 +1649,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
@@ -1671,7 +1671,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             DataObject tableColumnObject = context.getKeyValue(tableColumnInterface);
@@ -1691,7 +1691,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
@@ -1708,7 +1708,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             DataSession session = BL.createSession();
             BL.recalculateFollows(session);
             session.apply(BL);
@@ -1724,7 +1724,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             BL.recalculateStats(context.getSession());
         }
     }
@@ -1734,7 +1734,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, caption, new ValueClass[] {dropColumn});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             DataObject dropColumnObject = context.getSingleKeyValue();
             String columnName = (String) sidDropColumn.read(context, dropColumnObject);
             String tableName = (String) sidTableDropColumn.read(context, dropColumnObject);
@@ -1762,7 +1762,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.addProperty = addProperty;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             if (addProperty.read(context) != null) {
                 String barString = (String) context.getSingleKeyObject();
                 if (barString.trim().length() != 0) {

@@ -1,6 +1,5 @@
 package roman;
 
-import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
 import org.xBaseJ.fields.CharField;
 import org.xBaseJ.fields.DateField;
@@ -14,7 +13,6 @@ import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -35,7 +33,7 @@ public class InvoiceExportDbfActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         try {
             InvoiceExporter exporter = new InvoiceExporter(context.getKeys());
             exporter.extractData();

@@ -4,9 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -33,7 +31,7 @@ public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
         customUserInterface = i.next();
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         DataObject userObject = context.getKeyValue(customUserInterface);
 
         String currentEmail = (String) email.read(context, userObject);

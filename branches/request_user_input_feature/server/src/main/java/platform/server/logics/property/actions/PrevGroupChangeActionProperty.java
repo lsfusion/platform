@@ -1,9 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
-import platform.server.classes.ActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
@@ -13,9 +11,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LAP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.session.PropertyChange;
 import platform.server.session.PropertySet;
 
 import java.sql.SQLException;
@@ -107,7 +103,7 @@ public class PrevGroupChangeActionProperty extends CustomActionProperty {
         return result;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         Map<ClassPropertyInterface, KeyExpr> mainKeys = mainProperty.getMapKeys();
 
         Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());

@@ -2255,7 +2255,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             getRestartController().initRestart();
             updateRestartProperty();
         }
@@ -2266,7 +2266,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
         }
@@ -2277,7 +2277,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sid, caption, new ValueClass[]{});
         }
 
-        public void execute(ExecutionContext context) {
+        public void executeCustom(ExecutionContext context) {
             System.runFinalization();
             System.gc();
         }

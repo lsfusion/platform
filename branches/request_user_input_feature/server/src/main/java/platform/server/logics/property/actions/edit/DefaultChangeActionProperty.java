@@ -1,7 +1,6 @@
 package platform.server.logics.property.actions.edit;
 
 import platform.interop.form.ServerResponse;
-import platform.server.classes.ActionClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileClass;
 import platform.server.classes.ValueClass;
@@ -36,7 +35,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
 
         Map<ClassPropertyInterface,DataObject> keys = context.getKeys();
         Modifier modifier = context.getModifier();

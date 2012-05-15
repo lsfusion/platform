@@ -11,7 +11,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -38,7 +37,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
         declarationInterface = i.next();
     }
 
-    public void execute(ExecutionContext context) {
+    public void executeCustom(ExecutionContext context) {
         try {
             List<String> exportProperties = BaseUtils.toList("numberGroupDeclaration", "nameBrandGroupDeclaration",
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration",

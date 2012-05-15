@@ -14,8 +14,6 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -45,7 +43,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         this.session = context.getSession();
 
         Map<String, byte[]> files = new HashMap<String, byte[]>();

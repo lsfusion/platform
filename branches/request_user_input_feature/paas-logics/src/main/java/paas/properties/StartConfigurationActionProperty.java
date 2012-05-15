@@ -26,7 +26,7 @@ public class StartConfigurationActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         DataObject confObj = context.getSingleKeyValue();
 
         try {

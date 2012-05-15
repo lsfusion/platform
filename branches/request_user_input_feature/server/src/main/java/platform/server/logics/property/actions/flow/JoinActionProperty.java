@@ -23,7 +23,7 @@ public class JoinActionProperty extends KeepContextActionProperty {
         finalizeInit();
     }
 
-    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
+    public FlowResult execute(ExecutionContext context) throws SQLException {
         Map<ClassPropertyInterface, DataObject> readValues = new HashMap<ClassPropertyInterface, DataObject>();
         for (Map.Entry<ClassPropertyInterface, CalcPropertyInterfaceImplement<ClassPropertyInterface>> mapProp : action.mapping.entrySet()) {
             ObjectValue value = mapProp.getValue().readClasses(context, context.getKeys());
@@ -33,7 +33,7 @@ public class JoinActionProperty extends KeepContextActionProperty {
                 return FlowResult.FINISH;
             }
         }
-        ((ActionProperty) action.property).execute(context.override(readValues, action.mapping));
+        action.property.execute(context.override(readValues, action.mapping));
         return FlowResult.FINISH;
     }
 

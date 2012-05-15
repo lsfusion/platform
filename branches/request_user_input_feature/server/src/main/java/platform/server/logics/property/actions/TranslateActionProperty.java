@@ -6,7 +6,6 @@ import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -35,7 +34,7 @@ public class TranslateActionProperty extends CustomActionProperty {
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject dictionary = context.getKeyValue(interfacesList.remove(0));
         List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, context.getKeys());

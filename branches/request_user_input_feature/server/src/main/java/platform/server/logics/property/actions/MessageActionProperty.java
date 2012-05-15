@@ -2,7 +2,6 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
-import platform.server.Context;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -18,7 +17,7 @@ public class MessageActionProperty extends CustomActionProperty {
         msgInterface = BaseUtils.single(interfaces);
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         context.requestUserInteraction(
                 new MessageClientAction(((String) context.getKeyValue(msgInterface).object).trim(), caption)
         );

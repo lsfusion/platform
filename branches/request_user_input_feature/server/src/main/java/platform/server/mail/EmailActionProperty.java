@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import platform.base.ByteArray;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.Context;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -104,7 +103,7 @@ public class EmailActionProperty extends CustomActionProperty {
         attachmentProps.add(attachmentNameProp);
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         try {
             if (BL.LM.disableEmail.read(context) != null) {
                 logger.error(getString("mail.sending.disabled"));

@@ -8247,7 +8247,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject sID = context.getKeyValue(sidInterface);
@@ -8281,7 +8281,7 @@ public class RomanLogicsModule extends LogicsModule {
             createStampInterface = i.next();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             DataObject objCreateStamp = context.getKeyValue(createStampInterface);
             if ((firstNumberCreationStamp.read(context, objCreateStamp) == null) || (lastNumberCreationStamp.read(context, objCreateStamp) == null)) {
                 context.addAction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
@@ -8323,7 +8323,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             DataObject cloneObject = context.getKeyValue(itemInterface);
             DataObject newObject = context.addObject(item);
 
@@ -8349,7 +8349,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject objShipment = context.getKeyValue(shipmentInterface);

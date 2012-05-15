@@ -18,7 +18,7 @@ public class StopActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         context.addAction(new MessageClientAction(caption, header));
         context.addAction(new DenyCloseFormClientAction());
     }

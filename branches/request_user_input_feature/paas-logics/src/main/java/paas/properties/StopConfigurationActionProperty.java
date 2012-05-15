@@ -23,7 +23,7 @@ public class StopConfigurationActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext context) throws SQLException {
         DataObject confObj = context.getSingleKeyValue();
 
         Integer port = (Integer) paas.paasLM.configurationPort.read(context.getSession(), confObj);

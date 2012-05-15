@@ -19,15 +19,14 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
     }
 
     public Set<CalcProperty> getChangeProps() {
-        return ((FlowActionProperty) aspectActionImplement.property).getChangeProps();
+        return aspectActionImplement.property.getChangeProps();
     }
 
     public Set<CalcProperty> getUsedProps() {
-        return ((FlowActionProperty) aspectActionImplement.property).getUsedProps();
+        return aspectActionImplement.property.getUsedProps();
     }
 
-    @Override
-    public final FlowResult flowExecute(ExecutionContext context) throws SQLException {
+    public final FlowResult execute(ExecutionContext context) throws SQLException {
         return aroundAspect(context);
     }
 

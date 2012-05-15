@@ -15,12 +15,10 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.flow.FlowActionProperty;
-import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 public class AggChangeActionProperty<P extends PropertyInterface> extends CustomActionProperty {
 
@@ -37,7 +35,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Custom
     }
 
     @Override
-    public void execute(final ExecutionContext context) throws SQLException {
+    public void executeCustom(final ExecutionContext context) throws SQLException {
         ObjectValue readValue = null;
                 
         Type type = aggProp.getType();

@@ -133,7 +133,7 @@ public class SampleLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext context) throws SQLException {
             for (int i = 0; i < 5; ++i) {
                 if (JOptionPane.OK_OPTION != (Integer)context.requestUserInteraction(new ConfirmClientAction("Попытка №" + i, "Вы уверены, что хотите изменить это свойство?"))) {
                     context.requestUserInteraction(new MessageClientAction("Too bad :(", ":("));
