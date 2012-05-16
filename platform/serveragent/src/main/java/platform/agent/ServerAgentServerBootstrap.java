@@ -1,4 +1,4 @@
-package main.java;
+package platform.agent;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;

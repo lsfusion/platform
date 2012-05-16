@@ -5,11 +5,11 @@
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-lazy-init="true">
 
-    <bean id="serverAgentServer" class="main.java.ServerAgentServer">
+    <bean id="serverAgentServer" class="platform.agent.ServerAgentServer">
         <constructor-arg type="int" value="6666"/>
     </bean>
 
-    <bean id="serverInstanceLocator" class="main.java.ServerInstanceLocator">
+    <bean id="serverInstanceLocator" class="platform.agent.ServerInstanceLocator">
         <constructor-arg type="int" value="6666"/>
         <constructor-arg type="int" value="7652"/>
     </bean>

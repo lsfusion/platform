@@ -1,4 +1,4 @@
-package main.java;
+package platform.agent;
 
 import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;

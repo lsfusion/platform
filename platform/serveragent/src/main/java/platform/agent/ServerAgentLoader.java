@@ -1,9 +1,8 @@
-package main.java;
+package platform.agent;
 
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
