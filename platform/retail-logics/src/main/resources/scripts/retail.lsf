@@ -6859,7 +6859,7 @@ CLASS disparity 'Пересортица' : historyObject, numeratedObject;    //
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 TABLE disparity (disparity);
 
-CLASS inDisparityLedger 'Приход пересортицы' : inAutoBalanceItemLedger;
+CLASS inDisparityLedger 'Приход пересортицы' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
 TABLE inDisparityLedger (inDisparityLedger);
 
 CLASS disparityDetail 'Строка пересортицы': outAutoBalanceItemLedger;
@@ -7000,26 +7000,26 @@ markupSumInputDisparityDetailDisparity 'Сумма надбавки' (disparity)
     GROUP SUM markupSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
 
                                   // Текущее значение расхода //
-curWareInputDisparityDetail = DATA ware (disparityDetail) IN idGroup;
-curNameWareInputDisparityDetail 'Текущая посуда' (disparityDetail) = name(curWareInputDisparityDetail(disparityDetail)) IN priceDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-curWarePriceInputDisparityDetail 'Текущая цена посуды' (disparityDetail) = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-
-curWareRangeInputDisparityDetail (disparityDetail) = rangeWareVal(curWareInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail));
-curNumberWareRangeInputDisparityDetail 'Текущий НДС посуды, номер' (disparityDetail) = dataRange(curWareRangeInputDisparityDetail(disparityDetail));
-curDataWareRangeInputDisparityDetail 'Текущий НДС посуды, %' (disparityDetail) = dataActingRateRangeDate(curWareRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail));
-
-curImporterPriceInputDisparityDetail 'Тек. цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-curSupplierPriceInputDisparityDetail 'Тек. цена поставщика' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+//curWareInputDisparityDetail = DATA ware (disparityDetail) IN idGroup;
+//curNameWareInputDisparityDetail 'Текущая посуда' (disparityDetail) = name(curWareInputDisparityDetail(disparityDetail)) IN priceDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+//
+//curWarePriceInputDisparityDetail 'Текущая цена посуды' (disparityDetail) = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+//
+//curWareRangeInputDisparityDetail (disparityDetail) = rangeWareVal(curWareInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail));
+//curNumberWareRangeInputDisparityDetail 'Текущий НДС посуды, номер' (disparityDetail) = dataRange(curWareRangeInputDisparityDetail(disparityDetail));
+//curDataWareRangeInputDisparityDetail 'Текущий НДС посуды, %' (disparityDetail) = dataActingRateRangeDate(curWareRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail));
+//
+//curImporterPriceInputDisparityDetail 'Тек. цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+//curSupplierPriceInputDisparityDetail 'Тек. цена поставщика' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
 
 curRetailPriceInputDisparityDetail 'Тек. розничная цена' (disparityDetail) = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
 
-curRetailRangeInputDisparityDetail = DATA range (disparityDetail);
-curNumberRetailRangeInputDisparityDetail 'Тек. НДС розничный, номер' (disparityDetail) = dataRange(curRetailRangeInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
-curDataRetailRangeInputDisparityDetail 'Тек. НДС розничный, %' (disparityDetail) =
-   dataActingRateRangeDate(curRetailRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
-
-CONSTRAINT taxRange(curRetailRangeInputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY curRetailRangeInputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+//curRetailRangeInputDisparityDetail = DATA range (disparityDetail);
+//curNumberRetailRangeInputDisparityDetail 'Тек. НДС розничный, номер' (disparityDetail) = dataRange(curRetailRangeInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
+//curDataRetailRangeInputDisparityDetail 'Тек. НДС розничный, %' (disparityDetail) =
+//   dataActingRateRangeDate(curRetailRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
+//
+//CONSTRAINT taxRange(curRetailRangeInputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY curRetailRangeInputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 //----------------------------  Изменение остатка пересорт --------------------------------------------//
 
@@ -7069,7 +7069,7 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
 CLASS priceChangeDisparity 'Переоценка при пересортице' : priceChangeDocument;
 CLASS priceChangeDisparityDetail 'Строка переоценки при пересортице' : priceChangeDocumentDetail;
 
-needToPriceChangeDisparityDetail (disparityDetail) = retailPriceOutputDisparityDetail(disparityDetail) != retailPriceInputDisparityDetail(disparityDetail) AND
+needToPriceChangeDisparityDetail (disparityDetail) = curRetailPriceInputDisparityDetail(disparityDetail) != retailPriceInputDisparityDetail(disparityDetail) AND
                                                    quantityOutputDisparityDetail(disparityDetail) >0 AND quantityInputDisparityDetail(disparityDetail) >0;
 
 
@@ -7101,21 +7101,19 @@ warePricePriceChangeDisparityDetail 'Цена посуды' (priceChangeDisparit
 retailPricePriceChangeDisparityDetail 'Розничная цена' (priceChangeDisparityDetail) = retailPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
 
 
+curRetailPricePriceChangeDisparityDetail 'Текущая розничная цена' (priceChangeDisparityDetail) = curRetailPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+//curImporterPricePriceChangeDisparityDetail 'Цена изготовителя' (priceChangeDisparityDetail) = curImporterPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+//curSupplierPricePriceChangeDisparityDetail 'Цена поставщика' (priceChangeDisparityDetail) = curSupplierPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+//curDataRetailRangePriceChangeDisparityDetail 'НДС, %' (priceChangeDisparityDetail) = curDataRetailRangeInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+//curWarePriceChangeDisparityDetail 'Посуда' (priceChangeDisparityDetail) = curWareInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+//curWarePricePriceChangeDisparityDetail 'Цена посуды' (priceChangeDisparityDetail) = curWarePriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
 numberDisposalPriceChangeDisparity '№ распоряжения на переоценку' (disparity) = numberDisposalDisparity(disparityPriceChangeDisparity(disparity));
 revaluationCommitteePriceChangeDisparity 'Комиссия переоценки ИД' (disparity) = revaluationCommitteeDisparity(disparityPriceChangeDisparity(disparity));
 
-
-curRetailPricePriceChangeDisparityDetail 'Старая розничная цена' (priceChangeDisparityDetail) = curRetailPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-
-curImporterPricePriceChangeDisparityDetail 'Цена изготовителя' (priceChangeDisparityDetail) = curImporterPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-curSupplierPricePriceChangeDisparityDetail 'Цена поставщика' (priceChangeDisparityDetail) = curSupplierPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-
-curDataRetailRangePriceChangeDisparityDetail 'НДС, %' (priceChangeDisparityDetail) = curDataRetailRangeInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-
-curWarePriceChangeDisparityDetail 'Посуда' (priceChangeDisparityDetail) = curWareInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-curWarePricePriceChangeDisparityDetail 'Цена посуды' (priceChangeDisparityDetail) = curWarePriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-
-   // внести их в эксклюзив
 
 @defineDocumentPriceChangeNumber(disparity);
 @metaCodeIsPriceChangeWrong(disparity);
@@ -7210,7 +7208,8 @@ TABLE balanceItemLedgerBatch (balanceItemLedger, batch);
 TABLE batchDepartmentStore(batch, departmentStore);
 
 quantityBatch 'Кол-во в партии' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                           quantityStudyOutputDetail(ledger) PERSISTENT;
+                                                           quantityStudyOutputDetail(ledger),
+                                                           quantityInDisparityLedger(ledger) PERSISTENT;
 
 quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityWriteOffDetail(ledger),
                                                                      quantityStatementDetail(ledger),
@@ -7228,8 +7227,8 @@ quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOu
                                                                  quantityOutUserBalanceItemLedger(ledger) PERSISTENT;
 
 quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger),
-                                                                    quantityBillReturnDetail(ledger),
-                                                                    quantityInDisparityLedger(ledger);
+                                                                    quantityBillReturnDetail(ledger);
+                                                                  //  quantityInDisparityLedger(ledger);
 
 quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
                                                                 quantityInAutoBalanceItemLedger(ledger),
@@ -7298,21 +7297,26 @@ needToCostBalanceItemLedger 'Требуется расчет себестоим�
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
 dateTimeBatch 'Дата/время' (batch) = UNION EXCLUSIVE dateTimeShipmentDetail (batch),
-                                                     dateTimeStudyOutputDetail (batch) PERSISTENT INDEXED;
+                                                     dateTimeStudyOutputDetail (batch),
+                                                     dateTimeInDisparityLedger(batch) PERSISTENT INDEXED;
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
 
 isPostedBatch 'Закрыт' (batch) = UNION EXCLUSIVE isPostedShipmentDetail (batch),
-                                                 isPostedStudyOutputDetail (batch) PERSISTENT;
+                                                 isPostedStudyOutputDetail (batch),
+                                                 isPostedInDisparityLedger(batch) PERSISTENT;
 
 itemBatch 'Товар (ИД)' (batch) = UNION EXCLUSIVE itemShipmentDetail (batch),
-                                                 itemStudyOutputDetail (batch) PERSISTENT INDEXED;
+                                                 itemStudyOutputDetail (batch),
+                                                 itemInDisparityLedger(batch) PERSISTENT INDEXED;
 
 supplierPriceBatch 'Цена поставщика' (batch) = UNION EXCLUSIVE supplierPriceShipmentDetail(batch),
-                                                               supplierPriceStudyOutputDetail(batch) PERSISTENT;
+                                                               supplierPriceStudyOutputDetail(batch),
+                                                               supplierPriceInDisparityLedger(batch) PERSISTENT;
 
 descriptionBatch 'Описание' (batch) = UNION EXCLUSIVE descriptionShipmentDetail(batch),
-                                                      descriptionStudyOutputDetail(batch) PERSISTENT;
+                                                      descriptionStudyOutputDetail(batch),
+                                                      descriptionInDisparityLedger(batch) PERSISTENT;
 
 currentBalanceBatch 'Остаток (всего)' = GROUP SUM currentBalanceBatchLedger(batch, departmentStore) BY batch PERSISTENT;
 
@@ -9814,8 +9818,8 @@ FORM disparity 'Пересортица'
 
     PROPERTIES(dis) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
                     dateDisparity, timeDisparity,
-                    countDisparityDetailDisparity, quantityOutputDetailDisparity, retailSumOutputDisparityDetailDisparity,
-                    quantityInputDetailDisparity, retailSumInputDisparityDetailDisparity
+                    quantityOutputDetailDisparity, retailSumOutputDisparityDetailDisparity,
+                    quantityInputDetailDisparity, retailSumInputDisparityDetailDisparity, numberDisposalDisparity, nameRevaluationCommitteeDisparity
 
     OBJECTS d=disparityDetail
 
@@ -9823,8 +9827,7 @@ FORM disparity 'Пересортица'
                     barcodeExSkuOutputDisparityDetail, nameAttributeItemOutputDisparityDetail, shortNameUnitOfMeasureItemOutputDisparityDetail,
                     quantityOutputDisparityDetail, retailPriceOutputDisparityDetail, retailSumOutputDisparityDetail,
                     barcodeExSkuInputDisparityDetail, nameAttributeItemInputDisparityDetail, shortNameUnitOfMeasureItemInputDisparityDetail,
-                    quantityInputDisparityDetail, importerPriceInputDisparityDetail, supplierPriceInputDisparityDetail, nameWareInputDisparityDetail,
-                    warePriceInputDisparityDetail, dataRetailRangeInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
+                    quantityInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
     PROPERTIES(d) ADDOBJ, delete
 
 //    PROPERTIES (d)  FORCE PANEL importerPriceOutputDisparityDetail, supplierPriceOutputDisparityDetail, nameWareOutputDisparityDetail,
@@ -9833,8 +9836,8 @@ FORM disparity 'Пересортица'
 //    PROPERTIES (d)  FORCE PANEL importerPriceInputDisparityDetail, supplierPriceInputDisparityDetail, nameWareInputDisparityDetail,
 //                                warePriceInputDisparityDetail, dataRetailRangeInputDisparityDetail
 
-    PROPERTIES (d)  FORCE PANEL curImporterPriceInputDisparityDetail, curSupplierPriceInputDisparityDetail, curNameWareInputDisparityDetail,
-                                curWarePriceInputDisparityDetail, curDataRetailRangeInputDisparityDetail, curRetailPriceInputDisparityDetail
+    PROPERTIES (d)  FORCE PANEL importerPriceInputDisparityDetail, supplierPriceInputDisparityDetail, nameWareInputDisparityDetail,
+                                warePriceInputDisparityDetail, dataRetailRangeInputDisparityDetail, curRetailPriceInputDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
 
@@ -9846,47 +9849,37 @@ DESIGN disparity FROM DEFAULT {
         preferredSize = (1024, 768);
 
         NEW header.box{
+            childConstraints = TO THE RIGHT;
+            NEW caseTwo {
+                childConstraints = TO THE BOTTOM;
+                ADD dis.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreDisparity);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateDisparity);
+                    ADD PROPERTY(timeDisparity);
+                }
+                ADD dis.documentPrmGroup;
+            }
+                ADD dis.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
 
-            childConstraints = TO THE BOTTOM;
-            ADD dis.documentHeaderGroup {
-                childConstraints = TO THE RIGHT;
-                ADD PROPERTY(nameDepartmentStoreDisparity);
-                ADD PROPERTY(nameNumeratorObject);
-                ADD PROPERTY(numberObject);
-                ADD PROPERTY(seriesObject);
-                ADD PROPERTY(dateDisparity);
-                ADD PROPERTY(timeDisparity);
-            }
-            ADD dis.documentSumGroup {
-                childConstraints = TO THE RIGHT;
-                ADD PROPERTY(countDisparityDetailDisparity(dis));
-            }
         }
+
         ADD d.box {
             ADD d.priceDetailGroup {
-//                childConstraints = TO THE BOTTOM;
-//                NEW row1 {
-//                    childConstraints = TO THE RIGHTBOTTOM;
-//                    title = 'Расход';
-//                    ADD PROPERTY (importerPriceOutputDisparityDetail);
-//                    ADD PROPERTY (supplierPriceOutputDisparityDetail);
-//                    ADD PROPERTY (nameWareOutputDisparityDetail);
-//                    ADD PROPERTY (warePriceOutputDisparityDetail);
-//                    ADD PROPERTY (dataWareRangeOutputDisparityDetail);
-//                    ADD PROPERTY (dataRetailRangeOutputDisparityDetail);
-//                }
-//                NEW row2 {
-                    childConstraints = TO THE RIGHTBOTTOM;
+                    childConstraints = TO THE RIGHT;
                     title = 'Цены (приход)';
-                    ADD PROPERTY (curImporterPriceInputDisparityDetail);
-                    ADD PROPERTY (curSupplierPriceInputDisparityDetail);
-                    ADD PROPERTY (curNameWareInputDisparityDetail);
-                    ADD PROPERTY (curWarePriceInputDisparityDetail);
-                    ADD PROPERTY (curDataRetailRangeInputDisparityDetail);
+                    ADD PROPERTY (importerPriceInputDisparityDetail);
+                    ADD PROPERTY (supplierPriceInputDisparityDetail);
+                    ADD PROPERTY (nameWareInputDisparityDetail);
+                    ADD PROPERTY (warePriceInputDisparityDetail);
+                    ADD PROPERTY (dataRetailRangeInputDisparityDetail);
                     ADD PROPERTY (curRetailPriceInputDisparityDetail);
-//                }
             }
-
         }
         ADD functions.box;
     }
@@ -9905,6 +9898,14 @@ FORM disparities 'Пересортицы'
     PROPERTIES (dis) ADDFORM, EDITFORM SHOWIF isDraftDisparity(dis), delete FORCE PANEL SHOWIF isDraftDisparity(dis),
                             postDisparity SHOWIF isDraftDisparity(dis), unpostDisparity SHOWIF isPostedDisparity(dis)
 
+    OBJECTS d=disparityDetail
+    PROPERTIES(d)   READONLY indexDisparityDetail,
+                    barcodeExSkuOutputDisparityDetail, nameAttributeItemOutputDisparityDetail, shortNameUnitOfMeasureItemOutputDisparityDetail,
+                    quantityOutputDisparityDetail, retailPriceOutputDisparityDetail, retailSumOutputDisparityDetail,
+                    barcodeExSkuInputDisparityDetail, nameAttributeItemInputDisparityDetail, shortNameUnitOfMeasureItemInputDisparityDetail,
+                    quantityInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
+
+    FILTERS         disparityDisparityDetail(d) == dis
 ;
 DESIGN disparities FROM DEFAULT {
     ADD dis.box {
@@ -9916,16 +9917,19 @@ DESIGN disparities FROM DEFAULT {
             askConfirm = TRUE;
         }
     }
-    ADD dis.historyGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-    ADD dis.postedGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
+    ADD d.box;
+    NEW caseOne {
+        childConstraints = TO THE RIGHT;
+        ADD dis.historyGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
+        ADD dis.postedGroup {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 1;
+        }
     }
     ADD functions.box;
-
 }
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
@@ -10120,27 +10124,27 @@ retailPriceOutputDisparityDetail (disparityDetail) <- priceRetailBLedgerDateTime
                 itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
 
-curImporterPriceInputDisparityDetail (disparityDetail) <- priceImporterBLedgerDateTime (
+importerPriceInputDisparityDetail (disparityDetail) <- priceImporterBLedgerDateTime (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-curSupplierPriceInputDisparityDetail (disparityDetail) <- priceSupplierBLedgerDateTime (
+supplierPriceInputDisparityDetail (disparityDetail) <- priceSupplierBLedgerDateTime (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-curRetailRangeInputDisparityDetail (disparityDetail) <- rangeRetailBLedgerDateTime(
+retailRangeInputDisparityDetail (disparityDetail) <- rangeRetailBLedgerDateTime(
+                itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
+
+warePriceInputDisparityDetail (disparityDetail) <- warePriceBLedgerDateTime(
+                itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
+
+wareInputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
 curRetailPriceInputDisparityDetail (disparityDetail) <- priceRetailBLedgerDateTime (
-                itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
-
-curWarePriceInputDisparityDetail (disparityDetail) <- warePriceBLedgerDateTime(
-                itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
-
-curWareInputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
@@ -10311,14 +10315,16 @@ dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = UNION 
                                                                                  dateTimePriceChangeReturnSupplier(priceChangeDocument),
                                                                                  dateTimePriceChangeStatement(priceChangeDocument),
                                                                                  dateTimePriceChangeInnerArrival(priceChangeDocument),
-                                                                                 dateTimeUserPriceChange(priceChangeDocument) PERSISTENT;
+                                                                                 dateTimeUserPriceChange(priceChangeDocument),
+                                                                                 dateTimePriceChangeDisparity(priceChangeDocument) PERSISTENT;
 
 descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = [FORMULA STRING[200] '\'Переоценка.\' || \' \' || CAST($1 AS TEXT)'](
                                                                             UNION EXCLUSIVE descriptionPriceChangeShipment(priceChangeDocument),
                                                                                     descriptionPriceChangeReturnSupplier(priceChangeDocument),
                                                                                     descriptionPriceChangeStatement(priceChangeDocument),
                                                                                     descriptionPriceChangeInnerArrival(priceChangeDocument),
-                                                                                    descriptionUserPriceChange(priceChangeDocument)) PERSISTENT;
+                                                                                    descriptionUserPriceChange(priceChangeDocument),
+                                                                                    descriptionPriceChangeDisparity(priceChangeDocument)) PERSISTENT;
 
 datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
 
@@ -10326,46 +10332,54 @@ isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = UNION EXCLUSI
                                                                              isPostedPriceChangeReturnSupplier(priceChangeDocument),
                                                                              isPostedPriceChangeStatement(priceChangeDocument),
                                                                              isPostedPriceChangeInnerArrival(priceChangeDocument),
-                                                                             isPostedUserPriceChange(priceChangeDocument) PERSISTENT;
+                                                                             isPostedUserPriceChange(priceChangeDocument),
+                                                                             isPostedPriceChangeDisparity(priceChangeDocument) PERSISTENT;
 
 numberPriceChangeDocument 'Номер документа' (priceChangeDocument) = UNION EXCLUSIVE numberPriceChangeShipment(priceChangeDocument),
                                                                                     numberPriceChangeReturnSupplier(priceChangeDocument),
                                                                                     numberPriceChangeInnerArrival(priceChangeDocument),
                                                                                     numberPriceChangeStatement(priceChangeDocument),
-                                                                                    numberUserPriceChange(priceChangeDocument) PERSISTENT;
+                                                                                    numberUserPriceChange(priceChangeDocument),
+                                                                                    numberPriceChangeDisparity(priceChangeDocument) PERSISTENT;
 
 seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = UNION EXCLUSIVE seriesPriceChangeShipment(priceChangeDocument),
                                                                                     seriesPriceChangeReturnSupplier(priceChangeDocument),
                                                                                     seriesPriceChangeInnerArrival(priceChangeDocument),
                                                                                     seriesPriceChangeStatement (priceChangeDocument),
-                                                                                    seriesUserPriceChange(priceChangeDocument) PERSISTENT;
+                                                                                    seriesUserPriceChange(priceChangeDocument),
+                                                                                    seriesPriceChangeDisparity(priceChangeDocument) PERSISTENT;
 
 numberDisposalPriceChangeDocument '№ распоряжения на переоценку' (priceChangeDocument) = UNION EXCLUSIVE
                                                                                     numberDisposalPriceChangeShipment(priceChangeDocument),
                                                                                     numberDisposalPriceChangeReturnSupplier(priceChangeDocument),
                                                                                     numberDisposalPriceChangeInnerArrival(priceChangeDocument),
                                                                                     numberDisposalPriceChangeStatement(priceChangeDocument),
-                                                                                    numberDisposalUserPriceChange(priceChangeDocument)PERSISTENT;
+                                                                                    numberDisposalUserPriceChange(priceChangeDocument),
+                                                                                    numberDisposalPriceChangeDisparity(priceChangeDocument) PERSISTENT;
 
 revaluationCommitteePriceChangeDocument 'Комиссия переоценки ИД' (priceChangeDocument) = UNION EXCLUSIVE
                                                                                     revaluationCommitteePriceChangeShipment(priceChangeDocument),
                                                                                     revaluationCommitteePriceChangeReturnSupplier(priceChangeDocument),
                                                                                     revaluationCommitteePriceChangeInnerArrival(priceChangeDocument),
                                                                                     revaluationCommitteePriceChangeStatement(priceChangeDocument),
-                                                                                    revaluationCommitteeUserPriceChange(priceChangeDocument)PERSISTENT;
+                                                                                    revaluationCommitteeUserPriceChange(priceChangeDocument),
+                                                                                    revaluationCommitteePriceChangeDisparity(priceChangeDocument) PERSISTENT;
 
 departmentStorePriceChangeDocument (priceChangeDocument) = UNION EXCLUSIVE departmentStorePriceChangeShipment(priceChangeDocument),
                                                                            departmentStorePriceChangeReturnSupplier(priceChangeDocument),
                                                                            departmentStorePriceChangeStatement(priceChangeDocument),
                                                                            departmentStorePriceChangeInnerArrival(priceChangeDocument),
-                                                                           departmentStoreUserPriceChange(priceChangeDocument) PERSISTENT;
+                                                                           departmentStoreUserPriceChange(priceChangeDocument),
+                                                                           departmentStorePriceChangeDisparity(priceChangeDocument) PERSISTENT;
+
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
 priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail) = UNION EXCLUSIVE priceChangeShipmentPriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                 priceChangeReturnSupplierPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                 priceChangeStatementPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                 priceChangeInnerArrivalPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                userPriceChangeUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                priceChangeDisparityPriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 datePriceChangeDocumentDetail 'Дата' (priceChangeDocumentDetail) = datePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail)) PERSISTENT;
 
@@ -10373,7 +10387,9 @@ itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE item
                                                                             itemPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                             itemPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                             itemPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                            itemUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                            itemUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                            itemPriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
+
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 shortNameUnitOfMeasureItemPriceChangeDocumentDetail 'Ед. изм.' (priceChangeDocumentDetail) = shortNameUnitOfMeasureItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
@@ -10382,35 +10398,40 @@ quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) =
                                                                                           quantityPriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                           quantityPriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                          quantityUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                          quantityUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                          quantityPriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                             curWarePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                             curWarePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                             warePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                             curWarePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                            curWareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                            curWareUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                            warePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 warePriceChangeDocumentDetail (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                                             warePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                             warePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                             warePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                             warePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                            wareUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                            wareUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                            warePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 curWarePricePriceChangeDocumentDetail 'Текущая цена посуды' (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                                             curWarePricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                             curWarePricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                             warePricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                             curWarePricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                            curWarePriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                            curWarePriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                            warePricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 warePricePriceChangeDocumentDetail 'Цена посуды' (priceChangeDocumentDetail) = UNION EXCLUSIVE
                                                                                             warePricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                             warePricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                             warePricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                             warePricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                            warePriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                            warePriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                            warePricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 @defineDocumentDetailWareRange(priceChangeDocument);
 @defineDocumentDetailCurWareRange(priceChangeDocument);
@@ -10419,47 +10440,55 @@ curImporterPricePriceChangeDocumentDetail 'Текущая цена изгото�
                                                                                                               curImporterPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                               importerPricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                               curImporterPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                              curImporterPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                              curImporterPriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                              importerPricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 importerPricePriceChangeDocumentDetail 'Цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE importerPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                                importerPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                                importerPricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                                importerPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                               importerPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                               importerPriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                               importerPricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 curSupplierPricePriceChangeDocumentDetail 'Текущая цена поставщика' (priceChangeDocumentDetail) = UNION EXCLUSIVE curSupplierPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                             curSupplierPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                             supplierPricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                             curSupplierPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                            curSupplierPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                            curSupplierPriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                            supplierPricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 supplierPricePriceChangeDocumentDetail 'Цена поставщика' (priceChangeDocumentDetail) = UNION EXCLUSIVE supplierPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                         supplierPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                         supplierPricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                         supplierPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                        supplierPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
-
+                                                                                                        supplierPriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                        supplierPricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 curDataRetailRangePriceChangeDocumentDetail 'Текущий НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE curDataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                           curDataRetailRangePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                           dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                           curDataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                          curDataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                          curDataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                          dataRetailRangePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 dataRetailRangePriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = UNION EXCLUSIVE dataRetailRangePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                       dataRetailRangePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                      dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                      dataRetailRangeUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                      dataRetailRangePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 
 curRetailPricePriceChangeDocumentDetail 'Текущая розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE curRetailPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                          curRetailPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                          curRetailPricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                          curRetailPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                         curRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                         curRetailPriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                         curRetailPricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
+
 retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = UNION EXCLUSIVE retailPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                      retailPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
                                                                                                      retailPricePriceChangeStatementDetail(priceChangeDocumentDetail),
                                                                                                      retailPricePriceChangeInnerArrivalDetail(priceChangeDocumentDetail),
-                                                                                                     retailPriceUserPriceChangeDetail(priceChangeDocumentDetail) PERSISTENT;
+                                                                                                     retailPriceUserPriceChangeDetail(priceChangeDocumentDetail),
+                                                                                                     retailPricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 @defineDocumentDetailIndex(priceChangeDocument);
 
