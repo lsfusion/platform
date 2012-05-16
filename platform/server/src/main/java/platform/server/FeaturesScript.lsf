@@ -47,7 +47,7 @@ CLASS STATIC storeSize 'Размер склада'
 //                                                                                                 [FIXEDCHARWIDTH <int value>] [MINCHARWIDTH <int value>] [MAXCHARWIDTH <int value>] [PREFCHARWIDTH <int value>]
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
-//                                                                                                 [AGGPROP];
+//                                                                                                 [AGGPROP] [NOT NULL [DELETE]];
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
 // Специальные имена свойств: PREV, CHANGED, ASSIGNED
 
@@ -747,7 +747,7 @@ DESIGN storeArticle FROM DEFAULT {
 // META codeName([param1, ..., paramN]) metacode END
 //
 // Metacode usage syntax:
-// @codeName([param1, ..., paramN]);
+// @codeName([[param1], ..., [paramN]]);
 //
 // concatenation operator: ##
 // concatenation capitalize operator: ###

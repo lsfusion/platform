@@ -565,6 +565,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.aggProp = true;
     }
 
+    public void setScriptedNotNull(LP<?> property, boolean toResolve) {
+        setNotNull(property, toResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
+    }
+
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         setPropertySID(lp, transformNameToSID(name), false);

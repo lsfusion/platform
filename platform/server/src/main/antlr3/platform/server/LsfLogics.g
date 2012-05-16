@@ -1225,6 +1225,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
+		|	notNullSetting [property]
 		)*
 	;
 
@@ -1371,6 +1372,18 @@ aggPropSetting [LP property]
 	}
 }
 	:	'AGGPROP'
+	;
+
+notNullSetting [LP property]
+@init {
+	boolean toResolve = false;
+}
+@after {
+	if (inPropParseState()) {
+		self.setScriptedNotNull(property, toResolve);
+	}
+}
+	:	'NOT' 'NULL' ('DELETE' { toResolve = true; })?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
