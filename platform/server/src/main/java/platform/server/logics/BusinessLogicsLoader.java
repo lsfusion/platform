@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
+import java.util.List;
 
 public class BusinessLogicsLoader extends UnicastRemoteObject implements RemoteLoaderInterface {
     private final BusinessLogics BL;
@@ -24,5 +25,15 @@ public class BusinessLogicsLoader extends UnicastRemoteObject implements RemoteL
 
     public byte[] findClass(String name) throws RemoteException {
         return  BL.findClass(name);
+    }
+
+    @Override
+    public void setDbName(String dbName) throws RemoteException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public List<String> getDbNames() throws RemoteException {
+        return null;
     }
 }

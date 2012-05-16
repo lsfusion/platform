@@ -6,17 +6,16 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import platform.base.ClassUtils;
 import platform.base.ExceptionUtils;
+import platform.interop.RemoteLoaderInterface;
 import platform.server.Settings;
 import platform.server.lifecycle.LifecycleManager;
-import platform.server.net.ServerInstanceLocator;
 
 import java.io.IOException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 
 public class BusinessLogicsBootstrap {
     private static FileSystemXmlApplicationContext springContext;
@@ -68,7 +67,7 @@ public class BusinessLogicsBootstrap {
 
             initRMIRegistry();
 
-            initServiceLocator();
+            initServerAgent();
 
             logger.info("Server has successfully started");
             lifecycle.fireStarted();
@@ -135,12 +134,19 @@ public class BusinessLogicsBootstrap {
         }
     }
 
-    private static void initServiceLocator() {
-        if (springContext.containsBean("serverInstanceLocator")) {
-            ServerInstanceLocator serverLocator = (ServerInstanceLocator) springContext.getBean("serverInstanceLocator");
-            serverLocator.start();
+    private static void initServerAgent() {
 
-            logger.info("Server instance locator successfully started");
+        try {
+            String hostPort = "";
+            if (springContext.containsBean("serverAgentServer")) {
+                hostPort = (String) springContext.getBean("serverAgentServer");
+            }
+            RemoteLoaderInterface remoteLoader = (RemoteLoaderInterface) Naming.lookup(MessageFormat.format("rmi://{0}/ServerAgentLoader", hostPort));
+            remoteLoader.setDbName(BL.getDbName() == null ? "default" : BL.getDbName());
+        } catch (ConnectException e) {
+            //To change body of catch statement use File | Settings | File Templates.
+        } catch (Exception e) {
+            logger.error("Unhandled exception : ", e);
         }
     }
 

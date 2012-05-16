@@ -6,17 +6,26 @@ import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.codec.binary.Base64;
 import platform.base.OSUtils;
 import platform.interop.KeyStrokes;
+import platform.interop.RemoteLoaderInterface;
 import platform.interop.ServerInfo;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.rmi.ConnectException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Scanner;
 
@@ -117,9 +126,40 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        if (this.defaultLoginInfo.getServerHost() != null) {
+        serverDB.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent event) {
+                try {
+                    RemoteLoaderInterface remoteLoader = (RemoteLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
+                    serverDB.removeAllItems();
+                    for (String dbname : remoteLoader.getDbNames()) {
+                        ((MutableComboBoxModel) serverDB.getModel()).addElement(dbname);
+                    }
+                } catch (ConnectException e) {
+                    //To change body of catch statement use File | Settings | File Templates.
+                } catch (NotBoundException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (RemoteException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
+
+        if (defaultLoginInfo.getServerHost() != null) {
             StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
-            if (this.defaultLoginInfo.getServerPort() != null) {
+            if (defaultLoginInfo.getServerPort() != null) {
                 server.append(":");
                 server.append(this.defaultLoginInfo.getServerPort());
             }
@@ -128,9 +168,27 @@ public class LoginDialog extends JDialog {
             serverHost.setSelectedItem(item);
         }
 
+        try {
+            RemoteLoaderInterface remoteLoader = (RemoteLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
+
+            for (String dbname : remoteLoader.getDbNames()) {
+                ((MutableComboBoxModel) serverDB.getModel()).addElement(dbname);
+            }
+        } catch (ConnectException e) {
+            //To change body of catch statement use File | Settings | File Templates.
+        } catch (NotBoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (MalformedURLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (RemoteException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+
         String db = this.defaultLoginInfo.getServerDB();
         if (db != null) {
-            ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
+            if (serverDB.getItemCount() == 0)
+                ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
             serverDB.setSelectedItem(db);
         }
 
@@ -263,9 +321,9 @@ public class LoginDialog extends JDialog {
                 if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
                 }
-                if(scanner.hasNextLine()) scanner.nextLine();   //из-за лишней пустой строки
+                if (scanner.hasNextLine()) scanner.nextLine();   //из-за лишней пустой строки
                 String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if(serverDB.isEmpty()) {
+                if (serverDB.isEmpty()) {
                     serverDB = "default";
                 }
                 //if (loginInfo.getServerDB() != null) {
