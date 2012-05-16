@@ -228,7 +228,7 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        Iterator<ValueClass> classesIt = entity.propertyObject.property.getCommonClasses().interfaces.values().iterator();
+        Iterator<ValueClass> classesIt = entity.propertyObject.property.getMapClasses().values().iterator();
         Collection<PropertyObjectInterfaceEntity> interfacesEntities = entity.propertyObject.mapping.values();
         outStream.writeInt(interfacesEntities.size());
         for (PropertyObjectInterfaceEntity interfaceEntity : interfacesEntities) {
@@ -239,7 +239,7 @@ public class PropertyDrawView extends ComponentView {
             valueClass.serialize(outStream);
         }
 
-        entity.propertyObject.property.getCommonClasses().value.serialize(outStream);
+        entity.propertyObject.property.getValueClass().serialize(outStream);
         pool.writeString(outStream, entity.eventSID);
 
         pool.writeString(outStream, entity.propertyObject.getCreationScript());

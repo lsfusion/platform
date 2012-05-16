@@ -19,8 +19,13 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface>{
     }
 
     @Override
-    public CommonClasses<PropertyInterface> getCommonClasses() { // временно так (пока для определния сигнатур action'ов)
-        return new CommonClasses<PropertyInterface>(new HashMap<PropertyInterface, ValueClass>(), null);
+    public Map<PropertyInterface, ValueClass> getMapClasses() { // временно так (пока для определния сигнатур action'ов)
+        return new HashMap<PropertyInterface, ValueClass>();
+    }
+
+    @Override
+    public ValueClass getValueClass() { // временно так (пока для определния сигнатур action'ов)
+        return null;
     }
 
     @Override

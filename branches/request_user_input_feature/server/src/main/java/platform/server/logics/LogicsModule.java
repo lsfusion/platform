@@ -1166,26 +1166,17 @@ public abstract class LogicsModule {
 
         int mainIntCnt = mainProperty.listInterfaces.size();
 
-        LCP getterProperty = (LCP) params[mainIntCnt];
-
-        int getterIntCnt = getterProperty.listInterfaces.size();
-
-        int groupIntCnt = params.length - mainIntCnt - 1 - getterIntCnt;
+        int groupIntCnt = params.length - mainIntCnt;
 
         int mainInts[] = new int[mainIntCnt];
-        int getterInts[] = new int[getterIntCnt];
         int groupInts[] = new int[groupIntCnt];
 
         for (int i = 0; i < mainIntCnt; ++i) {
             mainInts[i] = (Integer)params[i] - 1;
         }
 
-        for (int i = 0; i < getterIntCnt; ++i) {
-            getterInts[i] = (Integer)params[mainIntCnt + 1 + i] - 1;
-        }
-
         for (int i = 0; i < groupIntCnt; ++i) {
-            groupInts[i] = (Integer)params[mainIntCnt + 1 + getterIntCnt] - 1;
+            groupInts[i] = (Integer)params[mainIntCnt] - 1;
         }
 
         return addGCAProp(group, name, caption, groupObject, mainProperty, mainInts, groupInts);
@@ -2109,6 +2100,10 @@ public abstract class LogicsModule {
         return addAAProp(customClass, null, null, false, properties);
     }
 
+    protected LAP addAAProp(String caption, CustomClass customClass, LCP... properties) {
+        return addAAProp(caption, customClass, null, null, false, properties);
+    }
+
     /**
      * Пример использования:
      * fileActPricat = addAAProp(pricat, filePricat.property, FileActionClass.getCustomInstance(true));
@@ -2122,7 +2117,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addAAProp(CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
-        return addAProp(new AddObjectActionProperty(genSID(),
+        return addAAProp(ServerResourceBundle.getString("logics.add"), customClass, barcode, barcodePrefix, quantity, properties);
+    }
+
+    protected LAP addAAProp(String caption, CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
+        return addAProp(new AddObjectActionProperty(genSID(), caption,
                 (barcode != null) ? (CalcProperty)barcode.property : null, (barcodePrefix != null) ? ((CalcProperty)barcodePrefix.property) : null,
                 quantity, customClass, LCP.toPropertyArray(properties), null, null));
     }

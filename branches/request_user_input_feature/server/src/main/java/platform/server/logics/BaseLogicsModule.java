@@ -163,7 +163,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP numberToDOW;
     public LCP DOWInDate;
 
-    public LCP vtrue, actionTrue, vzero;
+    public LCP vtrue;
+    public LCP vzero;
     public LCP vnull;
     public LCP charLength;
     public LCP positive, negative;
@@ -710,8 +711,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
 
         minus = addSFProp("minus", "(-(prm1))", 1);
-
-        actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 
         dumb1 = dumb(1);
         dumb2 = dumb(2);

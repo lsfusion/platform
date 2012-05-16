@@ -1,7 +1,9 @@
 package platform.server.logics.linear;
 
+import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ActionClass;
+import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -44,4 +46,7 @@ public class LAP extends LP<ClassPropertyInterface, ActionProperty> {
         property.setEventAction((CalcPropertyMapImplement<?, ClassPropertyInterface>) listImplements.get(0), 0);
     }
 
+    public ValueClass[] getMapClasses() {
+        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
+    }
 }

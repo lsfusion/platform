@@ -1,9 +1,7 @@
 package platform.server.integration;
 
 import platform.server.logics.property.CalcPropertyImplement;
-import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.SessionTableUsage;
 
 public class ImportDelete <P extends PropertyInterface, T extends PropertyInterface> {
     ImportKey<P> key;

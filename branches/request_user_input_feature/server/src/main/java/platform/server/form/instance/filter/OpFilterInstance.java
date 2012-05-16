@@ -6,8 +6,8 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcPropertyValueImplement;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.ExecutionEnvironment;
 
 import java.io.DataInputStream;
@@ -65,7 +65,7 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
+    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
         return BaseUtils.mergeSet(op1.getResolveChangeProperties(toChange), op2.getResolveChangeProperties(toChange));
     }
 }

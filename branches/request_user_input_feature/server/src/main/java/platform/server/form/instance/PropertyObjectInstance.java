@@ -95,37 +95,11 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
         properties.add((CalcProperty) property);
     }
 
-    public Map<P, ConcreteClass> getInterfaceClasses(P overrideInterface, ConcreteClass overrideClass) {
-        Map<P,ConcreteClass> mapInterface = new HashMap<P,ConcreteClass>();
-        for(Map.Entry<P, PropertyObjectInterfaceInstance> implement : mapping.entrySet())
-            if(overrideInterface!=null && implement.getKey().equals(overrideInterface))
-                mapInterface.put(overrideInterface, overrideClass);
-            else
-                mapInterface.put(implement.getKey(),implement.getValue().getCurrentClass());
-        return mapInterface;
-    }
-
     public Map<P, DataObject> getInterfaceValues() {
         Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
         for(Map.Entry<P, PropertyObjectInterfaceInstance> implement : mapping.entrySet())
             mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
         return mapInterface;
-    }
-
-    public PropertyValueImplement<P> getValueImplement() {
-        return new PropertyValueImplement<P>(property, getInterfaceValues());
-    }
-
-    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env) throws SQLException {
-        return ((CalcProperty<P>)property).read(session, getInterfaceValues(), modifier, env);
-    }
-
-    public Object read(DataSession session, Modifier modifier) throws SQLException {
-        return read(session.sql, modifier, session.env);
-    }
-
-    public List<ClientAction> execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw) throws SQLException {
-        return env.execute((ActionProperty) property, ActionProperty.cast(getInterfaceValues()), new FormEnvironment<ClassPropertyInterface>(ActionProperty.cast(mapping), propertyDraw), requestValue);
     }
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {

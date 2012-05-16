@@ -22,10 +22,7 @@ import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectHierarchy;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.*;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.listener.RemoteFormListener;
@@ -241,9 +238,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private InputStream getCustomReportInputStream(String sid, ReportNode node, boolean toExcel, Integer groupId) throws SQLException {
         InputStream iStream = null;
         if (node != null) {
-            PropertyObjectEntity reportPathProp = node.getGroupList().get(0).reportPathProp;
+            CalcPropertyObjectEntity reportPathProp = node.getGroupList().get(0).reportPathProp;
             if (reportPathProp != null) {
-                PropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
+                CalcPropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
                 String reportPath = (String) propInstance.read(form.session, form);
                 if (reportPath != null) {
                     String resourceName = "/" + getVariableCustomReportName(getReportPrefix(toExcel, groupId) + reportPath.trim());

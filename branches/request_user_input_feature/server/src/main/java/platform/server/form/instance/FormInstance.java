@@ -560,13 +560,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         for (LP lp : BL.LM.lproperties) {
             if(lp instanceof LCP) {
                 LCP<?> lcp = (LCP<?>) lp;
-                CalcProperty property = lcp.property;
+                CalcProperty<?> property = lcp.property;
                 if (property.autoset) {
-                    Property.CommonClasses<?> propClasses = property.getCommonClasses();
-                    ValueClass interfaceClass = BaseUtils.singleValue(propClasses.interfaces);
-                    if (propClasses.value instanceof CustomClass && interfaceClass instanceof CustomClass&&
+                    ValueClass interfaceClass = BaseUtils.singleValue(property.getMapClasses());
+                    ValueClass valueClass = property.getValueClass();
+                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass&&
                             cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
-                        Integer obj = getClassListener().getObject((CustomClass) propClasses.value);
+                        Integer obj = getClassListener().getObject((CustomClass) valueClass);
                         if(obj!=null)
                             lcp.change(obj, new ExecutionEnvironment(this), addObject);
                     }
@@ -1337,7 +1337,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     // pullProps чтобы запретить hint'ить
-    public <P extends PropertyInterface, F extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, PropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Collection<PullChangeProperty> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Collection<PullChangeProperty> pullProps) {
         Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
         CalcProperty<P> implementProperty = (CalcProperty<P>) implement.property;
 
@@ -1350,7 +1350,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
-                for(PropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
+                for(CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
                     OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty)filterImplement.property).getOnChangeProperty((CalcProperty) implement.property);
                     pullProps.add(onChangeProperty);
                     fixedFilters.add(new NotNullFilterEntity<OnChangeProperty.Interface<F, P>>(
@@ -1379,7 +1379,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return fixedFilters;
     }
 
-    public Object read(PropertyObjectInstance<?, ?> property) throws SQLException {
+    public Object read(CalcPropertyObjectInstance<?> property) throws SQLException {
         return property.read(session, this);
     }
 
@@ -1388,7 +1388,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer);
     }
 
-    public DialogInstance<T> createObjectEditorDialog(PropertyValueImplement propertyValues) throws SQLException {
+    public DialogInstance<T> createObjectEditorDialog(CalcPropertyValueImplement propertyValues) throws SQLException {
         CustomClass objectClass = propertyValues.getDialogClass(session);
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
 
@@ -1402,7 +1402,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
     }
 
-    public DialogInstance<T> createChangeEditorDialog(PropertyValueImplement propertyValues, GroupObjectInstance groupObject, CalcProperty filterProperty) throws SQLException {
+    public DialogInstance<T> createChangeEditorDialog(CalcPropertyValueImplement propertyValues, GroupObjectInstance groupObject, CalcProperty filterProperty) throws SQLException {
 
         ClassFormEntity<T> formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
         Set<PullChangeProperty> pullProps = new HashSet<PullChangeProperty>();
@@ -1470,7 +1470,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             for (ActionPropertyObjectEntity autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance autoActionInstance = instanceFactory.getInstance(autoAction);
                 if (autoActionInstance.isInInterface(null)) {
-                    List<ClientAction> actions = autoActionInstance.execute(new ExecutionEnvironment(this), null, null);
+                    List<ClientAction> actions = autoActionInstance.execute(new ExecutionEnvironment(this));
                     for (ClientAction clientAction : actions) {
                         clientActions.add(clientAction);
                         if (clientAction instanceof DenyCloseFormClientAction) {

@@ -4142,7 +4142,7 @@ public class RomanLogicsModule extends LogicsModule {
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
-            addPropertyDraw(addGCAProp(actionGroup, "nullOrderListArticleCompositeColor" + (edit ? "Edit" : ""), "Сбросить", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4), 1, 2, 3, 4),
+            addPropertyDraw(addGCAProp(actionGroup, "nullOrderListArticleCompositeColor" + (edit ? "Edit" : ""), "Сбросить", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero), 1, 2, 3, 4, 4),
                     objOrder, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, objOrder, objItem);
@@ -4393,8 +4393,8 @@ public class RomanLogicsModule extends LogicsModule {
                     addSetPropertyAProp(numberListArticle, 1, 2, baseLM.vnull), 1, 2),
                     objList, objArticle);
             nullArticleColor = addPropertyDraw(addListAProp("nullInvoiceListArticleCompositeColor" + formPostfix, "Сбросить",
-                    addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor" + formPostfix, "Сбросить (количество)", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4), 1, 2, 3, 4), 1, 2, 3, 4,
-                    addSetPropertyAProp(inListArticleColorSupplier, 1, 2, 3, baseLM.vnull)),
+                    addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor" + formPostfix, "Сбросить (количество)", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull), 1, 2, 3, 4, 4), 1, 2, 3, 4,
+                    addSetPropertyAProp(inListArticleColorSupplier, 1, 2, 3, baseLM.vnull), 1, 2, 3),
                                                 objList, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
@@ -5004,16 +5004,14 @@ public class RomanLogicsModule extends LogicsModule {
 
             addActionsOnObjectChange(objBarcode,
                     addPropertyObject(
-                            addIfAProp(true,
+                            addIfAProp(true, skuBarcodeObject, 2,
                                     addMFAProp(
                                             null,
                                             "Ввод нового товара",
                                             createItemForm,
                                             new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
                                             false),
-                                    1, 2,
-                                    skuBarcodeObject, 2
-                            ),
+                                    1, 2),
                             objSupplier, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
@@ -6363,8 +6361,8 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(nameSubCategoryDataSku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
 
             setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
             setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
@@ -6401,8 +6399,8 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
 
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
             
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));

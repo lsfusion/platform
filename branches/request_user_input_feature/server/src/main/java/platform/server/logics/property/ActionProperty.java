@@ -9,7 +9,6 @@ import platform.server.classes.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
@@ -134,12 +133,15 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
     }
 
     public List<ClientAction> execute(Map<ClassPropertyInterface, DataObject> keys, ExecutionEnvironment env, FormEnvironment<ClassPropertyInterface> formEnv) throws SQLException {
-        return getImplement().execute(keys, env, formEnv);
+        return env.execute(this, keys, formEnv, null);
     }
 
-    @Override
-    public ClassWhere<Object> getClassValueWhere() {
-        return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", ActionClass.instance), true);
+    public Map<ClassPropertyInterface, ValueClass> getMapClasses() {
+        return IsClassProperty.getMapClasses(interfaces);
+    }
+
+    public ValueClass getValueClass() {
+        return ActionClass.instance;
     }
 
     public Event<?,ClassPropertyInterface> event = null;

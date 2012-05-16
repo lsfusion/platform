@@ -26,7 +26,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @Override
     public ClassWhere<Object> getClassValueWhere() {
-        return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", getValueClass()), true);
+        return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 
     public Event<?,?> event = null;
@@ -46,7 +46,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @IdentityLazy
     protected CalcPropertyImplement<?, String> getValueClassProperty() {
-        return IsClassProperty.getProperty(getValueClass(), "value");
+        return IsClassProperty.getProperty(value, "value");
     }
 
     protected Set<CalcProperty> getClassDepends() {
@@ -74,10 +74,6 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("should not be"); // так как stored должен
-    }
-
-    public ValueClass getValueClass() {
-        return value;
     }
 
     public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes) {

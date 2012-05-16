@@ -60,12 +60,4 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         if (mapObject instanceof ObjectEntity)
             propertyView.caption = ((ObjectEntity) mapObject).getCaption();
     }
-
-    public Set<CalcProperty> getChangeProps() {
-        return new HashSet<CalcProperty>();
-    }
-
-    public Set<CalcProperty> getUsedProps() {
-        return new HashSet<CalcProperty>();
-    }
 }

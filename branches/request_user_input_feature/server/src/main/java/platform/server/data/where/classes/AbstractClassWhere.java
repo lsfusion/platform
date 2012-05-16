@@ -453,16 +453,26 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         super(where);
     }
 
+    // с проверкой на null, по аналогии с Action'ом, см. CalcProperty.getCommonClasses
+    private static OrClassSet or(OrClassSet or1, OrClassSet or2) {
+        if(or1==null)
+            return or2;
+        if(or2==null)
+            return or1;
+        return or1.or(or2);
+    }
     public Map<K, ValueClass> getCommonParent(Collection<K> keys) {
 
         assert !isFalse();
 
         Map<K, ValueClass> result = new HashMap<K, ValueClass>();
         for(K key : keys) {
-            OrClassSet orSet = wheres[0].get(key).getOr();
-            for(int i=1;i<wheres.length;i++)
-                orSet = orSet.or(wheres[i].get(key).getOr());
-            result.put(key,orSet.getCommonClass());
+            OrClassSet orSet = null;
+            for (And<K> where : wheres) {
+                AndClassSet and = where.get(key);
+                orSet = or(orSet, and == null ? null : and.getOr());
+            }
+            result.put(key,orSet==null ? null : orSet.getCommonClass());
         }
         return result;
     }

@@ -17,8 +17,8 @@ public class ChangeReadClassActionProperty extends CustomReadValueActionProperty
 
     private BaseClass baseClass;
 
-    public ChangeReadClassActionProperty(String sID, String caption, BaseClass baseClass) {
-        super(sID, caption, new ValueClass[]{baseClass});
+    public ChangeReadClassActionProperty(BaseClass baseClass) {
+        super("CHANGE_CLASS", "Изменить класс", new ValueClass[]{baseClass});
     }
 
     @Override

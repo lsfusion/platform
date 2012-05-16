@@ -487,7 +487,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImplementTable targetTable = null;
         if (tableName != null) {
             targetTable = findTableByCompoundName(tableName);
-            if (!targetTable.equalClasses(property.property.getMapClasses())) {
+            if (!targetTable.equalClasses(((LCP<?>)property).property.getMapClasses())) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }

@@ -653,7 +653,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
         LCP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
-        addArticleBarcode = addJoinAProp("Ввод товара по штрих-коду", addAAProp(article, baseLM.barcode), 1);
+        addArticleBarcode = addAAProp("Ввод товара по штрих-коду", article, baseLM.barcode);
 
         LCP groupParent = addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
         LCP groupParentName = addJProp(baseGroup, "Родительская группа", baseLM.name, groupParent, 1);
@@ -1840,19 +1840,6 @@ public class VEDLogicsModule extends LogicsModule {
                                                                   createArticleForm.addPropertyObject(addArticleBarcode, createArticleForm.objBarcode)
                                                           ), 1
                                              ), objBarcode));
-
-            addActionsOnObjectChange(objBarcode,
-                                     addPropertyObject(
-                                                     addIfAProp(true, baseLM.barcodeToObject, 1,
-                                                              addMFAProp(
-                                                                      null,
-                                                                      "Ввод нового товара",
-                                                                      createArticleForm,
-                                                                      new ObjectEntity[]{createArticleForm.objBarcode},
-                                                                      true,
-                                                                      createArticleForm.addPropertyObject(addArticleBarcode, createArticleForm.objBarcode)
-                                                              ), 1
-                                                     ), objBarcode));
 
 //            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction, objBarcode));
         }

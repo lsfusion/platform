@@ -9,6 +9,7 @@ import platform.server.Message;
 import platform.server.Settings;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.PackComplex;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -192,9 +193,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public ClassTable(CalcProperty<P> property) {
             super(property.getSID());
 
-            CommonClasses<P> commonClasses = property.getCommonClasses();
-            Map<P, ValueClass> propInterfaces = commonClasses.interfaces;
-            ValueClass valueClass = commonClasses.value;
+            Map<P, ValueClass> propInterfaces = property.getMapClasses();
+            ValueClass valueClass = property.getValueClass();
 
             mapFields = new HashMap<KeyField, P>();
             for(P propInterface : property.interfaces) {
@@ -453,6 +453,26 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         this.mapTable = mapTable;
         this.field = field;
+    }
+
+    public Map<T, ValueClass> getMapClasses() {
+        return getCommonClasses().interfaces;
+    }
+
+    public ValueClass getValueClass() {
+        return getCommonClasses().value;
+    }
+
+    @IdentityLazy
+    private CommonClasses<T> getCommonClasses() { // могут быть не "полное" свойство при использовании в определении классов action'ов
+        Map<Object, ValueClass> mapClasses = getClassValueWhere().getCommonParent(BaseUtils.<Object, T, String>merge(interfaces, Collections.singleton("value")));
+        return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
+    }
+
+    public abstract ClassWhere<Object> getClassValueWhere();
+
+    public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
+        return getClassValueWhere().remap(BaseUtils.<Object, T, String, Field>merge(mapTable.mapKeys, Collections.singletonMap("value", storedField)));
     }
 
     public Object read(ExecutionContext context) throws SQLException {

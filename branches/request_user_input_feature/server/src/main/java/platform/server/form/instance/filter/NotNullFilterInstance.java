@@ -7,8 +7,8 @@ import platform.server.data.where.Where;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcPropertyValueImplement;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 
@@ -46,7 +46,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
+    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
         if(checkChange && CalcProperty.depends((CalcProperty<?>) property.property, toChange))
             return BaseUtils.immutableCast(Collections.singleton(property.getValueImplement()));
         return super.getResolveChangeProperties(toChange);

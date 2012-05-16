@@ -34,8 +34,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyMapImplement<P, T>(property.getChanged(type), mapping);
     }
 
-    public PropertyValueImplement<P> mapValues(Map<T, DataObject> mapValues) {
-        return new PropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
+    public CalcPropertyValueImplement<P> mapValues(Map<T, DataObject> mapValues) {
+        return new CalcPropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
     }
 
     public List<ClientAction> change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
@@ -114,8 +114,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         properties.add(this);
     }
 
-    public Map<T,ValueClass> mapCommonInterfaces() {
-        return crossJoin(mapping, property.getCommonClasses().interfaces);
+    public Map<T,ValueClass> mapCommonInterfaces() { // тут не обязательно isFull
+        return crossJoin(mapping, property.getMapClasses());
     }
 
     @Override

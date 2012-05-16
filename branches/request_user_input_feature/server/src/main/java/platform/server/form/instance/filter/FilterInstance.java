@@ -3,17 +3,12 @@ package platform.server.form.instance.filter;
 import platform.interop.FilterType;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-import platform.server.form.entity.ClassFormEntity;
-import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcPropertyValueImplement;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
-import platform.server.logics.property.derived.OnChangeProperty;
-import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 
@@ -76,8 +71,8 @@ public abstract class FilterInstance implements Updated {
     public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }
 
-    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
-        return new HashSet<PropertyValueImplement<?>>();
+    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
+        return new HashSet<CalcPropertyValueImplement<?>>();
     }
 
 }

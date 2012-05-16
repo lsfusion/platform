@@ -102,7 +102,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
             }
 
             for (ActionPropertyObjectEntity startProperty : startProperties)
-                newFormInstance.instanceFactory.getInstance(startProperty).execute(new ExecutionEnvironment(newFormInstance), null, null);
+                newFormInstance.instanceFactory.getInstance(startProperty).execute(new ExecutionEnvironment(newFormInstance));
 
             context.requestUserInteraction(
                     new FormClientAction(form.isPrintForm, newSession, isModal,
@@ -142,7 +142,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
             if (!closeProperties.isEmpty() && formResult == FormCloseType.CLOSE) {
                 for (ActionPropertyObjectEntity property : closeProperties) {
                     try {
-                        newFormInstance.instanceFactory.getInstance(property).execute(new ExecutionEnvironment(newFormInstance), null, null);
+                        newFormInstance.instanceFactory.getInstance(property).execute(new ExecutionEnvironment(newFormInstance));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }

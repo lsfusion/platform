@@ -30,10 +30,6 @@ public class ActionPropertyMapImplement<T extends PropertyInterface> extends Act
         return new ActionPropertyMapImplement<K>(property, BaseUtils.join(mapping, remap));
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionEnvironment env, FormEnvironment<T> formEnv) throws SQLException {
-        return env.execute(property, BaseUtils.join(mapping, keys), formEnv == null ? null : formEnv.map(mapping), null);
-    }
-
     public <L extends PropertyInterface> void mapEventAction(CalcPropertyMapImplement<L, T> where, int options) {
         property.setEventAction(where.map(BaseUtils.reverse(mapping)), options);
     }

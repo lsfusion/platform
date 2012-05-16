@@ -45,7 +45,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Custom
             context.requestUserObject(new ExecutionContext.RequestDialog() {
                 @Override
                 public DialogInstance createDialog() throws SQLException {
-                    return context.getFormInstance().createObjectDialog((CustomClass) aggProp.getCommonClasses().value);
+                    return context.getFormInstance().createObjectDialog((CustomClass) aggProp.getValueClass());
                 }
             });
         

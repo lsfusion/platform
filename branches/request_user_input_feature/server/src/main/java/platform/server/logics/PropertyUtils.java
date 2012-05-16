@@ -21,7 +21,7 @@ public class PropertyUtils {
     public static ValueClass[] getValueClasses(LAP[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
         Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>();
         for (int i = 0; i < dataProperties.length; ++i) {
-            LP dataProperty = dataProperties[i];
+            LAP dataProperty = dataProperties[i];
 
             if (dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
                 continue;

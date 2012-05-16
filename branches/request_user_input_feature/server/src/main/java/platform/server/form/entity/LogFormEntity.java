@@ -14,6 +14,7 @@ import platform.server.logics.property.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static platform.server.logics.PropertyUtils.mapCalcImplement;
 import static platform.server.logics.PropertyUtils.readCalcImplements;
@@ -116,11 +117,11 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     }
 
     private static ValueClass[] getValueClassesList(LCP<?> property) {
-        Property.CommonClasses<?> commonClasses = property.property.getCommonClasses();
-        ValueClass[] classes = new ValueClass[commonClasses.interfaces.size()];
+        Map<? extends PropertyInterface,ValueClass> interfaces = property.property.getMapClasses();
+        ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;
         for (PropertyInterface pi : property.property.interfaces) {
-            classes[index++] = commonClasses.interfaces.get(pi);
+            classes[index++] = interfaces.get(pi);
         }
         return classes;
     }

@@ -399,7 +399,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     public DataChanges getUserDataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) {
         Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue> simple;
         if((simple = change.getSimple())!=null) {
-            if(IsClassProperty.fitClasses(getCurrentClasses(simple.first), property.getValueClass(),
+            if(IsClassProperty.fitClasses(getCurrentClasses(simple.first), property.value,
                     simple.second instanceof DataObject ? getCurrentClass((DataObject) simple.second) : null))
                 return new DataChanges(property, change);
             else
@@ -653,7 +653,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
             OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> result = changed.executeClasses(sql, new OrderedMap<String, Boolean>(), 30, baseClass, env);
             if (result.size() > 0) {
                 // для constraint'ов
-                final Map<T, ValueClass> classes = property.getCommonClasses().interfaces;
+                assert property.isFull();
+                final Map<T, ValueClass> classes = property.getMapClasses();
 
                 NoPropertyTableUsage<T> keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), new Type.Getter<T>() {
                     public Type getType(T key) {

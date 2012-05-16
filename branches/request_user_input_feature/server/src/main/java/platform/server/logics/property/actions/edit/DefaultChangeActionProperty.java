@@ -41,7 +41,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
         Modifier modifier = context.getModifier();
         final FormInstance<?> formInstance = context.getFormInstance();
 
-        final PropertyValueImplement<P> propertyValues = implement.mapValues(keys);
+        final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 
         if (!context.getSecurityPolicy().property.change.checkPermission(implement.property))
             return;

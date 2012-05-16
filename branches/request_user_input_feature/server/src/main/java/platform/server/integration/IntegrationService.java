@@ -11,7 +11,6 @@ import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcPropertyImplement;
-import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 

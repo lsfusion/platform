@@ -53,13 +53,16 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
             result.add(IntegerClass.instance);
         if (properties != null)
             for (CalcProperty property : properties) {
-                result.add(property.getCommonClasses().value);
+                result.add(property.getValueClass());
             }
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public AddObjectActionProperty(String sID, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties, CalcProperty propertyValue, DataClass dataClass) {
-        super(sID, ServerResourceBundle.getString("logics.add"), getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
+    private AddObjectActionProperty(String sID, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties, CalcProperty propertyValue, DataClass dataClass) {
+        this(sID, ServerResourceBundle.getString("logics.add"), barcode, barcodePrefix, quantity, valueClass, properties, propertyValue, dataClass);
+    }
+    public AddObjectActionProperty(String sID, String caption, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties, CalcProperty propertyValue, DataClass dataClass) {
+        super(sID, caption, getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.barcode = barcode;
         this.barcodePrefix = barcodePrefix;

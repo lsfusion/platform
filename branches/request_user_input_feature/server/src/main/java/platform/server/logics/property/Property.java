@@ -360,24 +360,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Type getType() {
-        return getCommonClasses().value.getType();
+        return getValueClass().getType();
     }
 
-    public Map<T, ValueClass> getMapClasses() {
-        return getCommonClasses().interfaces;
-    }
-
-    @IdentityLazy
-    public CommonClasses<T> getCommonClasses() {
-        Map<Object, ValueClass> mapClasses = getClassValueWhere().getCommonParent(BaseUtils.<Object, T, String>merge(interfaces, Collections.singleton("value")));
-        return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
-    }
-
-    public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
-        return getClassValueWhere().remap(BaseUtils.<Object, T, String, Field>merge(mapTable.mapKeys, Collections.singletonMap("value", storedField)));
-
-    }
-    public abstract ClassWhere<Object> getClassValueWhere();
+    public abstract Map<T, ValueClass> getMapClasses();
+    public abstract ValueClass getValueClass();
 
     public boolean cached = false;
 

@@ -52,10 +52,6 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         return mapValues;
     }
 
-    public ValueClass[] getMapClasses() {
-        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
-    }
-
     public ClassWhere<Integer> getClassWhere() {
         ClassWhere<T> classWhere = property.getClassWhere();
         Map<T, Integer> mapping = new HashMap<T, Integer>();

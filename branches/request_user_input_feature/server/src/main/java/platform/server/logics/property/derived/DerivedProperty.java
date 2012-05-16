@@ -545,16 +545,17 @@ public class DerivedProperty {
     }
     
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, CalcProperty<T> property) {
-        Property.CommonClasses<T> classes = property.getCommonClasses();
-        ValueClass[] interfaceClasses = new ValueClass[classes.interfaces.size()]; int iv = 0;
+        Map<T, ValueClass> interfaces = property.getMapClasses();
+        ValueClass valueClass = property.getValueClass();
+        ValueClass[] interfaceClasses = new ValueClass[interfaces.size()]; int iv = 0;
         List<T> listInterfaces = new ArrayList<T>();
-        for(Map.Entry<T, ValueClass> entry : classes.interfaces.entrySet()) {
+        for(Map.Entry<T, ValueClass> entry : interfaces.entrySet()) {
             interfaceClasses[iv++] = entry.getValue();
             listInterfaces.add(entry.getKey());
         }
         String sID = "pc" + property.getSID(); String caption = property.toString();
-        DataProperty dataProperty = (session ? new SessionDataProperty(sID, caption, interfaceClasses, classes.value) :
-                        new StoredDataProperty(sID, caption, interfaceClasses, classes.value));
+        DataProperty dataProperty = (session ? new SessionDataProperty(sID, caption, interfaceClasses, valueClass) :
+                        new StoredDataProperty(sID, caption, interfaceClasses, valueClass));
         return dataProperty.getImplement(listInterfaces);
     }
 

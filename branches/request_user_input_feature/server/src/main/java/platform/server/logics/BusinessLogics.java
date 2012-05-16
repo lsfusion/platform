@@ -1133,8 +1133,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 String classProperty = "";
                 try {
                     classProperty = property.getClass().getSimpleName();
-                    returnClass = property.getCommonClasses().value.getSID();
-                    for (Object cc : property.getCommonClasses().interfaces.values()) {
+                    returnClass = property.getValueClass().getSID();
+                    for (Object cc : property.getMapClasses().values()) {
                         if (cc instanceof CustomClass)
                             commonClasses += ((CustomClass) cc).getSID() + ", ";
                         else if (cc instanceof DataClass)

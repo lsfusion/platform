@@ -206,9 +206,8 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public ValueClass[] getCommonClasses(Result<ValueClass> value) {
-        Property.CommonClasses<T> common = property.getCommonClasses();
-        value.result = common.value;
-        return BaseUtils.mapList(listInterfaces, common.interfaces).toArray(new ValueClass[0]);
+        value.result = property.getValueClass();
+        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
     }
 
     public ValueClass getResultClass() {
@@ -245,5 +244,9 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     public void setAutoset(boolean autoset) {
         assert property.interfaces.size()==1;
         property.autoset = autoset;
+    }
+
+    public ValueClass[] getMapClasses() {
+        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
     }
 }
