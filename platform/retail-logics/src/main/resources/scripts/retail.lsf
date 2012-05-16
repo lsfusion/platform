@@ -398,7 +398,7 @@ END
 
 META defineDocumentHeaderCountCustom (object, detail)
     count###detail###object 'Количество строк в документе' (iobject) =
-        GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT;
+        GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT IN documentSumGroup;
 END
 
 META defineDocumentHeaderCount (object)
@@ -569,7 +569,7 @@ META defineDocumentDetailItemActions (object)
         FOR object###object##Detail (detail) == object DO {
           EXEC delete(detail AS object##Detail);
         };
-    } IN documentPrmGroup CONFIRM;
+    } IN documentPrmGroup TOOLBAR CONFIRM;
 
 END
 
@@ -2192,7 +2192,7 @@ generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku)
             SET tmpNum() <- weightNumeratorSku(sku)
         ELSE
             SET tmpNum() <- pieceNumeratorSku(sku);
-        SET barcodeEx(b) <- curStringValueNumerator(tmpNum());
+        SET barcodeEx(b) <- completeBarcode(curStringValueNumerator(tmpNum()));
         EXEC incrementValueNumerator(tmpNum());
     };
 } TOOLBAR CONFIRM;
@@ -5681,7 +5681,6 @@ GROUP inventoryGroup 'Информация об инвентаризации' : 
 GROUP collationSheetGroup 'Информация о сличительных ведомостях' : baseGroup;
 GROUP listInventoryGroup 'Информация об описях' : baseGroup;
 GROUP inventoryCommitteeGroup 'Комиссия' : baseGroup;
-GROUP adverbGroup 'Итого' : baseGroup;
 
 //---------------------------- Подсчет всех сумм ----------------------------//
 
@@ -5690,16 +5689,16 @@ countListInventoryCollationSheet 'К-во описей' (collationSheet) =
 countPageInventoryCollationSheet 'К-во страниц' (collationSheet) =
     GROUP SUM 1 IF pageInventory IS pageInventory BY collationSheetListInventory(listInventoryPageInventory(pageInventory));
 
-countPageInventoryDetailListInventory 'Кол-во строк' (listInventory) = GROUP SUM countPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN adverbGroup;
-quantityPageInventoryDetailListInventory 'Кол-во по описям' (listInventory) = GROUP SUM quantityPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN adverbGroup;
-accountSumPageInventoryDetailListInventory 'Сумма по описям' (listInventory) = GROUP SUM accountSumPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN adverbGroup;
+countPageInventoryDetailListInventory 'Кол-во строк' (listInventory) = GROUP SUM countPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+quantityPageInventoryDetailListInventory 'Кол-во по описям' (listInventory) = GROUP SUM quantityPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+accountSumPageInventoryDetailListInventory 'Сумма по описям' (listInventory) = GROUP SUM accountSumPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
 
 countPageInventoryDetailDepartmentStoreInventory 'Кол-во строк' (departmentStore, inventory) =
-    GROUP SUM countPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+    GROUP SUM countPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
 quantityPageInventoryDetailDepartmentStoreInventory 'Кол-во по описям' (departmentStore, inventory) =
-    GROUP SUM quantityPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+    GROUP SUM quantityPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
 accountSumPageInventoryDetailDepartmentStoreInventory 'Сумма по описям' (departmentStore, inventory) =
-    GROUP SUM accountSumPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN adverbGroup;
+    GROUP SUM accountSumPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
 
 quantityPageInventoryDetailCollationSheetItem 'Кол-во по описям' (collationSheet, item) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
     BY collationSheetPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
@@ -10093,12 +10092,6 @@ DESIGN writeOff FROM DEFAULT{
             }
         }
 
-        d.box {
-            PROPERTY (cleanAllWriteOffDetailsWriteOff(w)) {
-                panelLocation = TOOLBAR;
-            }
-        }
-
         d.panel{
             childConstraints = TO THE BOTTOM;
         }
@@ -10748,9 +10741,6 @@ DESIGN shipment FROM DEFAULT{
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
-                PROPERTY (cleanAllShipmentDetailsShipment(s)) {
-                    panelLocation = TOOLBAR;
-                }
                 ADD d.itemDetailGroup;
                 ADD d.priceDetailGroup;
             };
@@ -10976,9 +10966,6 @@ DESIGN returnSupplier FROM DEFAULT {
 
         ADD d.box{
             title = 'Спецификация';
-            PROPERTY (cleanAllReturnSupplierDetailsReturnSupplier(r)) {
-                panelLocation = TOOLBAR;
-            }
             ADD d.grid{
                 fillVertical = 12;
             };
@@ -11553,15 +11540,16 @@ DESIGN listInventory FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
 
-        li.box{ childConstraints = TO THE BOTTOM;
-        POSITION li.inventoryCommitteeGroup TO THE LEFT li.adverbGroup;
+        li.box {
+            childConstraints = TO THE BOTTOM;
+            POSITION li.inventoryCommitteeGroup TO THE LEFT li.documentSumGroup;
         }
         POSITION pl.box TO THE LEFT dp.box;
-        pl.box {fillHorizontal = 1;
+        pl.box {
+            fillHorizontal = 1;
             childConstraints = TO THE BOTTOM;
         };
         dp.box {fillHorizontal = 2;}
-
     }
 }
 
@@ -11896,11 +11884,6 @@ DESIGN userPriceChange FROM DEFAULT {
             }
         }
 
-        d.box {
-            PROPERTY (cleanAllUserPriceChangeDetailsUserPriceChange(u)) {
-                panelLocation = TOOLBAR;
-            }
-        }
         PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(retailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
@@ -12020,9 +12003,6 @@ DESIGN innerFlow FROM DEFAULT{
             type = TABBED;
             ADD d.box{
                 title = 'Спецификация';
-                PROPERTY (cleanAllInnerFlowDetailsInnerFlow(f)) {
-                    panelLocation = TOOLBAR;
-                }
                 ADD d.grid{
                     fillVertical = 12;
                 };
@@ -12221,9 +12201,6 @@ DESIGN innerArrival FROM DEFAULT{
             ADD d.box {
                 childConstraints = TO THE BOTTOM;
                 title = 'Спецификация';
-                PROPERTY (cleanAllInnerArrivalDetailsInnerArrival(a)) {
-                    panelLocation = TOOLBAR;
-                }
                 d.priceDetailGroup {
                     childConstraints = TO THE RIGHTBOTTOM;
                 }
@@ -12575,10 +12552,6 @@ DESIGN statement FROM DEFAULT {
             type = TABBED;
             ADD d.box{
                 title = 'Спецификация';
-                PROPERTY (cleanAllStatementDetailsStatement(st)) {
-                    panelLocation = TOOLBAR;
-                }
-
                 ADD d.panel {
                     POSITION d.priceDetailGroup TO THE LEFT d.itemDetailGroup;
                 }
@@ -13710,7 +13683,7 @@ DESIGN torgSales FROM DEFAULT {
 
 inSupplierItemDepartmentOver(sp, i, dep, t) = isSupplierItemDepartmentOver(sp, i, dep, t) == yesNo.yes;
 
-FORM isSupplierItemDepartmentStore 'Ассортимент товаров в подразделении'
+FORM isSupplierItemDepartmentStore 'Ассортимент поставщиков'
 
     OBJECTS t=DATE FIXED PANEL
     PROPERTIES(t) OBJVALUE
@@ -13728,8 +13701,8 @@ FORM isSupplierItemDepartmentStore 'Ассортимент товаров в п�
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
     ORDER BY          nameDep
-    PROPERTIES(sp, i, dep, t) nameIsSupplierItemDepartmentOver BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, dep, t),
-                              priceSupplierItemDepartmentOver BACKGROUND priceSupplierItemDepartmentDate(sp, i, dep, t)
+    PROPERTIES        nameIsSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, dep, t), showFormNameIsSupplierItemDepartmentOver(sp, i, dep),
+                      priceSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND priceSupplierItemDepartmentDate(sp, i, dep, t), showFormPriceSupplierItemDepartmentOver(sp, i, dep)
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10
@@ -13900,13 +13873,13 @@ NAVIGATOR {
     NEW processes 'Бизнес-процессы' TO formsToolbar {
         NEW orders 'Заказы' {
             ADD timeTableDate;
+            ADD isSupplierItemDepartmentStore;
             ADD orderSuppliers;
         }
         NEW incomeShipments 'Поставки' {
             ADD shipments;
             ADD wastages;
             ADD returnSuppliers;
-            ADD isSupplierItemDepartmentStore;
         }
         NEW carryingInventories 'Инвентаризация' {
             ADD inventories;

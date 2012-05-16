@@ -703,8 +703,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         percent = addSFProp("percent", "((prm1)*(prm2)/100)", 2);
         share = addSFProp("share", "((prm1)*100/(prm2))", 2);
 
-        jumpWorkdays = addSFProp("jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
-        completeBarcode = addSFProp("completeBarcode(prm1)", StringClass.get(13), 1);
+        jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
+        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
 
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
