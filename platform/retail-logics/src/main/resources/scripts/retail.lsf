@@ -6853,6 +6853,274 @@ isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
 
 CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Уценка товара запрещена';
 
+//----------------------------------- Пересорт товара -------------------------------------------------------
+
+CLASS disparity 'Пересортица' : historyObject, numeratedObject;    // incAccountSumDocumentLedger
+CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
+TABLE disparity (disparity);
+
+CLASS inDisparityLedger 'Приход пересортицы' : inAutoBalanceItemLedger;
+TABLE inDisparityLedger (inDisparityLedger);
+
+CLASS disparityDetail 'Строка пересортицы': outAutoBalanceItemLedger;
+
+
+// шапка дакта
+@defineDocumentRelation(disparity);
+
+@defineDocumentDepartmentStore(disparity);
+@defineDocumentTime(disparity);
+@defineDocumentPosted(disparity);
+@defineDocumentDetailIndex(disparity);
+
+@defineDocumentHeaderRevaluation(disparity);
+                                // Расход //
+itemOutputDisparityDetail = DATA item (disparityDetail);
+
+nameAttributeItemOutputDisparityDetail 'Товар, расход' (disparityDetail) =
+    nameAttributeItem(itemOutputDisparityDetail(disparityDetail)) IN itemDetailGroup;
+
+shortNameUnitOfMeasureItemOutputDisparityDetail 'Ед. изм.' (disparityDetail) =
+    shortNameUnitOfMeasureItem(itemOutputDisparityDetail(disparityDetail)) IN itemDetailGroup;
+
+barcodeExSkuOutputDisparityDetail 'Штрих-код' (disparityDetail) =
+    barcodeEx(barcodeSku(itemOutputDisparityDetail(disparityDetail))) IN itemDetailGroup;
+
+quantityOutputDisparityDetail 'Кол-во, расход' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail);
+
+//importerPriceOutputDisparityDetail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+//supplierPriceOutputDisparityDetail 'Цена поставщика без НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+//
+//wareOutputDisparityDetail = DATA ware(disparityDetail);
+//nameWareOutputDisparityDetail 'Посуда' (disparityDetail) = name(wareOutputDisparityDetail(disparityDetail)) IN priceDetailGroup;
+//dataWareRangeOutputDisparityDetail 'НДС посуды, %' (disparityDetail) =
+//    dataActingRateRangeDate(rangeWareVal(wareOutputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)),
+//                            dateDisparityDetail(disparityDetail));
+//inWareOutputDisparityDetail 'Товар в посуде' (disparityDetail) = inWareItem(itemOutputDisparityDetail(disparityDetail));
+//
+//warePriceOutputDisparityDetail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+retailPriceOutputDisparityDetail 'Розничная цена' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+//retailRangeOutputDisparityDetail = DATA range (disparityDetail);
+//numberRetailRangeOutputDisparityDetail 'НДС розничный, номер' (disparityDetail) = dataRange(retailRangeOutputDisparityDetail(disparityDetail)) IN priceDetailGroup;
+//dataRetailRangeOutputDisparityDetail 'НДС розничный, %' (disparityDetail) =
+//   dataActingRateRangeDate(retailRangeOutputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
+//
+//CONSTRAINT taxRange(retailRangeOutputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY retailRangeOutputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+//
+quantityOutputDetailDisparity 'Кол-во (всего)' (disparity) = GROUP SUM quantityOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+//
+//@defineDocumentDetailWareSum(outputDisparity);
+//
+//wareSumOutputDetailDisparity 'Сумма посуды с НДС' (disparity) =
+//    GROUP SUM wareSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+//wareVATSumOutputDetailDisparity 'Сумма НДС по посуде' (disparity) =
+//    GROUP SUM wareVATSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+//
+//@defineDocumentDetailInSum(outputDisparity);
+//
+//supplierISumOutputDisparityDetailDisparity 'Сумма поставщика без НДС (без посуды)' (disparity) =
+//    GROUP SUM supplierISumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+//
+//@defineDocumentDetailOutSum(outputDisparity);
+@defineDocumentDetailRetailSum(outputDisparity);
+
+retailSumOutputDisparityDetailDisparity 'Розничная сумма' (disparity) =
+    GROUP SUM retailSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+
+//retailVATISumOutputDisparityDetailDisparity 'Сумма НДС (без посуды)' (disparity) =
+//    GROUP SUM retailVATISumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+//
+//retailVATSumOutputDisparityDetailDisparity 'Сумма НДС' (disparity) = retailVATISumOutputDisparityDetailDisparity(disparity) (+) wareVATSumOutputDetailDisparity(disparity);
+//
+//markupSumOutputDisparityDetailDisparity 'Сумма надбавки' (disparity) =
+//    GROUP SUM markupSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+
+                                  // Приход
+itemInputDisparityDetail = DATA item (disparityDetail);
+
+nameAttributeItemInputDisparityDetail 'Товар, приход' (disparityDetail) =
+    nameAttributeItem(itemInputDisparityDetail(disparityDetail)) IN itemDetailGroup;
+
+shortNameUnitOfMeasureItemInputDisparityDetail 'Ед. изм.' (disparityDetail) =
+    shortNameUnitOfMeasureItem(itemInputDisparityDetail(disparityDetail)) IN itemDetailGroup;
+
+barcodeExSkuInputDisparityDetail 'Штрих-код' (disparityDetail) =
+    barcodeEx(barcodeSku(itemInputDisparityDetail(disparityDetail))) IN itemDetailGroup;
+
+quantityInputDisparityDetail 'Кол-во, приход' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail);
+
+importerPriceInputDisparityDetail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+supplierPriceInputDisparityDetail 'Цена поставщика без НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+wareInputDisparityDetail = DATA ware(disparityDetail);
+nameWareInputDisparityDetail 'Посуда' (disparityDetail) = name(wareInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
+dataWareRangeInputDisparityDetail 'НДС посуды, %' (disparityDetail) =
+    dataActingRateRangeDate(rangeWareVal(wareInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)),
+                            dateDisparityDetail(disparityDetail));
+inWareInputDisparityDetail 'Товар в посуде' (disparityDetail) = inWareItem(itemInputDisparityDetail(disparityDetail));
+warePriceInputDisparityDetail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+retailPriceInputDisparityDetail 'Розничная цена' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+retailRangeInputDisparityDetail = DATA range (disparityDetail);
+numberRetailRangeInputDisparityDetail 'НДС розничный, номер' (disparityDetail) = dataRange(retailRangeInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
+dataRetailRangeInputDisparityDetail 'НДС розничный, %' (disparityDetail) =
+   dataActingRateRangeDate(retailRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
+
+CONSTRAINT taxRange(retailRangeInputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY retailRangeInputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+quantityInputDetailDisparity 'Кол-во (всего)' (disparity) = GROUP SUM quantityInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+
+@defineDocumentDetailWareSum(inputDisparity);
+
+wareSumInputDetailDisparity 'Сумма посуды с НДС' (disparity) =
+    GROUP SUM wareSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+
+wareVATSumInputDetailDisparity 'Сумма НДС по посуде' (disparity) =
+    GROUP SUM wareVATSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+
+@defineDocumentDetailInSum(inputDisparity);
+
+supplierISumInputDisparityDetailDisparity 'Сумма поставщика без НДС (без посуды)' (disparity) =
+    GROUP SUM supplierISumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+
+@defineDocumentDetailOutSum(inputDisparity);
+
+retailSumInputDisparityDetailDisparity 'Розничная сумма' (disparity) =
+    GROUP SUM retailSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
+
+retailVATISumInputDisparityDetailDisparity 'Сумма НДС (без посуды)' (disparity) =
+    GROUP SUM retailVATISumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+
+retailVATSumInputDisparityDetailDisparity 'Сумма НДС' (disparity) = retailVATISumInputDisparityDetailDisparity(disparity) (+) wareVATSumInputDetailDisparity(disparity);
+
+markupSumInputDisparityDetailDisparity 'Сумма надбавки' (disparity) =
+    GROUP SUM markupSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+
+                                  // Текущее значение расхода //
+curWareInputDisparityDetail = DATA ware (disparityDetail) IN idGroup;
+curNameWareInputDisparityDetail 'Текущая посуда' (disparityDetail) = name(curWareInputDisparityDetail(disparityDetail)) IN priceDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+curWarePriceInputDisparityDetail 'Текущая цена посуды' (disparityDetail) = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+curWareRangeInputDisparityDetail (disparityDetail) = rangeWareVal(curWareInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail));
+curNumberWareRangeInputDisparityDetail 'Текущий НДС посуды, номер' (disparityDetail) = dataRange(curWareRangeInputDisparityDetail(disparityDetail));
+curDataWareRangeInputDisparityDetail 'Текущий НДС посуды, %' (disparityDetail) = dataActingRateRangeDate(curWareRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail));
+
+curImporterPriceInputDisparityDetail 'Тек. цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+curSupplierPriceInputDisparityDetail 'Тек. цена поставщика' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+curRetailPriceInputDisparityDetail 'Тек. розничная цена' (disparityDetail) = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
+
+curRetailRangeInputDisparityDetail = DATA range (disparityDetail);
+curNumberRetailRangeInputDisparityDetail 'Тек. НДС розничный, номер' (disparityDetail) = dataRange(curRetailRangeInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
+curDataRetailRangeInputDisparityDetail 'Тек. НДС розничный, %' (disparityDetail) =
+   dataActingRateRangeDate(curRetailRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
+
+CONSTRAINT taxRange(curRetailRangeInputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY curRetailRangeInputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+//----------------------------  Изменение остатка пересорт --------------------------------------------//
+
+needToInDisparityLedgerDetail (disparityDetail) = quantityInputDisparityDetail(disparityDetail) > 0
+    AND isPostedDisparityDetail(disparityDetail);
+
+@metaCodeSingleAggregation(disparityDetail, inDisparityLedger, needToInDisparityLedgerDetail);
+
+itemInDisparityLedger (inDisparityLedger) = itemInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+nameAttributeItemInDisparityLedger 'Товар' (inDisparityLedger) = nameAttributeItem(itemInDisparityLedger(inDisparityLedger)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+barcodeExSkuInDisparityLedger 'Штрих-код' (inDisparityLedger) = barcodeExSkuInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+dateTimeInDisparityLedger(inDisparityLedger) = dateTimeDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+dateInDisparityLedger(inDisparityLedger) = dateDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+isPostedInDisparityLedger(inDisparityLedger) = isPostedDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+departmentStoreInDisparityLedger(inDisparityLedger) = departmentStoreDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+quantityInDisparityLedger(inDisparityLedger) = quantityInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+
+importerPriceInDisparityLedger 'Цена изготовителя' (inDisparityLedger) = importerPriceInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+supplierPriceInDisparityLedger 'Цена поставщика' (inDisparityLedger) = supplierPriceInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+
+dataRetailRangeInDisparityLedger 'НДС, %' (inDisparityLedger) = dataRetailRangeInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+
+wareInDisparityLedger 'Посуда' (inDisparityLedger) = wareInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+dataWareRangeInDisparityLedger 'НДС посуды, %' (inDisparityLedger) =
+      dataActingRateRangeDate(rangeWareVal(wareInDisparityLedger(inDisparityLedger), dateInDisparityLedger(inDisparityLedger)),
+                                                                   dateInDisparityLedger(inDisparityLedger));
+
+warePriceInDisparityLedger 'Цена посуды' (inDisparityLedger) =  warePriceInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+
+retailPriceInDisparityLedger 'Розничная цена' (inDisparityLedger) = retailPriceInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+
+descriptionDisparity 'Название документа' (disparity) =
+    [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
+    seriesNumberObject(disparity), dateDisparity(disparity));
+
+descriptionInDisparityLedger 'Название документа' (inDisparityLedger) =
+    [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
+    seriesNumberObject(disparityDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger))), dateDisparity(disparityDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger))));
+
+descriptionDisparityDetail 'Название документа' (disparityDetail) =
+    [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
+    seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
+
+
+// ---------------------------------- Переоценка при пересорте ------------------------------------------
+
+CLASS priceChangeDisparity 'Переоценка при пересортице' : priceChangeDocument;
+CLASS priceChangeDisparityDetail 'Строка переоценки при пересортице' : priceChangeDocumentDetail;
+
+needToPriceChangeDisparityDetail (disparityDetail) = retailPriceOutputDisparityDetail(disparityDetail) != retailPriceInputDisparityDetail(disparityDetail) AND
+                                                   quantityOutputDisparityDetail(disparityDetail) >0 AND quantityInputDisparityDetail(disparityDetail) >0;
+
+
+needToPriceChangeDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+
+@metaCodeDetailAggregation(disparity, priceChangeDisparity, needToPriceChangeDisparity);
+@defineDocumentHeaderAggregation(disparity, priceChangeDisparity);
+@defineDocumentHeaderAggregationDescription(disparity, priceChangeDisparity);
+
+@defineDocumentDetailAggregationHeader(disparity, priceChangeDisparity);
+
+itemPriceChangeDisparityDetail (priceChangeDisparityDetail) = itemInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+nameItemPriceChangeDisparityDetail 'Товар' (priceChangeDisparityDetail) = nameAttributeItem(itemPriceChangeDisparityDetail(priceChangeDisparityDetail));
+barcodeExSkuPriceChangeDisparityDetail 'Штрих-код' (priceChangeDisparityDetail) = barcodeEx(barcodeSku(itemPriceChangeDisparityDetail(priceChangeDisparityDetail)));
+quantityPriceChangeDisparityDetail 'Количество' (priceChangeDisparityDetail) = quantityInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+importerPricePriceChangeDisparityDetail 'Цена изготовителя' (priceChangeDisparityDetail) = importerPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+supplierPricePriceChangeDisparityDetail 'Цена поставщика' (priceChangeDisparityDetail) = supplierPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+dataRetailRangePriceChangeDisparityDetail 'НДС, %' (priceChangeDisparityDetail) = dataRetailRangeInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+warePriceChangeDisparityDetail 'Посуда' (priceChangeDisparityDetail) = wareInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+dataWareRangePriceChangeDisparityDetail 'НДС посуды, %' (priceChangeDisparityDetail) =
+      dataActingRateRangeDate(rangeWareVal(warePriceChangeDisparityDetail(priceChangeDisparityDetail), datePriceChangeDisparityDetail(priceChangeDisparityDetail)),
+                                                                   datePriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+warePricePriceChangeDisparityDetail 'Цена посуды' (priceChangeDisparityDetail) =  warePriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+retailPricePriceChangeDisparityDetail 'Розничная цена' (priceChangeDisparityDetail) = retailPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+
+numberDisposalPriceChangeDisparity '№ распоряжения на переоценку' (disparity) = numberDisposalDisparity(disparityPriceChangeDisparity(disparity));
+revaluationCommitteePriceChangeDisparity 'Комиссия переоценки ИД' (disparity) = revaluationCommitteeDisparity(disparityPriceChangeDisparity(disparity));
+
+
+curRetailPricePriceChangeDisparityDetail 'Старая розничная цена' (priceChangeDisparityDetail) = curRetailPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+curImporterPricePriceChangeDisparityDetail 'Цена изготовителя' (priceChangeDisparityDetail) = curImporterPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+curSupplierPricePriceChangeDisparityDetail 'Цена поставщика' (priceChangeDisparityDetail) = curSupplierPriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+curDataRetailRangePriceChangeDisparityDetail 'НДС, %' (priceChangeDisparityDetail) = curDataRetailRangeInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+curWarePriceChangeDisparityDetail 'Посуда' (priceChangeDisparityDetail) = curWareInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+curWarePricePriceChangeDisparityDetail 'Цена посуды' (priceChangeDisparityDetail) = curWarePriceInputDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
+
+   // внести их в эксклюзив
+
+@defineDocumentPriceChangeNumber(disparity);
+@metaCodeIsPriceChangeWrong(disparity);
+
+
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
@@ -6865,7 +7133,9 @@ dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateT
                                                                   dateTimeInventoryLedger(ledger),
                                                                   dateTimeBillDetail(ledger),
                                                                   dateTimeStudyInputDetail(ledger),
-                                                                  dateTimeStudyOutputDetail(ledger) PERSISTENT INDEXED;
+                                                                  dateTimeStudyOutputDetail(ledger),
+                                                                  dateTimeInDisparityLedger(ledger),
+                                                                  dateTimeDisparityDetail(ledger) PERSISTENT INDEXED;
 
 dateBalanceItemLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceItemLedger(ledger)) PERSISTENT;
 
@@ -6881,7 +7151,9 @@ isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShip
                                                               isPostedInventoryLedger(ledger),
                                                               isPostedBillDetail(ledger),
                                                               isPostedStudyInputDetail(ledger),
-                                                              isPostedStudyOutputDetail(ledger) PERSISTENT;
+                                                              isPostedStudyOutputDetail(ledger),
+                                                              isPostedInDisparityLedger(ledger),
+                                                              isPostedDisparityDetail(ledger) PERSISTENT;
 
 itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemReturnSupplierDetail(ledger),
@@ -6893,7 +7165,9 @@ itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
                                                  itemInventoryLedger(ledger),
                                                  itemBillDetail(ledger),
                                                  itemStudyInputDetail(ledger),
-                                                 itemStudyOutputDetail(ledger) PERSISTENT INDEXED;
+                                                 itemStudyOutputDetail(ledger),
+                                                 itemInDisparityLedger(ledger),
+                                                 itemOutputDisparityDetail(ledger) PERSISTENT INDEXED;
 
 nameItemBalanceItemLedger 'Товар' (ledger) = nameAttributeItem(itemBalanceItemLedger(ledger));
 
@@ -6907,7 +7181,9 @@ departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipm
                                                             departmentStoreInventoryLedger(ledger),
                                                             departmentStoreBillDetail(ledger),
                                                             departmentStoreStudyInputDetail(ledger),
-                                                            departmentStoreStudyOutputDetail(ledger) PERSISTENT INDEXED;
+                                                            departmentStoreStudyOutputDetail(ledger),
+                                                            departmentStoreInDisparityLedger(ledger),
+                                                            departmentStoreDisparityDetail(ledger) PERSISTENT INDEXED;
 
 nameDepartmentStoreBalanceItemLedger 'Отдел магазина' (ledger) = name(departmentStoreBalanceItemLedger(ledger));
 
@@ -6922,7 +7198,9 @@ descriptionBalanceItemLedger 'Название документа' (ledger) = UN
                                                                              descriptionInInventoryLedger(ledger),
                                                                              descriptionBillDetail(ledger),
                                                                              descriptionStudyOutputDetail(ledger),
-                                                                             descriptionStudyInputDetail(ledger) PERSISTENT;
+                                                                             descriptionStudyInputDetail(ledger),
+                                                                             descriptionInDisparityLedger(ledger),
+                                                                             descriptionDisparityDetail(ledger) PERSISTENT;
 
 
 // ---------------------------- Расчет себестоимости -------------------------------- //
@@ -6940,7 +7218,8 @@ quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quanti
                                                                      quantityWastageDetail(ledger),
                                                                      quantityOutInventoryLedger(ledger),
                                                                      quantityBillSaleDetail(ledger),
-                                                                     quantityStudyInputDetail(ledger);
+                                                                     quantityStudyInputDetail(ledger),
+                                                                     quantityOutputDetailDisparity(ledger);
 
 quantityOutUserBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityReturnSupplierDetail(ledger);
 batchOutUserBalanceItemLedger 'Партия' (ledger) = UNION EXCLUSIVE batchReturnSupplierDetail(ledger);
@@ -6949,7 +7228,8 @@ quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOu
                                                                  quantityOutUserBalanceItemLedger(ledger) PERSISTENT;
 
 quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger),
-                                                                    quantityBillReturnDetail(ledger);
+                                                                    quantityBillReturnDetail(ledger),
+                                                                    quantityInDisparityLedger(ledger);
 
 quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
                                                                 quantityInAutoBalanceItemLedger(ledger),
@@ -9527,144 +9807,6 @@ END
 @metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, горизонтальная (сторона Б)');
 @metaCodeTransportConsignment(transportConsignmentAttach, 'Приложение к ТТН-1');
 
-//----------------------------------- Пересорт товара -------------------------------------------------------
-
-CLASS disparity 'Пересортица' : historyObject, numeratedObject;    // incAccountSumDocumentLedger
-CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
-TABLE disparity (disparity);
-
-CLASS disparityDetail 'Строка пересортицы': outAutoBalanceItemLedger, inAutoBalanceItemLedger;
-
-// шапка дакта
-@defineDocumentRelation(disparity);
-
-@defineDocumentDepartmentStore(disparity);
-@defineDocumentTime(disparity);
-@defineDocumentPosted(disparity);
-@defineDocumentDetailIndex(disparity);
-
-itemOutputDisparityDetail = DATA item (disparityDetail);
-itemInputDisparityDetail = DATA item (disparityDetail);
-
-nameAttributeItemOutputDisparityDetail 'Товар, расход' (disparityDetail) =
-    nameAttributeItem(itemOutputDisparityDetail(disparityDetail)) IN itemDetailGroup;
-nameAttributeItemInputDisparityDetail 'Товар, приход' (disparityDetail) =
-    nameAttributeItem(itemInputDisparityDetail(disparityDetail)) IN itemDetailGroup;
-
-shortNameUnitOfMeasureItemOutputDisparityDetail 'Ед. изм.' (disparityDetail) =
-    shortNameUnitOfMeasureItem(itemOutputDisparityDetail(disparityDetail)) IN itemDetailGroup;
-
-shortNameUnitOfMeasureItemInputDisparityDetail 'Ед. изм.' (disparityDetail) =
-    shortNameUnitOfMeasureItem(itemInputDisparityDetail(disparityDetail)) IN itemDetailGroup;
-
-barcodeExSkuOutputDisparityDetail 'Штрих-код' (disparityDetail) =
-    barcodeEx(barcodeSku(itemOutputDisparityDetail(disparityDetail))) IN itemDetailGroup;
-
-barcodeExSkuInputDisparityDetail 'Штрих-код' (disparityDetail) =
-    barcodeEx(barcodeSku(itemInputDisparityDetail(disparityDetail))) IN itemDetailGroup;
-
-quantityOutputDisparityDetail 'Кол-во, расход' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail);
-quantityInputDisparityDetail 'Кол-во, приход' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail);
-
-
-importerPriceOutputDisparityDetail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-supplierPriceOutputDisparityDetail 'Цена поставщика без НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-
-importerPriceInputDisparityDetail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-supplierPriceInputDisparityDetail 'Цена поставщика без НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-
-wareOutputDisparityDetail = DATA ware(disparityDetail);
-nameWareOutputDisparityDetail 'Посуда' (disparityDetail) = name(wareOutputDisparityDetail(disparityDetail)) IN priceDetailGroup;
-
-dataWareRangeOutputDisparityDetail 'НДС посуды, %' (disparityDetail) =
-    dataActingRateRangeDate(rangeWareVal(wareOutputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)),
-                            dateDisparityDetail(disparityDetail));
-
-inWareOutputDisparityDetail 'Товар в посуде' (disparityDetail) = inWareItem(itemOutputDisparityDetail(disparityDetail));
-
-warePriceOutputDisparityDetail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-
-wareInputDisparityDetail = DATA ware(disparityDetail);
-nameWareInputDisparityDetail 'Посуда' (disparityDetail) = name(wareInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
-
-dataWareRangeInputDisparityDetail 'НДС посуды, %' (disparityDetail) =
-    dataActingRateRangeDate(rangeWareVal(wareInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)),
-                            dateDisparityDetail(disparityDetail));
-
-inWareInputDisparityDetail 'Товар в посуде' (disparityDetail) = inWareItem(itemInputDisparityDetail(disparityDetail));
-
-warePriceInputDisparityDetail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-
-retailPriceOutputDisparityDetail 'Розничная цена' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-retailPriceInputDisparityDetail 'Розничная цена' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
-
-
-retailRangeOutputDisparityDetail = DATA range (disparityDetail);
-numberRetailRangeOutputDisparityDetail 'НДС розничный, номер' (disparityDetail) = dataRange(retailRangeOutputDisparityDetail(disparityDetail)) IN priceDetailGroup;
-dataRetailRangeOutputDisparityDetail 'НДС розничный, %' (disparityDetail) =
-   dataActingRateRangeDate(retailRangeOutputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
-
-CONSTRAINT taxRange(retailRangeOutputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY retailRangeOutputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-retailRangeInputDisparityDetail = DATA range (disparityDetail);
-numberRetailRangeInputDisparityDetail 'НДС розничный, номер' (disparityDetail) = dataRange(retailRangeInputDisparityDetail(disparityDetail)) IN priceDetailGroup;
-dataRetailRangeInputDisparityDetail 'НДС розничный, %' (disparityDetail) =
-   dataActingRateRangeDate(retailRangeInputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)) IN priceDetailGroup;
-
-CONSTRAINT taxRange(retailRangeInputDisparityDetail(disparityDetail)) != tax.taxNDS CHECKED BY retailRangeInputDisparityDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-quantityOutputDetailDisparity 'Кол-во (всего)' (disparity) = GROUP SUM quantityOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-quantityInputDetailDisparity 'Кол-во (всего)' (disparity) = GROUP SUM quantityInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-@defineDocumentDetailWareSum(outputDisparity);
-@defineDocumentDetailWareSum(inputDisparity);
-
-wareSumOutputDetailDisparity 'Сумма посуды с НДС' (disparity) =
-    GROUP SUM wareSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-wareVATSumOutputDetailDisparity 'Сумма НДС по посуде' (disparity) =
-    GROUP SUM wareVATSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-wareSumInputDetailDisparity 'Сумма посуды с НДС' (disparity) =
-    GROUP SUM wareSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-wareVATSumInputDetailDisparity 'Сумма НДС по посуде' (disparity) =
-    GROUP SUM wareVATSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-@defineDocumentDetailInSum(outputDisparity);
-@defineDocumentDetailInSum(inputDisparity);
-
-supplierISumOutputDisparityDetailDisparity 'Сумма поставщика без НДС (без посуды)' (disparity) =
-    GROUP SUM supplierISumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-supplierISumInputDisparityDetailDisparity 'Сумма поставщика без НДС (без посуды)' (disparity) =
-    GROUP SUM supplierISumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-@defineDocumentDetailOutSum(outputDisparity);
-@defineDocumentDetailOutSum(inputDisparity);
-
-retailSumOutputDisparityDetailDisparity 'Розничная сумма' (disparity) =
-    GROUP SUM retailSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-retailVATISumOutputDisparityDetailDisparity 'Сумма НДС (без посуды)' (disparity) =
-    GROUP SUM retailVATISumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
-
-retailVATSumOutputDisparityDetailDisparity 'Сумма НДС' (disparity) = retailVATISumOutputDisparityDetailDisparity(disparity) (+) wareVATSumOutputDetailDisparity(disparity);
-
-markupSumOutputDisparityDetailDisparity 'Сумма надбавки' (disparity) =
-    GROUP SUM markupSumOutputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
-
-retailSumInputDisparityDetailDisparity 'Розничная сумма' (disparity) =
-    GROUP SUM retailSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup;
-
-retailVATISumInputDisparityDetailDisparity 'Сумма НДС (без посуды)' (disparity) =
-    GROUP SUM retailVATISumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
-
-retailVATSumInputDisparityDetailDisparity 'Сумма НДС' (disparity) = retailVATISumInputDisparityDetailDisparity(disparity) (+) wareVATSumInputDetailDisparity(disparity);
-
-markupSumInputDisparityDetailDisparity 'Сумма надбавки' (disparity) =
-    GROUP SUM markupSumInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
-
 
 FORM disparity 'Пересортица'
 
@@ -9681,14 +9823,18 @@ FORM disparity 'Пересортица'
                     barcodeExSkuOutputDisparityDetail, nameAttributeItemOutputDisparityDetail, shortNameUnitOfMeasureItemOutputDisparityDetail,
                     quantityOutputDisparityDetail, retailPriceOutputDisparityDetail, retailSumOutputDisparityDetail,
                     barcodeExSkuInputDisparityDetail, nameAttributeItemInputDisparityDetail, shortNameUnitOfMeasureItemInputDisparityDetail,
-                    quantityInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
+                    quantityInputDisparityDetail, importerPriceInputDisparityDetail, supplierPriceInputDisparityDetail, nameWareInputDisparityDetail,
+                    warePriceInputDisparityDetail, dataRetailRangeInputDisparityDetail, retailPriceInputDisparityDetail, retailSumInputDisparityDetail
     PROPERTIES(d) ADDOBJ, delete
 
-    PROPERTIES (d)  FORCE PANEL importerPriceOutputDisparityDetail, supplierPriceOutputDisparityDetail, nameWareOutputDisparityDetail,
-                                warePriceOutputDisparityDetail, dataWareRangeOutputDisparityDetail, dataRetailRangeOutputDisparityDetail
+//    PROPERTIES (d)  FORCE PANEL importerPriceOutputDisparityDetail, supplierPriceOutputDisparityDetail, nameWareOutputDisparityDetail,
+//                                warePriceOutputDisparityDetail, dataWareRangeOutputDisparityDetail, dataRetailRangeOutputDisparityDetail
 
-    PROPERTIES (d)  FORCE PANEL importerPriceInputDisparityDetail, supplierPriceInputDisparityDetail, nameWareInputDisparityDetail,
-                                warePriceInputDisparityDetail, dataWareRangeInputDisparityDetail, dataRetailRangeInputDisparityDetail
+//    PROPERTIES (d)  FORCE PANEL importerPriceInputDisparityDetail, supplierPriceInputDisparityDetail, nameWareInputDisparityDetail,
+//                                warePriceInputDisparityDetail, dataRetailRangeInputDisparityDetail
+
+    PROPERTIES (d)  FORCE PANEL curImporterPriceInputDisparityDetail, curSupplierPriceInputDisparityDetail, curNameWareInputDisparityDetail,
+                                curWarePriceInputDisparityDetail, curDataRetailRangeInputDisparityDetail, curRetailPriceInputDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
 
@@ -9718,27 +9864,27 @@ DESIGN disparity FROM DEFAULT {
         }
         ADD d.box {
             ADD d.priceDetailGroup {
-                childConstraints = TO THE BOTTOM;
-                NEW row1 {
+//                childConstraints = TO THE BOTTOM;
+//                NEW row1 {
+//                    childConstraints = TO THE RIGHTBOTTOM;
+//                    title = 'Расход';
+//                    ADD PROPERTY (importerPriceOutputDisparityDetail);
+//                    ADD PROPERTY (supplierPriceOutputDisparityDetail);
+//                    ADD PROPERTY (nameWareOutputDisparityDetail);
+//                    ADD PROPERTY (warePriceOutputDisparityDetail);
+//                    ADD PROPERTY (dataWareRangeOutputDisparityDetail);
+//                    ADD PROPERTY (dataRetailRangeOutputDisparityDetail);
+//                }
+//                NEW row2 {
                     childConstraints = TO THE RIGHTBOTTOM;
-                    title = 'Расход';
-                    ADD PROPERTY (importerPriceOutputDisparityDetail);
-                    ADD PROPERTY (supplierPriceOutputDisparityDetail);
-                    ADD PROPERTY (nameWareOutputDisparityDetail);
-                    ADD PROPERTY (warePriceOutputDisparityDetail);
-                    ADD PROPERTY (dataWareRangeOutputDisparityDetail);
-                    ADD PROPERTY (dataRetailRangeOutputDisparityDetail);
-                }
-                NEW row2 {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                    title = 'Приход';
-                    ADD PROPERTY (importerPriceInputDisparityDetail);
-                    ADD PROPERTY (supplierPriceInputDisparityDetail);
-                    ADD PROPERTY (nameWareInputDisparityDetail);
-                    ADD PROPERTY (warePriceInputDisparityDetail);
-                    ADD PROPERTY (dataWareRangeInputDisparityDetail);
-                    ADD PROPERTY (dataRetailRangeInputDisparityDetail);
-                }
+                    title = 'Цены (приход)';
+                    ADD PROPERTY (curImporterPriceInputDisparityDetail);
+                    ADD PROPERTY (curSupplierPriceInputDisparityDetail);
+                    ADD PROPERTY (curNameWareInputDisparityDetail);
+                    ADD PROPERTY (curWarePriceInputDisparityDetail);
+                    ADD PROPERTY (curDataRetailRangeInputDisparityDetail);
+                    ADD PROPERTY (curRetailPriceInputDisparityDetail);
+//                }
             }
 
         }
@@ -9970,51 +10116,31 @@ DESIGN writeOffs FROM DEFAULT {
 
 // --------------------------- Использование регистров (автоматическое заполнение): выписка из розницы-------------//
 
-importerPriceOutputDisparityDetail (disparityDetail) <- priceImporterBLedgerDateTime (
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
-
-supplierPriceOutputDisparityDetail (disparityDetail) <- priceSupplierBLedgerDateTime (
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
-
-retailRangeOutputDisparityDetail (disparityDetail) <- rangeRetailBLedgerDateTime(
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
-
 retailPriceOutputDisparityDetail (disparityDetail) <- priceRetailBLedgerDateTime (
                 itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
 
-warePriceOutputDisparityDetail (disparityDetail) <- warePriceBLedgerDateTime(
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
-
-wareOutputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
-
-importerPriceInputDisparityDetail (disparityDetail) <- priceImporterBLedgerDateTime (
+curImporterPriceInputDisparityDetail (disparityDetail) <- priceImporterBLedgerDateTime (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-supplierPriceInputDisparityDetail (disparityDetail) <- priceSupplierBLedgerDateTime (
+curSupplierPriceInputDisparityDetail (disparityDetail) <- priceSupplierBLedgerDateTime (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-retailRangeInputDisparityDetail (disparityDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeInputDisparityDetail (disparityDetail) <- rangeRetailBLedgerDateTime(
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-retailPriceInputDisparityDetail (disparityDetail) <- priceRetailBLedgerDateTime (
+curRetailPriceInputDisparityDetail (disparityDetail) <- priceRetailBLedgerDateTime (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-warePriceInputDisparityDetail (disparityDetail) <- warePriceBLedgerDateTime(
+curWarePriceInputDisparityDetail (disparityDetail) <- warePriceBLedgerDateTime(
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-wareInputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
+curWareInputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
@@ -10392,13 +10518,13 @@ diffWareSumPriceChangeDocumentDetailPriceChangeDocument 'Изменение су
 diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) =
     wareVATSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curWareVATSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-diffSupplierSumPriceChangeDocument 'Изменение суммы поставщика' (priceChangeDocument) =
+diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы поставщика' (priceChangeDocument) =
     supplierISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curSupplierISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-diffTotalSumMarkupPriceChangeDocument 'Изменение суммы надбавки' (priceChangeDocument) =
+diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы надбавки' (priceChangeDocument) =
     markupSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curMarkupSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
-diffTotalSumRetailVATPriceChangeDocument 'Изменение суммы розничного НДС' (priceChangeDocument) =
+diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы розничного НДС' (priceChangeDocument) =
     retailVATISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curRetailVATISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
 
 diffRetailSumPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки' (priceChangeDocument) =
@@ -10434,7 +10560,7 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              curWareSumPriceChangeDocumentDetailPriceChangeDocument, curWareVATSumPriceChangeDocumentDetailPriceChangeDocument, curRetailSumPriceChangeDocumentDetailPriceChangeDocument,
                              supplierISumPriceChangeDocumentDetailPriceChangeDocument, markupSumPriceChangeDocumentDetailPriceChangeDocument, retailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                              wareSumPriceChangeDocumentDetailPriceChangeDocument, wareVATSumPriceChangeDocumentDetailPriceChangeDocument, retailSumPriceChangeDocumentDetailPriceChangeDocument,
-                             diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                             diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                              diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
@@ -10465,7 +10591,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             numberPriceChangeDocument, seriesPriceChangeDocument, nameSupplierPriceChangeShipment, nameSupplierPriceChangeReturnSupplier,
                             nameSenderDepartmentPriceChangeInnerArrival,
-                            diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                            diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                             diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, nameRevaluationCommitteePriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
@@ -11667,7 +11793,7 @@ FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                   diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                   diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument,
                    noteUserPriceChange, numberDisposalUserPriceChange, nameRevaluationCommitteeUserPriceChange
 
@@ -11743,7 +11869,7 @@ FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                   diffSupplierSumPriceChangeDocument, diffTotalSumMarkupPriceChangeDocument, diffTotalSumRetailVATPriceChangeDocument,
+                   diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument,
                    statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionUserPriceChange(u),
                    statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionUserPriceChange(u)
