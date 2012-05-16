@@ -2651,7 +2651,7 @@ addNDSValue 'Добавить значение НДС' = ACTION (tax, number, va
        ADDOBJ rate;
        FOR ra == addedObject() DO {
           SET rangeRate(ra) <- rn AS range;
-          SET dataRate(ra) <- value AS DOUBLE;
+          SET dataRate(ra) <- value AS NUMERIC[10,5];
           SET dateFromRate(ra) <- 2001_01_01;
        };
     };
@@ -6497,6 +6497,9 @@ wareReturnSupplierDetail (returnSupplierDetail) <- wareShipmentDetail(batchRetur
 warePriceReturnSupplierDetail (returnSupplierDetail) <- warePriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                         WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
+retailRangeReturnSupplierDetail (returnSupplierDetail) <- retailRangeShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
+                                                             WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
+
 retailPriceReturnSupplierDetail (returnSupplierDetail) <- retailPriceShipmentDetail(batchReturnSupplierDetail(returnSupplierDetail))
                                                           WHEN CHANGED(batchReturnSupplierDetail(returnSupplierDetail));
 
@@ -7121,85 +7124,20 @@ revaluationCommitteePriceChangeDisparity 'Комиссия переоценки 
 
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
-dateTimeBalanceItemLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                  dateTimeReturnSupplierDetail(ledger),
-                                                                  dateTimeInnerArrivalDetail(ledger),
-                                                                  dateTimeWriteOffDetail(ledger),
-                                                                  dateTimeStatementDetail(ledger),
-                                                                  dateTimeInnerFlowDetail(ledger),
-                                                                  dateTimeWastageDetail(ledger),
-                                                                  dateTimeInventoryLedger(ledger),
-                                                                  dateTimeBillDetail(ledger),
-                                                                  dateTimeStudyInputDetail(ledger),
-                                                                  dateTimeStudyOutputDetail(ledger),
-                                                                  dateTimeInDisparityLedger(ledger),
-                                                                  dateTimeDisparityDetail(ledger) PERSISTENT INDEXED;
-
+dateTimeBalanceItemLedger 'Дата/время' = ABSTRACT DATETIME (balanceItemLedger) PERSISTENT INDEXED;
 dateBalanceItemLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceItemLedger(ledger)) PERSISTENT;
 
 orderBalanceItemLedger (ledger) = LIST(dateTimeBalanceItemLedger(ledger), ledger);
 
-isPostedBalanceItemLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                              isPostedReturnSupplierDetail(ledger),
-                                                              isPostedInnerArrivalDetail(ledger),
-                                                              isPostedWriteOffDetail(ledger),
-                                                              isPostedStatementDetail(ledger),
-                                                              isPostedInnerFlowDetail(ledger),
-                                                              isPostedWastageDetail(ledger),
-                                                              isPostedInventoryLedger(ledger),
-                                                              isPostedBillDetail(ledger),
-                                                              isPostedStudyInputDetail(ledger),
-                                                              isPostedStudyOutputDetail(ledger),
-                                                              isPostedInDisparityLedger(ledger),
-                                                              isPostedDisparityDetail(ledger) PERSISTENT;
+isPostedBalanceItemLedger 'Закрыт' = ABSTRACT BOOLEAN (balanceItemLedger) PERSISTENT;
 
-itemBalanceItemLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                 itemReturnSupplierDetail(ledger),
-                                                 itemInnerArrivalDetail(ledger),
-                                                 itemWriteOffDetail(ledger),
-                                                 itemStatementDetail(ledger),
-                                                 itemInnerFlowDetail(ledger),
-                                                 itemWastageDetail(ledger),
-                                                 itemInventoryLedger(ledger),
-                                                 itemBillDetail(ledger),
-                                                 itemStudyInputDetail(ledger),
-                                                 itemStudyOutputDetail(ledger),
-                                                 itemInDisparityLedger(ledger),
-                                                 itemOutputDisparityDetail(ledger) PERSISTENT INDEXED;
-
+itemBalanceItemLedger = ABSTRACT item (balanceItemLedger) PERSISTENT INDEXED;
 nameItemBalanceItemLedger 'Товар' (ledger) = nameAttributeItem(itemBalanceItemLedger(ledger));
 
-departmentStoreBalanceItemLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                            departmentStoreReturnSupplierDetail(ledger),
-                                                            departmentStoreInnerArrivalDetail(ledger),
-                                                            departmentStoreWriteOffDetail(ledger),
-                                                            departmentStoreStatementDetail(ledger),
-                                                            departmentStoreInnerFlowDetail(ledger),
-                                                            departmentStoreWastageDetail(ledger),
-                                                            departmentStoreInventoryLedger(ledger),
-                                                            departmentStoreBillDetail(ledger),
-                                                            departmentStoreStudyInputDetail(ledger),
-                                                            departmentStoreStudyOutputDetail(ledger),
-                                                            departmentStoreInDisparityLedger(ledger),
-                                                            departmentStoreDisparityDetail(ledger) PERSISTENT INDEXED;
-
+departmentStoreBalanceItemLedger = ABSTRACT departmentStore(balanceItemLedger) PERSISTENT INDEXED;
 nameDepartmentStoreBalanceItemLedger 'Отдел магазина' (ledger) = name(departmentStoreBalanceItemLedger(ledger));
 
-descriptionBalanceItemLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                             descriptionInnerArrivalDetail(ledger),
-                                                                             descriptionWriteOffDetail(ledger),
-                                                                             descriptionStatementDetail(ledger),
-                                                                             descriptionInnerFlowDetail(ledger),
-                                                                             descriptionWastageDetail(ledger),
-                                                                             descriptionReturnSupplierDetail(ledger),
-                                                                             descriptionOutInventoryLedger(ledger),
-                                                                             descriptionInInventoryLedger(ledger),
-                                                                             descriptionBillDetail(ledger),
-                                                                             descriptionStudyOutputDetail(ledger),
-                                                                             descriptionStudyInputDetail(ledger),
-                                                                             descriptionInDisparityLedger(ledger),
-                                                                             descriptionDisparityDetail(ledger) PERSISTENT;
-
+descriptionBalanceItemLedger 'Название документа' = ABSTRACT STRING[200] (balanceItemLedger);
 
 // ---------------------------- Расчет себестоимости -------------------------------- //
 
@@ -7207,28 +7145,17 @@ TABLE batch(batch);
 TABLE balanceItemLedgerBatch (balanceItemLedger, batch);
 TABLE batchDepartmentStore(batch, departmentStore);
 
-quantityBatch 'Кол-во в партии' (ledger) = UNION EXCLUSIVE quantityShipmentDetail(ledger),
-                                                           quantityStudyOutputDetail(ledger),
-                                                           quantityInDisparityLedger(ledger) PERSISTENT;
+quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (batch);
 
-quantityOutAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityWriteOffDetail(ledger),
-                                                                     quantityStatementDetail(ledger),
-                                                                     quantityInnerFlowDetail(ledger),
-                                                                     quantityWastageDetail(ledger),
-                                                                     quantityOutInventoryLedger(ledger),
-                                                                     quantityBillSaleDetail(ledger),
-                                                                     quantityStudyInputDetail(ledger),
-                                                                     quantityOutputDetailDisparity(ledger);
+quantityOutAutoBalanceItemLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outAutoBalanceItemLedger);
 
-quantityOutUserBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityReturnSupplierDetail(ledger);
-batchOutUserBalanceItemLedger 'Партия' (ledger) = UNION EXCLUSIVE batchReturnSupplierDetail(ledger);
+quantityOutUserBalanceItemLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outUserBalanceItemLedger);
+batchOutUserBalanceItemLedger 'Партия' = ABSTRACT batch (outUserBalanceItemLedger);
 
 quantityOutBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutAutoBalanceItemLedger(ledger),
                                                                  quantityOutUserBalanceItemLedger(ledger) PERSISTENT;
 
-quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInInventoryLedger(ledger),
-                                                                    quantityBillReturnDetail(ledger);
-                                                                  //  quantityInDisparityLedger(ledger);
+quantityInAutoBalanceItemLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inAutoBalanceItemLedger);
 
 quantityInBalanceItemLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
                                                                 quantityInAutoBalanceItemLedger(ledger),
@@ -7397,6 +7324,96 @@ resetBalanceItemLedgerBatchCost 'Перерассчитать себестоим
 clearBalanceItemLedgerBatchCost 'Сбросить всю себестоимость' = ACTION() NEWSESSION AUTOAPPLY {
     SET costBalanceItemLedgerBatch(ledger, batch) <- NULL;
 } CONFIRM;
+
+dateTimeBalanceItemLedger (ledger) += dateTimeShipmentDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeReturnSupplierDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeInnerArrivalDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeWriteOffDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeStatementDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeInnerFlowDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeWastageDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeInventoryLedger(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeBillDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeStudyInputDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeStudyOutputDetail(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeInDisparityLedger(ledger);
+dateTimeBalanceItemLedger (ledger) += dateTimeDisparityDetail(ledger);
+
+isPostedBalanceItemLedger (ledger) += isPostedShipmentDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedReturnSupplierDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedInnerArrivalDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedWriteOffDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedStatementDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedInnerFlowDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedWastageDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedInventoryLedger(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedBillDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedStudyInputDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedStudyOutputDetail(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedInDisparityLedger(ledger);
+isPostedBalanceItemLedger (ledger) += isPostedDisparityDetail(ledger);
+
+itemBalanceItemLedger (ledger) += itemShipmentDetail(ledger);
+itemBalanceItemLedger (ledger) += itemReturnSupplierDetail(ledger);
+itemBalanceItemLedger (ledger) += itemInnerArrivalDetail(ledger);
+itemBalanceItemLedger (ledger) += itemWriteOffDetail(ledger);
+itemBalanceItemLedger (ledger) += itemStatementDetail(ledger);
+itemBalanceItemLedger (ledger) += itemInnerFlowDetail(ledger);
+itemBalanceItemLedger (ledger) += itemWastageDetail(ledger);
+itemBalanceItemLedger (ledger) += itemInventoryLedger(ledger);
+itemBalanceItemLedger (ledger) += itemBillDetail(ledger);
+itemBalanceItemLedger (ledger) += itemStudyInputDetail(ledger);
+itemBalanceItemLedger (ledger) += itemStudyOutputDetail(ledger);
+itemBalanceItemLedger (ledger) += itemInDisparityLedger(ledger);
+itemBalanceItemLedger (ledger) += itemOutputDisparityDetail(ledger);
+
+departmentStoreBalanceItemLedger (ledger) += departmentStoreShipmentDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreReturnSupplierDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreInnerArrivalDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreWriteOffDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreStatementDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreInnerFlowDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreWastageDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreInventoryLedger(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreBillDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreStudyInputDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreStudyOutputDetail(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreInDisparityLedger(ledger);
+departmentStoreBalanceItemLedger (ledger) += departmentStoreDisparityDetail(ledger);
+
+descriptionBalanceItemLedger (ledger) += descriptionShipmentDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionInnerArrivalDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionWriteOffDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionStatementDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionInnerFlowDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionWastageDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionReturnSupplierDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionOutInventoryLedger(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionInInventoryLedger(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionBillDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionStudyOutputDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionStudyInputDetail(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionInDisparityLedger(ledger);
+descriptionBalanceItemLedger (ledger) += descriptionDisparityDetail(ledger);
+
+quantityBatch (ledger) += quantityShipmentDetail(ledger);
+quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
+quantityBatch (ledger) += quantityInDisparityLedger(ledger);
+
+quantityOutAutoBalanceItemLedger (ledger) += quantityWriteOffDetail(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityStatementDetail(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityInnerFlowDetail(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityWastageDetail(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityOutInventoryLedger(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityBillSaleDetail(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityStudyInputDetail(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityOutputDetailDisparity(ledger);
+
+quantityOutUserBalanceItemLedger (ledger) += quantityReturnSupplierDetail(ledger);
+batchOutUserBalanceItemLedger (ledger) += batchReturnSupplierDetail(ledger);
+
+quantityInAutoBalanceItemLedger (ledger) += quantityInInventoryLedger(ledger);
+quantityInAutoBalanceItemLedger (ledger) += quantityBillReturnDetail(ledger);
 
 // --------------------------- Использование регистров количества (автоматическое заполнение) ---------------------------------
 
@@ -9073,15 +9090,8 @@ ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barc
 
 commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
 
-isDraftPriceTransactionDocument 'Открыт' (document) = UNION EXCLUSIVE isDraftShipment(document),
-                                                                      isDraftInnerArrival(document),
-                                                                      isDraftUserPriceChange(document),
-                                                                      isDraftActOfStudy(document);
-
-descriptionPriceTransactionDocument 'Название документа загрузки' (document) = UNION EXCLUSIVE descriptionShipment(document),
-                                                                                               descriptionInnerArrival(document),
-                                                                                               descriptionUserPriceChange(document),
-                                                                                               descriptionActOfStudy(document);
+isDraftPriceTransactionDocument 'Открыт' = ABSTRACT BOOLEAN (priceTransactionDocument);
+descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument);
 
 priceTransactionDocumentMachineryPriceTransaction = DATA priceTransactionDocument (machineryPriceTransaction);
 descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание загрузки' (transaction) =
@@ -9346,7 +9356,7 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
     }
 }
 
-FORM TerminalDocuments 'Документы ТСД'
+FORM terminalDocuments 'Документы ТСД'
     OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
     PROPERTIES(td)  idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
                     idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
@@ -9357,6 +9367,17 @@ FORM TerminalDocuments 'Документы ТСД'
 
     FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
 ;
+
+isDraftPriceTransactionDocument (document) += isDraftShipment(document);
+isDraftPriceTransactionDocument (document) += isDraftInnerArrival(document);
+isDraftPriceTransactionDocument (document) += isDraftUserPriceChange(document);
+isDraftPriceTransactionDocument (document) += isDraftActOfStudy(document);
+
+descriptionPriceTransactionDocument (document) += descriptionShipment(document);
+descriptionPriceTransactionDocument (document) += descriptionInnerArrival(document);
+descriptionPriceTransactionDocument (document) += descriptionUserPriceChange(document);
+descriptionPriceTransactionDocument (document) += descriptionActOfStudy(document);
+
 //----------------------------------- Печать ценников -------------------------------------------------------
 
 CLASS labelTransaction 'Печать ценников' : historyObject;
@@ -11068,17 +11089,15 @@ DESIGN returnSuppliers FROM DEFAULT{
 //        fillHorizontal = 1;
     };
 
-    ADD r.historyGroup BEFORE r.printGroup{
+    ADD r.historyGroup BEFORE r.printGroup {
         childConstraints = TO THE BOTTOM;
-//        fillHorizontal = 1;
     };
-    ADD r.postedGroup BEFORE r.printGroup{
+    ADD r.postedGroup BEFORE r.printGroup {
         childConstraints = TO THE BOTTOM;
-//        fillHorizontal = 1;
     };
 
     POSITION r.historyGroup TO THE LEFT r.postedGroup;
-    POSITION r.postedGroup TO THE LEFT r.printGroup;
+    POSITION r.printGroup TO THE BOTTOM r.historyGroup;
 }
 
 DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
@@ -13920,7 +13939,7 @@ NAVIGATOR {
         NEW frontOffice 'Фронт-офис' {
             ADD machineryPriceTransactions;
             ADD labelTransactions;
-            ADD TerminalDocuments;
+            ADD terminalDocuments;
         }
     }
     NEW accountInfo 'Сводная информация' TO formsToolbar{
