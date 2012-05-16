@@ -2209,9 +2209,21 @@ metaCodeIdList returns [List<String> ids]
 metaCodeId returns [String sid]
 	:	id=compoundID 			{ $sid = $id.sid; }
 	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
-	|	str=STRING_LITERAL 		{ $sid = $str.text; }
+	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
 	|							{ $sid = ""; }
 	;
+
+metaCodeLiteral
+	:	STRING_LITERAL 
+	| 	UINT_LITERAL
+	|	POSITIVE_DOUBLE_LITERAL
+	|	ULONG_LITERAL
+	|	LOGICAL_LITERAL
+	|	DATE_LITERAL
+	|	NULL_LITERAL
+	|	COLOR_LITERAL
+	;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// COMMON /////////////////////////////////
@@ -2319,7 +2331,7 @@ literal returns [LP property]
 	|	vnull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
 	|	vcolor=colorLiteral { cls = ScriptingLogicsModule.ConstType.COLOR; value = $vcolor.val; }		
 	;
-	
+
 classId returns [String sid]
 	:	id=compoundID { $sid = $id.sid; }
 	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
@@ -2353,6 +2365,14 @@ intLiteral returns [int val]
 	:	(MINUS {isMinus=true;})?
 		ui=uintLiteral  { $val = isMinus ? -$ui.val : $ui.val; }
 	;
+
+longLiteral returns [long val]
+@init {
+	boolean isMinus = false;
+} 
+	:	(MINUS {isMinus = true;})?
+		ul=ulongLiteral { $val = isMinus ? -$ul.val : $ul.val; } 
+	;	
 
 doubleLiteral returns [double val]
 @init {
