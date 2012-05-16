@@ -6,12 +6,14 @@ import platform.interop.form.PropertyReadType;
 import platform.interop.form.ServerResponse;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.ActionPropertyMapImplement;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ObjectValueProperty;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.ChangeObjectActionProperty;
+import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -19,33 +21,73 @@ import java.util.Map;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    private Map<String, ActionPropertyObjectInstance> editActions;
-    private ClassViewType curClassView;
+    private final Map<String, ActionPropertyObjectInstance> editActions;
 
     public ActionPropertyObjectInstance getEditAction(String actionId) {
-        if(isReadOnly()) // ?? тут или нет
+        // ?? тут или нет
+        if (isReadOnly()) {
             return null;
+        }
 
         ActionPropertyObjectInstance editAction = editActions.get(actionId);
-        if(editAction!=null)
+        if (editAction != null) {
             return editAction;
-
-        if(actionId.equals(ServerResponse.PASTE)) {
-//            sdds
         }
 
-        if(entity.isSelector()) {
+        Property<P> property = propertyObject.property;
+
+//        if (actionId.equals(ServerResponse.PASTE)) {
+//            if (editActions.containsKey(ServerResponse.CHANGE_WYS)) {
+//                //если переопределён CHANGE_WYS на уровне формы, то нужно переопредлять и PASTE, поэтому просто ничего не делаем
+//                return null;
+//            }
+//
+//            ActionPropertyMapImplement<P> changeWYSImplement = property.getEditAction(ServerResponse.CHANGE_WYS);
+//
+//            assert changeWYSImplement != null;
+//
+//            ArrayList<P> listInterfaces = new ArrayList<P>(property.getMapClasses().keySet());
+//            PasteActionProperty pasteActionProperty = new PasteActionProperty("PASTE" + property.getSID(), "sys", listInterfaces, changeWYSImplement);
+//            ActionPropertyObjectInstance pasteActionInstance = pasteActionProperty.getImplement(listInterfaces).mapObjects(propertyObject.mapping);
+//
+//            editActions.put(ServerResponse.PASTE, pasteActionInstance);
+//
+//            return pasteActionInstance;
+//        } else
+
+        if (actionId.equals(ServerResponse.GROUP_CHANGE)) {
+            if (editActions.containsKey(ServerResponse.CHANGE)) {
+                //если переопределён CHANGE на уровне формы, то нужно переопредлять и GROUP_CHANGE, поэтому просто ничего не делаем
+                return null;
+            }
+
+            ActionPropertyMapImplement<P> changeImplement = property.getEditAction(ServerResponse.CHANGE);
+
+            assert changeImplement != null;
+
+            ArrayList<P> listInterfaces = new ArrayList<P>(property.getMapClasses().keySet());
+            GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + property.getSID(), "sys", listInterfaces, changeImplement);
+            ActionPropertyObjectInstance groupChangeActionInstance = groupChangeActionProperty.getImplement(listInterfaces).mapObjects(propertyObject.mapping);
+
+            editActions.put(ServerResponse.GROUP_CHANGE, groupChangeActionInstance);
+
+            return groupChangeActionInstance;
+        }
+
+        if (entity.isSelector()) {
             Map<P, ObjectInstance> groupObjects = BaseUtils.filterValues(propertyObject.mapping, toDraw.objects); // берем нижний объект в toDraw
-            for(ObjectInstance objectInstance : groupObjects.values())
-                if(objectInstance instanceof CustomObjectInstance) {
-                    CustomObjectInstance customObjectInstance = (CustomObjectInstance)objectInstance;
-                    ChangeObjectActionProperty dialogAction = new ChangeObjectActionProperty((CalcProperty) propertyObject.property, customObjectInstance.getBaseClass().getBaseClass());
+            for (ObjectInstance objectInstance : groupObjects.values()) {
+                if (objectInstance instanceof CustomObjectInstance) {
+                    CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
+                    ChangeObjectActionProperty dialogAction = new ChangeObjectActionProperty((CalcProperty) property, customObjectInstance.getBaseClass().getBaseClass());
                     return new ActionPropertyObjectInstance(dialogAction,
-                            Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), customObjectInstance));
+                                                            Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), customObjectInstance));
                 }
+            }
         }
 
-        return propertyObject.getEditAction(actionId);
+        ActionPropertyMapImplement<P> editActionImplement = propertyObject.property.getEditAction(actionId);
+        return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);
     }
 
     public PropertyObjectInstance<P, ?> propertyObject;
@@ -113,7 +155,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public String toString() {
         return propertyObject.toString();
     }
-    
+
     public PropertyDrawEntity getEntity() {
         return entity;
     }

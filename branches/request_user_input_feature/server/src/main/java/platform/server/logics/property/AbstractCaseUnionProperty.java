@@ -60,11 +60,12 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
         ActionPropertyMapImplement<Interface> result = null;
         for(Case propCase : BaseUtils.reverse(getCases())) {
             ActionPropertyMapImplement<Interface> editAction = propCase.property.mapEditAction(editActionSID, filterProperty);
-            if(editAction!=null) {
-                if(result==null && ifClasses)
+            if (editAction != null) {
+                if (result == null && ifClasses) {
                     result = editAction;
-                else
+                } else {
                     result = DerivedProperty.createIfAction(interfaces, propCase.where, editAction, result, ifClasses);
+                }
             }
         }
         return result;

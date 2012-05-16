@@ -34,16 +34,16 @@ import static platform.base.BaseUtils.join;
 
 public class ExecutionContext {
     private final Map<ClassPropertyInterface, DataObject> keys;
-    private final ObjectValue value;
+    private final ObjectValue pushedUserInput;
     private final List<ClientAction> actions;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
     private final ExecutionEnvironment env;
     private final FormEnvironment<ClassPropertyInterface> form;
 
-    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment<ClassPropertyInterface> form, boolean groupLast) {
+    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment<ClassPropertyInterface> form, boolean groupLast) {
         this.keys = keys;
-        this.value = value;
+        this.pushedUserInput = pushedUserInput;
         this.env = env;
         this.actions = actions;
         this.form = form;
@@ -76,14 +76,6 @@ public class ExecutionContext {
 
     public int getKeyCount() {
         return keys.size();
-    }
-
-    public ObjectValue getValue() {
-        return value;
-    }
-
-    public Object getValueObject() {
-        return value.getValue();
     }
 
     public DataSession getSession() {
@@ -160,24 +152,23 @@ public class ExecutionContext {
     }
 
     public ExecutionContext override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext(keys, value, newEnv, new ArrayList<ClientAction>(), form, groupLast);
+        return new ExecutionContext(keys, pushedUserInput, newEnv, new ArrayList<ClientAction>(), form, groupLast);
     }
 
     public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, Map<ClassPropertyInterface, ? extends CalcPropertyInterfaceImplement<ClassPropertyInterface>> mapInterfaces) {
-        return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, value);
+        return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
     }
 
     public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> mapping) {
-        return override(join(mapping, keys), form!=null ? form.map(mapping) : null, value);
+        return override(join(mapping, keys), form!=null ? form.map(mapping) : null, pushedUserInput);
     }
 
     public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
-        return override(keys, form, value);
+        return override(keys, form, pushedUserInput);
     }
 
-
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, FormEnvironment form, ObjectValue value) {
-        return new ExecutionContext(keys, value, env, actions, form, groupLast);
+    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, FormEnvironment form, ObjectValue pushedUserInput) {
+        return new ExecutionContext(keys, pushedUserInput, env, actions, form, groupLast);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
@@ -199,25 +190,30 @@ public class ExecutionContext {
         return Context.context.get().requestUserInteraction(action);
     }
 
-    // для подмены ввода и обеспечания WYSIWYG механизмов
-    public ObjectValue getLastUserInput() {
-        return null;
-//        throw new RuntimeException("not implemented yet");
+    public ExecutionContext pushUserInput(ObjectValue overridenUserInput) {
+        return override(keys, form, overridenUserInput);
     }
-    public void pushUserInput(ObjectValue value) {
-        // todo;
-    }
-    public void popUserInput(ObjectValue value) {
-        // todo:
+
+    public ObjectValue getPushedUserInput() {
+        return pushedUserInput;
     }
 
     // чтение пользователя
     public ObjectValue requestUserObject(RequestDialog dialog) throws SQLException { // null если canceled
-        return Context.context.get().requestUserObject(dialog);
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserObject(dialog);
+        env.setLastUserInput(userInput);
+        return userInput;
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
-        return Context.context.get().requestUserData(dataClass, oldValue);
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserData(dataClass, oldValue);
+        env.setLastUserInput(userInput);
+        return userInput;
+    }
+
+    // для подмены ввода и обеспечания WYSIWYG механизмов
+    public ObjectValue getLastUserInput() {
+        return env.getLastUserInput();
     }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {

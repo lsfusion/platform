@@ -953,7 +953,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                     Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
-                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, keys, null);
+                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, keys);
 
                     if (logger.isInfoEnabled()) {
                         logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));

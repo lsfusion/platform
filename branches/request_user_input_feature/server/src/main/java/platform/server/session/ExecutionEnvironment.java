@@ -21,6 +21,7 @@ import java.util.Map;
 public class ExecutionEnvironment {
 
     private ExecutionEnvironmentInterface current;
+    private ObjectValue lastUserInput;
 
     public ExecutionEnvironment(ExecutionEnvironmentInterface current) {
         this.current = current;
@@ -72,11 +73,11 @@ public class ExecutionEnvironment {
         List<ClientAction> actions = new ArrayList<ClientAction>();
         ExecutionContext context = new ExecutionContext(change, null, this, actions, BaseUtils.<FormEnvironment<ClassPropertyInterface>>immutableCast(formEnv), true);
 
-        if(requestInput!=null)
-            context.pushUserInput(requestInput);
+        if(requestInput != null) {
+            context = context.pushUserInput(requestInput);
+        }
+
         property.execute(context);
-        if(requestInput!=null)
-            context.popUserInput(requestInput);
 
         return actions;
     }
@@ -97,4 +98,11 @@ public class ExecutionEnvironment {
         current = current.cancel();
     }
 
+    public ObjectValue getLastUserInput() {
+        return lastUserInput;
+    }
+
+    public void setLastUserInput(ObjectValue lastUserInput) {
+        this.lastUserInput = lastUserInput;
+    }
 }

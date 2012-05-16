@@ -6,8 +6,13 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
-import platform.interop.action.*;
-import platform.interop.form.*;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ConfirmClientAction;
+import platform.interop.action.DenyCloseFormClientAction;
+import platform.interop.action.LogMessageClientAction;
+import platform.interop.form.FormColumnUserPreferences;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.ServerResponse;
 import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
@@ -51,6 +56,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static platform.base.BaseUtils.mergeSet;
+import static platform.base.BaseUtils.toOrderedMap;
 import static platform.interop.ClassViewType.*;
 import static platform.interop.Order.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
@@ -630,6 +636,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return securityPolicy.cls.edit.change.checkPermission(object.currentClass);
     }
 
+    public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
+        return executeEditAction(property, editActionSID, keys, null);
+    }
+
     public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
         if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(session, this) != null)
             return new ArrayList<ClientAction>();
@@ -678,10 +688,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             executeList = BaseUtils.mergeList(executeList, groupObject.createObjects(session, this, table.size() - availableQuantity));
         }
 
-        for(PropertyDrawInstance property : properties) {
+        for (int i = 0; i < properties.size(); i++) {
+            PropertyDrawInstance property = properties.get(i);
+            Type propertyType = property.propertyObject.getType();
+
             OrderedMap<Map<ObjectInstance, DataObject>, ObjectValue> pasteRows = new OrderedMap<Map<ObjectInstance, DataObject>, ObjectValue>();
-            for (int i = 0, executeListSize = executeList.size(); i < executeListSize; i++)
-                pasteRows.put(executeList.get(i), session.getObjectValue(table.get(i), property.propertyObject.getType()));
+            for (int j = 0; j < executeList.size(); j++) {
+                pasteRows.put(executeList.get(j), session.getObjectValue(table.get(j).get(i), propertyType));
+            }
+
             executePasteAction(property, pasteRows);
         }
     }
@@ -711,17 +726,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
-            executePasteAction(property, BaseUtils.toOrderedMap(readObjects(cells.get(propertyId)), session.getObjectValue(parseValue, type)));
+            executePasteAction(property, toOrderedMap(readObjects(cells.get(propertyId)), session.getObjectValue(parseValue, type)));
         }
     }
-    
+
     private void executePasteAction(PropertyDrawInstance property, OrderedMap<Map<ObjectInstance, DataObject>, ObjectValue> pasteRows) throws SQLException {
-        if(pasteRows.isEmpty())
-            return;
+        if (!pasteRows.isEmpty()) {
+            assert new HashSet<ObjectInstance>(property.toDraw.objects).equals(pasteRows.keySet().iterator().next().keySet());
 
-        assert new HashSet<ObjectInstance>(property.toDraw.objects).equals(pasteRows.keySet().iterator().next().keySet());
-
-        executeEditAction(property, ServerResponse.PASTE, new HashMap<ObjectInstance, DataObject>(), new DataObject(pasteRows, ByteArrayClass.instance));
+            for (Map.Entry<Map<ObjectInstance, DataObject>, ObjectValue> row : pasteRows.entrySet()) {
+                executeEditAction(property, ServerResponse.CHANGE_WYS, row.getKey(), row.getValue());
+            }
+        }
     }
 
     public int countRecords(int groupObjectID) throws SQLException {

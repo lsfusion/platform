@@ -1,9 +1,7 @@
 package platform.server.logics.property.actions;
 
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.AroundAspectActionProperty;
-import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -24,12 +22,7 @@ public class PushUserInputActionProperty extends AroundAspectActionProperty {
     }
 
     @Override
-    protected FlowResult aroundAspect(ExecutionContext context) throws SQLException {
-
-        ObjectValue readValue = push.readClasses(context, context.getKeys());
-        context.pushUserInput(readValue);
-        FlowResult result = proceed(context);
-        context.popUserInput(readValue);
-        return result;
+    protected ExecutionContext beforeAspect(ExecutionContext context) throws SQLException {
+        return context.pushUserInput(push.readClasses(context, context.getKeys()));
     }
 }

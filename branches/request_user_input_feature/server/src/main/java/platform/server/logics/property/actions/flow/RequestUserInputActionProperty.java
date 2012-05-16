@@ -6,8 +6,10 @@ import platform.server.form.instance.FormCloseType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionPropertyMapImplement;
+import platform.server.logics.property.AnyValuePropertyHolder;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -47,8 +49,8 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     @Override
     protected FlowResult aroundAspect(ExecutionContext context) throws SQLException {
-        ObjectValue lastUserInput = context.getLastUserInput();
-        if (lastUserInput == null) {
+        ObjectValue pushedUserInput = context.getPushedUserInput();
+        if (pushedUserInput == null) {
             proceed(context);
 
             if (chosenKey != null) {
@@ -64,7 +66,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                 }
             }
         } else {
-            updateRequestedValue(context, lastUserInput.getValue());
+            updateRequestedValue(context, pushedUserInput.getValue());
         }
 
         return FlowResult.FINISH;

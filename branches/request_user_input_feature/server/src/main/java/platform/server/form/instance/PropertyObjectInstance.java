@@ -2,24 +2,15 @@ package platform.server.form.instance;
 
 import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
-import platform.interop.action.ClientAction;
-import platform.server.caches.IdentityLazy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.QueryEnvironment;
-import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
-import platform.server.logics.property.actions.FormEnvironment;
-import platform.server.session.DataSession;
-import platform.server.session.ExecutionEnvironment;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Modifier;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public abstract class PropertyObjectInstance<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject implements Updated {
@@ -130,9 +121,5 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
     @Override
     public String toString() {
         return property.toString();
-    }
-    
-    public ActionPropertyObjectInstance getEditAction(String editActionSID) {
-        return property.getEditAction(editActionSID).mapObjects(mapping);
     }
 }

@@ -4,8 +4,10 @@ import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.form.ServerResponse;
 import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -18,8 +20,12 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.property.actions.edit.AggChangeActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.session.*;
+import platform.server.session.DataChanges;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.util.*;
 
@@ -168,25 +174,50 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     public ActionPropertyMapImplement<Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        if(implement.property instanceof AndFormulaProperty) {
-            AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
+        CalcProperty<T> aggProp = implement.property;
+
+        if (aggProp instanceof AndFormulaProperty) {
+            AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
             List<CalcPropertyInterfaceImplement<Interface>> ands = new ArrayList<CalcPropertyInterfaceImplement<Interface>>();
             List<Boolean> nots = new ArrayList<Boolean>();
-            for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
-                if(andInterface != andProperty.objectInterface) {
+            for (AndFormulaProperty.Interface andInterface : andProperty.interfaces) {
+                if (andInterface != andProperty.objectInterface) {
                     ands.add(implement.mapping.get(andInterface));
-                    nots.add(((AndFormulaProperty.AndInterface)andInterface).not);
+                    nots.add(((AndFormulaProperty.AndInterface) andInterface).not);
                 }
+            }
             ActionPropertyMapImplement<Interface> implementEdit = implement.mapping.get(andProperty.objectInterface).mapEditAction(editActionSID, filterProperty);
-            if(implementEdit!=null)
-                return DerivedProperty.createIfAction(interfaces, DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createStatic(true, LogicalClass.instance), ands, nots),
-                    implementEdit, null, false);
+            if (implementEdit != null) {
+                return DerivedProperty.createIfAction(
+                        interfaces,
+                        DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createStatic(true, LogicalClass.instance), ands, nots),
+                        implementEdit,
+                        null,
+                        false);
+            }
         }
-        if(implement.mapping.size()==1 && !implementChange) {
-            // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
-            return BaseUtils.singleValue(implement.mapping).mapEditAction(editActionSID, implement.property);
+
+        if (implement.mapping.size() == 1 && !implementChange) {
+            if (editActionSID.equals(ServerResponse.CHANGE_WYS)) {
+                List<Interface> listInterfaces = new ArrayList<Interface>(getMapClasses().keySet());
+
+                ActionPropertyMapImplement<Interface> changeActionImplement = getEditAction(ServerResponse.CHANGE);
+
+                ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property.getValueClass();
+                AggChangeActionProperty<T> aggChangeActionProperty =
+                        new AggChangeActionProperty<T>("AGGCH" + getSID(), "sys", listInterfaces, aggProp, aggClass, changeActionImplement);
+
+                ActionPropertyMapImplement<Interface> aggChangeActionImplement = aggChangeActionProperty.getImplement(listInterfaces);
+
+                setEditAction(ServerResponse.CHANGE_WYS, aggChangeActionImplement);
+
+                return aggChangeActionImplement;
+            } else {
+                // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
+                return BaseUtils.singleValue(implement.mapping).mapEditAction(editActionSID, aggProp);
+            }
         }
-        return super.getDefaultEditAction(editActionSID, filterProperty);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.getDefaultEditAction(editActionSID, filterProperty);
     }
 
     public boolean checkEquals() {
