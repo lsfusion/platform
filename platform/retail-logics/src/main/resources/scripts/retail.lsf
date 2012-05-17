@@ -11200,7 +11200,6 @@ dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIV
                                                                          dateTimeStatement(ledger),
                                                                          dateTimeInnerFlow(ledger),
                                                                          dateTimeWastage(ledger),
-                                                                         dateTimeReturnSupplier(ledger),
                                                                          dateTimeInventory(inventoryCollationSheet(ledger)),
                                                                          dateTimeZReport(ledger),
                                                                          dateTimeSaleDiscountDocument(ledger),
@@ -11215,7 +11214,6 @@ descriptionDocumentLedger 'Название документа' (ledger) = UNION
                                                                           descriptionStatement(ledger),
                                                                           descriptionInnerFlow(ledger),
                                                                           descriptionWastage(ledger),
-                                                                          descriptionReturnSupplier(ledger),
                                                                           descriptionCollationSheet(ledger),
                                                                           descriptionZReport(ledger),
                                                                           descriptionSaleDiscountDocument(ledger),
@@ -11234,7 +11232,6 @@ isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPos
                                                                      isPostedStatement(ledger),
                                                                      isPostedInnerFlow(ledger),
                                                                      isPostedWastage(ledger),
-                                                                     isPostedReturnSupplier(ledger),
                                                                      isPostedInventory(inventoryCollationSheet(ledger)),
                                                                      isPostedZReport(ledger),
                                                                      isPostedSaleDiscountDocument(ledger),
@@ -11249,7 +11246,6 @@ departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentSto
                                                                    departmentStoreStatement(ledger),
                                                                    departmentStoreInnerFlow(ledger),
                                                                    departmentStoreWastage(ledger),
-                                                                   departmentStoreReturnSupplier(ledger),
                                                                    departmentStoreCollationSheet(ledger),
                                                                    departmentStoreZReport(ledger),
                                                                    departmentStoreSaleDiscountDocument(ledger),
@@ -11265,7 +11261,8 @@ sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSI
 
 sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailSumItemShipmentDetailShipment(ledger),
                                                                                     retailSumItemInnerArrivalDetailInnerArrival(ledger),
-                                                                                    diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger) PERSISTENT IN ledgerByItemGroup;//      subtotalByItemParish(ledger)
+                                                                                    diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger),
+                                                                                    retailSumParish(ledger) PERSISTENT IN ledgerByItemGroup;//      subtotalByItemParish(ledger)
 
 sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailSumContainerShipmentDetailShipment(ledger),
                                                                                         retailSumContainerInnerArrivalDetailInnerArrival(ledger),
