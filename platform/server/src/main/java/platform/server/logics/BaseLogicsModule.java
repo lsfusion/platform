@@ -730,7 +730,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         numberDOWInDate = addSFProp("numberDOWInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
-        dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
+        dayInDate = addJProp("dayInDate", "День даты", baseLM.and1, addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1), 1, is(DateClass.instance), 1);
         dateInTime = addSFProp("dateInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
         toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
 
