@@ -1154,8 +1154,8 @@ END
 
 META defineDocumentHeaderSupplierContract(object)
     supplier###object 'Поставщик (ИД)' (object) = DATA supplier (object) IN idGroup;
-    nameSupplier###object 'Поставщик' (object) = name(supplier###object(object)) IN documentHeaderGroup
-        MINCHARWIDTH 30 PREFCHARWIDTH 40 IN documentPrmGroup;
+    nameSupplier###object 'Поставщик' (object) = name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 40;
+    UNPSupplier###object 'УНП поставщика' (object) = UNPLegalEntity(supplier###object(object)) IN documentPrmGroup;
     supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
 
     contract###object 'Договор' (object) = DATA contract (object) IN idGroup;
@@ -1729,6 +1729,7 @@ TABLE item(item);
 
 CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
 TABLE legalEntity (legalEntity);
+UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
 
 TABLE itemDate (item, DATE);
 
@@ -2252,6 +2253,7 @@ nameGenTimeTableType 'Тип генерации графика' (genTimeTable) =
 
 supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable) AUTOSET;
 nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
+UNPSupplierGenTimeTable 'УНП поставщика' (genTimeTable) = UNPLegalEntity(supplierGenTimeTable(genTimeTable)) IN baseGroup;
 
 departmentStoreGenTimeTable 'Подразделение (ИД)' = DATA departmentStore (genTimeTable) AUTOSET;
 nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
@@ -2289,7 +2291,7 @@ toShowGenWeekOrDayMonth (genTimeTable) = UNION OVERRIDE toShowGenWeek(genTimeTab
 FORM genTimeTable 'Генерация графика'
 OBJECTS g=genTimeTable FIXED PANEL, m=month, d=DOW
 PROPERTIES(g) READONLY nameUserCreated, timeCreated
-PROPERTIES(g) nameGenTimeTableType, nameDepartmentStoreGenTimeTable, nameSupplierGenTimeTable, startDateGenTimeTable,
+PROPERTIES(g) nameGenTimeTableType, nameDepartmentStoreGenTimeTable, nameSupplierGenTimeTable, UNPSupplierGenTimeTable, startDateGenTimeTable,
               endDateGenTimeTable, dayBeforeGenTimeTable,inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
               dayAfterGenTimeTable SHOWIF toShowGenDay(g), periodGenTimeTable SHOWIF toShowGenWeek(g),
               stringNumberGenTimeTable SHOWIF toShowGenNumber(g), nameTransferDayGenTimeTable SHOWIF toShowGenNumber(g),
@@ -3681,7 +3683,7 @@ ownershipLegalEntity 'Форма собственности (ИД)' = DATA owner
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN baseGroup;
 fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
+
 //UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
 OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;     // подставить нужное потом значение
 OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
@@ -5932,6 +5934,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 customerStatement 'Покупатель (ИД)' (statement) = DATA customer (statement) IN idGroup;
 nameCustomerStatement 'Покупатель' (statement) = name(customerStatement(statement)) IN documentPrmGroup
     MINCHARWIDTH 30 PREFCHARWIDTH 40;
+UNPCustomerStatement 'УНП покупателя' (statement) = UNPLegalEntity(customerStatement(statement)) IN documentPrmGroup;
 
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -8069,6 +8072,7 @@ nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = nam
 
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
+UNPSupplierOrderSupplier 'УНП поставщика' (orderSupplier) = UNPLegalEntity(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 curDateOrderSupplier (orderSupplier) <- currentDate() WHEN ASSIGNED(departmentStoreOrderSupplier(orderSupplier));
@@ -8522,7 +8526,7 @@ FORM orderSupplier 'Заказ поставщику'
     PROPERTIES(o)          nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                            curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                           nameSupplierOrderSupplier, totalSumOrderSupplier, totalSumVatOrderSupplier,
+                           nameSupplierOrderSupplier, UNPSupplierOrderSupplier, totalSumOrderSupplier, totalSumVatOrderSupplier,
                            totalFullSumOrderSupplier, allowablePercentOrderSupplier
     PROPERTIES(o) READONLY completePercentageOrderSupplier
 
@@ -10768,7 +10772,7 @@ toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPri
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
-                   nameSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
+                   nameSupplierShipment, UNPSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
                    carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
@@ -10974,7 +10978,7 @@ FORM commonInfoBatchReturnSupplierDetail 'Партии'
 FORM returnSupplier 'Возврат поставщику'
     OBJECTS r=returnSupplier FIXED PANEL
     PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
-                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
+                  nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, UNPSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier,
                   retailSumReturnSupplierDetailReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
                   nameRevaluationCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
@@ -12462,7 +12466,7 @@ showFormSpecificationForm 'Показать отгрузки по данной �
 FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
-                    dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification,
+                    dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification, UNPCustomerSpecification,
                     nameObjectiveAcquiringSpecification, noteSpecification,
                     quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
@@ -12506,6 +12510,7 @@ DESIGN specification FROM DEFAULT{
                     NEW headerRow21 {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(nameCustomerSpecification);
+                        ADD PROPERTY(UNPCustomerSpecification);
                         ADD PROPERTY(nameObjectiveAcquiringSpecification);
                     }
                     NEW headerRow22 {
@@ -12589,7 +12594,7 @@ toPrintActOfRevaluationStatement 'Акт переоценки' (statement) = toP
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement,
+    PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement, UNPCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
                     noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), nameRevaluationCommitteeStatement SHOWIF needToPriceChangeStatement(st)
