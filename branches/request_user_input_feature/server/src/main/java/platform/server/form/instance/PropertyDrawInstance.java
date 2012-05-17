@@ -6,10 +6,7 @@ import platform.interop.form.PropertyReadType;
 import platform.interop.form.ServerResponse;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.ActionPropertyMapImplement;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.logics.property.actions.ChangeObjectActionProperty;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 
@@ -35,39 +32,16 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
 
         Property<P> property = propertyObject.property;
-
-//        if (actionId.equals(ServerResponse.PASTE)) {
-//            if (editActions.containsKey(ServerResponse.CHANGE_WYS)) {
-//                //если переопределён CHANGE_WYS на уровне формы, то нужно переопредлять и PASTE, поэтому просто ничего не делаем
-//                return null;
-//            }
-//
-//            ActionPropertyMapImplement<P> changeWYSImplement = property.getEditAction(ServerResponse.CHANGE_WYS);
-//
-//            assert changeWYSImplement != null;
-//
-//            ArrayList<P> listInterfaces = new ArrayList<P>(property.getMapClasses().keySet());
-//            PasteActionProperty pasteActionProperty = new PasteActionProperty("PASTE" + property.getSID(), "sys", listInterfaces, changeWYSImplement);
-//            ActionPropertyObjectInstance pasteActionInstance = pasteActionProperty.getImplement(listInterfaces).mapObjects(propertyObject.mapping);
-//
-//            editActions.put(ServerResponse.PASTE, pasteActionInstance);
-//
-//            return pasteActionInstance;
-//        } else
-
         if (actionId.equals(ServerResponse.GROUP_CHANGE)) {
-            if (editActions.containsKey(ServerResponse.CHANGE)) {
-                //если переопределён CHANGE на уровне формы, то нужно переопредлять и GROUP_CHANGE, поэтому просто ничего не делаем
-                return null;
-            }
+            ActionPropertyObjectInstance changeInstance = getEditAction(ServerResponse.CHANGE);
 
-            ActionPropertyMapImplement<P> changeImplement = property.getEditAction(ServerResponse.CHANGE);
+            assert changeInstance != null;
 
-            assert changeImplement != null;
+            ActionPropertyMapImplement<ClassPropertyInterface> changeImplement = changeInstance.property.getImplement();
+            ArrayList<ClassPropertyInterface> listInterfaces = new ArrayList<ClassPropertyInterface>(changeInstance.property.interfaces);
 
-            ArrayList<P> listInterfaces = new ArrayList<P>(property.getMapClasses().keySet());
             GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + property.getSID(), "sys", listInterfaces, changeImplement);
-            ActionPropertyObjectInstance groupChangeActionInstance = groupChangeActionProperty.getImplement(listInterfaces).mapObjects(propertyObject.mapping);
+            ActionPropertyObjectInstance groupChangeActionInstance = groupChangeActionProperty.getImplement(listInterfaces).mapObjects(changeInstance.mapping);
 
             editActions.put(ServerResponse.GROUP_CHANGE, groupChangeActionInstance);
 
