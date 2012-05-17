@@ -5156,8 +5156,8 @@ TABLE importerPriceLedger (importerPriceLedger);
 CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщика';
 TABLE supplierPriceLedger (supplierPriceLedger);
 
-CLASS ABSTRACT retailVATLedger 'Изменение НДС';
-TABLE retailVATLedger (retailVATLedger);
+CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
+TABLE retailRangeLedger (retailRangeLedger);
 
 CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
 TABLE accountPriceLedger (accountPriceLedger);
@@ -5406,7 +5406,7 @@ CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStu
 CLASS studyInputDetail 'Строка проработки (вход)' : outAutoBalanceItemLedger;
 TABLE studyInputDetail(studyInputDetail);
 
-CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
+CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailRangeLedger, accountPriceLedger, retailPriceLedger;
 TABLE studyOutputDetail(studyOutputDetail);
 
 // строки расхода
@@ -5829,11 +5829,11 @@ includeManyDepartmentStoreInventory(departmentStore, inventory) =
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
-CLASS ABSTRACT inventoryLedger 'Изменение остатка инвентаризации' : balanceItemLedger; // todo : опять же для ClassWhere
-TABLE inventoryLedger (inventoryLedger);
+CLASS ABSTRACT inventoryDetail 'Изменение остатка инвентаризации' : balanceItemLedger; // todo : опять же для ClassWhere
+TABLE inventoryDetail (inventoryDetail);
 
-CLASS outInventoryLedger 'Недостача инвентаризации' : inventoryLedger, outAutoBalanceItemLedger;
-CLASS inInventoryLedger 'Излишки инвентаризации' : inventoryLedger, inAutoBalanceItemLedger;
+CLASS outInventoryDetail 'Недостача инвентаризации' : inventoryDetail, outAutoBalanceItemLedger;
+CLASS inInventoryDetail 'Излишки инвентаризации' : inventoryDetail, inAutoBalanceItemLedger;
 
 needToOutLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) > 0
     AND isPostedCollationSheet(collationSheet);
@@ -5841,37 +5841,38 @@ needToOutLedgerCollationSheetItem (collationSheet, item) = quantityShortageColla
 needToInLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) < 0
     AND isPostedCollationSheet(collationSheet);
 
-@metaCodeDoubleAggregation(collationSheet, item, outInventoryLedger, needToOutLedgerCollationSheetItem);
-@metaCodeDoubleAggregation(collationSheet, item, inInventoryLedger, needToInLedgerCollationSheetItem);
+@metaCodeDoubleAggregation(collationSheet, item, outInventoryDetail, needToOutLedgerCollationSheetItem);
+@metaCodeDoubleAggregation(collationSheet, item, inInventoryDetail, needToInLedgerCollationSheetItem);
 
-collationSheetInventoryLedger(inventoryLedger) = UNION EXCLUSIVE collationSheetOutInventoryLedger(inventoryLedger),
-                                                                 collationSheetInInventoryLedger(inventoryLedger);
+collationSheetInventoryDetail(inventoryDetail) = UNION EXCLUSIVE collationSheetOutInventoryDetail(inventoryDetail),
+                                                                 collationSheetInInventoryDetail(inventoryDetail);
 
-inventoryInventoryLedger(inventoryLedger) = inventoryCollationSheet(collationSheetInventoryLedger(inventoryLedger)) PERSISTENT;
+inventoryInventoryDetail(inventoryDetail) = inventoryCollationSheet(collationSheetInventoryDetail(inventoryDetail)) PERSISTENT;
 
-@defineDocumentDetailTimeCustom(inventory, inventoryLedger);
-@defineDocumentDetailPostedCustom(inventory, inventoryLedger);
-@defineDocumentDetailDepartmentStoreCustom(collationSheet, inventoryLedger);
+@defineDocumentDetailTimeCustom(inventory, inventoryDetail);
+@defineDocumentDetailPostedCustom(inventory, inventoryDetail);
+@defineDocumentDetailDepartmentStoreCustom(collationSheet, inventoryDetail);
 
-quantityOutInventoryLedger = quantityShortageCollationSheetItem(collationSheetOutInventoryLedger(inventoryLedger), itemOutInventoryLedger(inventoryLedger));
-quantityInInventoryLedger = -quantityShortageCollationSheetItem(collationSheetInInventoryLedger(inventoryLedger), itemInInventoryLedger(inventoryLedger));
+quantityOutInventoryDetail = quantityShortageCollationSheetItem(collationSheetOutInventoryDetail(inventoryDetail), itemOutInventoryDetail(inventoryDetail));
+quantityInInventoryDetail = -quantityShortageCollationSheetItem(collationSheetInInventoryDetail(inventoryDetail), itemInInventoryDetail(inventoryDetail));
 
-itemInventoryLedger(inventoryLedger) = UNION EXCLUSIVE itemOutInventoryLedger(inventoryLedger),
-                                                       itemInInventoryLedger(inventoryLedger) PERSISTENT;
-nameAttributeItemInventoryLedger 'Товар' (inventoryLedger) = nameAttributeItem(itemInventoryLedger(inventoryLedger)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
-barcodeExInventoryLedger 'Щтрих-код' (inventoryLedger) =  barcodeEx(barcodeSku(itemInventoryLedger(inventoryLedger)));
+itemInventoryDetail(inventoryDetail) = UNION EXCLUSIVE itemOutInventoryDetail(inventoryDetail),
+                                                       itemInInventoryDetail(inventoryDetail) PERSISTENT;
+nameAttributeItemInventoryDetail 'Товар' (inventoryDetail) = nameAttributeItem(itemInventoryDetail(inventoryDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+barcodeExInventoryDetail 'Щтрих-код' (inventoryDetail) =  barcodeEx(barcodeSku(itemInventoryDetail(inventoryDetail)));
 
-quantityInventoryLedger 'Кол-во недостачи' (inventoryLedger) = quantityShortageCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) PERSISTENT;
-accountSumInventoryLedger 'Сумма недостачи' (inventoryLedger) = accountSumShortageCollationSheetItem(collationSheetInventoryLedger(inventoryLedger), itemInventoryLedger(inventoryLedger)) PERSISTENT;
+quantityInventoryDetail 'Кол-во недостачи' (inventoryDetail) = quantityShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
+accountSumInventoryDetail 'Сумма недостачи' (inventoryDetail) = accountSumShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
 
-descriptionOutInventoryLedger 'Название документа' (inventoryLedger) =
+descriptionOutInventoryDetail 'Название документа' (inventoryDetail) =
     [FORMULA STRING[200] '\'Недостача по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
-    nameCollationSheet(collationSheetOutInventoryLedger(inventoryLedger)), dateCollationSheet(collationSheetOutInventoryLedger(inventoryLedger)));
+    nameCollationSheet(collationSheetOutInventoryDetail(inventoryDetail)), dateCollationSheet(collationSheetOutInventoryDetail(inventoryDetail)));
 
-descriptionInInventoryLedger 'Название документа' (inventoryLedger) =
+descriptionInInventoryDetail 'Название документа' (inventoryDetail) =
     [FORMULA STRING[200] '\'Излишек по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
-    nameCollationSheet(collationSheetInInventoryLedger(inventoryLedger)), dateCollationSheet(collationSheetInInventoryLedger(inventoryLedger)));
+    nameCollationSheet(collationSheetInInventoryDetail(inventoryDetail)), dateCollationSheet(collationSheetInInventoryDetail(inventoryDetail)));
 
+descriptionInventoryDetail 'Название документа' (inventoryDetail) = descriptionOutInventoryDetail(inventoryDetail) OR descriptionInInventoryDetail(inventoryDetail);
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
 
 GROUP customerGroup 'Покупатель' : documentPrmGroup;
@@ -6065,7 +6066,7 @@ GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
 CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject, priceTransactionDocument;
-CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
+CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailRangeLedger, accountPriceLedger, retailPriceLedger, warePriceLedger;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
 @defineDocumentDefaultProperties(shipment);
@@ -6407,7 +6408,7 @@ noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
 @defineDocumentDefaultProperties(innerArrival);
@@ -6882,7 +6883,7 @@ descriptionSaleDiscountDocument (saleDiscountDocument) =
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
-CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger;
 CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
 
 @defineDocumentDefaultProperties(userPriceChange);
@@ -6922,8 +6923,8 @@ CLASS disparity 'Пересортица' : historyObject, numeratedObject;    //
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 TABLE disparity (disparity);
 
-CLASS inDisparityLedger 'Приход пересортицы' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, accountPriceLedger, retailPriceLedger;
-TABLE inDisparityLedger (inDisparityLedger);
+CLASS inDisparityDetail 'Приход пересортицы' : batch, importerPriceLedger, supplierPriceLedger, retailRangeLedger, accountPriceLedger, retailPriceLedger;
+TABLE inDisparityDetail (inDisparityDetail);
 
 CLASS disparityDetail 'Строка пересортицы': outAutoBalanceItemLedger;
 
@@ -6938,16 +6939,16 @@ CLASS disparityDetail 'Строка пересортицы': outAutoBalanceItemL
 
 @defineDocumentHeaderRevaluation(disparity);
                                 // Расход //
-itemOutputDisparityDetail = DATA item (disparityDetail);
+itemDisparityDetail = DATA item (disparityDetail);
 
 nameAttributeItemOutputDisparityDetail 'Товар, расход' (disparityDetail) =
-    nameAttributeItem(itemOutputDisparityDetail(disparityDetail)) IN itemDetailGroup;
+    nameAttributeItem(itemDisparityDetail(disparityDetail)) IN itemDetailGroup;
 
 shortNameUnitOfMeasureItemOutputDisparityDetail 'Ед. изм.' (disparityDetail) =
-    shortNameUnitOfMeasureItem(itemOutputDisparityDetail(disparityDetail)) IN itemDetailGroup;
+    shortNameUnitOfMeasureItem(itemDisparityDetail(disparityDetail)) IN itemDetailGroup;
 
 barcodeExSkuOutputDisparityDetail 'Штрих-код' (disparityDetail) =
-    barcodeEx(barcodeSku(itemOutputDisparityDetail(disparityDetail))) IN itemDetailGroup;
+    barcodeEx(barcodeSku(itemDisparityDetail(disparityDetail))) IN itemDetailGroup;
 
 quantityOutputDisparityDetail 'Кол-во, расход' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail);
 
@@ -6959,7 +6960,7 @@ nameWareOutputDisparityDetail 'Посуда' (disparityDetail) = name(wareOutput
 dataWareRangeOutputDisparityDetail 'НДС посуды, %' (disparityDetail) =
     dataActingRateRangeDate(rangeWareVal(wareOutputDisparityDetail(disparityDetail), dateDisparityDetail(disparityDetail)),
                             dateDisparityDetail(disparityDetail));
-inWareOutputDisparityDetail 'Товар в посуде' (disparityDetail) = inWareItem(itemOutputDisparityDetail(disparityDetail));
+inWareOutputDisparityDetail 'Товар в посуде' (disparityDetail) = inWareItem(itemDisparityDetail(disparityDetail));
 
 warePriceOutputDisparityDetail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (disparityDetail) IN priceDetailGroup;
 
@@ -7028,41 +7029,42 @@ curRetailPriceInputDisparityDetail 'Тек. розничная цена' (dispar
 
 //----------------------------  Изменение остатка пересорт --------------------------------------------//
 
-needToInDisparityLedgerDetail (disparityDetail) = quantityInputDisparityDetail(disparityDetail) > 0
+needToInDisparityDetailDetail (disparityDetail) = quantityInputDisparityDetail(disparityDetail) > 0
     AND isPostedDisparityDetail(disparityDetail);
 
-@metaCodeSingleAggregation(disparityDetail, inDisparityLedger, needToInDisparityLedgerDetail);
+@metaCodeSingleAggregation(disparityDetail, inDisparityDetail, needToInDisparityDetailDetail);
 
-itemInDisparityLedger (inDisparityLedger) = itemInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-nameAttributeItemInDisparityLedger 'Товар' (inDisparityLedger) = nameAttributeItem(itemInDisparityLedger(inDisparityLedger)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
-barcodeExSkuInDisparityLedger 'Штрих-код' (inDisparityLedger) = barcodeExSkuInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-dateTimeInDisparityLedger(inDisparityLedger) = dateTimeDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-dateInDisparityLedger(inDisparityLedger) = dateDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-isPostedInDisparityLedger(inDisparityLedger) = isPostedDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-departmentStoreInDisparityLedger(inDisparityLedger) = departmentStoreDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-quantityInDisparityLedger(inDisparityLedger) = quantityInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+itemInDisparityDetail (inDisparityDetail) = itemInputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+nameAttributeItemInDisparityDetail 'Товар' (inDisparityDetail) = nameAttributeItem(itemInDisparityDetail(inDisparityDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+barcodeExSkuInDisparityDetail 'Штрих-код' (inDisparityDetail) = barcodeExSkuInputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+dateTimeInDisparityDetail(inDisparityDetail) = dateTimeDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+dateInDisparityDetail(inDisparityDetail) = dateDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+isPostedInDisparityDetail(inDisparityDetail) = isPostedDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+departmentStoreInDisparityDetail(inDisparityDetail) = departmentStoreDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+quantityInDisparityDetail(inDisparityDetail) = quantityInputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
 
-importerPriceInDisparityLedger 'Цена изготовителя' (inDisparityLedger) = importerPriceOutputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-supplierPriceInDisparityLedger 'Цена поставщика' (inDisparityLedger) = supplierPriceOutputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+importerPriceInDisparityDetail 'Цена изготовителя' (inDisparityDetail) = importerPriceOutputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+supplierPriceInDisparityDetail 'Цена поставщика' (inDisparityDetail) = supplierPriceOutputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
 
-dataRetailRangeInDisparityLedger 'НДС, %' (inDisparityLedger) = dataRetailRangeOutputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+retailRangeInDisparityDetail (inDisparityDetail) = retailRangeOutputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+dataRetailRangeInDisparityDetail 'НДС, %' (inDisparityDetail) = dataRetailRangeOutputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
 
-wareInDisparityLedger 'Посуда' (inDisparityLedger) = wareOutputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
-dataWareRangeInDisparityLedger 'НДС посуды, %' (inDisparityLedger) =
-      dataActingRateRangeDate(rangeWareVal(wareInDisparityLedger(inDisparityLedger), dateInDisparityLedger(inDisparityLedger)),
-                                                                   dateInDisparityLedger(inDisparityLedger));
+wareInDisparityDetail 'Посуда' (inDisparityDetail) = wareOutputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
+dataWareRangeInDisparityDetail 'НДС посуды, %' (inDisparityDetail) =
+      dataActingRateRangeDate(rangeWareVal(wareInDisparityDetail(inDisparityDetail), dateInDisparityDetail(inDisparityDetail)),
+                                                                   dateInDisparityDetail(inDisparityDetail));
 
-warePriceInDisparityLedger 'Цена посуды' (inDisparityLedger) =  warePriceOutputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+warePriceInDisparityDetail 'Цена посуды' (inDisparityDetail) =  warePriceOutputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
 
-retailPriceInDisparityLedger 'Розничная цена' (inDisparityLedger) = retailPriceInputDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger));
+retailPriceInDisparityDetail 'Розничная цена' (inDisparityDetail) = retailPriceInputDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail));
 
 descriptionDisparity 'Название документа' (disparity) =
     [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparity), dateDisparity(disparity));
 
-descriptionInDisparityLedger 'Название документа' (inDisparityLedger) =
+descriptionInDisparityDetail 'Название документа' (inDisparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
-    seriesNumberObject(disparityDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger))), dateDisparity(disparityDisparityDetail(disparityDetailInDisparityLedger(inDisparityLedger))));
+    seriesNumberObject(disparityDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInDisparityDetail(inDisparityDetail))));
 
 descriptionDisparityDetail 'Название документа' (disparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
@@ -7267,27 +7269,13 @@ needToCostBalanceItemLedger 'Требуется расчет себестоим�
 
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
-dateTimeBatch 'Дата/время' (batch) = UNION EXCLUSIVE dateTimeShipmentDetail (batch),
-                                                     dateTimeStudyOutputDetail (batch),
-                                                     dateTimeInDisparityLedger(batch) PERSISTENT INDEXED;
+dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (batch) PERSISTENT INDEXED;
+isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
+itemBatch 'Товар (ИД)' (batch) = ABSTRACT item (batch) PERSISTENT INDEXED;
+supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
-
-isPostedBatch 'Закрыт' (batch) = UNION EXCLUSIVE isPostedShipmentDetail (batch),
-                                                 isPostedStudyOutputDetail (batch),
-                                                 isPostedInDisparityLedger(batch) PERSISTENT;
-
-itemBatch 'Товар (ИД)' (batch) = UNION EXCLUSIVE itemShipmentDetail (batch),
-                                                 itemStudyOutputDetail (batch),
-                                                 itemInDisparityLedger(batch) PERSISTENT INDEXED;
-
-supplierPriceBatch 'Цена поставщика' (batch) = UNION EXCLUSIVE supplierPriceShipmentDetail(batch),
-                                                               supplierPriceStudyOutputDetail(batch),
-                                                               supplierPriceInDisparityLedger(batch) PERSISTENT;
-
-descriptionBatch 'Описание' (batch) = UNION EXCLUSIVE descriptionShipmentDetail(batch),
-                                                      descriptionStudyOutputDetail(batch),
-                                                      descriptionInDisparityLedger(batch) PERSISTENT;
 
 currentBalanceBatch 'Остаток (всего)' = GROUP SUM currentBalanceBatchLedger(batch, departmentStore) BY batch PERSISTENT;
 
@@ -7369,86 +7357,37 @@ clearBalanceItemLedgerBatchCost 'Сбросить всю себестоимос�
     SET costBalanceItemLedgerBatch(ledger, batch) <- NULL;
 } CONFIRM;
 
-dateTimeBalanceItemLedger (ledger) += dateTimeShipmentDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeReturnSupplierDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeInnerArrivalDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeWriteOffDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeStatementDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeInnerFlowDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeWastageDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeInventoryLedger(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeBillDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeStudyInputDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeStudyOutputDetail(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeInDisparityLedger(ledger);
-dateTimeBalanceItemLedger (ledger) += dateTimeDisparityDetail(ledger);
+META implementItemDepartmentStoreBalanceLedger(concrete)
+    dateTimeBalanceItemLedger (ledger) += dateTime###concrete##Detail(ledger);
+    isPostedBalanceItemLedger (ledger) += isPosted###concrete##Detail(ledger);
+    itemBalanceItemLedger (ledger) += item###concrete##Detail(ledger);
+    departmentStoreBalanceItemLedger (ledger) += departmentStore###concrete##Detail(ledger);
+    descriptionBalanceItemLedger (ledger) += description###concrete##Detail(ledger);
+END
 
-isPostedBalanceItemLedger (ledger) += isPostedShipmentDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedReturnSupplierDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedInnerArrivalDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedWriteOffDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedStatementDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedInnerFlowDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedWastageDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedInventoryLedger(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedBillDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedStudyInputDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedStudyOutputDetail(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedInDisparityLedger(ledger);
-isPostedBalanceItemLedger (ledger) += isPostedDisparityDetail(ledger);
-
-itemBalanceItemLedger (ledger) += itemShipmentDetail(ledger);
-itemBalanceItemLedger (ledger) += itemReturnSupplierDetail(ledger);
-itemBalanceItemLedger (ledger) += itemInnerArrivalDetail(ledger);
-itemBalanceItemLedger (ledger) += itemWriteOffDetail(ledger);
-itemBalanceItemLedger (ledger) += itemStatementDetail(ledger);
-itemBalanceItemLedger (ledger) += itemInnerFlowDetail(ledger);
-itemBalanceItemLedger (ledger) += itemWastageDetail(ledger);
-itemBalanceItemLedger (ledger) += itemInventoryLedger(ledger);
-itemBalanceItemLedger (ledger) += itemBillDetail(ledger);
-itemBalanceItemLedger (ledger) += itemStudyInputDetail(ledger);
-itemBalanceItemLedger (ledger) += itemStudyOutputDetail(ledger);
-itemBalanceItemLedger (ledger) += itemInDisparityLedger(ledger);
-itemBalanceItemLedger (ledger) += itemOutputDisparityDetail(ledger);
-
-departmentStoreBalanceItemLedger (ledger) += departmentStoreShipmentDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreReturnSupplierDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreInnerArrivalDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreWriteOffDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreStatementDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreInnerFlowDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreWastageDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreInventoryLedger(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreBillDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreStudyInputDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreStudyOutputDetail(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreInDisparityLedger(ledger);
-departmentStoreBalanceItemLedger (ledger) += departmentStoreDisparityDetail(ledger);
-
-descriptionBalanceItemLedger (ledger) += descriptionShipmentDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionInnerArrivalDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionWriteOffDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionStatementDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionInnerFlowDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionWastageDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionReturnSupplierDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionOutInventoryLedger(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionInInventoryLedger(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionBillDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionStudyOutputDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionStudyInputDetail(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionInDisparityLedger(ledger);
-descriptionBalanceItemLedger (ledger) += descriptionDisparityDetail(ledger);
+@implementItemDepartmentStoreBalanceLedger(shipment);
+@implementItemDepartmentStoreBalanceLedger(returnSupplier);
+@implementItemDepartmentStoreBalanceLedger(innerArrival);
+@implementItemDepartmentStoreBalanceLedger(writeOff);
+@implementItemDepartmentStoreBalanceLedger(statement);
+@implementItemDepartmentStoreBalanceLedger(innerFlow);
+@implementItemDepartmentStoreBalanceLedger(wastage);
+@implementItemDepartmentStoreBalanceLedger(inventory);
+@implementItemDepartmentStoreBalanceLedger(bill);
+@implementItemDepartmentStoreBalanceLedger(studyInput);
+@implementItemDepartmentStoreBalanceLedger(studyOutput);
+@implementItemDepartmentStoreBalanceLedger(inDisparity);
+@implementItemDepartmentStoreBalanceLedger(disparity);
 
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
-quantityBatch (ledger) += quantityInDisparityLedger(ledger);
+quantityBatch (ledger) += quantityInDisparityDetail(ledger);
 
 quantityOutAutoBalanceItemLedger (ledger) += quantityWriteOffDetail(ledger);
 quantityOutAutoBalanceItemLedger (ledger) += quantityStatementDetail(ledger);
 quantityOutAutoBalanceItemLedger (ledger) += quantityInnerFlowDetail(ledger);
 quantityOutAutoBalanceItemLedger (ledger) += quantityWastageDetail(ledger);
-quantityOutAutoBalanceItemLedger (ledger) += quantityOutInventoryLedger(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityOutInventoryDetail(ledger);
 quantityOutAutoBalanceItemLedger (ledger) += quantityBillSaleDetail(ledger);
 quantityOutAutoBalanceItemLedger (ledger) += quantityStudyInputDetail(ledger);
 quantityOutAutoBalanceItemLedger (ledger) += quantityOutputDetailDisparity(ledger);
@@ -7456,8 +7395,20 @@ quantityOutAutoBalanceItemLedger (ledger) += quantityOutputDetailDisparity(ledge
 quantityOutUserBalanceItemLedger (ledger) += quantityReturnSupplierDetail(ledger);
 batchOutUserBalanceItemLedger (ledger) += batchReturnSupplierDetail(ledger);
 
-quantityInAutoBalanceItemLedger (ledger) += quantityInInventoryLedger(ledger);
+quantityInAutoBalanceItemLedger (ledger) += quantityInInventoryDetail(ledger);
 quantityInAutoBalanceItemLedger (ledger) += quantityBillReturnDetail(ledger);
+
+META implementBatch(concrete)
+    dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
+    isPostedBatch (batch) += isPosted###concrete##Detail(batch);
+    itemBatch (batch) += item###concrete##Detail(batch);
+    supplierPriceBatch (batch) += departmentStore###concrete##Detail(batch);
+    descriptionBatch (batch) += description###concrete##Detail(batch);
+END
+
+@implementBatch(shipment);
+@implementBatch(studyOutput);
+@implementBatch(inDisparity);
 
 // --------------------------- Использование регистров количества (автоматическое заполнение) ---------------------------------
 
@@ -7466,7 +7417,20 @@ balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDeta
 
 //---------------------------- Ценовые регистры (конкретная реализация) ----------------------------------------//
 
-META metaCodeItemDepartmentStoreLedger(prefix)
+META defineItemDepartmentStoreLedger(prefix, caption, type)
+
+    dateTime###prefix##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (prefix##Ledger) PERSISTENT INDEXED;
+    date###prefix##Ledger 'Дата' (ledger) = dateInTime(dateTime###prefix##Ledger(ledger)) PERSISTENT;
+
+    isPosted###prefix##Ledger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (prefix##Ledger) PERSISTENT;
+
+    item###prefix##Ledger (ledger) = ABSTRACT item (prefix##Ledger) PERSISTENT INDEXED;
+
+    departmentStore###prefix##Ledger (ledger) = ABSTRACT departmentStore (prefix##Ledger) PERSISTENT INDEXED;
+
+    description###prefix##Ledger 'Название документа' (ledger) = ABSTRACT STRING[200] (prefix##Ledger) PERSISTENT;
+
+    prefix###prefix##Ledger caption (ledger) = ABSTRACT type (prefix##Ledger) PERSISTENT;
 
     nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
     nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
@@ -7474,334 +7438,108 @@ META metaCodeItemDepartmentStoreLedger(prefix)
 
     // todo : переделать на concat и deconcat
 
-    order###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
+    orderT###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
 
-    concatLedgerB###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
+    concatLedgerB###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX orderT###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) < (dateTime AS DATETIME)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
 
     ledgerB###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerB###prefix##DateTime(item, departmentStore, dateTime)[2];
 
-    concatLedgerA###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX order###prefix##Ledger(ledger) AND
+    concatLedgerA###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX orderT###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
 
     ledgerA###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerA###prefix##DateTime(item, departmentStore, dateTime)[2];
 
-    concatLedgerCurrent###prefix (item, departmentStore) = GROUP MAX order###prefix##Ledger(ledger) AND
+    concatLedgerCurrent###prefix (item, departmentStore) = GROUP MAX orderT###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
 
-    currentLedger###prefix (item, departmentStore) = concatLedgerCurrent###prefix(item, departmentStore)[2];
+    prefix##BLedgerDateTime caption##' (до)' (item, departmentStore, dateTime) = prefix###prefix##Ledger(ledgerB###prefix##DateTime(item, departmentStore, dateTime));
+    prefix##ALedgerDateTime caption##' (после)' (item, departmentStore, dateTime) = prefix###prefix##Ledger(ledgerA###prefix##DateTime(item, departmentStore, dateTime));
                            //На дату//
-    orderBy###prefix##Ledger = LIST(date###prefix##Ledger(ledger), ledger) PERSISTENT;
+    orderD###prefix##Ledger = LIST(date###prefix##Ledger(ledger), ledger) PERSISTENT;
 
-    concatLedgerB###prefix##Date (item, departmentStore, date) = GROUP MAX orderBy###prefix##Ledger(ledger) AND
+    concatLedgerB###prefix##Date (item, departmentStore, date) = GROUP MAX orderD###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) < (date AS DATE)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), date;
 
     ledgerB###prefix##Date (item, departmentStore, date) = concatLedgerB###prefix##Date(item, departmentStore, date)[2];
 
-    concatLedgerA###prefix##Date (item, departmentStore, date) = GROUP MAX orderBy###prefix##Ledger(ledger) AND
+    concatLedgerA###prefix##Date (item, departmentStore, date) = GROUP MAX orderD###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) <= (date AS DATE)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), date;
 
     ledgerA###prefix##Date (item, departmentStore, date) = concatLedgerA###prefix##Date(item, departmentStore, date)[2];
 
-    concatLedgerCurrentDate###prefix (item, departmentStore) = GROUP MAX orderBy###prefix##Ledger(ledger) AND
+    concatLedgerCurrentDate###prefix (item, departmentStore) = GROUP MAX orderD###prefix##Ledger(ledger) AND
         isPosted###prefix##Ledger(ledger)
         BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
 
-    currentLedgerDate###prefix (item, departmentStore) = concatLedgerCurrentDate###prefix(item, departmentStore)[2];
+    prefix##BLedgerDate caption##' (до)' (item, departmentStore, date) = prefix###prefix##Ledger(ledgerB###prefix##Date(item, departmentStore, date));
+    prefix##ALedgerDate caption##' (после)' (item, departmentStore, date) = prefix###prefix##Ledger(ledgerA###prefix##Date(item, departmentStore, date));
 
+    currentLedger###prefix (item, departmentStore) = concatLedgerCurrent###prefix(item, departmentStore)[2];
+    current###prefix##Ledger caption (item, departmentStore) = prefix###prefix##Ledger(currentLedger###prefix(item, departmentStore));
 END
 
+META implementItemDepartmentStoreLedgerCustom(prefix, concrete, concretePrefix)
+    dateTime###prefix##Ledger (ledger) += dateTime###concrete##Detail(ledger);
+    isPosted###prefix##Ledger (ledger) += isPosted###concrete##Detail(ledger);
+    item###prefix##Ledger (ledger) += item###concrete##Detail(ledger);
+    departmentStore###prefix##Ledger (ledger) += departmentStore###concrete##Detail(ledger);
+    description###prefix##Ledger (ledger) += description###concrete##Detail(ledger);
+    prefix###prefix##Ledger (ledger) += concretePrefix###concrete##Detail(ledger);
+END
 
-// Цена изготовителя / импортера
-dateTimeImporterPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                    dateTimeInnerArrivalDetail(ledger),
-                                                                    dateTimeUserPriceChangeDetail(ledger),
-                                                                    dateTimeStudyOutputDetail(ledger),
-                                                                    dateTimeInDisparityLedger(ledger) PERSISTENT INDEXED;
+META implementItemDepartmentStoreLedger(prefix, concrete)
+    @implementItemDepartmentStoreLedgerCustom(prefix, concrete, prefix);
+END
 
-dateImporterPriceLedger 'Дата' (ledger) = dateInTime(dateTimeImporterPriceLedger(ledger)) PERSISTENT;
+META implementBaseIItemDepartmentStoreLedger(concrete)
+    @implementItemDepartmentStoreLedger(importerPrice, concrete);
+    @implementItemDepartmentStoreLedger(supplierPrice, concrete);
+    @implementItemDepartmentStoreLedger(retailRange, concrete);
+    @implementItemDepartmentStoreLedger(retailPrice, concrete);
+    @implementItemDepartmentStoreLedgerCustom(accountPrice, concrete, retailPrice);
+END
 
-isPostedImporterPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                                isPostedInnerArrivalDetail(ledger),
-                                                                isPostedUserPriceChangeDetail(ledger),
-                                                                isPostedStudyOutputDetail(ledger),
-                                                                isPostedInDisparityLedger(ledger) PERSISTENT;
+META implementBaseItemDepartmentStoreLedger(concrete)
+    @implementItemDepartmentStoreLedger(warePrice, concrete);
+    wareWarePriceLedger(ledger) += ware###concrete##Detail(ledger);
+    @implementBaseIItemDepartmentStoreLedger(concrete);
+END
 
-itemImporterPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                   itemInnerArrivalDetail(ledger),
-                                                   itemUserPriceChangeDetail(ledger),
-                                                   itemStudyOutputDetail(ledger),
-                                                   itemInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-departmentStoreImporterPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                              departmentStoreInnerArrivalDetail(ledger),
-                                                              departmentStoreUserPriceChangeDetail(ledger),
-                                                              departmentStoreStudyOutputDetail(ledger),
-                                                              departmentStoreInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-descriptionImporterPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                               descriptionInnerArrivalDetail(ledger),
-                                                                               descriptionUserPriceChangeDetail(ledger),
-                                                                               descriptionStudyOutputDetail(ledger),
-                                                                               descriptionInDisparityLedger(ledger);
-
-priceImporterLedger 'Цена' (ledger) = UNION EXCLUSIVE importerPriceShipmentDetail(ledger),
-                                                      importerPriceInnerArrivalDetail(ledger),
-                                                      importerPriceUserPriceChangeDetail(ledger),
-                                                      importerPriceStudyOutputDetail(ledger),
-                                                      importerPriceInDisparityLedger(ledger) PERSISTENT;
-@metaCodeItemDepartmentStoreLedger(importerPrice);
-
-priceImporterBLedgerDateTime 'Цена изготовителя (до)' (item, departmentStore, dateTime) = priceImporterLedger(ledgerBImporterPriceDateTime(item, departmentStore, dateTime));
-priceImporterALedgerDateTime 'Цена изготовителя (после)' (item, departmentStore, dateTime) = priceImporterLedger(ledgerAImporterPriceDateTime(item, departmentStore, dateTime));
-
-currentPriceImporterLedger 'Цена изготовителя' (item, departmentStore) = priceImporterLedger(currentLedgerImporterPrice(item, departmentStore));
-
-// Цена поставщика
-dateTimeSupplierPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                    dateTimeInnerArrivalDetail(ledger),
-                                                                    dateTimeUserPriceChangeDetail(ledger),
-                                                                    dateTimeStudyOutputDetail(ledger),
-                                                                    dateTimeInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-dateSupplierPriceLedger 'Дата' (ledger) = dateInTime(dateTimeSupplierPriceLedger(ledger)) PERSISTENT;
-
-isPostedSupplierPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                                isPostedInnerArrivalDetail(ledger),
-                                                                isPostedUserPriceChangeDetail(ledger),
-                                                                isPostedStudyOutputDetail(ledger),
-                                                                isPostedInDisparityLedger(ledger) PERSISTENT;
-
-itemSupplierPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                   itemInnerArrivalDetail(ledger),
-                                                   itemUserPriceChangeDetail(ledger),
-                                                   itemStudyOutputDetail(ledger),
-                                                   itemInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-departmentStoreSupplierPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                              departmentStoreInnerArrivalDetail(ledger),
-                                                              departmentStoreUserPriceChangeDetail(ledger),
-                                                              departmentStoreStudyOutputDetail(ledger),
-                                                              departmentStoreInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-descriptionSupplierPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                               descriptionInnerArrivalDetail(ledger),
-                                                                               descriptionUserPriceChangeDetail(ledger),
-                                                                               descriptionStudyOutputDetail(ledger),
-                                                                               descriptionInDisparityLedger(ledger);
-
-priceSupplierLedger 'Цена' (ledger) = UNION EXCLUSIVE supplierPriceShipmentDetail(ledger),
-                                                      supplierPriceInnerArrivalDetail(ledger),
-                                                      supplierPriceUserPriceChangeDetail(ledger),
-                                                      supplierPriceStudyOutputDetail(ledger),
-                                                      supplierPriceInDisparityLedger(ledger) PERSISTENT;
-@metaCodeItemDepartmentStoreLedger(supplierPrice);
-
-priceSupplierBLedgerDateTime 'Цена поставщика (до)' (item, departmentStore, dateTime) = priceSupplierLedger(ledgerBSupplierPriceDateTime(item, departmentStore, dateTime));
-priceSupplierALedgerDateTime 'Цена поставщика (после)' (item, departmentStore, dateTime) = priceSupplierLedger(ledgerASupplierPriceDateTime(item, departmentStore, dateTime));
-
-currentPriceSupplierLedger 'Цена поставщика' (item, departmentStore) = priceSupplierLedger(currentLedgerSupplierPrice(item, departmentStore));
-
-// Цена посуды
-dateTimeWarePriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                dateTimeInnerArrivalDetail(ledger),
-                                                                dateTimeUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
-
-dateWarePriceLedger 'Дата' (ledger) = dateInTime(dateTimeWarePriceLedger(ledger)) PERSISTENT;
-
-isPostedWarePriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                            isPostedInnerArrivalDetail(ledger),
-                                                            isPostedUserPriceChangeDetail(ledger) PERSISTENT;
-
-itemWarePriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                               itemInnerArrivalDetail(ledger),
-                                               itemUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
-
-departmentStoreWarePriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                          departmentStoreInnerArrivalDetail(ledger),
-                                                          departmentStoreUserPriceChangeDetail(ledger) PERSISTENT INDEXED;
-
-descriptionWarePriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                           descriptionInnerArrivalDetail(ledger),
-                                                                           descriptionUserPriceChangeDetail(ledger);
-
-wareWarePriceLedger(ledger) = UNION EXCLUSIVE wareShipmentDetail(ledger),
-                                              wareInnerArrivalDetail(ledger),
-                                              wareUserPriceChangeDetail(ledger) PERSISTENT;
-
-wareWarePricePriceLedger 'Цена' (ledger) = UNION EXCLUSIVE warePriceShipmentDetail(ledger),
-                                                           warePriceInnerArrivalDetail(ledger),
-                                                           warePriceUserPriceChangeDetail(ledger) PERSISTENT;
-
+@defineItemDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
+wareWarePriceLedger(ledger) = ABSTRACT ware (warePriceLedger) PERSISTENT;
 nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
-@metaCodeItemDepartmentStoreLedger(warePrice);
-
-warePriceBLedgerDateTime 'Цена посуды (до)' (item, departmentStore, dateTime) = wareWarePricePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
-warePriceALedgerDateTime 'Цена посуды (после)' (item, departmentStore, dateTime) = wareWarePricePriceLedger(ledgerAWarePriceDateTime(item, departmentStore, dateTime));
-
 currentWareLedger 'Посуда' (item, departmentStore) = wareWarePriceLedger(currentLedgerWarePrice(item, departmentStore));
-currentWarePriceLedger 'Цена посуды' (item, departmentStore) = wareWarePricePriceLedger(currentLedgerWarePrice(item, departmentStore));
-
 wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
 
-// Розничный НДС
-dateTimeRetailVATLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                dateTimeInnerArrivalDetail(ledger),
-                                                                dateTimeUserPriceChangeDetail(ledger),
-                                                                dateTimeStudyOutputDetail(ledger),
-                                                                dateTimeInDisparityLedger(ledger) PERSISTENT INDEXED;
+@defineItemDepartmentStoreLedger(importerPrice, 'Цена изготовителя', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(supplierPrice, 'Цена поставщика', NUMERIC[14,2]);
 
-dateRetailVATLedger 'Дата' (ledger) = dateInTime(dateTimeRetailVATLedger(ledger)) PERSISTENT;
+@defineItemDepartmentStoreLedger(retailRange, 'НДС', range);
+dataRetailRangeRetailRangeLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
+dataRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
+            dataActingRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+dataRetailRangeALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
+            dataActingRateRangeDate(retailRangeALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+currentDataRetailRangeLedger 'НДС, %' (item, departmentStore) =
+            dataActingRateRange(currentRetailRangeLedger(item, departmentStore));
 
+@defineItemDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(accountPrice, 'Учетная цена', NUMERIC[14,2]);
 
-isPostedRetailVATLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                            isPostedInnerArrivalDetail(ledger),
-                                                            isPostedUserPriceChangeDetail(ledger),
-                                                            isPostedStudyOutputDetail(ledger),
-                                                            isPostedInDisparityLedger(ledger) PERSISTENT;
+@implementBaseItemDepartmentStoreLedger(shipment);
+@implementBaseItemDepartmentStoreLedger(innerArrival);
+@implementBaseItemDepartmentStoreLedger(userPriceChange);
 
-itemRetailVATLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                               itemInnerArrivalDetail(ledger),
-                                               itemUserPriceChangeDetail(ledger),
-                                               itemStudyOutputDetail(ledger),
-                                               itemInDisparityLedger(ledger) PERSISTENT INDEXED;
+@implementBaseIItemDepartmentStoreLedger(studyOutput);
+@implementBaseIItemDepartmentStoreLedger(inDisparity);
 
-departmentStoreRetailVATLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                          departmentStoreInnerArrivalDetail(ledger),
-                                                          departmentStoreUserPriceChangeDetail(ledger),
-                                                          departmentStoreStudyOutputDetail(ledger),
-                                                          departmentStoreInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-descriptionRetailVATLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                           descriptionInnerArrivalDetail(ledger),
-                                                                           descriptionUserPriceChangeDetail(ledger),
-                                                                           descriptionStudyOutputDetail(ledger),
-                                                                           descriptionInDisparityLedger(ledger);
-
-rangeRetailLedger (ledger) = UNION EXCLUSIVE retailRangeShipmentDetail(ledger),
-                                             retailRangeInnerArrivalDetail(ledger),
-                                             retailRangeUserPriceChangeDetail(ledger),
-                                             retailRangeStudyOutputDetail(ledger),
-                                             retailRangeInputDisparityDetail(ledger) PERSISTENT;
-
-dataRetailLedger 'НДС, %' (ledger) = dataActingRateRangeDate(rangeRetailLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger))) PERSISTENT;
-
-@metaCodeItemDepartmentStoreLedger(retailVAT);
-
-rangeRetailBLedgerDateTime 'НДС (до)' (item, departmentStore, dateTime) = rangeRetailLedger(ledgerBRetailVATDateTime(item, departmentStore, dateTime));
-dataRetailBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
-            dataActingRateRangeDate(rangeRetailBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
-rangeRetailALedgerDateTime 'НДС (после)' (item, departmentStore, dateTime) = rangeRetailLedger(ledgerARetailVATDateTime(item, departmentStore, dateTime));
-dataRetailALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
-            dataActingRateRangeDate(rangeRetailALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
-
-currentRangeRetailLedger 'НДС' (item, departmentStore) = rangeRetailLedger(currentLedgerRetailVAT(item, departmentStore));
-dataCurrentRetailLedger 'НДС, %' (item, departmentStore) =
-            dataActingRateRange(currentRangeRetailLedger(item, departmentStore));
-
-
-// Цена учетная
-dateTimeAccountPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                   dateTimeInnerArrivalDetail(ledger),
-                                                                   dateTimeUserPriceChangeDetail(ledger),
-                                                                   dateTimeStudyOutputDetail(ledger),
-                                                                   dateTimeInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-dateAccountPriceLedger 'Дата' (ledger) = dateInTime(dateTimeAccountPriceLedger(ledger)) PERSISTENT;
-
-isPostedAccountPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                               isPostedInnerArrivalDetail(ledger),
-                                                               isPostedUserPriceChangeDetail(ledger),
-                                                               isPostedStudyOutputDetail(ledger),
-                                                               isPostedInDisparityLedger(ledger) PERSISTENT;
-
-itemAccountPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                  itemInnerArrivalDetail(ledger),
-                                                  itemUserPriceChangeDetail(ledger),
-                                                  itemStudyOutputDetail(ledger),
-                                                  itemInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-
-departmentStoreAccountPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                             departmentStoreInnerArrivalDetail(ledger),
-                                                             departmentStoreUserPriceChangeDetail(ledger),
-                                                             departmentStoreStudyOutputDetail(ledger),
-                                                             departmentStoreInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-descriptionAccountPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                              descriptionInnerArrivalDetail(ledger),
-                                                                              descriptionUserPriceChangeDetail(ledger),
-                                                                              descriptionStudyOutputDetail(ledger),
-                                                                              descriptionInDisparityLedger(ledger);
-
-
-priceAccountLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
-                                                     retailPriceInnerArrivalDetail(ledger),
-                                                     retailPriceUserPriceChangeDetail(ledger),
-                                                     retailPriceStudyOutputDetail(ledger),
-                                                     retailPriceInDisparityLedger(ledger) PERSISTENT;
-
-@metaCodeItemDepartmentStoreLedger(accountPrice);
-
-priceAccountBLedgerDateTime 'Учетная цена (до)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerBAccountPriceDateTime(item, departmentStore, dateTime));
-priceAccountALedgerDateTime 'Учетная цена (после)' (item, departmentStore, dateTime) = priceAccountLedger(ledgerAAccountPriceDateTime(item, departmentStore, dateTime));
-
-currentPriceAccountLedger 'Учетная цена' (item, departmentStore) = priceAccountLedger(currentLedgerAccountPrice(item, departmentStore));
-
-// Цена розничная
-dateTimeRetailPriceLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipmentDetail(ledger),
-                                                                  dateTimeInnerArrivalDetail(ledger),
-                                                                  dateTimeUserPriceChangeDetail(ledger),
-                                                                  dateTimeStudyOutputDetail(ledger),
-                                                                  dateTimeInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-dateRetailPriceLedger 'Дата' (ledger) = dateInTime(dateTimeRetailPriceLedger(ledger)) PERSISTENT;
-
-isPostedRetailPriceLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipmentDetail(ledger),
-                                                              isPostedInnerArrivalDetail(ledger),
-                                                              isPostedUserPriceChangeDetail(ledger),
-                                                              isPostedStudyOutputDetail(ledger),
-                                                              isPostedInDisparityLedger(ledger) PERSISTENT;
-
-itemRetailPriceLedger (ledger) = UNION EXCLUSIVE itemShipmentDetail(ledger),
-                                                 itemInnerArrivalDetail(ledger),
-                                                 itemUserPriceChangeDetail(ledger),
-                                                 itemStudyOutputDetail(ledger),
-                                                 itemInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-departmentStoreRetailPriceLedger (ledger) = UNION EXCLUSIVE departmentStoreShipmentDetail(ledger),
-                                                            departmentStoreInnerArrivalDetail(ledger),
-                                                            departmentStoreUserPriceChangeDetail(ledger),
-                                                            departmentStoreStudyOutputDetail(ledger),
-                                                            departmentStoreInDisparityLedger(ledger) PERSISTENT INDEXED;
-
-descriptionRetailPriceLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipmentDetail(ledger),
-                                                                             descriptionInnerArrivalDetail(ledger),
-                                                                             descriptionUserPriceChangeDetail(ledger),
-                                                                             descriptionStudyOutputDetail(ledger),
-                                                                             descriptionInDisparityLedger(ledger);
-
-priceRetailLedger 'Цена' (ledger) = UNION EXCLUSIVE retailPriceShipmentDetail(ledger),
-                                                    retailPriceInnerArrivalDetail(ledger),
-                                                    retailPriceUserPriceChangeDetail(ledger),
-                                                    retailPriceStudyOutputDetail(ledger),
-                                                    retailPriceInDisparityLedger(ledger) PERSISTENT;
-
-@metaCodeItemDepartmentStoreLedger(retailPrice);
-
-priceRetailBLedgerDateTime 'Розничная цена (до)' (item, departmentStore, dateTime) = priceRetailLedger(ledgerBRetailPriceDateTime(item, departmentStore, dateTime));
-priceRetailALedgerDateTime 'Розничная цена (после)' (item, departmentStore, dateTime) = priceRetailLedger(ledgerARetailPriceDateTime(item, departmentStore, dateTime));
-
-priceRetailBLedgerDate 'Розничная цена (до)' (item, departmentStore, date) = priceRetailLedger(ledgerBRetailPriceDate(item, departmentStore, date));
-priceRetailALedgerDate 'Розничная цена (после)' (item, departmentStore, date) = priceRetailLedger(ledgerARetailPriceDate(item, departmentStore, date));
-
-currentPriceRetailLedger 'Розничная цена' (item, departmentStore) = priceRetailLedger(currentLedgerRetailPrice(item, departmentStore)) PERSISTENT;
-ledgerPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentPriceRetailLedger(skuBarcode(barcode), departmentStore);
+currentRetailPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
 // --------------------------- Продажные регистры  ---------------------------------
 TABLE salesLedger(salesLedger);
@@ -7916,13 +7654,13 @@ quantityLossNaturalLossDetail 'Кол-во' = DATA NUMERIC[14,3] (naturalLossDet
 //supplierSumNaturalLossDetail 'Сумма поставщика, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
 //retailSumNaturalLossDetail 'Розничная сумма, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
 
-supplierPriceNaturalLossDetail(naturalLossDetail) <- priceSupplierBLedgerDateTime(
+supplierPriceNaturalLossDetail(naturalLossDetail) <- supplierPriceBLedgerDateTime(
                                                         itemNaturalLossDetail(naturalLossDetail),
                                                         departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
                                                         dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
     WHEN CHANGED(itemNaturalLossDetail(naturalLossDetail));
 
-retailPriceNaturalLossDetail(naturalLossDetail) <- priceRetailBLedgerDateTime(
+retailPriceNaturalLossDetail(naturalLossDetail) <- retailPriceBLedgerDateTime(
                                                         itemNaturalLossDetail(naturalLossDetail),
                                                         departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
                                                         dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
@@ -8785,19 +8523,19 @@ balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemL
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 
-curImporterPriceShipmentDetail (shipmentDetail) <- priceImporterBLedgerDateTime (
+curImporterPriceShipmentDetail (shipmentDetail) <- importerPriceBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-curSupplierPriceShipmentDetail (shipmentDetail) <- priceSupplierBLedgerDateTime (
+curSupplierPriceShipmentDetail (shipmentDetail) <- supplierPriceBLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-curRetailRangeShipmentDetail (shipmentDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeShipmentDetail (shipmentDetail) <- retailRangeBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
-curRetailPriceShipmentDetail (shipmentDetail) <- priceAccountBLedgerDateTime(
+curRetailPriceShipmentDetail (shipmentDetail) <- accountPriceBLedgerDateTime(
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
@@ -8810,17 +8548,17 @@ curWareShipmentDetail (shipmentDetail)  <- wareBLedgerDateTime(
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 
-accountPriceWriteOffDetail (writeOffDetail) <- priceAccountBLedgerDateTime(
+accountPriceWriteOffDetail (writeOffDetail) <- accountPriceBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
-//retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = priceRetailBLedgerDateTime (
+//retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = retailPriceBLedgerDateTime (
 //                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
-retailPriceWriteOffDetail (writeOffDetail) <- priceRetailBLedgerDateTime(
+retailPriceWriteOffDetail (writeOffDetail) <- retailPriceBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
-supplierPriceWriteOffDetail (writeOffDetail) <- priceSupplierBLedgerDateTime(
+supplierPriceWriteOffDetail (writeOffDetail) <- supplierPriceBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
@@ -8832,24 +8570,24 @@ warePriceWriteOffDetail (writeOffDetail) <- warePriceBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
-retailRangeWriteOffDetail (writeOffDetail) <- rangeRetailBLedgerDateTime(
+retailRangeWriteOffDetail (writeOffDetail) <- retailRangeBLedgerDateTime(
                 itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
                 WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
 
 
-retailPriceInnerFlowDetail (innerFlowDetail) <- priceRetailBLedgerDateTime(
+retailPriceInnerFlowDetail (innerFlowDetail) <- retailPriceBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
-importerPriceInnerFlowDetail (innerFlowDetail) <- priceImporterBLedgerDateTime(
+importerPriceInnerFlowDetail (innerFlowDetail) <- importerPriceBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
-supplierPriceInnerFlowDetail (innerFlowDetail) <- priceSupplierBLedgerDateTime(
+supplierPriceInnerFlowDetail (innerFlowDetail) <- supplierPriceBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
-retailRangeInnerFlowDetail (innerFlowDetail) <- rangeRetailBLedgerDateTime(
+retailRangeInnerFlowDetail (innerFlowDetail) <- retailRangeBLedgerDateTime(
                 itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
                 WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
@@ -8862,19 +8600,19 @@ wareInnerFlowDetail (innerFlowDetail) <- wareBLedgerDateTime(
                 WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
 
 
-curRetailPriceInnerArrivalDetail (innerArrivalDetail) <- priceRetailBLedgerDateTime(
+curRetailPriceInnerArrivalDetail (innerArrivalDetail) <- retailPriceBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
-curImporterPriceInnerArrivalDetail (innerArrivalDetail) <- priceImporterBLedgerDateTime(
+curImporterPriceInnerArrivalDetail (innerArrivalDetail) <- importerPriceBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
-curSupplierPriceInnerArrivalDetail (innerArrivalDetail) <- priceSupplierBLedgerDateTime(
+curSupplierPriceInnerArrivalDetail (innerArrivalDetail) <- supplierPriceBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
-curRetailRangeInnerArrivalDetail (innerArrivalDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeInnerArrivalDetail (innerArrivalDetail) <- retailRangeBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
@@ -8886,19 +8624,19 @@ curWareInnerArrivalDetail (innerArrivalDetail) <- wareBLedgerDateTime(
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
-curRetailPriceReturnSupplierDetail (returnSupplierDetail) <- priceAccountBLedgerDateTime(
+curRetailPriceReturnSupplierDetail (returnSupplierDetail) <- accountPriceBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
-curRetailRangeReturnSupplierDetail (returnSupplierDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeReturnSupplierDetail (returnSupplierDetail) <- retailRangeBLedgerDateTime(
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
-curImporterPriceReturnSupplierDetail (returnSupplierDetail) <- priceImporterBLedgerDateTime (
+curImporterPriceReturnSupplierDetail (returnSupplierDetail) <- importerPriceBLedgerDateTime (
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
-curSupplierPriceReturnSupplierDetail (returnSupplierDetail) <- priceSupplierBLedgerDateTime (
+curSupplierPriceReturnSupplierDetail (returnSupplierDetail) <- supplierPriceBLedgerDateTime (
                 itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
                 dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
@@ -8928,7 +8666,7 @@ FORM itemDepartmentStoreInput 'Подбор товаров'
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
-    PROPERTIES currentBalanceItemLedger(i, d), currentPriceRetailLedger(i, d), quantityInputItem(i)
+    PROPERTIES currentBalanceItemLedger(i, d), currentRetailPriceLedger(i, d), quantityInputItem(i)
 
     FILTERGROUP filterBalance
         FILTER 'На остатках' 'F10' currentBalanceItemLedger(i, d)
@@ -8985,7 +8723,7 @@ FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
-    PROPERTIES currentBalanceItemLedger(i, d), currentPriceRetailLedger(i, d), quantityInputItem(i)
+    PROPERTIES currentBalanceItemLedger(i, d), currentRetailPriceLedger(i, d), quantityInputItem(i)
 
     FILTERGROUP filterSupply
         FILTER 'Поставлявшиеся' 'F11' sumQuantityItemShipment(d, s, i) DEFAULT
@@ -9042,7 +8780,7 @@ FORM itemDepartmentStoreBalanceInput 'Подбор товаров'
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
-    PROPERTIES currentBalanceItemLedger(i, d), currentPriceRetailLedger(i, d), isInputItem(i)
+    PROPERTIES currentBalanceItemLedger(i, d), currentRetailPriceLedger(i, d), isInputItem(i)
 
     FILTERGROUP filterBalance
         FILTER 'На остатках' 'F10' currentBalanceItemLedger(i, d)
@@ -9154,7 +8892,7 @@ transactionNameBarcodeGroupMachinery 'Текущее наименование в
 
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = ledgerPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
+ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
 
 commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
 
@@ -9332,7 +9070,7 @@ createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStor
 } CONFIRM IN incrementMachineryPriceGroup;
 
 createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentPriceRetailLedger(item, departmentStore);
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentRetailPriceLedger(item, departmentStore);
     SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
     EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
 } CONFIRM IN incrementMachineryPriceGroup;
@@ -9544,7 +9282,7 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
     SET priceTransactionDocumentLabelTransaction(labelTransaction) <- createLabelTransactionDocument();
 
     SET nameLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode);
-    SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
+    SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- currentRetailPriceBarcodeDepartmentStore(barcode, departmentStore);
     SET shortNameUnitOfMeasureLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- shortNameUnitOfMeasureItem(skuBarcode(barcode));
     SET countryLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- countryItem(skuBarcode(barcode));
     SET manufacturerLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- manufacturerItem(skuBarcode(barcode));
@@ -9555,7 +9293,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
     LOCAL inBarcode = BOOLEAN (barcode);
     SET inBarcode(barcode) <- createLabelTransactionItem(skuBarcode(barcode)) // если передали параметром
                                                          AND activeBarcode(barcode) // если активный штрих-код
-                                                         AND ledgerPriceBarcodeDepartmentStore(barcode, departmentStore);
+                                                         AND currentRetailPriceBarcodeDepartmentStore(barcode, departmentStore);
 
     IF createLabelTransactionSnapshot() THEN {
         ADDOBJ labelTransaction;
@@ -10088,40 +9826,40 @@ balanceBeforeDisparityDetail (disparityDetail) <- balanceBItemLedgerDateTime (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-importerPriceOutputDisparityDetail (disparityDetail) <- [PREV(priceImporterBLedgerDateTime(item, departmentStore, dateTime))] (
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
+importerPriceOutputDisparityDetail (disparityDetail) <- [PREV(importerPriceBLedgerDateTime(item, departmentStore, dateTime))] (
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
-supplierPriceOutputDisparityDetail (disparityDetail) <- [PREV(priceSupplierBLedgerDateTime(item, departmentStore, dateTime))] (
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
+supplierPriceOutputDisparityDetail (disparityDetail) <- [PREV(supplierPriceBLedgerDateTime(item, departmentStore, dateTime))] (
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
-retailRangeOutputDisparityDetail (disparityDetail) <- [PREV(rangeRetailBLedgerDateTime(item, departmentStore, dateTime))](
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
+retailRangeOutputDisparityDetail (disparityDetail) <- [PREV(retailRangeBLedgerDateTime(item, departmentStore, dateTime))](
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
 warePriceOutputDisparityDetail (disparityDetail) <- warePriceBLedgerDateTime(
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
 wareOutputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
-retailPriceOutputDisparityDetail (disparityDetail) <- [PREV(priceRetailBLedgerDateTime(item, departmentStore, dateTime))] (
-                itemOutputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemOutputDisparityDetail(disparityDetail));
+retailPriceOutputDisparityDetail (disparityDetail) <- [PREV(retailPriceBLedgerDateTime(item, departmentStore, dateTime))] (
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
 
-importerPriceInputDisparityDetail (disparityDetail) <- [PREV(priceImporterBLedgerDateTime(item, departmentStore, dateTime))] (
+importerPriceInputDisparityDetail (disparityDetail) <- [PREV(importerPriceBLedgerDateTime(item, departmentStore, dateTime))] (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-supplierPriceInputDisparityDetail (disparityDetail) <- [PREV(priceSupplierBLedgerDateTime(item, departmentStore, dateTime))] (
+supplierPriceInputDisparityDetail (disparityDetail) <- [PREV(supplierPriceBLedgerDateTime(item, departmentStore, dateTime))] (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-retailRangeInputDisparityDetail (disparityDetail) <- [PREV(rangeRetailBLedgerDateTime(item, departmentStore, dateTime))](
+retailRangeInputDisparityDetail (disparityDetail) <- [PREV(retailRangeBLedgerDateTime(item, departmentStore, dateTime))](
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
@@ -10133,66 +9871,66 @@ wareInputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
-curRetailPriceInputDisparityDetail (disparityDetail) <- [PREV(priceRetailBLedgerDateTime(item, departmentStore, dateTime))] (
+curRetailPriceInputDisparityDetail (disparityDetail) <- [PREV(retailPriceBLedgerDateTime(item, departmentStore, dateTime))] (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
 
 
-retailPriceSpecificationDetail (specificationDetail) <- priceRetailBLedgerDateTime(
+retailPriceSpecificationDetail (specificationDetail) <- retailPriceBLedgerDateTime(
                 itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail))
                 WHEN CHANGED(itemSpecificationDetail(specificationDetail));
 
 // АКТ ПРОРАБОТКИ
-retailPriceStudyInputDetail (studyInputDetail) <- priceRetailBLedgerDateTime(
+retailPriceStudyInputDetail (studyInputDetail) <- retailPriceBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
                 WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
-importerPriceStudyInputDetail (studyInputDetail) <- priceImporterBLedgerDateTime (
+importerPriceStudyInputDetail (studyInputDetail) <- importerPriceBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
                 WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
-supplierPriceStudyInputDetail (studyInputDetail) <- priceSupplierBLedgerDateTime (
+supplierPriceStudyInputDetail (studyInputDetail) <- supplierPriceBLedgerDateTime (
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
                 WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
-retailRangeStudyInputDetail (studyInputDetail) <- rangeRetailBLedgerDateTime(
+retailRangeStudyInputDetail (studyInputDetail) <- retailRangeBLedgerDateTime(
                 itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
                 WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
 
-curImporterPriceStudyOutputDetail (studyOutputDetail) <- priceImporterBLedgerDateTime(
+curImporterPriceStudyOutputDetail (studyOutputDetail) <- importerPriceBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
-curSupplierPriceStudyOutputDetail (studyOutputDetail) <- priceSupplierBLedgerDateTime(
+curSupplierPriceStudyOutputDetail (studyOutputDetail) <- supplierPriceBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
-curRetailRangeStudyOutputDetail (studyOutputDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeStudyOutputDetail (studyOutputDetail) <- retailRangeBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
-curRetailPriceStudyOutputDetail (studyOutputDetail) <- priceRetailBLedgerDateTime(
+curRetailPriceStudyOutputDetail (studyOutputDetail) <- retailPriceBLedgerDateTime(
                 itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
                 WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
 
 // ОТГРУЗКА ИЗ РОЗНИЦЫ
-importerPriceStatementDetail (statementDetail) <- priceImporterBLedgerDateTime (
+importerPriceStatementDetail (statementDetail) <- importerPriceBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 WHEN CHANGED(itemStatementDetail(statementDetail));
 
-supplierPriceStatementDetail (statementDetail) <- priceSupplierBLedgerDateTime (
+supplierPriceStatementDetail (statementDetail) <- supplierPriceBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 WHEN CHANGED(itemStatementDetail(statementDetail));
 
-retailRangeStatementDetail (statementDetail) <- rangeRetailBLedgerDateTime(
+retailRangeStatementDetail (statementDetail) <- retailRangeBLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 WHEN CHANGED(itemStatementDetail(statementDetail));
 
-curRetailPriceStatementDetail (statementDetail) <- priceRetailBLedgerDateTime (
+curRetailPriceStatementDetail (statementDetail) <- retailPriceBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 WHEN CHANGED(itemStatementDetail(statementDetail));
 
-retailPriceStatementDetail (statementDetail) <- priceRetailBLedgerDateTime (
+retailPriceStatementDetail (statementDetail) <- retailPriceBLedgerDateTime (
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
                 WHEN CHANGED(itemStatementDetail(statementDetail));
 
@@ -10205,19 +9943,19 @@ wareStatementDetail (statementDetail) <- wareBLedgerDateTime(
                 WHEN CHANGED(itemStatementDetail(statementDetail));
 
 //  ПЕРЕОЦЕНКА
-curRetailPriceUserPriceChangeDetail(userPriceChangeDetail) <- priceRetailBLedgerDateTime(
+curRetailPriceUserPriceChangeDetail(userPriceChangeDetail) <- retailPriceBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
                 WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
-curImporterPriceUserPriceChangeDetail (userPriceChangeDetail) <- priceImporterBLedgerDateTime(
+curImporterPriceUserPriceChangeDetail (userPriceChangeDetail) <- importerPriceBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
                 WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
-curSupplierPriceUserPriceChangeDetail (userPriceChangeDetail) <- priceSupplierBLedgerDateTime(
+curSupplierPriceUserPriceChangeDetail (userPriceChangeDetail) <- supplierPriceBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
                 WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
-curRetailRangeUserPriceChangeDetail (userPriceChangeDetail) <- rangeRetailBLedgerDateTime(
+curRetailRangeUserPriceChangeDetail (userPriceChangeDetail) <- retailRangeBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
                 WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
@@ -10229,7 +9967,7 @@ curWareUserPriceChangeDetail (userPriceChangeDetail) <- wareBLedgerDateTime(
                 itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
                 WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
 
-retailRangeBillDetail (billDetail) <- rangeRetailBLedgerDateTime(
+retailRangeBillDetail (billDetail) <- retailRangeBLedgerDateTime(
                 itemBillDetail(billDetail), departmentStoreBillDetail(billDetail), dateTimeBillDetail(billDetail))
                 WHEN CHANGED(itemBillDetail(billDetail));
 
@@ -10264,11 +10002,11 @@ noOverdueSpecificationStatement 'Непросроченные с/ф' (specificat
 
 // --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
 
-accountPricePageInventoryDetail(pageInventoryDetail) <- priceAccountBLedgerDateTime(
+accountPricePageInventoryDetail(pageInventoryDetail) <- accountPriceBLedgerDateTime(
                 itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
                 WHEN CHANGED(itemPageInventoryDetail(pageInventoryDetail));
 
-accountPriceBalanceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
+accountPriceBalanceCollationSheetItem(collationSheet, item) <- accountPriceBLedgerDateTime(
                 item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
                 WHEN ASSIGNED(includeCollationSheetItem(collationSheet, item));
 
@@ -10280,10 +10018,10 @@ fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(in
 //  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
 
 convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-    SET accountPricePageInventoryDetail(pageInventoryDetail) AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory <- priceAccountBLedgerDateTime(
+    SET accountPricePageInventoryDetail(pageInventoryDetail) AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory <- accountPriceBLedgerDateTime(
             itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
             AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory;
-    SET accountPriceBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- priceAccountBLedgerDateTime(
+    SET accountPriceBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
             AND inventoryCollationSheet(collationSheet) == inventory;
 } CONFIRM;
@@ -10291,10 +10029,10 @@ convertPriceInventory 'Пересчитать цены по всей инвен�
 // todo: какой-то баг, не всегда срабатывает action
 
 convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
-    SET accountPricePageInventoryDetail(pageInventoryDetail) AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet <- priceAccountBLedgerDateTime(
+    SET accountPricePageInventoryDetail(pageInventoryDetail) AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet <- accountPriceBLedgerDateTime(
             itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
             AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet;
-    SET accountPriceBalanceCollationSheetItem(collationSheet, item) <- priceAccountBLedgerDateTime(
+    SET accountPriceBalanceCollationSheetItem(collationSheet, item) <- accountPriceBLedgerDateTime(
             item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
 } CONFIRM;
 
@@ -10859,8 +10597,8 @@ FORM shipment 'Поставка'
     FILTERS isShippedOrOrderedItemShipment(i, s)
 
     HINTNOUPDATE LIST isPostedShipment,
-                  balanceBItemLedgerDateTime, priceImporterBLedgerDateTime, wareBLedgerDateTime, warePriceBLedgerDateTime,
-                  rangeRetailBLedgerDateTime, priceRetailBLedgerDateTime, priceSupplierBLedgerDateTime, priceAccountBLedgerDateTime
+                  balanceBItemLedgerDateTime, importerPriceBLedgerDateTime, wareBLedgerDateTime, warePriceBLedgerDateTime,
+                  retailRangeBLedgerDateTime, retailPriceBLedgerDateTime, supplierPriceBLedgerDateTime, accountPriceBLedgerDateTime
 
     EDIT shipment OBJECT s
 ;
@@ -11847,11 +11585,11 @@ FORM inventories 'Инвентаризации'
     PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 
-    OBJECTS il=inventoryLedger
-    PROPERTIES(il) READONLY barcodeExInventoryLedger, nameAttributeItemInventoryLedger, quantityInventoryLedger, accountSumInventoryLedger, nameDepartmentStoreInventoryLedger
-    FILTERS                 inventoryInventoryLedger(il)==in
+    OBJECTS il=inventoryDetail
+    PROPERTIES(il) READONLY barcodeExInventoryDetail, nameAttributeItemInventoryDetail, quantityInventoryDetail, accountSumInventoryDetail, nameDepartmentStoreInventoryDetail
+    FILTERS                 inventoryInventoryDetail(il)==in
 
-    ORDER BY        nameDepartmentStoreInventoryLedger
+    ORDER BY        nameDepartmentStoreInventoryDetail
 ;
 
 DESIGN inventories FROM DEFAULT {
@@ -13101,8 +12839,8 @@ FORM balanceItemDepartment 'Остатки на дату'
                       inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
 
-    PROPERTIES(i, dep, t) READONLY balanceAItemLedgerDateTime, priceImporterALedgerDateTime, priceSupplierALedgerDateTime,
-                                   priceAccountALedgerDateTime, dataRetailALedgerDateTime, priceRetailALedgerDateTime,
+    PROPERTIES(i, dep, t) READONLY balanceAItemLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
+                                   accountPriceBLedgerDateTime, dataRetailRangeALedgerDateTime, retailPriceALedgerDateTime,
                                    warePriceALedgerDateTime
 
     PROPERTIES(i, dep) READONLY dateLastMovedItem
@@ -13114,12 +12852,12 @@ FORM balanceItemDepartment 'Остатки на дату'
         FILTER 'Товары с движением не позднее' 'F9' dateLastMovedUnionBalanceItem(i, dep, t)
 
     OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, priceAccountLedger
+    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
     FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
     ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, priceRetailLedger
+    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
     ORDER BY dateTimeRetailPriceLedger DESC
 
@@ -13129,22 +12867,22 @@ FORM balanceItemDepartment 'Остатки на дату'
     ORDER BY dateTimeBalanceItemLedger DESC
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, priceImporterLedger
+    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
+    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
     ORDER BY dateTimeSupplierPriceLedger DESC
 
-    OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, dataRetailLedger
-    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
-    ORDER BY dateTimeRetailVATLedger DESC
+    OBJECTS rvl=retailRangeLedger
+    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, dataRetailRangeRetailRangeLedger
+    FILTERS isPostedRetailRangeLedger(rvl) AND itemRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
+    ORDER BY dateTimeRetailRangeLedger DESC
 
     OBJECTS wpl= warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, wareWarePricePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
     FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
     ORDER BY dateTimeWarePriceLedger DESC
 ;
@@ -13203,8 +12941,8 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     ORDER BY          nameIt
 
 
-    PROPERTIES(i, dep) READONLY currentBalanceItemLedger, currentPriceImporterLedger, currentPriceSupplierLedger,
-                                currentPriceAccountLedger, dataCurrentRetailLedger, currentPriceRetailLedger,
+    PROPERTIES(i, dep) READONLY currentBalanceItemLedger, currentImporterPriceLedger, currentSupplierPriceLedger,
+                                currentAccountPriceLedger, currentDataRetailRangeLedger, currentRetailPriceLedger,
                                 currentWarePriceLedger, dateLastMovedItem, averageSoldItemDepartmentStore
 
     PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
@@ -13214,12 +12952,12 @@ FORM curBalanceItemDepartment 'Текущие остатки'
         FILTER 'Товары с движением не позднее' 'F9' curDateLastMovedUnionBalanceItem(i, dep)
 
     OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, priceAccountLedger
+    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
     FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
     ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, priceRetailLedger
+    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
     ORDER BY dateTimeRetailPriceLedger DESC
 
@@ -13229,22 +12967,22 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     ORDER BY dateTimeBalanceItemLedger DESC
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, priceImporterLedger
+    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, priceSupplierLedger
+    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
     ORDER BY dateTimeSupplierPriceLedger DESC
 
-    OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, dataRetailLedger
-    FILTERS isPostedRetailVATLedger(rvl) AND itemRetailVATLedger(rvl)==i AND departmentStoreRetailVATLedger(rvl)==dep
-    ORDER BY dateTimeRetailVATLedger DESC
+    OBJECTS rvl=retailRangeLedger
+    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, dataRetailRangeRetailRangeLedger
+    FILTERS isPostedRetailRangeLedger(rvl) AND itemRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
+    ORDER BY dateTimeRetailRangeLedger DESC
 
     OBJECTS wpl=warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, wareWarePricePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
     FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
     ORDER BY dateTimeWarePriceLedger DESC
 
@@ -13447,7 +13185,7 @@ netWeightBalanceAItemLedgerDate 'Вес товара на конец , кг' (it
 volumeBalanceAItemLedgerDate 'Объем товара на конец , л' (item, departmentStore, dateTo) =
     balanceAItemLedgerDate (item, departmentStore, dateTo) * volumeItem(item);
 retailSumBalanceAItemLedgerDate 'Сумма товара на конец , руб' (item, departmentStore, dateTo) =
-    priceRetailALedgerDate (item, departmentStore, dateTo) * balanceAItemLedgerDate(item, departmentStore, dateTo);
+    retailPriceALedgerDate (item, departmentStore, dateTo) * balanceAItemLedgerDate(item, departmentStore, dateTo);
 //balanceAItemLedgerDate (item, departmentStore, dateTo)    - шт.
 
                                    //с коэффициентом пересчета на коцен//
