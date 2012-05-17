@@ -2760,7 +2760,10 @@ monthToNaturalLossItemGroupDetail = DATA month (subNaturalLossItemGroupDetail);
 nameMonthToNaturalLossItemGroupDetail 'Месяц' = name(monthToNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail));
 percentNaturalLossItemGroupDetail '% естественной убыли' = DATA NUMERIC[10,5] (subNaturalLossItemGroupDetail);
 
-inInterval(prm1, prm2, prm3, prm4, prm5, prm6) = ((prm2*32+prm1) >= (prm4*32+prm3)) AND ((prm2*32+prm1) <= (prm6*32+prm5));
+dateToNumber(prm1, prm2) = prm2*32 + prm1;
+inInterval(prm1, prm2, prm3, prm4, prm5, prm6) = (dateToNumber(prm1, prm2) >= dateToNumber(prm3, prm4))
+                                                  AND (dateToNumber(prm1, prm2) <= dateToNumber(prm5, prm6));
+
 inIntervalNaturalLoss (date, subNaturalLossItemGroupDetail) =
     inInterval(dayInDate(date), numberMonthInDate(date),
                dayFromNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail),
@@ -2795,8 +2798,6 @@ inParentNaturalLossItemGroup(naturalLossItemGroup, subNaturalLossItemGroup) =
 inParentSubNaturalLossItemGroup (naturalLossItemGroup, subNaturalLossItemGroup) = UNION OVERRIDE
     parentNaturalLossItemGroup(subNaturalLossItemGroup) == naturalLossItemGroup,
     subNaturalLossItemGroup IS subNaturalLossItemGroup AND NOT naturalLossItemGroup;
-
-dateToNumber(prm1, prm2) = prm2*32 + prm1;
 
 numberFromSubNaturalLossItemGroupDetail (subNaturalLossItemGroupDetail) =
     dateToNumber(dayFromNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail),
