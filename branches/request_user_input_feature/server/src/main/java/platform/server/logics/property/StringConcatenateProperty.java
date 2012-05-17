@@ -1,14 +1,14 @@
 package platform.server.logics.property;
 
+import platform.server.classes.ConcatenateValueClass;
+import platform.server.classes.StringClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.StringConcatenateExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StringConcatenateProperty extends FormulaProperty<StringConcatenateProperty.Interface> {
     private final String separator;
@@ -51,5 +51,16 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
         for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
             exprs.add(joinImplement.get(getInterface(i)));
         return StringConcatenateExpr.create(exprs, separator, caseSensitive);
+    }
+
+    @Override
+    public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null) {
+            Map<Interface, ValueClass> result = new HashMap<Interface, ValueClass>();
+            for(int i=0;i<interfaces.size();i++)
+                result.put(getInterface(i), StringClass.get(0)); // немного бред но ладно
+            return result;
+        }
+        return super.getInterfaceCommonClasses(commonValue);
     }
 }

@@ -39,6 +39,10 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
         return new CalcPropertyImplement<P, L>(property, join(mapImplement));
     }
 
+    public static <P extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<P, T> mapPropertyImplement(CalcPropertyImplement<P, T> implement) {
+        return new CalcPropertyMapImplement<P, T>(implement.property, implement.mapping);
+    }
+        
     public <L extends PropertyInterface> CalcPropertyMapImplement<P, L> mapPropertyImplement(Map<T, L> mapImplement) {
         return new CalcPropertyMapImplement<P, L>(property, join(mapImplement));
     }

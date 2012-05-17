@@ -14,7 +14,6 @@ import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -39,7 +38,7 @@ public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty
         return null;
     }
 
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         DataObject object;
         if (valueClass.hasChildren()) {
             // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()

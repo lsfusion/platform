@@ -35,7 +35,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         Map<ClassPropertyInterface,DataObject> keys = context.getKeys();
         Modifier modifier = context.getModifier();

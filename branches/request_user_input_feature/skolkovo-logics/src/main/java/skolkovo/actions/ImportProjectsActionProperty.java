@@ -900,7 +900,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         PrivateInfo pInfo = new PrivateInfo();
 

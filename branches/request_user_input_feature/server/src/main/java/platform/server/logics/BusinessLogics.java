@@ -1134,7 +1134,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 try {
                     classProperty = property.getClass().getSimpleName();
                     returnClass = property.getValueClass().getSID();
-                    for (Object cc : property.getMapClasses().values()) {
+                    for (Object cc : property.getInterfaceClasses().values()) {
                         if (cc instanceof CustomClass)
                             commonClasses += ((CustomClass) cc).getSID() + ", ";
                         else if (cc instanceof DataClass)
@@ -2143,10 +2143,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.getLP(sID);
     }
 
-    private boolean intersect(LP[] props) {
+    private boolean intersect(LCP[] props) {
         for (int i = 0; i < props.length; i++)
             for (int j = i + 1; j < props.length; j++)
-                if (((LP<?, ?>) props[i]).intersect((LP<?, ?>) props[j]))
+                if (((LCP<?>) props[i]).intersect((LCP<?>) props[j]))
                     return true;
         return false;
     }
@@ -2170,11 +2170,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 logger.debug("Checking property : " + prop + "...");
                 assert prop.check();
             }
-        for (LP[] props : LM.checkCUProps) {
+        for (LCP[] props : LM.checkCUProps) {
             logger.debug("Checking class properties : " + props + "...");
             assert !intersect(props);
         }
-        for (LP[] props : LM.checkSUProps) {
+        for (LCP[] props : LM.checkSUProps) {
             logger.debug("Checking union properties : " + props + "...");
 //            assert intersect(props);
         }
@@ -2255,7 +2255,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             getRestartController().initRestart();
             updateRestartProperty();
         }
@@ -2266,7 +2266,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
         }
@@ -2277,7 +2277,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sid, caption, new ValueClass[]{});
         }
 
-        public void executeCustom(ExecutionContext context) {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
             System.runFinalization();
             System.gc();
         }

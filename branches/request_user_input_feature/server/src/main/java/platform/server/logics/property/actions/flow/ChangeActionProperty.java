@@ -1,10 +1,13 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.server.classes.LogicalClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
@@ -49,5 +52,13 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
     public Set<CalcProperty> getChangeProps() {
         return Collections.singleton((CalcProperty)writeTo.property);
 //        return new HashSet<CalcProperty>(writeTo.property.getDataChanges());
+    }
+
+    @Override
+    protected CalcPropertyMapImplement<?, I> getSetWhereProperty() {
+        // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
+        return DerivedProperty.createUnion(innerInterfaces, DerivedProperty.createAnd(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance), writeTo),
+                    DerivedProperty.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(), "value").
+                        mapImplement(Collections.singletonMap("value", writeFrom))));
     }
 }

@@ -30,11 +30,12 @@ public class TranslateActionProperty extends CustomActionProperty {
     private static ValueClass[] getValueClasses(LCP sourceProperty, ValueClass dictionary) {
         List<ValueClass> result = new ArrayList<ValueClass>();
         result.add(dictionary);
-        result.addAll(BaseUtils.toList(sourceProperty.getCommonClasses(new Result<ValueClass>(){})));
+        result.addAll(BaseUtils.toList(sourceProperty.getInterfaceValueClasses(new Result<ValueClass>() {
+        })));
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject dictionary = context.getKeyValue(interfacesList.remove(0));
         List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, context.getKeys());

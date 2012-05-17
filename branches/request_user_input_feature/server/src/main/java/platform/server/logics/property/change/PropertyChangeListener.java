@@ -51,7 +51,7 @@ public abstract class PropertyChangeListener<P extends PropertyInterface> {
 
         Expr listenerChangeExpr = getValueExpr();
 
-        DataChanges listenerChanges = ((CalcProperty<ClassPropertyInterface>)listenerImplement.property).
+        DataChanges listenerChanges = listenerImplement.property.
                 getDataChanges(new PropertyChange(listenerChangeValues, listenerChangeKeys, listenerChangeExpr, listenerChangedWhere), propChanges);
 
         return listenerChanges;

@@ -31,7 +31,7 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
         this.BL = BL;
     }
 
-    public void executeCustom(ExecutionContext context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DeclarationExporter exporter = new DeclarationExporter(context.getKeys());
             exporter.extractData();

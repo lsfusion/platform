@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -58,5 +59,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
                 throw new RuntimeException();
         }
         return new PropertyChange<T>(mapKeys, ValueExpr.get(where), Where.TRUE);
+    }
+
+    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        return property.getInterfaceCommonClasses(commonValue);
     }
 }

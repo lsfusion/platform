@@ -17,6 +17,7 @@ import platform.server.classes.ActionClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -37,8 +38,10 @@ import platform.server.form.view.panellocation.ShortcutPanelLocationView;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.Modifier;
@@ -139,6 +142,22 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public final Collection<T> interfaces;
 
+    public Type getType() {
+        return getValueClass().getType();
+    }
+
+    public abstract ValueClass getValueClass();
+
+    public abstract Map<T, ValueClass> getInterfaceClasses();
+    public abstract ClassWhere<T> getClassWhere();
+
+    public Map<T, ValueClass> getFullInterfaceClasses() {
+        return null;
+    }
+    public ClassWhere<T> getFullClassWhere() {
+        return null;
+    }
+
     public boolean check() {
         return !getClassWhere().isFalse();
     }
@@ -152,12 +171,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     @IdentityLazy
-    public boolean allInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
+    private boolean allInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
         return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere());
     }
 
     @IdentityLazy
-    public boolean anyInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
+    private boolean anyInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
         return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
@@ -211,10 +230,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Expr getExpr(Map<T, ? extends Expr> joinImplement) {
         return getExpr(joinImplement, PropertyChanges.EMPTY);
-    }
-
-    public Expr getClassExpr(Map<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, true, PropertyChanges.EMPTY, null);
     }
 
     public Expr getExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier) {
@@ -303,15 +318,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
 
     @IdentityLazy
-    public ClassWhere<T> getClassWhere() {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
-        return new Query<T, String>(mapKeys, getClassExpr(mapKeys), "value").getClassWhere(new ArrayList<String>());
-    }
-
-    @IdentityLazy
     public Type getInterfaceType(T propertyInterface) {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
-        return mapKeys.get(propertyInterface).getType(getClassExpr(mapKeys).getWhere());
+        return getInterfaceClasses().get(propertyInterface).getType();
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов
@@ -354,37 +362,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         canChangeSID = false;
     }
 
-    public static class CommonClasses<T extends PropertyInterface> {
-        public Map<T, ValueClass> interfaces;
-        public ValueClass value;
-
-        public CommonClasses(Map<T, ValueClass> interfaces, ValueClass value) {
-            this.interfaces = interfaces;
-            this.value = value;
-        }
-    }
-
-    public Type getType() {
-        return getValueClass().getType();
-    }
-
-    public abstract Map<T, ValueClass> getMapClasses();
-    public abstract ValueClass getValueClass();
-
     public boolean cached = false;
 
-    private Map<String, ActionPropertyMapImplement<T>> editActions = new HashMap<String, ActionPropertyMapImplement<T>>();
+    private Map<String, ActionPropertyMapImplement<?, T>> editActions = new HashMap<String, ActionPropertyMapImplement<?, T>>();
 
-    public void setEditAction(String editActionSID, ActionPropertyMapImplement<T> editActionImplement) {
+    public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
         editActions.put(editActionSID, editActionImplement);
     }
 
-    public ActionPropertyMapImplement<T> getEditAction(String editActionSID) {
+    public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID) {
         return getEditAction(editActionSID, null);
     }
 
-    public ActionPropertyMapImplement<T> getEditAction(String editActionSID, CalcProperty filterProperty) {
-        ActionPropertyMapImplement<T> editAction = editActions.get(editActionSID);
+    public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID, CalcProperty filterProperty) {
+        ActionPropertyMapImplement<?, T> editAction = editActions.get(editActionSID);
         if (editAction != null) {
             return editAction;
         }
@@ -399,7 +390,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getDefaultEditAction(editActionSID, filterProperty);
     }
 
-    public abstract ActionPropertyMapImplement<T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);
+    public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);
 
     public boolean checkEquals() {
         return this instanceof CalcProperty;
@@ -437,7 +428,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 }
 
                 //добавляем в контекстное меню...
-                drawEntity.setContextMenuEditAction(caption, getSID(), (ActionPropertyObjectEntity) entity.propertyObject);
+                drawEntity.setContextMenuEditAction(caption, getSID(), (ActionPropertyObjectEntity<T>) entity.propertyObject);
             }
         }
     }
@@ -577,7 +568,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         assert !finalized;
         finalized = true;
         if(this instanceof ActionProperty)
-            for(CalcProperty<?> property : ((ActionProperty)this).getChangeProps()) // вообще говоря DataProperty и IsClassProperty
+            for(CalcProperty<?> property : ((ActionProperty<?>)this).getChangeProps()) // вообще говоря DataProperty и IsClassProperty
                 property.actionChangeProps.add((ActionProperty) this);
     }
 

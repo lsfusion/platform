@@ -17,7 +17,7 @@ public class MessageActionProperty extends CustomActionProperty {
         msgInterface = BaseUtils.single(interfaces);
     }
 
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         context.requestUserInteraction(
                 new MessageClientAction(((String) context.getKeyValue(msgInterface).object).trim(), caption)
         );

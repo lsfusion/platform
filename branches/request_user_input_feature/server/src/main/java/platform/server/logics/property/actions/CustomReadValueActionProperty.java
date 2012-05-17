@@ -3,6 +3,7 @@ package platform.server.logics.property.actions;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public abstract class CustomReadValueActionProperty extends CustomActionProperty
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         Object userValue = null;
 
         DataClass readType = getReadType(context);
@@ -34,7 +35,7 @@ public abstract class CustomReadValueActionProperty extends CustomActionProperty
         executeRead(context, userValue);
     }
 
-    protected abstract void executeRead(ExecutionContext context, Object userValue) throws SQLException;
+    protected abstract void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException;
 
     protected abstract DataClass getReadType(ExecutionContext context);
 }

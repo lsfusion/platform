@@ -1,34 +1,33 @@
 package platform.server.logics.property.actions;
 
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.IsClassProperty;
+import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class CustomActionProperty extends ActionProperty {
+public abstract class CustomActionProperty extends ActionProperty<ClassPropertyInterface> {
 
     protected CustomActionProperty(String sID, ValueClass... classes) {
-        super(sID, classes);
+        this(sID, "sys", classes);
     }
 
     protected CustomActionProperty(String sID, String caption, ValueClass[] classes) {
-        super(sID, caption, classes);
+        super(sID, caption, IsClassProperty.getInterfaces(classes));
     }
 
-    protected abstract void executeCustom(ExecutionContext context) throws SQLException;
+    protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException;
 
-    public final FlowResult execute(ExecutionContext context) throws SQLException {
+    public final FlowResult execute(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(context.getKeys()))) // если подходит по классам выполнем
             executeCustom(context);
         return FlowResult.FINISH;
+    }
+
+    public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty() {
+        return IsClassProperty.getProperty(interfaces);
     }
 
     public Set<CalcProperty> getChangeProps() {

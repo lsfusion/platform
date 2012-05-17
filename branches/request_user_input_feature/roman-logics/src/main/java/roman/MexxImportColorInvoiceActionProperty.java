@@ -3,6 +3,7 @@ package roman;
 import platform.interop.action.MessageClientAction;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
     }
 
     @Override
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField colorCodeField = new ImportField(LM.sidColorSupplier);
         ImportField colorNameField = new ImportField(LM.baseLM.name);
 

@@ -6,10 +6,8 @@ import platform.server.form.instance.FormCloseType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.ActionPropertyMapImplement;
-import platform.server.logics.property.AnyValuePropertyHolder;
-import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.linear.LP;
+import platform.server.logics.property.*;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -27,7 +25,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     private final StaticCustomClass formResultClass;
     private final LCP formResultProperty;
 
-    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<I> action,
+    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
                                                                         Type requestValueType, String chosenKey,
                                                                         LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
                                                                         AnyValuePropertyHolder chosenValueProperty, StaticCustomClass formResultClass, LCP formResultProperty) {
@@ -48,7 +46,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     }
 
     @Override
-    protected FlowResult aroundAspect(ExecutionContext context) throws SQLException {
+    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
         ObjectValue pushedUserInput = context.getPushedUserInput();
         if (pushedUserInput == null) {
             proceed(context);

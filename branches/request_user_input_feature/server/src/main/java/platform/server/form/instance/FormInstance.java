@@ -568,7 +568,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 LCP<?> lcp = (LCP<?>) lp;
                 CalcProperty<?> property = lcp.property;
                 if (property.autoset) {
-                    ValueClass interfaceClass = BaseUtils.singleValue(property.getMapClasses());
+                    ValueClass interfaceClass = BaseUtils.singleValue(property.getInterfaceClasses());
                     ValueClass valueClass = property.getValueClass();
                     if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass&&
                             cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
@@ -1479,12 +1479,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     private List<ClientAction> fireEvent(Object eventObject) throws SQLException {
-        List<ActionPropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
+        List<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
         if (actionsOnEvent != null) {
             AUTOACTIONS:
-            for (ActionPropertyObjectEntity autoAction : actionsOnEvent) {
-                ActionPropertyObjectInstance autoActionInstance = instanceFactory.getInstance(autoAction);
+            for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
+                ActionPropertyObjectInstance<?> autoActionInstance = instanceFactory.getInstance(autoAction);
                 if (autoActionInstance.isInInterface(null)) {
                     List<ClientAction> actions = autoActionInstance.execute(new ExecutionEnvironment(this));
                     for (ClientAction clientAction : actions) {

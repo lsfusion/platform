@@ -4,6 +4,7 @@ import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
@@ -37,7 +38,7 @@ public class TNVEDImportActionProperty extends CustomReadValueActionProperty {
         return getFileClass();
     }
 
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         try {
             ObjectValue userObjectValue = context.getSession().getObjectValue(userValue, getFileClass());
             

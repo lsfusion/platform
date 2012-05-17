@@ -39,7 +39,7 @@ public class ChangeClassActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         context.changeClass(context.getObjectInstance(objectInterface), context.getKeyValue(objectInterface),
                 (Integer) context.getKeyValue(classInterface).object);
     }

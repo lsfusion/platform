@@ -13,7 +13,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.actions.ChangeObjectActionProperty;
 import platform.server.logics.property.actions.ChangeReadClassActionProperty;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
@@ -51,7 +50,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     }
 
     @Override
-    public ActionPropertyMapImplement<ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return new ChangeReadClassActionProperty(baseClass).getImplement(Collections.singletonList(getInterface()));
     }
 

@@ -103,7 +103,7 @@ public class EmailActionProperty extends CustomActionProperty {
         attachmentProps.add(attachmentNameProp);
     }
 
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             if (BL.LM.disableEmail.read(context) != null) {
                 logger.error(getString("mail.sending.disabled"));

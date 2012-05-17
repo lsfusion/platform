@@ -1,7 +1,6 @@
 package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
@@ -46,7 +45,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
-    public HashMap<Object, List<ActionPropertyObjectEntity>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity>>();
+    public HashMap<Object, List<ActionPropertyObjectEntity<?>>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
 
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
@@ -498,14 +497,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, PropertyObjectInterfaceEntity... objects) {
         return new CalcPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
     }
-    public ActionPropertyObjectEntity addPropertyObject(LAP property, PropertyObjectInterfaceEntity... objects) {
-        return new ActionPropertyObjectEntity(property.property, property.getMap(objects), property.getCreationScript());
+    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, PropertyObjectInterfaceEntity... objects) {
+        return new ActionPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
     }
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
         if(property instanceof LCP)
-            return addPropertyObject((LCP)property, objects);
+            return addPropertyObject((LCP<?>)property, objects);
         else
-            return addPropertyObject((LAP)property, objects);
+            return addPropertyObject((LAP<?>)property, objects);
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
@@ -761,7 +760,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         outStream.writeInt(eventActions.size());
-        for (Map.Entry<Object, List<ActionPropertyObjectEntity>> entry : eventActions.entrySet()) {
+        for (Map.Entry<Object, List<ActionPropertyObjectEntity<?>>> entry : eventActions.entrySet()) {
             Object event = entry.getKey();
 
             //пока предполагаем, что евент либо String, либо CustomSerializable!
@@ -795,14 +794,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             defaultOrders.put(order, inStream.readBoolean());
         }
 
-        eventActions = new HashMap<Object, List<ActionPropertyObjectEntity>>();
+        eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
             Object event = inStream.readBoolean()
                     ? pool.readString(inStream)
                     : pool.deserializeObject(inStream);
 
-            List<ActionPropertyObjectEntity> actions = pool.deserializeList(inStream);
+            List<ActionPropertyObjectEntity<?>> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);
         }
     }
@@ -830,17 +829,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         addActionsOnEvent(FormEventType.OK, false, actions);
     }
 
-    public void addActionsOnEvent(Object eventObject, boolean drop, ActionPropertyObjectEntity... actions) {
-        List<ActionPropertyObjectEntity> thisEventActions = eventActions.get(eventObject);
+    public void addActionsOnEvent(Object eventObject, boolean drop, ActionPropertyObjectEntity<?>... actions) {
+        List<ActionPropertyObjectEntity<?>> thisEventActions = eventActions.get(eventObject);
         if (thisEventActions == null || drop) {
-            thisEventActions = new ArrayList<ActionPropertyObjectEntity>();
+            thisEventActions = new ArrayList<ActionPropertyObjectEntity<?>>();
             eventActions.put(eventObject, thisEventActions);
         }
 
         thisEventActions.addAll(Arrays.asList(actions));
     }
 
-    public List<ActionPropertyObjectEntity> getActionsOnEvent(Object eventObject) {
+    public List<ActionPropertyObjectEntity<?>> getActionsOnEvent(Object eventObject) {
         return eventActions.get(eventObject);
     }
 

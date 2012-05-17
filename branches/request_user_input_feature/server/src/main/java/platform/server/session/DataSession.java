@@ -654,7 +654,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
             if (result.size() > 0) {
                 // для constraint'ов
                 assert property.isFull();
-                final Map<T, ValueClass> classes = property.getMapClasses();
+                final Map<T, ValueClass> classes = property.getInterfaceClasses();
 
                 NoPropertyTableUsage<T> keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), new Type.Getter<T>() {
                     public Type getType(T key) {

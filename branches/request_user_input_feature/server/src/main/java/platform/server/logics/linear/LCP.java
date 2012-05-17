@@ -205,14 +205,14 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         return BaseUtils.orderMap(property.getMapKeys(), listInterfaces);
     }
 
-    public ValueClass[] getCommonClasses(Result<ValueClass> value) {
+    public ValueClass[] getInterfaceValueClasses(Result<ValueClass> value) {
         value.result = property.getValueClass();
-        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
+        return BaseUtils.mapList(listInterfaces, property.getInterfaceClasses()).toArray(new ValueClass[0]);
     }
 
     public ValueClass getResultClass() {
         Result<ValueClass> result = new Result<ValueClass>();
-        getCommonClasses(result);
+        getInterfaceValueClasses(result);
         return result.result;
     }
 
@@ -246,7 +246,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         property.autoset = autoset;
     }
 
-    public ValueClass[] getMapClasses() {
-        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[0]);
+    public ValueClass[] getInterfaceClasses() {
+        return BaseUtils.mapList(listInterfaces, property.getInterfaceClasses()).toArray(new ValueClass[0]);
     }
 }

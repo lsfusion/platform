@@ -86,7 +86,7 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
         return null;
     }
 
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке
         if (quantity) {

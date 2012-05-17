@@ -1,19 +1,13 @@
 package platform.server.form.entity;
 
-import org.omg.CORBA.PUBLIC_MEMBER;
 import platform.base.TwinImmutableInterface;
-import platform.server.form.instance.InstanceFactory;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.serialization.ServerCustomSerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> implements ServerCustomSerializable {
@@ -104,6 +98,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         if(property instanceof CalcProperty)
             return new CalcPropertyObjectEntity<T>((CalcProperty<T>)property, map, creationScript);
         else
-            return (PropertyObjectEntity<T, ?>) new ActionPropertyObjectEntity((ActionProperty) property, ActionProperty.cast(map), creationScript);
+            return new ActionPropertyObjectEntity<T>((ActionProperty<T>) property, map, creationScript);
     }
 }

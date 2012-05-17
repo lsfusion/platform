@@ -9,7 +9,6 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 
 import java.util.Arrays;
@@ -18,7 +17,6 @@ import java.util.Map;
 
 import static platform.server.logics.PropertyUtils.mapCalcImplement;
 import static platform.server.logics.PropertyUtils.readCalcImplements;
-import static platform.server.logics.PropertyUtils.readImplements;
 
 /**
  * User: DAle
@@ -86,7 +84,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         addPropertyDraw(logProperty, entities);
 
         Result<ValueClass> value = new Result<ValueClass>();
-        property.getCommonClasses(value);
+        property.getInterfaceValueClasses(value);
         List<PropertyClassImplement> recognizePropImpls =
                 LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), true);
 
@@ -117,7 +115,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     }
 
     private static ValueClass[] getValueClassesList(LCP<?> property) {
-        Map<? extends PropertyInterface,ValueClass> interfaces = property.property.getMapClasses();
+        Map<? extends PropertyInterface,ValueClass> interfaces = property.property.getInterfaceClasses();
         ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;
         for (PropertyInterface pi : property.property.interfaces) {

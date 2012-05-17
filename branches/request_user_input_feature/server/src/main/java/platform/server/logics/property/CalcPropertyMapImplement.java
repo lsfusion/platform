@@ -114,12 +114,16 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         properties.add(this);
     }
 
-    public Map<T,ValueClass> mapCommonInterfaces() { // тут не обязательно isFull
-        return crossJoin(mapping, property.getMapClasses());
+    public Map<T,ValueClass> mapInterfaceClasses() { // тут не обязательно isFull
+        return crossJoin(mapping, property.getInterfaceClasses());
     }
 
     @Override
-    public ActionPropertyMapImplement<T> mapEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, T> mapEditAction(String editActionSID, CalcProperty filterProperty) {
         return property.getEditAction(editActionSID, filterProperty).map(mapping);
+    }
+    
+    public Map<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
+        return crossJoin(mapping, property.getInterfaceCommonClasses(commonValue));
     }
 }

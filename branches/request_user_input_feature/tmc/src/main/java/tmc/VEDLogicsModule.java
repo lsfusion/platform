@@ -100,7 +100,7 @@ public class VEDLogicsModule extends LogicsModule {
     private AbstractGroup documentPrintGroup;
     private LCP quantityOrder;
     private LCP   coeffTransArticle;
-    private LAP addArticleBarcode;
+    private LAP<?> addArticleBarcode;
     private LCP weightArticle;
     private LCP weightOrderArticle;
     private LCP transOrderArticle;
@@ -111,9 +111,9 @@ public class VEDLogicsModule extends LogicsModule {
     private LCP  legalEntityUnn;
     private LCP invoiceDocumentNumber;
     private LCP   addressLegalEntity;
-    private LAP importDocs;
+    private LAP<?> importDocs;
     private  LCP   documentIncSklFreeQuantity;
-    private LAP downToZero;
+    private LAP<?> downToZero;
     private LCP  freeIncOrderArticle;
     private CustomClass commitReturnShopOut;
     private LCP  sumWithDiscountCouponOrder;
@@ -324,8 +324,8 @@ public class VEDLogicsModule extends LogicsModule {
     LCP documentBarcodePrice, documentBarcodePriceOv;
     LCP numberInvoiceDocument, seriesInvoiceDocument;
     LCP orderBirthDay;
-    LAP payWithCard;
-    LAP printOrderCheck;
+    LAP<?> payWithCard;
+    LAP<?> printOrderCheck;
     // выноски
     LCP orderUser;
     //LCP discountSumOrderArticle;
@@ -333,10 +333,10 @@ public class VEDLogicsModule extends LogicsModule {
     LCP orderContragentBarcode;
     LCP orderUserBarcode;
     LCP orderComputer;
-    LAP saleExport;
-    LAP importOrder;
-    LAP importArticlesRRP;
-    LAP importArticlesInfo;
+    LAP<?> saleExport;
+    LAP<?> importOrder;
+    LAP<?> importArticlesRRP;
+    LAP<?> importArticlesInfo;
     LCP actionArticleStore;
 
     private LCP shopFormat;
@@ -1284,7 +1284,7 @@ public class VEDLogicsModule extends LogicsModule {
         VEDBL.cashRegController = new CashRegController(this); // бред конечно создавать его здесь, но влом создавать getCashRegController()
         VEDBL.cashRegController.addCashRegProperties();
 
-        LAP importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(VEDBL, genSID()));
+        LAP<?> importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(VEDBL, genSID()));
 
         quantityCheckCommitInnerArticle = addSDProp("quantityCheckCommitInnerArticle", "Кол-во свер.", DoubleClass.instance, commitInner, article);
         barcodeActionCheck = addJoinAProp("Ввод штрих-кода (проверки)",
@@ -1451,7 +1451,7 @@ public class VEDLogicsModule extends LogicsModule {
         return addJProp(group, sID, persistent, caption, roundSum, addJProp(removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1), 1, 2);
     }
 
-    LAP barcodeActionCheck;
+    LAP<?> barcodeActionCheck;
     LCP quantityCheckCommitInnerArticle, quantityDiffCommitArticle;
     LCP impSumCard;
     LCP impSumCash;
@@ -1472,11 +1472,11 @@ public class VEDLogicsModule extends LogicsModule {
     public LCP issueObligation;
     public LCP obligationSum;
     LCP barcodeAddClient;
-    LAP barcodeAddClientAction;
+    LAP<?> barcodeAddClientAction;
     LCP barcodeAddCert;
-    LAP barcodeAddCertAction;
-    LAP barcodeAction2;
-    LAP barcodeAction3;
+    LAP<?> barcodeAddCertAction;
+    LAP<?> barcodeAction2;
+    LAP<?> barcodeAction3;
     LCP orderClientSum;
     public LCP sumWithDiscountOrderArticle;
     LCP priceOrderArticle;
@@ -4118,7 +4118,7 @@ public class VEDLogicsModule extends LogicsModule {
             askConfirm = true;
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
             DataObject document = context.getSingleKeyValue();
             if(orderSalePayCash.read(context, document)==null && orderSalePayCard.read(context, document)==null) {
@@ -4143,7 +4143,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Печать", new ValueClass[]{orderSaleRetail});
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             FormInstance<?> remoteForm = context.getFormInstance();
             context.addAction(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
         }
@@ -4170,7 +4170,7 @@ public class VEDLogicsModule extends LogicsModule {
             dateTo = i.next();
         }
 
-        public void executeCustom(final ExecutionContext context) throws SQLException {
+        public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             Integer shopID = (Integer) context.getKeyObject(shopInterface);
             try {
                 new AbstractSaleExportTask(VEDBL, ((SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID), shopID) {
@@ -4245,7 +4245,7 @@ public class VEDLogicsModule extends LogicsModule {
             documentInterface = i.next();
         }
 
-        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             DataObject document = context.getKeyValue(documentInterface);
 
             Sheet sh;
@@ -4311,7 +4311,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать RRP");
         }
 
-        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             Sheet sh;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
@@ -4365,7 +4365,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать справочн.");
         }
 
-        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             Sheet sh;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
@@ -4425,7 +4425,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать док.", new ValueClass[]{shop});
         }
 
-        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             DataObject storeObject = context.getSingleKeyValue();
 
             Sheet sh;
@@ -4498,7 +4498,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Обнулить остатки", new ValueClass[]{order});
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject documentObject = context.getSingleKeyValue();
 
             // сколько в документе, сколько на остатках, уменьшаем на разницу

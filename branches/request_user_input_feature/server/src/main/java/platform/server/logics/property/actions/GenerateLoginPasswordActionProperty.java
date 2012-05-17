@@ -31,7 +31,7 @@ public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
         customUserInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         DataObject userObject = context.getKeyValue(customUserInterface);
 
         String currentEmail = (String) email.read(context, userObject);

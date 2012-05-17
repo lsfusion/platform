@@ -13,7 +13,6 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.AnyValuePropertyHolder;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -29,8 +28,8 @@ public class FormActionProperty extends CustomReadValueActionProperty {
 
     public final FormEntity<?> form;
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
-    private final ActionPropertyObjectEntity[] startProperties;
-    public List<ActionPropertyObjectEntity> closeProperties = new ArrayList<ActionPropertyObjectEntity>();
+    private final ActionPropertyObjectEntity<?>[] startProperties;
+    public List<ActionPropertyObjectEntity<?>> closeProperties = new ArrayList<ActionPropertyObjectEntity<?>>();
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
     private DataClass valueClass;
     private final boolean checkOnOk;
@@ -82,7 +81,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
         return valueClass;
     }
 
-    public void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    public void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
 
         final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, !form.isPrintForm);
 
@@ -101,7 +100,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
                 }
             }
 
-            for (ActionPropertyObjectEntity startProperty : startProperties)
+            for (ActionPropertyObjectEntity<?> startProperty : startProperties)
                 newFormInstance.instanceFactory.getInstance(startProperty).execute(new ExecutionEnvironment(newFormInstance));
 
             context.requestUserInteraction(
@@ -140,7 +139,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
                 }
             }
             if (!closeProperties.isEmpty() && formResult == FormCloseType.CLOSE) {
-                for (ActionPropertyObjectEntity property : closeProperties) {
+                for (ActionPropertyObjectEntity<?> property : closeProperties) {
                     try {
                         newFormInstance.instanceFactory.getInstance(property).execute(new ExecutionEnvironment(newFormInstance));
                     } catch (SQLException e) {

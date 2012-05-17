@@ -43,13 +43,17 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
             return new CalcPropertyImplement<P, T>(implement.property, BaseUtils.mapValues(implement.mapping, classes));
     }
 
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> getMapProperty(Map<T, ValueClass> classes) {
+        return CalcPropertyMapImplement.mapPropertyImplement(getProperty(classes));
+    }
+
     public static <T> CalcPropertyImplement<?, T> getProperty(ValueClass valueClass, T map) {
         IsClassProperty classProperty = valueClass.getProperty();
         return new CalcPropertyImplement<ClassPropertyInterface, T>(classProperty, Collections.singletonMap(BaseUtils.single(classProperty.interfaces), map));
     }
 
-    public static CalcPropertyImplement<?, ClassPropertyInterface> getProperty(Collection<ClassPropertyInterface> interfaces) {
-         return getProperty(getMapClasses(interfaces));
+    public static CalcPropertyMapImplement<?, ClassPropertyInterface> getProperty(Collection<ClassPropertyInterface> interfaces) {
+        return getMapProperty(getMapClasses(interfaces));
      }
 
     public static <T> Where getWhere(Map<T, ValueClass> joinClasses, Map<T, ? extends Expr> joinImplement, Modifier modifier) {

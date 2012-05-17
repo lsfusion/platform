@@ -40,7 +40,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @IdentityLazy
-    protected CalcPropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+    protected CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         return IsClassProperty.getProperty(interfaces);
     }
 

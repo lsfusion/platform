@@ -4,6 +4,7 @@ import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.CalcProperty;
 
@@ -19,7 +20,7 @@ public class ChangeObjectActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         final FormInstance<?> formInstance = context.getFormInstance();
         PropertyObjectInterfaceInstance singleObjectInstance = context.getSingleObjectInstance();

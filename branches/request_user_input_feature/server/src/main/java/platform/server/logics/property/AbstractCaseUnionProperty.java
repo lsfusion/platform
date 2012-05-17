@@ -54,12 +54,12 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public ActionPropertyMapImplement<Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         boolean ifClasses = !checkWhere();
-        ActionPropertyMapImplement<Interface> result = null;
+        ActionPropertyMapImplement<?, Interface> result = null;
         for(Case propCase : BaseUtils.reverse(getCases())) {
-            ActionPropertyMapImplement<Interface> editAction = propCase.property.mapEditAction(editActionSID, filterProperty);
+            ActionPropertyMapImplement<?, Interface> editAction = propCase.property.mapEditAction(editActionSID, filterProperty);
             if (editAction != null) {
                 if (result == null && ifClasses) {
                     result = editAction;

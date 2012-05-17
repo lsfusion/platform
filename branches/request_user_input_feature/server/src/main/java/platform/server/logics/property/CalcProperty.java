@@ -9,7 +9,6 @@ import platform.server.Message;
 import platform.server.Settings;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.ManualLazy;
 import platform.server.caches.PackComplex;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -101,14 +100,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Collection<Property> props = new ArrayList<Property>();
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && ((CalcProperty)implement.property).hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
-            ActionPropertyMapImplement<L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
+            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
             setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), Event.RESOLVE);
 //            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)));
             lm.addProp(setAction.property);
         }
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
-            ActionPropertyMapImplement<T> setAction = DerivedProperty.createSetAction(this, false, true);
+            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
             setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), Event.RESOLVE);
 //            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)));
@@ -193,7 +192,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public ClassTable(CalcProperty<P> property) {
             super(property.getSID());
 
-            Map<P, ValueClass> propInterfaces = property.getMapClasses();
+            Map<P, ValueClass> propInterfaces = property.getInterfaceClasses();
             ValueClass valueClass = property.getValueClass();
 
             mapFields = new HashMap<KeyField, P>();
@@ -377,11 +376,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // получает базовый класс по сути нужен для определения класса фильтра
     public CustomClass getDialogClass(Map<T, DataObject> mapValues, Map<T, ConcreteClass> mapClasses) {
-        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
+        return (CustomClass)getValueClass();
+/*        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for (Map.Entry<T, DataObject> keyField : mapValues.entrySet())
             mapExprs.put(keyField.getKey(), new ValueExpr(keyField.getValue().object, mapClasses.get(keyField.getKey())));
         return (CustomClass) new Query<String, String>(new HashMap<String, KeyExpr>(), getClassExpr(mapExprs), "value").
-                getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
+                getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();*/
     }
 
     public boolean hasChanges(Modifier modifier) {
@@ -441,10 +441,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         MapKeysTable<T> mapTable = null;
 
         if (table != null) {
-            mapTable = table.getMapKeysTable(getMapClasses());
+            mapTable = table.getMapKeysTable(getInterfaceClasses());
         }
         if (mapTable == null) {
-            mapTable = tableFactory.getMapTable(getMapClasses());
+            mapTable = tableFactory.getMapTable(getInterfaceClasses());
         }
 
         PropertyField field = new PropertyField(getSID(), getType());
@@ -455,21 +455,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
-    public Map<T, ValueClass> getMapClasses() {
-        return getCommonClasses().interfaces;
-    }
-
     public ValueClass getValueClass() {
-        return getCommonClasses().value;
+        return getClassValueWhere().getCommonParent(Collections.singleton("value")).get("value");
     }
 
+    public Map<T, ValueClass> getInterfaceClasses() {
+        return getClassWhere().getCommonParent(interfaces);
+    }
     @IdentityLazy
-    private CommonClasses<T> getCommonClasses() { // могут быть не "полное" свойство при использовании в определении классов action'ов
-        Map<Object, ValueClass> mapClasses = getClassValueWhere().getCommonParent(BaseUtils.<Object, T, String>merge(interfaces, Collections.singleton("value")));
-        return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
+    public ClassWhere<T> getClassWhere() {
+        return getClassValueWhere().keep(interfaces);
     }
 
-    public abstract ClassWhere<Object> getClassValueWhere();
+    protected abstract ClassWhere<Object> getClassValueWhere();
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
         return getClassValueWhere().remap(BaseUtils.<Object, T, String, Field>merge(mapTable.mapKeys, Collections.singletonMap("value", storedField)));
@@ -696,10 +694,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new CalcPropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
 
-    public ActionPropertyMapImplement<T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         List<T> listInterfaces = new ArrayList<T>();
         List<ValueClass> listValues = new ArrayList<ValueClass>();
-        for(Map.Entry<T, ValueClass> mapClass : getMapClasses().entrySet()) {
+        for(Map.Entry<T, ValueClass> mapClass : getInterfaceClasses().entrySet()) {
             listInterfaces.add(mapClass.getKey());
             listValues.add(mapClass.getValue());
         }
@@ -725,4 +723,40 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public boolean autoset;
 
+    public static ValueClass or(ValueClass v1, ValueClass v2) {
+        if(v1==null)
+            return v2;
+        if(v2==null)
+            return v1;
+        return v1.getUpSet().getOr().or(v2.getUpSet().getOr()).getCommonClass();
+    }
+
+    public static <T extends PropertyInterface> Map<T, ValueClass> or(Collection<T> interfaces, Map<T, ValueClass> or1, Map<T, ValueClass> or2) {
+        Map<T, ValueClass> result = new HashMap<T, ValueClass>();
+        for(T propInterface : interfaces) {
+            ValueClass or = or(or1.get(propInterface), or2.get(propInterface));
+            if(or!=null)
+                result.put(propInterface, or);
+        }
+        return result;
+    }
+    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) { // эвристично определяет классы, для входных значений
+        return getInterfaceClasses();
+    }
+
+    // костыль для email
+    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(List<I> mapInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> props) {
+        ValueClass[] result = new ValueClass[mapInterfaces.size()];
+        for(PropertyInterfaceImplement<I> prop : props) {
+            Map<I, ValueClass> propClasses;
+            if(prop instanceof CalcPropertyMapImplement)
+                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses();
+            else
+                propClasses = new HashMap<I, ValueClass>();
+
+            for(int i=0;i<result.length;i++)
+                result[i] = or(result[i], propClasses.get(mapInterfaces.get(i)));
+        }
+        return result;
+    }
 }

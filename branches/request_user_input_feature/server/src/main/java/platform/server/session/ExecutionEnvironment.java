@@ -47,7 +47,7 @@ public class ExecutionEnvironment {
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
             userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);
-        return change(userDataChanges != null ? userDataChanges : ((CalcProperty<P>)property).getDataChanges(change, current.getModifier()));
+        return change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, current.getModifier()));
     }
 
     public <P extends PropertyInterface> List<ClientAction> change(DataChanges mapChanges) throws SQLException {
@@ -62,16 +62,16 @@ public class ExecutionEnvironment {
 
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty property, PropertySet<ClassPropertyInterface> set, FormEnvironment<ClassPropertyInterface> formEnv) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for(Map<ClassPropertyInterface, DataObject> row : set.executeClasses(getSession()))
+        for(Map<P, DataObject> row : set.executeClasses(getSession()))
             actions.addAll(execute(property, row, formEnv, null));
         return actions;
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty property, Map<ClassPropertyInterface, DataObject> change, FormEnvironment<ClassPropertyInterface> formEnv, ObjectValue requestInput) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue requestInput) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        ExecutionContext context = new ExecutionContext(change, null, this, actions, BaseUtils.<FormEnvironment<ClassPropertyInterface>>immutableCast(formEnv), true);
+        ExecutionContext<P> context = new ExecutionContext<P>(change, null, this, actions, formEnv, true);
 
         if(requestInput != null) {
             context = context.pushUserInput(requestInput);

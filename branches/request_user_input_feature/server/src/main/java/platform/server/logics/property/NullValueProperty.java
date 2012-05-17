@@ -12,14 +12,16 @@ import java.util.Map;
 
 public class NullValueProperty extends FormulaProperty<PropertyInterface>{
 
-    public NullValueProperty() {
+    private NullValueProperty() {
         super("nullValue", "Значение NULL", new ArrayList<PropertyInterface>());
 
         finalizeInit();
     }
 
+    public static final NullValueProperty instance = new NullValueProperty();
+
     @Override
-    public Map<PropertyInterface, ValueClass> getMapClasses() { // временно так (пока для определния сигнатур action'ов)
+    public Map<PropertyInterface, ValueClass> getInterfaceClasses() { // временно так (пока для определния сигнатур action'ов)
         return new HashMap<PropertyInterface, ValueClass>();
     }
 

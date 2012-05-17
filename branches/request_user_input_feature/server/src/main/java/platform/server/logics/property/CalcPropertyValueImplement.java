@@ -13,27 +13,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CalcPropertyValueImplement<P extends PropertyInterface> extends TwinImmutableObject {
-
-    public final CalcProperty<P> property;
-    public final Map<P, DataObject> mapping;
-
-    public boolean twins(TwinImmutableInterface o) {
-        return property.equals(((CalcPropertyValueImplement) o).property) && mapping.equals(((CalcPropertyValueImplement) o).mapping);
-    }
-
-    public int immutableHashCode() {
-        return property.hashCode() * 31 + mapping.hashCode();
-    }
+public class CalcPropertyValueImplement<P extends PropertyInterface> extends CalcPropertyImplement<P, DataObject> {
 
     public CalcPropertyValueImplement(CalcProperty<P> property, Map<P, DataObject> mapping) {
-        this.property = property;
-        this.mapping = mapping;
-    }
-
-    @Override
-    public String toString() {
-        return property.toString();
+        super(property, mapping);
     }
 
     public int getID() {

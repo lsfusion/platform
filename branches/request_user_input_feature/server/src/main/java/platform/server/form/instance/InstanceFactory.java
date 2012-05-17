@@ -92,17 +92,17 @@ public class InstanceFactory {
     // временно
     public <P extends PropertyInterface> PropertyObjectInstance<P, ?> getInstance(PropertyObjectEntity<P, ?> entity) {
         if(entity instanceof CalcPropertyObjectEntity)
-            return getInstance((CalcPropertyObjectEntity)entity);
+            return getInstance((CalcPropertyObjectEntity<P>)entity);
         else
-            return (PropertyObjectInstance<P, ?>) getInstance((ActionPropertyObjectEntity)entity);
+            return getInstance((ActionPropertyObjectEntity<P>)entity);
     }
 
-    public <P extends PropertyInterface> ActionPropertyObjectInstance getInstance(ActionPropertyObjectEntity entity) {
+    public <P extends PropertyInterface> ActionPropertyObjectInstance<P> getInstance(ActionPropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.put(entity, new ActionPropertyObjectInstance(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.put(entity, new ActionPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
 
-        return (ActionPropertyObjectInstance) propertyObjectInstances.get(entity);
+        return (ActionPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
@@ -114,7 +114,7 @@ public class InstanceFactory {
             }
 
             Map<String, ActionPropertyObjectInstance> editActions = new HashMap<String, ActionPropertyObjectInstance>();
-            for (Map.Entry<String, ActionPropertyObjectEntity> i : entity.editActions.entrySet()) {
+            for (Map.Entry<String, ActionPropertyObjectEntity<?>> i : entity.editActions.entrySet()) {
                 editActions.put(i.getKey(), getInstance(i.getValue()));
             }
 

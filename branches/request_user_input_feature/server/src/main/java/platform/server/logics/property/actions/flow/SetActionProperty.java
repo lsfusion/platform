@@ -5,6 +5,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -31,16 +32,22 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException {
         if(!isWhereFull())
             changeWhere = changeWhere.and(writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere());
-        ((CalcProperty<P>)writeTo.property).setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
+        writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
     }
 
     public Set<CalcProperty> getChangeProps() {
-        return ((CalcProperty<P>)writeTo.property).getSetChangeProps(notNull, false);
+        return writeTo.property.getSetChangeProps(notNull, false);
     }
 
     public Set<CalcProperty> getUsedProps() {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
         where.mapFillDepends(result);
         return result;
+    }
+
+    protected CalcPropertyMapImplement<?, I> getSetWhereProperty() {
+        if(notNull)
+            return DerivedProperty.createNot(innerInterfaces, writeTo);
+        return writeTo;
     }
 }

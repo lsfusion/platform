@@ -51,11 +51,11 @@ public class NotificationActionProperty extends CustomActionProperty {
     }
 
     private static ValueClass[] getValueClasses(LCP sourceProperty) {
-        return sourceProperty.getCommonClasses(new Result<ValueClass>() {
+        return sourceProperty.getInterfaceValueClasses(new Result<ValueClass>() {
         });
     }
 
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         if (BL.LM.disableEmail.read(context) != null) {
             logger.error(ServerResourceBundle.getString("mail.sending.disabled"));

@@ -3,6 +3,7 @@ package roman;
 import platform.interop.action.MessageClientAction;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
     }
 
     @Override
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField invoiceSIDField = new ImportField(LM.sidDocument);
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField dateInvoiceField = new ImportField(LM.baseLM.date);

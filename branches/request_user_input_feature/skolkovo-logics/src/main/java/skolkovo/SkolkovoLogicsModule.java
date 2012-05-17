@@ -5465,7 +5465,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             DataObject projectObject = context.getKeyValue(projectInterface);
 
@@ -5499,7 +5499,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             foresightInterface = i.next();
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
             DataObject clusterObject = context.getKeyValue(clusterInterface);
             DataObject foresightObject = context.getKeyValue(foresightInterface);
@@ -7520,7 +7520,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             documentTemplateInterface = i.next();
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
             DataObject documentTemplateObject = context.getKeyValue(documentTemplateInterface);
 
@@ -7554,7 +7554,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             try {
                 DataObject projectObject = context.getKeyValue(projectInterface);
 
@@ -7593,7 +7593,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             try {
                 DataObject voteObject = context.getKeyValue(voteInterface);
 
@@ -7621,7 +7621,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             DataObject expertObject = context.getKeyValue(expertInterface);
 
@@ -7695,7 +7695,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             try {
 
@@ -7937,7 +7937,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             return DoubleClass.instance;
         }
 
-        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             try {
                 List<byte[]> fileList = valueClass.getFiles(userValue);
 
@@ -8026,7 +8026,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = i.next();
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
 
             boolean r2 = isR2Project.read(context, projectObject) != null;
@@ -8206,7 +8206,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject voteObject = context.getKeyValue(voteInterface);
             java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(context, voteObject);
 

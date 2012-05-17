@@ -39,7 +39,7 @@ public class CopyProjectActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         DataObject projectObject = context.getKeyValue(projectInterface);
         DataObject projectCopy = context.addObject(LM.project);

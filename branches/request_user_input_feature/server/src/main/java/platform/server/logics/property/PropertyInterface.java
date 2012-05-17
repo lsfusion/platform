@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.identity.IdentityObject;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
@@ -15,9 +16,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements CalcPropertyInterfaceImplement<P>, Comparable<P>, ServerIdentitySerializable {
 
@@ -90,7 +89,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public ActionPropertyMapImplement<P> mapEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty) {
         return null;
     }
 
@@ -99,5 +98,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         changeExpr = new PullExpr("interface " + ID);
+    }
+
+    public Map<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null)
+            return Collections.singletonMap((P)this, commonValue);
+        return new HashMap<P, ValueClass>();
     }
 }

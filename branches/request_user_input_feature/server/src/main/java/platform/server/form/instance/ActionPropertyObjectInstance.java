@@ -5,23 +5,27 @@ import platform.server.caches.IdentityLazy;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ActionPropertyMapImplement;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ActionPropertyObjectInstance extends PropertyObjectInstance<ClassPropertyInterface, ActionProperty> {
+public class ActionPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, ActionProperty<P>> {
 
-    public ActionPropertyObjectInstance(ActionProperty property, Map<ClassPropertyInterface, ? extends PropertyObjectInterfaceInstance> mapping) {
+    public ActionPropertyObjectInstance(ActionProperty<P> property, Map<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);
     }
 
     @IdentityLazy
-    public ActionPropertyObjectInstance getRemappedPropertyObject(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new ActionPropertyObjectInstance(property, remap(mapKeyValues));
+    public ActionPropertyObjectInstance<P> getRemappedPropertyObject(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        return new ActionPropertyObjectInstance<P>(property, remap(mapKeyValues));
     }
 
     public List<ClientAction> execute(ExecutionEnvironment env) throws SQLException {
@@ -29,6 +33,15 @@ public class ActionPropertyObjectInstance extends PropertyObjectInstance<ClassPr
     }
 
     public List<ClientAction> execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw) throws SQLException {
-        return env.execute(property, ActionProperty.cast(getInterfaceValues()), new FormEnvironment<ClassPropertyInterface>(mapping, propertyDraw), requestValue);
+        return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, propertyDraw), requestValue);
     }
+
+    public ActionPropertyObjectInstance<?> getGroupChange() {
+        ActionPropertyMapImplement<P, P> changeImplement = property.getImplement();
+        ArrayList<P> listInterfaces = new ArrayList<P>(property.interfaces);
+
+        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + property.getSID(), "sys", listInterfaces, changeImplement);
+        return groupChangeActionProperty.getImplement(listInterfaces).mapObjects(mapping);
+    }
+
 }

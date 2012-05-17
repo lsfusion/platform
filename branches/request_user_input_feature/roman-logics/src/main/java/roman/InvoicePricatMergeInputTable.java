@@ -117,7 +117,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
         //читаем данные из прайса по импортированным из инвойса штрихкодам
         Result<ValueClass> resultClass = new Result<ValueClass>();
-        BL.RomanLM.baseLM.barcode.getCommonClasses(resultClass);
+        BL.RomanLM.baseLM.barcode.getInterfaceValueClasses(resultClass);
         Type keyType = resultClass.result.getType();
         SingleKeyTableUsage<ResultField> table = new SingleKeyTableUsage<ResultField>(keyType, new ArrayList<ResultField>(), null);
 

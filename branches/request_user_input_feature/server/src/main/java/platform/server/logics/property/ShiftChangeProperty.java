@@ -5,7 +5,6 @@ import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
@@ -59,13 +58,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     }
 
     @IdentityLazy
-    private Map<Interface<P>, ValueClass> getInterfaceClasses() {
-        return BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses());
-    }
-
-    @IdentityLazy
     private CalcPropertyImplement<?, Interface<P>> getIsClassProperty() {
-        return IsClassProperty.getProperty(getInterfaceClasses());
+        return IsClassProperty.getProperty(BaseUtils.crossJoin(getMapInterfaces(), property.getInterfaceClasses()));
     }
 
     protected void fillDepends(Set<CalcProperty> depends, boolean events) {

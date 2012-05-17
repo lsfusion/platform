@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -13,6 +14,8 @@ import platform.server.session.PropertyChanges;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
+
+import static platform.base.BaseUtils.crossJoin;
 
 public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> extends PropertyInterfaceImplement<P> {
 
@@ -30,9 +33,11 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     Object read(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException;
     ObjectValue readClasses(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException;
 
-    public ActionPropertyMapImplement<P> mapEditAction(String editActionSID, CalcProperty filterProperty);
+    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
 
     DataChanges mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(Set<P> interfaces, Set<CalcPropertyMapImplement<?,P>> properties);
+
+    Map<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue);
 }

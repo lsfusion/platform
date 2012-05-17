@@ -11,18 +11,18 @@ import static platform.base.BaseUtils.reverse;
 
 public class PushUserInputActionProperty extends AroundAspectActionProperty {
 
-    private final CalcPropertyInterfaceImplement<ClassPropertyInterface> push;
+    private final CalcPropertyInterfaceImplement<PropertyInterface> push;
 
     // по аналогии с If
-    public <I extends PropertyInterface> PushUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<I> action) {
+    public <I extends PropertyInterface> PushUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
         super(sID, caption, innerInterfaces, action);
 
-        Map<I, ClassPropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
+        Map<I, PropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
         this.push = push.map(mapInterfaces);
     }
 
     @Override
-    protected ExecutionContext beforeAspect(ExecutionContext context) throws SQLException {
+    protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
         return context.pushUserInput(push.readClasses(context, context.getKeys()));
     }
 }

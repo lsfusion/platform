@@ -26,7 +26,7 @@ public class DisconnectActionProperty extends CustomActionProperty {
         this.LM = LM;
     }
 
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject connection = context.getKeyValue(interfacesList.remove(0));
 

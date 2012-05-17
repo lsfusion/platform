@@ -32,16 +32,16 @@ import java.util.*;
 
 import static platform.base.BaseUtils.join;
 
-public class ExecutionContext {
-    private final Map<ClassPropertyInterface, DataObject> keys;
+public class ExecutionContext<P extends PropertyInterface> {
+    private final Map<P, DataObject> keys;
     private final ObjectValue pushedUserInput;
     private final List<ClientAction> actions;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
     private final ExecutionEnvironment env;
-    private final FormEnvironment<ClassPropertyInterface> form;
+    private final FormEnvironment<P> form;
 
-    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment<ClassPropertyInterface> form, boolean groupLast) {
+    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment<P> form, boolean groupLast) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.env = env;
@@ -54,15 +54,15 @@ public class ExecutionContext {
         return env;
     }
 
-    public Map<ClassPropertyInterface, DataObject> getKeys() {
+    public Map<P, DataObject> getKeys() {
         return keys;
     }
 
-    public DataObject getKeyValue(ClassPropertyInterface key) {
+    public DataObject getKeyValue(P key) {
         return keys.get(key);
     }
 
-    public Object getKeyObject(ClassPropertyInterface key) {
+    public Object getKeyObject(P key) {
         return keys.get(key).object;
     }
 
@@ -104,7 +104,7 @@ public class ExecutionContext {
             return null;
         return drawInstance.toDraw;
     }
-    public Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> getObjectInstances() {
+    public Map<P, PropertyObjectInterfaceInstance> getObjectInstances() {
         return form!=null ? form.getMapObjects() : null;
     }
 
@@ -112,12 +112,12 @@ public class ExecutionContext {
         return getFormInstance().instanceFactory.getInstance(object);
     }
 
-    public PropertyObjectInterfaceInstance getObjectInstance(ClassPropertyInterface cls) {
+    public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
         return getObjectInstances().get(cls);
     }
 
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
-        Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
+        Map<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
         return mapObjects != null ? BaseUtils.singleValue(mapObjects) : null;
     }
 
@@ -151,24 +151,24 @@ public class ExecutionContext {
         }
     }
 
-    public ExecutionContext override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext(keys, pushedUserInput, newEnv, new ArrayList<ClientAction>(), form, groupLast);
+    public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
+        return new ExecutionContext<P>(keys, pushedUserInput, newEnv, new ArrayList<ClientAction>(), form, groupLast);
     }
 
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, Map<ClassPropertyInterface, ? extends CalcPropertyInterfaceImplement<ClassPropertyInterface>> mapInterfaces) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, Map<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
         return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
     }
 
-    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> mapping) {
+    public <T extends PropertyInterface> ExecutionContext<T> map(Map<T, P> mapping) {
         return override(join(mapping, keys), form!=null ? form.map(mapping) : null, pushedUserInput);
     }
 
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
+    public ExecutionContext<P> override(Map<P, DataObject> keys) {
         return override(keys, form, pushedUserInput);
     }
 
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, FormEnvironment form, ObjectValue pushedUserInput) {
-        return new ExecutionContext(keys, pushedUserInput, env, actions, form, groupLast);
+    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
+        return new ExecutionContext<T>(keys, pushedUserInput, env, actions, form, groupLast);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
@@ -190,7 +190,7 @@ public class ExecutionContext {
         return Context.context.get().requestUserInteraction(action);
     }
 
-    public ExecutionContext pushUserInput(ObjectValue overridenUserInput) {
+    public ExecutionContext<P> pushUserInput(ObjectValue overridenUserInput) {
         return override(keys, form, overridenUserInput);
     }
 
@@ -240,7 +240,7 @@ public class ExecutionContext {
         }
     }
 
-    public FormEnvironment<ClassPropertyInterface> getForm() {
+    public FormEnvironment<P> getForm() {
         return form;
     }
 

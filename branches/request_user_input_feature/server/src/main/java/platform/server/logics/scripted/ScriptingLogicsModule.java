@@ -487,7 +487,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImplementTable targetTable = null;
         if (tableName != null) {
             targetTable = findTableByCompoundName(tableName);
-            if (!targetTable.equalClasses(((LCP<?>)property).property.getMapClasses())) {
+            if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses())) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }
@@ -683,7 +683,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedFileAProp(boolean loadFile, LPWithParams property) {
         scriptLogger.info("addScriptedFileAProp(" + loadFile + ", " + property + ");");
-        LAP res;
+        LAP<?> res;
         if (loadFile) {
             res = addLFAProp((LCP) property.property);
         } else {
@@ -732,9 +732,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
         List<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
-        ValueClass[] eaClasses = ActionProperty.getClasses(tempContext, readImplements(tempContext, allParams));
+        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams));
 
-        LAP eaPropLP = addEAProp(null, "", "", eaClasses, null, null);
+        LAP<ClassPropertyInterface> eaPropLP = addEAProp(null, "", "", eaClasses, null, null);
         EmailActionProperty eaProp = (EmailActionProperty) eaPropLP.property;
 
         List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
@@ -844,7 +844,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
 
-        LAP listLP = addListAProp(resultParams.toArray());
+        LAP<?> listLP = addListAProp(resultParams.toArray());
         for (String propName : localPropNames) {
             currentLocalProperties.remove(propName);
         }
@@ -865,7 +865,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             prop = wrapWithFlowAction(new LPWithParams(addRequestUserDataAProp(null, genSID(), "", (DataClass) requestValueType), new ArrayList<Integer>()));
         } else {
-            prop = new LPWithParams(addRequestUserInputAProp(null, genSID(), "", (LAP) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
+            prop = new LPWithParams(addRequestUserInputAProp(null, genSID(), "", (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
         }
         return prop;
     }
@@ -882,7 +882,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedJoinAProp(" + mainProp + ", " + properties + ", " + ");");
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
-        LP prop = addJoinAProp(null, genSID(), "", (LAP) mainProp, resultParams.toArray());
+        LP prop = addJoinAProp(null, genSID(), "", (LAP<?>) mainProp, resultParams.toArray());
         return new LPWithParams(prop, usedParams);
     }
 
@@ -904,7 +904,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedChangeClassAProp(" + className + ")");
         ValueClass cls = findClassByCompoundName(className);
         checkChangeClassActionClass(cls);
-        LAP res = addChangeClassAProp("", (ConcreteCustomClass) cls);
+        LAP<?> res = addChangeClassAProp("", (ConcreteCustomClass) cls);
         return new LPWithParams(res,  param.usedParams);
     }
 
@@ -986,9 +986,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams wrapWithFlowAction(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        LAP action = (LAP) property.property;
+        LAP<?> action = (LAP<?>) property.property;
         int intNum = action.listInterfaces.size();
-        LP joinProp = addJoinAProp(null, genSID(), "", action.getMapClasses(), action, consecutiveList(intNum).toArray());
+        LP joinProp = addJoinAProp(null, genSID(), "", action.getInterfaceClasses(), action, consecutiveList(intNum).toArray());
         return new LPWithParams(joinProp, property.usedParams);
     }
 
@@ -1234,14 +1234,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             objects[i] = findObjectEntity(form, objectNames.get(i));
         }
 
-        ActionPropertyObjectEntity[] propObjects = new ActionPropertyObjectEntity[props == null ? 0 : props.size()];
+        ActionPropertyObjectEntity<?>[] propObjects = new ActionPropertyObjectEntity<?>[props == null ? 0 : props.size()];
         if (props != null) {
             for (int i = 0; i < props.size(); i++) {
                 PropertyObjectInterfaceEntity[] params = new PropertyObjectInterfaceEntity[props.get(i).usedParams.size()];
                 for (int j = 0; j < props.get(i).usedParams.size(); j++) {
                     params[j] = objects[props.get(i).usedParams.get(j)];
                 }
-                propObjects[i] = form.addPropertyObject((LAP) props.get(i).property, params);
+                propObjects[i] = form.addPropertyObject((LAP<?>) props.get(i).property, params);
             }
         }
         LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects, cls, newSession, isModal, checkOnOk), new ArrayList<Integer>());
@@ -1399,7 +1399,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ((LCP)mainProp).setEventChange(params.toArray());
         } else {
             params = getParamsPlainList(asList(whenProp));
-            ((LAP)mainProp).setEventAction(whenProp);
+            ((LAP<?>)mainProp).setEventAction(whenProp);
         }
     }
 
@@ -1555,7 +1555,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         NavigatorElement newElement;
 
         if (actionName != null) {
-            LAP actionProperty = (LAP) findLPByCompoundName(actionName);
+            LAP<?> actionProperty = (LAP<?>) findLPByCompoundName(actionName);
             checkActionProperty(actionProperty);
 
             newElement = addNavigatorAction(name, caption, actionProperty);
@@ -1878,7 +1878,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property instanceof LAP)) {
+        if (!(property instanceof LAP<?>)) {
             errLog.emitNotActionExecutedPropertyError(parser);
         }
     }

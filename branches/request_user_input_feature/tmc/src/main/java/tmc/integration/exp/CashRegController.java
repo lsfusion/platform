@@ -12,6 +12,7 @@ import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
@@ -356,7 +357,7 @@ public class CashRegController {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
@@ -374,7 +375,7 @@ public class CashRegController {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
@@ -409,7 +410,7 @@ public class CashRegController {
             this.mask = mask;
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             //пока отключен, чтобы не вылетал exception
 
             /*
@@ -437,7 +438,7 @@ public class CashRegController {
             return DoubleClass.instance;
         }
 
-        protected void executeRead(ExecutionContext context, Object countValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object countValue) throws SQLException {
             if (countValue instanceof Double) {
                 int comPort = getCashRegComPort(context.getFormInstance());
                 if (comPort == 0) {

@@ -1176,10 +1176,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LAP tallyWeijlImportInvoice;
     private LAP hugoBossImportInvoice;
     private LAP gerryWeberImportInvoice;
-    public LAP mexxImportInvoice;
-    public LAP mexxImportPricesInvoice;
-    public LAP mexxImportArticleInfoInvoice;
-    public LAP mexxImportColorInvoice;
+    public LAP<?> mexxImportInvoice;
+    public LAP<?> mexxImportPricesInvoice;
+    public LAP<?> mexxImportArticleInfoInvoice;
+    public LAP<?> mexxImportColorInvoice;
     private LAP mexxImportDelivery;
     private LAP bestsellerImportInvoice;
     private LAP hugoBossImportPricat;
@@ -8245,7 +8245,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject sID = context.getKeyValue(sidInterface);
@@ -8279,7 +8279,7 @@ public class RomanLogicsModule extends LogicsModule {
             createStampInterface = i.next();
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject objCreateStamp = context.getKeyValue(createStampInterface);
             if ((firstNumberCreationStamp.read(context, objCreateStamp) == null) || (lastNumberCreationStamp.read(context, objCreateStamp) == null)) {
                 context.addAction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
@@ -8321,7 +8321,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject cloneObject = context.getKeyValue(itemInterface);
             DataObject newObject = context.addObject(item);
 
@@ -8347,7 +8347,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject objShipment = context.getKeyValue(shipmentInterface);

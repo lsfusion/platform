@@ -37,7 +37,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
         declarationInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             List<String> exportProperties = BaseUtils.toList("numberGroupDeclaration", "nameBrandGroupDeclaration",
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration",

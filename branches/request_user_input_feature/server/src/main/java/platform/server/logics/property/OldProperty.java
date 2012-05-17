@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
@@ -33,5 +34,10 @@ public class OldProperty<T extends PropertyInterface> extends SimpleIncrementPro
             return getClassTableExpr(joinImplement);
 
         return property.getExpr(joinImplement); // возвращаем старое значение
+    }
+
+    @Override
+    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        return property.getInterfaceCommonClasses(commonValue);
     }
 }

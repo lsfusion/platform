@@ -13,7 +13,6 @@ import platform.server.logics.property.actions.ChangeObjectActionProperty;
 import platform.server.session.PropertyChanges;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +29,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         return "objectValue.getLP(baseClass.named)";
     }
 
-    private CalcPropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+    private CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         return IsClassProperty.getProperty(interfaces);
     }
 
@@ -45,7 +44,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    public ActionPropertyMapImplement<ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return new ChangeObjectActionProperty(null, getInterface().interfaceClass).getImplement(Collections.singletonList(getInterface()));
     }
 
@@ -59,5 +58,12 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(propertyView.entity.propertyObject.mapping);
         if (mapObject instanceof ObjectEntity)
             propertyView.caption = ((ObjectEntity) mapObject).getCaption();
+    }
+
+    @Override
+    public Map<ClassPropertyInterface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null)
+            return Collections.singletonMap(getInterface(), commonValue);
+        return super.getInterfaceCommonClasses(commonValue); 
     }
 }

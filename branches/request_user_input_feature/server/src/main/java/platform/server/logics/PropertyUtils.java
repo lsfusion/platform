@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
-import platform.base.Result;
 import platform.server.classes.ValueClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
@@ -14,14 +13,14 @@ import java.util.List;
 import java.util.Map;
 
 public class PropertyUtils {
-    public static ValueClass[] getValueClasses(LAP[] dataProperties, int[][] mapInterfaces) {
+    public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces) {
         return getValueClasses(dataProperties, mapInterfaces, true);
     }
 
-    public static ValueClass[] getValueClasses(LAP[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
+    public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
         Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>();
         for (int i = 0; i < dataProperties.length; ++i) {
-            LAP dataProperty = dataProperties[i];
+            LAP<?> dataProperty = dataProperties[i];
 
             if (dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
                 continue;
@@ -31,7 +30,7 @@ public class PropertyUtils {
                 mapPropInterfaces = BaseUtils.consecutiveInts(dataProperty.listInterfaces.size());
             }
 
-            ValueClass[] propClasses = dataProperty.getMapClasses();
+            ValueClass[] propClasses = dataProperty.getInterfaceClasses();
 
             assert propClasses.length == mapPropInterfaces.length;
 
@@ -117,7 +116,7 @@ public class PropertyUtils {
         return BaseUtils.immutableCast(readImplements(listInterfaces, params));
     }
 
-    public static <T extends PropertyInterface> List<ActionPropertyMapImplement<T>> readActionImplements(List<T> listInterfaces, Object... params) {
+    public static <T extends PropertyInterface> List<ActionPropertyMapImplement<?, T>> readActionImplements(List<T> listInterfaces, Object... params) {
         return BaseUtils.immutableCast(readImplements(listInterfaces, params));
     }
 
@@ -129,8 +128,8 @@ public class PropertyUtils {
         return intNum;
     }
 
-    public static <P extends PropertyInterface> ActionPropertyImplement<CalcPropertyInterfaceImplement<P>> mapActionImplement(LAP property, List<CalcPropertyInterfaceImplement<P>> propImpl) {
-        return new ActionPropertyImplement<CalcPropertyInterfaceImplement<P>>(property.property, getMapping(property, propImpl));
+    public static <P extends PropertyInterface> ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, List<CalcPropertyInterfaceImplement<P>> propImpl) {
+        return new ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>>(property.property, getMapping(property, propImpl));
     }
 
     public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyImplement<T, CalcPropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, List<CalcPropertyInterfaceImplement<P>> propImpl) {
@@ -201,7 +200,7 @@ public class PropertyUtils {
                 mapping.put(lp.listInterfaces.get(i), interfaces.get(mapInt[i] - 1));
 
             if(lp.property instanceof ActionProperty)
-                return new ActionPropertyMapImplement<T>((ActionProperty) lp.property, ActionProperty.cast(mapping));
+                return new ActionPropertyMapImplement<P, T>((ActionProperty<P>) lp.property, mapping);
             else
                 return new CalcPropertyMapImplement<P, T>((CalcProperty<P>) lp.property, mapping);
         }

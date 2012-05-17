@@ -48,12 +48,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return result;
         }
 
-        public And<K> keep(Collection<? extends K> keys) {
-            And<K> result = new And<K>();
+        public <T extends K> And<T> keep(Collection<T> keys) {
+            And<T> result = new And<T>();
             for(int i=0;i<size;i++) {
                 K key = getKey(i);
                 if(keys.contains(key))
-                    result.add(key, getValue(i));
+                    result.add((T) key, getValue(i));
             }
             return result;
         }
@@ -461,12 +461,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return or1;
         return or1.or(or2);
     }
-    public Map<K, ValueClass> getCommonParent(Collection<K> keys) {
+    public <T extends K> Map<T, ValueClass> getCommonParent(Collection<T> keys) {
 
         assert !isFalse();
 
-        Map<K, ValueClass> result = new HashMap<K, ValueClass>();
-        for(K key : keys) {
+        Map<T, ValueClass> result = new HashMap<T, ValueClass>();
+        for(T key : keys) {
             OrClassSet orSet = null;
             for (And<K> where : wheres) {
                 AndClassSet and = where.get(key);

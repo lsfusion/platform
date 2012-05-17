@@ -5,6 +5,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -17,11 +18,11 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
     private final CalcPropertyMapImplement<?, I> ifProp; // calculate
     private final OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
-    private final ActionPropertyMapImplement<I> action; // action
-    private final ActionPropertyMapImplement<I> elseAction; // action
+    private final ActionPropertyMapImplement<?, I> action; // action
+    private final ActionPropertyMapImplement<?, I> elseAction; // action
     private final boolean recursive;
 
-    public ForActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, ActionPropertyMapImplement<I> action, ActionPropertyMapImplement<I> elseAction, boolean recursive) {
+    public ForActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, boolean recursive) {
         super(sID, caption, innerInterfaces, mapInterfaces, merge(orders.keySet(), toList(ifProp, action)));
 
         assert elseAction == null || !recursive;
@@ -53,7 +54,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    public FlowResult execute(ExecutionContext context) throws SQLException {
+    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
         boolean execElse = elseAction != null;
@@ -83,7 +84,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return result;
     }
 
-    private Set<Map<I, DataObject>> readRows(DataSession session, Map<ClassPropertyInterface, DataObject> keys, Modifier modifier) throws SQLException {
+    private Set<Map<I, DataObject>> readRows(DataSession session, Map<PropertyInterface, DataObject> keys, Modifier modifier) throws SQLException {
         Query<I, CalcPropertyInterfaceImplement<I>> query = new Query<I, CalcPropertyInterfaceImplement<I>>(innerInterfaces, crossJoin(mapInterfaces, keys));
         Map<I,Expr> mapExprs = query.getMapExprs();
 
@@ -92,5 +93,11 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             query.properties.put(order, order.mapExpr(mapExprs, modifier));
         }
         return query.executeClasses(session, orders).keySet();
+    }
+
+    protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
+        CalcPropertyMapImplement<PropertyInterface, I> nullImplement = new CalcPropertyMapImplement<PropertyInterface, I>(NullValueProperty.instance);
+        return DerivedProperty.createIfElseUProp(innerInterfaces, ifProp,
+                action.mapWhereProperty(), elseAction != null ? elseAction.mapWhereProperty() : nullImplement, false);
     }
 }

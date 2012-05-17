@@ -341,7 +341,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     public ClassExprWhere keep(Collection<? extends VariableClassExpr> keys) {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(And<VariableClassExpr> andWhere : wheres)
-            result = result.or(new ClassExprWhere(andWhere.keep(keys)));
+            result = result.or(new ClassExprWhere((And<VariableClassExpr>) andWhere.keep(keys)));
         return result;
     }
 

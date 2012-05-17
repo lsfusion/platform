@@ -1,6 +1,5 @@
 package platform.server.form.view;
 
-import platform.base.Result;
 import platform.interop.form.ReportConstants;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
@@ -13,7 +12,6 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
@@ -23,12 +21,10 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -228,7 +224,7 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        Iterator<ValueClass> classesIt = entity.propertyObject.property.getMapClasses().values().iterator();
+        Iterator<ValueClass> classesIt = entity.propertyObject.property.getInterfaceClasses().values().iterator();
         Collection<PropertyObjectInterfaceEntity> interfacesEntities = entity.propertyObject.mapping.values();
         outStream.writeInt(interfacesEntities.size());
         for (PropertyObjectInterfaceEntity interfaceEntity : interfacesEntities) {

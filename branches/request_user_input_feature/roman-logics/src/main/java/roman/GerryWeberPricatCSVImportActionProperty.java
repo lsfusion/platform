@@ -26,7 +26,7 @@ public class GerryWeberPricatCSVImportActionProperty extends CustomReadValueActi
 
 
     @Override
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         ClassPropertyInterface supplierInterface = i.next();
         DataObject supplier = context.getKeyValue(supplierInterface);

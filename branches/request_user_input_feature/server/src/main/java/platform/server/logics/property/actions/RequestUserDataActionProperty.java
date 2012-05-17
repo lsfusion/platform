@@ -5,6 +5,7 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.AnyValuePropertyHolder;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -26,7 +27,7 @@ public class RequestUserDataActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         //todo: init oldValue
         ObjectValue userValue = context.requestUserData(dataClass, null);
         if (userValue == null) {

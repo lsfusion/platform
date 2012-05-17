@@ -32,7 +32,7 @@ public class ChangeReadClassActionProperty extends CustomReadValueActionProperty
     }
 
     @Override
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         context.changeClass(context.getSingleObjectInstance(), context.getSingleKeyValue(), (Integer) userValue);
     }
 }

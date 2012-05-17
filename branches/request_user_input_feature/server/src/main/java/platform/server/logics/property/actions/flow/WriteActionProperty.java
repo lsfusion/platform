@@ -7,6 +7,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -26,7 +27,7 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
     }
 
     @Override
-    public FlowResult execute(ExecutionContext context) throws SQLException {
+    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
         Map<I, KeyExpr> allKeys = KeyExpr.getMapKeys(innerInterfaces);
         Map<I, DataObject> innerValues = crossJoin(mapInterfaces, context.getKeys());
 
@@ -51,4 +52,11 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
     }
 
     protected abstract void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException;
+
+    @Override
+    protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
+        return DerivedProperty.createAnd(innerInterfaces, getSetWhereProperty(), where);
+    }
+
+    protected abstract CalcPropertyMapImplement<?, I> getSetWhereProperty();
 }

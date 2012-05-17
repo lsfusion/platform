@@ -8,6 +8,7 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -34,7 +35,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         String path = retailLM.getLCPByName("importLSTDirectory").read(context).toString().trim();
         if (!"".equals(path)) {

@@ -33,7 +33,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String mouseBinding;
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
-    public Map<String, ActionPropertyObjectEntity> editActions = new HashMap<String, ActionPropertyObjectEntity>();
+    public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
@@ -78,7 +78,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         mouseBinding = actionSID;
     }
 
-    public void setEditAction(String actionSID, ActionPropertyObjectEntity editAction) {
+    public void setEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
         editActions.put(actionSID, editAction);
     }
 
@@ -90,17 +90,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setKeyEditAction(KeyStroke keyStroke, String actionSID, ActionPropertyObjectEntity editAction) {
+    public void setKeyEditAction(KeyStroke keyStroke, String actionSID, ActionPropertyObjectEntity<?> editAction) {
         setKeyAction(keyStroke, actionSID);
         setEditAction(actionSID, editAction);
     }
 
-    public void setMouseEditAction(String actionSID, ActionPropertyObjectEntity editAction) {
+    public void setMouseEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
         setMouseAction(actionSID);
         setEditAction(actionSID, editAction);
     }
 
-    public void setContextMenuEditAction(String caption, String actionSID, ActionPropertyObjectEntity editAction) {
+    public void setContextMenuEditAction(String caption, String actionSID, ActionPropertyObjectEntity<?> editAction) {
         setContextMenuAction(caption, actionSID);
         setEditAction(actionSID, editAction);
     }

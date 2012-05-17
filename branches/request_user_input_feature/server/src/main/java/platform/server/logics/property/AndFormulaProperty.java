@@ -1,15 +1,13 @@
 package platform.server.logics.property;
 
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.session.PropertyChanges;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // выбирает объект по битам
 public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Interface> {
@@ -71,4 +69,12 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
             }
         return joinImplement.get(objectInterface).and(where);
     }
+
+    @Override
+    public Map<AndFormulaProperty.Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null)
+            return Collections.singletonMap((AndFormulaProperty.Interface)objectInterface, commonValue);
+        return super.getInterfaceCommonClasses(commonValue);
+    }
+
 }

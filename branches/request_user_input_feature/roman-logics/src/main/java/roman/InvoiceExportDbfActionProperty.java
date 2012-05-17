@@ -33,7 +33,7 @@ public class InvoiceExportDbfActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             InvoiceExporter exporter = new InvoiceExporter(context.getKeys());
             exporter.extractData();

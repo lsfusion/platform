@@ -2,17 +2,16 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.server.logics.linear.LAP;
-import platform.server.logics.linear.LCP;
 
 import java.util.List;
 
-public class ActionPropertyClassImplement extends PropertyClassImplement<ClassPropertyInterface, ActionProperty> {
+public class ActionPropertyClassImplement<P extends PropertyInterface> extends PropertyClassImplement<P, ActionProperty<P>> {
 
-    public ActionPropertyClassImplement(ActionProperty property, List<ValueClassWrapper> classes, List<ClassPropertyInterface> interfaces) {
+    public ActionPropertyClassImplement(ActionProperty<P> property, List<ValueClassWrapper> classes, List<P> interfaces) {
         super(property, classes, interfaces);
     }
 
-    public LAP createLP(List<ValueClassWrapper> listInterfaces) {
-        return new LAP(property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(mapping)));
+    public LAP<P> createLP(List<ValueClassWrapper> listInterfaces) {
+        return new LAP<P>(property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(mapping)));
     }
 }

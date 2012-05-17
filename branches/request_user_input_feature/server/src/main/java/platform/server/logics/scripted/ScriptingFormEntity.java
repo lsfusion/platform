@@ -203,7 +203,7 @@ public class ScriptingFormEntity extends FormEntity {
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LAP addObjAction = LM.getSimpleAddObjectAction((CustomClass)obj[0].baseClass);
+                LAP<?> addObjAction = LM.getSimpleAddObjectAction((CustomClass)obj[0].baseClass);
                 property = addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
                 if (mapping.size() != 1) {

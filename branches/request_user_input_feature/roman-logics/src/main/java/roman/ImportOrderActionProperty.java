@@ -8,10 +8,10 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.query.GroupType;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -71,7 +71,7 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         return true;
     }
 
-    protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
 
         initFields();

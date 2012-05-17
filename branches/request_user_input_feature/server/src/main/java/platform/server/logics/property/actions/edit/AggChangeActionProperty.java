@@ -15,10 +15,13 @@ import platform.server.form.instance.DialogInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.flow.AroundAspectActionProperty;
+import platform.server.logics.property.actions.flow.FlowActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +34,14 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
     private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public AggChangeActionProperty(String sID, String caption, List<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<JoinProperty.Interface> changeAction) {
+    public AggChangeActionProperty(String sID, String caption, List<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
         super(sID, caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
     }
 
     @Override
-    protected FlowResult aroundAspect(final ExecutionContext context) throws SQLException {
+    protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException {
         ObjectValue readValue = null;
 
         Type type = aggProp.getType();

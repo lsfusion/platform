@@ -8,9 +8,7 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.ChangeObjectActionProperty;
-import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,15 +31,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         Property<P> property = propertyObject.property;
         if (actionId.equals(ServerResponse.GROUP_CHANGE)) {
-            ActionPropertyObjectInstance changeInstance = getEditAction(ServerResponse.CHANGE);
+            ActionPropertyObjectInstance<?> changeInstance = getEditAction(ServerResponse.CHANGE);
 
             assert changeInstance != null;
 
-            ActionPropertyMapImplement<ClassPropertyInterface> changeImplement = changeInstance.property.getImplement();
-            ArrayList<ClassPropertyInterface> listInterfaces = new ArrayList<ClassPropertyInterface>(changeInstance.property.interfaces);
-
-            GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + property.getSID(), "sys", listInterfaces, changeImplement);
-            ActionPropertyObjectInstance groupChangeActionInstance = groupChangeActionProperty.getImplement(listInterfaces).mapObjects(changeInstance.mapping);
+            ActionPropertyObjectInstance<?> groupChangeActionInstance = changeInstance.getGroupChange();
 
             editActions.put(ServerResponse.GROUP_CHANGE, groupChangeActionInstance);
 
@@ -54,13 +48,13 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                 if (objectInstance instanceof CustomObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                     ChangeObjectActionProperty dialogAction = new ChangeObjectActionProperty((CalcProperty) property, customObjectInstance.getBaseClass().getBaseClass());
-                    return new ActionPropertyObjectInstance(dialogAction,
+                    return new ActionPropertyObjectInstance<ClassPropertyInterface>(dialogAction,
                                                             Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), customObjectInstance));
                 }
             }
         }
 
-        ActionPropertyMapImplement<P> editActionImplement = propertyObject.property.getEditAction(actionId);
+        ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
         return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);
     }
 

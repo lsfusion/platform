@@ -2,6 +2,8 @@ package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ConcatenateValueClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.DeconcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
@@ -34,5 +36,15 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
 
     protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return DeconcatenateExpr.create(BaseUtils.singleValue(joinImplement),part,baseClass);
+    }
+
+    private DeconcatenateProperty.Interface getInterface() {
+        return BaseUtils.single(interfaces);
+    }
+
+    @Override
+    public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        // так как не знаем соседних типов не можем построить valueclass
+        return super.getInterfaceCommonClasses(commonValue);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }

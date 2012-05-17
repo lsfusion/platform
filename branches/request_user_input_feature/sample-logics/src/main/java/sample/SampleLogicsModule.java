@@ -19,6 +19,7 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -133,7 +134,7 @@ public class SampleLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             for (int i = 0; i < 5; ++i) {
                 if (JOptionPane.OK_OPTION != (Integer)context.requestUserInteraction(new ConfirmClientAction("Попытка №" + i, "Вы уверены, что хотите изменить это свойство?"))) {
                     context.requestUserInteraction(new MessageClientAction("Too bad :(", ":("));

@@ -43,7 +43,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         this.session = context.getSession();
 
         Map<String, byte[]> files = new HashMap<String, byte[]>();

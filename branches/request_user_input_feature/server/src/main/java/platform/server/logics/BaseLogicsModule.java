@@ -706,7 +706,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
-        vnull = addProperty(privateGroup, new LCP<PropertyInterface>(new NullValueProperty()));
+        vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
 
         round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
 
@@ -1437,11 +1437,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return idSet.contains(sid) || sid.startsWith(DerivedProperty.ID_PREFIX_GEN);
     }
 
-    Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
+    Collection<LCP[]> checkCUProps = new ArrayList<LCP[]>();
 
     // объединяет разные по классам св-ва
 
-    Collection<LP[]> checkSUProps = new ArrayList<LP[]>();
+    Collection<LCP[]> checkSUProps = new ArrayList<LCP[]>();
 
 
     @Override
@@ -1453,11 +1453,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @IdentityLazy
     public LCP object(ValueClass valueClass) {
         return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
-    }
-    @Override
-    @IdentityLazy
-    public LCP vdefault(ConcreteValueClass valueClass) {
-        return addProperty(null, new LCP<PropertyInterface>(new DefaultValueProperty("default" + valueClass.getSID(), valueClass)));
     }
 
     protected LAP addRestartActionProp() {
@@ -1483,7 +1478,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.property = property;
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             FormInstance<?> form = context.getFormInstance();
@@ -1510,7 +1505,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         LCP fileProperty;
 
         LoadActionProperty(String sID, String caption, LCP fileProperty) {
-            super(sID, caption, fileProperty.getMapClasses());
+            super(sID, caption, fileProperty.getInterfaceClasses());
 
             this.fileProperty = fileProperty;
         }
@@ -1520,7 +1515,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return FileActionClass.getInstance(false, fileClass.isCustom(), fileClass.toString(), fileClass.getExtensions());
         }
 
-        protected void executeRead(ExecutionContext context, Object userValue) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             DataObject[] objects = new DataObject[context.getKeyCount()];
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
@@ -1540,7 +1535,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         LCP fileProperty;
 
         OpenActionProperty(String sID, String caption, LCP fileProperty) {
-            super(sID, caption, fileProperty.getMapClasses());
+            super(sID, caption, fileProperty.getInterfaceClasses());
 
             this.fileProperty = fileProperty;
         }
@@ -1549,7 +1544,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return (FileClass) fileProperty.property.getType();
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject[] objects = new DataObject[context.getKeyCount()];
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
@@ -1575,14 +1570,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         List<Integer> params;
 
         IncrementActionProperty(String sID, String caption, LCP dataProperty, LCP maxProperty, Integer[] params) {
-            super(sID, caption, dataProperty.getMapClasses());
+            super(sID, caption, dataProperty.getInterfaceClasses());
 
             this.dataProperty = dataProperty;
             this.maxProperty = maxProperty;
             this.params = Arrays.asList(params);
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             // здесь опять учитываем, что порядок тот же
             int i = 0;
@@ -1612,7 +1607,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject user = context.getSingleKeyValue();
@@ -1631,7 +1626,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
@@ -1648,7 +1643,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
@@ -1670,7 +1665,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             DataObject tableColumnObject = context.getKeyValue(tableColumnInterface);
@@ -1690,7 +1685,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
@@ -1707,7 +1702,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataSession session = BL.createSession();
             BL.recalculateFollows(session);
             session.apply(BL);
@@ -1723,7 +1718,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             BL.recalculateStats(context.getSession());
         }
     }
@@ -1733,7 +1728,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, caption, new ValueClass[] {dropColumn});
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject dropColumnObject = context.getSingleKeyValue();
             String columnName = (String) sidDropColumn.read(context, dropColumnObject);
             String tableName = (String) sidTableDropColumn.read(context, dropColumnObject);
@@ -1761,7 +1756,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.addProperty = addProperty;
         }
 
-        public void executeCustom(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             if (addProperty.read(context) != null) {
                 String barString = (String) context.getSingleKeyObject();
                 if (barString.trim().length() != 0) {

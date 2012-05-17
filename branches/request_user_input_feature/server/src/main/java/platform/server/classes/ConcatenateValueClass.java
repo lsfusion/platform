@@ -18,6 +18,10 @@ public class ConcatenateValueClass implements ValueClass {
     public ConcatenateValueClass(ValueClass[] valueClasses) {
         this.valueClasses = valueClasses;
     }
+    
+    public ValueClass get(int i) {
+        return valueClasses[i];
+    }
 
     public boolean isCompatibleParent(ValueClass remoteClass) {
         throw new RuntimeException("not supported");

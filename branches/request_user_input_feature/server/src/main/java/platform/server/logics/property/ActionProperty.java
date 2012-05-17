@@ -1,14 +1,12 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.interop.action.ClientAction;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.expr.Expr;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
@@ -18,18 +16,10 @@ import platform.server.session.*;
 import java.sql.SQLException;
 import java.util.*;
 
-public abstract class ActionProperty extends Property<ClassPropertyInterface> {
+public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
 
-    public static <K, V> Map<ClassPropertyInterface, V> cast(Map<K, V> map) {
-        return BaseUtils.<Map<ClassPropertyInterface, V>>immutableCast(map);
-    }
-    
-    public ActionProperty(String sID, ValueClass... classes) {
-        this(sID, "sysAction", classes);
-    }
-
-    public ActionProperty(String sID, String caption, ValueClass[] classes) {
-        super(sID, caption, IsClassProperty.getInterfaces(classes));
+    public ActionProperty(String sID, String caption, List<P> interfaces) {
+        super(sID, caption, interfaces);
     }
 
     // assert что возвращает только DataProperty и IsClassProperty
@@ -40,130 +30,89 @@ public abstract class ActionProperty extends Property<ClassPropertyInterface> {
         return getChangeProps().size()==0;
     }
 
-    public PropertyChange<ClassPropertyInterface> getEventAction(Modifier modifier) {
+    public PropertyChange<P> getEventAction(Modifier modifier) {
         return getEventAction(modifier.getPropertyChanges());
     }
 
-    public PropertyChange<ClassPropertyInterface> getEventAction(PropertyChanges changes) {
+    public PropertyChange<P> getEventAction(PropertyChanges changes) {
         return event.getChange(changes);
     }
 
-    @IdentityLazy
-    protected CalcPropertyImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
-        return IsClassProperty.getProperty(interfaces);
+    public Map<P, ValueClass> getInterfaceClasses() {
+        return getWhereProperty().mapInterfaceClasses();
+    }
+    public ClassWhere<P> getClassWhere() {
+        return getWhereProperty().mapClassWhere();
     }
 
     protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
-        return getInterfaceClassProperty().property.getUsedChanges(propChanges, cascade);
+        return getWhereProperty().property.getUsedChanges(propChanges, cascade);
     }
 
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return ActionClass.TRUE.getExpr().and(calculateWhere(joinImplement, propClasses, propChanges, changedWhere));
+    protected Expr calculateExpr(Map<P, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return ActionClass.TRUE.getExpr().and(getWhereProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
     }
 
-    protected Where calculateWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getInterfaceClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere();
-    }
+    public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
         for(CalcProperty depend : getUsedProps())
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.USEDACTION));
-        result.add(new Pair<Property<?>, LinkType>(getInterfaceClassProperty().property, LinkType.USEDACTION));
+        result.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, LinkType.USEDACTION));
         for(CalcProperty depend : getEventDepends())
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.EVENTACTION));
         return result;
     }
 
-    protected static ValueClass or(ValueClass v1, ValueClass v2) {
-        if(v1==null)
-            return v2;
-        if(v2==null)
-            return v1;
-        return v1.getUpSet().getOr().or(v2.getUpSet().getOr()).getCommonClass();
-    }
-
-    public static <I extends PropertyInterface> ValueClass[] getClasses(List<I> mapInterfaces, Collection<? extends PropertyInterfaceImplement<I>> props) {
-        ValueClass[] result = new ValueClass[mapInterfaces.size()];
-        for(PropertyInterfaceImplement<I> prop : props) {
-            Map<I, ValueClass> propClasses;
-            if(prop instanceof CalcPropertyMapImplement)
-                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapCommonInterfaces();
-            else if(prop instanceof ActionPropertyMapImplement)
-                propClasses = ((ActionPropertyMapImplement<I>) prop).mapCommonInterfaces();
-            else
-                propClasses = new HashMap<I, ValueClass>();
-
-            for(int i=0;i<result.length;i++)
-                result[i] = or(result[i], propClasses.get(mapInterfaces.get(i)));
-        }
-        return result;
-    }
-
-    public static <I extends PropertyInterface> ValueClass[] getClasses(List<I> mapInterfaces, ActionPropertyImplement<? extends PropertyInterfaceImplement<I>> implement) {
-        ValueClass[] result = new ValueClass[mapInterfaces.size()];
-        System.arraycopy(getClasses(mapInterfaces, implement.mapping.values()), 0, result, 0, result.length);
-        Map<ClassPropertyInterface, ValueClass> mapClasses = implement.property.getMapClasses();
-        for(Map.Entry<ClassPropertyInterface, ? extends PropertyInterfaceImplement<I>> actInt : implement.mapping.entrySet())
-            if(actInt.getValue() instanceof PropertyInterface) {
-                int i = mapInterfaces.indexOf(actInt.getValue());
-                result[i] = or(result[i], mapClasses.get(actInt.getKey()));
-            }
-        return result;
-    }
-
     // не сильно структурно поэтому вынесено в метод
-    public <V> Map<ClassPropertyInterface, V> getMapInterfaces(List<V> list) {
+    public <V> Map<P, V> getMapInterfaces(List<V> list) {
         int i=0;
-        Map<ClassPropertyInterface, V> result = new HashMap<ClassPropertyInterface, V>();
-        for(ClassPropertyInterface propertyInterface : interfaces)
+        Map<P, V> result = new HashMap<P, V>();
+        for(P propertyInterface : interfaces)
             result.put(propertyInterface, list.get(i++));
         return result;
     }
     
-    public <V extends PropertyInterface> ActionPropertyMapImplement<V> getImplement(List<V> list) {
-        return new ActionPropertyMapImplement<V>(this, getMapInterfaces(list));
+    public <V extends PropertyInterface> ActionPropertyMapImplement<P, V> getImplement(List<V> list) {
+        return new ActionPropertyMapImplement<P, V>(this, getMapInterfaces(list));
     }
 
-    public abstract FlowResult execute(ExecutionContext context) throws SQLException;
+    public abstract FlowResult execute(ExecutionContext<P> context) throws SQLException;
 
-    public ActionPropertyMapImplement<ClassPropertyInterface> getImplement() {
-        return new ActionPropertyMapImplement<ClassPropertyInterface>(this, getIdentityInterfaces());
+    public ActionPropertyMapImplement<P, P> getImplement() {
+        return new ActionPropertyMapImplement<P, P>(this, getIdentityInterfaces());
     }
 
-    public List<ClientAction> execute(Map<ClassPropertyInterface, DataObject> keys, ExecutionEnvironment env, FormEnvironment<ClassPropertyInterface> formEnv) throws SQLException {
+    public List<ClientAction> execute(Map<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
         return env.execute(this, keys, formEnv, null);
-    }
-
-    public Map<ClassPropertyInterface, ValueClass> getMapClasses() {
-        return IsClassProperty.getMapClasses(interfaces);
     }
 
     public ValueClass getValueClass() {
         return ActionClass.instance;
     }
 
-    public Event<?,ClassPropertyInterface> event = null;
+    public Event<?,P> event = null;
 
     protected Set<CalcProperty> getEventDepends() {
         return event !=null ? event.getDepends(true) : new HashSet<CalcProperty>();
     }
 
     @Override
-    public ActionPropertyMapImplement<ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+    public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return getImplement();
     }
 
-    protected PropertyClassImplement<ClassPropertyInterface, ?> createClassImplement(List<ValueClassWrapper> classes, List<ClassPropertyInterface> mapping) {
-        return new ActionPropertyClassImplement(this, classes, mapping);
+    protected ActionPropertyClassImplement<P> createClassImplement(List<ValueClassWrapper> classes, List<P> mapping) {
+        return new ActionPropertyClassImplement<P>(this, classes, mapping);
     }
 
-    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, ClassPropertyInterface> whereImplement, int options) {
+    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, P> whereImplement, int options) {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        event = new Event<D,ClassPropertyInterface>(this, DerivedProperty.<ClassPropertyInterface>createStatic(true, ActionClass.instance), whereImplement, options);
+        event = new Event<D,P>(this, DerivedProperty.<P>createStatic(true, ActionClass.instance), whereImplement, options);
     }
 
 }
