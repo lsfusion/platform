@@ -11286,19 +11286,20 @@ sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledge
                                                                        retailSumItemReturnSupplierDetailReturnSupplier(ledger),
                                                                        retailSumItemInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumItemStatementDetailStatement(ledger),
+                                                                       retailSumItemWastageDetailWastage(ledger),
                                                                        accountSumItemShortageCollationSheet(ledger),
                                                                        retailSumBillDetailZReport(ledger),
-                                                                       discountSaleDiscountDocument(ledger) PERSISTENT IN ledgerByItemGroup; // subtotalByItemConsumption(ledger), totalSumByItemWastage(ledger),
+                                                                       discountSaleDiscountDocument(ledger),
+                                                                       retailSumConsumption(ledger) PERSISTENT IN ledgerByItemGroup;
+
+
 
 sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
                                                                        retailSumContainerReturnSupplierDetailReturnSupplier(ledger),
                                                                        retailSumContainerInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumContainerStatementDetailStatement(ledger),
                                                                        accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
-//                                                                       retailSumBillDetailZReport(ledger),
-//                                                                       discountSaleDiscountDocument(ledger),
-//                                                                       subtotalByContainerConsumption(ledger)
-//                                                                        totalSumByContainerWastage(ledger),
+//
 quantityIncAccountSumDocumentLedger 'Количество приходных док-ов' (departmentStore, dtFrom, dtTo)=
     GROUP SUM 1 IF incAccountSumDocumentLedger AS incAccountSumDocumentLedger AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
         AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
