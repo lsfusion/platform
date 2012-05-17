@@ -15,6 +15,10 @@ public class TableManager {
         this.currentTable = currentTable;
     }
 
+    public JTable getCurrentTable() {
+        return currentTable;
+    }
+
     public boolean isEditing() {
         return currentTable != null && currentTable.isEditing();
     }

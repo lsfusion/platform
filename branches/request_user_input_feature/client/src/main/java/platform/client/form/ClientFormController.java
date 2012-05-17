@@ -319,6 +319,10 @@ public class ClientFormController {
         tableManager.setCurrentEditingTable(currentTable);
     }
 
+    public JTable getCurrentEditingTable() {
+        return tableManager.getCurrentTable();
+    }
+
     public boolean isEditing() {
         return tableManager.isEditing();
     }

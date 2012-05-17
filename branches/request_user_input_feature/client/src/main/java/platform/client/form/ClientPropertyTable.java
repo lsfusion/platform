@@ -17,7 +17,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 import java.util.EventObject;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
@@ -184,16 +185,33 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     @SuppressWarnings("deprecation")
     private void internalRemoveEditor() {
-        // в removeEditor фокус запрашивается обратно в таблицу,
-        // поэтому вместо этого явно ставим его на следующий элемент.
-        // в обычных случаях - это и будет таблица, но при редактировании по хоткею - предыдущий компонент
-
         Component editorComp = getEditorComponent();
         Component nextComp = null;
         if (editorComp instanceof JComponent) {
             nextComp = ((JComponent) editorComp).getNextFocusableComponent();
         }
 
+        //copy/paste из JTable
+        // изменён, чтобы не запращивать фокус обратно в таблицу,
+        // потому что на самом деле нам надо, чтобы он переходил на editorComponent.getNextFocusableComponent()
+        // в обычных случаях - это и будет таблица, но при редактировании по хоткею - предыдущий компонент,
+        // а в случае начала редактирование новой таблицы - эта новая таблица
+        TableCellEditor editor = getCellEditor();
+        if(editor != null) {
+            editor.removeCellEditorListener(this);
+            if (this.editorComp != null) {
+                remove(this.editorComp);
+            }
+
+            Rectangle cellRect = getCellRect(editingRow, editingColumn, false);
+
+            setCellEditor(null);
+            setEditingColumn(-1);
+            setEditingRow(-1);
+            this.editorComp = null;
+
+            repaint(cellRect);
+        }
         super.removeEditor();
 
         if (nextComp != null) {
