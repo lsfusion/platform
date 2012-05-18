@@ -526,6 +526,7 @@ META defineDocumentDetailItem (object)
     barcodeExSku###object##Detail 'Штрих-код' (detail) =
         barcodeEx(barcodeSku(item###object##Detail (detail))) IN itemDetailGroup;
 
+    inWare###object##Detail 'Товар в посуде' (detail) = inWareItem(item###object##Detail(detail));
 END
 
 META defineDocumentDetailItemExtra (object)
@@ -578,11 +579,16 @@ META defineDocumentDetailQuantity (object)
     quantity###object##Detail 'Кол-во' = DATA NUMERIC[14,3] (object##Detail);
 END
 
+// ----------------------------------- Объявление цен для detail -------------------------- //
+
 GROUP priceDetailGroup 'Цены' : publicGroup;
 
+META defineDocumentDetailInPricePrefix (object, prefix, caption)
+    prefix###importerPrice###object##Detail 'Цена изготовителя/импортера'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    prefix###supplierPrice###object##Detail 'Цена поставщика без НДС'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+END
 META defineDocumentDetailInPrice (object)
-    importerPrice###object##Detail 'Цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-    supplierPrice###object##Detail 'Цена поставщика без НДС' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    @defineDocumentDetailInPricePrefix(object,,);
 END
 
 META defineDocumentDetailInvoicePrice (object)
@@ -598,85 +604,55 @@ META defineDocumentDetailInvoicePrice (object)
     CONSTRAINT taxRange(supplierRange###object##Detail(detail)) != tax.taxNDS CHECKED BY supplierRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 END
 
+META defineDocumentDetailWareRangePrefix (object, prefix, caption)
+    prefix###wareRange###object##Detail (detail) = rangeWareVal(prefix###ware###object##Detail(detail), date###object##Detail(detail));
+    prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = dataRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
+    prefix###dataWareRange###object##Detail 'НДС посуды, %'###caption (detail) = dataActingRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+END
 META defineDocumentDetailWareRange (object)
-    wareRange###object##Detail (detail) = rangeWareVal(ware###object##Detail(detail), date###object##Detail(detail));
-    numberWareRange###object##Detail 'НДС посуды, номер' (detail) = dataRange(wareRange###object##Detail(detail)) IN priceDetailGroup;
-    dataWareRange###object##Detail 'НДС посуды, %' (detail) = dataActingRateRangeDate(wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+    @defineDocumentDetailWareRangePrefix(object,,);
 END
 
+META defineDocumentDetailWarePrefix (object, prefix, caption)
+    prefix###ware###object##Detail = DATA ware(object##Detail);
+    prefix###nameWare###object##Detail 'Посуда'###caption (detail) = name(prefix###ware###object##Detail(detail)) IN priceDetailGroup;
+
+    prefix###warePrice###object##Detail 'Цена посуды с НДС'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+
+    @defineDocumentDetailWareRangePrefix(object, prefix, caption);
+END
 META defineDocumentDetailWare (object)
-    ware###object##Detail = DATA ware(object##Detail);
-    nameWare###object##Detail 'Посуда' (detail) = name(ware###object##Detail(detail)) IN priceDetailGroup;
-
-    warePrice###object##Detail 'Цена посуды с НДС' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-
-    inWare###object##Detail 'Товар в посуде' (detail) = inWareItem(item###object##Detail(detail));
-
-    @defineDocumentDetailWareRange(object);
+    @defineDocumentDetailWarePrefix(object,,);
 END
 
+META defineDocumentDetailRetailPricePrefix (object, prefix, caption)
+    prefix###retailPrice###object##Detail 'Розничная цена'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+END
 META defineDocumentDetailRetailPrice (object)
-    retailPrice###object##Detail 'Розничная цена' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    @defineDocumentDetailRetailPricePrefix(object,,);
 END
 
+META defineDocumentDetailOutPricePrefix (object, prefix, caption)
+    prefix###retailRange###object##Detail = DATA range (object##Detail);
+    prefix###numberRetailRange###object##Detail 'НДС розничный, номер'###caption (detail) = dataRange(prefix###retailRange###object##Detail(detail)) IN priceDetailGroup;
+    prefix###dataRetailRange###object##Detail 'НДС розничный, %'###caption (detail) =
+       dataActingRateRangeDate(prefix###retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+
+    CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+    @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
+END
 META defineDocumentDetailOutPrice (object)
-    retailRange###object##Detail = DATA range (object##Detail);
-    numberRetailRange###object##Detail 'НДС розничный, номер' (detail) = dataRange(retailRange###object##Detail(detail)) IN priceDetailGroup;
-    dataRetailRange###object##Detail 'НДС розничный, %' (detail) =
-       dataActingRateRangeDate(retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
-
-    CONSTRAINT taxRange(retailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-    @defineDocumentDetailRetailPrice(object);
+    @defineDocumentDetailOutPricePrefix(object,);
 END
 
+META defineDocumentDetailBasePricePrefix (object, prefix, caption)
+    @defineDocumentDetailWarePrefix(object, prefix, caption);
+    @defineDocumentDetailInPricePrefix(object, prefix, caption);
+    @defineDocumentDetailOutPricePrefix(object, prefix, caption);
+END
 META defineDocumentDetailBasePrice (object)
-    @defineDocumentDetailWare(object);
-    @defineDocumentDetailInPrice(object);
-    @defineDocumentDetailOutPrice(object);
-END
-
-// todo : вот эту часть нужно будет грохнуть и переделать на один большой метакод
-
-META defineDocumentDetailCurWareRange (object)
-    curWareRange###object##Detail (detail) = rangeWareVal(curWare###object##Detail(detail), date###object##Detail(detail));
-    curNumberWareRange###object##Detail 'Текущий НДС посуды, номер' (detail) = dataRange(curWareRange###object##Detail(detail));
-    curDataWareRange###object##Detail 'Текущий НДС посуды, %' (detail) = dataActingRateRangeDate(curWareRange###object##Detail(detail), date###object##Detail(detail));
-END
-
-META defineDocumentDetailCurWare (object)
-    curWare###object##Detail = DATA ware (object##Detail) IN idGroup;
-    curNameWare###object##Detail 'Текущая посуда' (detail) = name(curWare###object##Detail(detail)) IN priceDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-    curWarePrice###object##Detail 'Текущая цена посуды' (detail) = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-
-    @defineDocumentDetailCurWareRange(object);
-END
-
-META defineDocumentDetailCurInPrice (object)
-    curImporterPrice###object##Detail 'Тек. цена изготовителя/импортера' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-    curSupplierPrice###object##Detail 'Тек. цена поставщика' = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-END
-
-META defineDocumentDetailCurRetailPrice (object)
-    curRetailPrice###object##Detail 'Тек. розничная цена' (detail) = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-END
-
-META defineDocumentDetailCurOutPrice (object)
-    curRetailRange###object##Detail = DATA range (object##Detail);
-    curNumberRetailRange###object##Detail 'Тек. НДС розничный, номер' (detail) = dataRange(curRetailRange###object##Detail(detail)) IN priceDetailGroup;
-    curDataRetailRange###object##Detail 'Тек. НДС розничный, %' (detail) =
-       dataActingRateRangeDate(curRetailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
-
-    CONSTRAINT taxRange(curRetailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY curRetailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-    @defineDocumentDetailCurRetailPrice(object);
-END
-
-META defineDocumentDetailCurBasePrice (object)
-    @defineDocumentDetailCurWare(object);
-    @defineDocumentDetailCurInPrice(object);
-    @defineDocumentDetailCurOutPrice(object);
+    @defineDocumentDetailBasePricePrefix(object,,);
 END
 
 META defineDocumentDetailCalcRange (object)
@@ -695,12 +671,13 @@ META defineDocumentDetailAccountPrice (object)
     accountPrice###object##Detail 'Учетная цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
 END
 
-META defineDocumentDetailInSum (object)
-    supplierISum###object##Detail 'Сумма поставщика без НДС' (detail) = round0(quantity###object##Detail(detail) * supplierPrice###object##Detail(detail));
-END
+// ----------------------------------- Объявление сумм для detail -------------------------- //
 
-META defineDocumentDetailCurInSum (object)
-    curSupplierISum###object##Detail 'Текущая сумма поставщика без НДС' (detail) = round0(quantity###object##Detail(detail) * curSupplierPrice###object##Detail(detail));
+META defineDocumentDetailInSumPrefix (object, prefix, caption)
+    prefix###supplierISum###object##Detail 'Сумма поставщика без НДС'###caption (detail) = round0(quantity###object##Detail(detail) * prefix###supplierPrice###object##Detail(detail));
+END
+META defineDocumentDetailInSum (object)
+    @defineDocumentDetailInSumPrefix(object,,);
 END
 
 META defineDocumentDetailInvoiceSum (object)
@@ -728,72 +705,56 @@ META defineDocumentDetailInvoiceSum (object)
         invoiceISum###object##Detail (detail) (-) supplierVATISum###object##Detail (detail) (+) wareSupplierSum###object##Detail(detail);
 END
 
+META defineDocumentDetailWareSumPrefix (object, prefix, caption)
+    prefix###wareSum###object##Detail 'Сумма посуды с НДС'###caption (detail) = quantity###object##Detail(detail) * prefix###warePrice###object##Detail(detail);
+
+    prefix###wareVATPrice###object##Detail 'Цена НДС посуды'###caption (object##Detail) = [round1(X*Y/(100+Y))](
+        prefix###warePrice###object##Detail (object##Detail), prefix###dataWareRange###object##Detail(object##Detail));
+
+    prefix###wareVATSum###object##Detail 'Сумма НДС по посуде'###caption (object##Detail) = round0(
+        quantity###object##Detail(object##Detail) * prefix###wareVATPrice###object##Detail(object##Detail));
+
+    prefix###wareSupplierPrice###object##Detail 'Цена посуды без НДС'###caption (object##Detail) =
+        prefix###warePrice###object##Detail (object##Detail) (-) prefix###wareVATPrice###object##Detail(object##Detail);
+
+    prefix###wareSupplierSum###object##Detail 'Сумма посуды без НДС'###caption (object##Detail) =
+        prefix###wareSum###object##Detail(object##Detail) (-) prefix###wareVATSum###object##Detail(object##Detail);
+END
 META defineDocumentDetailWareSum (object)
-    wareSum###object##Detail 'Сумма посуды с НДС' (detail) = quantity###object##Detail(detail) * warePrice###object##Detail(detail);
-
-    wareVATPrice###object##Detail 'Цена НДС посуды' (object##Detail) = [round1(X*Y/(100+Y))](
-        warePrice###object##Detail (object##Detail), dataWareRange###object##Detail(object##Detail));
-
-    wareVATSum###object##Detail 'Сумма НДС по посуде' (object##Detail) = round0(
-        quantity###object##Detail(object##Detail) * wareVATPrice###object##Detail(object##Detail));
-
-    wareSupplierPrice###object##Detail 'Цена посуды без НДС' (object##Detail) =
-        warePrice###object##Detail (object##Detail) (-) wareVATPrice###object##Detail(object##Detail);
-
-    wareSupplierSum###object##Detail 'Сумма посуды без НДС' (object##Detail) =
-        wareSum###object##Detail(object##Detail) (-) wareVATSum###object##Detail(object##Detail);
+    @defineDocumentDetailWareSumPrefix(object,,);
 END
 
-META defineDocumentDetailCurWareSum (object)
-    curWareSum###object##Detail 'Текущая сумма посуды с НДС' (detail) = quantity###object##Detail(detail) * curWarePrice###object##Detail(detail);
-
-    curWareVATPrice###object##Detail 'Текущая цена НДС посуды' (object##Detail) = [round1(X*Y/(100+Y))](
-        curWarePrice###object##Detail (object##Detail), curDataWareRange###object##Detail(object##Detail));
-
-    curWareVATSum###object##Detail 'Текущая сумма НДС по посуде' (object##Detail) = round0(
-        quantity###object##Detail(object##Detail) * curWareVATPrice###object##Detail(object##Detail));
-
-    curWareSupplierPrice###object##Detail 'Текущая цена посуды без НДС' (object##Detail) =
-        curWarePrice###object##Detail (object##Detail) (-) curWareVATPrice###object##Detail(object##Detail);
-
-    curWareSupplierSum###object##Detail 'Текущая сумма посуды без НДС' (object##Detail) =
-        curWareSum###object##Detail(object##Detail) (-) curWareVATSum###object##Detail(object##Detail);
+META defineDocumentDetailRetailSumPrefix (object, prefix, caption)
+    prefix###retailSum###object##Detail 'Розничная сумма'###caption (detail) = round0(quantity###object##Detail(detail) * prefix###retailPrice###object##Detail(detail));
 END
-
 META defineDocumentDetailRetailSum (object)
-    retailSum###object##Detail 'Розничная сумма' (detail) = round0(quantity###object##Detail(detail) * retailPrice###object##Detail(detail));
+    @defineDocumentDetailRetailSumPrefix(object,,);
 END
 
-META defineDocumentDetailCurRetailSum (object)
-    curRetailSum###object##Detail 'Текущая розничная сумма' (detail) = round0(quantity###object##Detail(detail) * curRetailPrice###object##Detail(detail));
-END
+META defineDocumentDetailOutSumPrefix (object, prefix, caption)
+    @defineDocumentDetailRetailSumPrefix(object, prefix, caption);
 
+    prefix###retailISum###object##Detail 'Розничная сумма (без посуды)'###caption (detail) = prefix###retailSum###object##Detail(detail) (-) prefix###wareSum###object##Detail(detail);
+
+    prefix###retailVATISum###object##Detail 'Сумма НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
+                prefix###retailISum###object##Detail(detail), prefix###dataRetailRange###object##Detail(detail));
+
+    prefix###retailVATSum###object##Detail 'Сумма НДС'###caption (detail) = prefix###retailVATISum###object##Detail(detail) (+) prefix###wareVATSum###object##Detail(detail);
+
+    prefix###markupSum###object##Detail 'Сумма надбавки'###caption (detail) =
+        prefix###retailISum###object##Detail(detail) (-) prefix###retailVATISum###object##Detail(detail) (-) prefix###supplierISum###object##Detail(detail);
+END
 META defineDocumentDetailOutSum (object)
-    @defineDocumentDetailRetailSum(object);
-
-    retailISum###object##Detail 'Розничная сумма (без посуды)' (detail) = retailSum###object##Detail(detail) (-) wareSum###object##Detail(detail);
-
-    retailVATISum###object##Detail 'Сумма НДС (без посуды)' (detail) = [round0(X*Y/(100+Y))](
-                retailISum###object##Detail(detail), dataRetailRange###object##Detail(detail));
-
-    retailVATSum###object##Detail 'Сумма НДС' (detail) = retailVATISum###object##Detail(detail) (+) wareVATSum###object##Detail(detail);
-
-    markupSum###object##Detail 'Сумма надбавки' (detail) =
-        retailISum###object##Detail(detail) (-) retailVATISum###object##Detail(detail) (-) supplierISum###object##Detail(detail);
+    @defineDocumentDetailOutSumPrefix(object,,);
 END
 
-META defineDocumentDetailCurOutSum (object)
-    @defineDocumentDetailCurRetailSum(object);
-
-    curRetailISum###object##Detail 'Текущая розничная сумма (без посуды)' (detail) = curRetailSum###object##Detail(detail) (-) curWareSum###object##Detail(detail);
-
-    curRetailVATISum###object##Detail 'Текущая сумма НДС (без посуды)' (detail) = [round0(X*Y/(100+Y))](
-                curRetailISum###object##Detail(detail), curDataRetailRange###object##Detail(detail));
-
-    curRetailVATSum###object##Detail 'Текущая сумма НДС' (detail) = curRetailVATISum###object##Detail(detail) (+) curWareVATSum###object##Detail(detail);
-
-    curMarkupSum###object##Detail 'Текущая сумма надбавки' (detail) =
-        curRetailISum###object##Detail(detail) (-) curRetailVATISum###object##Detail(detail) (-) curSupplierISum###object##Detail(detail);
+META defineDocumentDetailBaseSumPrefix (object, prefix, caption)
+    @defineDocumentDetailWareSumPrefix(object, prefix, caption);
+    @defineDocumentDetailInSumPrefix(object, prefix, caption);
+    @defineDocumentDetailOutSumPrefix(object, prefix, caption);
+END
+META defineDocumentDetailBaseSum (object)
+    @defineDocumentDetailBaseSumPrefix(object,,);
 END
 
 META defineDocumentDetailCalcVATSum (object)
@@ -805,16 +766,11 @@ END
 META defineDocumentDetailAccountSumCustom (object, detail)
     accountSum###detail 'Учетная сумма' (detail) = quantity###detail(detail) * accountPrice###detail(detail);
 END
-
 META defineDocumentDetailAccountSum (object)
     @defineDocumentDetailAccountSumCustom(object, object##Detail);
 END
 
-META defineDocumentDetailBaseSum (object)
-    @defineDocumentDetailWareSum(object);
-    @defineDocumentDetailInSum(object);
-    @defineDocumentDetailOutSum(object);
-END
+// ----------------------------------- Объявление сумм для header -------------------------- //
 
 META defineDocumentHeaderQuantityCustom (object, detail)
     quantity###detail###object 'Кол-во (всего)' (object) = GROUP SUM quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
@@ -834,18 +790,18 @@ META defineDocumentHeaderItemQuantity (object)
     @defineDocumentHeaderItemQuantityCustom(object, object###detail);
 END
 
+META defineDocumentHeaderInSumCustomPrefix (object, detail, prefix, caption)
+    prefix###supplierISum###detail###object 'Сумма поставщика без НДС (без посуды)'###caption (object) =
+        GROUP SUM prefix###supplierISum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
 META defineDocumentHeaderInSumCustom (object, detail)
-    supplierISum###detail###object 'Сумма поставщика без НДС (без посуды)' (object) =
-        GROUP SUM supplierISum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    @defineDocumentHeaderInSumCustomPrefix(object, detail, , )
 END
-
+META defineDocumentHeaderInSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderInSumCustomPrefix(object, object##Detail, prefix, caption);
+END
 META defineDocumentHeaderInSum (object)
-    @defineDocumentHeaderInSumCustom(object, object##Detail);
-END
-
-META defineDocumentHeaderCurInSum (object)
-    curSupplierISum###object##Detail###object 'Текущая сумма поставщика без НДС (без посуды)' (object) =
-        GROUP SUM curSupplierISum###object##Detail(idetail) BY object###object##Detail(idetail) IN documentSumGroup;
+    @defineDocumentHeaderInSumCustomPrefix(object, object##Detail, , );
 END
 
 META defineDocumentHeaderInvoiceSum (object)
@@ -865,85 +821,78 @@ META defineDocumentHeaderInvoiceSum (object)
         invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object);
 END
 
+META defineDocumentHeaderWareSumCustomPrefix (object, detail, prefix, caption)
+    prefix###wareSum###detail###object 'Сумма посуды с НДС'###caption (object) =
+        GROUP SUM prefix###wareSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+
+    prefix###wareVATSum###detail###object 'Сумма НДС по посуде'###caption (object) =
+        GROUP SUM prefix###wareVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
 META defineDocumentHeaderWareSumCustom (object, detail)
-    wareSum###detail###object 'Сумма посуды с НДС' (object) =
-        GROUP SUM wareSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-
-    wareVATSum###detail###object 'Сумма НДС по посуде' (object) =
-        GROUP SUM wareVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    @defineDocumentHeaderWareSumCustomPrefix(object, detail, , );
 END
-
+META defineDocumentHeaderWareSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderWareSumCustomPrefix(object, object##Detail, prefix, caption);
+END
 META defineDocumentHeaderWareSum (object)
-    @defineDocumentHeaderWareSumCustom(object, object##Detail);
+    @defineDocumentHeaderWareSumCustomPrefix(object, object##Detail, , );
 END
 
-META defineDocumentHeaderCurWareSumCustom (object, detail)
-    curWareSum###detail###object 'Текущая сумма посуды с НДС' (object) =
-        GROUP SUM curWareSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+META defineDocumentHeaderRetailSumCustomPrefix (object, detail, prefix, caption)
+    prefix###retailSum###detail###object 'Розничная сумма'###caption (object) =
+        GROUP SUM prefix###retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 
-    curWareVATSum###detail###object 'Текущая сумма НДС по посуде' (object) =
-        GROUP SUM curWareVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    prefix###retailSumItem###detail###object 'Розничная сумма (окр.), товар'###caption (idetail) =
+        GROUP SUM prefix###retailSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    prefix###retailSumContainer###detail###object 'Розничная сумма (окр.), тара'###caption (idetail) =
+        GROUP SUM prefix###retailSum###detail(idetail) IF isContainerItem(item###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
 END
-
-META defineDocumentHeaderCurWareSum (object)
-    @defineDocumentHeaderCurWareSumCustom(object, object##Detail);
-END
-
 META defineDocumentHeaderRetailSumCustom (object, detail)
-    retailSum###detail###object 'Розничная сумма' (object) =
-        GROUP SUM retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-
-    retailSumItem###detail###object 'Розничная сумма (окр.), товар' (idetail) =
-        GROUP SUM retailSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
-            BY object###detail(idetail) IN documentSumGroup;
-    retailSumContainer###detail###object 'Розничная сумма (окр.), тара' (idetail) =
-        GROUP SUM retailSum###detail(idetail) IF isContainerItem(item###detail(idetail))
-            BY object###detail(idetail) IN documentSumGroup;
+    @defineDocumentHeaderRetailSumCustomPrefix(object, detail, , );
 END
-
+META defineDocumentHeaderRetailSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderRetailSumCustomPrefix(object, object##Detail, prefix, caption);
+END
 META defineDocumentHeaderRetailSum (object)
-    @defineDocumentHeaderRetailSumCustom(object, object##Detail);
+    @defineDocumentHeaderRetailSumCustomPrefix(object, object##Detail, , );
 END
 
-META defineDocumentHeaderCurRetailSumCustom (object, detail)
-    curRetailSum###detail###object 'Текущая розничная сумма' (object) =
-        GROUP SUM curRetailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-END
+META defineDocumentHeaderOutSumCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderRetailSumCustomPrefix(object, detail, prefix, caption);
 
-META defineDocumentHeaderCurRetailSum (object)
-    @defineDocumentHeaderCurRetailSumCustom(object, object##Detail);
-END
+    prefix###retailVATISum###detail###object 'Сумма НДС (без посуды)'###caption (object) =
+        GROUP SUM prefix###retailVATISum###detail(idetail) BY object###detail(idetail);
 
+    prefix###retailVATSum###detail###object 'Сумма НДС'###caption (detail) = prefix###retailVATISum###detail###object(detail) (+) prefix###wareVATSum###detail###object(detail);
+
+    prefix###markupSum###detail###object 'Сумма надбавки'###caption (object) =
+        GROUP SUM prefix###markupSum###detail(idetail) BY object###detail(idetail);
+END
 META defineDocumentHeaderOutSumCustom (object, detail)
-    @defineDocumentHeaderRetailSumCustom(object, detail);
-
-    retailVATISum###detail###object 'Сумма НДС (без посуды)' (object) =
-        GROUP SUM retailVATISum###detail(idetail) BY object###detail(idetail);
-
-    retailVATSum###detail###object 'Сумма НДС' (detail) = retailVATISum###detail###object(detail) (+) wareVATSum###detail###object(detail);
-
-    markupSum###detail###object 'Сумма надбавки' (object) =
-        GROUP SUM markupSum###detail(idetail) BY object###detail(idetail);
+    @defineDocumentHeaderOutSumCustomPrefix(object, detail, , );
 END
-
+META defineDocumentHeaderOutSumPrefix (object)
+    @defineDocumentHeaderOutSumCustomPrefix(object, object##Detail, prefix, caption);
+END
 META defineDocumentHeaderOutSum (object)
-    @defineDocumentHeaderOutSumCustom(object, object##Detail);
+    @defineDocumentHeaderOutSumCustomPrefix(object, object##Detail, , );
 END
 
-META defineDocumentHeaderCurOutSumCustom (object, detail)
-    @defineDocumentHeaderCurRetailSumCustom(object, detail);
-
-    curRetailVATISum###detail###object 'Текущая сумма НДС (без посуды)' (object) =
-        GROUP SUM curRetailVATISum###detail(idetail) BY object###detail(idetail);
-
-    curRetailVATSum###detail###object 'Текущая сумма НДС' (detail) = curRetailVATISum###detail###object(detail) (+) curWareVATSum###detail###object(detail);
-
-    curMarkupSum###detail###object 'Текущая сумма надбавки' (object) =
-        GROUP SUM curMarkupSum###detail(idetail) BY object###detail(idetail);
+META defineDocumentHeaderBaseSumCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderWareSumCustomPrefix(object, detail, prefix, caption);
+    @defineDocumentHeaderInSumCustomPrefix(object, detail, prefix, caption);
+    @defineDocumentHeaderOutSumCustomPrefix(object, detail, prefix, caption);
 END
-
-META defineDocumentHeaderCurOutSum (object)
-    @defineDocumentHeaderCurOutSumCustom(object, object##Detail);
+META defineDocumentHeaderBaseSumCustom (object, detail)
+    @defineDocumentHeaderBaseSumCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderBaseSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderBaseSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderBaseSum (object)
+    @defineDocumentHeaderBaseSumCustomPrefix(object, object##Detail, , );
 END
 
 META defineDocumentHeaderItemSumCustom (object, detail)
@@ -979,18 +928,6 @@ END
 
 META defineDocumentHeaderAccountSum (object)
     @defineDocumentHeaderAccountSumCustom(object, object##Detail);
-END
-
-META defineDocumentHeaderBaseSumCustom (object, detail)
-    @defineDocumentHeaderWareSumCustom(object, detail);
-    @defineDocumentHeaderInSumCustom(object, detail);
-    @defineDocumentHeaderOutSumCustom(object, detail);
-END
-
-META defineDocumentHeaderBaseSum (object)
-    @defineDocumentHeaderWareSum(object);
-    @defineDocumentHeaderInSum(object);
-    @defineDocumentHeaderOutSum(object);
 END
 
 META defineDocumentHeaderRevaluation (object)
@@ -1201,7 +1138,7 @@ END
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
-META defineDocumentRegisterCommittee(object)
+META defineDocumentHeaderListRegister(object)
     registerCommittee###object (object) = DATA registerCommittee(object) IN idGroup;
 
     nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = commonName(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
@@ -5952,7 +5889,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 @defineDocumentDetailBasePrice(studyOutput);
 @defineDocumentDetailBaseSum(studyOutput);
 
-@defineDocumentDetailCurBasePrice(studyOutput);
+@defineDocumentDetailBasePricePrefix(studyOutput, cur, ' (тек.)');
 @deriveCurBasePriceLedgerOnItemChange(studyOutput);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
@@ -6519,7 +6456,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentDetailCalcRange(statement);
 @defineDocumentDetailCalcVATSum(statement);
 
-@defineDocumentDetailCurRetailPrice(statement);
+@defineDocumentDetailRetailPricePrefix(statement, cur, ' (тек.)');
 @deriveCurPriceLedgerOnItemChange(retailPrice, statement);
 
 @defineDocumentDetailNote(statement);
@@ -6639,7 +6576,8 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentDetailInvoicePrice(shipment);
 @defineDocumentDetailInvoiceSum(shipment);
 
-@defineDocumentDetailCurBasePrice(shipment);
+@defineDocumentDetailBasePricePrefix(shipment, cur, ' (тек.)');
+@deriveCurBasePriceLedgerOnItemChange(shipment);
 
 @defineDocumentHeaderQuantity(shipment);
 @defineDocumentHeaderItemQuantity(shipment);
@@ -6647,7 +6585,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentHeaderBaseSum(shipment);
 @defineDocumentHeaderInvoiceSum(shipment);
 
-@defineDocumentRegisterCommittee(shipment);
+@defineDocumentHeaderListRegister(shipment);
 
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 
@@ -6757,8 +6695,6 @@ balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (ship
 balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBItemLedgerDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-@deriveCurBasePriceLedgerOnItemChange(shipment);
 
 //-------------------- Документы качества ----------------------------//
 
@@ -6985,52 +6921,19 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineDocumentDefaultProperties(innerArrival);
 
 @defineDocumentHeaderRevaluation(innerArrival);
+@defineDocumentHeaderListRegister(innerArrival);
 
 @defineDocumentDetailQuantity(innerArrival);
 @defineDocumentDetailBasePrice(innerArrival);
-@defineDocumentDetailInvoicePrice(innerArrival);
+@defineDocumentDetailBaseSum(innerArrival);
 
-@defineDocumentDetailCurBasePrice(innerArrival);
-@defineDocumentDetailWareSum(innerArrival);
-@defineDocumentDetailInSum(innerArrival);
-@defineDocumentDetailOutSum(innerArrival);
-@defineDocumentDetailInvoiceSum(innerArrival);
+@defineDocumentDetailBasePricePrefix(innerArrival, cur, ' (тек.)');
+@deriveCurBasePriceLedgerOnItemChange(innerArrival);
 
-//@defineDocumentDetailRetailSum(innerArrival);
-//@defineDocumentDetailOutSum(innerArrival);
 @defineDocumentHeaderQuantity(innerArrival);
 @defineDocumentHeaderItemQuantity(innerArrival);
 
-//@defineDocumentHeaderRetailSum(innerArrival);
-
-@defineDocumentHeaderWareSum(innerArrival);
-@defineDocumentHeaderOutSum(innerArrival);
-@defineDocumentHeaderInvoiceSum(innerArrival);
-
-@defineDocumentRegisterCommittee(innerArrival);
-
-   //////////////////
-//@defineDocumentDefaultProperties(innerArrival);
-//
-//@defineDocumentHeaderRevaluation(innerArrival);
-//
-//@defineDocumentDetailQuantity(innerArrival);
-//@defineDocumentDetailBasePrice(innerArrival);
-//@defineDocumentDetailBaseSum(innerArrival);
-//
-//@defineDocumentDetailCurBasePrice(innerArrival);
-//@deriveCurBasePriceLedgerOnItemChange(innerArrival);
-//
-//@defineDocumentHeaderQuantity(innerArrival);
-//@defineDocumentHeaderItemQuantity(innerArrival);
-//
-//@defineDocumentHeaderBaseSum(innerArrival);
-//
-//@defineDocumentHeaderWareSum(innerArrival);
-//@defineDocumentHeaderOutSum(innerArrival);
-//@defineDocumentHeaderInvoiceSum(innerArrival);
-//
-//@defineDocumentRegisterCommittee(innerArrival);
+@defineDocumentHeaderBaseSum(innerArrival);
 
 innerFlowInnerArrival (innerArrival) = DATA innerFlowPosted (innerArrival);
 innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
@@ -7064,6 +6967,8 @@ retailPriceItemInnerArrival 'Розничная цена (максим.)' (item,
 quantityItemInnerFlowInnerArrival 'Количество в расходе' (item, innerArrival) = quantityInnerFlowDetailItemInnerFlow(item, innerFlowInnerArrival(innerArrival));
 diffQuantityItemInnerArrival 'Расхождение' (item, innerArrival) =
     quantityItemInnerFlowInnerArrival(item, innerArrival) (-) quantityInnerArrivalDetailItemInnerArrival(item, innerArrival);
+
+supplierMarkupInnerArrivalDetail 'Оптовая надбавка/торговая скидка, %' (detail) = DATA NUMERIC[6,2] (innerArrivalDetail) IN priceDetailGroup;
 
 retailMarkupInnerArrivalDetail 'Торговая надбавка, %'(innerArrivalDetail) = DATA NUMERIC[8,3] (innerArrivalDetail) IN baseGroup;
 importerMarkupInnerArrivalDetail '% надбавки с уч. оптовой' (innerArrivalDetail) = [X*(100+Y)/100](
@@ -7151,7 +7056,7 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentDetailInvoicePrice(returnSupplier);
 @defineDocumentDetailInvoiceSum(returnSupplier);
 
-@defineDocumentDetailCurBasePrice(returnSupplier);
+@defineDocumentDetailBasePricePrefix(returnSupplier, cur, ' (тек.)');
 @deriveCurBasePriceLedgerOnItemChange(returnSupplier);
 
 @defineDocumentHeaderQuantity(returnSupplier);
@@ -7531,7 +7436,7 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 @defineDocumentDetailQuantity(userPriceChange);
 @defineDocumentDetailBasePrice(userPriceChange);
 
-@defineDocumentDetailCurBasePrice(userPriceChange);
+@defineDocumentDetailBasePricePrefix(userPriceChange, cur, ' (тек.)');
 @deriveCurBasePriceLedgerOnItemChange(userPriceChange);
 
 @defineDocumentHeaderItemQuantity(userPriceChange);
@@ -9856,10 +9761,10 @@ quantityListRegisterDetailListRegister (listRegister) += quantityShipmentDetailS
 quantityListRegisterDetailListRegister (listRegister) += quantityInnerArrivalDetailInnerArrival(listRegister);
 
 supplierSumListRegisterDetailListRegister (listRegister) += supplierSumShipmentDetailShipment(listRegister);
-supplierSumListRegisterDetailListRegister (listRegister) += supplierSumInnerArrivalDetailInnerArrival(listRegister);
+supplierSumListRegisterDetailListRegister (listRegister) += supplierISumInnerArrivalDetailInnerArrival(listRegister) (+) wareSumInnerArrivalDetailInnerArrival(listRegister);
 
 supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumShipmentDetailShipment(listRegister);
-supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumInnerArrivalDetailInnerArrival(listRegister);
+//supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumInnerArrivalDetailInnerArrival(listRegister);
 
 wareSumListRegisterDetailListRegister (listRegister) += wareSumShipmentDetailShipment(listRegister);
 wareSumListRegisterDetailListRegister (listRegister) += wareSumInnerArrivalDetailInnerArrival(listRegister);
@@ -9868,7 +9773,7 @@ wareVATSumListRegisterDetailListRegister (listRegister) += wareVATSumShipmentDet
 wareVATSumListRegisterDetailListRegister (listRegister) += wareVATSumInnerArrivalDetailInnerArrival(listRegister);
 
 invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumShipmentDetailShipment(listRegister);
-invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumInnerArrivalDetailInnerArrival(listRegister);
+//invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumInnerArrivalDetailInnerArrival(listRegister);
 
 markupSumListRegisterDetailListRegister (listRegister) += markupSumShipmentDetailShipment(listRegister);
 markupSumListRegisterDetailListRegister (listRegister) += markupSumInnerArrivalDetailInnerArrival(listRegister);
@@ -9900,16 +9805,16 @@ importerPriceListRegisterDetail (listRegisterDetail) += importerPriceShipmentDet
 importerPriceListRegisterDetail (listRegisterDetail) += importerPriceInnerArrivalDetail(listRegisterDetail);
 
 supplierSumListRegisterDetail (listRegisterDetail) += supplierSumShipmentDetail(listRegisterDetail);
-supplierSumListRegisterDetail (listRegisterDetail) += supplierSumInnerArrivalDetail(listRegisterDetail);
+supplierSumListRegisterDetail (listRegisterDetail) += supplierISumInnerArrivalDetail(listRegisterDetail) (+) wareSumInnerArrivalDetail(listRegisterDetail);
 
 supplierMarkupListRegisterDetail (listRegisterDetail) += supplierMarkupShipmentDetail(listRegisterDetail);
 supplierMarkupListRegisterDetail (listRegisterDetail) += supplierMarkupInnerArrivalDetail(listRegisterDetail);
 
 supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumShipmentDetail(listRegisterDetail);
-supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumInnerArrivalDetail(listRegisterDetail);
+//supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumInnerArrivalDetail(listRegisterDetail);
 
 dataSupplierRangeListRegisterDetail (listRegisterDetail) += dataSupplierRangeShipmentDetail(listRegisterDetail);
-dataSupplierRangeListRegisterDetail (listRegisterDetail) += dataSupplierRangeInnerArrivalDetail(listRegisterDetail);
+//dataSupplierRangeListRegisterDetail (listRegisterDetail) += dataSupplierRangeInnerArrivalDetail(listRegisterDetail);
 
 wareSumListRegisterDetail (listRegisterDetail) += wareSumShipmentDetail(listRegisterDetail);
 wareSumListRegisterDetail (listRegisterDetail) += wareSumInnerArrivalDetail(listRegisterDetail);
@@ -9924,7 +9829,7 @@ dataWareRangeListRegisterDetail (listRegisterDetail) += dataWareRangeShipmentDet
 dataWareRangeListRegisterDetail (listRegisterDetail) += dataWareRangeInnerArrivalDetail(listRegisterDetail);
 
 invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumShipmentDetail(listRegisterDetail);
-invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumInnerArrivalDetail(listRegisterDetail);
+//invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumInnerArrivalDetail(listRegisterDetail);
 
 importerMarkupListRegisterDetail (listRegisterDetail) += importerMarkupShipmentDetail(listRegisterDetail);
 importerMarkupListRegisterDetail (listRegisterDetail) += importerMarkupInnerArrivalDetail(listRegisterDetail);
@@ -10317,7 +10222,7 @@ warePricePriceChangeDocumentDetail 'Цена посуды' (priceChangeDocumentD
                                                                                             warePricePriceChangeDisparityDetail(priceChangeDocumentDetail) PERSISTENT;
 
 @defineDocumentDetailWareRange(priceChangeDocument);
-@defineDocumentDetailCurWareRange(priceChangeDocument);
+@defineDocumentDetailWareRangePrefix(priceChangeDocument, cur, ' (тек.)');
 
 curImporterPricePriceChangeDocumentDetail 'Текущая цена изготовителя' (priceChangeDocumentDetail) = UNION EXCLUSIVE curImporterPricePriceChangeShipmentDetail(priceChangeDocumentDetail),
                                                                                                               curImporterPricePriceChangeReturnSupplierDetail(priceChangeDocumentDetail),
@@ -10383,23 +10288,13 @@ retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeD
 
 @defineDocumentDetailIndex(priceChangeDocument);
 
-@defineDocumentDetailWareSum(priceChangeDocument);
-@defineDocumentDetailInSum(priceChangeDocument);
-@defineDocumentDetailOutSum(priceChangeDocument);
-
-@defineDocumentDetailCurWareSum(priceChangeDocument);
-@defineDocumentDetailCurInSum(priceChangeDocument);
-@defineDocumentDetailCurOutSum(priceChangeDocument);
+@defineDocumentDetailBaseSum(priceChangeDocument);
+@defineDocumentDetailBaseSumPrefix(priceChangeDocument, cur, ' (тек.)');
 
 @defineDocumentHeaderQuantity(priceChangeDocument);
 
-@defineDocumentHeaderWareSum(priceChangeDocument);
-@defineDocumentHeaderInSum(priceChangeDocument);
-@defineDocumentHeaderOutSum(priceChangeDocument);
-
-@defineDocumentHeaderCurWareSum(priceChangeDocument);
-@defineDocumentHeaderCurInSum(priceChangeDocument);
-@defineDocumentHeaderCurOutSum(priceChangeDocument);
+@defineDocumentHeaderBaseSum(priceChangeDocument);
+@defineDocumentHeaderBaseSumPrefix(priceChangeDocument, cur, ' (тек.)');
 
 retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
     markupSumPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail));

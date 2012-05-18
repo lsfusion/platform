@@ -35,7 +35,7 @@ public class Event<D extends PropertyInterface, C extends PropertyInterface> {
 
     public Set<OldProperty> getOldDepends() {
         Set<OldProperty> result = new HashSet<OldProperty>();
-        result.addAll(writeFrom.mapOldDepends());
+//        result.addAll(writeFrom.mapOldDepends());
         result.addAll(where.mapOldDepends());
         return result;
     }
