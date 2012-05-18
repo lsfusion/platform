@@ -96,8 +96,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
-        CalcPropertyMapImplement<PropertyInterface, I> nullImplement = new CalcPropertyMapImplement<PropertyInterface, I>(NullValueProperty.instance);
         return DerivedProperty.createIfElseUProp(innerInterfaces, ifProp,
-                action.mapWhereProperty(), elseAction != null ? elseAction.mapWhereProperty() : nullImplement, false);
+                action.mapWhereProperty(), elseAction != null ? elseAction.mapWhereProperty() : null, false);
     }
 }

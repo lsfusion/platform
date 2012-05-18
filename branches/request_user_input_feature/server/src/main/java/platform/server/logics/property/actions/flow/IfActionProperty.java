@@ -45,10 +45,9 @@ public class IfActionProperty extends KeepContextActionProperty {
 
     @IdentityLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        CalcPropertyMapImplement<PropertyInterface, PropertyInterface> nullImplement = new CalcPropertyMapImplement<PropertyInterface, PropertyInterface>(NullValueProperty.instance);
         return DerivedProperty.createIfElseUProp(interfaces, ifProp,
-                trueAction != null ? trueAction.mapWhereProperty() : nullImplement, 
-                falseAction !=null ? falseAction.mapWhereProperty() : nullImplement, ifClasses);
+                trueAction != null ? trueAction.mapWhereProperty() : null,
+                falseAction !=null ? falseAction.mapWhereProperty() : null, ifClasses);
     }
 
     public Set<CalcProperty> getChangeProps() {

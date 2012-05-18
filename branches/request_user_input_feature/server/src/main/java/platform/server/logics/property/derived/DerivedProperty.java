@@ -589,8 +589,18 @@ public class DerivedProperty {
     }
 
     public static <L extends PropertyInterface> CalcPropertyMapImplement<?, L> createIfElseUProp(Collection<L> innerInterfaces, CalcPropertyInterfaceImplement<L> ifProp, CalcPropertyMapImplement<?, L> trueProp, CalcPropertyMapImplement<?, L> falseProp, boolean ifClasses) {
-        return DerivedProperty.createXUnion(innerInterfaces, DerivedProperty.createAnd(innerInterfaces, ifProp, trueProp),
-                DerivedProperty.createAndNot(innerInterfaces, ifProp, falseProp));
+        CalcPropertyMapImplement<?, L> ifTrue = null;
+        if(trueProp!=null)
+            ifTrue = DerivedProperty.createAnd(innerInterfaces, trueProp, ifProp);
+        CalcPropertyMapImplement<?, L> ifFalse = null;
+        if(falseProp!=null)
+            ifFalse = DerivedProperty.createAndNot(innerInterfaces, falseProp, ifProp);
+        
+        if(ifTrue==null)
+            return ifFalse;
+        if(ifFalse==null)
+            return ifTrue;
+        return DerivedProperty.createXUnion(innerInterfaces, ifTrue, ifFalse);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, CalcProperty<T> property) {
