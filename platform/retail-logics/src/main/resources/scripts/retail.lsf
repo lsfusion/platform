@@ -809,6 +809,12 @@ META defineDocumentDetailAccountSum (object)
     @defineDocumentDetailAccountSumCustom(object, object##Detail);
 END
 
+META defineDocumentDetailBaseSum (object)
+    @defineDocumentDetailWareSum(object);
+    @defineDocumentDetailInSum(object);
+    @defineDocumentDetailOutSum(object);
+END
+
 META defineDocumentHeaderQuantityCustom (object, detail)
     quantity###detail###object 'Кол-во (всего)' (object) = GROUP SUM quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
 END
@@ -827,9 +833,13 @@ META defineDocumentHeaderItemQuantity (object)
     @defineDocumentHeaderItemQuantityCustom(object, object###detail);
 END
 
+META defineDocumentHeaderInSumCustom (object, detail)
+    supplierISum###detail###object 'Сумма поставщика без НДС (без посуды)' (object) =
+        GROUP SUM supplierISum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+
 META defineDocumentHeaderInSum (object)
-    supplierISum###object##Detail###object 'Сумма поставщика без НДС (без посуды)' (object) =
-        GROUP SUM supplierISum###object##Detail(idetail) BY object###object##Detail(idetail) IN documentSumGroup;
+    @defineDocumentHeaderInSumCustom(object, object##Detail);
 END
 
 META defineDocumentHeaderCurInSum (object)
@@ -968,6 +978,18 @@ END
 
 META defineDocumentHeaderAccountSum (object)
     @defineDocumentHeaderAccountSumCustom(object, object##Detail);
+END
+
+META defineDocumentHeaderBaseSumCustom (object, detail)
+    @defineDocumentHeaderWareSumCustom(object, detail);
+    @defineDocumentHeaderInSumCustom(object, detail);
+    @defineDocumentHeaderOutSumCustom(object, detail);
+END
+
+META defineDocumentHeaderBaseSum (object)
+    @defineDocumentHeaderWareSum(object);
+    @defineDocumentHeaderInSum(object);
+    @defineDocumentHeaderOutSum(object);
 END
 
 META defineDocumentHeaderRevaluation (object)
@@ -5815,18 +5837,15 @@ TABLE studyOutputDetail(studyOutputDetail);
 
 @defineDocumentDetailQuantity(studyInput);
 @defineDocumentDetailBasePrice(studyInput);
-
-@defineDocumentDetailWareSum(studyInput);
-@defineDocumentDetailInSum(studyInput);
-@defineDocumentDetailOutSum(studyInput);
+@defineDocumentDetailBaseSum(studyInput);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyInputDetail);
 
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyInputDetail);
 @defineDocumentHeaderItemQuantityCustom(actOfStudy, studyInputDetail);
 
-@defineDocumentHeaderWareSumCustom(actOfStudy, studyInputDetail);
-@defineDocumentHeaderOutSumCustom(actOfStudy, studyInputDetail);
+@defineDocumentHeaderBaseSumCustom(actOfStudy, studyInputDetail);
+
 @defineDocumentHeaderItemSumCustom(actOfStudy, studyInputDetail);
 
 // custom информация по акту
@@ -5877,19 +5896,17 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
                                                               actualQuantityStudyOutputDetail(studyOutputDetail);
 
 @defineDocumentDetailBasePrice(studyOutput);
-@defineDocumentDetailCurBasePrice(studyOutput);
+@defineDocumentDetailBaseSum(studyOutput);
 
-@defineDocumentDetailWareSum(studyOutput);
-@defineDocumentDetailInSum(studyOutput);
-@defineDocumentDetailOutSum(studyOutput);
+@defineDocumentDetailCurBasePrice(studyOutput);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
 
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyOutputDetail);
 @defineDocumentHeaderItemQuantityCustom(actOfStudy, studyOutputDetail);
 
-@defineDocumentHeaderWareSumCustom(actOfStudy, studyOutputDetail);
-@defineDocumentHeaderOutSumCustom(actOfStudy, studyOutputDetail);
+@defineDocumentHeaderBaseSumCustom(actOfStudy, studyOutputDetail);
+
 @defineDocumentHeaderItemSumCustom(actOfStudy, studyOutputDetail);
 
 // используется для закачки в мета-коде
@@ -6494,20 +6511,17 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentDetailQuantity(shipment);
 
 @defineDocumentDetailBasePrice(shipment);
+@defineDocumentDetailBaseSum(shipment);
+
 @defineDocumentDetailInvoicePrice(shipment);
+@defineDocumentDetailInvoiceSum(shipment);
 
 @defineDocumentDetailCurBasePrice(shipment);
-
-@defineDocumentDetailWareSum(shipment);
-@defineDocumentDetailInSum(shipment);
-@defineDocumentDetailOutSum(shipment);
-@defineDocumentDetailInvoiceSum(shipment);
 
 @defineDocumentHeaderQuantity(shipment);
 @defineDocumentHeaderItemQuantity(shipment);
 
-@defineDocumentHeaderWareSum(shipment);
-@defineDocumentHeaderOutSum(shipment);
+@defineDocumentHeaderBaseSum(shipment);
 @defineDocumentHeaderInvoiceSum(shipment);
 
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
@@ -6696,15 +6710,11 @@ quantityWastageDetail 'Количество для списания '(wastageDet
 
 @defineDocumentDetailAggregationPrice(shipment, wastage);
 
-@defineDocumentDetailWareSum(wastage);
-@defineDocumentDetailInSum(wastage);
-@defineDocumentDetailOutSum(wastage);
+@defineDocumentDetailBaseSum(wastage);
 
 @defineDocumentHeaderQuantity(wastage);
 
-@defineDocumentHeaderWareSum(wastage);
-@defineDocumentHeaderInSum(wastage);
-@defineDocumentHeaderOutSum(wastage);
+@defineDocumentHeaderBaseSum(wastage);
 
 supplierWastage (wastage) = supplierShipment(shipmentWastage(wastage));
 nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
@@ -6749,15 +6759,12 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 
 @defineDocumentDetailQuantity(writeOff);
 @defineDocumentDetailBasePrice(writeOff);
+@defineDocumentDetailBaseSum(writeOff);
+
 @defineDocumentDetailAccountPrice(writeOff);
 
-@defineDocumentDetailInSum(writeOff);
-@defineDocumentDetailWareSum(writeOff);
-@defineDocumentDetailOutSum(writeOff);
 @defineDocumentDetailAccountSum(writeOff);
-
 @defineDocumentHeaderQuantity(writeOff);
-@defineDocumentHeaderWareSum(writeOff);
 @defineDocumentHeaderAccountSum(writeOff);
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
@@ -6784,17 +6791,14 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @defineDocumentDefaultProperties (innerFlow);
 
 @defineDocumentDetailQuantity(innerFlow);
-@defineDocumentDetailBasePrice(innerFlow);
 
-@defineDocumentDetailInSum(innerFlow);
-@defineDocumentDetailWareSum(innerFlow);
-@defineDocumentDetailOutSum(innerFlow);
+@defineDocumentDetailBasePrice(innerFlow);
+@defineDocumentDetailBaseSum(innerFlow);
 
 @defineDocumentHeaderQuantity(innerFlow);
 @defineDocumentHeaderItemQuantity(innerFlow);
 
-@defineDocumentHeaderWareSum(innerFlow);
-@defineDocumentHeaderOutSum(innerFlow);
+@defineDocumentHeaderBaseSum(innerFlow);
 
 recipientDepartmentInnerFlow (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
@@ -6849,15 +6853,14 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 
 @defineDocumentDetailQuantity(innerArrival);
 @defineDocumentDetailBasePrice(innerArrival);
+@defineDocumentDetailBaseSum(innerArrival);
 
 @defineDocumentDetailCurBasePrice(innerArrival);
-
-@defineDocumentDetailRetailSum(innerArrival);
 
 @defineDocumentHeaderQuantity(innerArrival);
 @defineDocumentHeaderItemQuantity(innerArrival);
 
-@defineDocumentHeaderRetailSum(innerArrival);
+@defineDocumentHeaderBaseSum(innerArrival);
 
 innerFlowInnerArrival (innerArrival) = DATA innerFlowPosted (innerArrival);
 innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
@@ -6964,19 +6967,16 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentDetailQuantity(returnSupplier);
 
 @defineDocumentDetailBasePrice(returnSupplier);
+@defineDocumentDetailBaseSum(returnSupplier);
+
 @defineDocumentDetailInvoicePrice(returnSupplier);
+@defineDocumentDetailInvoiceSum(returnSupplier);
 
 @defineDocumentDetailCurBasePrice(returnSupplier);
 
-@defineDocumentDetailWareSum(returnSupplier);
-@defineDocumentDetailInSum(returnSupplier);
-@defineDocumentDetailOutSum(returnSupplier);
-@defineDocumentDetailInvoiceSum(returnSupplier);
-
 @defineDocumentHeaderQuantity(returnSupplier);
 
-@defineDocumentHeaderWareSum(returnSupplier);
-@defineDocumentHeaderOutSum(returnSupplier);
+@defineDocumentHeaderBaseSum(returnSupplier);
 @defineDocumentHeaderInvoiceSum(returnSupplier);
 
 // количество/цены по строкам
