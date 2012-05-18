@@ -113,7 +113,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     public ClientPropertyDraw getProperty(Object node, int column) {
         if (node instanceof TreeGroupNode) {
             List<ClientPropertyDraw> groupProperties = groupPropsMap.get(((TreeGroupNode) node).group);
-            if (groupProperties == null || column == 0 || column > groupProperties.size()) {
+            if (groupProperties == null || column <= 0 || column > groupProperties.size()) {
                 return null;
             }
 
