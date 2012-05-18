@@ -192,22 +192,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public ClassTable(CalcProperty<P> property) {
             super(property.getSID());
 
-            Map<P, ValueClass> propInterfaces = property.getInterfaceClasses();
-            ValueClass valueClass = property.getValueClass();
-
             mapFields = new HashMap<KeyField, P>();
             for(P propInterface : property.interfaces) {
-                KeyField key = new KeyField(propInterface.getSID(), propInterfaces.get(propInterface).getType());
+                KeyField key = new KeyField(propInterface.getSID(), property.getInterfaceType(propInterface));
                 keys.add(key); // чтобы порядок сохранить, хотя может и не критично
                 mapFields.put(key, propInterface);
             }
 
+            ValueClass valueClass = property.getValueClass();
             propValue = new PropertyField("value", valueClass.getType());
             properties.add(propValue);
 
-            Map<KeyField, ValueClass> fieldClasses = BaseUtils.join(mapFields, propInterfaces);
-            classes = new ClassWhere<KeyField>(fieldClasses, true);
-            propertyClasses.put(propValue, new ClassWhere<Field>(BaseUtils.add(fieldClasses, propValue, valueClass), true));
+            classes = property.getClassWhere(true).remap(BaseUtils.reverse(mapFields)); // true потому как может быть old не полный (в частности NewSessionAction)
+            propertyClasses.put(propValue, BaseUtils.<ClassWhere<Field>>immutableCast(classes).and(new ClassWhere<Field>(propValue, valueClass.getUpSet())));
         }
 
         public StatKeys<KeyField> getStatKeys() {

@@ -317,8 +317,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
 
     @IdentityLazy
-    public Type getInterfaceType(T propertyInterface) {
-        return getInterfaceClasses().get(propertyInterface).getType();
+    public Type getInterfaceType(T propertyInterface) { // true потому как может быть old не полный (в частности NewSessionAction)
+        return getInterfaceClasses(true).get(propertyInterface).getType();
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов

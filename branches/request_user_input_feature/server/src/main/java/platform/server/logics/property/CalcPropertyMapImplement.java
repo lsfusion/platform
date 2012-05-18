@@ -31,6 +31,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getDataChanges(change.map(mapping), propChanges, changedWhere);
     }
 
+    public CalcPropertyMapImplement<P, T> mapOld() {
+        return new CalcPropertyMapImplement<P, T>(property.getOld(), mapping);
+    }
+
     public CalcPropertyMapImplement<P, T> mapChanged(IncrementType type) {
         return new CalcPropertyMapImplement<P, T>(property.getChanged(type), mapping);
     }

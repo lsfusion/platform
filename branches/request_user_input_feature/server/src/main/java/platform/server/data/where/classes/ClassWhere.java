@@ -124,7 +124,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
     }
     
-    public <T> ClassWhere<T> remap(Map<K, T> map) {
+    public <T> ClassWhere<T> remap(Map<K, ? extends T> map) {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)
             remapWheres[i] = wheres[i].remap(map);

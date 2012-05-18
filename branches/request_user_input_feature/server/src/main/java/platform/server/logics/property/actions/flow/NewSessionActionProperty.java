@@ -3,6 +3,7 @@ package platform.server.logics.property.actions.flow;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ActionPropertyMapImplement;
+import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.ExecutionEnvironment;
@@ -22,6 +23,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         this.doApply = doApply;
 
         finalizeInit();
+    }
+
+    @Override
+    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+        return super.getWhereProperty().mapOld();
     }
 
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {

@@ -37,7 +37,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return true;
         }
         
-        public <T> And<T> remap(Map<K, T> remap) {
+        public <T> And<T> remap(Map<K, ? extends T> remap) {
             And<T> result = new And<T>();
             for(int i=0;i<size;i++)
                 result.add(remap.get(getKey(i)), getValue(i));
@@ -473,8 +473,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return or1.or(or2);
     }
     public <T extends K> Map<T, ValueClass> getCommonParent(Collection<T> keys) {
-
-//        assert !isFalse();
 
         Map<T, ValueClass> result = new HashMap<T, ValueClass>();
         for(T key : keys) {

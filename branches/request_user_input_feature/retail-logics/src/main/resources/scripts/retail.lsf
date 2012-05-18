@@ -9095,7 +9095,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         FOR t == addedObject() DO {
             SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
             SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- 1;
-            EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
+            EXEC createLabelTransactionFillParams(t, departmentStore);
             FORM customLabelTransaction OBJECTS l = t AS labelTransaction MODAL;
             IF formResult() == formResult.ok THEN {
                 FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
@@ -9109,8 +9109,8 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
             FOR t == addedObject() DO {
                 SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentVal(barcode, departmentStore, date) == l;
                 SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- multiplierBarcodeDepartmentValOver(barcode, departmentStore, date);
-                SET labelTypeLabelTransaction(t) <- l AS labelType;
-                EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
+                SET labelTypeLabelTransaction(t) <- l;
+                EXEC createLabelTransactionFillParams(t, departmentStore);
                 // вызываем печатную форму для каждого из них
                 FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
             }
@@ -9122,7 +9122,7 @@ META metaCodeDocumentLabelTransaction (document)
 
     create###document##LabelTransaction 'Печать ценников' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createLabelTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
-        SET createLabelTransactionDocument() <- document AS priceTransactionDocument;
+        SET createLabelTransactionDocument() <- document;
         EXEC createLabelTransaction(departmentStore###document(document), date###document(document));
         SET printedPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;

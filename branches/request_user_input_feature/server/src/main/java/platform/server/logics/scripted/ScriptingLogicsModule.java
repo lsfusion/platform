@@ -658,7 +658,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(properties.get(0).property instanceof LAP) { // если action то подставляем if, потом надо будет запретить верхним assert'ом
                 curLP = properties.get(0);
                 for(int i=0;i<notsArray.length;i++)
-                    curLP = addScriptedIfAProp(properties.get(i+1), curLP, null);
+                    curLP = addScriptedIfAProp(properties.get(i+1), curLP, null, notsArray[i]);
             } else
                 curLP = addScriptedJProp(and(notsArray), properties);
         }
@@ -955,13 +955,18 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedIfAProp(condition, trueAction, falseAction, false);
+    }
+
+    // временно после появления NOT в явную можно будет убрать
+    private LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction, boolean not) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedIfAProp(" + condition + ", " + trueAction + ", " + falseAction + ");");
         List<LPWithParams> propParams = toList(condition, trueAction);
         if (falseAction != null) {
             propParams.add(falseAction);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-        LP result = addIfAProp(null, genSID(), "", getParamsPlainList(propParams).toArray());
+        LP result = addIfAProp(null, genSID(), "", not, getParamsPlainList(propParams).toArray());
         return new LPWithParams(result, allParams);
     }
 

@@ -20,7 +20,7 @@ public class IfActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
-    private final boolean ifClasses; // костыль из-за невозможности работы с ClassWhere, используется в UnionProperty для генерации editActions 
+    private final boolean ifClasses; // костыль из-за невозможности работы с ClassWhere на уровне свойств, используется в UnionProperty для генерации editActions
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
     public <I extends PropertyInterface> IfActionProperty(String sID, String caption, boolean not, List<I> innerInterfaces, CalcPropertyInterfaceImplement<I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction, boolean ifClasses) {
