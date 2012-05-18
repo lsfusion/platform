@@ -581,6 +581,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedJProp(LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+        //            assert mainProp instanceof LAP; should use JoinAction
+        if(mainProp instanceof LAP)
+            return addScriptedJoinAProp(mainProp, paramProps);
+
         checkParamCount(mainProp, paramProps.size());
         List<Object> resultParams = getParamsPlainList(paramProps);
         LP prop;
@@ -650,13 +654,20 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (int i = 0; i < nots.size(); i++) {
                 notsArray[i] = nots.get(i);
             }
-            curLP = addScriptedJProp(and(notsArray), properties);
+//            assert properties.get(0).property instanceof LCP; // assert что calculation'ы а не action'ы
+            if(properties.get(0).property instanceof LAP) { // если action то подставляем if, потом надо будет запретить верхним assert'ом
+                curLP = properties.get(0);
+                for(int i=0;i<notsArray.length;i++)
+                    curLP = addScriptedIfAProp(properties.get(i+1), curLP, null);
+            } else
+                curLP = addScriptedJProp(and(notsArray), properties);
         }
         return curLP;
     }
 
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedIfElseUProp(" + ifProp + ", " + thenProp + ", " + elseProp + ");");
+        assert thenProp.property instanceof LCP && elseProp.property instanceof LCP; // assert что calculation'ы а не action'ы
         return addScriptedUProp(Union.EXCLUSIVE,
                                 asList(addScriptedJProp(and(false), asList(thenProp, ifProp)),
                                        addScriptedJProp(and(true), asList(elseProp, ifProp))),
@@ -1399,7 +1410,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ((LCP)mainProp).setEventChange(params.toArray());
         } else {
             params = getParamsPlainList(asList(whenProp));
-            ((LAP<?>)mainProp).setEventAction(whenProp);
+            ((LAP<?>)mainProp).setEventAction(params.toArray());
         }
     }
 

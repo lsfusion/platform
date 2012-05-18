@@ -17,7 +17,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     private boolean check;
 
     public SetActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<W, I> where, CalcPropertyMapImplement<P, I> writeTo, boolean notNull, boolean check) {
-        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where, new ArrayList<CalcPropertyInterfaceImplement<I>>());
+        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where);
 
         this.notNull = notNull;
 

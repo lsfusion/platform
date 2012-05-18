@@ -224,7 +224,7 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        Iterator<ValueClass> classesIt = entity.propertyObject.property.getInterfaceClasses().values().iterator();
+        Iterator<ValueClass> classesIt = entity.propertyObject.property.getInterfaceClasses(true).values().iterator();
         Collection<PropertyObjectInterfaceEntity> interfacesEntities = entity.propertyObject.mapping.values();
         outStream.writeInt(interfacesEntities.size());
         for (PropertyObjectInterfaceEntity interfaceEntity : interfacesEntities) {

@@ -1,7 +1,6 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.classes.LogicalClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -9,7 +8,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.PropertyChange;
-import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -23,7 +21,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
                                 Collection<I> innerInterfaces,
                                 List<I> mapInterfaces, CalcPropertyMapImplement<W, I> where, CalcPropertyMapImplement<P, I> writeTo,
                                 CalcPropertyInterfaceImplement<I> writeFrom) {
-        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where, Collections.singletonList(writeFrom));
+        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where);
 
         this.writeFrom = writeFrom;
 

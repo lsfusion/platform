@@ -19,8 +19,8 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
     protected final CalcPropertyMapImplement<P, I> writeTo;
     protected final CalcPropertyMapImplement<W, I> where;
     
-    public WriteActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<P, I> writeTo, CalcPropertyMapImplement<W, I> where, List<CalcPropertyInterfaceImplement<I>> used) {
-        super(sID, caption, innerInterfaces, mapInterfaces, addList(writeTo, addList(where, used)));
+    public WriteActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<P, I> writeTo, CalcPropertyMapImplement<W, I> where) {
+        super(sID, caption, innerInterfaces, mapInterfaces);
 
         this.writeTo = writeTo;
         this.where = where;

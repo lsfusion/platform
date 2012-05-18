@@ -23,7 +23,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private final boolean recursive;
 
     public ForActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, boolean recursive) {
-        super(sID, caption, innerInterfaces, mapInterfaces, merge(orders.keySet(), toList(ifProp, action)));
+        super(sID, caption, innerInterfaces, mapInterfaces);
 
         assert elseAction == null || !recursive;
 

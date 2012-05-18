@@ -90,7 +90,10 @@ public class FormulaExpr extends StaticClassExpr {
      }
 
     public Type getType(KeyType keyType) {
-        return getStaticClass().getType();
+        ConcreteValueClass staticClass = getStaticClass();
+        if(staticClass==null)
+            return null;
+        return staticClass.getType();
     }
     public Stat getTypeStat(KeyStat keyStat) {
         return getStaticClass().getTypeStat();

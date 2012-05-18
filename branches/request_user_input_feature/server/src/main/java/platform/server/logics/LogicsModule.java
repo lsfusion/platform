@@ -1208,7 +1208,7 @@ public abstract class LogicsModule {
     }
 
     public void showIf(FormEntity<?> form, PropertyDrawEntity property, LCP ifProperty, PropertyObjectInterfaceEntity... objects) {
-        property.propertyCaption = (CalcPropertyObjectEntity) form.addPropertyObject(addHideCaptionProp((CalcProperty) property.propertyObject.property, ifProperty), objects);
+        property.propertyCaption = form.addPropertyObject(addHideCaptionProp(property.propertyObject.property, ifProperty), objects);
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, List<P> listInterfaces) {

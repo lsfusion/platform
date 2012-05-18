@@ -483,7 +483,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 AndClassSet and = where.get(key);
                 orSet = or(orSet, and == null ? null : and.getOr());
             }
-            result.put(key,orSet==null ? null : orSet.getCommonClass());
+            if(orSet!=null)
+                result.put(key,orSet==null ? null : orSet.getCommonClass());
         }
         return result;
     }

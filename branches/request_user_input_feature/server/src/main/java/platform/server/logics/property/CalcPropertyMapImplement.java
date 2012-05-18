@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.crossJoin;
+import static platform.base.BaseUtils.rightCrossJoin;
 
 public class CalcPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends CalcPropertyImplement<P, T> implements CalcPropertyInterfaceImplement<T> {
 
@@ -50,6 +51,12 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return env.change(property, mapValues(keys).getPropertyChange(objectValue.getExpr()));
     }
 
+    public Map<T,ValueClass> mapInterfaceClasses() {
+        return mapInterfaceClasses(false);
+    }
+    public Map<T,ValueClass> mapInterfaceClasses(boolean full) {
+        return rightCrossJoin(mapping, property.getInterfaceClasses(full));
+    }
     public ClassWhere<T> mapClassWhere() {
         return mapClassWhere(false);
     }
@@ -115,10 +122,6 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
 
     public void fill(Set<T> interfaces, Set<CalcPropertyMapImplement<?, T>> properties) {
         properties.add(this);
-    }
-
-    public Map<T,ValueClass> mapInterfaceClasses() { // тут не обязательно isFull
-        return crossJoin(mapping, property.getInterfaceClasses());
     }
 
     @Override

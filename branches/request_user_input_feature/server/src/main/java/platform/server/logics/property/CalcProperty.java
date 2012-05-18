@@ -460,8 +460,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getClassValueWhere().getCommonParent(Collections.singleton("value")).get("value");
     }
 
-    public Map<T, ValueClass> getInterfaceClasses() {
-        return getClassWhere().getCommonParent(interfaces);
+    @IdentityLazy
+    public Map<T, ValueClass> getInterfaceClasses(boolean full) {
+        return getClassWhere(full).getCommonParent(interfaces);
     }
     @IdentityLazy
     public ClassWhere<T> getClassWhere(boolean full) {

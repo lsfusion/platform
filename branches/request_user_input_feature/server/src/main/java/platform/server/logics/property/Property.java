@@ -148,7 +148,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract ValueClass getValueClass();
 
-    public abstract Map<T, ValueClass> getInterfaceClasses();
+    public Map<T, ValueClass> getInterfaceClasses() {
+        return getInterfaceClasses(false);
+    }
+    public abstract Map<T, ValueClass> getInterfaceClasses(boolean full);
     public ClassWhere<T> getClassWhere() {
         return getClassWhere(false);
     }

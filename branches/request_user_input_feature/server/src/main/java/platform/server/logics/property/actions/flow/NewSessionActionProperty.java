@@ -24,13 +24,13 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         finalizeInit();
     }
 
-    protected ExecutionContext beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
         return context.override(new ExecutionEnvironment(context.getSession().createSession()));
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
         if (doApply) {
-            context.apply(BL);
+            innerContext.apply(BL);
         }
 
         innerContext.getSession().close();

@@ -38,8 +38,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return event.getChange(changes);
     }
 
-    public Map<P, ValueClass> getInterfaceClasses() {
-        return getWhereProperty().mapInterfaceClasses();
+    public Map<P, ValueClass> getInterfaceClasses(boolean full) {
+        return getWhereProperty().mapInterfaceClasses(full);
     }
     public ClassWhere<P> getClassWhere(boolean full) {
         return getWhereProperty().mapClassWhere(full);

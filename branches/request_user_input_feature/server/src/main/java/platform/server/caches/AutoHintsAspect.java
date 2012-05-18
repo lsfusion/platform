@@ -12,10 +12,8 @@ import platform.server.data.query.IQuery;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
+import platform.server.logics.property.*;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyQueryType;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
@@ -30,7 +28,7 @@ public class AutoHintsAspect {
     public static ThreadLocal<FormInstance> catchAutoHint = new ThreadLocal<FormInstance>();
     
     public Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
-        if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance && property instanceof CalcProperty) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
+        if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             FormInstance formInstance = (FormInstance) modifier;
             catchAutoHint.set(formInstance);
             Object result;
@@ -44,7 +42,7 @@ public class AutoHintsAspect {
                 if(e.lowstat)
                     formInstance.addHintIncrement(e.property);
                 else
-                    formInstance.addHintNoUpdate((CalcProperty) property);
+                    formInstance.addHintNoUpdate(property instanceof CalcProperty ? (CalcProperty) property : ((ActionProperty)property).getWhereProperty().property);
                 result = ((MethodSignature)thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
             }
             return result;
