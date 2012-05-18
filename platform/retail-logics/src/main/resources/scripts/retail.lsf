@@ -5309,6 +5309,36 @@ CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
 TABLE accountPriceLedger (accountPriceLedger);
 @defineItemDepartmentStoreLedger(accountPrice, 'Учетная цена', NUMERIC[14,2]);
 
+META derivePriceLedgerOnItemChange (ledger, concrete)
+    ledger###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
+                    item###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(item###concrete##Detail(detail));
+END
+
+META deriveBasePriceLedgerOnItemChange (concrete)
+    @derivePriceLedgerOnItemChange(ware, concrete);
+    @derivePriceLedgerOnItemChange(warePrice, concrete);
+    @derivePriceLedgerOnItemChange(importerPrice, concrete);
+    @derivePriceLedgerOnItemChange(supplierPrice, concrete);
+    @derivePriceLedgerOnItemChange(retailRange, concrete);
+    @derivePriceLedgerOnItemChange(retailPrice, concrete);
+END
+
+META deriveCurPriceLedgerOnItemChange (ledger, concrete)
+    cur###ledger###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
+                    item###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(item###concrete##Detail(detail));
+END
+
+META deriveCurBasePriceLedgerOnItemChange (concrete)
+    @deriveCurPriceLedgerOnItemChange(ware, concrete);
+    @deriveCurPriceLedgerOnItemChange(warePrice, concrete);
+    @deriveCurPriceLedgerOnItemChange(importerPrice, concrete);
+    @deriveCurPriceLedgerOnItemChange(supplierPrice, concrete);
+    @deriveCurPriceLedgerOnItemChange(retailRange, concrete);
+    @deriveCurPriceLedgerOnItemChange(retailPrice, concrete);
+END
+
 currentRetailPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
 //---------------------------- Количественные регистры ----------------------------------------//
@@ -5836,7 +5866,10 @@ TABLE studyOutputDetail(studyOutputDetail);
 @defineDocumentDetailItem(studyInput);
 
 @defineDocumentDetailQuantity(studyInput);
+
 @defineDocumentDetailBasePrice(studyInput);
+@deriveBasePriceLedgerOnItemChange(studyInput);
+
 @defineDocumentDetailBaseSum(studyInput);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyInputDetail);
@@ -5899,6 +5932,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 @defineDocumentDetailBaseSum(studyOutput);
 
 @defineDocumentDetailCurBasePrice(studyOutput);
+@deriveCurBasePriceLedgerOnItemChange(studyOutput);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
 
@@ -6110,7 +6144,10 @@ nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAt
 @defineDocumentDetailIndex(pageInventory);
 
 @defineDocumentDetailQuantity(pageInventory);
+
 @defineDocumentDetailAccountPrice(pageInventory);
+@derivePriceLedgerOnItemChange(accountPrice, pageInventory);
+
 @defineDocumentDetailAccountSum(pageInventory);
 
 @defineDocumentHeaderQuantity(pageInventory);
@@ -6193,7 +6230,21 @@ accountSumPageInventoryDetailCollationSheet 'Сумма по описям' (coll
     GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) BY collationSheet;
 
 quantityBalanceCollationSheetItem 'Кол-во по остаткам' (collationSheet, item) = DATA NUMERIC[14,3] (collationSheet, item);
+
+//---------------------------- Состав сличительной ведомости ----------------------------//
+
+inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
+
+includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
+    collationSheet IS registerCollationSheet IF quantityPageInventoryDetailCollationSheetItem(collationSheet, item),
+    (UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), collationSheet IS manyCollationSheet IF quantityPageInventoryDetailCollationSheetItem(collationSheet, item)),
+    (collationSheet IS remainsCollationSheet IF UNION OVERRIDE quantityBalanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityPageInventoryDetailCollationSheetItem(collationSheet, item));
+
 accountPriceBalanceCollationSheetItem 'Цена по остаткам' (collationSheet, item) = DATA NUMERIC[14,2] (collationSheet, item);
+accountPriceBalanceCollationSheetItem(collationSheet, item) <- accountPriceBLedgerDateTime(
+                item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
+                WHEN ASSIGNED(includeCollationSheetItem(collationSheet, item));
+
 accountSumBalanceCollationSheetItem 'Сумма по остаткам' (collationSheet, item) =
     quantityBalanceCollationSheetItem(collationSheet, item) * accountPriceBalanceCollationSheetItem(collationSheet, item);
 
@@ -6219,14 +6270,32 @@ accountSumContainerShortageCollationSheet 'Сумма недостачи, тар
 
 differentPriceCollationSheetItem(collationSheet, item) = accountPricePageInventoryDetailCollationSheetItem(collationSheet, item) != accountPriceBalanceCollationSheetItem(collationSheet, item);
 
-//---------------------------- Состав сличительной ведомости ----------------------------//
 
-inManyCollationSheetItem 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, item) IN baseGroup;
+fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
+    SET quantityBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
+        <- balanceBItemLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
 
-includeCollationSheetItem(collationSheet, item) = UNION EXCLUSIVE
-    collationSheet IS registerCollationSheet IF quantityPageInventoryDetailCollationSheetItem(collationSheet, item),
-    (UNION OVERRIDE inManyCollationSheetItem(collationSheet, item), collationSheet IS manyCollationSheet IF quantityPageInventoryDetailCollationSheetItem(collationSheet, item)),
-    (collationSheet IS remainsCollationSheet IF UNION OVERRIDE quantityBalanceCollationSheetItem(collationSheet, item) != 0, TRUE IF quantityPageInventoryDetailCollationSheetItem(collationSheet, item));
+} CONFIRM;
+//  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
+
+convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
+    SET accountPricePageInventoryDetail(pageInventoryDetail) AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory <- accountPriceBLedgerDateTime(
+            itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory;
+    SET accountPriceBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceBLedgerDateTime(
+            item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
+            AND inventoryCollationSheet(collationSheet) == inventory;
+} CONFIRM;
+
+// todo: какой-то баг, не всегда срабатывает action
+
+convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
+    SET accountPricePageInventoryDetail(pageInventoryDetail) AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet <- accountPriceBLedgerDateTime(
+            itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet;
+    SET accountPriceBalanceCollationSheetItem(collationSheet, item) <- accountPriceBLedgerDateTime(
+            item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
+} CONFIRM;
 
 //---------------------------- Генерация сличительных ведомостей ----------------------------//
 
@@ -6325,7 +6394,10 @@ CLASS specificationDetail 'Строка документа';
 @defineDocumentDetailItemActions(specification);
 
 @defineDocumentDetailQuantity(specification);
+
 @defineDocumentDetailRetailPrice(specification);
+@derivePriceLedgerOnItemChange(retailPrice, specification);
+
 @defineDocumentDetailRetailSum(specification);
 
 @defineDocumentDetailCalcRange(specification);
@@ -6386,6 +6458,24 @@ phoneCompanySpecification 'Телефон компании' (specification) = ph
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
 
+balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (specificationDetail) = balanceBItemLedgerDateTime(
+                itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail)) IN itemDetailGroup;
+
+highlightSpecificationDetail(specificationDetail) =  quantitySpecificationDetailItemSpecification(itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail)) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
+
+reservedItemDepartmentStoreDate 'Количество выставленного товара' (departmentStore, item, date) = GROUP SUM
+    quantitySpecificationDetail(specificationDetail)
+    IF dateToSpecification(specificationSpecificationDetail(specificationDetail)) >= date AND date AS DATE
+    BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail), date;
+
+quantityExhibitedItemBySpecificationDetail(specificationDetail) = reservedItemDepartmentStoreDate(departmentStoreSpecificationDetail(specificationDetail),
+    itemSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)));
+
+availableQuantityItemBySpecificationDetail 'Доступное к-во, с учетом непросроченных с/ф' (specificationDetail) =
+    balanceDepartmentStoreItemSpecificationDetail(specificationDetail)-quantityExhibitedItemBySpecificationDetail(specificationDetail) IN itemDetailGroup;
+
+notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availableQuantityItemBySpecificationDetail(specificationDetail) < 0;
+
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
@@ -6399,13 +6489,17 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentHeaderRevaluation(statement);
 
 @defineDocumentDetailQuantity(statement);
+
 @defineDocumentDetailBasePrice(statement);
+@deriveBasePriceLedgerOnItemChange(statement);
+
 @defineDocumentDetailRetailSum(statement);
 
 @defineDocumentDetailCalcRange(statement);
 @defineDocumentDetailCalcVATSum(statement);
 
 @defineDocumentDetailCurRetailPrice(statement);
+@deriveCurPriceLedgerOnItemChange(retailPrice, statement);
 
 @defineDocumentDetailNote(statement);
 
@@ -6452,6 +6546,14 @@ descriptionStatementDetail 'Название документа' (statementDetai
 quantityOutAutoBalanceItemLedger (ledger) += quantityStatementDetail(ledger);
 
 @implementSalesLedger(statement);
+
+balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBItemLedgerDateTime(
+                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemDetailGroup;
+
+highlightStatementDetail(statementDetail) = quantityStatementDetailItemStatement(itemStatementDetail(statementDetail), statementStatementDetail(statementDetail)) > balanceDepartmentStoreItemStatementDetail(statementDetail);
+
+overdueSpecificationStatement 'Просроченные с/ф' (specification, statement) = overdueSpecificationDate(specification, dateStatement(statement));
+noOverdueSpecificationStatement 'Непросроченные с/ф' (specification, statement) = noOverdueSpecificationDate(specification, dateStatement(statement));
 
 toFillStatementDetailsStatement 'Заполнить отгрузку на основании с/ф' =  ACTION (statement) {
     FOR inStatementSpecification (statement, specification) AND inSpecificationSpecificationDetail(specification, specificationDetail) DO {
@@ -6548,8 +6650,6 @@ registerCommitteeShipment(shipment) <- registerCommitteeDepartmentStore(departme
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
-balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA NUMERIC[14,3] (shipmentDetail) IN baseGroup;
-
 dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
 CONSTRAINT controlExpiryItemShipmentDetail(shipmentDetail) AND NOT dateFitToShipmentDetail(shipmentDetail) MESSAGE 'Для товара не задан срок годности';
@@ -6632,6 +6732,14 @@ calculatedRetailPriceShipmentDetail 'Новая розничная цена (р�
 retailPriceShipmentDetail (shipmentDetail) <-
     calculatedRetailPriceShipmentDetail (shipmentDetail)
     WHEN CHANGED(calculatedRetailPriceShipmentDetail (shipmentDetail));
+
+// Запись текущих параметров
+balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA NUMERIC[14,3] (shipmentDetail);
+balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBItemLedgerDateTime (
+                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
+                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
+
+@deriveCurBasePriceLedgerOnItemChange(shipment);
 
 //-------------------- Документы качества ----------------------------//
 
@@ -6758,10 +6866,14 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 @defineDocumentDefaultProperties (writeOff);
 
 @defineDocumentDetailQuantity(writeOff);
+
 @defineDocumentDetailBasePrice(writeOff);
+@deriveBasePriceLedgerOnItemChange(writeOff);
+
 @defineDocumentDetailBaseSum(writeOff);
 
 @defineDocumentDetailAccountPrice(writeOff);
+@derivePriceLedgerOnItemChange(accountPrice, writeOff);
 
 @defineDocumentDetailAccountSum(writeOff);
 @defineDocumentHeaderQuantity(writeOff);
@@ -6793,6 +6905,8 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @defineDocumentDetailQuantity(innerFlow);
 
 @defineDocumentDetailBasePrice(innerFlow);
+@deriveBasePriceLedgerOnItemChange(innerFlow);
+
 @defineDocumentDetailBaseSum(innerFlow);
 
 @defineDocumentHeaderQuantity(innerFlow);
@@ -6856,6 +6970,7 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineDocumentDetailBaseSum(innerArrival);
 
 @defineDocumentDetailCurBasePrice(innerArrival);
+@deriveCurBasePriceLedgerOnItemChange(innerArrival);
 
 @defineDocumentHeaderQuantity(innerArrival);
 @defineDocumentHeaderItemQuantity(innerArrival);
@@ -6881,6 +6996,9 @@ CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != 
     MESSAGE 'Накладная с другого отдела';
 
 balanceBeforeInnerArrivalInnerArrivalDetail 'Остаток до' (innerArrivalDetail) = DATA NUMERIC[14,3] (innerArrivalDetail);
+balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemLedgerDateTime (
+                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
+                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
 importerPriceItemInnerArrival 'Цена изготовителя (максим.)' (item, innerArrival) = importerPriceItemInnerFlow(
     item, innerFlowInnerArrival(innerArrival));
@@ -6973,6 +7091,7 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentDetailInvoiceSum(returnSupplier);
 
 @defineDocumentDetailCurBasePrice(returnSupplier);
+@deriveCurBasePriceLedgerOnItemChange(returnSupplier);
 
 @defineDocumentHeaderQuantity(returnSupplier);
 
@@ -7188,6 +7307,7 @@ discountSumBillDetailBill 'Сумма скидки' (bill) = discountSumSaleBill
 retailRangeBillSaleDetail = DATA range (billSaleDetail);
 retailRangeBillReturnDetail = DATA range (billReturnDetail);
 retailRangeBillDetail (billDetail) = retailRangeBillReturnDetail(billDetail) OR retailRangeBillSaleDetail(billDetail);
+@derivePriceLedgerOnItemChange(retailRange, bill);
 
 // используется только для приема реализации из внешних касс
 numberBillDetail 'Номер позиции чека' = DATA INTEGER (billDetail);
@@ -7349,7 +7469,9 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 
 @defineDocumentDetailQuantity(userPriceChange);
 @defineDocumentDetailBasePrice(userPriceChange);
+
 @defineDocumentDetailCurBasePrice(userPriceChange);
+@deriveCurBasePriceLedgerOnItemChange(userPriceChange);
 
 @defineDocumentHeaderItemQuantity(userPriceChange);
 
@@ -8537,142 +8659,6 @@ DESIGN timeTableDate FROM DEFAULT {
             askConfirm = TRUE;
             }
 }
-
-// --------------------------- Использование регистров (автоматическое заполнение) ---------------------------------
-
-balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBItemLedgerDateTime (
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBItemLedgerDateTime (
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-
-curImporterPriceShipmentDetail (shipmentDetail) <- importerPriceBLedgerDateTime (
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-curSupplierPriceShipmentDetail (shipmentDetail) <- supplierPriceBLedgerDateTime (
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-curRetailRangeShipmentDetail (shipmentDetail) <- retailRangeBLedgerDateTime(
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-curRetailPriceShipmentDetail (shipmentDetail) <- accountPriceBLedgerDateTime(
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-curWarePriceShipmentDetail (shipmentDetail) <- warePriceBLedgerDateTime(
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(wareShipmentDetail(shipmentDetail));
-
-curWareShipmentDetail (shipmentDetail)  <- wareBLedgerDateTime(
-                itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
-                WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-
-accountPriceWriteOffDetail (writeOffDetail) <- accountPriceBLedgerDateTime(
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-//retailPriceWriteOffDetail 'Розничная цена' (writeOffDetail) = retailPriceBLedgerDateTime (
-//                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail));
-retailPriceWriteOffDetail (writeOffDetail) <- retailPriceBLedgerDateTime(
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-supplierPriceWriteOffDetail (writeOffDetail) <- supplierPriceBLedgerDateTime(
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-wareWriteOffDetail (writeOffDetail)  <- wareBLedgerDateTime(
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-warePriceWriteOffDetail (writeOffDetail) <- warePriceBLedgerDateTime(
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-retailRangeWriteOffDetail (writeOffDetail) <- retailRangeBLedgerDateTime(
-                itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail), dateTimeWriteOffDetail(writeOffDetail))
-                WHEN CHANGED(itemWriteOffDetail(writeOffDetail));
-
-
-retailPriceInnerFlowDetail (innerFlowDetail) <- retailPriceBLedgerDateTime(
-                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-
-importerPriceInnerFlowDetail (innerFlowDetail) <- importerPriceBLedgerDateTime(
-                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-
-supplierPriceInnerFlowDetail (innerFlowDetail) <- supplierPriceBLedgerDateTime(
-                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-
-retailRangeInnerFlowDetail (innerFlowDetail) <- retailRangeBLedgerDateTime(
-                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-
-warePriceInnerFlowDetail (innerFlowDetail) <- warePriceBLedgerDateTime(
-                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-
-wareInnerFlowDetail (innerFlowDetail) <- wareBLedgerDateTime(
-                itemInnerFlowDetail(innerFlowDetail), departmentStoreInnerFlowDetail(innerFlowDetail), dateTimeInnerFlowDetail(innerFlowDetail))
-                WHEN CHANGED(itemInnerFlowDetail(innerFlowDetail));
-
-
-curRetailPriceInnerArrivalDetail (innerArrivalDetail) <- retailPriceBLedgerDateTime(
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-curImporterPriceInnerArrivalDetail (innerArrivalDetail) <- importerPriceBLedgerDateTime(
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-curSupplierPriceInnerArrivalDetail (innerArrivalDetail) <- supplierPriceBLedgerDateTime(
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-curRetailRangeInnerArrivalDetail (innerArrivalDetail) <- retailRangeBLedgerDateTime(
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-curWarePriceInnerArrivalDetail (innerArrivalDetail) <- warePriceBLedgerDateTime(
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-curWareInnerArrivalDetail (innerArrivalDetail) <- wareBLedgerDateTime(
-                itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
-                WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
-
-curRetailPriceReturnSupplierDetail (returnSupplierDetail) <- accountPriceBLedgerDateTime(
-                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
-
-curRetailRangeReturnSupplierDetail (returnSupplierDetail) <- retailRangeBLedgerDateTime(
-                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
-
-curImporterPriceReturnSupplierDetail (returnSupplierDetail) <- importerPriceBLedgerDateTime (
-                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
-
-curSupplierPriceReturnSupplierDetail (returnSupplierDetail) <- supplierPriceBLedgerDateTime (
-                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
-
-curWareReturnSupplierDetail (returnSupplierDetail)  <- wareBLedgerDateTime(
-                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
-
-curWarePriceReturnSupplierDetail (returnSupplierDetail) <- warePriceBLedgerDateTime(
-                itemReturnSupplierDetail(returnSupplierDetail), departmentStoreReturnSupplierDetail(returnSupplierDetail),
-                dateTimeReturnSupplierDetail(returnSupplierDetail)) WHEN CHANGED(itemReturnSupplierDetail(returnSupplierDetail));
 
 //----------------------------------- Подбор товаров -------------------------------------------------------
 
@@ -9900,169 +9886,6 @@ wareInputDisparityDetail (disparityDetail) <- wareBLedgerDateTime(
 curRetailPriceInputDisparityDetail (disparityDetail) <- [PREV(retailPriceBLedgerDateTime(item, departmentStore, dateTime))] (
                 itemInputDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemInputDisparityDetail(disparityDetail));
-
-
-retailPriceSpecificationDetail (specificationDetail) <- retailPriceBLedgerDateTime(
-                itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail))
-                WHEN CHANGED(itemSpecificationDetail(specificationDetail));
-
-// АКТ ПРОРАБОТКИ
-retailPriceStudyInputDetail (studyInputDetail) <- retailPriceBLedgerDateTime(
-                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
-
-importerPriceStudyInputDetail (studyInputDetail) <- importerPriceBLedgerDateTime (
-                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
-
-supplierPriceStudyInputDetail (studyInputDetail) <- supplierPriceBLedgerDateTime (
-                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
-
-retailRangeStudyInputDetail (studyInputDetail) <- retailRangeBLedgerDateTime(
-                itemStudyInputDetail(studyInputDetail), departmentStoreStudyInputDetail(studyInputDetail), dateTimeStudyInputDetail(studyInputDetail))
-                WHEN CHANGED(itemStudyInputDetail(studyInputDetail));
-
-curImporterPriceStudyOutputDetail (studyOutputDetail) <- importerPriceBLedgerDateTime(
-                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
-
-curSupplierPriceStudyOutputDetail (studyOutputDetail) <- supplierPriceBLedgerDateTime(
-                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
-
-curRetailRangeStudyOutputDetail (studyOutputDetail) <- retailRangeBLedgerDateTime(
-                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
-
-curRetailPriceStudyOutputDetail (studyOutputDetail) <- retailPriceBLedgerDateTime(
-                itemStudyOutputDetail(studyOutputDetail), departmentStoreStudyOutputDetail(studyOutputDetail), dateTimeStudyOutputDetail(studyOutputDetail))
-                WHEN CHANGED(itemStudyOutputDetail(studyOutputDetail));
-
-// ОТГРУЗКА ИЗ РОЗНИЦЫ
-importerPriceStatementDetail (statementDetail) <- importerPriceBLedgerDateTime (
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-supplierPriceStatementDetail (statementDetail) <- supplierPriceBLedgerDateTime (
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-retailRangeStatementDetail (statementDetail) <- retailRangeBLedgerDateTime(
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-curRetailPriceStatementDetail (statementDetail) <- retailPriceBLedgerDateTime (
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-retailPriceStatementDetail (statementDetail) <- retailPriceBLedgerDateTime (
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-warePriceStatementDetail (statementDetail) <- warePriceBLedgerDateTime(
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-wareStatementDetail (statementDetail) <- wareBLedgerDateTime(
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail))
-                WHEN CHANGED(itemStatementDetail(statementDetail));
-
-//  ПЕРЕОЦЕНКА
-curRetailPriceUserPriceChangeDetail(userPriceChangeDetail) <- retailPriceBLedgerDateTime(
-                itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-curImporterPriceUserPriceChangeDetail (userPriceChangeDetail) <- importerPriceBLedgerDateTime(
-                itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-curSupplierPriceUserPriceChangeDetail (userPriceChangeDetail) <- supplierPriceBLedgerDateTime(
-                itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-curRetailRangeUserPriceChangeDetail (userPriceChangeDetail) <- retailRangeBLedgerDateTime(
-                itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-curWarePriceUserPriceChangeDetail (userPriceChangeDetail) <- warePriceBLedgerDateTime(
-                itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-curWareUserPriceChangeDetail (userPriceChangeDetail) <- wareBLedgerDateTime(
-                itemUserPriceChangeDetail(userPriceChangeDetail), departmentStoreUserPriceChangeDetail(userPriceChangeDetail), dateTimeUserPriceChangeDetail(userPriceChangeDetail))
-                WHEN CHANGED(itemUserPriceChangeDetail(userPriceChangeDetail));
-
-retailRangeBillDetail (billDetail) <- retailRangeBLedgerDateTime(
-                itemBillDetail(billDetail), departmentStoreBillDetail(billDetail), dateTimeBillDetail(billDetail))
-                WHEN CHANGED(itemBillDetail(billDetail));
-
-balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBItemLedgerDateTime(
-                itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemDetailGroup;
-
-quantityItemByStatementDetail(statementDetail) = quantityStatementDetailItemStatement(itemStatementDetail(statementDetail), statementStatementDetail(statementDetail));
-highlightStatementDetail(statementDetail) =  quantityItemByStatementDetail(statementDetail) > balanceDepartmentStoreItemStatementDetail(statementDetail);
-
-balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (specificationDetail) = balanceBItemLedgerDateTime(
-                itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail)) IN itemDetailGroup;
-
-quantityItemBySpecificationDetail(specificationDetail) = quantitySpecificationDetailItemSpecification( itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail));
-highlightSpecificationDetail(specificationDetail) =  quantityItemBySpecificationDetail(specificationDetail) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
-
-reservedItemDepartmentStoreDate 'Количество выставленного товара' (departmentStore, item, date) = GROUP SUM
-    quantitySpecificationDetail(specificationDetail)
-    IF dateToSpecification(specificationSpecificationDetail(specificationDetail)) >= date AND date AS DATE
-    BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail), date;
-
-
-quantityExhibitedItemBySpecificationDetail(specificationDetail) = reservedItemDepartmentStoreDate(departmentStoreSpecificationDetail(specificationDetail),
-    itemSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)));
-
-availableQuantityItemBySpecificationDetail 'Доступное к-во, с учетом непросроченных с/ф' (specificationDetail) =
-    balanceDepartmentStoreItemSpecificationDetail(specificationDetail)-quantityExhibitedItemBySpecificationDetail(specificationDetail) IN itemDetailGroup;
-
-notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availableQuantityItemBySpecificationDetail(specificationDetail) < 0;
-
-overdueSpecificationStatement 'Просроченные с/ф' (specification, statement) = overdueSpecificationDate(specification, dateStatement(statement));
-noOverdueSpecificationStatement 'Непросроченные с/ф' (specification, statement) = noOverdueSpecificationDate(specification, dateStatement(statement));
-
-// --------------------------- Использование регистров (автоматическое заполнение): инвентаризация---------------//
-
-accountPricePageInventoryDetail(pageInventoryDetail) <- accountPriceBLedgerDateTime(
-                itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
-                WHEN CHANGED(itemPageInventoryDetail(pageInventoryDetail));
-
-accountPriceBalanceCollationSheetItem(collationSheet, item) <- accountPriceBLedgerDateTime(
-                item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
-                WHEN ASSIGNED(includeCollationSheetItem(collationSheet, item));
-
-fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
-    SET quantityBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
-        <- balanceBItemLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
-
-} CONFIRM;
-//  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
-
-convertPriceInventory 'Пересчитать цены по всей инвентаризации' (inventory) = ACTION(inventory) {
-    SET accountPricePageInventoryDetail(pageInventoryDetail) AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory <- accountPriceBLedgerDateTime(
-            itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
-            AND inventoryPageInventoryDetail(pageInventoryDetail) == inventory;
-    SET accountPriceBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet) == inventory <- accountPriceBLedgerDateTime(
-            item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
-            AND inventoryCollationSheet(collationSheet) == inventory;
-} CONFIRM;
-
-// todo: какой-то баг, не всегда срабатывает action
-
-convertPriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION(collationSheet) {
-    SET accountPricePageInventoryDetail(pageInventoryDetail) AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet <- accountPriceBLedgerDateTime(
-            itemPageInventoryDetail(pageInventoryDetail), departmentStorePageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
-            AND collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) == collationSheet;
-    SET accountPriceBalanceCollationSheetItem(collationSheet, item) <- accountPriceBLedgerDateTime(
-            item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
-} CONFIRM;
-
-
 
 //---------------------------- Переоценка (конкретная реализация) ----------------------------------------//
 
