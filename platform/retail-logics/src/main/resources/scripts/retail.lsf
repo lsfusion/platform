@@ -8294,7 +8294,8 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
 
 // todo : здесь вообще-то нужно заполнять только ассортиментом данного поставщика, а не всем подряд как сейчас
 fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
-    FOR recommendCountOrderSupplier(orderSupplier, item AS item) DO {
+    FOR recommendCountOrderSupplier(orderSupplier, item AS item) AND isSupplierItemDepartmentOrderSupplier(o, i)
+        AND isBanSupplierItemDepartmentOrderSupplier(o, i) DO {
         SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item) ;
     };
 };
@@ -8309,6 +8310,7 @@ fillInOrderSupplier 'Заполнить заказ рекомендованны�
 //        }
 //    }
 //} TOOLBAR;
+
 
 createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
     ADDOBJ orderSupplier;
@@ -8461,6 +8463,8 @@ FORM orderSuppliers 'Заказы поставщику'
                                fullSumItemOrderSupplier
 
     FILTERS sumQuantityItemOrderSupplier(o, i)
+    //        isSupplierItemDepartmentOrderSupplier(o, i),
+    //        isBanSupplierItemDepartmentOrderSupplier(o, i)
 ;
 
 DESIGN orderSuppliers FROM DEFAULT{
