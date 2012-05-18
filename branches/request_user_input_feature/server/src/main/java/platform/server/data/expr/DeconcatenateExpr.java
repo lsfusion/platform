@@ -76,7 +76,10 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
-        return ((ConcatenateClassSet)expr.getAndClassSet(and)).get(part);
+        AndClassSet classSet = expr.getAndClassSet(and);
+        if(classSet == null)
+            return null;
+        return ((ConcatenateClassSet) classSet).get(part);
     }
 
     public Expr translateQuery(QueryTranslator translator) {

@@ -51,7 +51,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public ClassWhere<T> mapClassWhere() {
-        return new ClassWhere<T>(property.getClassWhere(),mapping);
+        return mapClassWhere(false);
+    }
+    public ClassWhere<T> mapClassWhere(boolean full) {
+        return new ClassWhere<T>(property.getClassWhere(full),mapping);
     }
 
     public boolean mapIsFull(Collection<T> interfaces) {

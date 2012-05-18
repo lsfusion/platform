@@ -20,17 +20,6 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface>{
 
     public static final NullValueProperty instance = new NullValueProperty();
 
-    @Override
-    public Map<PropertyInterface, ValueClass> getInterfaceClasses() { // временно так (пока для определния сигнатур action'ов)
-        return new HashMap<PropertyInterface, ValueClass>();
-    }
-
-    @Override
-    public ValueClass getValueClass() { // временно так (пока для определния сигнатур action'ов)
-        return null;
-    }
-
-    @Override
     protected Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return CaseExpr.NULL;
     }

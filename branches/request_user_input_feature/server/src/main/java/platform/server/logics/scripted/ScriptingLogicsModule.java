@@ -1971,7 +1971,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         if (needWarning) {
-            warningList.add(" Property " + name + " has class where " + property.getClassWhere());
+            warningList.add(" Property " + name + " has class where " + classWhere);
         }
     }
 

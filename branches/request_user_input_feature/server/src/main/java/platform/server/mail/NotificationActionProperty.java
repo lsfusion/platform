@@ -51,8 +51,7 @@ public class NotificationActionProperty extends CustomActionProperty {
     }
 
     private static ValueClass[] getValueClasses(LCP sourceProperty) {
-        return sourceProperty.getInterfaceValueClasses(new Result<ValueClass>() {
-        });
+        return sourceProperty.getInterfaceClasses();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

@@ -1476,6 +1476,13 @@ public class BaseUtils {
         return list;
     }
 
+    public static <K> List<Boolean> toBooleanList(boolean... elements) {
+        List<Boolean> list = new ArrayList<Boolean>();
+        for(boolean element : elements)
+            list.add(element);
+        return list;
+    }
+
     public static <K> List<K> toListNoNull(K... elements) {
         List<K> list = new ArrayList<K>();
         for(K element : elements)

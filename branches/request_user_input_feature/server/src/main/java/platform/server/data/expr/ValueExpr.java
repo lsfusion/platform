@@ -54,10 +54,6 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
 
     public static StaticValueExpr COUNT = new StaticValueExpr(1, IntegerClass.instance);
 
-    public ConcreteClass getStaticClass() {
-        return objectClass;
-    }
-
     public String getSource(CompileSource compile) {
         return compile.params.get(this);
     }

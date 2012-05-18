@@ -205,17 +205,6 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         return BaseUtils.orderMap(property.getMapKeys(), listInterfaces);
     }
 
-    public ValueClass[] getInterfaceValueClasses(Result<ValueClass> value) {
-        value.result = property.getValueClass();
-        return BaseUtils.mapList(listInterfaces, property.getInterfaceClasses()).toArray(new ValueClass[0]);
-    }
-
-    public ValueClass getResultClass() {
-        Result<ValueClass> result = new Result<ValueClass>();
-        getInterfaceValueClasses(result);
-        return result.result;
-    }
-
     public Expr getExpr(Modifier modifier, Expr... exprs) {
         Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for(int i=0;i<listInterfaces.size();i++)

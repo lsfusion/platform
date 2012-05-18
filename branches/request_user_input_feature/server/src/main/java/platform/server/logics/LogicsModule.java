@@ -3,7 +3,6 @@ package platform.server.logics;
 import org.apache.commons.lang.StringUtils;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
@@ -443,7 +442,7 @@ public abstract class LogicsModule {
 
         List<CalcPropertyInterfaceImplement<JoinProperty.Interface>> list = readCalcImplements(listInterfaces, params);
 
-        AndFormulaProperty andProperty = new AndFormulaProperty(genSID(), new boolean[list.size() - propsize]);
+        AndFormulaProperty andProperty = new AndFormulaProperty(genSID(), list.size() - propsize);
         Map<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>();
         mapImplement.put(andProperty.objectInterface, DerivedProperty.createJoin(mapCalcImplement(derivedProp, list.subList(0, propsize))));
         Iterator<AndFormulaProperty.AndInterface> itAnd = andProperty.andInterfaces.iterator();
@@ -455,17 +454,15 @@ public abstract class LogicsModule {
         LCP<JoinProperty.Interface> listProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
         // получаем классы
-        Result<ValueClass> value = new Result<ValueClass>();
-        ValueClass[] commonClasses = listProperty.getInterfaceValueClasses(value);
+        ValueClass[] commonClasses = listProperty.getInterfaceClasses();
 
         // override'им классы
-        ValueClass valueClass;
+        ValueClass valueClass = listProperty.property.getValueClass();
         if (overrideClasses.length > dersize) {
             valueClass = overrideClasses[dersize];
-            assert !overrideClasses[dersize].isCompatibleParent(value.result);
+            assert !overrideClasses[dersize].isCompatibleParent(valueClass);
             overrideClasses = copyOfRange(params, 0, dersize, ValueClass[].class);
-        } else
-            valueClass = value.result;
+        }
 
         // выполняем само создание свойства
         LCP derDataProp = addDProp(group, name, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
@@ -1028,7 +1025,17 @@ public abstract class LogicsModule {
     }
 
     protected LCP addAFProp(AbstractGroup group, String name, boolean... nots) {
-        return addProperty(group, new LCP<AndFormulaProperty.Interface>(new AndFormulaProperty(name, nots)));
+        List<PropertyInterface> interfaces = genInterfaces(nots.length + 1);
+        List<Boolean> list = new ArrayList<Boolean>();
+        boolean wasNot = false;
+        for(boolean not : nots) {
+            list.add(not);
+            wasNot = wasNot || not;
+        }
+        if(wasNot)
+            return mapLProp(group, false, DerivedProperty.createAnd(name, interfaces, list), interfaces);
+        else
+            return addProperty(group, new LCP<AndFormulaProperty.Interface>(new AndFormulaProperty(name, nots.length)));
     }
 
     protected LCP addCCProp(int paramCount) {

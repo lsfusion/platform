@@ -419,7 +419,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 SkolkovoLM.profileUpdateDateExpert.change(DateConverter.dateToStamp(new Date()), session, expertObj);
 
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
-                    DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));
+                    DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass) SkolkovoLM.sidForesight.property.getValueClass()));
                     SkolkovoLM.inExpertForesight.change(foresightInfo.selected, session, expertObj, foresightObj);
                     SkolkovoLM.commentExpertForesight.change(foresightInfo.comment, session, expertObj, foresightObj);
                 }

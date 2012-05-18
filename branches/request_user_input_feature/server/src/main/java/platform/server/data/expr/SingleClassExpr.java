@@ -52,7 +52,7 @@ public abstract class SingleClassExpr extends BaseExpr {
             return !set.isEmpty();
         else {
             for(QuickMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
-                if(!getAndClassSet(where).and(set).isEmpty()) return true;
+                if(!getAndClassSet(where).and(set).isEmpty()) return true; // тут наверное тоже надо getAndClassSet на не null проверять для не полных случаев
             return false;
         }
     }

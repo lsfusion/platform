@@ -149,14 +149,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public abstract ValueClass getValueClass();
 
     public abstract Map<T, ValueClass> getInterfaceClasses();
-    public abstract ClassWhere<T> getClassWhere();
-
-    public Map<T, ValueClass> getFullInterfaceClasses() {
-        return null;
+    public ClassWhere<T> getClassWhere() {
+        return getClassWhere(false);
     }
-    public ClassWhere<T> getFullClassWhere() {
-        return null;
-    }
+    public abstract ClassWhere<T> getClassWhere(boolean full);
 
     public boolean check() {
         return !getClassWhere().isFalse();
@@ -172,12 +168,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     @IdentityLazy
     private boolean allInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
-        return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere());
+        return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere(true));
     }
 
     @IdentityLazy
     private boolean anyInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
-        return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
+        return !getClassWhere(true).andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
     public boolean isFull(Collection<T> checkInterfaces) {
@@ -579,6 +575,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     
     public void prereadCaches() {
         getClassWhere();
+        getClassWhere(true);
         if(isFull())
             getQuery(false, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>()).pack();
     }

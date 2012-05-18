@@ -83,10 +83,8 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         addPropertyDraw(logProperty, entities);
 
-        Result<ValueClass> value = new Result<ValueClass>();
-        property.getInterfaceValueClasses(value);
         List<PropertyClassImplement> recognizePropImpls =
-                LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), true);
+                LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(property.property.getValueClass()))), true);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {

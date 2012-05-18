@@ -41,8 +41,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public Map<P, ValueClass> getInterfaceClasses() {
         return getWhereProperty().mapInterfaceClasses();
     }
-    public ClassWhere<P> getClassWhere() {
-        return getWhereProperty().mapClassWhere();
+    public ClassWhere<P> getClassWhere(boolean full) {
+        return getWhereProperty().mapClassWhere(full);
     }
 
     protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {

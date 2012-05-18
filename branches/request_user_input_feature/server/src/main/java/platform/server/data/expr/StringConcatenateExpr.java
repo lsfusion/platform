@@ -46,10 +46,11 @@ public class StringConcatenateExpr extends StaticClassExpr {
 
     @IdentityLazy
     public ConcreteClass getStaticClass() {
-        return getType(getWhere());
+        return (ConcreteClass) FormulaExpr.getCompatibleType(exprs); // есть еще вариант как в Union'е сделать с явным классом
+//        return getType(getWhere());
     }
 
-    protected BaseExpr translate(MapTranslate translator) {
+    protected StringConcatenateExpr translate(MapTranslate translator) {
         return new StringConcatenateExpr(translator.translateDirect(exprs), separator, caseSensitive);
     }
 
@@ -75,16 +76,17 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return result;
     }
 
+    @Override
     public Expr translateQuery(QueryTranslator translator) {
         return create(translator.translate(exprs), separator, caseSensitive);
     }
 
     public boolean twins(TwinImmutableInterface obj) {
-        return exprs.equals(((StringConcatenateExpr)obj).exprs);
+        return exprs.equals(((StringConcatenateExpr) obj).exprs) && separator.equals(((StringConcatenateExpr)obj).separator) && caseSensitive == ((StringConcatenateExpr)obj).caseSensitive;
     }
 
-    protected int hash(HashContext hashContext) {
-        return 31 * hashOuter(exprs, hashContext) + 5;
+    public int hash(HashContext hashContext) {
+        return 31 * (31 * hashOuter(exprs, hashContext) + separator.hashCode()) + (caseSensitive ? 1 : 0);
     }
 
     public String getSource(CompileSource compile) {

@@ -13,6 +13,7 @@ import platform.server.logics.property.actions.flow.SetActionProperty;
 
 import java.util.*;
 
+import static platform.base.BaseUtils.immutableCast;
 import static platform.base.BaseUtils.toList;
 
 public class DerivedProperty {
@@ -76,14 +77,18 @@ public class DerivedProperty {
         return new ActionPropertyImplement<P, CalcPropertyInterfaceImplement<K>>(implement.property,mapImplements(implement.mapping,map));
     }
 
+    private static <T extends PropertyInterface> Collection<T> getUsedInterfaces(CalcPropertyInterfaceImplement<T> interfaceImplement) {
+        if(interfaceImplement instanceof CalcPropertyMapImplement)
+            return new HashSet<T>(((CalcPropertyMapImplement<?, T>)interfaceImplement).mapping.values());
+        else
+            return Collections.singleton((T)interfaceImplement);
+    }
     // фильтрует только используемые интерфейсы и создает Join свойство с mapping'ом на эти интерфейсы
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createJoin(CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> implement) {
         // определяем какие интерфейсы использовали
-        Set<T> usedInterfaces = new HashSet<T>(); Set<CalcPropertyMapImplement<?,T>> usedProperties = new HashSet<CalcPropertyMapImplement<?,T>>();
+        Set<T> usedInterfaces = new HashSet<T>();
         for(CalcPropertyInterfaceImplement<T> interfaceImplement : implement.mapping.values())
-            interfaceImplement.fill(usedInterfaces, usedProperties);
-        for(CalcPropertyMapImplement<?, T> usedProperty : usedProperties)
-            usedInterfaces.addAll(usedProperty.mapping.values());
+            usedInterfaces.addAll(getUsedInterfaces(interfaceImplement));
 
         // создаем свойство - перемаппим интерфейсы
         List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(usedInterfaces.size());
@@ -113,14 +118,50 @@ public class DerivedProperty {
         return createCompare("sys", interfaces, distribute, previous, compare);
     }
 
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createNot(Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> implement) {
+        List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(innerInterfaces.size());
+        Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(innerInterfaces, listInterfaces);
+
+        return new CalcPropertyMapImplement<JoinProperty.Interface, T>(new JoinProperty<PropertyInterface>(genID(), "sys",
+                listInterfaces, false, NotFormulaProperty.instance.getImplement(implement.map(joinMap))), BaseUtils.reverse(joinMap));
+    }
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNot(CalcPropertyInterfaceImplement<T> implement) {
+        return createNot(getUsedInterfaces(implement), implement);
+    }
+    
+    private static <T extends PropertyInterface> List<CalcPropertyInterfaceImplement<T>> transNot(List<CalcPropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
+        List<CalcPropertyInterfaceImplement<T>> result = new ArrayList<CalcPropertyInterfaceImplement<T>>();
+        for(int i=0;i<nots.size();i++) {
+            CalcPropertyInterfaceImplement<T> and = ands.get(i);
+            if(nots.get(i))
+                result.add(createNot(and));
+            else
+                result.add(and);
+        }
+        return result;
+    }
+    public static <P extends PropertyInterface> CalcPropertyMapImplement<?,P> createAnd(String name, List<P> listInterfaces, List<Boolean> nots) {
+        return createAnd(name, "sys", listInterfaces, listInterfaces.get(0), BaseUtils.<List<CalcPropertyInterfaceImplement<P>>>immutableCast(listInterfaces.subList(1, listInterfaces.size())), nots);
+    }
+
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, List<CalcPropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
+        return createAnd(name, caption, interfaces, object, transNot(ands, nots));
+    }
+
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, List<CalcPropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
+        return createAnd(genID(), "sys", interfaces, object, ands, nots);
+    }
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
+        return createAnd(genID(), "sys", interfaces, object, ands);
+    }
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
         if(ands.size()==0 && object instanceof CalcPropertyMapImplement)
             return (CalcPropertyMapImplement<?,T>)object;
 
         List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(interfaces.size());
         Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, listInterfaces);
 
-        AndFormulaProperty implement = new AndFormulaProperty(genID(),BaseUtils.convertArray(nots.toArray(new Boolean[nots.size()])));
+        AndFormulaProperty implement = new AndFormulaProperty(genID(), ands.size());
         Map<AndFormulaProperty.Interface,CalcPropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>();
         joinImplement.put(implement.objectInterface,object.map(joinMap));
         Iterator<AndFormulaProperty.AndInterface> andIterator = implement.andInterfaces.iterator();
@@ -132,28 +173,8 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, List<CalcPropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
-        return createAnd(genID(), "sys", interfaces, object, ands, nots);
-    }
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
-        return createAnd(genID(), "sys", interfaces, object, ands);
-    }
-    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
-        List<CalcPropertyInterfaceImplement<T>> andList = new ArrayList<CalcPropertyInterfaceImplement<T>>();
-        List<Boolean> andNots = new ArrayList<Boolean>();
-        for(CalcPropertyInterfaceImplement<T> and : ands) {
-            andList.add(and);
-            andNots.add(false);
-        }
-        return createAnd(name, caption, interfaces, object, andList, andNots);
-    }
-
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAndNot(Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> object, CalcPropertyInterfaceImplement<T> not) {
         return createAnd(genID(), "sys", innerInterfaces, object, Collections.singletonList(not), Collections.singletonList(true));
-    }
-
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNot(Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> implement) {
-        return createAndNot(innerInterfaces, DerivedProperty.<T>createStatic(true, LogicalClass.instance), implement);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAndNot(CalcProperty<T> property, CalcPropertyInterfaceImplement<T> not) {
@@ -319,7 +340,7 @@ public class DerivedProperty {
         List<JoinProperty.Interface> listInterfaces = createSelfProp(interfaces, mapMain, mapDupl, partInterfaces);
 
         // ставим equals'ы на partitions свойства (раздвоенные), greater на предшествие order (раздвоенное)
-        AndFormulaProperty andPrevious = new AndFormulaProperty(genID(),new boolean[partProperties.size()+1]);
+        AndFormulaProperty andPrevious = new AndFormulaProperty(genID(), partProperties.size() + 1);
         Map<AndFormulaProperty.Interface,CalcPropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>();
         mapImplement.put(andPrevious.objectInterface,property.map(mapDupl));
         Iterator<AndFormulaProperty.AndInterface> itAnd = andPrevious.andInterfaces.iterator();
@@ -342,7 +363,7 @@ public class DerivedProperty {
 
         // создаем groupProperty для map2 и даем их на выход
         SumGroupProperty<JoinProperty.Interface> groupProperty = new SumGroupProperty<JoinProperty.Interface>(sID, caption, mapMain.values(), joinProperty);
-        Map<GroupProperty.Interface<JoinProperty.Interface>,JoinProperty.Interface> mapInterfaces = BaseUtils.immutableCast(groupProperty.getMapInterfaces());
+        Map<GroupProperty.Interface<JoinProperty.Interface>,JoinProperty.Interface> mapInterfaces = immutableCast(groupProperty.getMapInterfaces());
         return new CalcPropertyMapImplement<GroupProperty.Interface<JoinProperty.Interface>,T>(groupProperty,BaseUtils.join(mapInterfaces,BaseUtils.reverse(mapMain)));
     }
 

@@ -34,9 +34,4 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public CalcPropertyMapImplement<?, T> mapWhereProperty() {
         return property.getWhereProperty().map(mapping);
     }
-
-    // дублирующие Calc
-    public Map<T,ValueClass> mapCommonInterfaces() {
-        return crossJoin(mapping, property.getInterfaceClasses());
-    }
 }

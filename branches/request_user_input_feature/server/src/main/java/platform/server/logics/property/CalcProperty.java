@@ -440,11 +440,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public void markStored(TableFactory tableFactory, ImplementTable table) {
         MapKeysTable<T> mapTable = null;
 
+        Map<T, ValueClass> keyClasses = getInterfaceClasses();
         if (table != null) {
-            mapTable = table.getMapKeysTable(getInterfaceClasses());
+            mapTable = table.getMapKeysTable(keyClasses);
         }
         if (mapTable == null) {
-            mapTable = tableFactory.getMapTable(getInterfaceClasses());
+            mapTable = tableFactory.getMapTable(keyClasses);
         }
 
         PropertyField field = new PropertyField(getSID(), getType());
@@ -463,8 +464,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getClassWhere().getCommonParent(interfaces);
     }
     @IdentityLazy
-    public ClassWhere<T> getClassWhere() {
-        return getClassValueWhere().keep(interfaces);
+    public ClassWhere<T> getClassWhere(boolean full) {
+        ClassWhere<T> result = getClassValueWhere().keep(interfaces);
+        if(full) // тут по идее assert что result => icommon, но так как и сделано для того случая когда не хватает ключей
+            result = result.and(new ClassWhere<T>(getInterfaceCommonClasses(null), true));
+        return result;
     }
 
     protected abstract ClassWhere<Object> getClassValueWhere();

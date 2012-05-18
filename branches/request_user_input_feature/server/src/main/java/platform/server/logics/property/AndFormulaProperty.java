@@ -28,24 +28,21 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     public static class AndInterface extends Interface<AndInterface> {
-        public boolean not;
-
-        public AndInterface(int ID, boolean not) {
+        public AndInterface(int ID) {
             super(ID);
-            this.not = not;
         }
     }
 
-    static List<Interface> getInterfaces(boolean... nots) {
+    static List<Interface> getInterfaces(int size) {
         List<Interface> result = new ArrayList<Interface>();
         result.add(new ObjectInterface(0));
-        for(int i=0;i<nots.length;i++)
-            result.add(new AndInterface(i+1,nots[i]));
+        for(int i=0;i<size;i++)
+            result.add(new AndInterface(i+1));
         return result;
     }
 
-    public AndFormulaProperty(String sID, boolean... nots) {
-        super(sID, ServerResourceBundle.getString("logics.property.if"), getInterfaces(nots));
+    public AndFormulaProperty(String sID, int size) {
+        super(sID, ServerResourceBundle.getString("logics.property.if"), getInterfaces(size));
         andInterfaces = new ArrayList<AndInterface>();
         ObjectInterface objInterface = null;
         for(Interface propertyInterface : interfaces)
@@ -61,12 +58,8 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Where where = Where.TRUE;
         for(Interface propertyInterface : interfaces)
-            if(propertyInterface!= objectInterface) {
-                Where interfaceWhere = joinImplement.get(propertyInterface).getWhere();
-                if(((AndInterface)propertyInterface).not)
-                    interfaceWhere = interfaceWhere.not();
-                where = where.and(interfaceWhere);
-            }
+            if(propertyInterface!= objectInterface)
+                where = where.and(joinImplement.get(propertyInterface).getWhere());
         return joinImplement.get(objectInterface).and(where);
     }
 

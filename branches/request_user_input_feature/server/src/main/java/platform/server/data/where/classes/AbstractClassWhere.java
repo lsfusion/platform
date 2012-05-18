@@ -24,6 +24,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     public static class And<K> extends QuickMap<K, AndClassSet> {
 
+        @Override
+        public boolean add(K key, AndClassSet value) {
+            assert value!=null; // не зачем null'ы лучше вообще не добавлять
+            return super.add(key, value);
+        }
+
         public boolean compatible(And<K> and) {
             for(int i=0;i<size;i++)
                 if(!getValue(i).getType().isCompatible(and.get(getKey(i)).getType()))
@@ -71,6 +77,14 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         public And() {
+        }
+
+        public <V> And(And<V> andWhere, Map<V, K> map) {
+            for(int j=0;j< andWhere.size;j++) {
+                K mapValue = map.get(andWhere.getKey(j));
+                if(mapValue!=null)
+                    add(mapValue, andWhere.getValue(j));
+            }
         }
 
         public And(QuickMap<? extends K, AndClassSet> set) {
@@ -430,11 +444,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     private static <K,V,VThis extends AbstractClassWhere<V,VThis>> And<K>[] initMapKeys(VThis classes,Map<V,K> map) {
         And<K>[] mapWheres = new And[classes.wheres.length];
-        for(int i=0;i<classes.wheres.length;i++) {
-            mapWheres[i] = new And<K>();
-            for(int j=0;j<classes.wheres[i].size;j++)
-                mapWheres[i].add(map.get(classes.wheres[i].getKey(j)),classes.wheres[i].getValue(j));
-        }
+        for(int i=0;i<classes.wheres.length;i++)
+            mapWheres[i] = new And<K>(classes.wheres[i], map);
         return mapWheres;
     }
     protected <V, VThis extends AbstractClassWhere<V,VThis>> AbstractClassWhere(VThis classes,Map<V,K> map) {
@@ -463,7 +474,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
     public <T extends K> Map<T, ValueClass> getCommonParent(Collection<T> keys) {
 
-        assert !isFalse();
+//        assert !isFalse();
 
         Map<T, ValueClass> result = new HashMap<T, ValueClass>();
         for(T key : keys) {

@@ -654,13 +654,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
             if (result.size() > 0) {
                 // для constraint'ов
                 assert property.isFull();
-                final Map<T, ValueClass> classes = property.getInterfaceClasses();
 
-                NoPropertyTableUsage<T> keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), new Type.Getter<T>() {
-                    public Type getType(T key) {
-                        return classes.get(key).getType();
-                    }
-                });
+                NoPropertyTableUsage<T> keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), property.interfaceTypeGetter);
                 keysTable.writeKeys(sql, result.keyList());
                 Map<T, KeyExpr> keysMap = keysTable.getMapKeys();
 
@@ -675,7 +670,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
                 int interfaceIndex = 0;
                 for(T propertyInterface : property.interfaces) {
-                    ValueClass valueClass = classes.get(propertyInterface);
+                    ValueClass valueClass = property.getInterfaceClasses().get(propertyInterface);
                     for (Property nameProp : recognizeGroup.getProperties()) {
                         List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
                         if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {

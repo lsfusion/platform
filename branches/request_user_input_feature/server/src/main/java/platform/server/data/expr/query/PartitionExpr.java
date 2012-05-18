@@ -190,8 +190,11 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
                 return (AndClassSet) type;
             else {
                 QuickMap<KeyExpr, AndClassSet> keyClasses = new SimpleMap<KeyExpr, AndClassSet>();
-                for(Map.Entry<KeyExpr, BaseExpr> groupEntry : group.entrySet())
-                    keyClasses.add(groupEntry.getKey(), groupEntry.getValue().getAndClassSet(and));
+                for(Map.Entry<KeyExpr, BaseExpr> groupEntry : group.entrySet()) {
+                    AndClassSet classSet = groupEntry.getValue().getAndClassSet(and);
+                    if(classSet!=null)
+                        keyClasses.add(groupEntry.getKey(), classSet);
+                }
                 final ClassExprWhere keyWhere = new ClassExprWhere(keyClasses);
 
                 return new ExclExprPullWheres<AndClassSet>() {

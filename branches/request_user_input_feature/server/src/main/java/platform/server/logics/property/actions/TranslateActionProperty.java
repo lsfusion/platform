@@ -30,8 +30,7 @@ public class TranslateActionProperty extends CustomActionProperty {
     private static ValueClass[] getValueClasses(LCP sourceProperty, ValueClass dictionary) {
         List<ValueClass> result = new ArrayList<ValueClass>();
         result.add(dictionary);
-        result.addAll(BaseUtils.toList(sourceProperty.getInterfaceValueClasses(new Result<ValueClass>() {
-        })));
+        result.addAll(BaseUtils.toList(sourceProperty.getInterfaceClasses()));
         return result.toArray(new ValueClass[result.size()]);
     }
 
