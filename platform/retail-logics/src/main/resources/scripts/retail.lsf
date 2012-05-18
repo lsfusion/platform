@@ -3834,15 +3834,15 @@ CLASS contractProvider 'Договор с поставщиком' : contract;
 
 CLASS STATIC contractType 'Тип договора'
 {
-    sale 'договор купли-продажи',
-    commission 'договор комиссии'
+    sale 'Договор купли-продажи',
+    commission 'Договор комиссии'
 };
 
 CLASS STATIC contractForm 'Порядок оплаты'
 {
-    prepayment 'с отсрочкой платежа',
+    prepayment 'С отсрочкой платежа',
     implement 'По факту реализации',
-    instruction 'Платежное поручение',
+   // instruction 'Платежное поручение',
     requirement 'Платежное требование'
 };
 
@@ -3858,7 +3858,7 @@ currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (
 warnContract 'За сколько дней предупредить об окончании' = DATA INTEGER (contract) IN contractGroup;
 banContract 'За сколько дней запретить закупку товара' = DATA INTEGER (contract) IN contractGroup;
 //delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN contractGroup;
-requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
+//requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
 noteContract 'Примечание' = DATA STRING[500] (contract) IN contractGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 @metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm, contractGroup);
@@ -3959,7 +3959,7 @@ FORM contract 'Договор'
     OBJECTS c=contract FIXED PANEL
     PROPERTIES(c) numberContract, nameCompanyContract, nameSupplierContract, nameTypeContract, nameFormContract, showFormNameFormContract,
                    delayContract, showFormDelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
-                   requestContract, noteContract
+                   noteContract
 
     EDIT contract OBJECT c
     EDIT contractProvider OBJECT c
