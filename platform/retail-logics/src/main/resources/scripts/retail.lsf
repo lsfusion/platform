@@ -5507,9 +5507,81 @@ META implementBatch(concrete)
     descriptionBatch (batch) += description###concrete##Detail(batch);
 END
 
-//---------------------------- Разные маркеры ----------------------------------------//
+//---------------------------- Регистр продажи ----------------------------------------//
 
 CLASS ABSTRACT salesLedger 'Продажа товара' : balanceItemLedger;
+TABLE salesLedger(salesLedger);
+
+dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;
+dateSalesLedger 'Дата' (ledger) = dateInTime(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
+
+isPostedSalesLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (salesLedger) PERSISTENT;
+
+itemSalesLedger (ledger) = ABSTRACT item (salesLedger) PERSISTENT INDEXED;
+nameItemSalesLedger 'Товар' (ledger) = nameAttributeItem(itemSalesLedger(ledger));
+
+departmentStoreSalesLedger (ledger) = ABSTRACT departmentStore (salesLedger) PERSISTENT INDEXED;
+nameDepartmentStoreSalesLedger 'Отдел магазина' (ledger) = name(departmentStoreSalesLedger(ledger));
+
+descriptionSalesLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (salesLedger);
+
+quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger) PERSISTENT;
+
+retailSumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
+
+retailRangeSalesLedger (ledger) = ABSTRACT range (salesLedger) PERSISTENT;
+dataRetailRangeSalesLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
+
+retailVATSumSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
+        retailSumSalesLedger(ledger), dataRetailRangeSalesLedger(ledger));
+
+markupSumSalesLedger 'Надбавка' (ledger) = retailSumSalesLedger(ledger) - retailVATSumSalesLedger(ledger) - supplierSumBalanceItemLedger(ledger);
+
+quantitySoldItemDepartmentStoreDateFromTo 'Продано' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
+        quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
+        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
+
+retailSumSoldItemDepartmentStoreDateFromTo 'Сумма проданного товара, руб.' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
+        retailSumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
+        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
+
+itemDepartmentStoreAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
+
+averageSoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
+
+calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
+    LOCAL balance = NUMERIC[14,3] (item, departmentStore);
+    LOCAL days = INTEGER (item, departmentStore);
+    LOCAL dateCur = DATE();
+
+    SET dateCur() <- (dateFrom AS DATE);
+    SET balance(item, departmentStore) <- balanceBItemLedgerDate(item, departmentStore, dateFrom);
+
+    WHILE dateCur() <= (dateTo AS DATE) DO {
+        SET days(item, departmentStore) <- days(item, departmentStore) (+)
+                   (1 IF ((balance(item, departmentStore) > 0) OR (quantityItemDepartmentStoreDate(item, departmentStore, dateCur()) > 0)));
+        SET balance(item, departmentStore) <- balance(item, departmentStore) (+)
+                   signedQuantityItemDepartmentStoreDate(item, departmentStore, dateCur());
+        SET dateCur() <- sumDate(dateCur(), 1);
+    }
+
+    SET averageSoldItemDepartmentStore(item, departmentStore) <- quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / days(item, departmentStore);
+}
+calcCurrentQuantitySoldInterval 'Пересчитать однодневные продажи' = ACTION () NEWSESSION AUTOAPPLY {
+    EXEC calcQuantitySoldInterval(subtractDate(currentDate(), itemDepartmentStoreAverageInterval()), subtractDate(currentDate(), 1));
+}
+
+META implementSalesLedger(concrete)
+    dateTimeSalesLedger (ledger) += dateTime###concrete##Detail(ledger);
+    isPostedSalesLedger (ledger) += isPosted###concrete##Detail(ledger);
+    itemSalesLedger (ledger) += item###concrete##Detail(ledger);
+    departmentStoreSalesLedger (ledger) += departmentStore###concrete##Detail(ledger);
+    descriptionSalesLedger (ledger) += description###concrete##Detail(ledger);
+
+    quantitySalesLedger (ledger) += quantity###concrete##Detail(ledger);
+    retailRangeSalesLedger (ledger) += retailRange###concrete##Detail(ledger);
+    retailSumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
+END
 
 //---------------------------- Суммовые регистры ----------------------------------------//
 
@@ -6362,6 +6434,8 @@ descriptionStatementDetail 'Название документа' (statementDetai
 @implementItemDepartmentStoreBalanceLedger(statement);
 quantityOutAutoBalanceItemLedger (ledger) += quantityStatementDetail(ledger);
 
+@implementSalesLedger(statement);
+
 toFillStatementDetailsStatement 'Заполнить отгрузку на основании с/ф' =  ACTION (statement) {
     FOR inStatementSpecification (statement, specification) AND inSpecificationSpecificationDetail(specification, specificationDetail) DO {
         ADDOBJ statementDetail;
@@ -7154,6 +7228,8 @@ descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR 
 quantityOutAutoBalanceItemLedger (ledger) += quantityBillSaleDetail(ledger);
 quantityInAutoBalanceItemLedger (ledger) += quantityBillReturnDetail(ledger);
 
+@implementSalesLedger(billSale);
+
 // ----------------- Оплаты по чеку ------------------------------
 
 CLASS payment 'Оплата по чеку';
@@ -7287,7 +7363,7 @@ descriptionUserPriceChangeDetail 'Название документа' (userPric
 
 @implementBaseItemDepartmentStoreLedger(userPriceChange);
 
--//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
+//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
 
 isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
     retailPriceUserPriceChangeDetail(userPriceChangeDetail) < curRetailPriceUserPriceChangeDetail(userPriceChangeDetail)
@@ -7557,77 +7633,6 @@ revaluationCommitteePriceChangeDisparity 'Комиссия переоценки 
 
 @defineDocumentPriceChangeNumber(disparity);
 @metaCodeIsPriceChangeWrong(disparity);
-
-// --------------------------- Продажные регистры  ---------------------------------
-TABLE salesLedger(salesLedger);
-
-dateTimeSalesLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeBillSaleDetail(ledger),
-                                                            dateTimeStatementDetail(ledger) PERSISTENT INDEXED;
-
-dateSalesLedger 'Дата' (ledger) = dateInTime(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
-
-isPostedSalesLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedBillSaleDetail(ledger),
-                                                        isPostedStatementDetail(ledger) PERSISTENT;
-
-itemSalesLedger (ledger) = UNION EXCLUSIVE itemBillSaleDetail(ledger),
-                                           itemStatementDetail(ledger) PERSISTENT INDEXED;
-
-nameItemSalesLedger 'Товар' (ledger) = nameAttributeItem(itemSalesLedger(ledger));
-
-departmentStoreSalesLedger (ledger) = UNION EXCLUSIVE departmentStoreBillSaleDetail(ledger),
-                                                      departmentStoreStatementDetail(ledger) PERSISTENT INDEXED;
-nameDepartmentStoreSalesLedger 'Отдел магазина' (ledger) = name(departmentStoreSalesLedger(ledger));
-
-descriptionSalesLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionBillSaleDetail(ledger),
-                                                                       descriptionStatementDetail(ledger);
-
-quantitySalesLedger 'Кол-во' (ledger) = quantityBalanceItemLedger(ledger) AND ledger IS salesLedger;
-
-retailSumSalesLedger 'Сумма продажи' (ledger) = UNION EXCLUSIVE retailSumBillSaleDetail(ledger),
-                                                                retailSumStatementDetail(ledger) PERSISTENT;
-
-retailRangeSalesLedger 'НДС (ИД)' (ledger) = UNION EXCLUSIVE retailRangeBillSaleDetail(ledger),
-                                                             retailRangeStatementDetail(ledger) PERSISTENT;
-dataRetailRangeSalesLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
-
-vatSumSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
-        retailSumSalesLedger(ledger), dataRetailRangeSalesLedger(ledger));
-
-markupSumSalesLedger 'Надбавка' (ledger) = retailSumSalesLedger(ledger) - vatSumSalesLedger(ledger) - supplierSumBalanceItemLedger(ledger);
-
-quantitySoldItemDepartmentStoreDateFromTo 'Продано' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
-        quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
-
-retailSumSoldItemDepartmentStoreDateFromTo 'Сумма проданного товара, руб.' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
-        retailSumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
-
-itemDepartmentStoreAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
-
-averageSoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
-
-calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
-    LOCAL balance = NUMERIC[14,3] (item, departmentStore);
-    LOCAL days = INTEGER (item, departmentStore);
-    LOCAL dateCur = DATE();
-
-    SET dateCur() <- (dateFrom AS DATE);
-    SET balance(item, departmentStore) <- balanceBItemLedgerDate(item, departmentStore, dateFrom);
-
-    WHILE dateCur() <= (dateTo AS DATE) DO {
-        SET days(item, departmentStore) <- days(item, departmentStore) (+)
-                   (1 IF ((balance(item, departmentStore) > 0) OR (quantityItemDepartmentStoreDate(item, departmentStore, dateCur()) > 0)));
-        SET balance(item, departmentStore) <- balance(item, departmentStore) (+)
-                   signedQuantityItemDepartmentStoreDate(item, departmentStore, dateCur());
-        SET dateCur() <- sumDate(dateCur(), 1);
-    }
-
-    SET averageSoldItemDepartmentStore(item, departmentStore) <- quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / days(item, departmentStore);
-}
-calcCurrentQuantitySoldInterval 'Пересчитать однодневные продажи' = ACTION () NEWSESSION AUTOAPPLY {
-    EXEC calcQuantitySoldInterval(subtractDate(currentDate(), itemDepartmentStoreAverageInterval()), subtractDate(currentDate(), 1));
-}
 
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
@@ -13089,7 +13094,7 @@ FORM salesLedger 'Продажи по позициям'
 
     OBJECTS s = salesLedger
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameDepartmentStoreSalesLedger, nameItemSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, supplierSumBalanceItemLedger, markupSumSalesLedger, vatSumSalesLedger, retailSumSalesLedger
+                           quantitySalesLedger, supplierSumBalanceItemLedger, markupSumSalesLedger, retailVATSumSalesLedger, retailSumSalesLedger
     FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
