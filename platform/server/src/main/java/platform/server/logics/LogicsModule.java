@@ -2579,7 +2579,7 @@ public abstract class LogicsModule {
 
         private String concatTokens(String t1, String t2, boolean toCapitalize) {
             if (t1.isEmpty() || t2.isEmpty()) {
-                return t1 + capitalize(t2, toCapitalize);
+                return t1 + capitalize(t2, toCapitalize && !t1.isEmpty());
             } else if (t1.charAt(0) == QUOTE || t2.charAt(0) == QUOTE) {
                 return QUOTE + unquote(t1) + capitalize(unquote(t2), toCapitalize) + QUOTE;
             } else {
