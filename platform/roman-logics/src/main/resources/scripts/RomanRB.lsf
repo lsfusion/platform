@@ -6,6 +6,8 @@ IMPORT RomanLogicsModule;
 round0 (number) = round(number, 0);
 roundMinus1 (number) = round(number, -1);
 
+maxDateTime 'Максимальная дата' = DATA DATETIME();
+
 
 META metaCodeDefineDocumentTime (object)
 
@@ -67,7 +69,8 @@ META metaCodePriceBaseDiscount(document, caption)
 
     concat###document##ArticleDateTime (article, dateTime) = GROUP MAX order###document(document) AND
                                                                        priceData###document##Article(document, article) AND
-                                                                       dateTimePriceChangeDocument(document) < (dateTime AS DATETIME)
+                                                                       dateTimePriceChangeDocument(document) < (dateTime AS DATETIME) AND
+                                                                       dateTimeToPriceChangeDocument(document) > (dateTime AS DATETIME)
                                                                     BY article, dateTime;
 
     document##ArticleDateTime (article, dateTime) = concat###document##ArticleDateTime(article, dateTime)[2];
@@ -697,6 +700,10 @@ CLASS STATIC methodPrice 'Метод расчёта'
     previous 'Предыдущая'
 };
 
+//
+EXTEND FORM globalParamForm
+     PROPERTIES() maxDateTime
+;
 
 
 CLASS ABSTRACT priceChangeDocument 'Документ изменения цен' : transaction;
@@ -725,6 +732,10 @@ sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN b
 @metaCodeDefineDocumentTime(priceChangeDocument);
 
 dateTimePriceChangeDocument 'Дата/время документа' (priceChangeDocument) = toDateTime(date(priceChangeDocument), timePriceChangeDocument(priceChangeDocument));
+
+dateTimeToDataPriceChangeDocument 'Дата/время окончания' = DATA DATETIME(priceChangeDocument) IN baseGroup;
+dateTimeToPriceChangeDocument 'Дата/время окончания' (priceChangeDocument) = UNION OVERRIDE maxDateTime() IF priceChangeDocument IS priceChangeDocument,
+                                                                                            dateTimeToDataPriceChangeDocument(priceChangeDocument) IN baseGroup;
 
 isDiscountPriceChangeDocument 'Распродажа' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
 keepDiscountPriceChangeDocument 'Учитывать скидки' = DATA BOOLEAN(priceChangeDocument) IN baseGroup;
@@ -864,7 +875,7 @@ FORM coefficientRetails 'История коэффициентов'
 ;
 
 
-FORM priceChangeDocument 'Документ изменений цен'
+FORM priceChangeDocument 'Документ базовых цен'
 
     OBJECTS p=basePriceChangeDocument FIXED PANEL
     PROPERTIES(p) sidPriceChangeDocument, date, timePriceChangeDocument, toSetPricesPriceChangeDocument
@@ -876,13 +887,13 @@ FORM priceChangeDocument 'Документ изменений цен'
     PROPERTIES READONLY OBJVALUE(vv), name(c)
 
     OBJECTS aa=article
-    PROPERTIES READONLY sidArticle(aa)
+    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, aa) inArticlePriceChangeDocument
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
 
     OBJECTS a=article
-    PROPERTIES(a)  sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, a) priceInPriceChangeDocumentArticle,
                       RRPPriceChangeDocumentArticle, markupPriceChangeDocumentArticle, priceOutPriceChangeDocumentArticle,
                       ratePriceChangeDocumentArticle, RRPRatePriceChangeDocumentArticle, priceOutRatePriceChangeDocumentArticle,
@@ -910,12 +921,16 @@ DESIGN priceChangeDocument FROM DEFAULT {
         fillHorizontal = 1.5;
     }
 
+    aa.box {
+        fillHorizontal = 1.5;
+    }
+
 }
 
-FORM priceChangeDocuments 'Документы изменений цен'
+FORM priceChangeDocuments 'Документы базовых цен'
 
     OBJECTS p=basePriceChangeDocument
-    PROPERTIES(p) READONLY sidPriceChangeDocument, date, timePriceChangeDocument
+    PROPERTIES(p) READONLY sidPriceChangeDocument, date, timePriceChangeDocument, dateTimeToPriceChangeDocument
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
@@ -944,10 +959,10 @@ FORM logPriceArticle 'История цен'
 
 showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle OBJECTS a NEWSESSION MODAL;
 
-FORM discountPriceChangeDocument 'Уценка'
+FORM discountPriceChangeDocument 'Распродажа'
 
     OBJECTS d=discountPriceChangeDocument FIXED PANEL
-    PROPERTIES(d) sidPriceChangeDocument, date, timePriceChangeDocument
+    PROPERTIES(d) sidPriceChangeDocument, date, timePriceChangeDocument, dateTimeToPriceChangeDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -956,13 +971,13 @@ FORM discountPriceChangeDocument 'Уценка'
     PROPERTIES READONLY OBJVALUE(vv), name(c)
 
     OBJECTS aa=article
-    PROPERTIES READONLY sidArticle(aa)
+    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (d, aa) inArticlePriceChangeDocument
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
 
     OBJECTS a=article
-    PROPERTIES(a)  sidArticle, nameCategoryArticle, nameBrandSupplierArticle, showFormLogPriceArticle
+    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, showFormLogPriceArticle
     PROPERTIES (d, a) ratePriceChangeDocumentArticle, priceInRateBBasePriceChangeDocumentArticle, priceBBasePriceChangeDocumentArticle,
                       percentDiscountPriceChangeDocumentArticle, priceDiscountPriceChangeDocumentArticle, priceBDiscountPriceChangeDocumentArticle,
                       priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
@@ -982,13 +997,17 @@ DESIGN discountPriceChangeDocument FROM DEFAULT {
     treeSupplierBrand.tree {
         fillHorizontal = 1.5;
     }
+
+    aa.box {
+        fillHorizontal = 1.5;
+    }
 }
 
 
-FORM discountPriceChangeDocuments 'Уценки'
+FORM discountPriceChangeDocuments 'Распродажи'
 
     OBJECTS d=discountPriceChangeDocument
-    PROPERTIES(d) READONLY sidPriceChangeDocument, date, timePriceChangeDocument
+    PROPERTIES(d) READONLY sidPriceChangeDocument, date, timePriceChangeDocument, dateTimeToPriceChangeDocument
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
@@ -1000,7 +1019,7 @@ FORM discountPriceChangeDocuments 'Уценки'
 
 
 
-toCreatePriceChangeDocument 'Заполнить документ из фрахта' =  ACTION (freight) NEWSESSION {
+toCreatePriceChangeDocument 'Расценка фрахта' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceChangeDocument;
     FOR p == addedObject() DO {
         SET freightPriceChangeDocument(p) <- freight AS freight;
@@ -1018,9 +1037,27 @@ toCreatePriceChangeDocument 'Заполнить документ из фрахт
 FORM freights 'Ценообразование по фрахтам'
 
     OBJECTS f=freight
-    PROPERTIES(f) READONLY date, objectClassName, dateArrivalFreight, nameCustomStoreFreight, nameRouteFreight, nameExporterFreight
+    PROPERTIES(f) READONLY date BACKGROUND isPriceChangeDocumentFreight(f), objectClassName, dateArrivalFreight, nameCustomStoreFreight, nameRouteFreight, nameExporterFreight
     PROPERTIES(f) FORCE PANEL toCreatePriceChangeDocument SHOWIF isPriceChangeDocumentFreight(f)
+
+    FILTERGROUP filtersDocument
+        FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceChangeDocumentFreight(f)
 ;
+
+// Акции, распродажи
+CLASS ABSTRACT action 'Акция';
+CLASS saleAction 'Распродажа': action;
+CLASS articleAction 'Акция по позициям': action;
+
+dateFromAction 'Дата с' = DATA DATE(action) IN baseGroup;
+dateToAction 'Дата по' = DATA DATE(action) IN baseGroup;
+
+inActionStore 'Магазин в акции' = DATA BOOLEAN(action, store);
+inActionArticle 'Артикул в акции' = DATA BOOLEAN(action, article);
+
+minSumClientArticleAction 'Мин. накопленная сумма' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
+minSumCheckArticleAction 'Мин. сумма чека' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
+
 
 
 NAVIGATOR {
