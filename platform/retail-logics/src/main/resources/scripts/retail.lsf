@@ -1698,6 +1698,7 @@ GROUP labelGroup 'Ценник' : publicGroup;
 GROUP manufactoryGroup 'Производство' : publicGroup;
 GROUP orderGroup 'Заказ' : publicGroup;
 GROUP barGroup 'Бар' : publicGroup;
+GROUP activeGroup 'Активный товар' : publicGroup;
 GROUP documentGroup 'Для документов' : publicGroup;
 GROUP displayGroup 'Свойства для отображения' : baseGroup;
 
@@ -1879,9 +1880,8 @@ minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA NU
 bonusItem 'Бонус получаемый по товару' = DATA NUMERIC[9,2] (item) IN documentGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA NUMERIC[8,3] (item) IN retailGroup;
 banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN equipmentGroup;
-inactiveItem 'Неактивный товар' = DATA yesNo (item, DATE);
-nameInactiveItem 'Неактивный товар' (item, date) = name(inactiveItem(item, date));
-isInactiveItem (item) = inactiveItem(item, currentDate()) != yesNo.yes;
+@metaCodeNameObjectDateProperty(inactiveItem, item, 'Неактивный товар', yesNo, activeGroup);
+isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes;
 
 //manufactoryGroup
 CLASS groupMenu 'Группа меню' : named;
@@ -2975,7 +2975,7 @@ FORM item 'Товар'
 
                   volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
 
-                  nameIsPortionBarItem, showFormNameIsPortionBarItem,
+                  nameIsPortionBarItem, showFormNameIsPortionBarItem, nameInactiveItem, showFormNameInactiveItem,
 
                   // Дополнительные
                   passScalesItem, isMarkItem, isLoafCutItem,
@@ -3019,7 +3019,6 @@ FORM item 'Товар'
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
-    PROPERTIES (i, dt) inactiveItem TODRAW i FORCE PANEL
     PROPERTIES      nameIsSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, d, dt), showFormNameIsSupplierItemDepartmentOver(sp, i, d),
                     nameBanSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameBanSupplierItemDepartmentDate(sp, i, d, dt), showFormNameBanSupplierItemDepartmentOver(sp, i, d),
                     priceSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND priceSupplierItemDepartmentDate(sp, i, d, dt), showFormPriceSupplierItemDepartmentOver(sp, i, d),
@@ -3051,7 +3050,6 @@ DESIGN item FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(canonicalNameItemGroupSku);
                 ADD PROPERTY(barcodeBarcodeSku);
-                ADD PROPERTY(inactiveItem);
             }
         }
         NEW item.box BEFORE b.box {
@@ -3089,6 +3087,7 @@ DESIGN item FROM DEFAULT {
                         childConstraints = TO THE BOTTOM;
                     };
                     ADD i.barGroup;
+                    ADD i.activeGroup;
                 }
                 POSITION containerLeft TO THE LEFT containerRight;
                 ADD b.box;
@@ -3175,7 +3174,7 @@ FORM items 'Товары'
     ORDER BY nameAttributeItemGroupItem
 
     FILTERGROUP filters
-        FILTER 'Отображать только активные товары' 'F10' isInactiveItem(i) DEFAULT
+        FILTER 'Отображать только активные товары' 'F10' isActiveItem(i) DEFAULT
 
     DIALOG item OBJECT i
 ;
