@@ -8303,6 +8303,12 @@ preliminaryOrderOrderSupplier 'Предварительный заказ зак�
 preliminaryOrderToOrderSupplier 'Заказ по предварительному заказу' (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
 dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = seriesNumberObject(preliminaryOrderToOrderSupplier(preliminaryOrder));
 
+uniquePreliminaryOrder (date1, date2, departmentStore, supplier) = GROUP UNIQUE preliminaryOrder
+                                                                   BY dateOrderPreliminaryOrder(preliminaryOrder),
+                                                                      dateSupplyPreliminaryOrder(preliminaryOrder),
+                                                                      departmentStorePreliminaryOrder(preliminaryOrder),
+                                                                      supplierPreliminaryOrder(preliminaryOrder);
+
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA NUMERIC[8,3] (orderSupplier) IN orderSupplierGroup;
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN documentPrmGroup;
 
