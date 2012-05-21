@@ -575,6 +575,22 @@ META defineDocumentDetailItemActions (object)
 
 END
 
+META defineDocumentDefaultProperties (object)
+    @defineDocumentTables(object);
+
+    @defineDocumentRelation(object);
+    @defineDocumentDetailIndex(object);
+
+    @defineDocumentTime(object);
+    @defineDocumentDepartmentStore(object);
+    @defineDocumentHeaderNote(object);
+
+    @defineDocumentDetailItem(object);
+    @defineDocumentDetailItemActions(object);
+
+    @defineDocumentPosted(object);
+END
+
 META defineDocumentDetailQuantityPrefix (object, prefix, caption)
     prefix###quantity###object##Detail 'Кол-во'###caption = DATA NUMERIC[14,3] (object##Detail);
 END
@@ -1142,24 +1158,6 @@ META implementInputListRegister (concrete)
 END
 
 // ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
-META defineDocumentDefaultProperties (object)
-
-    @defineDocumentTables(object);
-
-    @defineDocumentRelation(object);
-
-    @defineDocumentTime(object);
-    @defineDocumentDepartmentStore(object);
-    @defineDocumentHeaderNote(object);
-
-    @defineDocumentDetailIndex(object);
-
-    @defineDocumentDetailItem(object);
-    @defineDocumentDetailItemActions(object);
-
-    @defineDocumentPosted(object);
-
-END
 
 META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
 
@@ -1220,7 +1218,11 @@ TABLE itemGroup(itemGroup);
 TABLE itemGroupItemGroup (itemGroup, itemGroup);
 
 parentItemGroup = DATA itemGroup (itemGroup); //AUTOSET;  --  пока не имеет смысла проставляет не ту группу
-inParentItemGroupItemGroup (child, parent) = parentItemGroup(child) == parent;
+
+hasParentItemGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS itemGroup AND parent == child
+                                                                  STEP 2l AND parent == parentItemGroup($parent) PERSISTENT;
+
+hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGroupLevel(child, parent);
 
 nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
@@ -1236,11 +1238,7 @@ childNumberItemGroup 'Кол-во непосредственных потомк�
 
 isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup) PERSISTENT;
 
-hasParentItemGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS itemGroup AND parent == child
-                                                                  STEP 2l AND parent == parentItemGroup($parent) PERSISTENT;
 TABLE itemGroupStructure(itemGroup, itemGroup, LONG);
-
-hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGroupLevel(child, parent);
 
 hasParentAndLeafItemGroup (child, parent) = hasParentItemGroup(child, parent) AND isLeafItemGroup(child);
 
@@ -1482,19 +1480,30 @@ PROPERTIES(r) name, percentRateWaste;
 
 // ----------------------------------- Склад ------------------------------------------ //
 
+CLASS ABSTRACT stockGroup 'Группа складов' : named;
+
+parentStockGroup = ABSTRACT stockGroup (stockGroup);
+
+hasParentStockGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS stockGroup AND parent == child
+                                                                  STEP 2l AND parent == parentStockGroup($parent) PERSISTENT;
+
+hasParentStockGroup 'Уровень' (child, parent) = TRUE AND hasParentStockGroupLevel(child, parent);
+
+
 CLASS ABSTRACT stock 'Склад' : named;
+stockGroupStock (stock) = ABSTRACT stockGroup (stock);
 
 // ----------------------------------- Магазин ----------------------------------------- //
 
-CLASS store 'Магазин' : named, externalObject;
+CLASS store 'Магазин' : stockGroup, externalObject;
 TABLE store (store);
 CLASS region 'Регион' : named;
 TABLE region (region);
 
-CLASS tradingNetwork 'Торговая сеть' : named, externalObject; // "Рублевский", "Базар"
+CLASS tradingNetwork 'Торговая сеть' : stockGroup, externalObject; // "Рублевский", "Базар"
 TABLE tradingNetwork (tradingNetwork);
 
-CLASS storeType 'Формат магазина' : named; //Мини, Супер, ...
+CLASS storeType 'Формат магазина' : stockGroup; //Мини, Супер, ...
 TABLE storeType (storeType);
 
 companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
@@ -1504,10 +1513,14 @@ regionStore 'Регион магазина ИД' = DATA region (store);
 nameRegionStore 'Регион для стат. отчета' (store) = name(regionStore(store));
 
 storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) AUTOSET;
+parentStockGroup (store) += storeTypeStore(store);
+
 nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN baseGroup;
 inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
 
 tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType);
+parentStockGroup (storeType) += tradingNetworkStoreType(storeType);
+
 nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN baseGroup;
 nameToStoreType 'Формат магазина по имени и торговой сети' (name, tradingNetwork) = GROUP UNIQUE storeType BY name (storeType), tradingNetworkStoreType(storeType);
 
@@ -1567,6 +1580,8 @@ CLASS STATIC itemStatus 'Статус товара'
 };
 
 storeDepartmentStore = DATA store (departmentStore) AUTOSET;
+stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
+
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
 
 revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
@@ -3244,7 +3259,7 @@ FORM itemGroups 'Товарные группы'
     FILTERGROUP filters
         FILTER 'Все листья' 'F10' hasParentAndLeafItemGroup(cg, g) DEFAULT
         FILTER 'Всех потомков' 'F9' hasParentItemGroup(cg, g)
-        FILTER 'Только непосредственных потомков' 'F8' inParentItemGroupItemGroup(cg, g)
+        FILTER 'Только непосредственных потомков' 'F8' parentItemGroup(cg) == g
 ;
 
 DESIGN itemGroups FROM DEFAULT {
@@ -5508,7 +5523,7 @@ TABLE balanceItemLedger (balanceItemLedger);
 CLASS ABSTRACT inBalanceItemLedger 'Приход' : balanceItemLedger;
 CLASS ABSTRACT outBalanceItemLedger 'Расход' : balanceItemLedger;
 
-CLASS ABSTRACT batch 'Партия' : inBalanceItemLedger, importerPriceLedger; // todo : смотри выше
+CLASS ABSTRACT batch 'Партия' : inBalanceItemLedger;
 TABLE batch(batch);
 TABLE balanceItemLedgerBatch (balanceItemLedger, batch);
 TABLE batchDepartmentStore(batch, departmentStore);
@@ -5714,7 +5729,7 @@ META implementBatch(concrete)
     dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
     isPostedBatch (batch) += isPosted###concrete##Detail(batch);
     itemBatch (batch) += item###concrete##Detail(batch);
-    supplierPriceBatch (batch) += departmentStore###concrete##Detail(batch);
+    supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
     descriptionBatch (batch) += description###concrete##Detail(batch);
 END
 
@@ -8102,7 +8117,7 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
 
 @implementItemDepartmentStoreBalanceLedger(disparity);
-quantityOutAutoBalanceItemLedger (ledger) += quantityDisparityDetailDisparity(ledger);
+quantityOutAutoBalanceItemLedger (ledger) += quantityDisparityDetail(ledger);
 
                                   // Приход
 
@@ -8134,7 +8149,7 @@ needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetai
 @metaCodeSingleAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
 
 @defineDocumentDetailAggregationHeader(disparity, inputDisparity);
-@defineDocumentDetailAggregationItem(disparity, inputDisparity);
+@defineDocumentDetailAggregationItemPrefix(disparity, inputDisparity, input);
 quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
 
 @defineDocumentDetailAggregationPrice(disparity, inputDisparity);
