@@ -2158,10 +2158,10 @@ PROPERTIES(c) READONLY name, nettoBruttoCoeffComponent
 PROPERTIES(c) ADDFORM, EDITFORM, delete;
 
 
+
 // ----------------------------------- Генерация графика --------------------------------------- //
 
 CLASS STATIC genType 'Тип генерации' {
-    genWeek 'Генерация каждые N недель',
     genDays 'Генерация через N дней',
     genNumber 'Генерация по числам',
     genDayMonth 'Генерация по дням недели и месяца'
@@ -2205,40 +2205,9 @@ inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, DOW);
 inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
 inMonthGenTimeTable(genTimeTable, month) <- inAllMonthGenTable(genTimeTable) WHEN ASSIGNED(inAllMonthGenTable(genTimeTable) AND month IS month);
 
-toShowGenWeek (genTimeTable) = genTimeTableType(genTimeTable) == genType.genWeek;
 toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDays;
 toShowGenNumber (genTimeTable) = genTimeTableType(genTimeTable) == genType.genNumber;
 toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDayMonth;
-toShowGenWeekOrDayMonth (genTimeTable) = UNION OVERRIDE toShowGenWeek(genTimeTable), toShowGenDayMonth(genTimeTable);
-
-FORM genTimeTable 'Генерация графика'
-OBJECTS g=genTimeTable FIXED PANEL, m=month, d=DOW
-PROPERTIES(g) READONLY nameUserCreated, timeCreated
-PROPERTIES(g) nameGenTimeTableType, nameDepartmentStoreGenTimeTable, nameSupplierGenTimeTable, UNPSupplierGenTimeTable, startDateGenTimeTable,
-              endDateGenTimeTable, dayBeforeGenTimeTable,inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
-              dayAfterGenTimeTable SHOWIF toShowGenDay(g), periodGenTimeTable SHOWIF toShowGenWeek(g),
-              stringNumberGenTimeTable SHOWIF toShowGenNumber(g), nameTransferDayGenTimeTable SHOWIF toShowGenNumber(g),
-              dayLastOrderGenTimeTable SHOWIF toShowGenDay(g)
-PROPERTIES(m) READONLY name SHOWIF toShowGenDayMonth(g)
-PROPERTIES(d) READONLY name SHOWIF toShowGenWeekOrDayMonth(g)
-PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
-PROPERTIES(g, d) inDayGenTimeTable SHOWIF toShowGenWeekOrDayMonth(g)
-EDIT genTimeTable OBJECT g;
-
-DESIGN genTimeTable FROM DEFAULT {
-    g.panel {
-        fillVertical = 0.5;
-        preferredSize = (1280, 1024);
-    }
-    ADD g.historyGroup BEFORE functions.box;
-}
-
-showFormGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
-
-FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
-OBJECTS g=genTimeTable
-PROPERTIES(g) READONLY name
-PROPERTIES(g) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Физические лица -------------------------------------------------- //
 
@@ -8498,6 +8467,25 @@ isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepa
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 
+dateLastPreliminaryOrder 'Дата последнего заказа' (departmentStore, supplier, date) =
+    GROUP MAX dateOrderPreliminaryOrder(preliminaryOrder)
+              AND dateOrderPreliminaryOrder(preliminaryOrder) < (date AS DATE)
+              AND preliminaryOrderToOrderSupplier(preliminaryOrder)
+          BY departmentStorePreliminaryOrder(preliminaryOrder), supplierPreliminaryOrder(preliminaryOrder), date;
+
+dayLastOrderGenTimeTable (genTimeTable) <- dateLastPreliminaryOrder(departmentStoreGenTimeTable(genTimeTable),
+                                                                    supplierGenTimeTable(genTimeTable),
+                                                                    startDateGenTimeTable(genTimeTable))
+                                           WHEN CHANGED(startDateGenTimeTable(genTimeTable));
+
+CONSTRAINT startDateGenTimeTable(genTimeTable) > endDateGenTimeTable(genTimeTable)
+    MESSAGE 'Некорректно заданный интервал';
+
+inDateMonth (date1, date2, month) = numberMonth(month AS month) >= numberMonthInDate(date1 AS DATE) AND
+                                    numberMonth(month AS month) <= numberMonthInDate(date2 AS DATE);
+inDateMonthGTT(genTimeTable, month) = inDateMonth(startDateGenTimeTable(genTimeTable),
+                                                  endDateGenTimeTable(genTimeTable), month);
+
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
@@ -8603,6 +8591,36 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
     };
 } IN shipmentOrderGroup CONFIRM;
 
+FORM genTimeTable 'Генерация графика'
+OBJECTS g=genTimeTable FIXED PANEL, m=month, d=DOW
+PROPERTIES(g) READONLY nameUserCreated, timeCreated
+PROPERTIES(g) nameGenTimeTableType, nameDepartmentStoreGenTimeTable, nameSupplierGenTimeTable, UNPSupplierGenTimeTable, startDateGenTimeTable,
+              endDateGenTimeTable, dayBeforeGenTimeTable, periodGenTimeTable SHOWIF toShowGenDayMonth(g),
+              dayAfterGenTimeTable SHOWIF toShowGenDay(g), inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
+              stringNumberGenTimeTable SHOWIF toShowGenNumber(g), nameTransferDayGenTimeTable SHOWIF toShowGenNumber(g),
+              dayLastOrderGenTimeTable SHOWIF toShowGenDay(g)
+PROPERTIES(m) READONLY name SHOWIF toShowGenDayMonth(g)
+PROPERTIES(d) READONLY name SHOWIF toShowGenDayMonth(g)
+PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
+PROPERTIES(g, d) inDayGenTimeTable SHOWIF toShowGenDayMonth(g)
+FILTERS inDateMonthGTT(g, m)
+EDIT genTimeTable OBJECT g;
+
+DESIGN genTimeTable FROM DEFAULT {
+    g.panel {
+        fillVertical = 0.5;
+        preferredSize = (1280, 1024);
+    }
+    ADD g.historyGroup BEFORE functions.box;
+}
+
+showFormGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
+
+FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
+OBJECTS g=genTimeTable
+PROPERTIES(g) READONLY name
+PROPERTIES(g) ADDFORM, EDITFORM, delete;
+
 FORM preliminaryOrder 'Предварительный заказ'
 OBJECTS p=preliminaryOrder FIXED PANEL
 PROPERTIES(p) nameDepartmentStorePreliminaryOrder, nameSupplierPreliminaryOrder, dateOrderPreliminaryOrder,
@@ -8624,36 +8642,26 @@ tmpGTT = SESSION DATA genTimeTable();
 tmpDate = SESSION DATA DATE();
 tmpDateS = SESSION DATA DATE();
 
-createGenTimeTable 'Создать график поставок' = ACTION () NEWSESSION {
-    FORM genTimeTable INIT [ACTION ADDOBJ genTimeTable]() MODAL;
+
+createGenTimeTable 'Создать график поставок' = ACTION (departmentStore, supplier) NEWSESSION {
+
+    ADDOBJ genTimeTable;
+    FOR gt == addedObject() DO {
+        SET departmentStoreGenTimeTable(gt) <- departmentStore AS departmentStore;
+        SET supplierGenTimeTable(gt) <- supplier AS supplier;
+        SET startDateGenTimeTable(gt) <- currentDate();
+        SET endDateGenTimeTable(gt) <- sumDate(currentDate(), 30);
+        SET dayBeforeGenTimeTable(gt) <- 1;
+        SET periodGenTimeTable(gt) <- 1;
+        SET dayAfterGenTimeTable(gt) <- 1;
+        SET inAllMonthGenTable(gt) <- TRUE;
+        //SET dayLastOrderGenTimeTable(gt) <- dateLastPreliminaryOrder(departmentStore, supplier, startDateGenTimeTable(gt));
+        FORM genTimeTable OBJECTS g = (gt AS genTimeTable) MODAL;
+    }
 
     IF formResult() == formResult.ok THEN {
 
         SET tmpGTT() <- chosenObject('g');
-        // генерация через N недель
-        IF genTimeTableType(tmpGTT()) == genType.genWeek THEN {
-            // бежим по всем дням недели
-            FOR inDayGenTimeTable(tmpGTT(), dow) DO {
-                SET tmpDate() <- startDateGenTimeTable(tmpGTT());
-                // ищем первую дату начиная со стартовой с нужным днем недели
-                WHILE DOWInDate(tmpDate()) != dow AS DOW DO {
-                    SET tmpDate() <- sumDate(tmpDate(), 1);
-                };
-
-                // итерируемся по всем датам через период * 7 дней
-                WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
-                    ADDOBJ preliminaryOrder;
-                    FOR o == addedObject() DO {
-                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
-                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
-                        SET dateSupplyPreliminaryOrder(o) <- tmpDate();
-                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
-                    };
-                    SET tmpDate() <- sumDate(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
-                };
-            };
-        };
 
         // генерация через N дней
         IF genTimeTableType(tmpGTT()) == genType.genDays THEN {
@@ -8719,7 +8727,8 @@ createGenTimeTable 'Создать график поставок' = ACTION () NE
                         SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
                     };
                 };
-                SET tmpDate() <- sumDate(tmpDate(), 1);
+                //SET tmpDate() <- sumDate(tmpDate(), 1);
+                SET tmpDate() <- sumDate(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
             };
         };
 
@@ -8936,10 +8945,12 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(t) OBJVALUE
 
     OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR, createGenTimeTable()
+    PROPERTIES name(d) SELECTOR
 
     OBJECTS s=supplier
     PROPERTIES(s) READONLY name
+
+    PROPERTIES createGenTimeTable(d, s) FORCE PANEL
 
     OBJECTS p=preliminaryOrder
     PROPERTIES(p) showFormGenTimeTablePreliminaryOrder
