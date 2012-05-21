@@ -383,10 +383,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
             Map<ObjectEntity, PropertyInterface> objectToInterface =
                     BaseUtils.<ObjectEntity, ValueClassWrapper, PropertyInterface>join(objectToClass, BaseUtils.reverse(implement.mapping));
+            List<ObjectEntity> entities = new ArrayList<ObjectEntity>();
             for (ObjectEntity object : objects) {
-                interfaces.add(objectToInterface.get(object));
+                if (objectToInterface.get(object) != null) {
+                    interfaces.add(objectToInterface.get(object));
+                    entities.add(object);
+                }
             }
-            propertyDraws.add(addPropertyDraw(new LP(implement.property, interfaces), groupObject, objects));
+            propertyDraws.add(addPropertyDraw(new LP(implement.property, interfaces), groupObject, entities.toArray(new ObjectEntity[entities.size()])));
         }
 
         return propertyDraws;
@@ -444,7 +448,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         if (propertyImplement.property.getSID() != null) {
-            String propertySID = propertyImplement.property.getSID();
+            String propertySID = propertyImplement.property.getSID(); //BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
 
             setPropertyDrawGeneratedSID(newPropertyDraw, propertySID);
         }
