@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="l" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="1544"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -41,15 +41,14 @@
 	<field name="objectClassName" class="java.lang.String"/>
 	<field name="retail_dateListRegister" class="java.util.Date"/>
 	<field name="retail_nameDepartmentStoreListRegister" class="java.lang.String"/>
+	<field name="retail_numberContractShipment" class="java.lang.String"/>
+	<field name="retail_dateContractShipment" class="java.util.Date"/>
 	<field name="retail_shipperListRegister" class="java.lang.String"/>
 	<field name="retail_consigneeListRegister" class="java.lang.String"/>
-	<field name="retail_isShipmentListRegister" class="java.lang.Boolean"/>
 	<field name="retail_quantityListRegisterDetailListRegister" class="java.lang.Double"/>
 	<field name="retail_supplierSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_supplierVATISumListRegisterDetailListRegister" class="java.lang.Double"/>
 	<field name="retail_wareSumListRegisterDetailListRegister" class="java.lang.Double"/>
 	<field name="retail_wareVATSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_invoiceSumListRegisterDetailListRegister" class="java.lang.Double"/>
 	<field name="retail_markupSumListRegisterDetailListRegister" class="java.lang.Double"/>
 	<field name="retail_retailVATSumListRegisterDetailListRegister" class="java.lang.Double"/>
 	<field name="retail_retailSumListRegisterDetailListRegister" class="java.lang.Double"/>
@@ -68,21 +67,16 @@
 	<field name="retail_importerPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_supplierSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_supplierMarkupListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_supplierVATISumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_dataSupplierRangeListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_wareSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_warePriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_wareVATSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_dataWareRangeListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_invoiceSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_importerMarkupListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_markupSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_dataRetailRangeListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_retailVATSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_retailPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retail_retailSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_numberContractShipment" class="java.lang.String"/>
-	<field name="retail_dateContractShipment" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{l})]]></groupExpression>
 	</group>
@@ -90,8 +84,19 @@
 		<groupExpression><![CDATA[String.valueOf($F{l})]]></groupExpression>
 		<groupFooter>
 			<band height="22">
+				<staticText>
+					<reportElement style="GroupCellStyle0" x="0" y="0" width="210" height="22" forecolor="#000000" backcolor="#FFFFFF"/>
+					<box>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top"/>
+					<text><![CDATA[ВСЕГО]]></text>
+				</staticText>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="480" y="0" width="55" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="524" y="0" width="66" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -101,33 +106,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_wareVATSumListRegisterDetailListRegister}]]></textFieldExpression>
-				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="735" y="0" width="60" height="22" backcolor="#FFFFFF"/>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Right" verticalAlignment="Top">
-						<font size="8"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailSumListRegisterDetailListRegister}]]></textFieldExpression>
-				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="640" y="0" width="50" height="22" backcolor="#FFFFFF"/>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Right" verticalAlignment="Top">
-						<font size="8"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailVATSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_markupSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement style="GroupCellStyle0" x="210" y="0" width="20" height="22" backcolor="#FFFFFF"/>
@@ -141,7 +120,7 @@
 					<text><![CDATA[]]></text>
 				</staticText>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="315" y="0" width="60" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="656" y="0" width="66" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -151,10 +130,10 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_supplierSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="585" y="0" width="55" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="392" y="0" width="66" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -164,32 +143,8 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_markupSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_wareSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="535" y="0" width="50" height="22" backcolor="#FFFFFF"/>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Right" verticalAlignment="Top">
-						<font size="8"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_invoiceSumListRegisterDetailListRegister}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement style="GroupCellStyle0" x="0" y="0" width="210" height="22" forecolor="#000000" backcolor="#FFFFFF"/>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Top"/>
-					<text><![CDATA[ВСЕГО]]></text>
-				</staticText>
 				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>
 					<box>
@@ -204,7 +159,7 @@
 					<textFieldExpression><![CDATA[$F{retail_quantityListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="375" y="0" width="50" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="722" y="0" width="73" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -214,10 +169,10 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_supplierVATISumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_retailSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="425" y="0" width="55" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="326" y="0" width="66" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -227,10 +182,10 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_wareSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_supplierSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="260" y="0" width="66" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -243,7 +198,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" x="260" y="0" width="55" height="22" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="590" y="0" width="66" height="22" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -253,15 +208,28 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_retailVATSumListRegisterDetailListRegister}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" x="458" y="0" width="66" height="22" backcolor="#FFFFFF"/>
+					<box>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{retail_wareVATSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
 	</group>
 	<title>
-		<band height="98">
-			<staticText>
-				<reportElement x="210" y="36" width="105" height="13"/>
+		<band height="80">
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="210" y="62" width="585" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -269,8 +237,8 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<text><![CDATA[Грузополучатель]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA["Вид операции: Приход товара из другого отдела"]]></textFieldExpression>
+			</textField>
 			<staticText>
 				<reportElement x="210" y="23" width="105" height="13"/>
 				<box>
@@ -294,7 +262,7 @@
 				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{retail_numberListRegister}+"-"+$F{retail_seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateListRegister})+" года"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="210" y="75" width="585" height="13"/>
+				<reportElement x="315" y="23" width="480" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -302,10 +270,10 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Вид операции: Приход товара от поставщика"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_shipperListRegister}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="210" y="10" width="585" height="13"/>
+			<staticText>
+				<reportElement x="210" y="36" width="105" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -313,8 +281,8 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{retail_numberListRegister}+"-"+$F{retail_seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateListRegister})+" года"]]></textFieldExpression>
-			</textField>
+				<text><![CDATA[Грузополучатель]]></text>
+			</staticText>
 			<textField isBlankWhenNull="true">
 				<reportElement x="315" y="36" width="480" height="13"/>
 				<box>
@@ -327,7 +295,7 @@
 				<textFieldExpression><![CDATA[$F{retail_consigneeListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="315" y="23" width="480" height="13"/>
+				<reportElement x="210" y="10" width="585" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -335,25 +303,14 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_shipperListRegister}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="210" y="62" width="585" height="13" isRemoveLineWhenBlank="true"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement/>
-				<textFieldExpression><![CDATA["Договор: № "+$F{retail_numberContractShipment}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateContractShipment})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{retail_numberListRegister}+"-"+$F{retail_seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateListRegister})+" года"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<pageHeader>
 		<band height="18">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="640" y="0" width="50" height="18" backcolor="#FFFFFF"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="656" y="0" width="66" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -363,10 +320,23 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["НДС розничный, руб./%"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Цена розничная, руб."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="585" y="0" width="55" height="18" backcolor="#FFFFFF"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="260" y="0" width="66" height="18" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Цена изготовителя, руб."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="524" y="0" width="66" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -377,32 +347,6 @@
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Наценка, скидка руб./%"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Кол-во"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="210" y="0" width="20" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Ед. изм."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="30" y="0" width="180" height="18" backcolor="#FFFFFF"/>
@@ -418,7 +362,7 @@
 				<textFieldExpression><![CDATA["Товар"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="18" backcolor="#FFFFFF"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -428,59 +372,7 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Цена розничная, руб."]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="480" y="0" width="55" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["НДС посуды, руб./%"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="315" y="0" width="60" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Сумма пост.,\n"+"% опт.нац.\n руб./%"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="375" y="0" width="50" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["НДС поставщика, руб./%"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="735" y="0" width="60" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Сумма розн. с НДС руб."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Кол-во"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="18" backcolor="#FFFFFF"/>
@@ -496,20 +388,7 @@
 				<textFieldExpression><![CDATA["№ п/п"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="260" y="0" width="55" height="18" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Цена изготовителя, руб."]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="425" y="0" width="55" height="18" backcolor="#FFFFFF"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="392" y="0" width="66" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -522,7 +401,7 @@
 				<textFieldExpression><![CDATA["Сум./цен. стеклопосуды"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="535" y="0" width="50" height="18" backcolor="#FFFFFF"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="590" y="0" width="66" height="18" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -532,14 +411,144 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Сумма пост. с НДС, руб."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["НДС розничный, руб./%"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="326" y="0" width="66" height="18" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Сумма пост.,\n"+"% опт.нац.\n руб./%"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="458" y="0" width="66" height="18" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["НДС посуды, руб./%"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="210" y="0" width="20" height="18" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ед. изм."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="722" y="0" width="73" height="18" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Сумма розн. с НДС руб."]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="22">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" isPrintRepeatedValues="false" mode="Transparent" x="30" y="0" width="180" height="11" isRemoveLineWhenBlank="true" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="722" y="0" width="73" height="22" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_retailSumListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" x="524" y="0" width="66" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_markupSumListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="524" y="11" width="66" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_importerMarkupListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" x="458" y="0" width="66" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_wareVATSumListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" x="590" y="0" width="66" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_retailVATSumListRegisterDetail}]]></textFieldExpression>
+			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="480" y="11" width="55" height="11" backcolor="#FFFFFF"/>
+				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="458" y="11" width="66" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.5"/>
@@ -550,6 +559,97 @@
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_dataWareRangeListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="392" y="11" width="66" height="11"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_warePriceListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="210" y="0" width="20" height="22" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="22" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_indexListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" x="326" y="0" width="66" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_supplierSumListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="326" y="11" width="66" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_supplierMarkupListRegisterDetail}==0?"":$F{retail_supplierMarkupListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="66" height="22" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_importerPriceListRegisterDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="656" y="0" width="66" height="22" backcolor="#FFFFFF"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_retailPriceListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" positionType="Float" x="30" y="11" width="180" height="11" backcolor="#FFFFFF"/>
@@ -565,84 +665,6 @@
 				<textFieldExpression><![CDATA[$F{retail_barcodeExSkuListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="375" y="11" width="50" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_dataSupplierRangeListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailPriceListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="22" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_indexListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="425" y="11" width="55" height="11"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_warePriceListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="585" y="0" width="55" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_markupSumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" isPrintRepeatedValues="false" mode="Transparent" x="30" y="0" width="180" height="11" isRemoveLineWhenBlank="true" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -655,138 +677,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{retail_quantityListRegisterDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="480" y="0" width="55" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_wareVATSumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="315" y="11" width="60" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierMarkupListRegisterDetail}==0?"":$F{retail_supplierMarkupListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="640" y="0" width="50" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailVATSumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="210" y="0" width="20" height="22" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="585" y="11" width="55" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_importerMarkupListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="735" y="0" width="60" height="22" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailSumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="315" y="0" width="60" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierSumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="535" y="0" width="50" height="22" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_invoiceSumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="375" y="0" width="50" height="11" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierVATISumListRegisterDetail}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="55" height="22" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_importerPriceListRegisterDetail}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" x="425" y="0" width="55" height="11"/>
+				<reportElement style="GroupCellStyle0_1" x="392" y="0" width="66" height="11"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -799,7 +691,7 @@
 				<textFieldExpression><![CDATA[$F{retail_wareSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="640" y="11" width="50" height="11" backcolor="#FFFFFF"/>
+				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="590" y="11" width="66" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.5"/>
@@ -814,22 +706,9 @@
 		</band>
 	</detail>
 	<summary>
-		<band height="52">
-			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="130" y="29" width="115" height="13"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameCheckedManListRegister}]]></textFieldExpression>
-			</textField>
+		<band height="46">
 			<staticText>
-				<reportElement style="DefaultStyle" x="30" y="10" width="100" height="13"/>
+				<reportElement style="DefaultStyle" x="520" y="10" width="85" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -837,7 +716,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<text><![CDATA[Цены сформировал]]></text>
+				<text><![CDATA[Бухгалтер]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="DefaultStyle" x="30" y="29" width="100" height="13"/>
@@ -849,41 +728,6 @@
 				</box>
 				<textElement/>
 				<text><![CDATA[Реестр цен проверил]]></text>
-			</staticText>
-			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="605" y="10" width="130" height="13"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameAccountantManListRegister}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement style="DefaultStyle" x="520" y="29" width="85" height="13"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement/>
-				<text><![CDATA[Зав. магазином]]></text>
-			</staticText>
-			<staticText>
-				<reportElement style="DefaultStyle" x="520" y="10" width="85" height="13"/>
-				<box>
-					<topPen lineWidth="0.0"/>
-					<leftPen lineWidth="0.0"/>
-					<bottomPen lineWidth="0.0"/>
-					<rightPen lineWidth="0.0"/>
-				</box>
-				<textElement/>
-				<text><![CDATA[Бухгалтер]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="605" y="29" width="130" height="13"/>
@@ -899,7 +743,7 @@
 				<textFieldExpression><![CDATA[$F{retail_nameHeadManListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="130" y="10" width="115" height="13"/>
+				<reportElement style="DefaultStyle" x="605" y="10" width="130" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -909,7 +753,20 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameFormedManListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_nameAccountantManListRegister}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" x="130" y="29" width="115" height="13"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_nameCheckedManListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="380" y="10" width="126" height="13"/>
@@ -925,6 +782,28 @@
 				<textFieldExpression><![CDATA[$F{retail_nameLabeledManListRegister}]]></textFieldExpression>
 			</textField>
 			<staticText>
+				<reportElement style="DefaultStyle" x="30" y="10" width="100" height="13"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Цены сформировал]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="DefaultStyle" x="520" y="29" width="85" height="13"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Зав. магазином]]></text>
+			</staticText>
+			<staticText>
 				<reportElement style="DefaultStyle" x="260" y="10" width="120" height="13"/>
 				<box>
 					<topPen lineWidth="0.0"/>
@@ -936,6 +815,19 @@
 				<text><![CDATA[Товар промаркировал
 и выдал в продажу]]></text>
 			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" x="130" y="10" width="115" height="13"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{retail_nameFormedManListRegister}]]></textFieldExpression>
+			</textField>
 		</band>
 	</summary>
 </jasperReport>

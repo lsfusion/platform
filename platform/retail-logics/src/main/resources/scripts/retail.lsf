@@ -5762,8 +5762,11 @@ CLASS ABSTRACT consignment 'Накладная' : outAccountSumDocumentLedger; /
 CLASS ABSTRACT consignmentDetail 'Строка накладной' : outBalanceItemLedger; // todo : тоже самое
 
 //---------------------------- Реестр цен ----------------------------------------//
-CLASS ABSTRACT listRegister 'Реестр' ; // outAccountSumDocumentLedger
-CLASS ABSTRACT listRegisterDetail 'Строка реестра' ; // outBalanceItemLedger
+CLASS ABSTRACT inputListRegister 'Реестр (внутр.)' ;
+CLASS ABSTRACT inputListRegisterDetail 'Строка реестра (внутр.)' ;
+
+CLASS ABSTRACT listRegister 'Реестр' : inputListRegister; // outAccountSumDocumentLedger
+CLASS ABSTRACT listRegisterDetail 'Строка реестра' : inputListRegisterDetail; // outBalanceItemLedger
 
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
@@ -7327,8 +7330,8 @@ noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
 
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 
-CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument, listRegister;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, listRegisterDetail;
+CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceItemLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
 
@@ -9766,217 +9769,216 @@ seriesNumberShipment 'Серия/Номер' (shipment) = seriesNumberObject(shi
 
 //--------------------------------------Реестр цен-----------------------------------------//
 
-numberListRegister 'Номер' (listRegister) =  ABSTRACT STRING[18] (listRegister);
+numberListRegister 'Номер' (inputListRegister) =  ABSTRACT STRING[18] (inputListRegister);
 
-seriesListRegister 'Серия' (listRegister) = ABSTRACT STRING[2] (listRegister);
+seriesListRegister 'Серия' (inputListRegister) = ABSTRACT STRING[2] (inputListRegister);
 
-dateListRegister 'Дата' (listRegister) = ABSTRACT DATE (listRegister);
+dateListRegister 'Дата' (inputListRegister) = ABSTRACT DATE (inputListRegister);
 
-departmentStoreListRegister (listRegister) = ABSTRACT departmentStore (listRegister) IN idGroup;
-nameDepartmentStoreListRegister 'Отдел документа' (listRegister) = name(departmentStoreListRegister(listRegister));
+departmentStoreListRegister (inputListRegister) = ABSTRACT departmentStore (inputListRegister) IN idGroup;
+nameDepartmentStoreListRegister 'Отдел документа' (inputListRegister) = name(departmentStoreListRegister(inputListRegister));
 
-consigneeListRegister 'Грузополучатель' (listRegister) =
+consigneeListRegister 'Грузополучатель' (inputListRegister) =
     [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
-    nameCompanyDepartmentStore(departmentStoreListRegister(listRegister)),
-    name(storeDepartmentStore(departmentStoreListRegister(listRegister))),
-    nameDepartmentStoreListRegister(listRegister)) IN documentPrmGroup;
+    nameCompanyDepartmentStore(departmentStoreListRegister(inputListRegister)),
+    name(storeDepartmentStore(departmentStoreListRegister(inputListRegister))),
+    nameDepartmentStoreListRegister(inputListRegister)) IN documentPrmGroup;
 
-senderListRegister (listRegister) = ABSTRACT supplier(listRegister) IN idGroup;
+senderListRegister (inputListRegister) = ABSTRACT legalEntity (inputListRegister) IN idGroup;
 
-shipperListRegister 'Грузоотправитель' (listRegister) = ABSTRACT STRING[200] (listRegister);
+shipperListRegister 'Грузоотправитель' (inputListRegister) = ABSTRACT STRING[200] (inputListRegister);
 
-quantityListRegisterDetailListRegister 'Кол-во (всего)' (listRegister) = ABSTRACT NUMERIC[14,3] (listRegister);
+quantityListRegisterDetailListRegister 'Кол-во (всего)' (inputListRegister) = ABSTRACT NUMERIC[14,3] (inputListRegister);
 
-supplierSumListRegisterDetailListRegister 'Сумма поставщика без НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
+supplierSumListRegisterDetailListRegister 'Сумма поставщика без НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
+
+wareSumListRegisterDetailListRegister 'Сумма посуды с НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
+
+wareVATSumListRegisterDetailListRegister 'Сумма НДС по посуде' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
+
+markupSumListRegisterDetailListRegister 'Сумма надбавки' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
+
+retailVATSumListRegisterDetailListRegister 'Сумма НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
+
+retailSumListRegisterDetailListRegister 'Розничная сумма' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
+
+registerCommitteeListRegister  (inputListRegister) = ABSTRACT registerCommittee (inputListRegister) IN idGroup;
+nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = name(registerCommitteeListRegister(inputListRegister));
+nameFormedManListRegister 'Цены сформировал' (inputListRegister) = nameFormedManCommittee(registerCommitteeListRegister(inputListRegister));
+nameCheckedManListRegister 'Реестр проверил' (inputListRegister) = nameCheckedManCommittee(registerCommitteeListRegister(inputListRegister));
+nameLabeledManListRegister 'Товар промаркировал' (inputListRegister) = nameLabeledManCommittee(registerCommitteeListRegister(inputListRegister));
+nameAccountantManListRegister 'Бухгалтер' (inputListRegister) = nameAccountantManCommittee(registerCommitteeListRegister(inputListRegister));
+nameHeadManListRegister 'Зав. магазином' (inputListRegister) = nameHeadManCommittee(registerCommitteeListRegister(inputListRegister));
+
+
+listRegisterListRegisterDetail (inputListRegisterDetail) = ABSTRACT inputListRegister(inputListRegisterDetail) IN idGroup;
+
+indexListRegisterDetail 'Номер строки' (inputListRegisterDetail) = ABSTRACT INTEGER (inputListRegisterDetail);
+
+itemListRegisterDetail  (inputListRegisterDetail) = ABSTRACT item (inputListRegisterDetail) IN idGroup;
+nameAttributeItemListRegisterDetail 'Товар' (inputListRegisterDetail) = nameAttributeItem(itemListRegisterDetail(inputListRegisterDetail));
+barcodeExSkuListRegisterDetail 'Штрих-код' (inputListRegisterDetail) = barcodeBarcodeSku(itemListRegisterDetail(inputListRegisterDetail));
+shortNameUnitOfMeasureItemListRegisterDetail 'Ед. изм.' (inputListRegisterDetail) = shortNameUnitOfMeasureItem(itemListRegisterDetail(inputListRegisterDetail));
+
+quantityListRegisterDetail 'Кол-во' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,3] (inputListRegisterDetail);
+
+importerPriceListRegisterDetail 'Цена изготовителя/импортера' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+supplierSumListRegisterDetail 'Сумма поставщика без НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+supplierMarkupListRegisterDetail 'Оптовая надбавка/торговая скидка, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+
+wareSumListRegisterDetail 'Сумма посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+warePriceListRegisterDetail 'Цена посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+wareVATSumListRegisterDetail 'Сумма НДС по посуде' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+dataWareRangeListRegisterDetail 'НДС посуды, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+
+importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+
+markupSumListRegisterDetail 'Сумма надбавки' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+dataRetailRangeListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+
+retailVATSumListRegisterDetail 'Сумма НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+retailPriceListRegisterDetail 'Розничная цена' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+retailSumListRegisterDetail 'Розничная сумма' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
+
+//-------------------------------------------- listRegister-------------------------------------------//
 
 supplierVATISumListRegisterDetailListRegister 'Сумма НДС поставщика (без посуды)' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
-wareSumListRegisterDetailListRegister 'Сумма посуды с НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
-wareVATSumListRegisterDetailListRegister 'Сумма НДС по посуде' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
 invoiceSumListRegisterDetailListRegister 'Сумма поставщика с НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
 
-markupSumListRegisterDetailListRegister 'Сумма надбавки' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
-retailVATSumListRegisterDetailListRegister 'Сумма НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
-retailSumListRegisterDetailListRegister 'Розничная сумма' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
-registerCommitteeListRegister  (listRegister) = ABSTRACT registerCommittee (listRegister) IN idGroup;
-nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (listRegister) = name(registerCommitteeListRegister(listRegister));
-nameFormedManListRegister 'Цены сформировал' (listRegister) = nameFormedManCommittee(registerCommitteeListRegister(listRegister));
-nameCheckedManListRegister 'Реестр проверил' (listRegister) = nameCheckedManCommittee(registerCommitteeListRegister(listRegister));
-nameLabeledManListRegister 'Товар промаркировал' (listRegister) = nameLabeledManCommittee(registerCommitteeListRegister(listRegister));
-nameAccountantManListRegister 'Бухгалтер' (listRegister) = nameAccountantManCommittee(registerCommitteeListRegister(listRegister));
-nameHeadManListRegister 'Зав. магазином' (listRegister) = nameHeadManCommittee(registerCommitteeListRegister(listRegister));
-
-isShipmentListRegister (listRegister) = TRUE IF listRegister IS shipment;
-
-
-listRegisterListRegisterDetail (listRegisterDetail) = ABSTRACT listRegister(listRegisterDetail) IN idGroup;
-indexListRegisterDetail 'Номер строки' (listRegisterDetail) = ABSTRACT INTEGER (listRegisterDetail);
-
-itemListRegisterDetail  (listRegisterDetail) = ABSTRACT item (listRegisterDetail) IN idGroup;
-nameAttributeItemListRegisterDetail 'Товар' (listRegisterDetail) = nameAttributeItem(itemListRegisterDetail(listRegisterDetail));
-barcodeExSkuListRegisterDetail 'Штрих-код' (listRegisterDetail) = barcodeBarcodeSku(itemListRegisterDetail(listRegisterDetail));
-shortNameUnitOfMeasureItemListRegisterDetail 'Ед. изм.' (listRegisterDetail) = shortNameUnitOfMeasureItem(itemListRegisterDetail(listRegisterDetail));
-
-quantityListRegisterDetail 'Кол-во' (listRegisterDetail) = ABSTRACT NUMERIC[14,3] (listRegisterDetail);
-
-importerPriceListRegisterDetail 'Цена изготовителя/импортера' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-supplierSumListRegisterDetail 'Сумма поставщика без НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-supplierMarkupListRegisterDetail 'Оптовая надбавка/торговая скидка, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
+//-------------------------------------------- listRegisterDetail-------------------------------------------//
 
 supplierVATISumListRegisterDetail 'Сумма НДС поставщика (без посуды)' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
 
 dataSupplierRangeListRegisterDetail 'НДС поставщика, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
 
-wareSumListRegisterDetail 'Сумма посуды с НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-warePriceListRegisterDetail 'Цена посуды с НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-wareVATSumListRegisterDetail 'Сумма НДС по посуде' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-dataWareRangeListRegisterDetail 'НДС посуды, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
-
 invoiceSumListRegisterDetail 'Сумма поставщика с НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
-
-markupSumListRegisterDetail 'Сумма надбавки' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-dataRetailRangeListRegisterDetail 'НДС розничный, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
-
-retailVATSumListRegisterDetail 'Сумма НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-retailPriceListRegisterDetail 'Розничная цена' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-retailSumListRegisterDetail 'Розничная сумма' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
 
 //-------------------------------------------------------------------
 
-numberListRegister (listRegister) += numberShipment(listRegister);
-numberListRegister += numberInnerArrival(listRegister);
+numberListRegister (inputListRegister) += numberShipment(inputListRegister);
+numberListRegister += numberInnerArrival(inputListRegister);
 
-seriesListRegister (listRegister) += seriesShipment(listRegister);
-seriesListRegister (listRegister) += seriesInnerArrival(listRegister);
+seriesListRegister (inputListRegister) += seriesShipment(inputListRegister);
+seriesListRegister (inputListRegister) += seriesInnerArrival(inputListRegister);
 
-dateListRegister (listRegister) += dateShipment(listRegister);
-dateListRegister (listRegister) += dateInnerArrival(listRegister);
+dateListRegister (inputListRegister) += dateShipment(inputListRegister);
+dateListRegister (inputListRegister) += dateInnerArrival(inputListRegister);
 
-departmentStoreListRegister(listRegister) += departmentStoreShipment(listRegister);
-departmentStoreListRegister (listRegister) += departmentStoreInnerArrival(listRegister);
+departmentStoreListRegister(inputListRegister) += departmentStoreShipment(inputListRegister);
+departmentStoreListRegister (inputListRegister) += departmentStoreInnerArrival(inputListRegister);
 
-senderListRegister (listRegister) += supplierShipment(listRegister);
-senderListRegister (listRegister) += companyDepartmentStore(senderDepartmentInnerArrival(listRegister));
+senderListRegister (inputListRegister) += supplierShipment(inputListRegister);
+senderListRegister (inputListRegister) += companyDepartmentStore(senderDepartmentInnerArrival(inputListRegister));
 
-shipperListRegister (listRegister) += nameSupplierShipment(listRegister);
+shipperListRegister (inputListRegister) += nameSupplierShipment(inputListRegister);
+shipperListRegister (inputListRegister) +=   [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
+                                        nameCompanyDepartmentStore(senderDepartmentInnerArrival(inputListRegister)),
+                                        name(storeDepartmentStore(senderDepartmentInnerArrival(inputListRegister))),
+                                        name(senderDepartmentInnerArrival(inputListRegister)));
 
-shipperListRegister (listRegister) +=   [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
-                                        nameCompanyDepartmentStore(senderDepartmentInnerArrival(listRegister)),
-                                        name(storeDepartmentStore(senderDepartmentInnerArrival(listRegister))),
-                                        name(senderDepartmentInnerArrival(listRegister)));
+quantityListRegisterDetailListRegister (inputListRegister) += quantityShipmentDetailShipment(inputListRegister);
+quantityListRegisterDetailListRegister (inputListRegister) += quantityInnerArrivalDetailInnerArrival(inputListRegister);
 
-quantityListRegisterDetailListRegister (listRegister) += quantityShipmentDetailShipment(listRegister);
-quantityListRegisterDetailListRegister (listRegister) += quantityInnerArrivalDetailInnerArrival(listRegister);
-
-supplierSumListRegisterDetailListRegister (listRegister) += supplierSumShipmentDetailShipment(listRegister);
-supplierSumListRegisterDetailListRegister (listRegister) += supplierISumInnerArrivalDetailInnerArrival(listRegister) (+) wareSumInnerArrivalDetailInnerArrival(listRegister);
+supplierSumListRegisterDetailListRegister (inputListRegister) += supplierSumShipmentDetailShipment(inputListRegister);
+supplierSumListRegisterDetailListRegister (inputListRegister) += supplierISumInnerArrivalDetailInnerArrival(inputListRegister) (+) wareSumInnerArrivalDetailInnerArrival(inputListRegister);
 
 supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumShipmentDetailShipment(listRegister);
-//supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumInnerArrivalDetailInnerArrival(listRegister);
 
-wareSumListRegisterDetailListRegister (listRegister) += wareSumShipmentDetailShipment(listRegister);
-wareSumListRegisterDetailListRegister (listRegister) += wareSumInnerArrivalDetailInnerArrival(listRegister);
+wareSumListRegisterDetailListRegister (inputListRegister) += wareSumShipmentDetailShipment(inputListRegister);
+wareSumListRegisterDetailListRegister (inputListRegister) += wareSumInnerArrivalDetailInnerArrival(inputListRegister);
 
-wareVATSumListRegisterDetailListRegister (listRegister) += wareVATSumShipmentDetailShipment(listRegister);
-wareVATSumListRegisterDetailListRegister (listRegister) += wareVATSumInnerArrivalDetailInnerArrival(listRegister);
+wareVATSumListRegisterDetailListRegister (inputListRegister) += wareVATSumShipmentDetailShipment(inputListRegister);
+wareVATSumListRegisterDetailListRegister (inputListRegister) += wareVATSumInnerArrivalDetailInnerArrival(inputListRegister);
 
 invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumShipmentDetailShipment(listRegister);
-//invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumInnerArrivalDetailInnerArrival(listRegister);
 
-markupSumListRegisterDetailListRegister (listRegister) += markupSumShipmentDetailShipment(listRegister);
-markupSumListRegisterDetailListRegister (listRegister) += markupSumInnerArrivalDetailInnerArrival(listRegister);
+markupSumListRegisterDetailListRegister (inputListRegister) += markupSumShipmentDetailShipment(inputListRegister);
+markupSumListRegisterDetailListRegister (inputListRegister) += markupSumInnerArrivalDetailInnerArrival(inputListRegister);
 
-retailVATSumListRegisterDetailListRegister (listRegister) += retailVATSumShipmentDetailShipment(listRegister);
-retailVATSumListRegisterDetailListRegister (listRegister) += retailVATSumInnerArrivalDetailInnerArrival(listRegister);
+retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSumShipmentDetailShipment(inputListRegister);
+retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSumInnerArrivalDetailInnerArrival(inputListRegister);
 
-retailSumListRegisterDetailListRegister (listRegister) += retailSumShipmentDetailShipment(listRegister);
-retailSumListRegisterDetailListRegister (listRegister) += retailSumInnerArrivalDetailInnerArrival(listRegister);
+retailSumListRegisterDetailListRegister (inputListRegister) += retailSumShipmentDetailShipment(inputListRegister);
+retailSumListRegisterDetailListRegister (inputListRegister) += retailSumInnerArrivalDetailInnerArrival(inputListRegister);
 
-registerCommitteeListRegister(listRegister) += registerCommitteeShipment(listRegister);
-registerCommitteeListRegister(listRegister) += registerCommitteeInnerArrival(listRegister);
+registerCommitteeListRegister(inputListRegister) += registerCommitteeShipment(inputListRegister);
+registerCommitteeListRegister(inputListRegister) += registerCommitteeInnerArrival(inputListRegister);
 
                                       //------------- Detail ----------//
 
-listRegisterListRegisterDetail(listRegisterDetail) += shipmentShipmentDetail(listRegisterDetail);
-listRegisterListRegisterDetail(listRegisterDetail) += innerArrivalInnerArrivalDetail(listRegisterDetail);
+listRegisterListRegisterDetail(inputListRegisterDetail) += shipmentShipmentDetail(inputListRegisterDetail);
+listRegisterListRegisterDetail(inputListRegisterDetail) += innerArrivalInnerArrivalDetail(inputListRegisterDetail);
 
-indexListRegisterDetail (listRegisterDetail) += indexShipmentDetail(listRegisterDetail);
-indexListRegisterDetail (listRegisterDetail) += indexInnerArrivalDetail(listRegisterDetail);
+indexListRegisterDetail (inputListRegisterDetail) += indexShipmentDetail(inputListRegisterDetail);
+indexListRegisterDetail (inputListRegisterDetail) += indexInnerArrivalDetail(inputListRegisterDetail);
 
-itemListRegisterDetail  (listRegisterDetail) += itemShipmentDetail(listRegisterDetail);
-itemListRegisterDetail  (listRegisterDetail) += itemInnerArrivalDetail(listRegisterDetail);
+itemListRegisterDetail  (inputListRegisterDetail) += itemShipmentDetail(inputListRegisterDetail);
+itemListRegisterDetail  (inputListRegisterDetail) += itemInnerArrivalDetail(inputListRegisterDetail);
 
-quantityListRegisterDetail (listRegisterDetail) += quantityShipmentDetail(listRegisterDetail);
-quantityListRegisterDetail (listRegisterDetail) += quantityInnerArrivalDetail(listRegisterDetail);
+quantityListRegisterDetail (inputListRegisterDetail) += quantityShipmentDetail(inputListRegisterDetail);
+quantityListRegisterDetail (inputListRegisterDetail) += quantityInnerArrivalDetail(inputListRegisterDetail);
 
-importerPriceListRegisterDetail (listRegisterDetail) += importerPriceShipmentDetail(listRegisterDetail);
-importerPriceListRegisterDetail (listRegisterDetail) += importerPriceInnerArrivalDetail(listRegisterDetail);
+importerPriceListRegisterDetail (inputListRegisterDetail) += importerPriceShipmentDetail(inputListRegisterDetail);
+importerPriceListRegisterDetail (inputListRegisterDetail) += importerPriceInnerArrivalDetail(inputListRegisterDetail);
 
-supplierSumListRegisterDetail (listRegisterDetail) += supplierSumShipmentDetail(listRegisterDetail);
-supplierSumListRegisterDetail (listRegisterDetail) += supplierISumInnerArrivalDetail(listRegisterDetail) (+) wareSumInnerArrivalDetail(listRegisterDetail);
+supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumShipmentDetail(inputListRegisterDetail);
+supplierSumListRegisterDetail (inputListRegisterDetail) += supplierISumInnerArrivalDetail(inputListRegisterDetail) (+) wareSumInnerArrivalDetail(inputListRegisterDetail);
 
-supplierMarkupListRegisterDetail (listRegisterDetail) += supplierMarkupShipmentDetail(listRegisterDetail);
-supplierMarkupListRegisterDetail (listRegisterDetail) += supplierMarkupInnerArrivalDetail(listRegisterDetail);
+supplierMarkupListRegisterDetail (inputListRegisterDetail) += supplierMarkupShipmentDetail(inputListRegisterDetail);
+supplierMarkupListRegisterDetail (inputListRegisterDetail) += supplierMarkupInnerArrivalDetail(inputListRegisterDetail);
 
 supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumShipmentDetail(listRegisterDetail);
-//supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumInnerArrivalDetail(listRegisterDetail);
 
 dataSupplierRangeListRegisterDetail (listRegisterDetail) += dataSupplierRangeShipmentDetail(listRegisterDetail);
-//dataSupplierRangeListRegisterDetail (listRegisterDetail) += dataSupplierRangeInnerArrivalDetail(listRegisterDetail);
 
-wareSumListRegisterDetail (listRegisterDetail) += wareSumShipmentDetail(listRegisterDetail);
-wareSumListRegisterDetail (listRegisterDetail) += wareSumInnerArrivalDetail(listRegisterDetail);
+wareSumListRegisterDetail (inputListRegisterDetail) += wareSumShipmentDetail(inputListRegisterDetail);
+wareSumListRegisterDetail (inputListRegisterDetail) += wareSumInnerArrivalDetail(inputListRegisterDetail);
 
-warePriceListRegisterDetail (listRegisterDetail) += warePriceShipmentDetail(listRegisterDetail);
-warePriceListRegisterDetail (listRegisterDetail) += warePriceInnerArrivalDetail(listRegisterDetail);
+warePriceListRegisterDetail (inputListRegisterDetail) += warePriceShipmentDetail(inputListRegisterDetail);
+warePriceListRegisterDetail (inputListRegisterDetail) += warePriceInnerArrivalDetail(inputListRegisterDetail);
 
-wareVATSumListRegisterDetail (listRegisterDetail) += wareVATSumShipmentDetail(listRegisterDetail);
-wareVATSumListRegisterDetail (listRegisterDetail) += wareVATSumInnerArrivalDetail(listRegisterDetail);
+wareVATSumListRegisterDetail (inputListRegisterDetail) += wareVATSumShipmentDetail(inputListRegisterDetail);
+wareVATSumListRegisterDetail (inputListRegisterDetail) += wareVATSumInnerArrivalDetail(inputListRegisterDetail);
 
-dataWareRangeListRegisterDetail (listRegisterDetail) += dataWareRangeShipmentDetail(listRegisterDetail);
-dataWareRangeListRegisterDetail (listRegisterDetail) += dataWareRangeInnerArrivalDetail(listRegisterDetail);
+dataWareRangeListRegisterDetail (inputListRegisterDetail) += dataWareRangeShipmentDetail(inputListRegisterDetail);
+dataWareRangeListRegisterDetail (inputListRegisterDetail) += dataWareRangeInnerArrivalDetail(inputListRegisterDetail);
 
 invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumShipmentDetail(listRegisterDetail);
-//invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumInnerArrivalDetail(listRegisterDetail);
 
-importerMarkupListRegisterDetail (listRegisterDetail) += importerMarkupShipmentDetail(listRegisterDetail);
-importerMarkupListRegisterDetail (listRegisterDetail) += importerMarkupInnerArrivalDetail(listRegisterDetail);
+importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkupShipmentDetail(inputListRegisterDetail);
+importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkupInnerArrivalDetail(inputListRegisterDetail);
 
-markupSumListRegisterDetail (listRegisterDetail) += markupSumShipmentDetail(listRegisterDetail);
-markupSumListRegisterDetail (listRegisterDetail) += markupSumInnerArrivalDetail(listRegisterDetail);
+markupSumListRegisterDetail (inputListRegisterDetail) += markupSumShipmentDetail(inputListRegisterDetail);
+markupSumListRegisterDetail (inputListRegisterDetail) += markupSumInnerArrivalDetail(inputListRegisterDetail);
 
-dataRetailRangeListRegisterDetail (listRegisterDetail) += dataRetailRangeShipmentDetail(listRegisterDetail);
-dataRetailRangeListRegisterDetail (listRegisterDetail) += dataRetailRangeInnerArrivalDetail(listRegisterDetail);
+dataRetailRangeListRegisterDetail (inputListRegisterDetail) += dataRetailRangeShipmentDetail(inputListRegisterDetail);
+dataRetailRangeListRegisterDetail (inputListRegisterDetail) += dataRetailRangeInnerArrivalDetail(inputListRegisterDetail);
 
-retailVATSumListRegisterDetail (listRegisterDetail) += retailVATSumShipmentDetail(listRegisterDetail);
-retailVATSumListRegisterDetail (listRegisterDetail) += retailVATSumInnerArrivalDetail(listRegisterDetail);
+retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSumShipmentDetail(inputListRegisterDetail);
+retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSumInnerArrivalDetail(inputListRegisterDetail);
 
-retailPriceListRegisterDetail (listRegisterDetail) += retailPriceShipmentDetail(listRegisterDetail);
-retailPriceListRegisterDetail (listRegisterDetail) += retailPriceInnerArrivalDetail(listRegisterDetail);
+retailPriceListRegisterDetail (inputListRegisterDetail) += retailPriceShipmentDetail(inputListRegisterDetail);
+retailPriceListRegisterDetail (inputListRegisterDetail) += retailPriceInnerArrivalDetail(inputListRegisterDetail);
 
-retailSumListRegisterDetail (listRegisterDetail) += retailSumShipmentDetail(listRegisterDetail);
-retailSumListRegisterDetail (listRegisterDetail) += retailSumInnerArrivalDetail(listRegisterDetail);
+retailSumListRegisterDetail (inputListRegisterDetail) += retailSumShipmentDetail(inputListRegisterDetail);
+retailSumListRegisterDetail (inputListRegisterDetail) += retailSumInnerArrivalDetail(inputListRegisterDetail);
 
-FORM listRegister 'Реестр цен' PRINT
+
+//-------------------------------------------------------------------------------------------------------
+
+FORM listRegister 'Реестр цен (поставка)' PRINT
     OBJECTS l=listRegister FIXED PANEL
     PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
                     numberContractShipment, dateContractShipment,
-                    shipperListRegister, consigneeListRegister, isShipmentListRegister,
+                    shipperListRegister, consigneeListRegister, //isShipmentListRegister,
                     quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, supplierVATISumListRegisterDetailListRegister,
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister, invoiceSumListRegisterDetailListRegister, markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
@@ -9995,25 +9997,29 @@ FORM listRegister 'Реестр цен' PRINT
 
 toPrintListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup CONFIRM;
 
-//FORM pricesRegister 'Реестр цен' PRINT
-//    OBJECTS s=shipment FIXED PANEL
-//    PROPERTIES (s)  SELECTOR numberObject, objectClassName, dateShipment, nameDepartmentStoreShipment,
-//                    numberContractShipment, dateContractShipment,  nameSupplierShipment, consigneeShipment,
-//                    quantityShipmentDetailShipment, supplierSumShipmentDetailShipment, supplierVATISumShipmentDetailShipment,
-//                    wareSumShipmentDetailShipment, wareVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, markupSumShipmentDetailShipment,
-//                    retailVATSumShipmentDetailShipment, retailSumShipmentDetailShipment, nameRegisterCommitteeShipment,
-//                    nameFormedManShipment, nameCheckedManShipment, nameLabeledManShipment, nameAccountantManShipment,
-//                    nameHeadManShipment
-//
-//    OBJECTS d=shipmentDetail
-//    PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, shortNameUnitOfMeasureItemShipmentDetail, quantityShipmentDetail,
-//                    importerPriceShipmentDetail, supplierSumShipmentDetail, supplierMarkupShipmentDetail, supplierVATISumShipmentDetail, dataSupplierRangeShipmentDetail,
-//                    wareSumShipmentDetail, warePriceShipmentDetail, wareVATSumShipmentDetail, dataWareRangeShipmentDetail,
-//                    invoiceSumShipmentDetail, importerMarkupShipmentDetail, markupSumShipmentDetail, dataRetailRangeShipmentDetail,
-//                    retailVATSumShipmentDetail, retailPriceShipmentDetail, retailSumShipmentDetail
-//
-//    FILTERS inShipmentShipmentDetail(s, d)
-//;
+FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
+    OBJECTS l=inputListRegister FIXED PANEL
+    PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+                    numberContractShipment, dateContractShipment,
+                    shipperListRegister, consigneeListRegister,//isShipmentListRegister,
+                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, //supplierVATISumListRegisterDetailListRegister,
+                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,   //invoiceSumListRegisterDetailListRegister
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
+                    nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
+                    nameHeadManListRegister
+
+    OBJECTS d=inputListRegisterDetail
+    PROPERTIES (d)  indexListRegisterDetail, barcodeExSkuListRegisterDetail, nameAttributeItemListRegisterDetail, shortNameUnitOfMeasureItemListRegisterDetail, quantityListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,//supplierVATISumListRegisterDetail, dataSupplierRangeListRegisterDetail, invoiceSumListRegisterDetail
+                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, dataWareRangeListRegisterDetail,
+                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, dataRetailRangeListRegisterDetail,
+                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
+
+    FILTERS listRegisterListRegisterDetail(d) == l
+;
+
+toPrintInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup CONFIRM;
+
 
 // --------------------------- Формы списания ---------------------------------
 companyWriteOff (writeOff) = companyDepartmentStore(departmentStoreWriteOff(writeOff));
@@ -10309,7 +10315,6 @@ DESIGN disparities FROM DEFAULT {
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
-//toPrintPricesRegister 'Реестр цен' (shipment) = ACTION FORM pricesRegister OBJECTS s IMAGE 'print.png' IN printGroup CONFIRM;
 toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
@@ -11880,7 +11885,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
                             createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             toPrintActOfRevaluationInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
-                            toPrintListRegister FORCE PANEL,
+                            toPrintInputListRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                             postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
@@ -13559,6 +13564,7 @@ NAVIGATOR {
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD listRegister;
+        ADD inputListRegister;
         ADD actOfRevaluation;
         ADD transportConsignmentVerticalA;
         ADD transportConsignmentHorizontalA;
