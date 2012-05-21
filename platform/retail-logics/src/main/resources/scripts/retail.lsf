@@ -3984,6 +3984,20 @@ grossWeightConsignmentDetailConsignment 'Общая масса груза, т.' 
 
 sumKgGrossWeightConsignment(consignment) = grossWeightConsignmentDetailConsignment(consignment)*1000;
 
+// Посуда на возврате
+isWareConsignment 'Возврат поставщику' (consignment) = ABSTRACT BOOLEAN (consignment);
+wareSumConsignmentDetailConsignment 'Сумма посуды с НДС' (consignment) = ABSTRACT NUMERIC[14,2] (consignment);
+supplierSumConsignmentDetailConsignment 'Сумма поставщика без НДС' (consignment) = ABSTRACT NUMERIC[14,2] (consignment);
+
+wareConsignmentDetail (consignmentDetail) = ABSTRACT ware (consignmentDetail);
+nameWareConsignmentDetail 'Посуда' (consignmentDetail) = name(wareConsignmentDetail(consignmentDetail));
+warePriceConsignmentDetail 'Цена посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
+wareSumConsignmentDetail 'Сумма посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
+dataWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (consignmentDetail);
+wareVATSumConsignmentDetail 'Сумма НДС по посуде' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
+wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
+wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
+
 
 // ----------------------------------- Договор ------------------------------------------ //
 
@@ -7754,11 +7768,23 @@ batchOutUserBalanceItemLedger (ledger) += batchReturnSupplierDetail(ledger);
 @implementConsignmentHeader(returnSupplier);
 @implementConsignmentDetail(returnSupplier);
 recipientConsignment (consignment) += supplierReturnSupplier(consignment);
+isWareConsignment (consignment) += consignment IS returnSupplier;
+wareSumConsignmentDetailConsignment  (consignment) += wareSumReturnSupplierDetailReturnSupplier (consignment);
+supplierSumConsignmentDetailConsignment (consignment) += supplierSumReturnSupplierDetailReturnSupplier (consignment);
+
 priceConsignmentDetail (consignmentDetail) += supplierPriceReturnSupplierDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += supplierSumReturnSupplierDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += dataSupplierRangeReturnSupplierDetail (consignmentDetail);
 sumVATConsignmentDetail (consignmentDetail) += supplierVATISumReturnSupplierDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += invoiceISumReturnSupplierDetail (consignmentDetail);
+
+wareConsignmentDetail (consignmentDetail) += wareReturnSupplierDetail(consignmentDetail);
+warePriceConsignmentDetail (consignmentDetail) += warePriceReturnSupplierDetail(consignmentDetail);
+wareSumConsignmentDetail  (consignmentDetail) += wareSumReturnSupplierDetail(consignmentDetail);
+dataWareRangeConsignmentDetail (consignmentDetail) += dataWareRangeReturnSupplierDetail(consignmentDetail);
+wareVATSumConsignmentDetail (consignmentDetail) += wareVATSumReturnSupplierDetail(consignmentDetail);
+wareSupplierPriceConsignmentDetail (consignmentDetail) += wareSupplierPriceReturnSupplierDetail(consignmentDetail);
+wareSupplierSumConsignmentDetail (consignmentDetail) += wareSupplierSumReturnSupplierDetail(consignmentDetail);
 
 // ---------------------------------- Переоценка на возврате ------------------------------------------
 
@@ -9868,7 +9894,7 @@ END
 
 // ---------------------------- Формы для накладных --------------------------------- //
 
-isReturnSupplierConsignment (consignment) = consignment IS returnSupplier;
+//isReturnSupplierConsignment (consignment) = consignment IS returnSupplier;
 
 META metaCodeConsignmentTwo(prop, caption)
 
@@ -9880,15 +9906,15 @@ META metaCodeConsignmentTwo(prop, caption)
                        quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
                        fullNameRecipientConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
-                       isReturnSupplierConsignment
+                       isWareConsignment
 
         OBJECTS d=consignmentDetail
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      noteInnerFlowDetail, nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, wareSumReturnSupplierDetail,
-                      dataWareRangeReturnSupplierDetail, wareVATSumReturnSupplierDetail, wareSupplierPriceReturnSupplierDetail,
-                      wareSupplierSumReturnSupplierDetail
+                      noteInnerFlowDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
+                      dataWareRangeConsignmentDetail, wareVATSumConsignmentDetail, wareSupplierPriceConsignmentDetail,
+                      wareSupplierSumConsignmentDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
@@ -9914,17 +9940,17 @@ META metaCodeTransportConsignment(prop, caption)
                        quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment, sumKgGrossWeightConsignment,
                        sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment, UNPSenderConsignment,
                        addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       countConsignmentDetailConsignment, wareSumReturnSupplierDetailReturnSupplier, supplierSumReturnSupplierDetailReturnSupplier,
-                       seriesObject, numberObject, isReturnSupplierConsignment
+                       countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
+                       seriesObject, numberObject, isWareConsignment
 
         OBJECTS d=consignmentDetail
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
                       packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
-                      nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, dataWareRangeReturnSupplierDetail,
-                      wareSupplierPriceReturnSupplierDetail, wareSumReturnSupplierDetail, wareSupplierSumReturnSupplierDetail,
-                      wareVATSumReturnSupplierDetail, wareSumReturnSupplierDetail
+                      nameWareConsignmentDetail, warePriceConsignmentDetail, dataWareRangeConsignmentDetail,
+                      wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
+                      wareVATSumConsignmentDetail, wareSumConsignmentDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
