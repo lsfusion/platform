@@ -4047,13 +4047,13 @@ META defineConsignmentHeader (object)
     driverCar###object 'Водитель' (object) = DATA STRING[40] (object) IN carConsignmentGroup;
     waybill###object 'Путевой лист' (object) = DATA STRING[20] (object) IN carConsignmentGroup;
 
-    transportPayer###object 'Заказчик перевозки (ИД)' (object) = DATA legalEntity (object);
+    transportPayer###object 'Заказчик перевозки (ИД)' (object) = DATA legalEntity (object) IN carConsignmentGroup;
 
     dataLoadingPlace###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
 
     dataUnloadingPlace###object 'Пункт разгрузки' (object) = DATA STRING[50] (object);
 
-    readdressing###object 'Переадресовка' (object) = DATA STRING[50] (object);
+    readdressing###object 'Переадресовка' (object) = DATA STRING[50] (object) IN carConsignmentGroup;
 
     shipmentBase###object 'Основание отпуска' (object) = DATA STRING[30] (object) IN issuanceConsignmentGroup;
 
@@ -4063,7 +4063,7 @@ META defineConsignmentHeader (object)
 
     forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = DATA STRING[40] (object) IN issuanceConsignmentGroup;
 
-    warrant###object 'По доверенности (номер, дата)' (object) = DATA STRING[30] (object);
+    warrant###object 'По доверенности (номер, дата)' (object) = DATA STRING[30] (object) IN issuanceConsignmentGroup;
     warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = DATA STRING[100] (object) IN issuanceConsignmentGroup;
 
     goodsAccepted###object 'Принял грузополучатель' (object) = DATA STRING[40] (object) IN issuanceConsignmentGroup;
@@ -4072,7 +4072,7 @@ META defineConsignmentHeader (object)
 
     wayOfLoading###object (object) = DATA wayOfLoading(object);
 
-    codeLoading###object 'Код ПРР' (object) = DATA STRING[3] (object);
+    codeLoading###object 'Код ПРР' (object) = DATA STRING[3] (object) IN loadingConsignmentGroup;
 
     arrivalTime###object 'Время прибытия' (object) = DATA DATETIME(object) IN carConsignmentGroup;
     departureTime###object 'Время убытия' (object) = DATA DATETIME(object) IN carConsignmentGroup;
@@ -4152,11 +4152,11 @@ transportPayerConsignment 'Заказчик перевозки (ИД)' (consignm
 
 dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (consignment);
 loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreConsignment(consignment))),
-                                                                 dataLoadingPlaceConsignment (consignment);
+                                                                 dataLoadingPlaceConsignment (consignment) IN carConsignmentGroup;
 
-dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (consignment);
+dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (consignment)IN carConsignmentGroup;
 
-readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (consignment);
+readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
 
 shipmentBaseConsignment 'Основание отпуска' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
 
@@ -4168,7 +4168,7 @@ commonNameIssuanceExecutedConsignment 'Отпуск произвел' (consignme
 
 forwarderConsignment 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
 
-warrantConsignment 'По доверенности (номер, дата)' (consignment) = ABSTRACT STRING[30] (consignment);
+warrantConsignment 'По доверенности (номер, дата)' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
 warrantHolderConsignment 'По доверенности выданной (наименование орг-ии)' (consignment) = ABSTRACT STRING[100] (consignment) IN issuanceConsignmentGroup;
 
 goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
@@ -4179,7 +4179,7 @@ commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignmen
 wayOfLoadingConsignment (consignment) = ABSTRACT wayOfLoading(consignment);
 nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment)) IN loadingConsignmentGroup;
 
-codeLoadingConsignment 'Код ПРР' (consignment) = ABSTRACT STRING[3] (consignment);
+codeLoadingConsignment 'Код ПРР' (consignment) = ABSTRACT STRING[3] (consignment)IN loadingConsignmentGroup;
 
 arrivalTimeConsignment 'Время прибытия' (consignment) = ABSTRACT DATETIME(consignment) IN carConsignmentGroup;
 departureTimeConsignment 'Время убытия' (consignment) = ABSTRACT DATETIME(consignment) IN carConsignmentGroup;
@@ -4193,7 +4193,7 @@ addressRecipientConsignment 'Юридический адрес получате�
 fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment));
 
 unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressRecipientConsignment(consignment),
-                                                                           dataUnloadingPlaceConsignment (consignment);
+                                                                           dataUnloadingPlaceConsignment (consignment) IN carConsignmentGroup;
 
 senderConsignment 'Отправитель ИД' (consignment) = companyDepartmentStore(departmentStoreConsignment(consignment));
 UNPSenderConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(senderConsignment(consignment));
@@ -10773,19 +10773,36 @@ DESIGN returnSupplier FROM DEFAULT {
                 };
             };
         };
+
         NEW consignment{
             title = 'Накладная';
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHT;
+
             ADD r.carConsignmentGroup;
-            ADD r.issuanceConsignmentGroup;
-            ADD r.loadingConsignmentGroup;
-            ADD r.sumConsignmentGroup{
-                childConstraints = TO THE RIGHT;
-            };
-            POSITION r.issuanceConsignmentGroup TO THE RIGHT r.carConsignmentGroup;
-            POSITION r.loadingConsignmentGroup TO THE RIGHT r.carConsignmentGroup;
-            POSITION r.sumConsignmentGroup TO THE RIGHT r.carConsignmentGroup;
-        };
+
+            NEW wor1 {
+                childConstraints = TO THE BOTTOM;
+                ADD r.issuanceConsignmentGroup;
+                ADD r.loadingConsignmentGroup;
+                ADD r.sumConsignmentGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW wor21 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(quantityConsignmentDetailConsignment);
+                        ADD PROPERTY(packQuantityConsignmentDetailConsignment);
+                        ADD PROPERTY(grossWeightConsignmentDetailConsignment);
+                    }
+                    NEW wor22 {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(sumConsignmentDetailConsignment);
+                        ADD PROPERTY(sumVATConsignmentDetailConsignment);
+                        ADD PROPERTY(sumInvoiceConsignmentDetailConsignment);
+                    }
+                }
+            }
+
+        }
+
     };
 
     NEW header.box BEFORE specification.box {
@@ -10806,11 +10823,25 @@ DESIGN returnSupplier FROM DEFAULT {
 
             ADD r.documentPrmGroup {
                 childConstraints = TO THE BOTTOM;
+                NEW row11 {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameSupplierReturnSupplier);
+                    ADD PROPERTY(UNPSupplierReturnSupplier);
+                    ADD PROPERTY(numberContractReturnSupplier);
+                }
+                NEW row22 {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(noteReturnSupplier);
+                    ADD PROPERTY(carryingChargesReturnSupplier);
+                    ADD PROPERTY(returnLossSupplierReturnSupplier);
+                }
+
             };
         }
 
         ADD r.documentSumGroup{
             childConstraints = TO THE BOTTOM;
+
         };
     };
 
@@ -11792,20 +11823,38 @@ DESIGN innerFlow FROM DEFAULT{
             NEW consignment{
                 title = 'Накладная';
                 childConstraints = TO THE BOTTOM;
-                ADD f.carConsignmentGroup;
-                ADD f.issuanceConsignmentGroup;
-                ADD f.loadingConsignmentGroup;
-                ADD f.sumConsignmentGroup{
+
                     childConstraints = TO THE RIGHT;
+
+                ADD f.carConsignmentGroup{
                 };
-                POSITION f.issuanceConsignmentGroup TO THE RIGHT f.carConsignmentGroup;
-                POSITION f.loadingConsignmentGroup TO THE RIGHT f.carConsignmentGroup;
-                POSITION f.sumConsignmentGroup TO THE RIGHT f.carConsignmentGroup;
+                NEW caseTwo {
+                    childConstraints = TO THE BOTTOM;
+                    ADD f.issuanceConsignmentGroup {
+                    };
+                    ADD f.loadingConsignmentGroup{
+                    };
+
+                    ADD f.sumConsignmentGroup{
+                        childConstraints = TO THE BOTTOM;
+                        NEW oneCase {
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY (quantityConsignmentDetailConsignment);
+                            ADD PROPERTY (packQuantityConsignmentDetailConsignment);
+                            ADD PROPERTY (grossWeightConsignmentDetailConsignment);
+                        }
+                        NEW twoCase {
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY (sumConsignmentDetailConsignment);
+                            ADD PROPERTY (sumVATConsignmentDetailConsignment);
+                            ADD PROPERTY (sumInvoiceConsignmentDetailConsignment);
+                        }
+                    };
+                }
             };
         };
 
         NEW header.box BEFORE specification.box {
-
             childConstraints = TO THE RIGHT;
 
             NEW headerRow1 {
@@ -12342,16 +12391,30 @@ DESIGN statement FROM DEFAULT {
             }
             NEW consignment{
                 title = 'Накладная';
-                childConstraints = TO THE BOTTOM;
+                childConstraints = TO THE RIGHT;
+
                 ADD st.carConsignmentGroup;
-                ADD st.issuanceConsignmentGroup;
-                ADD st.loadingConsignmentGroup;
-                ADD st.sumConsignmentGroup {
-                    childConstraints = TO THE RIGHT;
+
+                NEW wor1 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD st.issuanceConsignmentGroup;
+                    ADD st.loadingConsignmentGroup;
+                    ADD st.sumConsignmentGroup {
+                        childConstraints = TO THE BOTTOM;
+                        NEW wor21 {
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY(quantityConsignmentDetailConsignment);
+                            ADD PROPERTY(packQuantityConsignmentDetailConsignment);
+                            ADD PROPERTY(grossWeightConsignmentDetailConsignment);
+                        }
+                        NEW wor22 {
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY(sumConsignmentDetailConsignment);
+                            ADD PROPERTY(sumVATConsignmentDetailConsignment);
+                            ADD PROPERTY(sumInvoiceConsignmentDetailConsignment);
+                        }
+                    }
                 }
-                POSITION st.issuanceConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
-                POSITION st.loadingConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
-                POSITION st.sumConsignmentGroup TO THE RIGHT st.carConsignmentGroup;
             }
         }
 
