@@ -15,6 +15,7 @@
         <module>client</module>
         <module>fullclient</module>
         <module>server</module>
+        <module>fdk</module>
         <module>tmc</module>
         <module>skolkovo-api</module>
         <module>skolkovo-logics</module>

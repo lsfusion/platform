@@ -8,9 +8,6 @@ IMPORT Stock;
 IMPORT Numerator;
 IMPORT Document;
 
-round0 (number) = round(number, 0);
-roundMinus1 (number) = round(number, -1);
-
 maxDateTime 'Максимальная дата' = DATA DATETIME();
 
 META metaCodePriceBaseDiscount(document, caption)
@@ -777,7 +774,7 @@ priceInRateBBasePriceChangeDocumentArticle 'Цена поставщика (ру�
 
 percentDiscountPriceChangeDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
 
-priceDiscountPriceChangeDocumentArticle 'Цена без процентов' (discountPriceChangeDocument, article) = [roundMinus1(X*(100-Y)/100)]
+priceDiscountPriceChangeDocumentArticle 'Цена без процентов' (discountPriceChangeDocument, article) = [roundM1(X*(100-Y)/100)]
                                                                                                         (priceBBasePriceChangeDocumentArticle(discountPriceChangeDocument, article),
                                                                                                          percentDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article)) IN baseGroup;
 

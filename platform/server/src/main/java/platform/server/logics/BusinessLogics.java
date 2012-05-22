@@ -700,8 +700,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // по умолчанию с полным стартом
 
-    protected void addLogicsModule(LogicsModule module) {
+    protected <T extends LogicsModule> T addLogicsModule(T module) {
         logicModules.add(module);
+        return module;
     }
 
     protected void createModules() throws IOException {

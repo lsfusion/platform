@@ -312,6 +312,11 @@
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
+                <artifactId>fdk</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
                 <artifactId>tmc</artifactId>
                 <version>${project.version}</version>
             </dependency>

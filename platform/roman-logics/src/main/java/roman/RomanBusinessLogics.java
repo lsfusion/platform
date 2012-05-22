@@ -36,18 +36,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        Utils = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this);
-        addLogicsModule(Utils);
-        Numerator = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this);
-        addLogicsModule(Numerator);
-        Stock = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this);
-        addLogicsModule(Stock);
-        Document = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this);
-        addLogicsModule(Document);
-        RomanLM = new RomanLogicsModule(LM, this);
-        addLogicsModule(RomanLM);
-        RomanRB = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this);
-        addLogicsModule(RomanRB);
+        Utils = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this));
+        Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
+        Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
+        Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
+        RomanLM = addLogicsModule(new RomanLogicsModule(LM, this));
+        RomanRB = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this));
     }
 
     @Override

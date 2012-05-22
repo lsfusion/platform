@@ -170,6 +170,19 @@ META defineDocumentDetailQuantity (object)
     @defineDocumentDetailQuantityPrefix(object, , );
 END
 
+META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
+    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+META defineDocumentHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderQuantity (object)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
+END
+
 META defineDocumentBase (object)
     @defineDocumentTables(object);
 

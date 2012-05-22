@@ -2,6 +2,33 @@ MODULE Utils;
 
 IMPORT BaseLogicsModule;
 
+ceil = FORMULA DOUBLE 'ceil($1)';
+
+castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
+castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))';
+isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
+
+roundM1 (number) = round(number, -1);
+round0 (number) = round(number, 0);
+round1 (number) = round(number, 1);
+round2 (number) = round(number, 2);
+round3 (number) = round(number, 3);
+
+CLASS doubleNamed 'Объект с кратким наименованием' : named;
+
+shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) IN baseGroup;
+
+CLASS STATIC yesNo 'Логическое' {
+    yes 'ДА',
+    no 'НЕТ'
+};
+
+classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS yesNo;
+
+CLASS language 'Язык' : doubleNamed;
+
+stringEqualsAll(string) = string == 'Все';
+
 FORM dialogDate 'Выбор даты'
     OBJECTS d = DATE FIXED PANEL
     PROPERTIES(d) objValue = OBJVALUE
