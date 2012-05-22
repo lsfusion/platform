@@ -8200,8 +8200,9 @@ quantityOutAutoBalanceSkuLedger (ledger) += quantityDisparityDetail(ledger);
 @defineDocumentDetailBasePricePrefix(disparity, input, ' (приход)');
 @derivePrevBasePriceLedgerOnItemChangePrefix(disparity, input, input);
 
-@defineDocumentDetailRetailSumPrefix(disparity, input, ' (приход)');
-
+//@defineDocumentDetailRetailSumPrefix(disparity, input, ' (приход)');
+inputRetailSumDisparityDetail 'Розничная сумма (приход)'(disparityDetail) = round0(inputQuantityDisparityDetail(disparityDetail) * inputRetailPriceDisparityDetail(disparityDetail));
+//inputQuantityDisparityDetailDisparity 'Кол-во (всего) (приход)' (disparityDetail) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup PERSISTENT;
 @defineDocumentHeaderQuantityPrefix(disparity, input, ' (приход)');
 @defineDocumentHeaderRetailSumPrefix(disparity, input, ' (приход)');
 
@@ -8209,6 +8210,11 @@ quantityOutAutoBalanceSkuLedger (ledger) += quantityDisparityDetail(ledger);
 
 @defineDocumentDetailBasePricePrefix(disparity, inputCur, ' (тек.)');
 @derivePrevBasePriceLedgerOnItemChangePrefix(disparity, inputCur, input);
+
+balanceBeforeDisparityDetail 'Остаток до пересорта (расход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN baseGroup;
+balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuLedgerDateTime (
+                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
+                WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
 //----------------------------  Изменение остатка пересорт --------------------------------------------//
 
@@ -8242,8 +8248,8 @@ descriptionDisparity 'Название документа' (disparity) =
 
 // ---------------------------------- Дооценка остатка при пересорте ------------------------------------------
 
-balanceBeforeDisparityDetail 'Остаток до пересорта' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN baseGroup;
-balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuLedgerDateTime (
+inputBalanceBeforeDisparityDetail 'Остаток до пересорта (приход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN priceDetailGroup;
+inputBalanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuLedgerDateTime (
                 inputItemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(inputItemDisparityDetail(disparityDetail));
 
@@ -8251,7 +8257,7 @@ CLASS priceChangeInputDisparity 'Переоценка остатка при пе
 CLASS priceChangeInputDisparityDetail 'Строка переоценки остатка при пересортице' : priceChangeDocumentDetail;
 
 needToPriceChangeInputDisparityDetail (disparityDetail) = inputCurRetailPriceDisparityDetail(disparityDetail) != inputRetailPriceDisparityDetail(disparityDetail) AND
-                                                   balanceBeforeDisparityDetail(disparityDetail) !=0;
+                                                   inputBalanceBeforeDisparityDetail(disparityDetail) !=0;
 
 needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
 
@@ -8261,7 +8267,7 @@ needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeIn
 
 @defineDocumentDetailAggregationHeader(disparity, priceChangeInputDisparity);
 @defineDocumentDetailAggregationItemPrefix(disparity, priceChangeInputDisparity, input);
-quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = balanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
+quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = inputBalanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
 @defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, input, , );
 @defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, inputCur, cur, ' (тек.)');
@@ -10263,9 +10269,12 @@ FORM disparity 'Пересортица'
 
     PROPERTIES      addDisparityDetailBarcode(dis) TODRAW d
 
-    PROPERTIES (d)  FORCE PANEL inputImporterPriceDisparityDetail, inputSupplierPriceDisparityDetail, inputNameWareDisparityDetail,
-                                inputWarePriceDisparityDetail, inputDataRetailRangeDisparityDetail, inputCurRetailPriceDisparityDetail,
-                                balanceBeforeDisparityDetail
+    PROPERTIES (d)  FORCE PANEL importerPriceDisparityDetail, supplierPriceDisparityDetail, nameWareDisparityDetail,
+                                warePriceDisparityDetail, dataRetailRangeDisparityDetail, balanceBeforeDisparityDetail,
+                                inputCurImporterPriceDisparityDetail, inputCurSupplierPriceDisparityDetail, inputCurNameWareDisparityDetail,
+                                inputCurWarePriceDisparityDetail, inputCurDataRetailRangeDisparityDetail, inputCurRetailPriceDisparityDetail,
+                                inputImporterPriceDisparityDetail, inputSupplierPriceDisparityDetail, inputNameWareDisparityDetail,
+                                inputWarePriceDisparityDetail, inputDataRetailRangeDisparityDetail, inputBalanceBeforeDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
 
@@ -10299,20 +10308,46 @@ DESIGN disparity FROM DEFAULT {
 
         ADD d.box {
             childConstraints = TO THE BOTTOM;
-            ADD d.priceDetailGroup {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                    title = 'Цены (приход)';
+            title = 'Ценовый и количественные показатели';
+
+            NEW row {
+                childConstraints = TO THE RIGHT;
+                title = 'Расход';
+                ADD PROPERTY (importerPriceDisparityDetail);
+                ADD PROPERTY (supplierPriceDisparityDetail);
+                ADD PROPERTY (nameWareDisparityDetail);
+                ADD PROPERTY (warePriceDisparityDetail);
+                ADD PROPERTY (dataRetailRangeDisparityDetail);
+                ADD PROPERTY (balanceBeforeDisparityDetail);
+
+            }
+
+            NEW row1 {
+                title = 'Приход';
+                childConstraints = TO THE RIGHT;
+
+                NEW row11{
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Цены (приход) текущие';
+                    ADD PROPERTY (inputCurImporterPriceDisparityDetail);
+                    ADD PROPERTY (inputCurSupplierPriceDisparityDetail);
+                    ADD PROPERTY (inputCurNameWareDisparityDetail);
+                    ADD PROPERTY (inputCurWarePriceDisparityDetail);
+                    ADD PROPERTY (inputCurDataRetailRangeDisparityDetail);
+                    ADD PROPERTY (inputCurRetailPriceDisparityDetail);
+                }
+                NEW row12{
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+                    title = 'Цены (приход) новые';
                     ADD PROPERTY (inputImporterPriceDisparityDetail);
                     ADD PROPERTY (inputSupplierPriceDisparityDetail);
                     ADD PROPERTY (inputNameWareDisparityDetail);
                     ADD PROPERTY (inputWarePriceDisparityDetail);
                     ADD PROPERTY (inputDataRetailRangeDisparityDetail);
-                    ADD PROPERTY (inputCurRetailPriceDisparityDetail);
-            }
-            NEW case {
-                childConstraints = TO THE RIGHT;
-                title = 'Остаток (приход)';
-                ADD PROPERTY (balanceBeforeDisparityDetail);
+                    ADD PROPERTY (inputBalanceBeforeDisparityDetail);
+                }
             }
         }
         ADD functions.box;
