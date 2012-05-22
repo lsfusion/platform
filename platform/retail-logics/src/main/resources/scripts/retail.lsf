@@ -8745,6 +8745,9 @@ isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepa
 
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
 isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
+inSupplyIntervalPreliminaryOrder (preliminaryOrder, date1, date2) =
+    dateSupplyPreliminaryOrder(preliminaryOrder) >= (date1 AS DATE) AND
+    dateSupplyPreliminaryOrder(preliminaryOrder) <= (date2 AS DATE);
 
 dateLastPreliminaryOrder 'Дата последнего заказа' (departmentStore, supplier, date) =
     GROUP MAX dateOrderPreliminaryOrder(preliminaryOrder)
@@ -9258,6 +9261,47 @@ DESIGN timeTableDate FROM DEFAULT {
         p.box {fillHorizontal = 4;}
 
         ADD PROPERTY(createGenTimeTable) IN d.panel;
+        PROPERTY (delete(p)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+            }
+}
+
+FORM printTimeTable 'Печать графика поставок по датам'
+
+    OBJECTS interval = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS d=departmentStore FIXED PANEL
+    PROPERTIES name(d) SELECTOR
+
+    OBJECTS p=preliminaryOrder
+    PROPERTIES(p) showFormGenTimeTablePreliminaryOrder
+    PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder,
+                           nameSupplierPreliminaryOrder, nextDateOrder
+    PROPERTIES(p) createOrderSupplier
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
+
+    FILTERS inSupplyIntervalPreliminaryOrder(p, dFrom, dTo)
+
+    ORDER BY dateSupplyPreliminaryOrder
+;
+
+DESIGN printTimeTable FROM DEFAULT {
+
+    ADD interval.box BEFORE d.box{
+        caption = 'Период';
+        childConstraints = TO THE RIGHT;
+        PROPERTY(objFrom) {
+            caption = 'Дата (с)';
+        }
+        PROPERTY(objTo) {
+            caption = 'Дата (по)';
+        }
+    }
+
+        p.box {fillHorizontal = 4;}
+
         PROPERTY (delete(p)) {
             panelLocation = TOOLBAR;
             askConfirm = TRUE;
@@ -13584,6 +13628,7 @@ NAVIGATOR {
     NEW processes 'Бизнес-процессы' TO formsToolbar {
         NEW orders 'Заказы' {
             ADD timeTableDate;
+            ADD printTimeTable;
             ADD isSupplierItemDepartmentStore;
             ADD orderSuppliers;
         }
