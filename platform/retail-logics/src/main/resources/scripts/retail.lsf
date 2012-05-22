@@ -1034,7 +1034,7 @@ META defineDocumentDetailAggregationItem (primObject, aggrObject)
     @defineDocumentDetailAggregationItemPrefix(primObject, aggrObject, );
 END
 
-META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixA, prefixP, caption)
+META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP, prefixA, caption)
     prefixA###importerPrice###aggrObject##Detail 'Цена изготовителя'###caption (detail) = prefixP###importerPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###supplierPrice###aggrObject##Detail 'Цена поставщика'###caption (detail) = prefixP###supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
@@ -1089,7 +1089,7 @@ META defineDocumentPriceChangeQuantity (object)
 END
 
 META defineDocumentPriceChangePricePrefix (object, prefixA, prefixP, caption)
-    @defineDocumentDetailAggregationPricePrefix(object, priceChange###object, prefixA, prefixP, caption);
+    @defineDocumentDetailAggregationPricePrefix(object, priceChange###object, prefixP, prefixA, caption);
 END
 META defineDocumentPriceChangePrice (object)
     @defineDocumentPriceChangePricePrefix (object, , , );
@@ -8231,7 +8231,7 @@ needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetai
 @defineDocumentDetailAggregationItemPrefix(disparity, inputDisparity, input);
 quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
 
-@defineDocumentDetailAggregationPrice(disparity, inputDisparity);
+@defineDocumentDetailAggregationPricePrefix(disparity, inputDisparity, input, , );
 
 descriptionInputDisparityDetail 'Название документа' (inputDisparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
@@ -8270,8 +8270,8 @@ needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeIn
 @defineDocumentDetailAggregationItemPrefix(disparity, priceChangeInputDisparity, input);
 quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = balanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
-@defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, , input, );
-@defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, cur, inputCur, ' (тек.)');
+@defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, input, , );
+@defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, inputCur, cur, ' (тек.)');
 //curRetailPricePriceChangeInputDisparityDetail 'Розничная цена (тек.)' (priceChangeInputDisparityDetail) = inputCurRetailPriceDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
 numberDisposalPriceChangeInputDisparity '№ распоряжения на переоценку' (priceChangeInputDisparity) = numberDisposalDisparity(disparityPriceChangeInputDisparity(priceChangeInputDisparity));
