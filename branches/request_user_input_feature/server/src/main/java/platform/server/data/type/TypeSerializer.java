@@ -67,8 +67,6 @@ public class TypeSerializer {
 
         //todo:!!
         if (type == Data.FILEACTION) return FileActionClass.getDefinedInstance(false, "", "");
-        //todo:!!
-        if (type == Data.CLASSACTION) return new ClassActionClass(null, null);
 
         throw new IOException();
     }

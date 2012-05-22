@@ -60,7 +60,6 @@ public class ClientTypeSerializer {
         if (type == Data.COLOR) return ClientColorClass.instance;
 
         if (type == Data.ACTION) return new ClientActionClass(inStream);
-        if (type == Data.CLASSACTION) return new ClientClassActionClass(inStream);
         if (type == Data.FILEACTION) return new ClientFileActionClass(inStream);
 
         throw new IOException();

@@ -554,18 +554,11 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
         startTransaction();
 
-        Map<ActionProperty, List<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>>> pendingExecutes = new HashMap<ActionProperty, List<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>>>();
+        Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecutes = new HashMap<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>>();
         IncrementApply incrementApply = new IncrementApply(this);
 
-        String constraintResult = null;
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
-            if(property instanceof CalcProperty && ((CalcProperty)property).isFalse) { // ограничения
-                constraintResult = check((CalcProperty) property, incrementApply);
-                if (constraintResult != null) {
-                    break;
-                }
-            }
             if(property instanceof ActionProperty && ((ActionProperty)property).event!=null)
                 if(!executeEventAction((ActionProperty) property, incrementApply, actions, pendingExecutes)) // действия
                     return false;
@@ -594,9 +587,9 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         commitTransaction();
         restart(false);
 
-        for(Map.Entry<ActionProperty, List<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>>> pendingExecute : pendingExecutes.entrySet())
-            for (Iterator<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>> iterator = pendingExecute.getValue().iterator(); iterator.hasNext(); ) {
-                Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue> context = iterator.next();
+        for(Map.Entry<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute : pendingExecutes.entrySet())
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = pendingExecute.getValue().iterator(); iterator.hasNext(); ) {
+                Map<ClassPropertyInterface, DataObject> context = iterator.next();
                 executePending(pendingExecute.getKey(), context, actions, !iterator.hasNext());
             }
 
@@ -616,28 +609,26 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     }
 
     public boolean executeEventAction(@ParamMessage ActionProperty property, IncrementApply incrementApply, List<ClientAction> actions,
-                                      Map<ActionProperty, List<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>>> pendingExecute) throws SQLException {
+                                      Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute) throws SQLException {
         ExecutionEnvironment transactEnv = new ExecutionEnvironment(incrementApply);
         assert transactEnv.isInTransaction();
         
-        PropertyChange<ClassPropertyInterface> propertyChange = property.getEventAction(incrementApply);
+        PropertySet<ClassPropertyInterface> propertyChange = property.getEventAction(incrementApply);
         if(propertyChange!=null && !propertyChange.isEmpty()) {
-            List<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>> pendingPropExecute = null;
+            List<Map<ClassPropertyInterface, DataObject>> pendingPropExecute = null;
             if(property.pendingEventExecute()) {
-                pendingPropExecute = new ArrayList<Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>>();
+                pendingPropExecute = new ArrayList<Map<ClassPropertyInterface, DataObject>>();
                 pendingExecute.put(property, pendingPropExecute);
             }
 
-            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
-                Map<ClassPropertyInterface, DataObject> executeKeys = executeRow.getKey();
-                ObjectValue executeValue = executeRow.getValue().get("value");
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = propertyChange.executeClasses(sql, env, baseClass).iterator(); iterator.hasNext();) {
+                Map<ClassPropertyInterface, DataObject> executeRow = iterator.next();
 
                 if(pendingPropExecute!=null)
                     // иначе "pend'им" выполнение, но уже с новыми классами
-                    pendingPropExecute.add(new Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue>(getCurrentObjects(executeKeys), getCurrentValue(executeValue)));
+                    pendingPropExecute.add(getCurrentObjects(executeRow));
                 else
-                    property.execute(new ExecutionContext(executeKeys, executeValue, transactEnv, actions, null, !iterator.hasNext()));
+                    property.execute(new ExecutionContext(executeRow, null, transactEnv, actions, null, !iterator.hasNext()));
             }
         }
 
@@ -645,7 +636,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     }
 
     @Message("message.session.apply.check")
-    public <T extends PropertyInterface> String check(@ParamMessage CalcProperty<T> property, IncrementApply incrementApply) throws SQLException {
+    public <T extends PropertyInterface> boolean check(@ParamMessage CalcProperty<T> property, IncrementApply incrementApply, List<ClientAction> actions) throws SQLException {
         assert property.noDB();
         if(property.hasChanges(incrementApply)) {
             Query<T,String> changed = new Query<T,String>(property);
@@ -705,17 +696,18 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
                     resultString += "    " + infoStr + '\n';
                 }
 
+                actions.add(new LogMessageClientAction(resultString, true));
                 keysTable.drop(sql);
-                return resultString;
+                return false;
             }
         }
 
-        return null;
+        return true;
     }
 
     @Message("message.session.apply.auto.execute")
-    public void executePending(@ParamMessage ActionProperty property, Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue> context, List<ClientAction> actions, boolean groupLast) throws SQLException {
-        property.execute(new ExecutionContext(context.first, context.second, new ExecutionEnvironment(this), actions, null, groupLast));
+    public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, List<ClientAction> actions, boolean groupLast) throws SQLException {
+        property.execute(new ExecutionContext(context, null, new ExecutionEnvironment(this), actions, null, groupLast));
     }
 
     public final QueryEnvironment env = new QueryEnvironment() {

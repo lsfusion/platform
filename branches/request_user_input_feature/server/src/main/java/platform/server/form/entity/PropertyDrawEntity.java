@@ -1,15 +1,18 @@
 package platform.server.form.entity;
 
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
-import platform.server.form.instance.InstanceFactory;
-import platform.server.form.instance.Instantiable;
-import platform.server.form.instance.PropertyDrawInstance;
+import platform.interop.form.ServerResponse;
+import platform.server.classes.CustomClass;
+import platform.server.form.instance.*;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
+import platform.server.logics.property.actions.ChangeObjectActionProperty;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -17,10 +20,7 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
@@ -34,6 +34,41 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
     public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
+
+    public ActionPropertyObjectEntity<?> getEditAction(String actionId) {
+        // ?? тут или нет
+        if (isReadOnly()) {
+            return null;
+        }
+
+        ActionPropertyObjectEntity editAction = editActions.get(actionId);
+        if (editAction != null) {
+            return editAction;
+        }
+
+        Property<P> property = propertyObject.property;
+        if (actionId.equals(ServerResponse.GROUP_CHANGE))
+            return getEditAction(ServerResponse.CHANGE).getGroupChange();
+
+        if (isSelector())
+            return getSelectorAction(property);
+
+        ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
+        return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);
+    }
+
+    private ActionPropertyObjectEntity<?> getSelectorAction(Property<P> property) {
+        Map<P, ObjectEntity> groupObjects = BaseUtils.filterValues(propertyObject.mapping, toDraw.objects); // берем нижний объект в toDraw
+        for (ObjectEntity objectInstance : groupObjects.values()) {
+            if (objectInstance.baseClass instanceof CustomClass) {
+                CustomActionProperty dialogAction = objectInstance.getChangeAction(property);
+                return new ActionPropertyObjectEntity<ClassPropertyInterface>(dialogAction,
+                        Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), (PropertyObjectInterfaceEntity) objectInstance), null);
+            }
+        }
+        return null;
+    }
+
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();

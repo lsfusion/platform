@@ -113,16 +113,10 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            Map<String, ActionPropertyObjectInstance> editActions = new HashMap<String, ActionPropertyObjectInstance>();
-            for (Map.Entry<String, ActionPropertyObjectEntity<?>> i : entity.editActions.entrySet()) {
-                editActions.put(i.getKey(), getInstance(i.getValue()));
-            }
-
             propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(
                     entity,
                     getInstance(entity.propertyObject),
                     getInstance(entity.toDraw),
-                    editActions,
                     columnGroupObjects,
                     entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
                     entity.propertyReadOnly == null ? null : getInstance(entity.propertyReadOnly),

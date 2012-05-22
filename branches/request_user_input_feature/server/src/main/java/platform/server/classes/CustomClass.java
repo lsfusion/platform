@@ -315,12 +315,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return new CustomObjectInstance(entity, this);
     }
 
-    // чисто для IdentityLazy, потом если сделать для static'ов можно вернуть в ClassActionClass
-    @IdentityLazy
-    public ClassActionClass getActionClass(CustomClass defaultClass) {
-        return new ClassActionClass(this, defaultClass);        
-    }
-
     private abstract class ClassFormHolder {
         private ClassFormEntity form;
 

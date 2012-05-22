@@ -2,10 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.DataClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
@@ -19,7 +16,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty {
+public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty {
     // обозначает класс объекта, который нужно добавить
     private CustomClass valueClass;
 
@@ -32,21 +29,12 @@ public class SimpleAddObjectActionProperty extends CustomReadValueActionProperty
         this.storeNewObjectProperty = storeNewObjectProperty;
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
-        if(valueClass.hasChildren())
-            return valueClass.getActionClass(valueClass);
-        return null;
+    protected Read getReadClass(ExecutionContext context) {
+        return new Read(valueClass, true);
     }
 
-    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
-        DataObject object;
-        if (valueClass.hasChildren()) {
-            // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()
-            boolean valueProvided = true;//!getValueClass().getDefaultValue().equals(userValue);
-            object = context.addObject((ConcreteCustomClass) (valueProvided?context.getSession().baseClass.findClassID((Integer) userValue):valueClass));
-        } else {
-            object = context.addObject((ConcreteCustomClass) valueClass);
-        }
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, ObjectClass readClass) throws SQLException {
+        DataObject object = context.addObject((ConcreteCustomClass) readClass);
 
         if (storeNewObjectProperty != null && object != null) {
             context.addActions(

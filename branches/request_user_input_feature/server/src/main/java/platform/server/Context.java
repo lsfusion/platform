@@ -2,6 +2,7 @@ package platform.server;
 
 import platform.interop.action.ClientAction;
 import platform.interop.form.UserInputResult;
+import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
@@ -35,6 +36,7 @@ public interface Context {
 
     ObjectValue requestUserObject(ExecutionContext.RequestDialog requestDialog) throws SQLException;
     ObjectValue requestUserData(DataClass dataClass, Object oldValue);
+    ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     Object requestUserInteraction(ClientAction action);
     Object[] requestUserInteraction(ClientAction... actions);

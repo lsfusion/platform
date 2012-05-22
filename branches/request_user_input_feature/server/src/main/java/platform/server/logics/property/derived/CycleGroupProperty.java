@@ -42,7 +42,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        CalcProperty constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance),
+        CalcProperty constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
                 getMapInterfaces().values(), groupProperty, new HashMap<I, JoinProperty.Interface>(), Compare.GREATER);
         constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
         return constraint;
@@ -61,6 +61,13 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             return MaxChangeProperty.getUsedChanges(this,toChange, propChanges);
         else
             return QuickSet.EMPTY();
+    }
+
+    @Override
+    public Collection<DataProperty> getChangeProps() {
+        if(toChange!=null)
+            return toChange.getChangeProps();
+        return super.getChangeProps();
     }
 
     @Override

@@ -50,26 +50,21 @@ public class IfActionProperty extends KeepContextActionProperty {
                 falseAction !=null ? falseAction.mapWhereProperty() : null, ifClasses);
     }
 
-    public Set<CalcProperty> getChangeProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    public Set<ActionProperty> getDependActions() {
+        Set<ActionProperty> result = new HashSet<ActionProperty>();
         if (trueAction != null) {
-            result.addAll(trueAction.property.getChangeProps());
+            result.add(trueAction.property);
         }
         if (falseAction != null) {
-            result.addAll(falseAction.property.getChangeProps());
+            result.add(falseAction.property);
         }
         return result;
     }
 
     public Set<CalcProperty> getUsedProps() {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
-        if (trueAction != null) {
-            result.addAll(new HashSet<CalcProperty>(trueAction.property.getUsedProps()));
-        }
-        if (falseAction != null) {
-            result.addAll(falseAction.property.getUsedProps());
-        }
         ifProp.mapFillDepends(result);
+        result.addAll(super.getUsedProps());
         return result;
     }
 

@@ -105,4 +105,12 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
             return Collections.singletonMap((P)this, commonValue);
         return new HashMap<P, ValueClass>();
     }
+
+    public Collection<DataProperty> mapChangeProps() {
+        return new HashSet<DataProperty>();
+    }
+
+    public DataChanges mapDataChanges(PropertyChange<P> pPropertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        return new DataChanges();
+    }
 }

@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.interop.form.ServerResponse;
+import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
@@ -16,46 +17,11 @@ import java.util.Map;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    private final Map<String, ActionPropertyObjectInstance> editActions;
-
-    public ActionPropertyObjectInstance getEditAction(String actionId) {
-        // ?? тут или нет
-        if (isReadOnly()) {
-            return null;
-        }
-
-        ActionPropertyObjectInstance editAction = editActions.get(actionId);
-        if (editAction != null) {
-            return editAction;
-        }
-
-        Property<P> property = propertyObject.property;
-        if (actionId.equals(ServerResponse.GROUP_CHANGE)) {
-            ActionPropertyObjectInstance<?> changeInstance = getEditAction(ServerResponse.CHANGE);
-
-            assert changeInstance != null;
-
-            ActionPropertyObjectInstance<?> groupChangeActionInstance = changeInstance.getGroupChange();
-
-            editActions.put(ServerResponse.GROUP_CHANGE, groupChangeActionInstance);
-
-            return groupChangeActionInstance;
-        }
-
-        if (entity.isSelector()) {
-            Map<P, ObjectInstance> groupObjects = BaseUtils.filterValues(propertyObject.mapping, toDraw.objects); // берем нижний объект в toDraw
-            for (ObjectInstance objectInstance : groupObjects.values()) {
-                if (objectInstance instanceof CustomObjectInstance) {
-                    CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                    ChangeObjectActionProperty dialogAction = new ChangeObjectActionProperty((CalcProperty) property, customObjectInstance.getBaseClass().getBaseClass());
-                    return new ActionPropertyObjectInstance<ClassPropertyInterface>(dialogAction,
-                                                            Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), customObjectInstance));
-                }
-            }
-        }
-
-        ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
-        return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);
+    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory) {
+        ActionPropertyObjectEntity editAction = entity.getEditAction(actionId);
+        if(editAction!=null)
+            return instanceFactory.getInstance(editAction);
+        return null;
     }
 
     public PropertyObjectInstance<P, ?> propertyObject;
@@ -85,7 +51,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 PropertyObjectInstance<P, ?> propertyObject,
                                 GroupObjectInstance toDraw,
-                                Map<String, ActionPropertyObjectInstance> editActions,
                                 List<GroupObjectInstance> columnGroupObjects,
                                 CalcPropertyObjectInstance<?> propertyCaption,
                                 CalcPropertyObjectInstance<?> propertyReadOnly,
@@ -96,7 +61,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
-        this.editActions = editActions;
         this.propertyCaption = propertyCaption;
         this.propertyReadOnly = propertyReadOnly;
         this.propertyFooter = propertyFooter;
@@ -110,10 +74,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public byte getTypeID() {
         return PropertyReadType.DRAW;
-    }
-
-    public boolean isReadOnly() {
-        return entity.isReadOnly();
     }
 
     public ClassViewType getForceViewType() {

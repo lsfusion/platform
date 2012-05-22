@@ -95,6 +95,11 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     }
 
     @Override
+    public Collection<DataProperty> getChangeProps() {
+        return property.getChangeProps();
+    }
+
+    @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         Map<P, Interface<P>> mapInterfaces = getMapInterfaces();
         PropertyChange<P> mapChange = change.map(mapInterfaces);

@@ -58,5 +58,9 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
         return DerivedProperty.createAnd(innerInterfaces, getSetWhereProperty(), where);
     }
 
+    public Set<ActionProperty> getDependActions() {
+        return new HashSet<ActionProperty>();
+    }
+
     protected abstract CalcPropertyMapImplement<?, I> getSetWhereProperty();
 }

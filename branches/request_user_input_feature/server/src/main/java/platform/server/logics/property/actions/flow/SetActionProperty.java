@@ -35,10 +35,12 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
         writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
     }
 
+    @Override
     public Set<CalcProperty> getChangeProps() {
         return writeTo.property.getSetChangeProps(notNull, false);
     }
 
+    @Override
     public Set<CalcProperty> getUsedProps() {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
         where.mapFillDepends(result);

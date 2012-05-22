@@ -5,6 +5,7 @@ import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.ServerResponse;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
@@ -88,15 +89,11 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return result;
         }
 
-        if(implement.property instanceof AndFormulaProperty) {
-            AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
-            Set<CalcProperty> depends = new HashSet<CalcProperty>();
-            for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
-                if(andInterface != andProperty.objectInterface)
-                    implement.mapping.get(andInterface).mapFillDepends(depends);
+        T andInterface = getObjectAndInterface(implement.property);
+        if(andInterface!=null) {
             Set<CalcProperty> implementDepends = new HashSet<CalcProperty>();
-            implement.mapping.get(andProperty.objectInterface).mapFillDepends(implementDepends);
-            return QuickSet.add(propChanges.getUsedDataChanges(implementDepends), propChanges.getUsedChanges(depends));
+            implement.mapping.get(andInterface).mapFillDepends(implementDepends);
+            return QuickSet.add(propChanges.getUsedDataChanges(implementDepends), getUsedChanges(propChanges));
         }
 
         CalcProperty<T> implementProperty = implement.property;
@@ -156,6 +153,28 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
+    @IdentityLazy
+    public Collection<DataProperty> getChangeProps() {
+        if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) {
+            assert implement.mapping.size()==2;
+            Iterator<CalcPropertyInterfaceImplement<Interface>> i = implement.mapping.values().iterator();
+            return BaseUtils.merge(i.next().mapChangeProps(), i.next().mapChangeProps());
+        }
+
+        T andInterface = getObjectAndInterface(implement.property);
+        if(andInterface!=null)
+            return implement.mapping.get(andInterface).mapChangeProps();
+
+        if(implementChange)
+            return implement.property.getChangeProps();
+
+        if(implement.mapping.size() == 1 && implement.property.aggProp)
+            return BaseUtils.singleValue(implement.mapping).mapChangeProps();
+
+        return super.getChangeProps();
+    }
+
+    @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
@@ -199,6 +218,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
+    @IdentityLazy
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         CalcProperty<T> aggProp = implement.property;
 
@@ -214,7 +234,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             if (implementEdit != null) {
                 return DerivedProperty.createIfAction(
                         interfaces,
-                        DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createStatic(true, LogicalClass.instance), ands),
+                        DerivedProperty.createAnd(interfaces, DerivedProperty.<Interface>createTrue(), ands),
                         implementEdit,
                         null,
                         false);

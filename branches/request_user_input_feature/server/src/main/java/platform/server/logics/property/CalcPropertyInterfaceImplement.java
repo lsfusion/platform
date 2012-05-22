@@ -6,12 +6,10 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.session.DataChanges;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChanges;
+import platform.server.session.*;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,7 +33,10 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
 
     public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
 
+    Collection<DataProperty> mapChangeProps();
     DataChanges mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges);
+
+    DataChanges mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(Set<P> interfaces, Set<CalcPropertyMapImplement<?,P>> properties);
 

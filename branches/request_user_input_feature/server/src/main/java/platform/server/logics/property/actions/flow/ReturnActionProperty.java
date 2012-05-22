@@ -16,12 +16,8 @@ public class ReturnActionProperty extends KeepContextActionProperty {
         finalizeInit();
     }
 
-    public Set<CalcProperty> getChangeProps() {
-        return new HashSet<CalcProperty>();
-    }
-
-    public Set<CalcProperty> getUsedProps() {
-        return new HashSet<CalcProperty>();
+    public Set<ActionProperty> getDependActions() {
+        return new HashSet<ActionProperty>();
     }
 
     public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {

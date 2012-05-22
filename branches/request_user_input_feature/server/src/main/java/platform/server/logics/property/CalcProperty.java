@@ -15,7 +15,6 @@ import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
@@ -33,6 +32,9 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.actions.ActionEvent;
+import platform.server.logics.property.actions.ChangeEvent;
+import platform.server.logics.property.actions.LogPropertyActionProperty;
 import platform.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import platform.server.logics.property.change.PropertyChangeListener;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -101,14 +103,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && ((CalcProperty)implement.property).hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
             ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), Event.RESOLVE);
+            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
 //            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)));
             lm.addProp(setAction.property);
         }
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
             ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), Event.RESOLVE);
+            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), ActionEvent.RESOLVE);
 //            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
 //            setAction.mapDerivedChange(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)));
             lm.addProp(setAction.property);
@@ -121,12 +123,26 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return props;
     }
 
+    public void setConstraint(CheckType type, List<CalcProperty<?>> checkProperties, LogicsModule lm) {
+        assert type != CheckType.CHECK_SOME || checkProperties != null;
+        assert noDB();
+
+        this.checkChange = type;
+        this.checkProperties = checkProperties;
+
+        ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction = DerivedProperty.createListAction(new ArrayList<ClassPropertyInterface>(), BaseUtils.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
+                lm.baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>()),
+                new LogPropertyActionProperty<T>(this).getImplement()));
+        constraintAction.mapEventAction(DerivedProperty.createAnyGProp(this).getImplement(), 0);
+        lm.addProp(constraintAction.property);
+    }
+
     protected boolean hasSet(boolean notNull) {
         return !getSetChangeProps(notNull, false).isEmpty();
     }
 
     public Set<CalcProperty> getSetChangeProps(boolean notNull, boolean add) {
-        return new HashSet<CalcProperty>(getDataChanges(PropertyChanges.EMPTY, !notNull).getProperties()); // хотя и getDataChanges() сойдет
+        return new HashSet<CalcProperty>(getChangeProps()); // !notNull
     }
 
     public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, DataSession session) throws SQLException {
@@ -263,15 +279,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return newExpr;
     }
 
-    public void setConstraint(CheckType type, List<CalcProperty<?>> checkProperties) {
-        assert type != CheckType.CHECK_SOME || checkProperties != null;
-        assert noDB();
-
-        isFalse = true;
-        this.checkChange = type;
-        this.checkProperties = checkProperties;
-    }
-
     public final Type.Getter<T> interfaceTypeGetter = new Type.Getter<T>() {
         public Type getType(T key) {
             return getInterfaceType(key);
@@ -303,7 +310,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new OnChangeProperty<T, P>(this, change);
     }
 
-    public boolean isFalse = false;
     public enum CheckType { CHECK_NO, CHECK_ALL, CHECK_SOME }
     public CheckType checkChange = CheckType.CHECK_NO;
     public List<CalcProperty<?>> checkProperties = null;
@@ -318,7 +324,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public PropertyChanges getChangeModifier(PropertyChanges changes, boolean toNull) {
         // строим Where для изменения
-        return getDataChanges(changes, toNull).add(changes);
+        return getPullDataChanges(changes, toNull).add(changes);
     }
 
     public Map<CalcProperty, List<CalcProperty>> getRecDepends(Stack<CalcProperty> current) {
@@ -533,11 +539,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getDataChanges(change, propChanges, null);
     }
 
-    public Collection<DataProperty> getDataChanges() {
-        return getDataChanges(PropertyChanges.EMPTY, false).getProperties();
+    public Collection<DataProperty> getChangeProps() { // дублирует getDataChanges, но по сложности не вытягивает нижний механизм
+//        Map<T, KeyExpr> mapKeys = getMapKeys();
+//        return getDataChanges(new PropertyChange<T>(mapKeys, toNull ? CaseExpr.NULL : changeExpr, CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
+        return new HashSet<DataProperty>();
     }
 
-    protected DataChanges getDataChanges(PropertyChanges changes, boolean toNull) {
+    protected DataChanges getPullDataChanges(PropertyChanges changes, boolean toNull) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         return getDataChanges(new PropertyChange<T>(mapKeys, toNull ? CaseExpr.NULL : changeExpr, CompareWhere.compare(mapKeys, getChangeExprs())), changes, null);
     }
@@ -611,7 +619,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         CalcPropertyMapImplement<?, T> where;
         if(onChangeWhereImplements.size() > 0) {
-            CalcPropertyMapImplement<?, T> onChangeWhere;
             if(onChangeWhereImplements.size()==1)
                 where = BaseUtils.single(onChangeWhereImplements);
             else
@@ -627,16 +634,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {
-        setEventChange(valueImplement, whereImplement, 0);
-    }
-
-    private <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement, int options) {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        Event<D,T> event = new Event<D,T>(this, valueImplement, whereImplement, options);
+        ChangeEvent<T> event = new ChangeEvent<T>(this, valueImplement, whereImplement);
         // запишем в DataProperty
-        for(DataProperty dataProperty : getDataChanges())
+        for(DataProperty dataProperty : getChangeProps())
             dataProperty.event = event;
     }
 
@@ -666,7 +669,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         proceedNotNull(set, env, notNull);
     }
 
-    protected Expr getDefaultExpr(Map<T, ? extends Expr> mapExprs) {
+    protected Expr getDefaultExpr() {
         Type type = getType();
         if(type instanceof DataClass)
             return ((DataClass) type).getDefaultExpr();
@@ -677,7 +680,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     // assert что where содержит getWhere().not
     protected void proceedNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         if(notNull) {
-            Expr defaultExpr = getDefaultExpr(set.getMapExprs());
+            Expr defaultExpr = getDefaultExpr();
             if(defaultExpr!=null)
                 env.change(this, new PropertyChange<T>(set, defaultExpr));
         } else
@@ -696,6 +699,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new CalcPropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
 
+    @IdentityLazy
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         List<T> listInterfaces = new ArrayList<T>();
         List<ValueClass> listValues = new ArrayList<ValueClass>();

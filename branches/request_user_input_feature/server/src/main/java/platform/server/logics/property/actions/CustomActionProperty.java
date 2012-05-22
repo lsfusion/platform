@@ -30,11 +30,7 @@ public abstract class CustomActionProperty extends ActionProperty<ClassPropertyI
         return IsClassProperty.getProperty(interfaces);
     }
 
-    public Set<CalcProperty> getChangeProps() {
-        return new HashSet<CalcProperty>();
-    }
-
-    public Set<CalcProperty> getUsedProps() {
-        return new HashSet<CalcProperty>();
+    public Set<ActionProperty> getDependActions() {
+        return new HashSet<ActionProperty>();
     }
 }

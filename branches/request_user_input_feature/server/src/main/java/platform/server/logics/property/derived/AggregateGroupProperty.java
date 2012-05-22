@@ -81,7 +81,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
                 result.addAll(((CalcProperty)((CalcPropertyMapImplement) whereProp).property).getSetChangeProps(true, true));
             for(CalcPropertyInterfaceImplement<T> groupProp : groupProps)
                 if(groupProp instanceof CalcPropertyMapImplement)
-                    result.addAll(((CalcProperty)(((CalcPropertyMapImplement)groupProp).property)).getDataChanges());
+                    result.addAll(((CalcProperty)(((CalcPropertyMapImplement)groupProp).property)).getChangeProps());
             return result;
         } else
             return super.getSetChangeProps(notNull, add);

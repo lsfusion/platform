@@ -91,6 +91,13 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     }
 
     @Override
+    public Collection<DataProperty> getChangeProps() {
+        if(distribute!=null)
+            return groupProperty.mapChangeProps();
+        return super.getChangeProps();
+    }
+
+    @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> propertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(distribute != null) {
             // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
@@ -99,7 +106,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             Map<I, KeyExpr> mapKeys = new HashMap<I, KeyExpr>(); Map<I, Expr> mapValueKeys = new HashMap<I, Expr>();
             Where valueWhere = getGroupKeys(propertyChange, mapKeys, mapValueKeys);
 
-            PropertyChanges mapChanges = new PropertyChanges((CalcProperty<ClassPropertyInterface>)nullImplement.property, propertyChange.map(nullImplement.mapping));
+            PropertyChanges mapChanges = new PropertyChanges(nullImplement.property, propertyChange.map(nullImplement.mapping));
 
             Where nullWhere = propertyChange.getWhere(getGroupImplements(mapValueKeys, propChanges)).and(groupProperty.mapExpr(mapValueKeys, propChanges).getWhere()); // where чтобы за null'ить
             if(!nullWhere.isFalse())

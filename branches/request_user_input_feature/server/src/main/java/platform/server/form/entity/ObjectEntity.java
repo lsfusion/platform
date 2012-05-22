@@ -3,10 +3,16 @@ package platform.server.form.entity;
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
 import platform.interop.FormEventType;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.actions.ChangeObjectActionProperty;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
@@ -89,5 +95,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @Override
     public String toString() {
         return getCaption();
+    }
+
+    @IdentityLazy
+    public CustomActionProperty getChangeAction(Property filterProperty) {
+        assert baseClass instanceof CustomClass;
+        return new ChangeObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
     }
 }

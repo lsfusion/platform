@@ -19,6 +19,8 @@ public interface ClientActionDispatcher {
 
     public Object execute(MessageFileClientAction action);
 
+    public Object execute(ChooseClassAction action);
+
     public void execute(UserChangedClientAction action);
     
     public void execute(UserReloginClientAction action);

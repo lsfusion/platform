@@ -467,4 +467,16 @@ public class Settings {
     public void setApplyVolatileStats(boolean applyVolatileStats) {
         this.applyVolatileStats = applyVolatileStats;
     }
+
+    // если prev идет в value, то использовать то значение которое есть сейчас после singleapply,
+    // а не высчитывать на начало транзакции потому как все равно "временнОй" целостности не будет
+    private boolean useEventValuePrevHeuristic = true;
+
+    public void setUseEventValuePrevHeuristic(boolean useEventValuePrevHeuristic) {
+        this.useEventValuePrevHeuristic = useEventValuePrevHeuristic;
+    }
+
+    public boolean isUseEventValuePrevHeuristic() {
+        return useEventValuePrevHeuristic;
+    }
 }

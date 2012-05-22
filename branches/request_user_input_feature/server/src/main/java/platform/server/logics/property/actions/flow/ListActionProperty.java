@@ -15,7 +15,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     private final List<ActionPropertyMapImplement<?, PropertyInterface>> actions;
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions, BusinessLogics BL)  {
+    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions)  {
         super(sID, caption, innerInterfaces.size());
 
         this.actions = DerivedProperty.mapActionImplements(reverse(getMapInterfaces(innerInterfaces)), actions);
@@ -25,24 +25,17 @@ public class ListActionProperty extends KeepContextActionProperty {
 
     @IdentityLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        List<CalcPropertyMapImplement<?, PropertyInterface>> listWheres = new ArrayList<CalcPropertyMapImplement<?, PropertyInterface>>();
+        List<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = new ArrayList<CalcPropertyInterfaceImplement<PropertyInterface>>();
         for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
             listWheres.add(action.mapWhereProperty());
         return DerivedProperty.createUnion(interfaces, listWheres);
     }
 
-    public Set<CalcProperty> getChangeProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    public Set<ActionProperty> getDependActions() {
+        Set<ActionProperty> depends = new HashSet<ActionProperty>();
         for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
-            result.addAll(action.property.getChangeProps());
-        return result;
-    }
-
-    public Set<CalcProperty> getUsedProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
-        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
-            result.addAll(action.property.getUsedProps());
-        return result;
+            depends.add(action.property);
+        return depends;
     }
 
     @Override

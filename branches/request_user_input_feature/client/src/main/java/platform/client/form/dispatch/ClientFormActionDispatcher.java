@@ -2,11 +2,15 @@ package platform.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import platform.client.form.ClientFormController;
+import platform.client.form.classes.ClassDialog;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.action.*;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ServerResponse;
 
 import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 

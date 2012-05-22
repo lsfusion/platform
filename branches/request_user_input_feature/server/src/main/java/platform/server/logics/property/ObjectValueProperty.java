@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
@@ -44,6 +45,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     @Override
+    @IdentityLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return new ChangeObjectActionProperty(null, getInterface().interfaceClass).getImplement(Collections.singletonList(getInterface()));
     }

@@ -23,7 +23,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         super(sID, caption, interfaces);
     }
 
-    protected abstract Collection<CalcPropertyMapImplement<?, Interface>> getOperands();
+    protected abstract Collection<CalcPropertyInterfaceImplement<Interface>> getOperands();
 
     @Override
     public void fillDepends(Set<CalcProperty> depends, boolean events) {
@@ -33,7 +33,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
     @Override
     public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         Map<Interface, ValueClass> result = new HashMap<Interface, ValueClass>();
-        for(CalcPropertyMapImplement<?, Interface> operand : getOperands())
+        for(CalcPropertyInterfaceImplement<Interface> operand : getOperands())
             result = or(interfaces, result, operand.mapInterfaceCommonClasses(commonValue));
         return result;
     }

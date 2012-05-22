@@ -35,13 +35,4 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     public List<ClientAction> execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw) throws SQLException {
         return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, propertyDraw), requestValue);
     }
-
-    public ActionPropertyObjectInstance<?> getGroupChange() {
-        ActionPropertyMapImplement<P, P> changeImplement = property.getImplement();
-        ArrayList<P> listInterfaces = new ArrayList<P>(property.interfaces);
-
-        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + property.getSID(), "sys", listInterfaces, changeImplement);
-        return groupChangeActionProperty.getImplement(listInterfaces).mapObjects(mapping);
-    }
-
 }

@@ -36,20 +36,20 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         finalizeInit();
     }
 
-    public Set<CalcProperty> getChangeProps() {
-        Set<CalcProperty> result = action.property.getChangeProps();
+    public Set<ActionProperty> getDependActions() {
+        Set<ActionProperty> result = Collections.singleton((ActionProperty) action.property);
         if(elseAction != null)
-            result = mergeSet(result, elseAction.property.getChangeProps());
+            result = addSet(result, elseAction.property);
         return result;
     }
 
+    @Override
     public Set<CalcProperty> getUsedProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>(action.property.getUsedProps());
-        if(elseAction != null)
-            result.addAll(elseAction.property.getUsedProps());
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         ifProp.mapFillDepends(result);
         for(CalcPropertyInterfaceImplement<I> order : orders.keySet())
             order.mapFillDepends(result);
+        result.addAll(super.getUsedProps());
         return result;
     }
 

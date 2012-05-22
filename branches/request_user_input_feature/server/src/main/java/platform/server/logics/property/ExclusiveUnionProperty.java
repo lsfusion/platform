@@ -14,13 +14,13 @@ import java.util.*;
 // чисто для оптимизации
 public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
-    private final Collection<CalcPropertyMapImplement<?,Interface>> operands;
+    private final Collection<CalcPropertyInterfaceImplement<Interface>> operands;
 
     @IdentityLazy
     protected Iterable<Case> getCases() {
         assert finalized;
         Collection<Case> result = new ArrayList<Case>();
-        for(CalcPropertyMapImplement<?, Interface> operand : operands)
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
             result.add(new Case(operand, operand));
         return result;
     }
@@ -41,7 +41,7 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
         return super.getChangedDepends();
     }
 
-    public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<CalcPropertyMapImplement<?, Interface>> operands) {
+    public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<CalcPropertyInterfaceImplement<Interface>> operands) {
         super(sID, caption, interfaces);
         this.operands = operands;
 
@@ -60,7 +60,7 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
         assert finalized;
 
         DataChanges result = new DataChanges();
-        for(CalcPropertyMapImplement<?, Interface> operand : operands)
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
             result = result.add(operand.mapDataChanges(change, changedWhere, propChanges));
         return result;
     }
@@ -77,7 +77,7 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     private ClassWhere<Object> classValueWhere;
     public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, ValueClass valueClass, Map<Interface, ValueClass> interfaceClasses) {
         super(sID, caption, interfaces);
-        operands = new ArrayList<CalcPropertyMapImplement<?, Interface>>();
+        operands = new ArrayList<CalcPropertyInterfaceImplement<Interface>>();
 
         classValueWhere = new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(interfaceClasses, "value", valueClass), true);
     }

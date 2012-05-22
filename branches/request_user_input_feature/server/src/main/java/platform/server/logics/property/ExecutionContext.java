@@ -12,6 +12,8 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.Context;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -133,8 +135,12 @@ public class ExecutionContext<P extends PropertyInterface> {
         return getEnv().addObject(cls);
     }
 
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException {
+        getEnv().changeClass(objectInstance, object, changeClass, isGroupLast());
+    }
+
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, int clsID) throws SQLException {
-        getEnv().changeClass(objectInstance, object, getSession().baseClass.findConcreteClassID(clsID < 0 ? null : clsID), isGroupLast());
+        changeClass(objectInstance, object, getSession().baseClass.findConcreteClassID(clsID < 0 ? null : clsID));
     }
 
     public void apply(BusinessLogics BL) throws SQLException {
@@ -207,6 +213,12 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserData(dataClass, oldValue);
+        env.setLastUserInput(userInput);
+        return userInput;
+    }
+
+    public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserClass(baseClass, defaultValue, concrete);
         env.setLastUserInput(userInput);
         return userInput;
     }

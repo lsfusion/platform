@@ -236,6 +236,6 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public ValueClass[] getInterfaceClasses() {
-        return BaseUtils.mapList(listInterfaces, property.getInterfaceClasses()).toArray(new ValueClass[0]);
+        return property.getInterfaceClasses(listInterfaces);
     }
 }

@@ -9,6 +9,7 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.IfActionProperty;
+import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.actions.flow.SetActionProperty;
 
 import java.util.*;
@@ -52,9 +53,9 @@ public class DerivedProperty {
         return mapImplement;
     }
 
-    public static <L,T extends PropertyInterface,K extends PropertyInterface, C extends PropertyInterface> List<CalcPropertyMapImplement<C, K>> mapCalcImplements(Map<T, K> map, List<CalcPropertyMapImplement<C, T>> propertyImplements) {
-        List<CalcPropertyMapImplement<C, K>> mapImplement = new ArrayList<CalcPropertyMapImplement<C, K>>();
-        for(CalcPropertyMapImplement<C, T> interfaceImplementEntry : propertyImplements)
+    public static <L,T extends PropertyInterface,K extends PropertyInterface, C extends PropertyInterface> List<CalcPropertyInterfaceImplement<K>> mapCalcImplements(Map<T, K> map, List<CalcPropertyInterfaceImplement<T>> propertyImplements) {
+        List<CalcPropertyInterfaceImplement<K>> mapImplement = new ArrayList<CalcPropertyInterfaceImplement<K>>();
+        for(CalcPropertyInterfaceImplement<T> interfaceImplementEntry : propertyImplements)
             mapImplement.add(interfaceImplementEntry.map(map));
         return mapImplement;
     }
@@ -189,59 +190,71 @@ public class DerivedProperty {
         return createAnd(interfaces, object, Collections.singleton(and));
     }
 
-    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createUnion(Collection<T> interfaces, List<CalcPropertyMapImplement<?, T>> props) {
+    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createUnion(Collection<T> interfaces, List<? extends CalcPropertyInterfaceImplement<T>> props) {
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.size());
         Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,listInterfaces);
 
-        List<CalcPropertyMapImplement<?,UnionProperty.Interface>> operands =
-                BaseUtils.<List<CalcPropertyMapImplement<?, UnionProperty.Interface>>>immutableCast(DerivedProperty.mapCalcImplements(mapInterfaces,
-                        BaseUtils.<List<CalcPropertyMapImplement<C, T>>>immutableCast(props)));
+        List<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands =
+                DerivedProperty.mapCalcImplements(mapInterfaces, (List<CalcPropertyInterfaceImplement<T>>) props);
         OverrideUnionProperty unionProperty = new OverrideUnionProperty(genID(),"sys",listInterfaces,operands);
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
-    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createXUnion(Collection<T> interfaces, List<CalcPropertyMapImplement<?, T>> props) {
+    public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createXUnion(Collection<T> interfaces, List<CalcPropertyInterfaceImplement<T>> props) {
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.size());
         Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,listInterfaces);
 
-        List<CalcPropertyMapImplement<?,UnionProperty.Interface>> operands =
-                BaseUtils.<List<CalcPropertyMapImplement<?, UnionProperty.Interface>>>immutableCast(DerivedProperty.mapCalcImplements(mapInterfaces,
-                        BaseUtils.<List<CalcPropertyMapImplement<C, T>>>immutableCast(props)));
+        List<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands = DerivedProperty.mapCalcImplements(mapInterfaces, props);
         ExclusiveUnionProperty unionProperty = new ExclusiveUnionProperty(genID(),"sys",listInterfaces,operands);
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUnion(Collection<T> interfaces, CalcPropertyMapImplement<?,T> first, CalcPropertyMapImplement<?,T> rest) {
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createUnion(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> first, CalcPropertyInterfaceImplement<T> rest) {
         return createUnion(interfaces, BaseUtils.toList(first, rest));
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createXUnion(Collection<T> interfaces, CalcPropertyMapImplement<?,T> first, CalcPropertyMapImplement<?,T> rest) {
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createXUnion(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> first, CalcPropertyInterfaceImplement<T> rest) {
         return createXUnion(interfaces, BaseUtils.toList(first, rest));
     }
 
-    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createDiff(CalcProperty<T> restriction, CalcPropertyMapImplement<?,T> from) {
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createDiff(CalcProperty<T> restriction, CalcPropertyInterfaceImplement<T> from) {
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(restriction.interfaces.size());
         Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(restriction.interfaces,listInterfaces);
 
-        Map<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer> operands = new HashMap<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer>();
+        Map<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> operands = new HashMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer>();
         operands.put(from.map(mapInterfaces),1);
         operands.put(new CalcPropertyMapImplement<T,UnionProperty.Interface>(restriction,mapInterfaces),-1);
         SumUnionProperty unionProperty = new SumUnionProperty(genID(),"sys",listInterfaces,operands);
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
-    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createSum(String sID, String caption, Collection<T> interfaces, CalcPropertyMapImplement<?, T> sum1, CalcPropertyMapImplement<?,T> sum2) {
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createSum(String sID, String caption, Collection<T> interfaces, CalcPropertyInterfaceImplement<T> sum1, CalcPropertyInterfaceImplement<T> sum2) {
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.size());
         Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,listInterfaces);
 
-        Map<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer> operands = new HashMap<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer>();
+        Map<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> operands = new HashMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer>();
         operands.put(sum1.map(mapInterfaces),1);
         operands.put(sum2.map(mapInterfaces),1);
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(new SumUnionProperty(sID,caption,listInterfaces,operands),BaseUtils.reverse(mapInterfaces));
     }
 
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createTrue() {
+        return createStatic(true, LogicalClass.instance);
+    }
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNotNull(CalcPropertyInterfaceImplement<T> notNull) {
+        return createAnd(getUsedInterfaces(notNull), DerivedProperty.<T>createTrue(), notNull);
+    }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
         return new CalcPropertyMapImplement<PropertyInterface,T>(new ValueProperty(genID(),"sys", value, valueClass),new HashMap<PropertyInterface, T>());
+    }
+
+    public static <T extends PropertyInterface> GroupProperty createAnyGProp(CalcProperty<T> property) {
+        return createAnyGProp("ANY_" + property.getSID(), "ANY " + property.caption, property);
+    }
+    public static <T extends PropertyInterface> GroupProperty<?> createAnyGProp(String sID, String caption, CalcProperty<T> prop) {
+        if(!prop.getType().equals(LogicalClass.instance)) // делаем Logical
+            return createAnyGProp(sID, caption, DerivedProperty.createNotNull(prop.getImplement()).property);
+        return new MaxGroupProperty<T>(sID, caption, prop.interfaces, new ArrayList<CalcPropertyInterfaceImplement<T>>(), prop.getImplement(), false);
     }
 
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(Collection<T> interfaces, String formula, ConcreteValueClass valueClass, List<? extends CalcPropertyInterfaceImplement<T>> params) {
@@ -383,7 +396,7 @@ public class DerivedProperty {
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(property.interfaces.size());
         Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(property.interfaces,listInterfaces);
 
-        Map<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer> operands = new HashMap<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer>();
+        Map<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> operands = new HashMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer>();
         Iterator<Map.Entry<CalcPropertyInterfaceImplement<T>,Boolean>> it = orders.entrySet().iterator();
         while(it.hasNext()) {
             Map.Entry<CalcPropertyInterfaceImplement<T>,Boolean> order = it.next();
@@ -621,13 +634,19 @@ public class DerivedProperty {
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(CalcProperty<L> property, boolean notNull, boolean check) {
         List<L> listInterfaces = new ArrayList<L>(property.interfaces);
         SetActionProperty<L, PropertyInterface, L> actionProperty = new SetActionProperty<L, PropertyInterface, L>(genID(), (notNull ? "Задать" : "Сбросить") + " " + property.caption,
-                property.interfaces, listInterfaces, (CalcPropertyMapImplement<PropertyInterface,L>) DerivedProperty.createStatic(true, LogicalClass.instance), property.getImplement(), notNull, check);
+                property.interfaces, listInterfaces, (CalcPropertyMapImplement<PropertyInterface,L>) DerivedProperty.createTrue(), property.getImplement(), notNull, check);
         return actionProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(Collection<L> innerInterfaces, CalcPropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean ifClasses) {
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(Collection<L> innerInterfaces, CalcPropertyInterfaceImplement<L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean ifClasses) {
         List<L> listInterfaces = new ArrayList<L>(innerInterfaces);
         IfActionProperty actionProperty = new IfActionProperty(genID(), "sys", false, listInterfaces, where, action, elseAction, ifClasses);
+        return actionProperty.getImplement(listInterfaces);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createListAction(Collection<L> innerInterfaces, List<ActionPropertyMapImplement<?, L>> actions) {
+        List<L> listInterfaces = new ArrayList<L>(innerInterfaces);
+        ListActionProperty actionProperty = new ListActionProperty(genID(), "sys", listInterfaces, actions);
         return actionProperty.getImplement(listInterfaces);
     }
 }

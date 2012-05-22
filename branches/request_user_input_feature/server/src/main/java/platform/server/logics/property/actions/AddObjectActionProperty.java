@@ -16,7 +16,7 @@ import platform.server.logics.property.*;
 import java.sql.SQLException;
 import java.util.*;
 
-public class AddObjectActionProperty extends CustomReadValueActionProperty {
+public class AddObjectActionProperty extends CustomReadClassActionProperty {
 
     // barcode != null, автоматически заполнять поле barcode значением префикс + 0000 + id
     private CalcProperty barcode;
@@ -31,20 +31,13 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
     // автоматически заполнить указанные свойства из входов этого свойства
     private List<CalcProperty> properties;
 
-    private CalcProperty propertyValue;
-    private DataClass dataClass;
-
     @Override
     public Set<CalcProperty> getChangeProps() {
         return IsClassProperty.getParentProps(valueClass);
     }
 
     public AddObjectActionProperty(String sID, CustomClass valueClass) {
-        this(sID, null, null, false, valueClass, null, null, null);
-    }
-
-    public AddObjectActionProperty(String sID, CustomClass valueClass, CalcProperty propertyValue, DataClass dataClass) {
-        this(sID, null, null, false, valueClass, null, propertyValue, dataClass);
+        this(sID, null, null, false, valueClass, null);
     }
 
     private static ValueClass[] getValueClassList(boolean quantity, List<CalcProperty> properties) {
@@ -58,10 +51,10 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    private AddObjectActionProperty(String sID, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties, CalcProperty propertyValue, DataClass dataClass) {
-        this(sID, ServerResourceBundle.getString("logics.add"), barcode, barcodePrefix, quantity, valueClass, properties, propertyValue, dataClass);
+    private AddObjectActionProperty(String sID, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties) {
+        this(sID, ServerResourceBundle.getString("logics.add"), barcode, barcodePrefix, quantity, valueClass, properties);
     }
-    public AddObjectActionProperty(String sID, String caption, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties, CalcProperty propertyValue, DataClass dataClass) {
+    public AddObjectActionProperty(String sID, String caption, CalcProperty barcode, CalcProperty barcodePrefix, boolean quantity, CustomClass valueClass, List<CalcProperty> properties) {
         super(sID, caption, getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.barcode = barcode;
@@ -69,8 +62,6 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
         this.quantity = quantity;
         this.valueClass = valueClass;
         this.properties = properties;
-        this.propertyValue = propertyValue;
-        this.dataClass = dataClass;
     }
 
     @Override
@@ -78,30 +69,19 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
         return "getAddObjectAction(" + valueClass.getSID() + ")";
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
-        if(dataClass!=null)
-            return dataClass;
-        if(valueClass.hasChildren())
-            return valueClass.getActionClass(valueClass);
-        return null;
+    protected Read getReadClass(ExecutionContext context) {
+        return new Read(valueClass, true);
     }
 
-    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, ObjectClass readClass) throws SQLException {
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке
         if (quantity) {
             quantityAdd = (Integer) context.getKeyObject(interfaces.iterator().next());
         }
 
-        ArrayList<byte[]> values = null;
-        if (dataClass instanceof FileActionClass) {
-            FileActionClass clazz = (FileActionClass) dataClass;
-            values = clazz.getFiles(userValue);
-            quantityAdd = values.size();
-        }
-
         for (int k = 0; k < quantityAdd; k++) {
-            DataObject object = context.addObject((ConcreteCustomClass)(valueClass.hasChildren()?context.getSession().baseClass.findClassID((Integer) userValue):valueClass));
+            DataObject object = context.addObject((ConcreteCustomClass)readClass);
             if (barcode != null) {
 
                 String prefix = null;
@@ -123,7 +103,7 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
                 }
                 int checkDigit = (evenSum * 3 + oddSum) % 10 == 0 ? 0 : 10 - (evenSum * 3 + oddSum) % 10;
 
-                ((CalcProperty)barcode).change(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), context, barcode12 + checkDigit);
+                barcode.change(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), context, barcode12 + checkDigit);
             }
 
             // меняем все свойства на значения входов
@@ -137,12 +117,8 @@ public class AddObjectActionProperty extends CustomReadValueActionProperty {
                         continue;
                     }
                     CalcProperty property = properties.get(i++);
-                    ((CalcProperty)property).change(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
+                    property.change(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
                 }
-            }
-
-            if (propertyValue != null) {
-                ((CalcProperty)propertyValue).change(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object), context, values.get(k));
             }
         }
     }

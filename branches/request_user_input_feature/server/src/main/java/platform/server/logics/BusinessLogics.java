@@ -1105,7 +1105,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return !LM.isGeneratedSID(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull();
+        return !LM.isGeneratedSID(property.getSID()) && property.isFull();
     }
 
     private void synchronizeProperties(){
@@ -1567,13 +1567,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private static class LinksIn implements Comparable<LinksIn> {
 //        private final QuickMap<LinkType, List<Property>> countLinks = new SimpleMap<LinkType, List<Property>>();
         private final QuickMap<LinkType, Integer> countLinks = new SimpleMap<LinkType, Integer>();
-        private final boolean usedByConstraints;
+        private final boolean usedByCancel;
         private final Property<?> property;
 
         public int compareTo(LinksIn o) {
-            if(usedByConstraints && !o.usedByConstraints)
+            if(usedByCancel && !o.usedByCancel)
                 return 1;
-            if(!usedByConstraints && o.usedByConstraints)
+            if(!usedByCancel && o.usedByCancel)
                 return -1;
 
             for(LinkType linkType : LinkType.order) {
@@ -1590,12 +1590,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return property.getSID().compareTo(o.property.getSID());
         }
 
-        private LinksIn(Property property, boolean usedByConstraints) {
+        private LinksIn(Property property, boolean usedByCancel) {
             for(LinkType linkType : LinkType.order)
 //                countLinks.add(linkType, new ArrayList<Property>());
                 countLinks.add(linkType, 0);
             this.property = property;
-            this.usedByConstraints = usedByConstraints;
+            this.usedByCancel = usedByCancel;
         }
 
         public void reduce(Property property, LinkType link) {
@@ -1610,12 +1610,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private static void fillLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByConstraints, QuickSet<Property> checked) {
+    private static void fillLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByCancel, QuickSet<Property> checked) {
         if(linksMap.get(property)==null)
-            linksMap.add(property, new LinksIn(property, usedByConstraints));
-        fillRecLinks(property, linksMap, usedByConstraints, checked);
+            linksMap.add(property, new LinksIn(property, usedByCancel));
+        fillRecLinks(property, linksMap, usedByCancel, checked);
     }
-    private static void fillRecLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByConstraints, QuickSet<Property> checked) {
+    private static void fillRecLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByCancel, QuickSet<Property> checked) {
         if(checked.add(property)) // было, уходим
             return;
 
@@ -1624,12 +1624,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Property<?> linkProperty = link.first;
             LinksIn linksIn = linksMap.get(linkProperty);
             if(linksIn==null) {
-                linksIn = new LinksIn(linkProperty, usedByConstraints);
+                linksIn = new LinksIn(linkProperty, usedByCancel);
                 linksMap.add(linkProperty, linksIn);
             }
             linksIn.add(property, link.second);
 
-            fillLinks(linkProperty, linksMap, usedByConstraints, checked);
+            fillLinks(linkProperty, linksMap, usedByCancel, checked);
         }
     }
 
@@ -1659,14 +1659,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public Iterable<Property> getPropertyList(boolean onlyCheck) {
         QuickMap<Property, LinksIn> linksMap = new SimpleMap<Property, LinksIn>();
         QuickSet<Property> checked = new QuickSet<Property>();
+        
+        List<Property> rest = new ArrayList<Property>();
         for (Property property : getProperties())
-            if(property instanceof CalcProperty && ((CalcProperty)property).isFalse)
+            if(property instanceof ActionProperty && ((ActionProperty)property).hasCancel())
                 fillLinks(property, linksMap, true, checked);
-        if(!onlyCheck) { // именно так чтобы правильные пометки usedByConstraints проставились
-            for (Property property : getProperties())
-                if(!(property instanceof CalcProperty && ((CalcProperty)property).isFalse))
-                    fillLinks(property, linksMap, false, checked);
-        }
+            else
+                rest.add(property);
+        if(!onlyCheck) // именно так чтобы правильные пометки usedByCancel проставились
+            for (Property property : rest)
+                fillLinks(property, linksMap, false, checked);
 
         SortedSet<LinksIn> sortedLinks = new TreeSet<LinksIn>();
         for(int i=0;i<linksMap.size;i++)
@@ -1687,8 +1689,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LinkedHashSet<OldProperty> getEventDependProperties() {
         LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
         for (Property property : getPropertyList()) {
-            if (property instanceof CalcProperty && ((CalcProperty)property).isFalse)
-                result.addAll(((CalcProperty)property).getOldDepends());
             if (property instanceof ActionProperty && ((ActionProperty) property).event!=null)
                 result.addAll(((ActionProperty)property).event.getOldDepends());
             if (property instanceof DataProperty && ((DataProperty) property).event!=null)
@@ -1702,7 +1702,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // здесь нужно вернуть список stored или тех кто
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList(onlyCheck))
-            if ((property instanceof CalcProperty && (((CalcProperty)property).isStored() || ((CalcProperty)property).isFalse))
+            if ((property instanceof CalcProperty && ((CalcProperty)property).isStored())
                     || (property instanceof ActionProperty && ((ActionProperty)property).event!=null))
                 result.add(property);
         return result;
@@ -1752,22 +1752,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public List<CalcProperty> getConstrainedProperties() {
-        List<CalcProperty> result = new ArrayList<CalcProperty>();
-        for (Property property : getPropertyList()) {
-            if (property instanceof CalcProperty && ((CalcProperty)property).isFalse) {
-                result.add((CalcProperty) property);
-            }
-        }
-        return result;
-    }
-
-    @IdentityLazy
     public List<CalcProperty> getCheckConstrainedProperties() {
         List<CalcProperty> result = new ArrayList<CalcProperty>();
-        for (CalcProperty property : getConstrainedProperties()) {
-            if (property.checkChange != CalcProperty.CheckType.CHECK_NO) {
-                result.add(property);
+        for (Property property : getPropertyList()) {
+            if (property instanceof CalcProperty && ((CalcProperty)property).checkChange != CalcProperty.CheckType.CHECK_NO) {
+                result.add((CalcProperty) property);
             }
         }
         return result;

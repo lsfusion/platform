@@ -2,6 +2,8 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.ActionPropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 
@@ -27,8 +29,8 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         property.setEventAction(where.map(BaseUtils.reverse(mapping)), options);
     }
 
-    public ActionPropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
-        return new ActionPropertyObjectInstance<P>(property, BaseUtils.join(mapping, mapObjects));
+    public ActionPropertyObjectEntity<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {
+        return new ActionPropertyObjectEntity<P>(property, BaseUtils.join(mapping, mapObjects));
     }
 
     public CalcPropertyMapImplement<?, T> mapWhereProperty() {

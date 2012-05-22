@@ -34,6 +34,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
+import platform.server.logics.property.actions.flow.CancelActionProperty;
 import platform.server.logics.property.actions.flow.ReturnActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -283,10 +284,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP delete;
 
     public LAP apply;
-    public LAP cancel;
 
     public LAP flowBreak;
     public LAP flowReturn;
+    public LAP<?> cancel;
 
     public LCP objectClass;
     public LCP objectClassName;
@@ -650,6 +651,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initProperties() {
+
+        apply = addAProp(new ApplyActionProperty(BL));
+        cancel = addAProp(new CancelActionProperty());
+
+        flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
+        flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
+
         selection = new SelectionPropertySet();
         sessionGroup.add(selection);
 
@@ -743,12 +751,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), numberToDOW, numberDOWInDate, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
-
-        apply = addAProp(new ApplyActionProperty(BL));
-        cancel = addAProp(new CancelActionProperty());
-
-        flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
-        flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 

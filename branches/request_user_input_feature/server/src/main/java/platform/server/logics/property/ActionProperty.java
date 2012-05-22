@@ -3,12 +3,15 @@ package platform.server.logics.property;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.interop.action.ClientAction;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
@@ -23,18 +26,39 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     // assert что возвращает только DataProperty и IsClassProperty
-    public abstract Set<CalcProperty> getChangeProps();
-    public abstract Set<CalcProperty> getUsedProps();
-
-    public boolean pendingEventExecute() {
-        return getChangeProps().size()==0;
+    @IdentityLazy
+    public Set<CalcProperty> getChangeProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(ActionProperty<?> dependAction : getDependActions())
+            result.addAll(dependAction.getChangeProps());
+        return result;
+    }
+    @IdentityLazy
+    public Set<CalcProperty> getUsedProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(ActionProperty<?> dependAction : getDependActions())
+            result.addAll(dependAction.getUsedProps());
+        return result;
+    }
+    @IdentityLazy
+    public boolean hasCancel() {
+        boolean hasCancel = false;
+        for(ActionProperty<?> dependAction : getDependActions())
+            hasCancel = hasCancel || dependAction.hasCancel();
+        return hasCancel;
     }
 
-    public PropertyChange<P> getEventAction(Modifier modifier) {
+    public abstract Set<ActionProperty> getDependActions();
+
+    public boolean pendingEventExecute() {
+        return getChangeProps().size()==0 && !hasCancel();
+    }
+
+    public PropertySet<P> getEventAction(Modifier modifier) {
         return getEventAction(modifier.getPropertyChanges());
     }
 
-    public PropertyChange<P> getEventAction(PropertyChanges changes) {
+    public PropertySet<P> getEventAction(PropertyChanges changes) {
         return event.getChange(changes);
     }
 
@@ -93,10 +117,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return ActionClass.instance;
     }
 
-    public Event<?,P> event = null;
+    public ActionEvent<P> event = null;
 
     protected Set<CalcProperty> getEventDepends() {
-        return event !=null ? event.getDepends(true) : new HashSet<CalcProperty>();
+        return event !=null ? event.getDepends() : new HashSet<CalcProperty>();
     }
 
     @Override
@@ -112,7 +136,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        event = new Event<D,P>(this, DerivedProperty.<P>createStatic(true, ActionClass.instance), whereImplement, options);
+        event = new ActionEvent<P>(this, whereImplement, options);
     }
 
+    @IdentityLazy
+    public ActionPropertyMapImplement<?, P> getGroupChange() {
+        ActionPropertyMapImplement<P, P> changeImplement = getImplement();
+        ArrayList<P> listInterfaces = new ArrayList<P>(interfaces);
+
+        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + getSID(), "sys", listInterfaces, changeImplement);
+        return groupChangeActionProperty.getImplement(listInterfaces);
+    }
 }

@@ -1353,6 +1353,13 @@ public class BaseUtils {
         return genArray(element, length, stringInstancer);
     }
 
+    public static int[] genArray(int element, int length) {
+        int[] ints = new int[length];
+        for(int i=0;i<length;i++)
+            ints[i] = element;
+        return ints;
+    }
+
     public static boolean isData(Object object) {
         return object instanceof Number || object instanceof String || object instanceof Boolean || object instanceof byte[];
     }

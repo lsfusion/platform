@@ -791,7 +791,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (operands.size() > 0) {
             scriptLogger.info("addScriptedAdditiveOrProp(" + operands + ", " + properties + ");");
             List<Object> resultParams;
-            Integer[] coeffs = new Integer[properties.size()];
+            int[] coeffs = new int[properties.size()];
             for (int i = 0; i < coeffs.length; i++) {
                 if (i == 0 || operands.get(i-1).equals("(+)")) {
                     coeffs[i] = 1;
@@ -799,8 +799,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                     coeffs[i] = -1;
                 }
             }
-            resultParams = getCoeffParamsPlainList(properties, coeffs);
-            res = new LPWithParams(addUProp(null, "", Union.SUM, resultParams.toArray()), mergeAllParams(properties));
+            resultParams = getParamsPlainList(properties);
+            res = new LPWithParams(addUProp(null, "", Union.SUM, null, coeffs, resultParams.toArray()), mergeAllParams(properties));
         }
         return res;    
     }
@@ -1102,17 +1102,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ");");
         checkUnionPropertyParams(paramProps, errMsgPropType);
 
-        List<Object> resultParams;
+        int[] coeffs = null;
         if (unionType == Union.SUM) {
-            Integer[] coeffs = new Integer[paramProps.size()];
+            coeffs = new int[paramProps.size()];
             for (int i = 0; i < coeffs.length; i++) {
                 coeffs[i] = 1;
             }
-            resultParams = getCoeffParamsPlainList(paramProps, coeffs);
-        } else {
-            resultParams = getParamsPlainList(paramProps);
         }
-        LCP prop = addUProp(null, "", unionType, resultParams.toArray());
+        List<Object> resultParams = getParamsPlainList(paramProps);
+        LCP prop = addUProp(null, "", unionType, null, coeffs, resultParams.toArray());
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
 
@@ -1371,7 +1369,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             type = CalcProperty.CheckType.CHECK_SOME;
         }
-        addConstraint((LCP<?>) property, type, BaseUtils.<List<CalcProperty<?>>>immutableCast(checkedProps));
+        addConstraint((LCP<?>) property, type, BaseUtils.<List<CalcProperty<?>>>immutableCast(checkedProps), this);
     }
 
     public LPWithParams addScriptedSpecialProp(String propType, LPWithParams property) {

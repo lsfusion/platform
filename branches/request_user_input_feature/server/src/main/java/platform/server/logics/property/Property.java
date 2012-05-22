@@ -148,6 +148,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract ValueClass getValueClass();
 
+    public ValueClass[] getInterfaceClasses(List<T> listInterfaces) {
+        return BaseUtils.mapList(listInterfaces, getInterfaceClasses()).toArray(new ValueClass[listInterfaces.size()]);
+    }
     public Map<T, ValueClass> getInterfaceClasses() {
         return getInterfaceClasses(false);
     }

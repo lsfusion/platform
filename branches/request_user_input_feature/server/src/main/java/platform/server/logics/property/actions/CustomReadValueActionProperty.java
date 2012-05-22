@@ -10,10 +10,6 @@ import java.sql.SQLException;
 
 public abstract class CustomReadValueActionProperty extends CustomActionProperty {
 
-    protected CustomReadValueActionProperty(String sID, ValueClass... classes) {
-        super(sID, classes);
-    }
-
     protected CustomReadValueActionProperty(String sID, String caption, ValueClass[] classes) {
         super(sID, caption, classes);
     }

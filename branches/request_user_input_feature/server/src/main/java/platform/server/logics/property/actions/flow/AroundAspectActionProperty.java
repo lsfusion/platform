@@ -5,6 +5,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -20,12 +21,8 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
         this.aspectActionImplement = action.map(reverse(getMapInterfaces(innerInterfaces)));
     }
 
-    public Set<CalcProperty> getChangeProps() {
-        return aspectActionImplement.property.getChangeProps();
-    }
-
-    public Set<CalcProperty> getUsedProps() {
-        return aspectActionImplement.property.getUsedProps();
+    public Set<ActionProperty> getDependActions() {
+        return Collections.singleton((ActionProperty)aspectActionImplement.property);
     }
 
     public final FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {

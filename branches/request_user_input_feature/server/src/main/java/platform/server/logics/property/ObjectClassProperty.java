@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.interop.ClassViewType;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -50,6 +51,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     }
 
     @Override
+    @IdentityLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return new ChangeReadClassActionProperty(baseClass).getImplement(Collections.singletonList(getInterface()));
     }

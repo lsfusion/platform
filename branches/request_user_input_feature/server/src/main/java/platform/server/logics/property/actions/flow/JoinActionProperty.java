@@ -38,15 +38,16 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         return FlowResult.FINISH;
     }
 
-    @Override
-    public Set<CalcProperty> getChangeProps() {
-        return action.property.getChangeProps();
+    public Set<ActionProperty> getDependActions() {
+        return Collections.singleton((ActionProperty)action.property);
     }
 
+    @Override
     public Set<CalcProperty> getUsedProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>(action.property.getUsedProps());
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.values())
             value.mapFillDepends(result);
+        result.addAll(super.getUsedProps());
         return result;
     }
 

@@ -11,6 +11,9 @@ import platform.client.SwingUtils;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientModalForm;
 import platform.client.form.ClientNavigatorDialog;
+import platform.client.form.classes.ClassDialog;
+import platform.client.logics.classes.ClientObjectClass;
+import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.KeyStrokes;
 import platform.interop.action.*;
@@ -232,6 +235,20 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public Object execute(ChooseClassAction action) {
+        try {
+            DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(action.classes));
+            ClientObjectClass baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inputStream);
+            ClientObjectClass defaultClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inputStream);
+            ClientObjectClass resultClass = ClassDialog.dialogObjectClass(getDialogParentContainer(), baseClass, defaultClass, action.concrete);
+            if(resultClass!=null)
+                return resultClass.ID;
+            return null;
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
     }
 

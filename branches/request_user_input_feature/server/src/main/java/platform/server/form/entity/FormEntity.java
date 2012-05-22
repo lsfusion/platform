@@ -11,6 +11,7 @@ import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.navigator.FormShowType;
+import platform.server.classes.DateClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;

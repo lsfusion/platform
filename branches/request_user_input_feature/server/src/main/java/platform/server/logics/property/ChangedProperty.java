@@ -44,7 +44,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
     }
 
     // для resolve'а следствий в частности
-    protected PropertyChange<T> getFullChange(Modifier modifier) {
+    public PropertyChange<T> getFullChange(Modifier modifier) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         Expr expr = property.getExpr(mapKeys, modifier);
         Where where;

@@ -40,6 +40,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
         context.addActions(context.getEnv().change(writeTo.property, change)); // нет FormEnvironment так как заведомо не action
     }
 
+    @Override
     public Set<CalcProperty> getUsedProps() {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
         writeFrom.mapFillDepends(result);
@@ -47,15 +48,15 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
         return result;
     }
 
+    @Override
     public Set<CalcProperty> getChangeProps() {
-        return Collections.singleton((CalcProperty)writeTo.property);
-//        return new HashSet<CalcProperty>(writeTo.property.getDataChanges());
+        return new HashSet<CalcProperty>(writeTo.property.getChangeProps());
     }
 
     @Override
     protected CalcPropertyMapImplement<?, I> getSetWhereProperty() {
         // проверяем на is WriteClass (можно было бы еще на интерфейсы проверить но пока нет смысла)
-        return DerivedProperty.createUnion(innerInterfaces, DerivedProperty.createAnd(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance), writeTo),
+        return DerivedProperty.createUnion(innerInterfaces, DerivedProperty.createNotNull(writeTo),
                     DerivedProperty.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(), "value").
                         mapImplement(Collections.singletonMap("value", writeFrom))));
     }

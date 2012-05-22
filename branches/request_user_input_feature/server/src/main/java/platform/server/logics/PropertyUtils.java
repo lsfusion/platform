@@ -68,21 +68,15 @@ public class PropertyUtils {
         return params;
     }
 
-    public static Object[] getUParams(LP[] props, int exoff) {
-        int intNum = props[0].listInterfaces.size();
-        Object[] params = new Object[props.length * (1 + intNum + exoff)];
-        for (int i = 0; i < props.length; i++) {
-            if (exoff > 0)
-                params[i * (1 + intNum + exoff)] = 1;
-            params[i * (1 + intNum + exoff) + exoff] = props[i];
-            for (int j = 1; j <= intNum; j++)
-                params[i * (1 + intNum + exoff) + exoff + j] = j;
-        }
-        return params;
+    public static Object[] getUParams(LP[] props) {
+        Object[] result = new Object[0];
+        for (LP prop : props)
+            result = BaseUtils.add(result, directLI(prop));
+        return result;
     }
 
     public static Object[] directLI(LP prop) {
-        return getUParams(new LP[]{prop}, 0);
+        return BaseUtils.add(prop, getParams(prop));
     }
 
     // считывает "линейные" имплементации

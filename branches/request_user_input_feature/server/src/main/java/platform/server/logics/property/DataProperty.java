@@ -9,6 +9,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.property.actions.ChangeEvent;
 import platform.server.session.*;
 
 import java.util.*;
@@ -29,7 +30,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 
-    public Event<?,?> event = null;
+    public ChangeEvent<?> event = null;
 
     protected Set<CalcProperty> getEventDepends() {
         return event !=null ? event.getDepends(true) : new HashSet<CalcProperty>();
@@ -50,12 +51,17 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     protected Set<CalcProperty> getClassDepends() {
-        return BaseUtils.toSet((CalcProperty)getInterfaceClassProperty().property, (CalcProperty)getValueClassProperty().property);
+        return BaseUtils.toSet((CalcProperty) getInterfaceClassProperty().property, (CalcProperty) getValueClassProperty().property);
     }
 
     @Override
     protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         return propChanges.getUsedChanges(getClassDepends());
+    }
+
+    @Override
+    public Collection<DataProperty> getChangeProps() {
+        return Collections.singleton(this);
     }
 
     @Override

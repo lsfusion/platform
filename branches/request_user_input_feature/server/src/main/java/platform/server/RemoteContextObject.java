@@ -6,12 +6,15 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.interop.RemoteContextInterface;
+import platform.interop.action.ChooseClassAction;
 import platform.interop.action.ClientAction;
 import platform.interop.action.DialogClientAction;
 import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.UserInputResult;
 import platform.interop.remote.RemoteObject;
+import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
+import platform.server.classes.SystemClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
@@ -25,6 +28,8 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -33,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import static platform.base.BaseUtils.nevl;
+import static platform.base.BaseUtils.nullInnerJoin;
 import static platform.base.BaseUtils.serializeObject;
 import static platform.server.data.type.TypeSerializer.serializeType;
 
@@ -112,13 +119,27 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         return dialogInstance.getFormResult() == FormCloseType.NULL ? NullValue.instance : dialogInstance.getDialogObjectValue();
     }
 
-    @Override
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
         try {
             UserInputResult result = (UserInputResult) requestUserInteraction(new RequestUserInputClientAction(serializeType(dataClass), serializeObject(oldValue)));
             if(result.isCanceled())
                 return null;
             return result.getValue()==null?NullValue.instance:new DataObject(result.getValue(), dataClass);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+            baseClass.serialize(dataStream);
+            defaultValue.serialize(dataStream);
+            Integer result = (Integer) requestUserInteraction(new ChooseClassAction(outStream.toByteArray(), concrete));
+            if(result==null)
+                return null;
+            return new DataObject(result, baseClass.getBaseClass().objectClass);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

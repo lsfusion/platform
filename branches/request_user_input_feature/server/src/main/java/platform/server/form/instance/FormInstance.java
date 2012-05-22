@@ -667,7 +667,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             }
         }
 
-        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID);
+        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory);
         if(editAction!=null)
             return editAction.getRemappedPropertyObject(keys).
                     execute(new ExecutionEnvironment(this), requestValue, property);
@@ -1296,8 +1296,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return reportObjects;
     }
 
+    public FormData getFormData(int orderTop) throws SQLException {
+        return getFormData(properties, groups, orderTop);
+    }
+
+    public FormData getFormData(Collection<PropertyDrawInstance> propertyDraws, Collection<GroupObjectInstance> classGroups) throws SQLException {
+        return getFormData(propertyDraws, classGroups, 0);
+    }
+
     // считывает все данные с формы
-    public FormData getFormData(Collection<PropertyDrawInstance> propertyDraws, Set<GroupObjectInstance> classGroups) throws SQLException {
+    public FormData getFormData(Collection<PropertyDrawInstance> propertyDraws, Collection<GroupObjectInstance> classGroups, int orderTop) throws SQLException {
 
         applyFilters();
         applyOrders();

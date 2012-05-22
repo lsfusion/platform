@@ -609,7 +609,7 @@ public abstract class LogicsModule {
         List<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         List<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<W, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<W, PropertyInterface>)
-                (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createStatic(true, LogicalClass.instance));
+                (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
         return addProperty(group, new LAP(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
                 innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
                  (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
@@ -624,7 +624,7 @@ public abstract class LogicsModule {
     protected LAP addListAProp(AbstractGroup group, String name, String caption, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         return addProperty(group, new LAP(new ListActionProperty(name, caption, listInterfaces,
-                readActionImplements(listInterfaces, params), baseLM.BL)));
+                readActionImplements(listInterfaces, params))));
     }
 
     protected LAP addIfAProp(Object... params) {
@@ -1653,7 +1653,7 @@ public abstract class LogicsModule {
     protected LCP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, CustomClass customClass, LCP... props) {
         if(props.length==1)
             ((CalcProperty)props[0].property).aggProp = true;
-        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, is(customClass), add(1, getUParams(props, 0)));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, is(customClass), add(1, getUParams(props)));
     }
 
     protected <T extends PropertyInterface<T>> LCP addAGProp(String name, String caption, LCP<T> lp, int aggrInterface, Object... props) {
@@ -1731,53 +1731,18 @@ public abstract class LogicsModule {
         return result;
     }
 
-    protected LCP addUProp(AbstractGroup group, String name, String caption, Union unionType, Object... params) {
-        return addUProp(group, name, false, caption, unionType, params);
+    protected LCP addUProp(AbstractGroup group, String caption, Union unionType, String delimeter, int[] coeffs, Object... params) {
+        return addUProp(group, genSID(), false, caption, unionType, null, coeffs, params);
     }
 
-    protected LCP addUProp(AbstractGroup group, String caption, Union unionType, Object... params) {
-        return addUProp(group, genSID(), false, caption, unionType, params);
-    }
+    protected LCP addUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, String delimeter, int[] coeffs, Object... params) {
 
-    protected LCP addUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, Object... params) {
+        assert (unionType==Union.SUM)==(coeffs!=null);
+        assert (unionType==Union.STRING_AGG)==(delimeter!=null);
 
-        int intNum = ((LCP) params[unionType == Union.SUM ? 1 : 0]).listInterfaces.size();
-
+        int intNum = getIntNum(params);
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(intNum);
-        List<CalcPropertyMapImplement<?, UnionProperty.Interface>> listOperands = new ArrayList<CalcPropertyMapImplement<?, UnionProperty.Interface>>();
-        Map<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer> mapOperands = new HashMap<CalcPropertyMapImplement<?, UnionProperty.Interface>, Integer>();
-        String delimeter = null;
-        int extra = 0;
-
-        switch (unionType) {
-            case SUM:
-                extra = 1;
-                break;
-            case STRING_AGG:
-                delimeter = (String) params[params.length-1];
-                params = copyOfRange(params, 0, params.length - 1);
-                break;
-        }
-
-        for (int i = 0; i < params.length / (intNum + 1 + extra); i++) {
-            Integer offs = i * (intNum + 1 + extra);
-            LCP<?> opImplement = (LCP) params[offs + extra];
-            CalcPropertyMapImplement operand = new CalcPropertyMapImplement((CalcProperty) opImplement.property);
-            for (int j = 0; j < intNum; j++)
-                operand.mapping.put(opImplement.listInterfaces.get(((Integer) params[offs + 1 + extra + j]) - 1), listInterfaces.get(j));
-
-            switch (unionType) {
-                case SUM:
-                    if (mapOperands.containsKey(operand)) {
-                        mapOperands.put(operand, mapOperands.get(operand) + (Integer) params[offs]);
-                    } else {
-                        mapOperands.put(operand, (Integer) params[offs]);
-                    }
-                    break;
-                default:
-                    listOperands.add(operand);
-            }
-        }
+        List<CalcPropertyInterfaceImplement<UnionProperty.Interface>> listOperands = readCalcImplements(listInterfaces, params);
 
         UnionProperty property = null;
         switch (unionType) {
@@ -1785,6 +1750,11 @@ public abstract class LogicsModule {
                 property = new MaxUnionProperty(name, caption, listInterfaces, listOperands);
                 break;
             case SUM:
+                Map<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> mapOperands = new HashMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer>();
+                for(int i=0;i<listOperands.size();i++) {
+                    CalcPropertyInterfaceImplement<UnionProperty.Interface> operand = listOperands.get(i);
+                    mapOperands.put(operand, BaseUtils.nvl(mapOperands.get(operand), 0)  + coeffs[i]);
+                }
                 property = new SumUnionProperty(name, caption, listInterfaces, mapOperands);
                 break;
             case OVERRIDE:
@@ -1881,17 +1851,7 @@ public abstract class LogicsModule {
     }
 
     protected LCP addDUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP prop1, LCP prop2) {
-        int intNum = prop1.listInterfaces.size();
-        Object[] params = new Object[2 * (2 + intNum)];
-        params[0] = 1;
-        params[1] = prop1;
-        for (int i = 0; i < intNum; i++)
-            params[2 + i] = i + 1;
-        params[2 + intNum] = -1;
-        params[3 + intNum] = prop2;
-        for (int i = 0; i < intNum; i++)
-            params[4 + intNum + i] = i + 1;
-        return addUProp(group, name, persistent, caption, Union.SUM, params);
+        return addUProp(group, name, persistent, caption, Union.SUM, null, new int[]{1, -1}, getUParams(new LCP[]{prop1, prop2}));
     }
 
     protected LCP addNUProp(LCP prop) {
@@ -1909,7 +1869,7 @@ public abstract class LogicsModule {
         params[1] = prop;
         for (int i = 0; i < intNum; i++)
             params[2 + i] = i + 1;
-        return addUProp(group, name, persistent, caption, Union.SUM, params);
+        return addUProp(group, name, persistent, caption, Union.SUM, null, new int[]{-1}, getUParams(new LP[]{prop}));
     }
 
     public LCP addLProp(LCP lp, ValueClass... classes) {
@@ -1928,7 +1888,7 @@ public abstract class LogicsModule {
     }
 
     protected LCP addXorUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP... props) {
-        return addUProp(group, name, persistent, caption, Union.XOR, getUParams(props, 0));
+        return addUProp(group, name, persistent, caption, Union.XOR, null, null, getUParams(props));
 //        int intNum = prop1.listInterfaces.size();
 //        Object[] params = new Object[2 * (1 + intNum)];
 //        params[0] = prop1;
@@ -1951,7 +1911,7 @@ public abstract class LogicsModule {
     }
 
     protected LCP addIfProp(AbstractGroup group, String name, boolean persistent, String caption, LCP prop, boolean not, LCP ifProp, Object... params) {
-        return addJProp(group, name, persistent, caption, and(not), add(getUParams(new LCP[]{prop}, 0), add(new LCP[]{ifProp}, params)));
+        return addJProp(group, name, persistent, caption, and(not), add(getUParams(new LCP[]{prop}), add(new LCP[]{ifProp}, params)));
     }
 
     protected LCP addIfElseUProp(LCP prop1, LCP prop2, LCP ifProp, Object... params) {
@@ -2000,14 +1960,14 @@ public abstract class LogicsModule {
 
     protected LCP addSUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, LCP... props) {
         assert baseLM.checkSUProps.add(props);
-        return addUProp(group, name, persistent, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
+        return addUProp(group, name, persistent, caption, unionType, null, (unionType == Union.SUM ? BaseUtils.genArray(1, props.length) : null), getUParams(props));
     }
 
     protected LCP addSFUProp(AbstractGroup group, String name, String caption, String delimiter, LCP... props) {
         return addSFUProp(group, name, false, caption, delimiter, props);
     }
     protected LCP addSFUProp(AbstractGroup group, String name, boolean persistent, String caption, String delimiter, LCP... props) {
-        return addUProp(group, name, persistent, caption, Union.STRING_AGG, add(getUParams(props, 0), delimiter));
+        return addUProp(group, name, persistent, caption, Union.STRING_AGG, delimiter, null, getUParams(props));
     }
     protected LCP addXSUProp(AbstractGroup group, String caption, LCP... props) {
         return addXSUProp(group, genSID(), caption, props);
@@ -2020,7 +1980,7 @@ public abstract class LogicsModule {
     }
 
     protected LCP addXSUProp(AbstractGroup group, String name, boolean persistent, String caption, LCP... props) {
-        return addUProp(group, name, persistent, caption, Union.EXCLUSIVE, getUParams(props, 0));
+        return addUProp(group, name, persistent, caption, Union.EXCLUSIVE, null, null, getUParams(props));
     }
 
     protected LCP[] addMUProp(AbstractGroup group, String[] names, String[] captions, int extra, LCP... props) {
@@ -2030,7 +1990,7 @@ public abstract class LogicsModule {
         LCP[] result = new LCP[extra + 1];
         int i = 0;
         do {
-            result[i] = addUProp(group, names[i], captions[i], Union.MAX, getUParams(maxProps, 0));
+            result[i] = addSUProp(group, names[i], captions[i], Union.MAX, maxProps);
             if (i < extra) { // если не последняя
                 for (int j = 0; j < propNum; j++)
                     maxProps[j] = addJProp(baseLM.and1, add(directLI(props[(i + 1) * propNum + j]), directLI( // само свойство
@@ -2050,7 +2010,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addBAProp(ConcreteCustomClass customClass, LCP add) {
-        return addAProp(baseLM.new AddBarcodeActionProperty(customClass, ((CalcProperty)add.property), genSID()));
+        return addAProp(baseLM.new AddBarcodeActionProperty(customClass, ((CalcProperty) add.property), genSID()));
     }
 
     protected LAP addSAProp(LCP lp) {
@@ -2111,18 +2071,6 @@ public abstract class LogicsModule {
         return addAAProp(caption, customClass, null, null, false, properties);
     }
 
-    /**
-     * Пример использования:
-     * fileActPricat = addAAProp(pricat, filePricat.property, FileActionClass.getCustomInstance(true));
-     * pricat - добавляемый класс
-     * filePricat.property - свойство, которое изменяется
-     * FileActionClass.getCustomInstance(true) - класс
-     * неявный assertion, что класс свойства должен быть совместим с классом Action
-     */
-    protected LAP addAAProp(ValueClass cls, CalcProperty propertyValue, DataClass dataClass) {
-        return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls, propertyValue, dataClass));
-    }
-
     protected LAP addAAProp(CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
         return addAAProp(ServerResourceBundle.getString("logics.add"), customClass, barcode, barcodePrefix, quantity, properties);
     }
@@ -2130,7 +2078,7 @@ public abstract class LogicsModule {
     protected LAP addAAProp(String caption, CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(), caption,
                 (barcode != null) ? (CalcProperty)barcode.property : null, (barcodePrefix != null) ? ((CalcProperty)barcodePrefix.property) : null,
-                quantity, customClass, LCP.toPropertyArray(properties), null, null));
+                quantity, customClass, LCP.toPropertyArray(properties)));
     }
 
     @IdentityLazy
@@ -2367,14 +2315,14 @@ public abstract class LogicsModule {
     }
 
     public void addConstraint(LCP<?> lp, boolean checkChange) {
-        addConstraint(lp, (checkChange ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO), null);
+        addConstraint(lp, (checkChange ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO), null, this);
     }
 
-    protected void addConstraint(LCP<?> lp, CalcProperty.CheckType type, List<CalcProperty<?>> checkProps) {
+    protected void addConstraint(LCP<?> lp, CalcProperty.CheckType type, List<CalcProperty<?>> checkProps, LogicsModule lm) {
         if(!((CalcProperty)lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET);
         // assert что lp уже в списке properties
-        ((CalcProperty)lp.property).setConstraint(type, checkProps);
+        ((CalcProperty)lp.property).setConstraint(type, checkProps, lm);
     }
 
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, LCP<L> second, int... mapping) {

@@ -361,7 +361,10 @@ public class Query<K,V> extends IQuery<K,V> {
         return result;
     }
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, OrderedMap<? extends V, Boolean> orders) throws SQLException {
-        return executeClasses(session.sql, orders, 0, session.baseClass, session.env);
+        return executeClasses(session, orders, 0);
+    }
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, OrderedMap<? extends V, Boolean> orders, int orderTop) throws SQLException {
+        return executeClasses(session.sql, orders, orderTop, session.baseClass, session.env);
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, OrderedMap<? extends V, Boolean> orders, int selectTop, BaseClass baseClass, QueryEnvironment env) throws SQLException {

@@ -120,6 +120,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.readClasses(session, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
     }
 
+    public Collection<DataProperty> mapChangeProps() {
+        return property.getChangeProps();
+    }
+
     public DataChanges mapJoinDataChanges(Map<T, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return property.getJoinDataChanges(BaseUtils.join(mapping, mapKeys), expr, where, propChanges, changedWhere);
     }
@@ -134,6 +138,14 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
     
     public Map<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
-        return crossJoin(mapping, property.getInterfaceCommonClasses(commonValue));
+        Map<P, ValueClass> commonClasses = property.getInterfaceCommonClasses(commonValue);
+
+        Map<T, ValueClass> result = new HashMap<T, ValueClass>();
+        for (Map.Entry<P, T> entry : mapping.entrySet()) {
+            ValueClass commonClass = CalcProperty.or(commonClasses.get(entry.getKey()), result.get(entry.getValue()));
+            if(commonClass!=null)
+                result.put(entry.getValue(), commonClass);
+        }
+        return result;
     }
 }

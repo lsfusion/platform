@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
+import platform.server.caches.IdentityLazy;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.StructChanges;
 
@@ -10,10 +11,10 @@ import java.util.*;
 public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
 
     public static class Case {
-        CalcPropertyMapImplement<?, Interface> where;
-        CalcPropertyMapImplement<?, Interface> property;
+        CalcPropertyInterfaceImplement<Interface> where;
+        CalcPropertyInterfaceImplement<Interface> property;
 
-        public Case(CalcPropertyMapImplement<?, Interface> where, CalcPropertyMapImplement<?, Interface> property) {
+        public Case(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property) {
             this.where = where;
             this.property = property;
         }
@@ -24,20 +25,20 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected Collection<CalcPropertyMapImplement<?, Interface>> getOperands() {
+    protected Collection<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return BaseUtils.mergeSet(getWheres(), getProps());
     }
 
     protected abstract Iterable<Case> getCases();
 
-    protected Set<CalcPropertyMapImplement<?, Interface>> getWheres() {
-        Set<CalcPropertyMapImplement<?, Interface>> operands = new HashSet<CalcPropertyMapImplement<?,Interface>>();
+    protected Set<CalcPropertyInterfaceImplement<Interface>> getWheres() {
+        Set<CalcPropertyInterfaceImplement<Interface>> operands = new HashSet<CalcPropertyInterfaceImplement<Interface>>();
         for(Case propCase : getCases())
             operands.add(propCase.where);
         return operands;
     }
-    protected Set<CalcPropertyMapImplement<?, Interface>> getProps() {
-        Set<CalcPropertyMapImplement<?, Interface>> operands = new HashSet<CalcPropertyMapImplement<?,Interface>>();
+    protected Set<CalcPropertyInterfaceImplement<Interface>> getProps() {
+        Set<CalcPropertyInterfaceImplement<Interface>> operands = new HashSet<CalcPropertyInterfaceImplement<Interface>>();
         for(Case propCase : getCases())
             operands.add(propCase.property);
         return operands;
@@ -54,6 +55,7 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
+    @IdentityLazy
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         boolean ifClasses = !checkWhere();
@@ -68,6 +70,15 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
                 }
             }
         }
+        return result;
+    }
+
+    @Override
+    @IdentityLazy
+    public Collection<DataProperty> getChangeProps() {
+        Set<DataProperty> result = new HashSet<DataProperty>();
+        for(Case operand : getCases())
+            result.addAll(operand.property.mapChangeProps());
         return result;
     }
 }

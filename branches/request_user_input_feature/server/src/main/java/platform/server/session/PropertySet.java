@@ -61,4 +61,8 @@ public class PropertySet<T extends PropertyInterface> {
     public Query<T,String> getQuery() {
         return new Query<T, String>(PropertyChange.getFullMapKeys(mapKeys, mapValues), where, mapValues);
     }
+
+    public boolean isEmpty() {
+        return where.isFalse();
+    }
 }

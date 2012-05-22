@@ -315,6 +315,14 @@ createNewStore 'Добавить большой склад' = ACTION () {
 // CONSTRAINT propertyExpression [CHECKED [BY propertyName1, ..., propertyNameN]] propertyExpression MESSAGE 'message';
 CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
+constraintAction (store, article) = ACTION (store, article) {
+    EXEC cancel();
+    IF foo(store, article) > 300000 THEN {
+        MESSAGE 'Forbidden';
+    }
+};
+constraintAction(store, article) WHEN foo(store,article)>10000;
+
 
 ////////////////FOLLOWS STATEMENT////////////////
 // Syntax:
