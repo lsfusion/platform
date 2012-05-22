@@ -8167,7 +8167,7 @@ CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'У
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Пересортица' : historyObject, numeratedObject;    // incAccountSumDocumentLedger
+CLASS disparity 'Пересортица' : historyObject, numeratedObject, priceTransactionDocument;    // incAccountSumDocumentLedger
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы': outAutoBalanceSkuLedger;
 
@@ -8246,6 +8246,8 @@ descriptionDisparity 'Название документа' (disparity) =
     [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparity), dateDisparity(disparity));
 
+isDraftPriceTransactionDocument (document) += isDraftDisparity(document);
+descriptionPriceTransactionDocument (document) += descriptionDisparity(document);
 // ---------------------------------- Дооценка остатка при пересорте ------------------------------------------
 
 inputBalanceBeforeDisparityDetail 'Остаток до пересорта (приход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN priceDetailGroup;
@@ -10246,6 +10248,11 @@ toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM spec
 
 //------------------------------------------- Пересорт товара----------------------------------------------------//
 
+quantityDisparityDetailItemDisparity 'Кол-во для закачки в оборудование (приход)' (item, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputItemDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
+
+@metaCodeDocumentMachineryPriceTransaction(disparity);
+@metaCodeDocumentLabelTransaction(disparity);
+
 toPrintActOfRevaluationDisparity 'Акт переоценки (приход)' (disparity) = toPrintActOfRevaluation(uniquePriceChangeDisparity(disparity)) IN printGroup;
 toPrintActOfRevaluationInputDisparity 'Акт переоценки (остатки)' (disparity) = toPrintActOfRevaluation(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
 
@@ -10359,12 +10366,17 @@ FORM disparities 'Пересортицы'
     OBJECTS dis=disparity
     PROPERTIES(dis)  READONLY objectClassName, numberObject, seriesObject, nameDepartmentStoreDisparity, dateDisparity, timeDisparity,
                               countDisparityDetailDisparity, quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
-                              inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity
+                              inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
+                              statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionDisparity(dis),
+                              statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionDisparity(dis)
 
     PROPERTIES(dis)  READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
-
-    PROPERTIES (dis) toPrintActOfRevaluationDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
+    PROPERTIES (dis) createDisparityLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionDisparity(dis),
+                     createSnapshotDisparityLabelTransaction FORCE PANEL SHOWIF isPostedDisparity(dis),
+                     createDisparityMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionDisparity(dis),
+                     createSnapshotDisparityMachineryPriceTransaction FORCE PANEL SHOWIF isPostedDisparity(dis),
+                     toPrintActOfRevaluationDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
                      toPrintActOfRevaluationInputDisparity FORCE PANEL SHOWIF needToPriceChangeInputDisparity(dis),
                      ADDFORM, EDITFORM SHOWIF isDraftDisparity(dis), delete FORCE PANEL SHOWIF isDraftDisparity(dis),
                      postDisparity SHOWIF isDraftDisparity(dis), unpostDisparity SHOWIF isPostedDisparity(dis)
