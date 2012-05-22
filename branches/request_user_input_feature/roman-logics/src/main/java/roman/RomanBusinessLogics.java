@@ -19,6 +19,11 @@ import java.util.Arrays;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
+    public ScriptingLogicsModule Utils;
+    public ScriptingLogicsModule Numerator;
+    public ScriptingLogicsModule Stock;
+    public ScriptingLogicsModule Document;
+
     public RomanLogicsModule RomanLM;
     public ScriptingLogicsModule RomanRB;
 
@@ -31,6 +36,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void createModules() throws IOException {
         super.createModules();
+        Utils = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this);
+        addLogicsModule(Utils);
+        Numerator = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this);
+        addLogicsModule(Numerator);
+        Stock = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this);
+        addLogicsModule(Stock);
+        Document = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this);
+        addLogicsModule(Document);
         RomanLM = new RomanLogicsModule(LM, this);
         addLogicsModule(RomanLM);
         RomanRB = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this);

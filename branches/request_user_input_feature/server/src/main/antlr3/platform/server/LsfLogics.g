@@ -13,6 +13,7 @@ grammar LsfLogics;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
+	import platform.server.form.entity.FormEntity;
 	import platform.server.form.navigator.NavigatorElement;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
@@ -263,12 +264,17 @@ formStatement
 scope {
 	ScriptingFormEntity form;
 }
+@init {
+	boolean initialDeclaration = false;
+}
 @after {
-	if (inPropParseState()) {
+	if (inPropParseState() && initialDeclaration) {
 		self.addScriptedForm($formStatement::form);
 	}
 }
-	:	declaration=formDeclaration { $formStatement::form = $declaration.form; }
+	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
+		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
+		)
 		(	formGroupObjectsList
 		|	formTreeGroupObjectList
 		|	formFiltersList
@@ -326,6 +332,15 @@ formDeclaration returns [ScriptingFormEntity form]
 		formNameCaption=simpleNameWithCaption
 		('PRINT' { isPrint = true; })?
 		(type = formShowTypeSetting { showType = $type.value; })?
+	;
+
+extendingFormDeclaration returns [ScriptingFormEntity form]
+@after {
+	if (inPropParseState()) {
+		$form = self.getFormForExtending($formName.sid);
+	}
+}
+	:	'EXTEND' 'FORM' formName=compoundID
 	;
 
 formShowTypeSetting returns [FormShowType value = null]
@@ -1210,6 +1225,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
+		|	notNullSetting [property]
 		)*
 	;
 
@@ -1356,6 +1372,18 @@ aggPropSetting [LP property]
 	}
 }
 	:	'AGGPROP'
+	;
+
+notNullSetting [LP property]
+@init {
+	boolean toResolve = false;
+}
+@after {
+	if (inPropParseState()) {
+		self.setScriptedNotNull(property, toResolve);
+	}
+}
+	:	'NOT' 'NULL' ('DELETE' { toResolve = true; })?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2206,16 +2234,29 @@ metaCodeIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:		( firstId=metaCodeId { ids.add($firstId.sid); }
-			( ',' nextId=metaCodeId { ids.add($nextId.sid); })* )?
+	:		firstId=metaCodeId { ids.add($firstId.sid); }
+			( ',' nextId=metaCodeId { ids.add($nextId.sid); })* 
 	;
 
 
 metaCodeId returns [String sid]
 	:	id=compoundID 			{ $sid = $id.sid; }
 	|	ptype=PRIMITIVE_TYPE	{ $sid = $ptype.text; } 
-	|	str=STRING_LITERAL 		{ $sid = $str.text; }
+	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
+	|							{ $sid = ""; }
 	;
+
+metaCodeLiteral
+	:	STRING_LITERAL 
+	| 	UINT_LITERAL
+	|	POSITIVE_DOUBLE_LITERAL
+	|	ULONG_LITERAL
+	|	LOGICAL_LITERAL
+	|	DATE_LITERAL
+	|	NULL_LITERAL
+	|	COLOR_LITERAL
+	;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// COMMON /////////////////////////////////
@@ -2323,7 +2364,7 @@ literal returns [LP property]
 	|	vnull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
 	|	vcolor=colorLiteral { cls = ScriptingLogicsModule.ConstType.COLOR; value = $vcolor.val; }		
 	;
-	
+
 classId returns [String sid]
 	:	id=compoundID { $sid = $id.sid; }
 	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
@@ -2362,6 +2403,14 @@ intLiteral returns [int val]
 	:	(MINUS {isMinus=true;})?
 		ui=uintLiteral  { $val = isMinus ? -$ui.val : $ui.val; }
 	;
+
+longLiteral returns [long val]
+@init {
+	boolean isMinus = false;
+} 
+	:	(MINUS {isMinus = true;})?
+		ul=ulongLiteral { $val = isMinus ? -$ul.val : $ul.val; } 
+	;	
 
 doubleLiteral returns [double val]
 @init {

@@ -1,0 +1,54 @@
+MODULE Utils;
+
+IMPORT BaseLogicsModule;
+
+FORM dialogDate 'Выбор даты'
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) objValue = OBJVALUE
+;
+
+DESIGN dialogDate FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Введите дату';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
+// --------------------------- Агрегации --------------------------------- //
+
+META defineAggregationCustom (primProperty, aggrObject, aggrProperty)
+    unique###aggrObject 'Одиночная агрегация' (primObject) =
+        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
+END
+
+META defineAggregation (primObject, aggrObject, aggrProperty)
+    primObject###aggrObject = DATA primObject (aggrObject);
+
+    @defineAggregationCustom (primObject###aggrObject, aggrObject, aggrProperty);
+END
+
+META defineAggregationDoubleCustom (prim1Property, prim2Property, aggrObject, aggrProperty)
+    unique###aggrObject 'Двойная агрегация' (prim1Object, prim2Object) =
+        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
+END
+
+META defineAggregationDouble (prim1Object, prim2Object, aggrObject, aggrProperty)
+    prim1Object###aggrObject = DATA prim1Object (aggrObject);
+    prim2Object###aggrObject = DATA prim2Object (aggrObject);
+
+    @defineAggregationDoubleCustom(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
+END
+

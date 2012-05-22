@@ -47,18 +47,18 @@
 	<field name="retail_warrantConsignment" class="java.lang.String"/>
 	<field name="retail_warrantHolderConsignment" class="java.lang.String"/>
 	<field name="retail_goodsAcceptedConsignment" class="java.lang.String"/>
-	<field name="retail_sumQuantityConsignment" class="java.lang.Double"/>
-	<field name="retail_sumCostConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_totalSumVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_quantityConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_sumConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="retail_nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="retail_shortNameConsignmentDetail" class="java.lang.String"/>
+	<field name="retail_shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
 	<field name="retail_quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_priceConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_costConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_sumConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_sumVATConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_costWithVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_sumInvoiceConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_noteInnerFlowDetail" class="java.lang.String"/>
 	<field name="retail_UNPRecipientConsignment" class="java.lang.String"/>
 	<field name="retail_UNPSenderConsignment" class="java.lang.String"/>
@@ -67,8 +67,8 @@
 	<field name="retail_addressRecipientConsignment" class="java.lang.String"/>
 	<field name="retail_fullNameSenderConsignment" class="java.lang.String"/>
 	<field name="retail_fullNameRecipientConsignment" class="java.lang.String"/>
-	<field name="retail_quantityConsignmentDetailsConsignment" class="java.lang.Integer"/>
-	<field name="retail_costWithVATConsignment" class="java.lang.Double"/>
+	<field name="retail_countConsignmentDetailConsignment" class="java.lang.Integer"/>
+	<field name="retail_sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="retail_priceWareReturnSupplierDetail" class="java.lang.Double"/>
 	<field name="retail_nameWareReturnSupplierDetail" class="java.lang.String"/>
 	<field name="retail_dataWareRangeReturnSupplierDetail" class="java.lang.Double"/>
@@ -338,7 +338,7 @@
 				</staticText>
 			</band>
 			<band height="12">
-				<printWhenExpression><![CDATA[$F{retail_quantityConsignmentDetailsConsignment} > 5]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{retail_countConsignmentDetailConsignment} > 5]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="785" height="12"/>
 					<textElement textAlignment="Left">
@@ -384,14 +384,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_costWithVATConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_sumInvoiceConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="341" y="0" width="49" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_sumQuantityConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_quantityConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" x="25" y="0" width="24" height="14" backcolor="#FFFFFF"/>
@@ -405,14 +405,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_totalSumVATConsignmentDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_sumVATConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="446" y="0" width="71" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_sumCostConsignmentDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retail_sumConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" x="49" y="0" width="260" height="14" backcolor="#FFFFFF"/>
@@ -447,7 +447,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_totalSumVATConsignmentDetail}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumVATConsignmentDetailConsignment}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="15" width="601" height="1"/>
@@ -478,7 +478,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_costWithVATConsignment}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumInvoiceConsignmentDetailConsignment}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="25" y="0" width="105" height="12"/>
@@ -873,7 +873,7 @@
 	</pageHeader>
 	<detail>
 		<band height="12">
-			<printWhenExpression><![CDATA[$F{retail_quantityConsignmentDetailsConsignment} <= 5]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{retail_countConsignmentDetailConsignment} <= 5]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="49" y="0" width="260" height="12"/>
 				<box>
@@ -899,7 +899,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_shortNameConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="12"/>
@@ -938,7 +938,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_costConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="12"/>
@@ -977,7 +977,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_costWithVATConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumInvoiceConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="12"/>
@@ -1005,7 +1005,7 @@
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[$F{retail_isReturnSupplierConsignment} != null && $F{retail_priceWareReturnSupplierDetail} != null
-&& $F{retail_quantityConsignmentDetailsConsignment} <= 5]]></printWhenExpression>
+&& $F{retail_countConsignmentDetailConsignment} <= 5]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="12" backcolor="#FFFFFF">
 					<printWhenExpression><![CDATA[$F{retail_isReturnSupplierConsignment} != null && $F{retail_priceWareReturnSupplierDetail} != null]]></printWhenExpression>

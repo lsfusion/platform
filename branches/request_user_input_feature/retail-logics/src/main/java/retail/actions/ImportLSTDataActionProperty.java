@@ -247,7 +247,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField dataRetailRangeItemField = new ImportField(retailLM.getLCPByName("dataRate"));
         ImportField quantityPackItemField = new ImportField(retailLM.getLCPByName("quantityPackItem"));
         ImportField wareIDField = new ImportField(BL.LM.extSID);
-        ImportField priceWareField = new ImportField(retailLM.getLCPByName("priceWareDate"));
+        ImportField priceWareField = new ImportField(retailLM.getLCPByName("warePriceDate"));
         ImportField ndsWareField = new ImportField(retailLM.getLCPByName("dataRate"));
         ImportField rateWasteIDField = new ImportField(BL.LM.extSID);
 
@@ -320,7 +320,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(isLoafCutItemField, retailLM.getLCPByName("isLoafCutItem").getMapping(itemKey)));
         props.add(new ImportProperty(isWeightItemField, retailLM.getLCPByName("isWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(compositionField, retailLM.getLCPByName("compositionScalesItem").getMapping(itemKey)));
-        props.add(new ImportProperty(dataSuppliersRangeItemField, retailLM.getLCPByName("suppliersRangeItemDate").getMapping(itemKey, dateField, supplierRangeKey),
+        props.add(new ImportProperty(dataSuppliersRangeItemField, retailLM.getLCPByName("supplierRangeItemDate").getMapping(itemKey, dateField, supplierRangeKey),
                 BL.LM.object(retailLM.getClassByName("range")).getMapping(supplierRangeKey)));
         props.add(new ImportProperty(dataRetailRangeItemField, retailLM.getLCPByName("retailRangeItemDate").getMapping(itemKey, dateField, retailRangeKey),
                 BL.LM.object(retailLM.getClassByName("range")).getMapping(retailRangeKey)));
@@ -329,8 +329,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(wareIDField, retailLM.getLCPByName("wareItem").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("ware")).getMapping(wareKey)));
 
-        props.add(new ImportProperty(wareIDField, BL.LM.extSID.getMapping(wareKey)));
-        props.add(new ImportProperty(priceWareField, retailLM.getLCPByName("priceWareDate").getMapping(wareKey, dateField)));
+//        props.add(new ImportProperty(wareIDField, BL.LM.extSID.getMapping(wareKey))); // нельзя включать, потому то будут проблемы, если ссылается на товар, который не lgrmsec
+        props.add(new ImportProperty(priceWareField, retailLM.getLCPByName("warePriceDate").getMapping(wareKey, dateField)));
         props.add(new ImportProperty(ndsWareField, retailLM.getLCPByName("rangeWareDate").getMapping(wareKey, dateField, rangeKey),
                 BL.LM.object(retailLM.getClassByName("range")).getMapping(rangeKey)));
 
@@ -393,7 +393,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         context.addAction(new MessageClientAction(result, "Ошибка"));
                 }
                 session.close();
-                System.out.println("done " + start);
+                System.out.println("done prices " + start);
             }
         } catch (xBaseJException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -430,6 +430,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField retailMarkupShipmentDetailField = new ImportField(retailLM.getLCPByName("retailMarkupShipmentDetail"));
                 ImportField dataSuppliersRangeField = new ImportField(retailLM.getLCPByName("dataRate"));
                 ImportField dataRetailRangeField = new ImportField(retailLM.getLCPByName("dataRate"));
+                ImportField toShowWareField = new ImportField(retailLM.getLCPByName("toShowWareShipment"));
 
                 ImportKey<?> shipmentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("shipment"),
                         retailLM.getLCPByName("numberSeriesToShipment").getMapping(waybillShipmentField, seriesWaybillShipmentField));
@@ -462,6 +463,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         BL.LM.object(retailLM.getClassByName("departmentStore")).getMapping(departmentStoreKey)));
                 props.add(new ImportProperty(supplierIDField, retailLM.getLCPByName("supplierShipment").getMapping(shipmentKey),
                         BL.LM.object(retailLM.getClassByName("supplier")).getMapping(supplierKey)));
+                props.add(new ImportProperty(toShowWareField, retailLM.getLCPByName("toShowWareShipment").getMapping(shipmentKey)));
 
                 props.add(new ImportProperty(shipmentDetailIDField, retailLM.getLCPByName("sidShipmentDetail").getMapping(shipmentDetailKey)));
                 props.add(new ImportProperty(quantityShipmentDetailField, retailLM.getLCPByName("quantityShipmentDetail").getMapping(shipmentDetailKey)));
@@ -470,7 +472,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 props.add(new ImportProperty(retailPriceShipmentDetailField, retailLM.getLCPByName("retailPriceShipmentDetail").getMapping(shipmentDetailKey)));
                 props.add(new ImportProperty(retailMarkupShipmentDetailField, retailLM.getLCPByName("retailMarkupShipmentDetail").getMapping(shipmentDetailKey)));
 
-                props.add(new ImportProperty(dataSuppliersRangeField, retailLM.getLCPByName("suppliersRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierRangeKey),
+                props.add(new ImportProperty(dataSuppliersRangeField, retailLM.getLCPByName("supplierRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierRangeKey),
                         BL.LM.object(retailLM.getClassByName("range")).getMapping(supplierRangeKey)));
                 props.add(new ImportProperty(dataRetailRangeField, retailLM.getLCPByName("retailRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */retailRangeKey),
                         BL.LM.object(retailLM.getClassByName("range")).getMapping(retailRangeKey)));
@@ -484,7 +486,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportTable table = new ImportTable(Arrays.asList(waybillShipmentField, seriesWaybillShipmentField,
                         departmentStoreIDField, supplierIDField, dateShipmentField, itemIDField, shipmentDetailIDField,
                         quantityShipmentDetailField, supplierPriceShipmentDetail, importerPriceShipmentDetail, retailPriceShipmentDetailField,
-                        retailMarkupShipmentDetailField, dataSuppliersRangeField, dataRetailRangeField), data);
+                        retailMarkupShipmentDetailField, dataSuppliersRangeField, dataRetailRangeField, toShowWareField), data);
 
                 DataSession session = BL.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(shipmentKey, supplierKey, departmentStoreKey, shipmentDetailKey, itemKey, supplierRangeKey, retailRangeKey), props);
@@ -495,6 +497,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         context.addAction(new MessageClientAction(result, "Ошибка"));
                 }
                 session.close();
+
+                System.out.println("done shipment " + start);
             }
 
         } catch (xBaseJException e) {
@@ -556,6 +560,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         context.addAction(new MessageClientAction(result, "Ошибка"));
                 }
                 session.close();
+
+                System.out.println("done assortment " + start);
             }
 
         } catch (xBaseJException e) {
@@ -1205,7 +1211,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             if (post_dok.length != 1)
                 data.add(Arrays.asList((Object) number, series, departmentStoreID, supplierID, dateShipment, itemID,
                         shipmentDetailID, quantityShipmentDetail, supplierPriceShipmentDetail, importerPriceShipmentDetail, retailPriceShipmentDetail,
-                        retailMarkupShipmentDetail, suppliersRange, retailRange));
+                        retailMarkupShipmentDetail, suppliersRange, retailRange, true));
         }
         return data;
     }

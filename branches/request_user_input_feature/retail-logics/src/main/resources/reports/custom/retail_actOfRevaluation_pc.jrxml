@@ -41,26 +41,26 @@
 	<field name="retail_commonNameChairmanPriceChangeDocument" class="java.lang.String"/>
 	<field name="retail_nameOfficerChairmanPriceChangeDocument" class="java.lang.String"/>
 	<field name="retail_commonNameEmployeeCommitteePriceChangeDocument" class="java.lang.String"/>
-	<field name="retail_quantityPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_quantityPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
 	<field name="retail_numberDisposalPriceChangeDocument" class="java.lang.String"/>
-	<field name="retail_oldTotalSumSupplierPricePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_oldTotalSumMarkupPriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_oldTotalSumRetailVATPriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_oldTotalSumWarePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_oldTotalSumVatWarePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_oldRetailSumChangeDocument" class="java.lang.Double"/>
-	<field name="retail_totalSumSupplierPricePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_totalSumMarkupPriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_totalSumRetailVATPriceChangeDocument1" class="java.lang.Double"/>
-	<field name="retail_totalSumWarePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_totalSumVatWarePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_retailSumChangeDocument" class="java.lang.Double"/>
-	<field name="retail_diffTotalSumSupplierPricePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_diffTotalSumMarkupPriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_diffTotalSumRetailVATPriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_diffTotalSumWarePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_diffTotalSumVatWarePriceChangeDocument" class="java.lang.Double"/>
-	<field name="retail_accountSumChangeDocument" class="java.lang.Double"/>
+	<field name="retail_curSupplierISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_curMarkupSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_curRetailVATISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_curWareSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_curWareVATSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_curRetailSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_supplierISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_markupSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_retailVATISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_wareSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_wareVATSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_retailSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_diffWareSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
+	<field name="retail_diffRetailSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
 	<field name="retail_isRevaluationCommitteePriceChangeDocument" class="java.lang.Boolean"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{pc})]]></groupExpression>
@@ -145,35 +145,35 @@
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_oldTotalSumSupplierPricePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_curSupplierISumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="216" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_oldTotalSumMarkupPriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_curMarkupSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="247" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_oldTotalSumRetailVATPriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_curRetailVATISumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="278" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_oldTotalSumWarePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_curWareSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="309" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_oldTotalSumVatWarePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_curWareVATSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="340" y="0" width="31" height="18" backcolor="#FFFFFF"/>
@@ -187,35 +187,35 @@
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_totalSumSupplierPricePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_supplierISumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="433" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_totalSumMarkupPriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_markupSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="464" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_totalSumRetailVATPriceChangeDocument1},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_retailVATISumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="495" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_totalSumWarePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_wareSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="526" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_totalSumVatWarePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_wareVATSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="557" y="0" width="31" height="18" backcolor="#FFFFFF"/>
@@ -229,42 +229,42 @@
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffTotalSumSupplierPricePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="652" y="0" width="30" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffTotalSumMarkupPriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="682" y="0" width="30" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffTotalSumRetailVATPriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="712" y="0" width="30" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffTotalSumWarePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffWareSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="742" y="0" width="30" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffTotalSumVatWarePriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="772" y="0" width="30" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_accountSumChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_diffRetailSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="26" y="0" width="114" height="18" backcolor="#FFFFFF"/>
@@ -278,7 +278,7 @@
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_quantityPriceChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_quantityPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="140" y="0" width="19" height="18" backcolor="#FFFFFF"/>
@@ -292,14 +292,14 @@
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_oldRetailSumChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_curRetailSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="588" y="0" width="31" height="18" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_retailSumChangeDocument},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_retailSumPriceChangeDocumentDetailPriceChangeDocument},0)]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="10" y="29" width="149" height="13"/>
@@ -339,7 +339,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_oldRetailSumChangeDocument})+
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_curRetailSumPriceChangeDocumentDetailPriceChangeDocument})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -348,7 +348,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_retailSumChangeDocument})+
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_retailSumPriceChangeDocumentDetailPriceChangeDocument})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -357,7 +357,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_accountSumChangeDocument})+
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_diffRetailSumPriceChangeDocumentDetailPriceChangeDocument})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -366,7 +366,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_quantityPriceChangeDocument})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_quantityPriceChangeDocumentDetailPriceChangeDocument})]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="11" y="97" width="129" height="13"/>

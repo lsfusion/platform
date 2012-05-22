@@ -21,6 +21,8 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
     @Override
     public void sendTransaction(TransactionCashRegisterInfo transactionInfo, List<CashRegisterInfo> machineryInfoList) throws IOException {
 
+        DBF file = null;
+
         try {
             NumField POSNO = new NumField("POSNO", 5, 0);
             CharField CMD = new CharField("CMD", 1);
@@ -64,16 +66,16 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
 
             for (String directory : directoriesList) {
                 File folder = new File(directory.trim());
-                if(!folder.exists() && !folder.mkdir())
+                if (!folder.exists() && !folder.mkdir())
                     throw new RuntimeException("The folder " + folder.getAbsolutePath() + " can not be created");
                 folder = new File(directory.trim() + "/SEND");
-                if(!folder.exists() && !folder.mkdir())
+                if (!folder.exists() && !folder.mkdir())
                     throw new RuntimeException("The folder " + folder.getAbsolutePath() + " can not be created");
 
                 Util.setxBaseJProperty("ignoreMissingMDX", "true");
 
                 String path = directory + "/SEND/" + transactionInfo.dateTimeCode;
-                DBF file = new DBF(path + ".DBF", DBF.DBASEIV, true, "CP866");
+                file = new DBF(path + ".DBF", DBF.DBASEIV, true, "CP866");
 
 
                 file.addField(new Field[]{POSNO, CMD, ERRNO, PLUCODE, ECRID, NAME, PRICE1, PRICE2, PRICE3, PRICE4,
@@ -85,17 +87,19 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
                     NAME.put(item.name);
                     PRICE1.put(item.price);
                     file.write();
-                    file.file.setLength(file.file.length()-1);
+                    file.file.setLength(file.file.length() - 1);
                 }
-                file.close();
 
                 File fileOut = new File(path + ".OUT");
-                if(!fileOut.exists() && !fileOut.createNewFile())
+                if (!fileOut.exists() && !fileOut.createNewFile())
                     throw new RuntimeException("The file " + fileOut.getAbsolutePath() + " can not be created");
 
             }
         } catch (xBaseJException e) {
             throw new RuntimeException(e.toString(), e.getCause());
+        } finally {
+            if (file != null)
+                file.close();
         }
     }
 
@@ -114,13 +118,14 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
         List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
         List<String> readFiles = new ArrayList<String>();
         for (Map.Entry<String, String> entry : cashRegisterDirectories.entrySet()) {
+            DBF importFile = null;
             try {
                 if (entry.getValue() != null) {
                     File directory = new File(entry.getValue().trim() + "/READ/");
                     if (directory.isDirectory())
                         for (String fileName : directory.list(new DBFFilter())) {
                             String filePath = entry.getValue().trim() + "/READ/" + fileName;
-                            DBF importFile = new DBF(filePath);
+                            importFile = new DBF(filePath);
                             readFiles.add(filePath);
                             int recordCount = importFile.getRecordCount();
                             int numberBillDetail = 1;
@@ -150,11 +155,13 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
                                     numberBillDetail++;
                                 }
                             }
-                            importFile.close();
                         }
                 }
             } catch (xBaseJException e) {
                 throw new RuntimeException(e.toString(), e.getCause());
+            } finally {
+                if (importFile != null)
+                    importFile.close();
             }
         }
 

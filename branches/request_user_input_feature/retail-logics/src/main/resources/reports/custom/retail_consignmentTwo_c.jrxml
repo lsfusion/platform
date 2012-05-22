@@ -29,18 +29,18 @@
 	<field name="retail_warrantConsignment" class="java.lang.String"/>
 	<field name="retail_warrantHolderConsignment" class="java.lang.String"/>
 	<field name="retail_goodsAcceptedConsignment" class="java.lang.String"/>
-	<field name="retail_sumQuantityConsignment" class="java.lang.Double"/>
-	<field name="retail_sumCostConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_totalSumVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_quantityConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_sumConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="retail_nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="retail_shortNameConsignmentDetail" class="java.lang.String"/>
+	<field name="retail_shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
 	<field name="retail_quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_priceConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_costConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_sumConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_sumVATConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_costWithVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_sumInvoiceConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_noteInnerFlowDetail" class="java.lang.String"/>
 	<field name="retail_UNPRecipientConsignment" class="java.lang.String"/>
 	<field name="retail_UNPSenderConsignment" class="java.lang.String"/>
@@ -388,7 +388,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="309" y="0" width="32" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{retail_shortNameConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="18"/>
@@ -403,7 +403,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{retail_costConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="18"/>
@@ -418,7 +418,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$F{retail_costWithVATConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumInvoiceConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="18"/>
@@ -479,7 +479,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumCostConsignmentDetail}) + " белорусских рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumConsignmentDetailConsignment}) + " белорусских рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="309" y="0" width="32" height="20"/>
@@ -519,7 +519,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumCostConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumConsignmentDetailConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="153" width="80" height="14"/>
@@ -539,7 +539,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumQuantityConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_quantityConsignmentDetailConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="25" y="0" width="24" height="20"/>
@@ -566,7 +566,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_totalSumVATConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumVATConsignmentDetailConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="203" width="140" height="14"/>
@@ -599,7 +599,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_sumCostConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retail_sumConsignmentDetailConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="82" width="84" height="14"/>
@@ -697,7 +697,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_totalSumVATConsignmentDetail}) + " белорусских рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumVATConsignmentDetailConsignment}) + " белорусских рублей"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="130" y="75" width="580" height="7"/>

@@ -315,7 +315,8 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
     }
 
     @Override
-    public void finishSendingTerminalDocumentInfo(List<TerminalInfo> terminalInfoList) throws IOException {
+    public void finishSendingTerminalDocumentInfo(List<TerminalInfo> terminalInfoList,
+                                                  List<TerminalDocumentInfo> terminalDocumentInfoList) throws IOException {
 
         DBF fileDOC = null;
         Index fileDOCIndex = null;
@@ -346,11 +347,17 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
 
                 fileDOCIndex = fileDOC.createIndex(directory + "/" + "DOC.NDX", "IDDOC", true, true);
 
-                for (int i = 1; i <= recordCount; i++) {
-                    fileDOC.gotoRecord(i);
-                    fileDOC.getField("ACCEPTED").put("1");
-                    fileDOC.update();
+                for (TerminalDocumentInfo docInfo : terminalDocumentInfoList) {
+                    if (fileDOC.findExact(docInfo.idDocument.toString())) {
+                        fileDOC.getField("ACCEPTED").put("1");
+                        fileDOC.update();
+                    }
                 }
+                //for (int i = 1; i <= recordCount; i++) {
+                //    fileDOC.gotoRecord(i);
+                //    fileDOC.getField("ACCEPTED").put("1");
+                //    fileDOC.update();
+                //}
             }
         } catch (xBaseJException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

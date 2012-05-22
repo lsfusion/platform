@@ -709,8 +709,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         percent = addSFProp("percent", "((prm1)*(prm2)/100)", 2);
         share = addSFProp("share", "((prm1)*100/(prm2))", 2);
 
-        jumpWorkdays = addSFProp("jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
-        completeBarcode = addSFProp("completeBarcode(prm1)", StringClass.get(13), 1);
+        jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
+        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
 
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
@@ -734,7 +734,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         numberDOWInDate = addSFProp("numberDOWInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
-        dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
+        dayInDate = addJProp("dayInDate", "День даты", baseLM.and1, addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1), 1, is(DateClass.instance), 1);
         dateInTime = addSFProp("dateInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
         toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
 

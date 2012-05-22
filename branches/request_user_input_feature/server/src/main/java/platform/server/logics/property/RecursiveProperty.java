@@ -122,7 +122,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         if(isLogical() || cycle == Cycle.YES) { // если допускаются циклы, то придется все пересчитывать
             if(changedWhere!=null) changedWhere.add(getLogicalIncrementWhere(joinImplement, propChanges));
-            return calculateNewExpr(joinImplement, propChanges);
+            return calculateNewExpr(joinImplement, false, propChanges);
         } else {
             Expr changedExpr = getSumIncrementExpr(joinImplement, propChanges);
             if(changedWhere!=null) changedWhere.add(changedExpr.getWhere());
@@ -130,12 +130,12 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         }
     }
 
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges) {
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges) {
         Result<Map<KeyExpr, KeyExpr>> mapIterate = new Result<Map<KeyExpr, KeyExpr>>();
         Map<KeyExpr, Expr> group = new HashMap<KeyExpr, Expr>();
         Map<T, Expr> recursiveKeys = getRecursiveKeys(joinImplement, mapIterate, group);
-        return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, propChanges),
-                step.mapExpr(recursiveKeys, propChanges), isCyclePossible(), group);
+        return RecursiveExpr.create(mapIterate.result, initial.mapExpr(recursiveKeys, propClasses, propChanges, null),
+                step.mapExpr(recursiveKeys, propClasses, propChanges, null), isCyclePossible(), group);
     }
 
     // проталкивание значений на уровне property
@@ -167,7 +167,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert assertPropClasses(propClasses, propChanges, changedWhere);
         if(!hasChanges(propChanges) || (changedWhere==null && !isStored()))
-            return calculateNewExpr(joinImplement, propChanges);
+            return calculateNewExpr(joinImplement, propClasses, propChanges);
 
         assert !propClasses;
         return calculateIncrementExpr(joinImplement, propChanges, getExpr(joinImplement), changedWhere);

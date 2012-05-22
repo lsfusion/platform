@@ -34,11 +34,11 @@
 	<field name="retail_departureTimeConsignment" class="java.util.Date"/>
 	<field name="retail_downtimeConsignment" class="java.lang.String"/>
 	<field name="retail_raceQuantityConsignment" class="java.lang.Integer"/>
-	<field name="retail_sumQuantityConsignment" class="java.lang.Double"/>
-	<field name="retail_sumPackQuantityConsignment" class="java.lang.Double"/>
-	<field name="retail_sumGrossWeightConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumCostConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_totalSumVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_quantityConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_grossWeightConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_sumConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="retail_sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="retail_UNPRecipientConsignment" class="java.lang.String"/>
 	<field name="retail_UNPSenderConsignment" class="java.lang.String"/>
 	<field name="retail_UNPTransportPayerConsignment" class="java.lang.String"/>
@@ -50,13 +50,13 @@
 	<field name="retail_fullNameTransportPayerConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="retail_nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="retail_shortNameConsignmentDetail" class="java.lang.String"/>
+	<field name="retail_shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
 	<field name="retail_quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_priceConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_costConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_sumConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_sumVATConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_costWithVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="retail_sumInvoiceConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_packQuantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_grossWeightConsignmentDetail" class="java.lang.Double"/>
 	<field name="retail_noteInnerFlowDetail" class="java.lang.String"/>
@@ -67,7 +67,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumPackQuantityConsignment}) + " мест"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_packQuantityConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="132" y="70" width="115" height="12"/>
@@ -168,7 +168,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumGrossWeightConsignmentDetail}) + " кг"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_grossWeightConsignmentDetailConsignment}) + " кг"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="82" width="115" height="12"/>
@@ -220,7 +220,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_costWithVATConsignmentDetail}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumInvoiceConsignmentDetail}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="118" y="331" width="17" height="12"/>

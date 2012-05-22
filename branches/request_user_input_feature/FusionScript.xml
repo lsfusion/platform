@@ -82,6 +82,7 @@
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="EXEC" />
+      <keyword name="EXTEND" />
       <keyword name="FALSE" />
       <keyword name="FILTER" />
       <keyword name="FILTERGROUP" />
