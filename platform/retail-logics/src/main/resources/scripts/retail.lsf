@@ -351,6 +351,41 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
 
 END
 
+META defineAggregationCustom (primProperty, aggrObject, aggrProperty)
+    unique###aggrObject 'Одиночная агрегация' (primObject) =
+        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
+END
+
+META defineAggregation (primObject, aggrObject, aggrProperty)
+    primObject###aggrObject = DATA primObject (aggrObject);
+
+    @defineAggregationCustom (primObject###aggrObject, aggrObject, aggrProperty);
+END
+
+META defineAggregationDoubleCustom (prim1Property, prim2Property, aggrObject, aggrProperty)
+    unique###aggrObject 'Двойная агрегация' (prim1Object, prim2Object) =
+        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
+        WHERE aggrObject IS aggrObject;
+
+    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
+END
+
+META defineAggregationDouble (prim1Object, prim2Object, aggrObject, aggrProperty)
+    prim1Object###aggrObject = DATA prim1Object (aggrObject);
+    prim2Object###aggrObject = DATA prim2Object (aggrObject);
+
+    @defineAggregationDoubleCustom(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
+END
+
 //------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
 
 META metaCodeIsPriceChangeWrong(prop)
@@ -507,6 +542,13 @@ META defineDocumentDetailNumbered (object)
     number###object##Detail 'Номер' (detail) = numberObject(object###object##Detail(detail));
     series###object##Detail 'Серия' (detail) = seriesObject(object###object##Detail(detail));
     seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
+END
+
+META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
+    @defineAggregation(primObject, aggrObject, aggrProperty);
+    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
+
+    aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
 END
 
 META defineDocumentBase (object)
@@ -1064,7 +1106,7 @@ END
 META defineDocumentPriceChange (object)
     needToPriceChange###object (object) = GROUP SUM 1 IF needToPriceChange###object##Detail(detail) BY object###object##Detail(detail);
 
-    @metaCodeDetailAggregation(object, priceChange###object, needToPriceChange###object);
+    @defineDocumentAggregation(object, priceChange###object, needToPriceChange###object);
 
     @defineDocumentHeaderAggregation(object, priceChange###object);
     @defineDocumentHeaderAggregationDescription(object, priceChange###object);
@@ -1186,61 +1228,6 @@ END
 META implementInputListRegister (concrete)
     @implementHeaderInputListRegister(concrete);
     @implementInputListRegisterDetail(concrete);
-END
-
-// ----------------------------------- Свойства для объектов Posted ------------------------------------------ //
-
-META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
-
-    primObject###aggrObject = DATA primObject (aggrObject);
-
-    @metaCodeSinglePropsAggregation (primObject###aggrObject, aggrObject, aggrProperty);
-
-END
-
-META metaCodeSinglePropsAggregation (primProperty, aggrObject, aggrProperty)
-
-    unique###aggrObject 'Одиночная агрегация' (primObject) =
-        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
-        WHERE aggrObject IS aggrObject;
-
-    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
-
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
-    is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
-
-END
-
-META metaCodeDoubleAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
-
-    prim1Object###aggrObject = DATA prim1Object (aggrObject);
-    prim2Object###aggrObject = DATA prim2Object (aggrObject);
-
-    @metaCodeDoublePropsAggregation(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
-
-END
-
-META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, aggrProperty)
-
-    unique###aggrObject 'Двойная агрегация' (prim1Object, prim2Object) =
-        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
-        WHERE aggrObject IS aggrObject;
-
-    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
-
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
-    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
-
-END
-
-
-META metaCodeDetailAggregation (primObject, aggrObject, aggrProperty)
-
-    @metaCodeSingleAggregation(primObject, aggrObject, aggrProperty);
-    @metaCodeSingleAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
-
-    aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
-
 END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
@@ -6586,7 +6573,7 @@ TABLE parish (parish);
 isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy;
 
          //  приходный документ //
-@metaCodeSingleAggregation(actOfStudy, parish, isActOfStudy);
+@defineAggregation(actOfStudy, parish, isActOfStudy);
 
 dateParish (parish) = dateActOfStudy(actOfStudyParish(parish));
 dateTimeParish 'Дата/время' (parish) = dateTimeActOfStudy(actOfStudyParish(parish));
@@ -6616,7 +6603,7 @@ quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 CLASS consumption 'Расходный документ (разруб)' : outAccountSumDocumentLedger;
 TABLE consumption (consumption);
 
-@metaCodeSingleAggregation(actOfStudy, consumption, isActOfStudy);
+@defineAggregation(actOfStudy, consumption, isActOfStudy);
 
 dateConsumption (consumption) = dateActOfStudy(actOfStudyConsumption(consumption));
 dateTimeConsumption 'Дата/время' (consumption) = dateTimeActOfStudy(actOfStudyConsumption(consumption));
@@ -6898,19 +6885,19 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
 
-@metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, registerCollationSheet, includeRegisterDepartmentStoreInventory);
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, registerCollationSheet, includeRegisterDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по остаткам) //
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
 
-@metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 includeManyDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
 
-@metaCodeDoublePropsAggregation(departmentStoreCollationSheet, inventoryCollationSheet, manyCollationSheet, includeManyDepartmentStoreInventory);
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, manyCollationSheet, includeManyDepartmentStoreInventory);
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
@@ -6926,8 +6913,8 @@ needToOutLedgerCollationSheetItem (collationSheet, item) = quantityShortageColla
 needToInLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) < 0
     AND isPostedCollationSheet(collationSheet);
 
-@metaCodeDoubleAggregation(collationSheet, item, outInventoryDetail, needToOutLedgerCollationSheetItem);
-@metaCodeDoubleAggregation(collationSheet, item, inInventoryDetail, needToInLedgerCollationSheetItem);
+@defineAggregationDouble(collationSheet, item, outInventoryDetail, needToOutLedgerCollationSheetItem);
+@defineAggregationDouble(collationSheet, item, inInventoryDetail, needToInLedgerCollationSheetItem);
 
 collationSheetInventoryDetail(inventoryDetail) = UNION EXCLUSIVE collationSheetOutInventoryDetail(inventoryDetail),
                                                                  collationSheetInInventoryDetail(inventoryDetail);
@@ -7411,7 +7398,7 @@ CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, h
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': outAutoBalanceSkuLedger;
 
-@metaCodeDetailAggregation (shipment, wastage, needToWasteShipment);
+@defineDocumentAggregation (shipment, wastage, needToWasteShipment);
 
 @defineDocumentTables(wastage);
 @defineDocumentDetailIndex(wastage);
@@ -8089,7 +8076,7 @@ numberCashDocument 'Номер документа' (cashDocument) = DATA INTEGER
 sumCashDocument 'Сумма документа' (cashDocument) = DATA NUMERIC[16,2] (cashDocument) IN baseGroup;
 dopInfoCashDocument 'Описание' (cashDocument) = DATA STRING[10] (cashDocument) IN baseGroup;
 
-@metaCodeSingleAggregation(zReport, incomeCashOrder, isPostedZReport);
+@defineAggregation(zReport, incomeCashOrder, isPostedZReport);
 
 retailSumIncomeCashOrder(incomeCashOrder) = retailSumBillDetailZReport(zReportIncomeCashOrder(incomeCashOrder));
 sumCashDocument (incomeCashOrder) <- retailSumIncomeCashOrder(incomeCashOrder) WHEN CHANGED(retailSumIncomeCashOrder(incomeCashOrder));
@@ -8120,7 +8107,7 @@ FORM cashReports 'Кассовые отчеты'
 CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumDocumentLedger;
 TABLE saleDiscountDocument (saleDiscountDocument);
 
-@metaCodeSingleAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
+@defineAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
 @defineDocumentHeaderAggregation(zReport, saleDiscountDocument);
 
 numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
@@ -8231,7 +8218,7 @@ TABLE inputDisparityDetail (inputDisparityDetail);
 needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetail(disparityDetail) > 0
     AND isPostedDisparityDetail(disparityDetail);
 
-@metaCodeSingleAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
+@defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
 
 @defineDocumentDetailAggregationHeader(disparity, inputDisparity);
 @defineDocumentDetailAggregationItemPrefix(disparity, inputDisparity, input);
@@ -8268,7 +8255,7 @@ needToPriceChangeInputDisparityDetail (disparityDetail) = inputCurRetailPriceDis
 
 needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
 
-@metaCodeDetailAggregation(disparity, priceChangeInputDisparity, needToPriceChangeInputDisparity);
+@defineDocumentAggregation(disparity, priceChangeInputDisparity, needToPriceChangeInputDisparity);
 @defineDocumentHeaderAggregation(disparity, priceChangeInputDisparity);
 @defineDocumentHeaderAggregationDescription(disparity, priceChangeInputDisparity);
 

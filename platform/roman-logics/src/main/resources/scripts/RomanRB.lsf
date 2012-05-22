@@ -3,63 +3,14 @@ MODULE RB;
 IMPORT BaseLogicsModule;
 IMPORT RomanLogicsModule;
 
+IMPORT Utils;
+IMPORT Stock;
+IMPORT Numerator;
+
 round0 (number) = round(number, 0);
 roundMinus1 (number) = round(number, -1);
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
-
-
-META metaCodeDefineDocumentTime (object)
-
-    time###object 'Время документа' = DATA TIME (object);
-    time###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
-
-END
-
-
-META metaCodeSingleAggregation (primObject, aggrObject, aggrProperty)
-
-    primObject###aggrObject = DATA primObject (aggrObject);
-
-    @metaCodeSinglePropsAggregation (primObject###aggrObject, aggrObject, aggrProperty);
-
-END
-
-META metaCodeSinglePropsAggregation (primProperty, aggrObject, aggrProperty)
-
-    unique###aggrObject (primObject) =
-        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
-        WHERE aggrObject IS aggrObject PERSISTENT;
-
-    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
-
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
-    is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
-
-END
-
-META metaCodeDoubleAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
-
-    prim1Object###aggrObject = DATA prim1Object (aggrObject);
-    prim2Object###aggrObject = DATA prim2Object (aggrObject);
-
-    @metaCodeDoublePropsAggregation(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
-
-END
-
-META metaCodeDoublePropsAggregation (prim1Property, prim2Property, aggrObject, aggrProperty)
-
-    unique###aggrObject (prim1Object, prim2Object) =
-        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
-        WHERE aggrObject IS aggrObject PERSISTENT;
-
-    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
-
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
-    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
-
-END
-
 
 META metaCodePriceBaseDiscount(document, caption)
 
@@ -115,7 +66,7 @@ TABLE innerInvoice (innerInvoice);
 
 includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived;
 
-@metaCodeDoubleAggregation(importer, freight, formedInvoice, includeImporterFreight);
+@defineAggregationDouble(importer, freight, formedInvoice, includeImporterFreight);
 
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
                                                                           freightDirectInvoice(innerInvoice) IN idGroup;
@@ -211,7 +162,7 @@ innerInvoiceDeclarationSku 'Инвойс для декларации' (declarati
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN baseGroup PERSISTENT;
 
-@metaCodeDoubleAggregation(declaration, sku, declarationDetail, quantityDeclarationSku);
+@defineAggregationDouble(declaration, sku, declarationDetail, quantityDeclarationSku);
 
 dateDeclarationDetail 'Дата декларации' (declarationDetail) = date(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
@@ -729,7 +680,8 @@ uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRet
 sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN baseGroup;
 //timePriceChangeDocument 'Время документа' = DATA TIME(priceChangeDocument) IN baseGroup;
 
-@metaCodeDefineDocumentTime(priceChangeDocument);
+timePriceChangeDocument 'Время документа' = DATA TIME (priceChangeDocument);
+timePriceChangeDocument (priceChangeDocument) <- currentTime() WHEN ASSIGNED(priceChangeDocument AS priceChangeDocument);
 
 dateTimePriceChangeDocument 'Дата/время документа' (priceChangeDocument) = toDateTime(date(priceChangeDocument), timePriceChangeDocument(priceChangeDocument));
 
@@ -1088,5 +1040,9 @@ NAVIGATOR {
         ADD declarationInvoices;
         ADD coefficientRetail;
         ADD logPriceArticle;
+        ADD dialogDate;
+        ADD numerators;
+        ADD numerator;
+        ADD costItemLedger;
     }
 }
