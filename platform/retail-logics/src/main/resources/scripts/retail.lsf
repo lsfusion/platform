@@ -3003,10 +3003,11 @@ castIntervalNaturalLoss (subNaturalLossItemGroupDetail) =
                  dayToNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail),
                  nameMonthToNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail));
 
-castConcat = FORMULA STRING[100] 'CAST($1 AS TEXT)';
+castConcat = FORMULA STRING[15] 'CAST($1 AS TEXT)';
 concatSubNaturalLossItemGroupDetail (subNaturalLossItemGroup) =
     GROUP CONCAT castConcat(percentNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)), ','
-    BY subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail);
+    BY subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)
+    MINCHARWIDTH 100 PREFCHARWIDTH 150;
 
 inSubNaturalLossItemGroup (subNaturalLossItemGroup, subNaturalLossItemGroupDetail) =
     subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail) ==  subNaturalLossItemGroup;
@@ -9310,6 +9311,7 @@ DESIGN printTimeTable FROM DEFAULT {
             panelLocation = TOOLBAR;
             askConfirm = TRUE;
             }
+    POSITION d.box TO THE BOTTOM interval.box;
 }
 
 //----------------------------------- Подбор товаров -------------------------------------------------------
