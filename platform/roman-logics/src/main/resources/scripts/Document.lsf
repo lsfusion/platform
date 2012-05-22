@@ -77,7 +77,7 @@ END
 
 META defineDocumentHeaderStock (object, stockClass, stockCaption)
     stockClass###object = DATA stockClass(object) AUTOSET;
-    nameDepartmentStore###object stockCaption (object) = name(departmentStore###object(object)) IN documentHeaderGroup
+    name###stockClass###object stockCaption (object) = name(stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 END
 
@@ -86,7 +86,7 @@ META defineDocumentDetailStockCustom (object, detail, stockClass, stockCaption)
     name###stockClass###detail stockCaption (idetail) = name(stockClass###detail(idetail));
 END
 META defineDocumentDetailStock (object, stockClass, stockCaption)
-    @defineDocumentDetailDepartmentStockCustom (object, object##Detail, stockClass, stockCaption);
+    @defineDocumentDetailStockCustom (object, object##Detail, stockClass, stockCaption);
 END
 
 META defineDocumentStock (object, stockClass, stockCaption)

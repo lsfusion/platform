@@ -46,7 +46,7 @@ CLASS ABSTRACT inTransferBalanceSkuLedger 'Внутренний приход п�
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceSkuLedger 'Дата/время' = ABSTRACT DATETIME (balanceSkuLedger) PERSISTENT INDEXED;
-dateBalanceSkuLedger'Дата' (ledger) = dateInTime(dateTimeBalanceSkuLedger(ledger)) PERSISTENT;
+dateBalanceSkuLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceSkuLedger(ledger)) PERSISTENT;
 
 orderBalanceSkuLedger (ledger) = LIST(dateTimeBalanceSkuLedger(ledger), ledger);
 

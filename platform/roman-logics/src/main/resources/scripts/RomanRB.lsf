@@ -6,6 +6,7 @@ IMPORT RomanLogicsModule;
 IMPORT Utils;
 IMPORT Stock;
 IMPORT Numerator;
+IMPORT Document;
 
 round0 (number) = round(number, 0);
 roundMinus1 (number) = round(number, -1);
@@ -1009,6 +1010,15 @@ inActionArticle 'Артикул в акции' = DATA BOOLEAN(action, article);
 
 minSumClientArticleAction 'Мин. накопленная сумма' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
 minSumCheckArticleAction 'Мин. сумма чека' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
+
+// документы товародвижения
+CLASS customsFlow 'Расход с СВХ' : historyObject, numberedObject;
+CLASS customsFlowDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger;
+CLASS customsFlowPosted 'Закрытый расход с СВХ' : customsFlow, postedObject;
+
+@defineDocumentBasePosted(customsFlow);
+
+@defineDocumentStock(customsFlow, customStore, 'СВХ');
 
 
 
