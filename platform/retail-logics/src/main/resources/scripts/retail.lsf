@@ -54,7 +54,6 @@ CLASS ABSTRACT postedObject 'Объект с возможностью закры
 TABLE postedObject (postedObject);
 
 GROUP postedGroup 'Информация о закрытии' : baseGroup;
-GROUP printGroup 'Печатные формы' : baseGroup;
 
 timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN postedGroup;
 userClosed 'Закрыт пользователем' = DATA customUser (postedObject) IN idGroup;
@@ -71,6 +70,7 @@ GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 GROUP documentSumGroup 'Суммы документа': publicGroup;
 GROUP documentPrmGroup 'Параметры документа': publicGroup;
 
+GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
 // ----------------------------------- Нумераторы ------------------------------------------ //
 
@@ -137,7 +137,6 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
     EXEC incrementValueNumerator(numeratorObject(numeratedObject));
 } IN numberedGroup SHORTCUT numberObject;
 
-// todo : не работает
 setValueNumeratedObject(numeratedObject) WHEN CHANGED(numeratorObject(numeratedObject));
 
 // ----------------------------------- Шаблоны ------------------------------------------ //
@@ -277,19 +276,6 @@ META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type,
 
 END
 
-//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
-
-META metaCodeIsPriceChangeWrong(prop)
-
-    isPriceChangeWrong###prop (priceChange###prop##Detail) =
-        retailPricePriceChange###prop##Detail(priceChange###prop##Detail) < curRetailPricePriceChange###prop##Detail(priceChange###prop##Detail)
-          AND banMarkdownItem(itemPriceChange###prop##Detail(priceChange###prop##Detail));
-
-// todo : при изменении поставки начинает сильно тормозить
-//    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
-
-END
-
 // ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
 META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type, group)
 
@@ -362,6 +348,19 @@ META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, capti
 
     showFormName###prop caption (object1, object2, object3) = ACTION FORM name###prop OBJECTS a, b, c MODAL SHORTCUT name###prop DEFAULT;
     showFormName###prop##Over caption (object1, object2, object3) = ACTION FORM name###prop OBJECTS a, b, c MODAL SHORTCUT name###prop##Over;
+
+END
+
+//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
+
+META metaCodeIsPriceChangeWrong(prop)
+
+    isPriceChangeWrong###prop (priceChange###prop##Detail) =
+        retailPricePriceChange###prop##Detail(priceChange###prop##Detail) < curRetailPricePriceChange###prop##Detail(priceChange###prop##Detail)
+          AND banMarkdownItem(itemPriceChange###prop##Detail(priceChange###prop##Detail));
+
+// todo : при изменении поставки начинает сильно тормозить
+//    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
 
 END
 
@@ -448,22 +447,6 @@ META defineDocumentStock (object, stockClass, stockCaption)
     @defineDocumentDetailStock(object, stockClass, stockCaption);
 END
 
-META defineDocumentHeaderDepartmentStore (object)
-    @defineDocumentHeaderStock(object, departmentStore, 'Отдел документа');
-END
-
-META defineDocumentDetailDepartmentStoreCustom (object, detail)
-   @defineDocumentDetailStockCustom (object, detail, departmentStore, 'Отдел документа');
-END
-META defineDocumentDetailDepartmentStore (object)
-    @defineDocumentDetailDepartmentStoreCustom (object, object##Detail);
-END
-
-META defineDocumentDepartmentStore (object)
-    @defineDocumentHeaderDepartmentStore(object);
-    @defineDocumentDetailDepartmentStore(object);
-END
-
 // Примечание
 
 META defineDocumentHeaderNote (object)
@@ -524,6 +507,60 @@ META defineDocumentDetailNumbered (object)
     number###object##Detail 'Номер' (detail) = numberObject(object###object##Detail(detail));
     series###object##Detail 'Серия' (detail) = seriesObject(object###object##Detail(detail));
     seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
+END
+
+META defineDocumentBase (object)
+    @defineDocumentTables(object);
+
+    @defineDocumentRelation(object);
+    @defineDocumentDetailIndex(object);
+
+    @defineDocumentTime(object);
+    @defineDocumentHeaderNote(object);
+
+    @defineDocumentDetailActions(object);
+END
+
+META defineDocumentBasePosted (object)
+    @defineDocumentBase(object);
+
+    @defineDocumentPosted(object);
+END
+
+META defineDocumentDetailQuantityPrefix (object, prefix, caption)
+    prefix###quantity###object##Detail 'Кол-во'###caption = DATA NUMERIC[14,3] (object##Detail);
+END
+META defineDocumentDetailQuantity (object)
+    @defineDocumentDetailQuantityPrefix(object, , );
+END
+
+META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
+    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+META defineDocumentHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
+END
+META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentHeaderQuantity (object)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentHeaderDepartmentStore (object)
+    @defineDocumentHeaderStock(object, departmentStore, 'Отдел документа');
+END
+
+META defineDocumentDetailDepartmentStoreCustom (object, detail)
+   @defineDocumentDetailStockCustom (object, detail, departmentStore, 'Отдел документа');
+END
+META defineDocumentDetailDepartmentStore (object)
+    @defineDocumentDetailDepartmentStoreCustom (object, object##Detail);
+END
+
+META defineDocumentDepartmentStore (object)
+    @defineDocumentHeaderDepartmentStore(object);
+    @defineDocumentDetailDepartmentStore(object);
 END
 
 GROUP itemDetailGroup 'Товар' : publicGroup;
@@ -590,18 +627,6 @@ META defineDocumentDetailItemActions (object)
     } TOOLBAR EDITKEY 'F4';
 END
 
-META defineDocumentBase (object)
-    @defineDocumentTables(object);
-
-    @defineDocumentRelation(object);
-    @defineDocumentDetailIndex(object);
-
-    @defineDocumentTime(object);
-    @defineDocumentHeaderNote(object);
-
-    @defineDocumentDetailActions(object);
-END
-
 META defineDocumentBaseDepartmentStoreItem (object)
     @defineDocumentBase(object);
 
@@ -615,13 +640,6 @@ META defineDocumentBasePostedDepartmentStoreItem (object)
     @defineDocumentBaseDepartmentStoreItem(object);
 
     @defineDocumentPosted(object);
-END
-
-META defineDocumentDetailQuantityPrefix (object, prefix, caption)
-    prefix###quantity###object##Detail 'Кол-во'###caption = DATA NUMERIC[14,3] (object##Detail);
-END
-META defineDocumentDetailQuantity (object)
-    @defineDocumentDetailQuantityPrefix(object, , );
 END
 
 // ----------------------------------- Объявление цен для detail -------------------------- //
@@ -816,19 +834,6 @@ META defineDocumentDetailAccountSum (object)
 END
 
 // ----------------------------------- Объявление сумм для header -------------------------- //
-
-META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
-    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
-END
-META defineDocumentHeaderQuantityCustom (object, detail)
-    @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
-END
-META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
-    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderQuantity (object)
-    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
-END
 
 META defineDocumentHeaderItemQuantityCustom (object, detail)
     quantity###detail##Item###object 'Кол-во товара в документе' (item, object) = GROUP SUM quantity###detail(idetail)
@@ -1537,7 +1542,6 @@ CLASS ABSTRACT outBalanceSkuLedger 'Расход' : balanceSkuLedger;
 CLASS ABSTRACT batch 'Партия' : inBalanceSkuLedger;
 TABLE batch(batch);
 TABLE balanceSkuLedgerBatch (balanceSkuLedger, batch);
-TABLE batchDepartmentStore(batch, departmentStore);
 
 CLASS ABSTRACT outUserBalanceSkuLedger 'Внешний расход с указанной партией' : outBalanceSkuLedger;
 CLASS ABSTRACT outAutoBalanceSkuLedger 'Внешний расход с автоматической себестоимостью' : outBalanceSkuLedger;
@@ -1758,20 +1762,22 @@ FORM costItemLedger 'Себестоимость'
 ;
 
 
+TABLE batchDepartmentStore(batch, departmentStore);
+
 META implementBalanceSkuLedgerItemDepartmentStore(concrete)
     dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
     isPostedBalanceSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
+    descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
     skuBalanceSkuLedger (ledger) += item###concrete##Detail(ledger);
     stockBalanceSkuLedger (ledger) += departmentStore###concrete##Detail(ledger);
-    descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
 END
 
 META implementBatch(concrete)
     dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
     isPostedBatch (batch) += isPosted###concrete##Detail(batch);
+    descriptionBatch (batch) += description###concrete##Detail(batch);
     skuBatch (batch) += item###concrete##Detail(batch);
     supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
-    descriptionBatch (batch) += description###concrete##Detail(batch);
 END
 
 // ----------------------------------- Магазин ----------------------------------------- //
