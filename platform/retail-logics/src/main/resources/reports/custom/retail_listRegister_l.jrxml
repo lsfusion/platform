@@ -36,53 +36,53 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="l" class="java.lang.Integer"/>
-	<field name="retail_numberListRegister" class="java.lang.String"/>
-	<field name="retail_seriesListRegister" class="java.lang.String"/>
+	<field name="numberListRegister" class="java.lang.String"/>
+	<field name="seriesListRegister" class="java.lang.String"/>
 	<field name="objectClassName" class="java.lang.String"/>
-	<field name="retail_dateListRegister" class="java.util.Date"/>
-	<field name="retail_nameDepartmentStoreListRegister" class="java.lang.String"/>
-	<field name="retail_shipperListRegister" class="java.lang.String"/>
-	<field name="retail_consigneeListRegister" class="java.lang.String"/>
-	<field name="retail_isShipmentListRegister" class="java.lang.Boolean"/>
-	<field name="retail_quantityListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_supplierSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_supplierVATISumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_wareSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_wareVATSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_invoiceSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_markupSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_retailVATSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_retailSumListRegisterDetailListRegister" class="java.lang.Double"/>
-	<field name="retail_nameRegisterCommitteeListRegister" class="java.lang.String"/>
-	<field name="retail_nameFormedManListRegister" class="java.lang.String"/>
-	<field name="retail_nameCheckedManListRegister" class="java.lang.String"/>
-	<field name="retail_nameLabeledManListRegister" class="java.lang.String"/>
-	<field name="retail_nameAccountantManListRegister" class="java.lang.String"/>
-	<field name="retail_nameHeadManListRegister" class="java.lang.String"/>
+	<field name="dateListRegister" class="java.util.Date"/>
+	<field name="nameDepartmentStoreListRegister" class="java.lang.String"/>
+	<field name="shipperListRegister" class="java.lang.String"/>
+	<field name="consigneeListRegister" class="java.lang.String"/>
+	<field name="isShipmentListRegister" class="java.lang.Boolean"/>
+	<field name="quantityListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="supplierSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="supplierVATISumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="wareSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="wareVATSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="invoiceSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="markupSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="retailVATSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="retailSumListRegisterDetailListRegister" class="java.lang.Double"/>
+	<field name="nameRegisterCommitteeListRegister" class="java.lang.String"/>
+	<field name="nameFormedManListRegister" class="java.lang.String"/>
+	<field name="nameCheckedManListRegister" class="java.lang.String"/>
+	<field name="nameLabeledManListRegister" class="java.lang.String"/>
+	<field name="nameAccountantManListRegister" class="java.lang.String"/>
+	<field name="nameHeadManListRegister" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="retail_indexListRegisterDetail" class="java.lang.Integer"/>
-	<field name="retail_barcodeExSkuListRegisterDetail" class="java.lang.String"/>
-	<field name="retail_nameAttributeItemListRegisterDetail" class="java.lang.String"/>
-	<field name="retail_shortNameUnitOfMeasureItemListRegisterDetail" class="java.lang.String"/>
-	<field name="retail_quantityListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_importerPriceListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_supplierSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_supplierMarkupListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_supplierVATISumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_dataSupplierRangeListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_wareSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_warePriceListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_wareVATSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_dataWareRangeListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_invoiceSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_importerMarkupListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_markupSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_dataRetailRangeListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_retailVATSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_retailPriceListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_retailSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="retail_numberContractShipment" class="java.lang.String"/>
-	<field name="retail_dateContractShipment" class="java.util.Date"/>
+	<field name="indexListRegisterDetail" class="java.lang.Integer"/>
+	<field name="barcodeExSkuListRegisterDetail" class="java.lang.String"/>
+	<field name="nameAttributeItemListRegisterDetail" class="java.lang.String"/>
+	<field name="shortNameUnitOfMeasureItemListRegisterDetail" class="java.lang.String"/>
+	<field name="quantityListRegisterDetail" class="java.lang.Double"/>
+	<field name="importerPriceListRegisterDetail" class="java.lang.Double"/>
+	<field name="supplierSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="supplierMarkupListRegisterDetail" class="java.lang.Double"/>
+	<field name="supplierVATISumListRegisterDetail" class="java.lang.Double"/>
+	<field name="dataSupplierRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="wareSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="warePriceListRegisterDetail" class="java.lang.Double"/>
+	<field name="wareVATSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="dataWareRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="invoiceSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="importerMarkupListRegisterDetail" class="java.lang.Double"/>
+	<field name="markupSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="dataRetailRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="retailVATSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="retailPriceListRegisterDetail" class="java.lang.Double"/>
+	<field name="retailSumListRegisterDetail" class="java.lang.Double"/>
+	<field name="numberContractShipment" class="java.lang.String"/>
+	<field name="dateContractShipment" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{l})]]></groupExpression>
 	</group>
@@ -101,7 +101,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_wareVATSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{wareVATSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="735" y="0" width="60" height="22" backcolor="#FFFFFF"/>
@@ -114,7 +114,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retailSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="640" y="0" width="50" height="22" backcolor="#FFFFFF"/>
@@ -127,7 +127,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailVATSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retailVATSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement style="GroupCellStyle0" x="210" y="0" width="20" height="22" backcolor="#FFFFFF"/>
@@ -151,7 +151,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_supplierSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{supplierSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="585" y="0" width="55" height="22" backcolor="#FFFFFF"/>
@@ -164,7 +164,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_markupSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{markupSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="535" y="0" width="50" height="22" backcolor="#FFFFFF"/>
@@ -177,7 +177,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_invoiceSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{invoiceSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement style="GroupCellStyle0" x="0" y="0" width="210" height="22" forecolor="#000000" backcolor="#FFFFFF"/>
@@ -201,7 +201,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_quantityListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="375" y="0" width="50" height="22" backcolor="#FFFFFF"/>
@@ -214,7 +214,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_supplierVATISumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{supplierVATISumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="425" y="0" width="55" height="22" backcolor="#FFFFFF"/>
@@ -227,7 +227,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_wareSumListRegisterDetailListRegister}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{wareSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
@@ -291,7 +291,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{retail_numberListRegister}+"-"+$F{retail_seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateListRegister})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Основание: Накладная № "+$F{numberListRegister}+"-"+$F{seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{dateListRegister})+" года"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="210" y="75" width="585" height="13"/>
@@ -313,7 +313,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{retail_numberListRegister}+"-"+$F{retail_seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateListRegister})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["РЕЕСТР РОЗНИЧНЫХ ЦЕН № "+$F{numberListRegister}+"-"+$F{seriesListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{dateListRegister})+" года"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="315" y="36" width="480" height="13"/>
@@ -324,7 +324,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_consigneeListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{consigneeListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="315" y="23" width="480" height="13"/>
@@ -335,7 +335,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{retail_shipperListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shipperListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="210" y="62" width="585" height="13" isRemoveLineWhenBlank="true"/>
@@ -346,7 +346,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Договор: № "+$F{retail_numberContractShipment}+" от "+platform.base.BaseUtils.formatRussian($F{retail_dateContractShipment})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Договор: № "+$F{numberContractShipment}+" от "+platform.base.BaseUtils.formatRussian($F{dateContractShipment})+" года"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -549,7 +549,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_dataWareRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dataWareRangeListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" positionType="Float" x="30" y="11" width="180" height="11" backcolor="#FFFFFF"/>
@@ -562,7 +562,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_barcodeExSkuListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{barcodeExSkuListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="375" y="11" width="50" height="11" backcolor="#FFFFFF"/>
@@ -575,7 +575,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_dataSupplierRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dataSupplierRangeListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
@@ -588,7 +588,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailPriceListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retailPriceListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="22" backcolor="#FFFFFF"/>
@@ -601,7 +601,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_indexListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{indexListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="425" y="11" width="55" height="11"/>
@@ -614,7 +614,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_warePriceListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{warePriceListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="585" y="0" width="55" height="11" backcolor="#FFFFFF"/>
@@ -627,7 +627,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_markupSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{markupSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" isPrintRepeatedValues="false" mode="Transparent" x="30" y="0" width="180" height="11" isRemoveLineWhenBlank="true" backcolor="#FFFFFF"/>
@@ -640,7 +640,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameAttributeItemListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>
@@ -653,7 +653,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_quantityListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="480" y="0" width="55" height="11" backcolor="#FFFFFF"/>
@@ -666,7 +666,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_wareVATSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{wareVATSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="315" y="11" width="60" height="11" backcolor="#FFFFFF"/>
@@ -679,7 +679,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierMarkupListRegisterDetail}==0?"":$F{retail_supplierMarkupListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supplierMarkupListRegisterDetail}==0?"":$F{supplierMarkupListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="640" y="0" width="50" height="11" backcolor="#FFFFFF"/>
@@ -692,7 +692,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailVATSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retailVATSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="210" y="0" width="20" height="22" backcolor="#FFFFFF"/>
@@ -705,7 +705,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureItemListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="585" y="11" width="55" height="11" backcolor="#FFFFFF"/>
@@ -718,7 +718,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_importerMarkupListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{importerMarkupListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="735" y="0" width="60" height="22" backcolor="#FFFFFF"/>
@@ -731,7 +731,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retailSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="315" y="0" width="60" height="11" backcolor="#FFFFFF"/>
@@ -744,7 +744,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supplierSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="535" y="0" width="50" height="22" backcolor="#FFFFFF"/>
@@ -757,7 +757,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_invoiceSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{invoiceSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="375" y="0" width="50" height="11" backcolor="#FFFFFF"/>
@@ -770,7 +770,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierVATISumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supplierVATISumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="55" height="22" backcolor="#FFFFFF"/>
@@ -783,7 +783,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_importerPriceListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{importerPriceListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" x="425" y="0" width="55" height="11"/>
@@ -796,7 +796,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_wareSumListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{wareSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="640" y="11" width="50" height="11" backcolor="#FFFFFF"/>
@@ -809,7 +809,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_dataRetailRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dataRetailRangeListRegisterDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -826,7 +826,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameCheckedManListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameCheckedManListRegister}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" x="30" y="10" width="100" height="13"/>
@@ -861,7 +861,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameAccountantManListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameAccountantManListRegister}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" x="520" y="29" width="85" height="13"/>
@@ -896,7 +896,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameHeadManListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameHeadManListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="130" y="10" width="115" height="13"/>
@@ -909,7 +909,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameFormedManListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameFormedManListRegister}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="380" y="10" width="126" height="13"/>
@@ -922,7 +922,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameLabeledManListRegister}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameLabeledManListRegister}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" x="260" y="10" width="120" height="13"/>

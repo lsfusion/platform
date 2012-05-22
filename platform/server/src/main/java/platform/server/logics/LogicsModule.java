@@ -2254,7 +2254,7 @@ public abstract class LogicsModule {
     }
 
     private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
-        setPropertySID(lp, transformNameToSID(lp.property.getSID()), true);
+        setPropertySID(lp, lp.property.getSID(), true);
         if (group != null && group != baseLM.privateGroup || persistent) {
             lp.property.freezeSID();
         }
@@ -2268,14 +2268,16 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    protected <T extends LP<?>> void setPropertySID(T lp, String sID, boolean generated) {
+    protected <T extends LP<?>> void setPropertySID(T lp, String name, boolean generated) {
         String oldSID = lp.property.getSID();
+        lp.property.setName(name);
+        String newSID = transformNameToSID(name);
         if (baseLM.idSet.contains(oldSID)) {
             baseLM.idSet.remove(oldSID);
             if (generated)
-                baseLM.idSet.add(sID);
+                baseLM.idSet.add(newSID);
         }
-        lp.property.setSID(sID);
+        lp.property.setSID(newSID);
     }
 
     public void addIndex(LP<?>... lps) {

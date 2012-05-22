@@ -17,7 +17,7 @@
 	</style>
 	<field name="e" class="java.lang.Integer"/>
 	<field name="commonName" class="java.lang.String"/>
-	<field name="retail_nameOfficerEmployee" class="java.lang.String"/>
+	<field name="nameOfficerEmployee" class="java.lang.String"/>
 	<detail>
 		<band height="24">
 			<textField isBlankWhenNull="true">
@@ -77,7 +77,7 @@
 				<textElement textAlignment="Center">
 					<font size="8" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameOfficerEmployee}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameOfficerEmployee}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

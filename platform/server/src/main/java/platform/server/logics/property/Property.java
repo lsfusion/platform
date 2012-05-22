@@ -66,7 +66,7 @@ import static platform.base.BaseUtils.merge;
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
 
     private String sID;
-
+    private String name;
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
 
     public String caption;
@@ -535,6 +535,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         assert DataSession.notFitClasses(this, notFit); // из-за эвристики с not могут быть накладки
         changeTable.drop(session.sql);
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public static class CommonClasses<T extends PropertyInterface> {

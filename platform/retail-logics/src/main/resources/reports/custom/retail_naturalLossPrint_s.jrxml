@@ -23,33 +23,33 @@
 	</style>
 	<style name="GroupCellStyle3" hAlign="Center" vAlign="Middle"/>
 	<field name="s" class="java.lang.Integer"/>
-	<field name="retail_numberObject" class="java.lang.String"/>
-	<field name="retail_nameDepartmentStoreNaturalLoss" class="java.lang.String"/>
-	<field name="retail_timeNaturalLoss" class="java.sql.Time"/>
-	<field name="retail_seriesObject" class="java.lang.String"/>
-	<field name="retail_dateNaturalLoss" class="java.util.Date"/>
-	<field name="retail_dateFromNaturalLoss" class="java.util.Date"/>
-	<field name="retail_dateToNaturalLoss" class="java.util.Date"/>
-	<field name="retail_quantityNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
-	<field name="retail_invoiceSumNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
-	<field name="retail_retailSumNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
-	<field name="retail_noteNaturalLoss" class="java.lang.String"/>
+	<field name="numberObject" class="java.lang.String"/>
+	<field name="nameDepartmentStoreNaturalLoss" class="java.lang.String"/>
+	<field name="timeNaturalLoss" class="java.sql.Time"/>
+	<field name="seriesObject" class="java.lang.String"/>
+	<field name="dateNaturalLoss" class="java.util.Date"/>
+	<field name="dateFromNaturalLoss" class="java.util.Date"/>
+	<field name="dateToNaturalLoss" class="java.util.Date"/>
+	<field name="quantityNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
+	<field name="invoiceSumNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
+	<field name="retailSumNaturalLossDetailNaturalLoss" class="java.lang.Double"/>
+	<field name="noteNaturalLoss" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="retail_indexNaturalLossDetail" class="java.lang.Integer"/>
-	<field name="retail_nameAttributeItemNaturalLossDetail" class="java.lang.String"/>
-	<field name="retail_codeNaturalLossDetail" class="java.lang.String"/>
-	<field name="retail_shortNameUnitOfMeasureItemNaturalLossDetail" class="java.lang.String"/>
-	<field name="retail_quantityLossNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_supplierPriceNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_retailPriceNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_supplierSumLossNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_retailSumLossNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_nameSubNaturalLossItemGroupNaturalLossDetail" class="java.lang.String"/>
-	<field name="retail_percentNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_quantityNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_supplierSumNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_retailSumNaturalLossDetail" class="java.lang.Double"/>
-	<field name="retail_castNameSubNaturalLossItemGroup" class="java.lang.String"/>
+	<field name="indexNaturalLossDetail" class="java.lang.Integer"/>
+	<field name="nameAttributeItemNaturalLossDetail" class="java.lang.String"/>
+	<field name="codeNaturalLossDetail" class="java.lang.String"/>
+	<field name="shortNameUnitOfMeasureItemNaturalLossDetail" class="java.lang.String"/>
+	<field name="quantityLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="supplierPriceNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retailPriceNaturalLossDetail" class="java.lang.Double"/>
+	<field name="supplierSumLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retailSumLossNaturalLossDetail" class="java.lang.Double"/>
+	<field name="nameSubNaturalLossItemGroupNaturalLossDetail" class="java.lang.String"/>
+	<field name="percentNaturalLossDetail" class="java.lang.Double"/>
+	<field name="quantityNaturalLossDetail" class="java.lang.Double"/>
+	<field name="supplierSumNaturalLossDetail" class="java.lang.Double"/>
+	<field name="retailSumNaturalLossDetail" class="java.lang.Double"/>
+	<field name="castNameSubNaturalLossItemGroup" class="java.lang.String"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{s})]]></groupExpression>
 	</group>
@@ -100,7 +100,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression><![CDATA["за период с " + $F{retail_dateFromNaturalLoss}+" по "+$F{retail_dateToNaturalLoss}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["за период с " + $F{dateFromNaturalLoss}+" по "+$F{dateToNaturalLoss}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -185,77 +185,77 @@
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameAttributeItemNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameAttributeItemNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="21" y="20" width="27" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_codeNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{codeNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="48" y="20" width="137" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_castNameSubNaturalLossItemGroup}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{castNameSubNaturalLossItemGroup}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="185" y="20" width="65" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailSumLossNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retailSumLossNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="250" y="20" width="65" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierSumLossNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supplierSumLossNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="315" y="20" width="30" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_quantityLossNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityLossNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="345" y="20" width="20" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_shortNameUnitOfMeasureItemNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureItemNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="365" y="20" width="40" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_percentNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{percentNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="405" y="20" width="50" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_quantityNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="455" y="20" width="65" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_retailSumNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retailSumNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="520" y="20" width="65" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_supplierSumNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{supplierSumNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

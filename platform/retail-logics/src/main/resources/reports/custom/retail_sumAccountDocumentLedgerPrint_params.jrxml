@@ -35,29 +35,29 @@
 	<field name="objTo" class="java.util.Date"/>
 	<field name="ds" class="java.lang.Integer"/>
 	<field name="name" class="java.lang.String"/>
-	<field name="retail_sumAccountBDocumentLedgerDate" class="java.lang.Double"/>
-	<field name="retail_sumAccountByItemBDocumentLedgerDate" class="java.lang.Double"/>
-	<field name="retail_sumAccountByContainerBDocumentLedgerDate" class="java.lang.Double"/>
-	<field name="retail_sumAccountByItemADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="retail_sumAccountByContainerADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="retail_sumAccountADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="retail_quantityIncAccountSumDocumentLedger" class="java.lang.Integer"/>
-	<field name="retail_quantityOutAccountSumDocumentLedger" class="java.lang.Integer"/>
-	<field name="retail_nameStoreDepartmentStore" class="java.lang.String"/>
-	<field name="retail_nameCompanyDepartmentStore" class="java.lang.String"/>
-	<field name="retail_UNPDepartmentStore" class="java.lang.String"/>
-	<field name="retail_totalSumIncAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="retail_totalSumIncAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
-	<field name="retail_subtotalIncAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="retail_subtotalIncAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
-	<field name="retail_totalSumOutAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="retail_totalSumOutAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
-	<field name="retail_commonNameMRPDepartmentStore" class="java.lang.String"/>
-	<field name="retail_nameOfficerMRPDepartmentStore" class="java.lang.String"/>
-	<field name="retail_commonNamePersonCheckDepartmentStore" class="java.lang.String"/>
-	<field name="retail_nameOfficerPersonCheckDepartmentStore" class="java.lang.String"/>
-	<field name="retail_nameOfficerBookkeeperDepartmentStore" class="java.lang.String"/>
-	<field name="retail_commonNameBookkeeperDepartmentStore" class="java.lang.String"/>
+	<field name="sumAccountBDocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumAccountByItemBDocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumAccountByContainerBDocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumAccountByItemADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumAccountByContainerADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumAccountADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="quantityIncAccountSumDocumentLedger" class="java.lang.Integer"/>
+	<field name="quantityOutAccountSumDocumentLedger" class="java.lang.Integer"/>
+	<field name="nameStoreDepartmentStore" class="java.lang.String"/>
+	<field name="nameCompanyDepartmentStore" class="java.lang.String"/>
+	<field name="UNPDepartmentStore" class="java.lang.String"/>
+	<field name="totalSumIncAccountSumByItemDocumentLedger" class="java.lang.Double"/>
+	<field name="totalSumIncAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
+	<field name="subtotalIncAccountSumByItemDocumentLedger" class="java.lang.Double"/>
+	<field name="subtotalIncAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
+	<field name="totalSumOutAccountSumByItemDocumentLedger" class="java.lang.Double"/>
+	<field name="totalSumOutAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
+	<field name="commonNameMRPDepartmentStore" class="java.lang.String"/>
+	<field name="nameOfficerMRPDepartmentStore" class="java.lang.String"/>
+	<field name="commonNamePersonCheckDepartmentStore" class="java.lang.String"/>
+	<field name="nameOfficerPersonCheckDepartmentStore" class="java.lang.String"/>
+	<field name="nameOfficerBookkeeperDepartmentStore" class="java.lang.String"/>
+	<field name="commonNameBookkeeperDepartmentStore" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -130,14 +130,14 @@
 					<textElement textAlignment="Right">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_sumAccountByItemBDocumentLedgerDate},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumAccountByItemBDocumentLedgerDate},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="0" width="80" height="12" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{retail_sumAccountByContainerBDocumentLedgerDate},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumAccountByContainerBDocumentLedgerDate},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12" backcolor="#FFFFFF"/>
@@ -203,7 +203,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_nameOfficerMRPDepartmentStore}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameOfficerMRPDepartmentStore}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="335" y="30" width="202" height="10"/>
@@ -216,11 +216,11 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_commonNameMRPDepartmentStore}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{commonNameMRPDepartmentStore}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="335" y="40" width="149" height="1">
-						<printWhenExpression><![CDATA[$F{retail_commonNameMRPDepartmentStore}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{commonNameMRPDepartmentStore}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -228,7 +228,7 @@
 				</line>
 				<line>
 					<reportElement x="163" y="40" width="115" height="1">
-						<printWhenExpression><![CDATA[$F{retail_nameOfficerMRPDepartmentStore}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{nameOfficerMRPDepartmentStore}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -266,7 +266,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_commonNamePersonCheckDepartmentStore}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{commonNamePersonCheckDepartmentStore}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="163" y="0" width="119" height="10"/>
@@ -279,11 +279,11 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_nameOfficerPersonCheckDepartmentStore}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameOfficerPersonCheckDepartmentStore}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="335" y="10" width="149" height="1">
-						<printWhenExpression><![CDATA[$F{retail_commonNamePersonCheckDepartmentStore}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{commonNamePersonCheckDepartmentStore}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -291,7 +291,7 @@
 				</line>
 				<line>
 					<reportElement x="163" y="10" width="115" height="1">
-						<printWhenExpression><![CDATA[$F{retail_nameOfficerPersonCheckDepartmentStore}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{nameOfficerPersonCheckDepartmentStore}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -329,11 +329,11 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_commonNameBookkeeperDepartmentStore}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{commonNameBookkeeperDepartmentStore}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="335" y="10" width="149" height="1">
-						<printWhenExpression><![CDATA[$F{retail_commonNameBookkeeperDepartmentStore}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{commonNameBookkeeperDepartmentStore}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -341,7 +341,7 @@
 				</line>
 				<line>
 					<reportElement x="163" y="9" width="115" height="1">
-						<printWhenExpression><![CDATA[$F{retail_nameOfficerBookkeeperDepartmentStore}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{nameOfficerBookkeeperDepartmentStore}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -358,7 +358,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_nameOfficerBookkeeperDepartmentStore}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameOfficerBookkeeperDepartmentStore}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="285" y="10" width="42" height="1"/>
@@ -382,7 +382,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{retail_nameCompanyDepartmentStore}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyDepartmentStore}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="10" width="366" height="10"/>
@@ -395,7 +395,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Магазин: "+$F{retail_nameStoreDepartmentStore}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Магазин: "+$F{nameStoreDepartmentStore}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="494" y="0" width="43" height="10"/>
@@ -447,7 +447,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_UNPDepartmentStore}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{UNPDepartmentStore}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="494" y="50" width="43" height="10"/>

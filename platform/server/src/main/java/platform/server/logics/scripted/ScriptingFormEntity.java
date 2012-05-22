@@ -221,7 +221,7 @@ public class ScriptingFormEntity {
             }
             applyPropertyOptions(property, commonOptions.overrideWith(options.get(i)));
 
-            setPropertDrawAlias(alias, property);
+            setPropertyDrawAlias(alias, property);
         }
     }
 
@@ -286,7 +286,7 @@ public class ScriptingFormEntity {
         return form.addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
     }
 
-    private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
         assert property != null;
 
         if (alias == null) {

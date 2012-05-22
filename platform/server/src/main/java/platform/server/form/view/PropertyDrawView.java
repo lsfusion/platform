@@ -19,7 +19,6 @@ import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -213,7 +212,7 @@ public class PropertyDrawView extends ComponentView {
         TypeSerializer.serializeType(outStream, getType());
         TypeSerializer.serializeType(outStream, getChangeType());
 
-        pool.writeString(outStream, entity.propertyObject.property.getSID());
+        pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, entity.propertyObject.property.toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(
                 SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));

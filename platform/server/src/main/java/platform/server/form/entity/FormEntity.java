@@ -448,7 +448,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         if (propertyImplement.property.getSID() != null) {
-            String propertySID = propertyImplement.property.getSID(); //BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
+            String propertySID = BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
 
             setPropertyDrawGeneratedSID(newPropertyDraw, propertySID);
         }

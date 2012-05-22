@@ -25,21 +25,21 @@
 	<parameter name="a_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="a_params" class="java.util.Map"/>
 	<field name="w" class="java.lang.Integer"/>
-	<field name="retail_numberWastage" class="java.lang.String"/>
-	<field name="retail_seriesWastage" class="java.lang.String"/>
-	<field name="retail_dateWastage" class="java.util.Date"/>
-	<field name="retail_timeWastage" class="java.sql.Time"/>
-	<field name="retail_nameCompanyWastage" class="java.lang.String"/>
-	<field name="retail_nameDepartmentStoreWastage" class="java.lang.String"/>
-	<field name="retail_nameSupplierWastage" class="java.lang.String"/>
-	<field name="retail_countWastageDetailWastage" class="java.lang.Integer"/>
-	<field name="retail_quantityItemWastageDetailWastage" class="java.lang.Double"/>
-	<field name="retail_quantityWastageDetailWastage" class="java.lang.Double"/>
-	<field name="retail_supplierISumWastageDetailWastage" class="java.lang.Double"/>
-	<field name="retail_markupSumWastageDetailWastage" class="java.lang.Double"/>
-	<field name="retail_retailVATSumWastageDetailWastage" class="java.lang.Double"/>
-	<field name="retail_retailSumWastageDetailWastage" class="java.lang.Double"/>
-	<field name="retail_wastageCommitteeWastage" class="java.lang.Integer"/>
+	<field name="numberWastage" class="java.lang.String"/>
+	<field name="seriesWastage" class="java.lang.String"/>
+	<field name="dateWastage" class="java.util.Date"/>
+	<field name="timeWastage" class="java.sql.Time"/>
+	<field name="nameCompanyWastage" class="java.lang.String"/>
+	<field name="nameDepartmentStoreWastage" class="java.lang.String"/>
+	<field name="nameSupplierWastage" class="java.lang.String"/>
+	<field name="countWastageDetailWastage" class="java.lang.Integer"/>
+	<field name="quantityItemWastageDetailWastage" class="java.lang.Double"/>
+	<field name="quantityWastageDetailWastage" class="java.lang.Double"/>
+	<field name="supplierISumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="markupSumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retailVATSumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="retailSumWastageDetailWastage" class="java.lang.Double"/>
+	<field name="wastageCommitteeWastage" class="java.lang.Integer"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{w})]]></groupExpression>
 		<groupHeader>
@@ -52,7 +52,7 @@
 				</subreport>
 			</band>
 			<band height="43">
-				<printWhenExpression><![CDATA[$F{retail_wastageCommitteeWastage}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{wastageCommitteeWastage}==null]]></printWhenExpression>
 				<line>
 					<reportElement x="0" y="13" width="270" height="1"/>
 				</line>
@@ -217,7 +217,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_quantityItemWastageDetailWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityItemWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="298" y="0" width="35" height="14" backcolor="#FFFFFF"/>
@@ -231,14 +231,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailSumWastageDetailWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retailSumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="443" y="0" width="55" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_retailVATSumWastageDetailWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retailVATSumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="228" height="14" backcolor="#FFFFFF"/>
@@ -259,14 +259,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_markupSumWastageDetailWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{markupSumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="333" y="0" width="55" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retail_supplierISumWastageDetailWastage}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{supplierISumWastageDetailWastage}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement positionType="Float" x="0" y="19" width="260" height="12"/>
@@ -292,7 +292,7 @@
 					<textElement>
 						<font size="10" isItalic="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_retailSumWastageDetailWastage}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retailSumWastageDetailWastage}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="18">
@@ -306,7 +306,7 @@
 				</textField>
 			</band>
 			<band height="80">
-				<printWhenExpression><![CDATA[$F{retail_wastageCommitteeWastage}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{wastageCommitteeWastage}==null]]></printWhenExpression>
 				<textField>
 					<reportElement x="156" y="72" width="119" height="8"/>
 					<box>
@@ -448,7 +448,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{retail_nameCompanyWastage}!=null?"Компания: "+$F{retail_nameCompanyWastage}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nameCompanyWastage}!=null?"Компания: "+$F{nameCompanyWastage}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="443" y="0" width="111" height="10"/>
@@ -474,7 +474,7 @@
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA["АКТ СПИСАНИЯ ТОВАРА № "+($F{retail_numberWastage}!=null?$F{retail_numberWastage}:" ")+($F{retail_seriesWastage}!=null?"-"+$F{retail_seriesWastage}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["АКТ СПИСАНИЯ ТОВАРА № "+($F{numberWastage}!=null?$F{numberWastage}:" ")+($F{seriesWastage}!=null?"-"+$F{seriesWastage}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="37" width="554" height="12"/>
@@ -487,7 +487,7 @@
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA["от "+platform.base.BaseUtils.formatRussian($F{retail_dateWastage})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["от "+platform.base.BaseUtils.formatRussian($F{dateWastage})+" года"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="49" width="554" height="12"/>
@@ -500,7 +500,7 @@
 				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ЗАПОЛНЕНО ИЗ НАКЛАДНОЙ № "+($F{retail_numberWastage}!=null?$F{retail_numberWastage}:" ")+($F{retail_seriesWastage}!=null?"-"+$F{retail_seriesWastage}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ЗАПОЛНЕНО ИЗ НАКЛАДНОЙ № "+($F{numberWastage}!=null?$F{numberWastage}:" ")+($F{seriesWastage}!=null?"-"+$F{seriesWastage}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="66" width="554" height="12"/>

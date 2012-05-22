@@ -10,56 +10,56 @@
 		</box>
 	</style>
 	<field name="c" class="java.lang.Integer"/>
-	<field name="retail_dateConsignment" class="java.util.Date"/>
-	<field name="retail_carConsignment" class="java.lang.String"/>
-	<field name="retail_ownerCarConsignment" class="java.lang.String"/>
-	<field name="retail_trailerConsignment" class="java.lang.String"/>
-	<field name="retail_driverCarConsignment" class="java.lang.String"/>
-	<field name="retail_waybillConsignment" class="java.lang.String"/>
-	<field name="retail_nameTransportPayerConsignment" class="java.lang.String"/>
-	<field name="retail_shipmentBaseConsignment" class="java.lang.String"/>
-	<field name="retail_loadingPlaceConsignment" class="java.lang.String"/>
-	<field name="retail_unloadingPlaceConsignment" class="java.lang.String"/>
-	<field name="retail_readdressingConsignment" class="java.lang.String"/>
-	<field name="retail_commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
-	<field name="retail_commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
-	<field name="retail_forwarderConsignment" class="java.lang.String"/>
-	<field name="retail_warrantConsignment" class="java.lang.String"/>
-	<field name="retail_warrantHolderConsignment" class="java.lang.String"/>
-	<field name="retail_goodsAcceptedConsignment" class="java.lang.String"/>
-	<field name="retail_commonNameLoadingExecuterConsignment" class="java.lang.String"/>
-	<field name="retail_nameWayOfLoadingConsignment" class="java.lang.String"/>
-	<field name="retail_codeLoadingConsignment" class="java.lang.String"/>
-	<field name="retail_arrivalTimeConsignment" class="java.util.Date"/>
-	<field name="retail_departureTimeConsignment" class="java.util.Date"/>
-	<field name="retail_downtimeConsignment" class="java.lang.String"/>
-	<field name="retail_raceQuantityConsignment" class="java.lang.Integer"/>
-	<field name="retail_quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="retail_packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="retail_grossWeightConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="retail_sumConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="retail_sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="retail_UNPRecipientConsignment" class="java.lang.String"/>
-	<field name="retail_UNPSenderConsignment" class="java.lang.String"/>
-	<field name="retail_UNPTransportPayerConsignment" class="java.lang.String"/>
-	<field name="retail_addressSenderConsignment" class="java.lang.String"/>
-	<field name="retail_addressRecipientConsignment" class="java.lang.String"/>
-	<field name="retail_addressTransportPayerConsignment" class="java.lang.String"/>
-	<field name="retail_fullNameSenderConsignment" class="java.lang.String"/>
-	<field name="retail_fullNameRecipientConsignment" class="java.lang.String"/>
-	<field name="retail_fullNameTransportPayerConsignment" class="java.lang.String"/>
+	<field name="dateConsignment" class="java.util.Date"/>
+	<field name="carConsignment" class="java.lang.String"/>
+	<field name="ownerCarConsignment" class="java.lang.String"/>
+	<field name="trailerConsignment" class="java.lang.String"/>
+	<field name="driverCarConsignment" class="java.lang.String"/>
+	<field name="waybillConsignment" class="java.lang.String"/>
+	<field name="nameTransportPayerConsignment" class="java.lang.String"/>
+	<field name="shipmentBaseConsignment" class="java.lang.String"/>
+	<field name="loadingPlaceConsignment" class="java.lang.String"/>
+	<field name="unloadingPlaceConsignment" class="java.lang.String"/>
+	<field name="readdressingConsignment" class="java.lang.String"/>
+	<field name="commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="forwarderConsignment" class="java.lang.String"/>
+	<field name="warrantConsignment" class="java.lang.String"/>
+	<field name="warrantHolderConsignment" class="java.lang.String"/>
+	<field name="goodsAcceptedConsignment" class="java.lang.String"/>
+	<field name="commonNameLoadingExecuterConsignment" class="java.lang.String"/>
+	<field name="nameWayOfLoadingConsignment" class="java.lang.String"/>
+	<field name="codeLoadingConsignment" class="java.lang.String"/>
+	<field name="arrivalTimeConsignment" class="java.util.Date"/>
+	<field name="departureTimeConsignment" class="java.util.Date"/>
+	<field name="downtimeConsignment" class="java.lang.String"/>
+	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
+	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="grossWeightConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="UNPRecipientConsignment" class="java.lang.String"/>
+	<field name="UNPSenderConsignment" class="java.lang.String"/>
+	<field name="UNPTransportPayerConsignment" class="java.lang.String"/>
+	<field name="addressSenderConsignment" class="java.lang.String"/>
+	<field name="addressRecipientConsignment" class="java.lang.String"/>
+	<field name="addressTransportPayerConsignment" class="java.lang.String"/>
+	<field name="fullNameSenderConsignment" class="java.lang.String"/>
+	<field name="fullNameRecipientConsignment" class="java.lang.String"/>
+	<field name="fullNameTransportPayerConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="retail_nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="retail_shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
-	<field name="retail_quantityConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_priceConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_vatConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumVATConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_sumInvoiceConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_packQuantityConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_grossWeightConsignmentDetail" class="java.lang.Double"/>
-	<field name="retail_noteInnerFlowDetail" class="java.lang.String"/>
+	<field name="nameItemConsignmentDetail" class="java.lang.String"/>
+	<field name="shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
+	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
+	<field name="priceConsignmentDetail" class="java.lang.Double"/>
+	<field name="sumConsignmentDetail" class="java.lang.Double"/>
+	<field name="vatConsignmentDetail" class="java.lang.Double"/>
+	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
+	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
+	<field name="grossWeightConsignmentDetail" class="java.lang.Double"/>
+	<field name="noteInnerFlowDetail" class="java.lang.String"/>
 	<summary>
 		<band height="494">
 			<textField>
@@ -67,14 +67,14 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_packQuantityConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="132" y="70" width="115" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_commonNameIssuanceAllowedConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{commonNameIssuanceAllowedConsignment}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="18" y="172" width="784" height="1"/>
@@ -84,7 +84,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_goodsAcceptedConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{goodsAcceptedConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="158" width="141" height="12"/>
@@ -112,7 +112,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumVATConsignmentDetail}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumVATConsignmentDetail}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="422" y="158" width="141" height="12"/>
@@ -140,7 +140,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_commonNameIssuanceExecutedConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{commonNameIssuanceExecutedConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="125" width="130" height="12"/>
@@ -168,7 +168,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_grossWeightConsignmentDetailConsignment}) + " кг"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{grossWeightConsignmentDetailConsignment}) + " кг"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="82" width="115" height="12"/>
@@ -196,7 +196,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_warrantConsignment}+" выданной "+$F{retail_warrantHolderConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{warrantConsignment}+" выданной "+$F{warrantHolderConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="422" y="106" width="77" height="12"/>
@@ -210,7 +210,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_forwarderConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{forwarderConsignment}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="413" y="65" width="1" height="107"/>
@@ -220,7 +220,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{retail_sumInvoiceConsignmentDetail}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumInvoiceConsignmentDetail}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="118" y="331" width="17" height="12"/>
@@ -346,7 +346,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_downtimeConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{downtimeConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="405" y="319" width="42" height="12"/>
@@ -1016,7 +1016,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_codeLoadingConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{codeLoadingConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="169" y="319" width="68" height="12"/>
@@ -1100,7 +1100,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_commonNameLoadingExecuterConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{commonNameLoadingExecuterConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="356" y="343" width="49" height="12"/>
@@ -1147,7 +1147,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_arrivalTimeConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{arrivalTimeConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="249" y="248" width="51" height="12"/>
@@ -1390,7 +1390,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_departureTimeConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{departureTimeConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="222" y="248" width="28" height="12"/>
@@ -1425,7 +1425,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{retail_nameWayOfLoadingConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameWayOfLoadingConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="69" y="362" width="49" height="49"/>
