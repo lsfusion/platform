@@ -8749,6 +8749,9 @@ inSupplyIntervalPreliminaryOrder (preliminaryOrder, date1, date2) =
     dateSupplyPreliminaryOrder(preliminaryOrder) >= (date1 AS DATE) AND
     dateSupplyPreliminaryOrder(preliminaryOrder) <= (date2 AS DATE);
 
+isDepartmentPreliminaryOrder (preliminaryOrder, departmentStore) =
+   departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore AS departmentStore;
+
 dateLastPreliminaryOrder 'Дата последнего заказа' (departmentStore, supplier, date) =
     GROUP MAX dateOrderPreliminaryOrder(preliminaryOrder)
               AND dateOrderPreliminaryOrder(preliminaryOrder) < (date AS DATE)
@@ -9283,6 +9286,7 @@ FORM printTimeTable 'Печать графика поставок по дата�
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
 
     FILTERS inSupplyIntervalPreliminaryOrder(p, dFrom, dTo)
+    FILTERS isDepartmentPreliminaryOrder(p, d)
 
     ORDER BY dateSupplyPreliminaryOrder
 ;
