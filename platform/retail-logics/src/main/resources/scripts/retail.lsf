@@ -8785,6 +8785,26 @@ META metaCodeInputMultipleItems (object)
 
 END
 
+
+META metaCodeInputMultipleItemsBill (object)
+
+    inputMultipleItems###object 'Подбор товаров (продажа)' = ACTION (object) {
+        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR quantityInputItem(item) DO {
+                ADDOBJ object##Sale##Detail;
+                FOR w == addedObject() DO {
+                    SET object###object##Sale##Detail(w) <- object AS object;
+                    SET item###object##Sale##Detail(w) <- item AS item;
+                    SET quantity###object##Sale##Detail(w) <- quantityInputItem(item);
+                }
+            }
+        }
+        SET quantityInputItem(item) <- NULL;
+    } TOOLBAR;
+
+END
+
 //------------------------------------------------Подбор товара для возврата поставщику-----------------------------------------
 
 FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
@@ -8837,6 +8857,25 @@ META metaCodeInputMultipleItemsSupplier (object)
                     SET object###object##Detail(w) <- object AS object;
                     SET item###object##Detail(w) <- item AS item;
                     SET quantity###object##Detail(w) <- quantityInputItem(item);
+                }
+            }
+        }
+        SET quantityInputItem(item) <- NULL;
+    } TOOLBAR;
+
+END
+
+META metaCodeInputMultipleItemsSupplierBill (object)
+
+    inputMultipleItemsSupplier###object 'Подбор товаров (возврат)' = ACTION (object) {
+        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR quantityInputItem(item) DO {
+                ADDOBJ object##Return##Detail;
+                FOR w == addedObject() DO {
+                    SET object###object##Return##Detail(w) <- object AS object;
+                    SET item###object##Return##Detail(w) <- item AS item;
+                    SET quantity###object##Return##Detail(w) <- quantityInputItem(item);
                 }
             }
         }
@@ -11949,6 +11988,11 @@ DESIGN statements FROM DEFAULT {
  //   ADD d.box BEFORE footer.container;
 }
 
+//----------------------------------- Подбор товаров для чеков -------------------------------------------------------//
+
+@metaCodeInputMultipleItemsBill(bill);
+@metaCodeInputMultipleItemsSupplierBill(bill);
+
 //----------------------------------- Формы чеков -------------------------------------------------//
 
 FORM bill 'Z-отчет'
@@ -11956,13 +12000,15 @@ FORM bill 'Z-отчет'
     PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateZReport, timeZReport, numberZReport,
                     countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumBillDetailZReport
 
-    OBJECTS b=bill
+    OBJECTS b=bill, d=billDetail
     PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
-                  numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill, countBillDetailBill, quantityBillDetailBill, ADDOBJ, delete
+                  numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
+                  countBillDetailBill, quantityBillDetailBill, inputMultipleItemsBill TODRAW d,
+                  inputMultipleItemsSupplierBill TODRAW d, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
-    OBJECTS d=billDetail
-    PROPERTIES(d) barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail, retailSumBillDetail, discountSumBillDetail, ADDOBJ, delete
+    PROPERTIES(d) objectClassName, barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+                  retailSumBillDetail, discountSumBillDetail, ADDOBJ, delete
 
     FILTERS billBillDetail(d)==b
 
@@ -12003,7 +12049,7 @@ FORM bills 'Чеки'
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY  barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+    PROPERTIES(d) READONLY  objectClassName, barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                             supplierSumBalanceSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
