@@ -1700,6 +1700,9 @@ resetCostBalanceSkuLedgerBatch 'Перерассчитать себестоим�
     SET costBalanceSkuLedgerBatch(ledger, batch) <- quantityBalanceSkuLedgerBatch(ledger, batch);
 }
 
+// мгновенный расчет себестоимости
+resetCostBalanceSkuLedgerBatch (ledger) WHEN ASSIGNED(isPostedBalanceSkuLedger(ledger));
+
 setBalanceSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
 
     SET costBalanceSkuLedgerBatch(ledger, batch) AND needToCostBalanceSkuLedger(ledger) <- NULL;
@@ -1731,6 +1734,29 @@ resetBalanceSkuLedgerBatchCost 'Перерассчитать себестоим�
 clearBalanceSkuLedgerBatchCost 'Сбросить всю себестоимость' = ACTION() NEWSESSION AUTOAPPLY {
     SET costBalanceSkuLedgerBatch(ledger, batch) <- NULL;
 } CONFIRM;
+
+FORM costItemLedger 'Себестоимость'
+    OBJECTS bil = balanceSkuLedger
+    PROPERTIES(bil) READONLY dateTimeBalanceSkuLedger, descriptionBalanceSkuLedger, nameSkuBalanceSkuLedger, nameStockBalanceSkuLedger,
+                             quantityBalanceSkuLedger, costedBalanceSkuLedger
+    PROPERTIES(bil)          resetCostBalanceSkuLedgerBatch
+    ORDER BY dateTimeBalanceSkuLedger
+
+    FILTERGROUP needToCostBalanceSkuLedger
+        FILTER 'Нерасписанные строки' 'F9' needToCostBalanceSkuLedger(bil)
+
+    OBJECTS bt = batch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
+    PROPERTIES(bil, bt)     costBalanceSkuLedgerBatch FORCE GRID
+    FILTERS skuBatch(bt) == skuBalanceSkuLedger(bil)
+    ORDER BY dateTimeBatch DESC
+
+    FILTERGROUP inBalanceSkuLedgerBatch
+        FILTER 'Только расписанные партии' 'F10' costBalanceSkuLedgerBatch (bil, bt) DEFAULT
+
+    PROPERTIES() setBalanceSkuLedgerBatchCost, resetBalanceSkuLedgerBatchCost, clearBalanceSkuLedgerBatchCost
+;
+
 
 META implementBalanceSkuLedgerItemDepartmentStore(concrete)
     dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
@@ -7546,7 +7572,7 @@ noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : balanceSkuLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : inTransferBalanceSkuLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
 
@@ -7643,6 +7669,8 @@ quantityInnerArrivalDetailBatch (innerArrivalDetail, batch) = quantityInnerArriv
 limitInTransferBalanceSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
 
 @implementBalanceSkuLedgerItemDepartmentStore(innerArrival);
+quantityInTransferBalanceSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
+
 @implementBaseItemDepartmentStoreLedger(innerArrival);
 
 isDraftPriceTransactionDocument (document) += isDraftInnerArrival(document);
@@ -12826,28 +12854,6 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
         ADD functions.box;
     }
 }
-
-FORM costItemLedger 'Себестоимость'
-    OBJECTS bil = balanceSkuLedger
-    PROPERTIES(bil) READONLY dateTimeBalanceSkuLedger, descriptionBalanceSkuLedger, nameSkuBalanceSkuLedger, nameStockBalanceSkuLedger,
-                             quantityBalanceSkuLedger, costedBalanceSkuLedger
-    PROPERTIES(bil)          resetCostBalanceSkuLedgerBatch
-    ORDER BY dateTimeBalanceSkuLedger
-
-    FILTERGROUP needToCostBalanceSkuLedger
-        FILTER 'Нерасписанные строки' 'F9' needToCostBalanceSkuLedger(bil)
-
-    OBJECTS bt = batch
-    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
-    PROPERTIES(bil, bt)     costBalanceSkuLedgerBatch FORCE GRID
-    FILTERS skuBatch(bt) == skuBalanceSkuLedger(bil)
-    ORDER BY dateTimeBatch DESC
-
-    FILTERGROUP inBalanceSkuLedgerBatch
-        FILTER 'Только расписанные партии' 'F10' costBalanceSkuLedgerBatch (bil, bt) DEFAULT
-
-    PROPERTIES() setBalanceSkuLedgerBatchCost, resetBalanceSkuLedgerBatchCost, clearBalanceSkuLedgerBatchCost
-;
 
 DESIGN costItemLedger FROM DEFAULT {
     NEW buttonCont BEFORE functions.box {
