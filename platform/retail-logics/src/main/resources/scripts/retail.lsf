@@ -1985,7 +1985,7 @@ GROUP labelGroup 'Ценник' : publicGroup;
 GROUP manufactoryGroup 'Производство' : publicGroup;
 GROUP orderGroup 'Заказ' : publicGroup;
 GROUP barGroup 'Бар' : publicGroup;
-GROUP activeGroup 'Активный товар' : publicGroup;
+GROUP activeGroup 'Активность товара' : publicGroup;
 GROUP documentGroup 'Для документов' : publicGroup;
 GROUP displayGroup 'Свойства для отображения' : baseGroup;
 
@@ -13682,6 +13682,8 @@ NAVIGATOR {
             ADD nameIsPortionBarItem;
             ADD addNameBanDiscountItem;
             ADD nameBanDiscountItem;
+            ADD addNameInactiveItem;
+            ADD nameInactiveItem;
             ADD addCoefficientNetGrossItem;
             ADD coefficientNetGrossItem;
         //    ADD addrateNaturalLossItem;
