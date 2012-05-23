@@ -241,11 +241,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getExpr(joinImplement, propChanges, null);
     }
 
-    public Expr aspectGetExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        assert joinImplement.size() == interfaces.size();
-
-        return calculateExpr(joinImplement, propClasses, propChanges, changedWhere);
-    }
+    public abstract Expr aspectGetExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
 
     public IQuery<T, String> getQuery(PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) {
         return getQuery(false, propChanges, queryType, interfaceValues);
@@ -309,38 +305,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return getJoinExpr(joinImplement, propClasses, propChanges, changedWhere);
     }
 
-    public Expr calculateExpr(Map<T, ? extends Expr> joinImplement) {
-        return calculateExpr(joinImplement, false, PropertyChanges.EMPTY, null);
-    }
-
-    public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, true, PropertyChanges.EMPTY, null);
-    }
-
-    protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
-
     @IdentityLazy
     public Type getInterfaceType(T propertyInterface) { // true потому как может быть old не полный (в частности NewSessionAction)
         return getInterfaceClasses(true).get(propertyInterface).getType();
     }
 
-    // возвращает от чего "зависят" изменения - с callback'ов
-    protected abstract QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade);
-
     public QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges) {
         return getUsedChanges(propChanges, false);
     }
-    // 2-й параметр - "сверху" есть каскадная сессия, поэтому eventChange'ы надо проверять полностью, а не только на where
-    public QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade) {
-        if(this instanceof ActionProperty || propChanges.isEmpty()) // чтобы рекурсию разбить
-            return QuickSet.EMPTY();
 
-        QuickSet<CalcProperty> usedChanges;
-        QuickSet<CalcProperty> modifyChanges = propChanges.getUsedChanges((CalcProperty) this, cascade);
-        if(propChanges.hasChanges(modifyChanges) || (propChanges.hasChanges(usedChanges  = calculateUsedChanges(propChanges, cascade)) && !modifyChanges.isEmpty()))
-            return modifyChanges;
-        return usedChanges;
-    }
+    public abstract QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade);
+    // 2-й параметр - "сверху" есть каскадная сессия, поэтому eventChange'ы надо проверять полностью, а не только на where
 
     public PropertyChanges getUsedChanges(PropertyChanges propChanges) {
         return propChanges.filter(getUsedChanges(propChanges.getStruct()));

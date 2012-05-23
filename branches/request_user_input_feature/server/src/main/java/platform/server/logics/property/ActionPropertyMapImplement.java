@@ -1,12 +1,19 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.ActionPropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.session.ExecutionEnvironment;
+import platform.server.session.PropertyChange;
 
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import static platform.base.BaseUtils.crossJoin;
@@ -35,5 +42,13 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
 
     public CalcPropertyMapImplement<?, T> mapWhereProperty() {
         return property.getWhereProperty().map(mapping);
+    }
+
+    public LAP<P> createLP(List<T> listInterfaces) {
+        return new LAP<P>(property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(mapping)));
+    }
+    
+    public List<ClientAction> execute(PropertyChange<T> change, ExecutionEnvironment env, FormEnvironment<T> form) throws SQLException {
+        return env.execute(property, change.map(mapping), form==null ? null : form.map(mapping));
     }
 }

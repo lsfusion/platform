@@ -1062,7 +1062,7 @@ public class VEDLogicsModule extends LogicsModule {
         orderHour = addDCProp(baseGroup, "orderHour", "Час", baseLM.currentHour, is(orderSale), 1, orderSaleArticleRetail);
         orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", baseLM.currentMinute, is(orderSale), 1, orderSaleArticleRetail);
 
-        changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
+        changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", false, "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
         changeQuantityOrder = addOProp(documentGroup, "Номер", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
 
         LCP monthDay = addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);

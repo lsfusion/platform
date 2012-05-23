@@ -405,6 +405,21 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
+    // возвращает от чего "зависят" изменения - с callback'ов
+    protected abstract QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade);
+
+    public QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade) {
+        if(propChanges.isEmpty()) // чтобы рекурсию разбить
+            return QuickSet.EMPTY();
+
+        QuickSet<CalcProperty> usedChanges;
+        QuickSet<CalcProperty> modifyChanges = propChanges.getUsedChanges((CalcProperty) this, cascade);
+        if(propChanges.hasChanges(modifyChanges) || (propChanges.hasChanges(usedChanges  = calculateUsedChanges(propChanges, cascade)) && !modifyChanges.isEmpty()))
+            return modifyChanges;
+        return usedChanges;
+    }
+
+    protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
 
     public Expr aspectGetExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert joinImplement.size() == interfaces.size();
@@ -427,7 +442,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
         }
 
-        return super.aspectGetExpr(joinImplement, propClasses, propChanges, changedWhere);
+        return calculateExpr(joinImplement, propClasses, propChanges, changedWhere);
     }
 
     public MapKeysTable<T> mapTable; // именно здесь потому как не обязательно persistent

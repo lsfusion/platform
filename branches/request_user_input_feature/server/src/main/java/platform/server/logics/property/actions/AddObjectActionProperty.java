@@ -3,6 +3,7 @@ package platform.server.logics.property.actions;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
+import platform.interop.form.ServerResponse;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -12,6 +13,7 @@ import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
+import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -116,8 +118,10 @@ public class AddObjectActionProperty extends CustomReadClassActionProperty {
                         first = false;
                         continue;
                     }
-                    CalcProperty property = properties.get(i++);
-                    property.change(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
+                    CalcProperty<PropertyInterface> property = properties.get(i++);
+                    property.getEditAction(ServerResponse.CHANGE).execute(new PropertyChange<PropertyInterface>(context.getKeyValue(classInterface), BaseUtils.single(property.interfaces), object),
+                            context.getEnv(), null);
+//                    property.change(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
                 }
             }
         }

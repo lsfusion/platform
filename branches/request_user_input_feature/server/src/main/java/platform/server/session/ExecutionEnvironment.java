@@ -22,6 +22,7 @@ public class ExecutionEnvironment {
 
     private ExecutionEnvironmentInterface current;
     private ObjectValue lastUserInput;
+    private boolean wasUserInput = false;
 
     public ExecutionEnvironment(ExecutionEnvironmentInterface current) {
         this.current = current;
@@ -60,6 +61,13 @@ public class ExecutionEnvironment {
         }
         return actions;
 
+    }
+
+    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(getSession()).entrySet())
+            actions.addAll(execute(property, row.getKey(), formEnv, row.getValue().get("value")));
+        return actions;
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
@@ -101,8 +109,12 @@ public class ExecutionEnvironment {
     public ObjectValue getLastUserInput() {
         return lastUserInput;
     }
+    public boolean getWasUserInput() {
+        return wasUserInput;
+    }
 
     public void setLastUserInput(ObjectValue lastUserInput) {
         this.lastUserInput = lastUserInput;
+        this.wasUserInput = true;
     }
 }

@@ -39,13 +39,19 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
 
     @Override
     protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+        Set<Map<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
+
         FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)
-        ObjectValue lastObject; // запоминаем его значение, если не cancel
-        if(!flowResult.equals(FlowResult.FINISH) || (lastObject = context.getLastUserInput())==null)
+        if(!flowResult.equals(FlowResult.FINISH))
             return flowResult;
 
-        context = context.pushUserInput(lastObject);
-        for(Map<ObjectInstance, DataObject> row : getObjectGroupKeys(context)) // бежим по всем
+        if(context.getWasUserInput()) {
+            ObjectValue lastObject; // запоминаем его значение, если не cancel
+            if((lastObject = context.getLastUserInput())==null)
+                return FlowResult.FINISH;
+            context = context.pushUserInput(lastObject);
+        }
+        for(Map<ObjectInstance, DataObject> row : groupKeys) // бежим по всем
             if(!BaseUtils.hashEquals(row, context.getKeys())) { // кроме текущего
                 proceed(context.override(BaseUtils.replace(context.getKeys(), BaseUtils.rightJoin(context.getObjectInstances(), row))));
             }

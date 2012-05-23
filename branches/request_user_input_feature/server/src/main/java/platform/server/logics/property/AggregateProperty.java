@@ -12,6 +12,7 @@ import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
+import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -43,6 +44,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         }
 
         return message;
+    }
+
+    public Expr calculateExpr(Map<T, ? extends Expr> joinImplement) {
+        return calculateExpr(joinImplement, false, PropertyChanges.EMPTY, null);
+    }
+
+    public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+        return calculateExpr(joinImplement, true, PropertyChanges.EMPTY, null);
     }
 
     private Query<T, String> getRecalculateQuery(boolean outDB) {

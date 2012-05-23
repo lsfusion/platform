@@ -35,7 +35,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         Map<ClassPropertyInterface,DataObject> keys = context.getKeys();
         Modifier modifier = context.getModifier();
@@ -68,10 +68,9 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
                 });
                 return;
             } else {
-                final GroupObjectInstance groupObject = context.getGroupObjectInstance();
                 changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
                     public DialogInstance createDialog() throws SQLException {
-                        return formInstance.createChangeEditorDialog(propertyValues, groupObject, filterProperty);
+                        return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
                     }
                 });
             }

@@ -51,7 +51,7 @@ public abstract class WriteActionProperty<P extends PropertyInterface, W extends
         return where.mapIsFull(BaseUtils.filterNot(innerInterfaces, mapInterfaces.values()));
     }
 
-    protected abstract void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException;
+    protected abstract void write(ExecutionContext<PropertyInterface> context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException;
 
     @Override
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {

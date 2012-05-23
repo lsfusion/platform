@@ -6,6 +6,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
+import platform.interop.form.ServerResponse;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
@@ -27,7 +28,6 @@ import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
-import platform.server.logics.property.change.TimePropertyChangeListener;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
@@ -334,6 +334,13 @@ public abstract class LogicsModule {
         return id;
     }
 
+    protected LCP addDProp(AbstractGroup group, String name, String caption, ValueClass value, boolean stored, ValueClass... params) {
+        if(stored)
+            return addDProp(group, name, caption, value, params);
+        else
+            return addSDProp(group, name, caption, value, params);
+    }
+
     protected LCP addDProp(String name, String caption, ValueClass value, ValueClass... params) {
         return addDProp(null, name, false, caption, value, params);
     }
@@ -587,6 +594,10 @@ public abstract class LogicsModule {
         return addSetPropertyAProp("sys", params);
     }
 
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(boolean useEditAction, Object... params) {
+        return addSetPropertyAProp(null, genSID(), "sys", useEditAction, params);
+    }
+
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(String caption, Object... params) {
         return addSetPropertyAProp(genSID(), caption, params);
     }
@@ -600,19 +611,28 @@ public abstract class LogicsModule {
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, Object... params) {
+        return addSetPropertyAProp(group, name, caption, false, params);
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, boolean useEditAction, Object... params) {
         int resInterfaces = getIntNum(params);
-        return addSetPropertyAProp(group, name, caption, resInterfaces, false, BaseUtils.add(BaseUtils.consecutiveList(resInterfaces).toArray(), params));
+        return addSetPropertyAProp(group, name, caption, resInterfaces, false, useEditAction, BaseUtils.add(BaseUtils.consecutiveList(resInterfaces).toArray(), params));
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, int resInterfaces,
                                                                                                  boolean conditional, Object... params) {
+        return addSetPropertyAProp(group, name, caption, resInterfaces, conditional, false, params);
+    }
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, int resInterfaces,
+                                                                                                 boolean conditional, boolean useEditAction, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         List<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<W, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<W, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
         return addProperty(group, new LAP(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
                 innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
-                 (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
+                 (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1), useEditAction)));
     }
 
     protected LAP addListAProp(Object... params) {
@@ -929,29 +949,18 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<PropertyInterface>(new TimeFormulaProperty(sID, time)));
     }
 
-    protected <P extends PropertyInterface> LCP addTCProp(Time time, String name, String caption, LCP<P> changeProp, ValueClass... classes) {
-        return addTCProp(null, time, name, caption, changeProp, classes);
-    }
-
     protected <P extends PropertyInterface> LCP addTCProp(Time time, String name, boolean isStored, String caption, LCP<P> changeProp, ValueClass... classes) {
         return addTCProp(null, time, name, isStored, caption, changeProp, classes);
     }
 
-    protected <P extends PropertyInterface> LCP addTCProp(AbstractGroup group, Time time, String name, String caption, LCP<P> changeProp, ValueClass... classes) {
-        return addTCProp(group, time, name, false, caption, changeProp, classes);
-    }
-
-    protected <P extends PropertyInterface> LCP addTCProp(AbstractGroup group, Time time, String name, boolean isStored, String caption, LCP<P> changeProp, ValueClass... classes) {
-        TimePropertyChangeListener<P> timePropertyChangeListener =
-                new TimePropertyChangeListener<P>((CalcProperty<P>) changeProp.property, isStored, time, name, caption, overrideClasses(changeProp.getInterfaceClasses(), classes), changeProp.listInterfaces);
-
-        changeProp.property.addChangeListener(timePropertyChangeListener);
-
-        if (isStored) {
-            timePropertyChangeListener.timeProperty.markStored(baseLM.tableFactory);
-        }
-
-        return addProperty(group, false, new LCP<ClassPropertyInterface>(timePropertyChangeListener.timeProperty));
+    protected <P extends PropertyInterface, T extends PropertyInterface> LCP addTCProp(AbstractGroup group, Time time, String name, boolean isStored, String caption, LCP<P> changeProp, ValueClass... classes) {
+        LCP timeProperty = addDProp(group, name, caption, time.getConcreteValueClass(), isStored, overrideClasses(changeProp.getInterfaceClasses(), classes));
+        LCP curTime = addTProp(time);
+        LAP setCurTime = addSetPropertyAProp(BaseUtils.add(directLI(timeProperty), curTime));
+        LAP editAction = changeProp.getEditAction(ServerResponse.CHANGE);
+        LAP<?> overrideAction = addListAProp(BaseUtils.add(directLI(editAction), directLI(setCurTime)));
+        changeProp.setEditAction(ServerResponse.CHANGE, overrideAction);
+        return timeProperty;
     }
 
     protected LCP addSFProp(String name, String formula, int paramCount) {

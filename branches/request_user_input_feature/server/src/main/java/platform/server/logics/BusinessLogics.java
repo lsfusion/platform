@@ -1148,7 +1148,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     commonClasses = "";
                 }
                 dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null,
-                        property instanceof CalcProperty && ((CalcProperty)property).isStored() ? true : null, ((CalcProperty)property).setNotNull ? true : null, commonClasses, returnClass, classProperty));
+                        property instanceof CalcProperty && ((CalcProperty)property).isStored() ? true : null, property instanceof CalcProperty && ((CalcProperty)property).setNotNull ? true : null, commonClasses, returnClass, classProperty));
             }
         }
 

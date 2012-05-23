@@ -238,4 +238,13 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     public ValueClass[] getInterfaceClasses() {
         return property.getInterfaceClasses(listInterfaces);
     }
+    
+    public LAP getEditAction(String editActionSID) {
+        return property.getEditAction(editActionSID).createLP(listInterfaces);
+    }
+
+    public <A extends PropertyInterface> void setEditAction(String editActionSID, LAP<A> editAction) {
+        property.setEditAction(editActionSID, new ActionPropertyMapImplement<A, T>(editAction.property, editAction.getMap(listInterfaces)));
+    }
+
 }

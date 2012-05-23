@@ -227,6 +227,9 @@ public class ExecutionContext<P extends PropertyInterface> {
     public ObjectValue getLastUserInput() {
         return env.getLastUserInput();
     }
+    public boolean getWasUserInput() {
+        return env.getWasUserInput();
+    }
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {
 
