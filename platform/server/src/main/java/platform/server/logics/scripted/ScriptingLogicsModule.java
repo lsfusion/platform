@@ -508,7 +508,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setFixedCharWidth(LP<?> property, Integer fixedCharWidth) {
-        if (fixedCharWidth != null)
+        if (fixedCharWidth != null && fixedCharWidth > 0)
             property.setFixedCharWidth(fixedCharWidth);
     }
 

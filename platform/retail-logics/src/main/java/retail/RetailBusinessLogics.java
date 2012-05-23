@@ -38,6 +38,7 @@ import java.util.*;
 
 public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements RetailRemoteInterface {
     public ScriptingLogicsModule Utils;
+    public ScriptingLogicsModule Historizable;
     public ScriptingLogicsModule Numerator;
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule Document;
@@ -56,6 +57,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     protected void createModules() throws IOException {
         super.createModules();
         Utils = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this));
+        Historizable = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Historizable.lsf"), LM, this));
         Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
         Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
         Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));

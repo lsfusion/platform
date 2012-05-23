@@ -10,6 +10,7 @@ MODULE retail;
 IMPORT BaseLogicsModule;
 
 IMPORT Utils;
+IMPORT Historizable;
 IMPORT Numerator;
 IMPORT Stock;
 IMPORT Document;
@@ -19,216 +20,6 @@ dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 
 GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
-
-// ----------------------------------- Свойство объект-дата------------------------------------------ //
-META metaCodeObjectDateProperty(prop, object, caption, type, group)
-
-    prop##Date caption = DATA type (object, DATE) IN group;
-    date###prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
-    prop##Val caption (object, date) = prop##Date(object, date###prop(object, date)) IN group;
-    prop caption (object) = prop##Date(object, date###prop(object, currentDate())) IN group;
-
-    FORM add###prop caption
-    OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(a) READONLY, OBJVALUE(d), prop##Date(a, d);
-    DESIGN add###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-    }
-
-    showFormAdd###prop 'Добавить' (object) = ACTION FORM add###prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM prop caption
-    OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAdd###prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, d)
-    FILTERS prop##Date(a, d);
-    DESIGN prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-    }
-
-    showForm###prop caption (object) = ACTION FORM prop OBJECTS a MODAL SHORTCUT prop DEFAULT;
-
-END
-
-// ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
-
-META metaCodeNameObjectDateProperty(prop, object, caption, type, group)
-
-    prop##Date caption = DATA type (object, DATE) IN group;
-    name###prop##Date caption (object, date) = name(prop##Date(object, date));
-    date###prop (object, date) = GROUP MAX dateIn AND prop##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
-    prop caption (object) = prop##Date(object, date###prop(object, currentDate()));
-    name###prop caption (object) = name(prop(object)) IN group;
-
-    FORM addName###prop caption
-    OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(a) READONLY, OBJVALUE(d), name###prop##Date(a, d);
-    DESIGN addName###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-    }
-
-    showFormAddName###prop 'Добавить' (object) = ACTION FORM addName###prop OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM name###prop caption
-    OBJECTS a=object FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, showFormAddName###prop(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name###prop##Date(a, d)
-    FILTERS prop##Date(a, d);
-    DESIGN name###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-    }
-
-    showFormName###prop caption (object) = ACTION FORM name###prop OBJECTS a MODAL SHORTCUT name###prop DEFAULT;
-
-END
-
-// ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
-META metaCodeDoubleObjectDateProperty(prop, object1, object2, caption, type, group)
-
-    prop##Date caption = DATA type (object1, object2, DATE) IN group;
-    date###prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
-    prop##Val caption (object1, object2, date) = prop##Date(object1, object2, date###prop(object1, object2, date));
-    prop caption (object1, object2) = prop##Val(object1, object2, currentDate()) IN group;
-    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, date), prop##Date(object1, object2, date);
-
-    FORM add###prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(a) READONLY, name(b) READONLY, OBJVALUE(d), prop##Date(a, b, d);
-    DESIGN add###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-    }
-
-    showFormAdd###prop 'Добавить' (object1, object2) = ACTION FORM add###prop OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, showFormAdd###prop(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, b, d)
-    FILTERS prop##Date(a, b, d);
-    DESIGN prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-    }
-
-    showForm###prop caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL SHORTCUT prop DEFAULT;
-    showForm###prop##Over caption (object1, object2) = ACTION FORM prop OBJECTS a, b MODAL SHORTCUT prop##Over;
-
-END
-// ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
-
-META metaCodeNameYesNoDoubleObjectDateProperty(prop, object1, object2, caption, type, group)
-    default###prop###object1###object2 = yesNo.no AND object1 IS object1 AND object2 IS object2;
-    @metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type, group, default###prop###object1###object2);
-END
-
-META metaCodeNameDoubleObjectDateProperty(prop, object1, object2, caption, type, group, defaultProperty)
-
-    prop##Date caption = DATA type (object1, object2, DATE) IN group;
-    name###prop##Date caption (object1, object2, date) = name(prop##Date(object1, object2, date));
-    date###prop (object1, object2, date) = GROUP MAX dateIn AND prop##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
-    prop##Val caption (object1, object2, date) = UNION OVERRIDE defaultProperty(object1, object2) AND date IS DATE, prop##Date(object1, object2, date###prop(object1, object2, date));
-    prop caption (object1, object2) = prop##Val(object1, object2, date###prop(object1, object2, currentDate()));
-    name###prop caption (object1, object2) = name(prop(object1, object2)) IN group;
-
-    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, date), prop##Date(object1, object2, date);
-    name###prop##Over caption (object1, object2, date) = name(prop##Over(object1, object2, date)) FIXEDCHARWIDTH 7;
-
-    FORM addName###prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(a) READONLY, name(b) READONLY, OBJVALUE(d), name###prop##Date(a, b, d);
-    DESIGN addName###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-    }
-
-    showFormAddName###prop 'Добавить' (object1, object2) = ACTION FORM addName###prop OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM name###prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY,  showFormAddName###prop(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name###prop##Date(a, b, d)
-    FILTERS prop##Date(a, b, d);
-    DESIGN name###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-    }
-
-    showFormName###prop caption (object1, object2) = ACTION FORM name###prop OBJECTS a, b MODAL SHORTCUT name###prop DEFAULT;
-    showFormName###prop##Over caption (object1, object2) = ACTION FORM name###prop OBJECTS a, b MODAL SHORTCUT name###prop##Over;
-
-END
-
-// ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
-META metaCodeTripleObjectDateProperty(prop, object1, object2, object3, caption, type, group)
-
-    prop##Date caption = DATA type (object1, object2, object3, DATE) IN group;
-    date###prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
-    prop##Val caption (object1, object2, object3, date) = prop##Date(object1, object2, object3, date###prop(object1, object2, object3, date));
-    prop caption (object1, object2, object3) = prop##Val(object1, object2, object3, currentDate()) IN group;
-    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
-
-    FORM add###prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3  FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, OBJVALUE(d), prop##Date(a, b, c, d);
-    DESIGN add###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-        PROPERTY(name(c)) { focusable = FALSE; }
-    }
-
-    showFormAdd###prop 'Добавить' (object1, object2, object3) = ACTION FORM add###prop OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAdd###prop(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, prop##Date(a, b, c, d)
-    FILTERS prop##Date(a, b, c, d);
-    DESIGN prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-        PROPERTY(name(c)) { focusable = FALSE; }
-    }
-
-    showForm###prop caption (object1, object2, object3) = ACTION FORM prop OBJECTS a, b, c MODAL SHORTCUT prop DEFAULT;
-    showForm###prop##Over caption (object1, object2, object3) = ACTION FORM prop OBJECTS a, b, c MODAL SHORTCUT prop##Over;
-
-END
-// -------------------- Свойство объект1-объект2-объект3-дата для yesNo со значением по-умолчанию НЕТ---------------------------- //
-
-META metaCodeNameTripleObjectDateProperty(prop, object1, object2, object3, caption, type, group)
-
-    prop##Date caption = DATA type (object1, object2, object3, DATE) IN group;
-    name###prop##Date caption (object1, object2, object3, date) = name(prop##Date(object1, object2, object3, date));
-    date###prop (object1, object2, object3, date) = GROUP MAX dateIn AND prop##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
-    prop##Val caption (object1, object2, object3, date) = UNION OVERRIDE yesNo.no AND object1 IS object1 AND object2 IS object2 AND object3 IS object3 AND date IS DATE,
-                                                                         prop##Date(object1, object2, object3, date###prop(object1, object2, object3, date));
-    prop caption (object1, object2, object3) = prop##Val(object1, object2, object3, currentDate());
-    name###prop caption (object1, object2, object3) = name(prop(object1, object2, object3)) IN group;
-
-    prop##Over caption = UNION OVERRIDE prop##Val(object1, object2, object3, date), prop##Date(object1, object2, object3, date);
-    name###prop##Over caption (object1, object2, object3, date) = name(prop##Over(object1, object2, object3, date)) FIXEDCHARWIDTH 7;
-
-    FORM addName###prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL,  c=object3 FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, OBJVALUE(d), name###prop##Date(a, b, c, d);
-    DESIGN addName###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-        PROPERTY(name(c)) { focusable = FALSE; }
-    }
-
-    showFormAddName###prop 'Добавить' (object1, object2, object3) = ACTION FORM addName###prop OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM name###prop caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES name(a) READONLY, name(b) READONLY, name(c) READONLY, showFormAddName###prop(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, name###prop##Date(a, b, c, d)
-    FILTERS prop##Date(a, b, c, d);
-    DESIGN name###prop FROM DEFAULT {
-        PROPERTY(name(a)) { focusable = FALSE; }
-        PROPERTY(name(b)) { focusable = FALSE; }
-        PROPERTY(name(c)) { focusable = FALSE; }
-    }
-
-    showFormName###prop caption (object1, object2, object3) = ACTION FORM name###prop OBJECTS a, b, c MODAL SHORTCUT name###prop DEFAULT;
-    showFormName###prop##Over caption (object1, object2, object3) = ACTION FORM name###prop OBJECTS a, b, c MODAL SHORTCUT name###prop##Over;
-
-END
 
 //------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
 
@@ -1565,8 +1356,6 @@ minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA NU
 bonusItem 'Бонус получаемый по товару' = DATA NUMERIC[9,2] (item) IN documentGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA NUMERIC[8,3] (item) IN retailGroup;
 banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN equipmentGroup;
-@metaCodeNameObjectDateProperty(inactiveItem, item, 'Неактивный товар', yesNo, activeGroup);
-isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes;
 
 //manufactoryGroup
 CLASS groupMenu 'Группа меню' : named;
@@ -1995,7 +1784,7 @@ CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT includeDepartmentStoreEmp
     CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-@metaCodeNameObjectDateProperty(discount, departmentStore, 'Разрешать скидки', yesNo, baseGroup);
+@defineHistorizableCustom(discount, 'Разрешать скидки', yesNo, name, departmentStore, name, baseGroup);
 
 FORM officer 'Должность'
     OBJECTS of=officer FIXED PANEL
@@ -2098,17 +1887,16 @@ topDepartmentStoreItem 'Топ' = DATA INTEGER (departmentStore, item) IN orderG
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
 
-@metaCodeNameObjectDateProperty(isPortionBarItem, item, 'Порционный товар для бара', yesNo, barGroup);
+@defineHistorizableCustom(inactiveItem, 'Неактивный товар', yesNo, name, item, nameAttributeItem, activeGroup);
+isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSISTENT;
 
-@metaCodeNameObjectDateProperty(banDiscountItem, item, 'Запретить скидки по товару', yesNo, discountGroup);
+@defineHistorizableCustom(isPortionBarItem, 'Порционный товар для бара', yesNo, name, item, nameAttributeItem, barGroup);
 
-@metaCodeObjectDateProperty(coefficientNetGrossItem, item, 'Сезонный коэффициент пересчета сырья из нетто в брутто', NUMERIC[8,3], manufactoryGroup);
+@defineHistorizableCustom(banDiscountItem, 'Запретить скидки по товару', yesNo, name, item, nameAttributeItem, discountGroup);
 
-//@metaCodeObjectDateProperty(rateNaturalLossItem, item, 'Норма естественной убыли,%', NUMERIC[8,3], rateGroup);
+@defineHistorizable(coefficientNetGrossItem, 'Сезонный коэффициент пересчета сырья из нетто в брутто', NUMERIC[8,3], item, nameAttributeItem, manufactoryGroup);
 
-//@metaCodeObjectDateProperty(NDSSupplierItem, item, 'НДС поставщика,%', DOUBLE, historyGroup);
-
-@metaCodeObjectDateProperty(importerPriceItem, item, 'Цена импортёра', NUMERIC[14,3], retailGroup);
+@defineHistorizable(importerPriceItem, 'Цена импортёра', NUMERIC[14,3], item, nameAttributeItem, retailGroup);
 
 
 //---------------------------- Налоги ----------------------------------------//
@@ -2218,11 +2006,11 @@ DESIGN addSupplierRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-showFormAddSupplierRangeItem 'Добавить' (item) = ACTION FORM addSupplierRangeItem OBJECTS i MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+addSupplierRangeItem 'Добавить' (item) = ACTION FORM addSupplierRangeItem OBJECTS i MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM supplierRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
-    PROPERTIES       nameAttributeItem(i) READONLY, showFormAddSupplierRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
+    PROPERTIES       nameAttributeItem(i) READONLY, addSupplierRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
     PROPERTIES(i, d) dataSupplierRangeItemDate, dataActingSupplierRangeItemDate
     FILTERS supplierRangeItemDate(i, d)
 ;
@@ -2231,7 +2019,7 @@ DESIGN supplierRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-showFormSupplierRangeItem 'Шкала' (item) = ACTION FORM supplierRangeItem OBJECTS i MODAL SHORTCUT dataSupplierRangeItem DEFAULT;
+dialogSupplierRangeItem 'Шкала' (item) = ACTION FORM supplierRangeItem OBJECTS i MODAL SHORTCUT dataSupplierRangeItem DEFAULT;
 
 retailRangeItemDate 'Шкала' (item, date) = DATA range (item, DATE) IN idGroup;
 dataRetailRangeItemDate 'Шкала' (item, date) = dataRange(retailRangeItemDate(item, date)) IN retailNDSGroup;
@@ -2259,11 +2047,11 @@ DESIGN addRetailRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-showFormAddRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRangeItem OBJECTS i MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+addRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRangeItem OBJECTS i MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM retailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
-    PROPERTIES       nameAttributeItem(i) READONLY, showFormAddRetailRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
+    PROPERTIES       nameAttributeItem(i) READONLY, addRetailRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
     PROPERTIES(i, d) dataRetailRangeItemDate, dataActingRetailRangeItemDate
     FILTERS retailRangeItemDate(i, d)
 ;
@@ -2271,7 +2059,7 @@ DESIGN retailRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-showFormRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
+dialogRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
 
 toShowDataRangeItem(item) = TRUE IF item IS item AND dataActingRateSupplierRangeItem(item); // dataSupplierRateRangeItem(item);
 
@@ -2539,47 +2327,47 @@ DESIGN naturalLossItems FROM DEFAULT {
 TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
-@metaCodeDoubleObjectDateProperty(maxReserveItemDepartment, item, departmentStore, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], orderGroup);
-@metaCodeDoubleObjectDateProperty(minReserveItemDepartment, item, departmentStore, 'Минимально допустимый товарный запас в днях', NUMERIC[8,2], orderGroup);
+@defineHistorizableDouble(maxReserveItemDepartment, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
+@defineHistorizableDouble(minReserveItemDepartment, 'Минимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
 
-@metaCodeNameYesNoDoubleObjectDateProperty(banRevaluationItemDepartment, item, departmentStore, 'Запрет на переоценку', yesNo, retailGroup);
+@defineHistorizableDoubleYesNo(banRevaluationItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@metaCodeNameYesNoDoubleObjectDateProperty(inActionItemDepartment, item, departmentStore, 'Товар акции', yesNo, discountGroup);
+@defineHistorizableDoubleYesNo(inActionItemDepartment, 'Товар акции', item, nameAttributeItem, departmentStore, name, discountGroup);
 
-@metaCodeDoubleObjectDateProperty(marginProductionItemDepartment, item, departmentStore, 'Наценка производства', NUMERIC[8,3], retailGroup);
+@defineHistorizableDouble(marginProductionItemDepartment, 'Наценка производства', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(retailPriceItemDepartment, item, departmentStore, 'Розничная цена', NUMERIC[14,2], retailGroup);
+@defineHistorizableDouble(retailPriceItemDepartment, 'Розничная цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(accountPriceItemDepartment, item, departmentStore, 'Учётная цена', NUMERIC[14,2], retailGroup);
+@defineHistorizableDouble(accountPriceItemDepartment, 'Учётная цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(discountItemDepartment, item, departmentStore, 'Скидка для товара', STRING[100], discountGroup);
+@defineHistorizableDouble(discountItemDepartment, 'Скидка для товара', STRING[100], item, nameAttributeItem, departmentStore, name, discountGroup);
 
 defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
-@metaCodeNameDoubleObjectDateProperty(labelItemDepartment, item, departmentStore, 'Ценник', labelType, labelGroup, defaultLabelTypeItemDepartmentStore);
+@defineHistorizableDoubleDefaultCustom(labelItemDepartment, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
 labelBarcodeDepartmentVal (barcode, departmentStore, date) = labelItemDepartmentVal(skuBarcode(barcode), departmentStore, date);
 
 CONSTRAINT labelItemDepartmentDate(item, departmentStore, date) AND NOT inLabelTypeDepartmentStore(labelItemDepartmentDate(item, departmentStore, date), departmentStore)
     CHECKED BY labelItemDepartmentDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
 
-@metaCodeDoubleObjectDateProperty(multiplierItemDepartment, item, departmentStore, 'Множитель', INTEGER, labelGroup);
+@defineHistorizableDouble(multiplierItemDepartment, 'Множитель', INTEGER, item, nameAttributeItem, departmentStore, name, labelGroup);
 multiplierItemDepartmentValOver (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
                                                                                multiplierItemDepartmentVal(item, departmentStore, date);
 multiplierBarcodeDepartmentValOver (barcode, departmentStore, date) = multiplierItemDepartmentValOver(skuBarcode(barcode), departmentStore, date);
 
-@metaCodeDoubleObjectDateProperty(oldPriceItemDepartment, item, departmentStore, 'Старая цена', NUMERIC[14,2], labelGroup);
+@defineHistorizableDouble(oldPriceItemDepartment, 'Старая цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, labelGroup);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
-@metaCodeNameTripleObjectDateProperty(isSupplierItemDepartment, supplier, item, departmentStore, 'Поставляется', yesNo, orderGroup);
+@defineHistorizableTripleYesNo(isSupplierItemDepartment, 'Поставляется', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
 
-@metaCodeTripleObjectDateProperty(priceSupplierItemDepartment, supplier, item, departmentStore, 'Цена поставщика', NUMERIC[14,2], retailGroup);
+@defineHistorizableTriple(priceSupplierItemDepartment, 'Цена поставщика', NUMERIC[14,2], supplier, name, item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@metaCodeDoubleObjectDateProperty(markupItemDepartment, item, departmentStore, 'Торговая надбавка', NUMERIC[8,3], retailGroup);
+@defineHistorizableDouble(markupItemDepartment, 'Торговая надбавка', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@metaCodeNameTripleObjectDateProperty(banSupplierItemDepartment, supplier, item, departmentStore, 'Запретить закупку', yesNo, orderGroup);
+@defineHistorizableTripleYesNo(banSupplierItemDepartment, 'Запретить закупку', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
 
 // Посуда
-@metaCodeObjectDateProperty(warePrice, ware, 'Цена', NUMERIC[14,2], baseGroup);
+@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
 
 taxNDSWare(ware) = tax.taxNDS IF ware IS ware IN idGroup;
 nameTaxNDSWare(ware) = name(taxNDSWare(ware));
@@ -2611,11 +2399,11 @@ DESIGN addRangeWare FROM DEFAULT {
     PROPERTY(name(w)) { focusable = FALSE; }
 };
 
-showFormAddRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+addRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM rangeWare 'Добавить Шкалу'
 OBJECTS w=ware FIXED PANEL, d=DATE
-PROPERTIES name(w) READONLY, showFormAddRangeWare(w) TODRAW d, OBJVALUE(d) READONLY,
+PROPERTIES name(w) READONLY, addRangeWare(w) TODRAW d, OBJVALUE(d) READONLY,
            dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
 FILTERS rangeWareDate(w, d);
 
@@ -2623,17 +2411,17 @@ DESIGN rangeWare FROM DEFAULT {
 PROPERTY(name(w)) { focusable = FALSE; }
 };
 
-showFormRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SHORTCUT dataRangeWare DEFAULT;
+dialogRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SHORTCUT dataRangeWare DEFAULT;
 
 FORM ware 'Посуда'
 OBJECTS w=ware FIXED PANEL
-PROPERTIES(w) name, warePrice, showFormWarePrice
-PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, showFormRangeWare
+PROPERTIES(w) name, warePrice, dialogWarePrice
+PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, dialogRangeWare
 EDIT ware OBJECT w;
 
 FORM wares 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, showFormWarePrice, dataRangeWare, dataActingRateRangeWare
+PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, dialogWarePrice, dataRangeWare, dataActingRateRangeWare
 PROPERTIES(w)          ADDFORM, EDITFORM, delete
 DIALOG ware OBJECT w;
 
@@ -2657,25 +2445,25 @@ FORM item 'Товар'
                   grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
                   nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
                   normOutItem SHOWIF isManufacturedItem(i), nameGroupMenuItem SHOWIF isManufacturedItem(i),
-                  isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), showFormCoefficientNetGrossItem,
+                  isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), dialogCoefficientNetGrossItem,
 
                   nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
 
                   volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
 
-                  nameIsPortionBarItem, showFormNameIsPortionBarItem, nameInactiveItem, showFormNameInactiveItem,
+                  nameIsPortionBarItem, dialogIsPortionBarItem, nameInactiveItem, dialogInactiveItem,
 
                   // Дополнительные
                   passScalesItem, isMarkItem, isLoafCutItem,
                   compositionScalesItem, storageTemperatureItem, banSailItem,
 
-                  importerPriceItem, showFormImporterPriceItem,
-                  dataSupplierRangeItem, dataActingRateSupplierRangeItem, showFormSupplierRangeItem,
-                  dataRetailRangeItem, dataActingRateRetailRangeItem, showFormRetailRangeItem,
+                  importerPriceItem, dialogImporterPriceItem,
+                  dataSupplierRangeItem, dataActingRateSupplierRangeItem, dialogSupplierRangeItem,
+                  dataRetailRangeItem, dataActingRateRetailRangeItem, dialogRetailRangeItem,
                   percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem,
                   isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i),
 
-                  quantityDiscountItem, fixPriceItem, nameBanDiscountItem, showFormNameBanDiscountItem,
+                  quantityDiscountItem, fixPriceItem, nameBanDiscountItem, dialogBanDiscountItem,
 
                   percentFatItem, percentAlcoholItem, nutritionalValueItem, energyItem,
                   fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
@@ -2707,20 +2495,20 @@ FORM item 'Товар'
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
-    PROPERTIES      nameIsSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, d, dt), showFormNameIsSupplierItemDepartmentOver(sp, i, d),
-                    nameBanSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameBanSupplierItemDepartmentDate(sp, i, d, dt), showFormNameBanSupplierItemDepartmentOver(sp, i, d),
-                    priceSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND priceSupplierItemDepartmentDate(sp, i, d, dt), showFormPriceSupplierItemDepartmentOver(sp, i, d),
-                    markupItemDepartmentOver(i, d, dt) BACKGROUND markupItemDepartmentDate(i, d, dt), showFormMarkupItemDepartmentOver(i, d)
-    PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) BACKGROUND retailPriceItemDepartmentDate(i, d, dt), showFormRetailPriceItemDepartmentOver(i, d),
-                    maxReserveItemDepartmentOver(i, d, dt) BACKGROUND maxReserveItemDepartmentDate(i, d, dt), showFormMaxReserveItemDepartmentOver(i, d),
-                    minReserveItemDepartmentOver(i, d, dt) BACKGROUND minReserveItemDepartmentDate(i, d, dt), showFormMinReserveItemDepartmentOver(i, d),
-                    nameBanRevaluationItemDepartmentOver(i, d, dt) BACKGROUND nameBanRevaluationItemDepartmentDate(i, d, dt), showFormNameBanRevaluationItemDepartmentOver(i, d),
-                    nameInActionItemDepartmentOver(i, d, dt) BACKGROUND nameInActionItemDepartmentDate(i, d, dt), showFormNameInActionItemDepartmentOver(i, d),
-                    marginProductionItemDepartmentOver(i, d, dt) BACKGROUND marginProductionItemDepartmentDate(i, d, dt), showFormMarginProductionItemDepartmentOver(i, d),
-                    discountItemDepartmentOver(i, d, dt) BACKGROUND discountItemDepartmentDate(i, d, dt), showFormDiscountItemDepartmentOver(i, d),
-                    nameLabelItemDepartmentOver(i, d, dt) BACKGROUND labelItemDepartmentDate(i, d, dt), showFormNameLabelItemDepartmentOver(i, d),
-                    multiplierItemDepartmentOver(i, d, dt) BACKGROUND multiplierItemDepartmentDate(i, d, dt), showFormMultiplierItemDepartmentOver(i, d),
-                    oldPriceItemDepartmentOver(i, d, dt) BACKGROUND oldPriceItemDepartmentDate(i, d, dt), showFormOldPriceItemDepartmentOver(i, d)
+    PROPERTIES      nameIsSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, d, dt), dialogIsSupplierItemDepartmentOver(sp, i, d),
+                    nameBanSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameBanSupplierItemDepartmentDate(sp, i, d, dt), dialogBanSupplierItemDepartmentOver(sp, i, d),
+                    priceSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND priceSupplierItemDepartmentDate(sp, i, d, dt), dialogPriceSupplierItemDepartmentOver(sp, i, d),
+                    markupItemDepartmentOver(i, d, dt) BACKGROUND markupItemDepartmentDate(i, d, dt), dialogMarkupItemDepartmentOver(i, d)
+    PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) BACKGROUND retailPriceItemDepartmentDate(i, d, dt), dialogRetailPriceItemDepartmentOver(i, d),
+                    maxReserveItemDepartmentOver(i, d, dt) BACKGROUND maxReserveItemDepartmentDate(i, d, dt), dialogMaxReserveItemDepartmentOver(i, d),
+                    minReserveItemDepartmentOver(i, d, dt) BACKGROUND minReserveItemDepartmentDate(i, d, dt), dialogMinReserveItemDepartmentOver(i, d),
+                    nameBanRevaluationItemDepartmentOver(i, d, dt) BACKGROUND nameBanRevaluationItemDepartmentDate(i, d, dt), dialogBanRevaluationItemDepartmentOver(i, d),
+                    nameInActionItemDepartmentOver(i, d, dt) BACKGROUND nameInActionItemDepartmentDate(i, d, dt), dialogInActionItemDepartmentOver(i, d),
+                    marginProductionItemDepartmentOver(i, d, dt) BACKGROUND marginProductionItemDepartmentDate(i, d, dt), dialogMarginProductionItemDepartmentOver(i, d),
+                    discountItemDepartmentOver(i, d, dt) BACKGROUND discountItemDepartmentDate(i, d, dt), dialogDiscountItemDepartmentOver(i, d),
+                    nameLabelItemDepartmentOver(i, d, dt) BACKGROUND labelItemDepartmentDate(i, d, dt), dialogLabelItemDepartmentOver(i, d),
+                    multiplierItemDepartmentOver(i, d, dt) BACKGROUND multiplierItemDepartmentDate(i, d, dt), dialogMultiplierItemDepartmentOver(i, d),
+                    oldPriceItemDepartmentOver(i, d, dt) BACKGROUND oldPriceItemDepartmentDate(i, d, dt), dialogOldPriceItemDepartmentOver(i, d)
 
     EDIT item OBJECT i
 ;
@@ -3329,11 +3117,11 @@ departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
 CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN banksGroup;
 infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN banksGroup;
 
-@metaCodeObjectDateProperty(addressBank, bank, 'Адрес банка', STRING[150], banksGroup);
+@defineHistorizable(addressBank, 'Адрес банка', STRING[150], bank, name, banksGroup);
 
 FORM bank 'Банк'
 OBJECTS b=bank FIXED PANEL
-PROPERTIES(b)  name, addressBank, showFormAddressBank, MFOBank, departmentBank, CBUBank, infoBank
+PROPERTIES(b)  name, addressBank, dialogAddressBank, MFOBank, departmentBank, CBUBank, infoBank
 EDIT bank OBJECT b;
 
 FORM banks 'Банки'
@@ -3432,11 +3220,11 @@ dataActingLicenseLegalEntity 'Действующая лицензия' (legalEnt
 
 TABLE legalEntityDate (legalEntity, DATE);
 
-@metaCodeObjectDateProperty(addressLegalEntity, legalEntity, 'Юридический адрес', STRING[150], baseGroup);
-@metaCodeObjectDateProperty(managerLegalEntity, legalEntity, 'Руководитель', STRING[100], lawGroup);
-@metaCodeObjectDateProperty(accountantLegalEntity, legalEntity, 'Главный бухгалтер', STRING[100], lawGroup);
-@metaCodeObjectDateProperty(postAddressLegalEntity, legalEntity, 'Почтовый адрес', STRING[150], lawGroup);
-@metaCodeObjectDateProperty(phoneLegalEntity, legalEntity, 'Телефон/факс', STRING[100], baseGroup);
+@defineHistorizable(addressLegalEntity, 'Юридический адрес', STRING[150], legalEntity, name, baseGroup);
+@defineHistorizable(managerLegalEntity, 'Руководитель', STRING[100], legalEntity, name, lawGroup);
+@defineHistorizable(accountantLegalEntity, 'Главный бухгалтер', STRING[100], legalEntity, name, lawGroup);
+@defineHistorizable(postAddressLegalEntity, 'Почтовый адрес', STRING[150], legalEntity, name, lawGroup);
+@defineHistorizable(phoneLegalEntity, 'Телефон/факс', STRING[100], legalEntity, name, baseGroup);
 
 // ----------------------------------- Компания отдела ------------------------------------- //
 
@@ -3727,9 +3515,9 @@ banContract 'За сколько дней запретить закупку то
 //requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
 noteContract 'Примечание' = DATA STRING[500] (contract) IN contractGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-@metaCodeNameObjectDateProperty(formContract, contract, 'Порядок оплаты по договору', contractForm, contractGroup);
+@defineHistorizableCustom(formContract, 'Порядок оплаты по договору', contractForm, name, contract, name, contractGroup);
 CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'ошибка: Не выбран порядок оплаты по договору';
-@metaCodeObjectDateProperty(delayContract, contract, 'Отсрочка платежа(кален. дней),при "-" предоплата', INTEGER, contractGroup);
+@defineHistorizable(delayContract, 'Отсрочка платежа(кален. дней),при "-" предоплата', INTEGER, contract, numberContract, contractGroup);
 
 
 // ----------------------------------- Поставщик ------------------------------------------ //
@@ -3777,7 +3565,7 @@ nameControlSupplierDepartmentStore 'Контролировать ассорти�
     yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
     controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
 
-@metaCodeNameYesNoDoubleObjectDateProperty(sureSupplierDepartmentStore, supplier, departmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', yesNo, orderGroup);
+@defineHistorizableDoubleYesNo(sureSupplierDepartmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', supplier, name, departmentStore, name, orderGroup);
 
 overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE
     (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
@@ -3823,8 +3611,8 @@ equalsCompanySupplierContract 'Основной договор' (company, suppli
 
 FORM contract 'Договор'
     OBJECTS c=contract FIXED PANEL
-    PROPERTIES(c) numberContract, nameCompanyContract, nameSupplierContract, nameTypeContract, nameFormContract, showFormNameFormContract,
-                   delayContract, showFormDelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
+    PROPERTIES(c) numberContract, nameCompanyContract, nameSupplierContract, nameTypeContract, nameFormContract, dialogFormContract,
+                   delayContract, dialogDelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
                    noteContract
 
     EDIT contract OBJECT c
@@ -3874,9 +3662,9 @@ FORM supplier 'Поставщик'
     PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
 
     OBJECTS s=supplier FIXED PANEL, dt=DATE FIXED PANEL
-    PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormAddressLegalEntity,
-                  postAddressLegalEntity, showFormPostAddressLegalEntity, managerLegalEntity, showFormManagerLegalEntity,
-                  accountantLegalEntity, showFormAccountantLegalEntity, phoneLegalEntity, showFormPhoneLegalEntity,
+    PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
+                  postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
+                  accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                   residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
                   afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier,
@@ -3902,7 +3690,7 @@ FORM supplier 'Поставщик'
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
 
     PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore
-    PROPERTIES       nameSureSupplierDepartmentStoreOver(s, d, dt) BACKGROUND nameSureSupplierDepartmentStoreDate(s, d, dt), showFormNameSureSupplierDepartmentStoreOver(s, d)
+    PROPERTIES       nameSureSupplierDepartmentStoreOver(s, d, dt) BACKGROUND nameSureSupplierDepartmentStoreDate(s, d, dt), dialogSureSupplierDepartmentStoreOver(s, d)
 
 //    PROPERTIES(s,c) equalsSupplierContract
     PROPERTIES(s,a) equalsLegalEntityAccount
@@ -3993,8 +3781,8 @@ FORM suppliers 'Поставщики'
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
     PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
-                   showFormAddressLegalEntity, postAddressLegalEntity, showFormPostAddressLegalEntity, managerLegalEntity,
-                   showFormManagerLegalEntity, accountantLegalEntity, showFormAccountantLegalEntity, phoneLegalEntity, showFormPhoneLegalEntity,
+                   dialogAddressLegalEntity, postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity,
+                   dialogManagerLegalEntity, accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
                    UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 
     OBJECTS a=account
@@ -4064,9 +3852,9 @@ FORM companies 'Компании'
 
 FORM customer 'Покупатель'
     OBJECTS cu=customer FIXED PANEL
-    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, showFormAddressLegalEntity,
-                       postAddressLegalEntity, showFormPostAddressLegalEntity, managerLegalEntity, showFormManagerLegalEntity,
-                       accountantLegalEntity, showFormAccountantLegalEntity, phoneLegalEntity, showFormPhoneLegalEntity,
+    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
+                       postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
+                       accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
                        UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
                        residentLegalEntity
     OBJECTS a=account
@@ -4131,7 +3919,7 @@ FORM departmentStore 'Отдел магазина'
                     quantityCashChangeOneOperationAccountDepartmentStore, commonNameMRPDepartmentStore, nameOfficerMRPDepartmentStore,
                     commonNameBookkeeperDepartmentStore, nameOfficerBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore,
                     nameOfficerPersonCheckDepartmentStore, nameRevaluationCommitteeDepartmentStore,
-                    nameRegisterCommitteeDepartmentStore, nameWastageCommitteeDepartmentStore, nameDiscount, showFormNameDiscount
+                    nameRegisterCommitteeDepartmentStore, nameWastageCommitteeDepartmentStore, nameDiscount, dialogDiscount
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
@@ -7964,7 +7752,7 @@ genTimeTablePreliminaryOrder 'График поставок'  = DATA genTimeTabl
 
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
-@metaCodeDoubleObjectDateProperty(timeTable, supplier, departmentStore, 'Поставка', BOOLEAN, baseGroup);
+@defineHistorizableDouble(timeTable, 'Поставка', BOOLEAN, supplier, name, departmentStore, name, baseGroup);
 
 CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 //TABLE order(order);
@@ -8257,7 +8045,7 @@ FORM ordersShipment 'Заказы'
             isPostedOrderSupplier(o)
 ;
 
-showFormOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
+dialogOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
 quantityShipmentOrderItem 'Поставленное количество' (orderSupplier, item) = GROUP SUM quantityShipmentDetail (shipmentDetail) IF inShipmentOrder (shipmentShipmentDetail (shipmentDetail), orderSupplier) BY orderSupplier, itemShipmentDetail(shipmentDetail);
 
@@ -8319,7 +8107,7 @@ DESIGN genTimeTable FROM DEFAULT {
     ADD g.historyGroup BEFORE functions.box;
 }
 
-showFormGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
+dialogGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
 
 FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
 OBJECTS g=genTimeTable
@@ -8642,7 +8430,7 @@ isSupplyDate (date, preliminaryOrder) = dateSupplyPreliminaryOrder(preliminaryOr
 isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) =
     departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore AND supplierPreliminaryOrder(preliminaryOrder) ==supplier;
 
-showFormGenTimeTablePreliminaryOrder 'Показать генерацию графика' (preliminaryOrder) = showFormGenTimeTable(genTimeTablePreliminaryOrder(preliminaryOrder));
+dialogGenTimeTablePreliminaryOrder 'Показать генерацию графика' (preliminaryOrder) = dialogGenTimeTable(genTimeTablePreliminaryOrder(preliminaryOrder));
 
 FORM timeTableDate 'График поставок'
 
@@ -8658,7 +8446,7 @@ FORM timeTableDate 'График поставок'
     PROPERTIES createGenTimeTable(d, s) FORCE PANEL
 
     OBJECTS p=preliminaryOrder
-    PROPERTIES(p) showFormGenTimeTablePreliminaryOrder
+    PROPERTIES(p) dialogGenTimeTablePreliminaryOrder
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
     PROPERTIES(p) nextDateOrder, createOrderSupplier
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
@@ -8699,7 +8487,7 @@ FORM printTimeTable 'Печать графика поставок по дата�
     PROPERTIES name(d) SELECTOR
 
     OBJECTS p=preliminaryOrder
-    PROPERTIES(p) showFormGenTimeTablePreliminaryOrder
+    PROPERTIES(p) dialogGenTimeTablePreliminaryOrder
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder,
                            nameSupplierPreliminaryOrder, nextDateOrder
     PROPERTIES(p) createOrderSupplier
@@ -10058,7 +9846,7 @@ FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
                    nameSupplierShipment, UNPSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
-                   percentOrderedShipmentDetailsShipment, showFormOrdersShipment,
+                   percentOrderedShipmentDetailsShipment, dialogOrdersShipment,
                    carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
                    nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
@@ -10895,7 +10683,7 @@ FORM nameDepartmentInventory 'Подразделения для инвентар
 
 ;
 
-showFormNameDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
+dialogDepartmentByInventory 'Подразделения для инвентаризации' (inventory) =
     ACTION FORM nameDepartmentInventory OBJECTS in MODAL SHORTCUT nameDepartmentInventory DEFAULT;
 
 FORM collationSheetItem 'Товары для добавления в сличительную ведомость'
@@ -10922,7 +10710,7 @@ DESIGN collationSheetItem FROM DEFAULT {
 
 }
 
-showFormItemByCollationSheet 'Добавить товар' (collationSheet) = [ACTION FORM collationSheetItem OBJECTS cs MODAL](collationSheet) AND collationSheet IS manyCollationSheet;
+dialogItemByCollationSheet 'Добавить товар' (collationSheet) = [ACTION FORM collationSheetItem OBJECTS cs MODAL](collationSheet) AND collationSheet IS manyCollationSheet;
 
 FORM listInventory 'Опись'
     OBJECTS         li=listInventory FIXED PANEL
@@ -10964,7 +10752,7 @@ FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                      nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
-                     noteInventory, infoInventory, nameDepartmentInventory, showFormNameDepartmentByInventory, convertPriceInventory,
+                     noteInventory, infoInventory, nameDepartmentInventory, dialogDepartmentByInventory, convertPriceInventory,
                      fillBalanceInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageInventory
@@ -10990,7 +10778,7 @@ FORM inventory 'Инвентаризация'
                      quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                      accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
                      countListInventoryCollationSheet, countPageInventoryCollationSheet
-    PROPERTIES (cs)  showFormItemByCollationSheet, convertPriceCollationSheet, delete
+    PROPERTIES (cs)  dialogItemByCollationSheet, convertPriceCollationSheet, delete
 
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -11105,7 +10893,7 @@ DESIGN inventory FROM DEFAULT {
                             treeGroup.box{ fillHorizontal = 1.5;}
                             i.box{ fillHorizontal = 3.5;}
 
-                    ADD PROPERTY(showFormItemByCollationSheet(cs)) IN i.panel;
+                    ADD PROPERTY(dialogItemByCollationSheet(cs)) IN i.panel;
                     }
                 }
 
@@ -11187,7 +10975,7 @@ DESIGN addPercMarkupUserPriceChange FROM DEFAULT {
     }
 }
 
-showFormAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
+dialogAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
         FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
         IF formResult() == formResult.ok THEN {
             FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
@@ -11215,7 +11003,7 @@ DESIGN addPercDiscountUserPriceChange FROM DEFAULT {
     }
 }
 
-showFormAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
+dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
         FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
         IF formResult() == formResult.ok THEN {
             FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
@@ -11253,8 +11041,8 @@ FORM userPriceChange 'Переоценка товаров'
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
 //    PROPERTIES (u, d)  newMarkupRetailPriceUserPriceChangeDetail, newDiscountRetailPriceUserPriceChangeDetail
 
-    PROPERTIES showFormAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
-               showFormAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
+    PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
+               dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
                inputMultipleItemsBalanceUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d,
                cleanAllUserPriceChangeDetailsUserPriceChange(u) FORCE PANEL TODRAW d
 
@@ -11806,7 +11594,7 @@ DESIGN specificationForm FROM DEFAULT{
 }
 
 
-showFormSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
+dialogSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
 
 @metaCodeInputMultipleItems (specification);
 
@@ -11880,7 +11668,7 @@ FORM specifications 'Счет-фактуры'
     PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
                              nameCustomerSpecification, dateToSpecification, countSpecificationDetailSpecification, quantitySpecificationDetailSpecification,
                              calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
-    PROPERTIES (sp)          showFormSpecificationForm FORCE PANEL SHOWIF  countStatementSpecification(sp)
+    PROPERTIES (sp)          dialogSpecificationForm FORCE PANEL SHOWIF  countStatementSpecification(sp)
 
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
 
@@ -11933,7 +11721,7 @@ FORM specificationsStatement 'Счета'
             FILTER 'Без отгрузок с/ф ' 'F8' noStatementSpecification(sp)
 ;
 
-showFormSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
+dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
 @metaCodeInputMultipleItems (statement);
 
@@ -11942,7 +11730,7 @@ toPrintActOfRevaluationStatement 'Акт переоценки' (statement) = toP
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement, UNPCustomerStatement,
-                    nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, showFormSpecificationsStatement,
+                    nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, dialogSpecificationsStatement,
                     noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), nameRevaluationCommitteeStatement SHOWIF needToPriceChangeStatement(st)
 
@@ -13126,8 +12914,8 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
     ORDER BY          nameDep
-    PROPERTIES        nameIsSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, dep, t), showFormNameIsSupplierItemDepartmentOver(sp, i, dep),
-                      priceSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND priceSupplierItemDepartmentDate(sp, i, dep, t), showFormPriceSupplierItemDepartmentOver(sp, i, dep)
+    PROPERTIES        nameIsSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, dep, t), dialogIsSupplierItemDepartmentOver(sp, i, dep),
+                      priceSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND priceSupplierItemDepartmentDate(sp, i, dep, t), dialogPriceSupplierItemDepartmentOver(sp, i, dep)
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10
@@ -13427,19 +13215,19 @@ NAVIGATOR {
             ADD innerFlowPosted;
         //    ADD numberInPack;
             ADD rateWaste;
-            ADD addNameIsPortionBarItem;
-            ADD nameIsPortionBarItem;
-            ADD addNameBanDiscountItem;
-            ADD nameBanDiscountItem;
-            ADD addNameInactiveItem;
-            ADD nameInactiveItem;
+            ADD addIsPortionBarItem;
+            ADD dialogIsPortionBarItem;
+            ADD addBanDiscountItem;
+            ADD dialogBanDiscountItem;
+            ADD addInactiveItem;
+            ADD dialogInactiveItem;
             ADD addCoefficientNetGrossItem;
-            ADD coefficientNetGrossItem;
+            ADD dialogCoefficientNetGrossItem;
         //    ADD addrateNaturalLossItem;
         //    ADD rateNaturalLossItem;
             ADD genTimeTables;
             ADD addWarePrice;
-            ADD warePrice;
+            ADD dialogWarePrice;
             ADD rangeWare;
             ADD addRangeWare;
             ADD supplierRangeItem;
@@ -13447,37 +13235,37 @@ NAVIGATOR {
             ADD retailRangeItem;
             ADD addRetailRangeItem;
             ADD addImporterPriceItem;
-            ADD importerPriceItem;
+            ADD dialogImporterPriceItem;
             ADD addMaxReserveItemDepartment;
-            ADD maxReserveItemDepartment;
+            ADD dialogMaxReserveItemDepartment;
             ADD addMinReserveItemDepartment;
-            ADD minReserveItemDepartment;
-            ADD addNameBanRevaluationItemDepartment;
-            ADD nameBanRevaluationItemDepartment;
-            ADD addNameInActionItemDepartment;
-            ADD nameInActionItemDepartment;
+            ADD dialogMinReserveItemDepartment;
+            ADD addBanRevaluationItemDepartment;
+            ADD dialogBanRevaluationItemDepartment;
+            ADD addInActionItemDepartment;
+            ADD dialogInActionItemDepartment;
             ADD addMarginProductionItemDepartment;
-            ADD marginProductionItemDepartment;
+            ADD dialogMarginProductionItemDepartment;
             ADD addRetailPriceItemDepartment;
-            ADD retailPriceItemDepartment;
+            ADD dialogRetailPriceItemDepartment;
             ADD addAccountPriceItemDepartment;
-            ADD accountPriceItemDepartment;
+            ADD dialogAccountPriceItemDepartment;
             ADD addDiscountItemDepartment;
-            ADD discountItemDepartment;
-            ADD addNameLabelItemDepartment;
-            ADD nameLabelItemDepartment;
+            ADD dialogDiscountItemDepartment;
+            ADD addLabelItemDepartment;
+            ADD dialogLabelItemDepartment;
             ADD addMultiplierItemDepartment;
-            ADD multiplierItemDepartment;
+            ADD dialogMultiplierItemDepartment;
             ADD addOldPriceItemDepartment;
-            ADD oldPriceItemDepartment;
-            ADD addNameIsSupplierItemDepartment;
-            ADD nameIsSupplierItemDepartment;
+            ADD dialogOldPriceItemDepartment;
+            ADD addIsSupplierItemDepartment;
+            ADD dialogIsSupplierItemDepartment;
             ADD addPriceSupplierItemDepartment;
-            ADD priceSupplierItemDepartment;
+            ADD dialogPriceSupplierItemDepartment;
             ADD addMarkupItemDepartment;
-            ADD markupItemDepartment;
-            ADD addNameBanSupplierItemDepartment;
-            ADD nameBanSupplierItemDepartment;
+            ADD dialogMarkupItemDepartment;
+            ADD addBanSupplierItemDepartment;
+            ADD dialogBanSupplierItemDepartment;
             ADD preliminaryOrder;
             ADD cashRegister;
             ADD scales;
@@ -13493,30 +13281,30 @@ NAVIGATOR {
             ADD groupTerminalDocumentType;
             ADD component;
             ADD addAddressLegalEntity;
-            ADD addressLegalEntity;
+            ADD dialogAddressLegalEntity;
             ADD addPostAddressLegalEntity;
-            ADD postAddressLegalEntity;
+            ADD dialogPostAddressLegalEntity;
             ADD addManagerLegalEntity;
-            ADD managerLegalEntity;
+            ADD dialogManagerLegalEntity;
             ADD addAccountantLegalEntity;
-            ADD accountantLegalEntity;
+            ADD dialogAccountantLegalEntity;
             ADD addPhoneLegalEntity;
-            ADD phoneLegalEntity;
-            ADD addNameSureSupplierDepartmentStore;
-            ADD nameSureSupplierDepartmentStore;
-            ADD addressBank;
+            ADD dialogPhoneLegalEntity;
+            ADD addSureSupplierDepartmentStore;
+            ADD dialogSureSupplierDepartmentStore;
             ADD addAddressBank;
-            ADD nameFormContract;
-            ADD addNameFormContract;
-            ADD delayContract;
+            ADD dialogAddressBank;
+            ADD addFormContract;
+            ADD dialogFormContract;
             ADD addDelayContract;
+            ADD dialogDelayContract;
             ADD genTimeTable;
-            ADD addNameDiscount;
+            ADD addDiscount;
+            ADD dialogDiscount;
             ADD addTimeTable;
+            ADD dialogTimeTable;
             ADD orderSupplier;
-            ADD timeTable;
             ADD cashReport;
-            ADD nameDiscount;
             ADD rateWaste;
             ADD ordersShipment;
             ADD shipment;
