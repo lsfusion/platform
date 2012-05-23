@@ -11,6 +11,8 @@ import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.PropertyMapImplement;
+import platform.server.logics.property.derived.DerivedProperty;
 
 import javax.swing.*;
 import java.util.*;
@@ -275,15 +277,11 @@ public class ScriptingFormEntity {
     }
 
     private PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity groundProperty, boolean back) {
-        LP backgroundLP = LM.getLPBySID(groundProperty.property.getSID());
-        Object[] params = new Object[backgroundLP.listInterfaces.size() + 2];
-        params[0] = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
-        params[1] = backgroundLP;
-        for (int i = 0; i < backgroundLP.listInterfaces.size(); i++) {
-            params[i + 2] = i + 1;
-        }
-        Collection<ObjectEntity> objects = groundProperty.getObjectInstances();
-        return form.addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+        LP defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
+        PropertyMapImplement mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
+                                                                new PropertyMapImplement(defaultColorProp.property, new HashMap()),
+                                                                new PropertyMapImplement(groundProperty.property, BaseUtils.buildMap(groundProperty.property.interfaces, groundProperty.property.interfaces)));
+        return new PropertyObjectEntity(mapImpl.property, BaseUtils.join(mapImpl.mapping, groundProperty.mapping));
     }
 
     private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
