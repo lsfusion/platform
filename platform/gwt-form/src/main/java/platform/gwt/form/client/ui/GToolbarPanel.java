@@ -13,7 +13,7 @@ public class GToolbarPanel extends HStack {
     
     public GToolbarPanel() {
         super(10);
-        setHeight(1);
+        setAutoHeight();
         setBackgroundColor("#F5F5F5");
     }
 

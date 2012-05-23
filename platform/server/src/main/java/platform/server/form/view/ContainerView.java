@@ -18,9 +18,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public byte type = ContainerType.CONTAINER;
 
-    public boolean gwtVertical = true;
-    public boolean gwtIsLayout = false;
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -31,14 +28,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public void setType(byte type) {
         this.type = type;
-    }
-
-    public void setGwtVertical(boolean gwtVertical) {
-        this.gwtVertical = gwtVertical;
-    }
-
-    public void setGwtIsLayout(boolean gwtIsLayout) {
-        this.gwtIsLayout = gwtIsLayout;
     }
 
     public ContainerView() {
@@ -126,8 +115,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, description);
 
         outStream.writeByte(type);
-        outStream.writeBoolean(gwtVertical);
-        outStream.writeBoolean(gwtIsLayout);
     }
 
     @Override
@@ -140,7 +127,5 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         description = pool.readString(inStream);
 
         type = inStream.readByte();
-        gwtVertical = inStream.readBoolean();
-        gwtIsLayout = inStream.readBoolean();
     }
 }

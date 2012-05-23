@@ -5,7 +5,6 @@ public interface AbstractContainer<C extends AbstractContainer<C, T>, T extends 
     void setTitle(String caption);
     void setDescription(String description);
     void setSID(String sID);
-    void setGwtVertical(boolean gwtVertical);
     void setType(byte type);
 
     void add(T child);

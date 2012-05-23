@@ -20,8 +20,8 @@ public class FormFieldTypeRenderer implements GTypeRenderer {
         this.item = item;
 
         itemForm = new DynamicForm();
-        itemForm.setWidth(1);
-        itemForm.setHeight(1);
+        itemForm.setAutoWidth();
+        itemForm.setAutoHeight();
         itemForm.setOverflow(Overflow.VISIBLE);
         itemForm.setWrapItemTitles(false);
 

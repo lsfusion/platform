@@ -1,6 +1,7 @@
 package platform.gwt.form.client.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.events.ClickEvent;
@@ -84,13 +85,11 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         dispatcher.setForm(form);
 
         setWidth100();
-        setHeight100();
-        setAutoHeight();
 
         mainPane = new GFormLayout(form.mainContainer);
-        mainPane.setWidth100();
-        mainPane.setHeight100();
-        mainPane.setAutoHeight();
+        mainPane.setMinHeight(Window.getClientHeight());
+        mainPane.setHeight(Window.getClientHeight());
+        mainPane.setMaxHeight(Window.getClientHeight());
 
         if (!dialogMode) {
             mainPane.addMember(new ToolStripPanel(form.caption) {

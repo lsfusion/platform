@@ -23,12 +23,4 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setType(byte type) {
         target.type = type;
     }
-
-    public void setGwtVertical(boolean gwtVertical) {
-        target.setGwtVertical(gwtVertical);
-    }
-    
-    public void setGwtIsLayout(boolean gwtIsLayout) {
-        target.setGwtIsLayout(gwtIsLayout);
-    }
 }

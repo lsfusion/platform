@@ -50,7 +50,7 @@ public class RemoteExceptionManager {
             try {
                 OutputStream os = new ByteArrayOutputStream();
                 e.printStackTrace(new PrintStream(os));
-                BL.logException(e.getCause().getMessage(), e.getClass().getName(), os.toString(), null, null, false);
+                BL.logException(e.getMessage(), e.getClass().getName(), os.toString(), null, null, false);
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }

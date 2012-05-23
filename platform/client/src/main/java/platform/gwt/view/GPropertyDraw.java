@@ -1,13 +1,10 @@
 package platform.gwt.view;
 
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.grid.HoverCustomizer;
 import com.smartgwt.client.widgets.grid.ListGridField;
-import com.smartgwt.client.widgets.grid.ListGridRecord;
 import platform.gwt.view.classes.GType;
 import platform.gwt.view.logics.FormLogicsProvider;
 import platform.gwt.view.renderer.GTypeRenderer;
-import platform.interop.PropertyEditType;
 
 public class GPropertyDraw extends GComponent {
     public int ID;
@@ -19,11 +16,11 @@ public class GPropertyDraw extends GComponent {
     public String iconPath;
     public Boolean focusable;
     public boolean checkEquals;
-    public PropertyEditType editType = PropertyEditType.EDITABLE;
+    public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
     public ListGridField createGridField(FormLogicsProvider formLogics) {
         ListGridField gridField = baseType.createGridField(formLogics, this);
-        gridField.setCanEdit(!(editType == PropertyEditType.EDITABLE));
+        gridField.setCanEdit(!(editType == GPropertyEditType.EDITABLE));
         if (baseType != changeType) {
             gridField.setEditorType(changeType.createEditorType(formLogics, this));
         }

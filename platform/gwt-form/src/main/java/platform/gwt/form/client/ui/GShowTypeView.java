@@ -18,7 +18,7 @@ public abstract class GShowTypeView extends HStack {
     private List<GClassViewType> banClassView;
 
     public GShowTypeView(final GGroupObject groupObject, final GFormController form) {
-        setHeight(1);
+        setAutoHeight();
         setBackgroundColor("#F5F5F5");
 
         ClickHandler clickHandler = new ClickHandler() {

@@ -12,6 +12,7 @@ import platform.gwt.view.GContainer;
 import platform.interop.form.layout.AbstractContainer;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.SimplexConstraints;
+import platform.interop.form.layout.SingleSimplexConstraint;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -28,9 +29,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
 
     private byte type = ContainerType.CONTAINER;
-
-    public boolean gwtVertical;
-    public boolean gwtIsLayout;
 
     public ClientContainer() {
     }
@@ -51,8 +49,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         pool.writeString(outStream, description);
 
         outStream.writeByte(type);
-        outStream.writeBoolean(gwtVertical);
-        outStream.writeBoolean(gwtIsLayout);
     }
 
     @Override
@@ -65,8 +61,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         description = pool.readString(inStream);
 
         type = inStream.readByte();
-        gwtVertical = inStream.readBoolean();
-        gwtIsLayout = inStream.readBoolean();
     }
 
     @Override
@@ -153,14 +147,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return description;
     }
 
-    public void setGwtVertical(boolean gwtVertical) {
-        this.gwtVertical = gwtVertical;
-    }
-
-    public void setGwtIsLayout(boolean gwtIsLayout) {
-        this.gwtIsLayout = gwtIsLayout;
-    }
-
     public void setDescription(String description) {
         this.description = description;
         updateDependency(this, "description");
@@ -234,8 +220,10 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         super.initGwtComponent(container);
         container.title = title;
         container.type = type;
-        container.gwtVertical = gwtVertical;
-        container.gwtIsLayout = gwtIsLayout;
+
+        container.gwtVertical = isSplitPane() ? type == ContainerType.SPLIT_PANE_VERTICAL : !getConstraints().childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
+
+        container.gwtIsLayout = container.gwtVertical ? getConstraints().fillVertical != 0 : getConstraints().fillHorizontal != 0;
     }
 
     private GContainer gwtContainer;

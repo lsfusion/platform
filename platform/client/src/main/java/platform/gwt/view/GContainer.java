@@ -7,7 +7,6 @@ public class GContainer extends GComponent {
     public String title;
     public String description;
     public String sID;
-    public boolean tabbedPane;
     public byte type;
     public boolean gwtIsLayout;
     public boolean gwtVertical;

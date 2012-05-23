@@ -1,8 +1,8 @@
 package platform.gwt.form.client.ui;
 
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.layout.Layout;
-import com.smartgwt.client.widgets.layout.VLayout;
+import com.smartgwt.client.widgets.layout.*;
+import platform.gwt.base.shared.GContainerType;
 import platform.gwt.view.GComponent;
 import platform.gwt.view.GContainer;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 public class GFormLayout extends VLayout {
     private Layout mainContainer;
     private GContainer mainKey;
-    private Map<GContainer, GFormContainer> contViews = new HashMap<GContainer, GFormContainer>();
+    private Map<GContainer, GAbstractFormContainer> contViews = new HashMap<GContainer, GAbstractFormContainer>();
 
     public GFormLayout(GContainer mainContainer) {
         createContainerViews(mainContainer);
@@ -20,13 +20,20 @@ public class GFormLayout extends VLayout {
     }
 
     private void createContainerViews(GContainer container) {
-        GFormContainer formContainer = new GFormContainer(container);
+        GAbstractFormContainer formContainer;
+        if (GContainerType.isSplitPane(container.type)) {
+            formContainer = new GFormSplitPane(container);
+        } else if (GContainerType.isTabbedPane(container.type)) {
+            formContainer = new GFormTabbedPane(container);
+        } else {
+            formContainer = new GFormContainer(container);
+        }
 
         if (container.container == null) {
             mainContainer = formContainer.getComponent();
             mainKey = formContainer.getKey();
         } else {
-            GFormContainer parent = contViews.get(container.container);
+            GAbstractFormContainer parent = contViews.get(container.container);
             parent.add(container, formContainer.getComponent());
         }
 
@@ -44,7 +51,7 @@ public class GFormLayout extends VLayout {
             return false;
         }
 
-        GFormContainer keyContView = contViews.get(key.container);
+        GAbstractFormContainer keyContView = contViews.get(key.container);
         if (keyContView == null) {
             return false;
         }
@@ -62,7 +69,7 @@ public class GFormLayout extends VLayout {
             return false;
         }
 
-        GFormContainer keyContView = contViews.get(key.container);
+        GAbstractFormContainer keyContView = contViews.get(key.container);
         if (keyContView == null) {
             return false;
         }

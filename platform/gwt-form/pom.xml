@@ -34,6 +34,10 @@
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
+            <artifactId>retail-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
             <artifactId>gwt-api</artifactId>
         </dependency>
         <dependency>
