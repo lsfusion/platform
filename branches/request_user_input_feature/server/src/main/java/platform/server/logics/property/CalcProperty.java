@@ -36,7 +36,6 @@ import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.ChangeEvent;
 import platform.server.logics.property.actions.LogPropertyActionProperty;
 import platform.server.logics.property.actions.edit.DefaultChangeActionProperty;
-import platform.server.logics.property.change.PropertyChangeListener;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
@@ -532,18 +531,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public QuickSet<CalcProperty> getUsedDataChanges(StructChanges propChanges) {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>(calculateUsedDataChanges(propChanges));
-
-        for (PropertyChangeListener<T> listener : changeListeners) {
-            result.addAll(listener.getUsedDataChanges(propChanges));
-        }
-        return result;
-    }
-
-    private final List<PropertyChangeListener<T>> changeListeners = new ArrayList<PropertyChangeListener<T>>();
-
-    public void addChangeListener(PropertyChangeListener<T> changeListener) {
-        changeListeners.add(changeListener);
+        return calculateUsedDataChanges(propChanges);
     }
 
     public DataChanges getDataChanges(PropertyChange<T> change, Modifier modifier) {
@@ -581,19 +569,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @PackComplex
     @ThisMessage
     public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (!change.where.isFalse()) {
-            if (changedWhere == null && !changeListeners.isEmpty()) {
-                changedWhere = new WhereBuilder();
-            }
-
-            DataChanges dataChanges = calculateDataChanges(change, changedWhere, propChanges);
-
-            for (PropertyChangeListener<T> changeListener : changeListeners) {
-                dataChanges = dataChanges.add(changeListener.getDataChanges(change, propChanges, changedWhere.toWhere()));
-            }
-
-            return dataChanges;
-        }
+        if (!change.where.isFalse())
+            return calculateDataChanges(change, changedWhere, propChanges);
         return new DataChanges();
     }
 
