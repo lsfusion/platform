@@ -3,18 +3,18 @@ MODULE Historizable;
 IMPORT BaseLogicsModule;
 
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
-    property##Date caption = DATA type (object, DATE) IN group;
+    data###property##Date caption = DATA type (object, DATE) IN group;
 
-    date###property (object, date) = GROUP MAX dateIn AND property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
-    property##Val caption (object, date) = property##Date(object, date###property(object, date)) IN group;
-    property##Over caption = UNION OVERRIDE property##Val(object, date), property##Date(object, date);
+    property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
+    over###property##Date caption = UNION OVERRIDE property##Date(object, date), data###property##Date(object, date);
 
-    property caption (object) = property##Val(object, currentDate()) IN group;
+    property caption (object) = property##Date(object, currentDate()) IN group;
 
     FORM add###property caption
         OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), property##Date(a, d)
+        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###property##Date(a, d)
     ;
     DESIGN add###property FROM DEFAULT {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
@@ -24,8 +24,8 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
 
     FORM dialog###property caption
         OBJECTS a=object FIXED PANEL, d=DATE
-        PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, property##Date(a, d)
-        FILTERS property##Date(a, d)
+        PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, d)
+        FILTERS data###property##Date(a, d)
     ;
     DESIGN dialog###property FROM DEFAULT {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
@@ -37,19 +37,19 @@ END
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
 
 META defineHistorizableCustom(property, caption, type, typeIdentity, object, objectIdentity, group)
-    property##Date caption = DATA type (object, DATE) IN group;
-    typeIdentity###property##Date caption (object, date) = typeIdentity(property##Date(object, date));
+    data###property##Date caption = DATA type (object, DATE) IN group;
+    data###typeIdentity###property##Date caption (object, date) = typeIdentity(data###property##Date(object, date));
 
-    date###property (object, date) = GROUP MAX dateIn AND property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
+    date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
-    property##Val caption (object, date) = property##Date(object, date###property(object, date)) IN group;
+    property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
 
-    property caption (object) = property##Val(object, currentDate());
+    property caption (object) = property##Date(object, currentDate());
     typeIdentity###property caption (object) = typeIdentity(property(object)) IN group;
 
     FORM add###property caption
         OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), typeIdentity###property##Date(a, d)
+        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, d)
     ;
     DESIGN add###property FROM DEFAULT {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
@@ -59,8 +59,8 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
 
     FORM dialog###property caption
         OBJECTS a=object FIXED PANEL, d=DATE
-        PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, typeIdentity###property##Date(a, d)
-        FILTERS property##Date(a, d)
+        PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, d)
+        FILTERS data###property##Date(a, d)
     ;
     DESIGN dialog###property FROM DEFAULT {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
@@ -71,18 +71,18 @@ END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
 META defineHistorizableDouble(property, caption, type, object1, object1Identity, object2, object2Identity, group)
-    property##Date caption = DATA type (object1, object2, DATE) IN group;
+    data###property##Date caption = DATA type (object1, object2, DATE) IN group;
 
-    date###property (object1, object2, date) = GROUP MAX dateIn AND property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
 
-    property##Val caption (object1, object2, date) = property##Date(object1, object2, date###property(object1, object2, date));
-    property##Over caption = UNION OVERRIDE property##Val(object1, object2, date), property##Date(object1, object2, date);
+    property##Date caption (object1, object2, date) = data###property##Date(object1, object2, date###property##Date(object1, object2, date));
+    over###property##Date caption = UNION OVERRIDE property##Date(object1, object2, date), data###property##Date(object1, object2, date);
 
-    property caption (object1, object2) = property##Val(object1, object2, currentDate()) IN group;
+    property caption (object1, object2) = property##Date(object1, object2, currentDate()) IN group;
 
     FORM add###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), property##Date(a, b, d)
+        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###property##Date(a, b, d)
     ;
     DESIGN add###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -93,8 +93,8 @@ META defineHistorizableDouble(property, caption, type, object1, object1Identity,
 
     FORM dialog###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, property##Date(a, b, d)
-        FILTERS property##Date(a, b, d)
+        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, b, d)
+        FILTERS data###property##Date(a, b, d)
     ;
     DESIGN dialog###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -102,27 +102,29 @@ META defineHistorizableDouble(property, caption, type, object1, object1Identity,
     }
 
     dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT property DEFAULT;
-    dialog###property##Over caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT property##Over;
+    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT over###property##Date;
 END
 // ----------------------------------- Свойство объект1-объект2-дата для yesNo со значением по-умолчанию НЕТ------------------------------------------ //
 
 META defineHistorizableDoubleDefaultCustom(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    property##Date caption = DATA type (object1, object2, DATE) IN group;
+    data###property##Date caption = DATA type (object1, object2, DATE) IN group;
+    data###typeIdentity###property##Date caption (object1, object2, date) = typeIdentity(data###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
+
+    date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+
+    property##Date caption (object1, object2, date) = UNION OVERRIDE defaultProperty(object1, object2) AND date IS DATE, data###property##Date(object1, object2, date###property##Date(object1, object2, date));
     typeIdentity###property##Date caption (object1, object2, date) = typeIdentity(property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
-    date###property (object1, object2, date) = GROUP MAX dateIn AND property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
+    over###property##Date caption = UNION OVERRIDE property##Date(object1, object2, date), data###property##Date(object1, object2, date);
 
-    property##Val caption (object1, object2, date) = UNION OVERRIDE defaultProperty(object1, object2) AND date IS DATE, property##Date(object1, object2, date###property(object1, object2, date));
-    property##Over caption = UNION OVERRIDE property##Val(object1, object2, date), property##Date(object1, object2, date);
+    over###typeIdentity###property##Date caption (object1, object2, date) = typeIdentity(over###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
-    typeIdentity###property##Over caption (object1, object2, date) = typeIdentity(property##Over(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    property caption (object1, object2) = property##Val(object1, object2, date###property(object1, object2, currentDate()));
+    property caption (object1, object2) = property##Date(object1, object2, date###property##Date(object1, object2, currentDate()));
     typeIdentity###property caption (object1, object2) = typeIdentity(property(object1, object2)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     FORM add###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), name###property##Date(a, b, d)
+        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, b, d)
     ;
     DESIGN add###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -133,8 +135,8 @@ META defineHistorizableDoubleDefaultCustom(property, defaultProperty, caption, t
 
     FORM dialog###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, typeIdentity###property##Date(a, b, d)
-        FILTERS property##Date(a, b, d)
+        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, b, d)
+        FILTERS data###property##Date(a, b, d)
     ;
     DESIGN dialog###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -142,23 +144,23 @@ META defineHistorizableDoubleDefaultCustom(property, defaultProperty, caption, t
     }
 
     dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT typeIdentity###property DEFAULT;
-    dialog###property##Over caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT typeIdentity###property##Over;
+    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT over###typeIdentity###property##Date;
 END
 
 // ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
 META defineHistorizableTriple(property, caption, type, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
+    data###property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
 
-    date###property (object1, object2, object3, date) = GROUP MAX dateIn AND property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
+    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
-    property##Val caption (object1, object2, object3, date) = property##Date(object1, object2, object3, date###property(object1, object2, object3, date));
-    property##Over caption = UNION OVERRIDE property##Val(object1, object2, object3, date), property##Date(object1, object2, object3, date);
+    property##Date caption (object1, object2, object3, date) = data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
+    over###property##Date caption = UNION OVERRIDE property##Date(object1, object2, object3, date), data###property##Date(object1, object2, object3, date);
 
-    property caption (object1, object2, object3) = property##Val(object1, object2, object3, currentDate()) IN group;
+    property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate()) IN group;
 
     FORM add###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3  FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), property##Date(a, b, c, d)
+        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), data###property##Date(a, b, c, d)
     ;
     DESIGN add###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -170,8 +172,8 @@ META defineHistorizableTriple(property, caption, type, object1, object1Identity,
 
     FORM dialog###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, property##Date(a, b, c, d)
-        FILTERS property##Date(a, b, c, d)
+        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, b, c, d)
+        FILTERS data###property##Date(a, b, c, d)
     ;
     DESIGN dialog###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -180,27 +182,27 @@ META defineHistorizableTriple(property, caption, type, object1, object1Identity,
     }
 
     dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT property DEFAULT;
-    dialog###property##Over caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT property##Over;
+    overDialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT over###property##Date;
 END
 // -------------------- Свойство объект1-объект2-объект3-дата для yesNo со значением по-умолчанию НЕТ---------------------------- //
 
 META defineHistorizableTripleDefaultCustom(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, object3, object3Identity, fixedCharWidth, group)
-    property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
-    typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(property##Date(object1, object2, object3, date));
+    data###property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
+    data###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(data###property##Date(object1, object2, object3, date));
 
-    date###property (object1, object2, object3, date) = GROUP MAX dateIn AND property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
+    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
-    property##Val caption (object1, object2, object3, date) = UNION OVERRIDE defaultProperty(object1, object2, object3) AND date IS DATE,
-                                                                             property##Date(object1, object2, object3, date###property(object1, object2, object3, date));
-    property##Over caption = UNION OVERRIDE property##Val(object1, object2, object3, date), property##Date(object1, object2, object3, date);
-    typeIdentity###property##Over caption (object1, object2, object3, date) = typeIdentity(property##Over(object1, object2, object3, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
+    property##Date caption (object1, object2, object3, date) = UNION OVERRIDE defaultProperty(object1, object2, object3) AND date IS DATE,
+                                                                             data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
+    over###property##Date caption = UNION OVERRIDE property##Date(object1, object2, object3, date), data###property##Date(object1, object2, object3, date);
+    over###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(over###property##Date(object1, object2, object3, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
-    property caption (object1, object2, object3) = property##Val(object1, object2, object3, currentDate());
+    property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate());
     typeIdentity###property caption (object1, object2, object3) = typeIdentity(property(object1, object2, object3)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     FORM add###property caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), typeIdentity###property##Date(a, b, c, d);
+    PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, b, c, d);
     DESIGN add###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
@@ -211,8 +213,8 @@ META defineHistorizableTripleDefaultCustom(property, defaultProperty, caption, t
 
     FORM dialog###property caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
-    PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, typeIdentity###property##Date(a, b, c, d)
-    FILTERS property##Date(a, b, c, d);
+    PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, b, c, d)
+    FILTERS data###property##Date(a, b, c, d);
     DESIGN dialog###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
@@ -220,5 +222,5 @@ META defineHistorizableTripleDefaultCustom(property, defaultProperty, caption, t
     }
 
     dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT typeIdentity###property DEFAULT;
-    dialog###property##Over caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT typeIdentity###property##Over;
+    over###dialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT over###typeIdentity###property##Date;
 END

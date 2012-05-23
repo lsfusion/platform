@@ -95,12 +95,12 @@ META defineDocumentDetailItemExtra (object)
     isManufacturedItem###object##Detail 'Товар производится?' (detail) = isManufacturedItem(item###object##Detail(detail)) IN itemDetailGroup;
     isWeightItem###object##Detail 'Весовой товар?' (detail) = isWeightItem(item###object##Detail(detail)) IN itemDetailGroup;
 
-    nameInActionItemDepartment###object##Detail 'Товар акции?' (detail) = name(inActionItemDepartmentVal(item###object##Detail(detail),
-        departmentStore###object##Detail(detail), date###object##Detail(detail))) IN itemDetailGroup FIXEDCHARWIDTH 3;
+    nameInActionItemDepartment###object##Detail 'Товар акции?' (detail) = nameInActionItemDepartmentDate(item###object##Detail(detail),
+        departmentStore###object##Detail(detail), date###object##Detail(detail)) IN itemDetailGroup FIXEDCHARWIDTH 3;
 
     hintItem###object##Detail 'Подсказка по товару' (detail) = hintItem(item###object##Detail(detail)) IN itemDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-    nameBanRevaluationItemDepartment###object##Detail 'Запрет на переоценку' (detail) = name(banRevaluationItemDepartmentVal(item###object##Detail(detail),
+    nameBanRevaluationItemDepartment###object##Detail 'Запрет на переоценку' (detail) = name(banRevaluationItemDepartmentDate(item###object##Detail(detail),
         departmentStore###object##Detail(detail), date###object##Detail(detail))) IN itemDetailGroup FIXEDCHARWIDTH 3;
 
 END
@@ -1786,7 +1786,7 @@ CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT includeDepartmentStoreEmp
     CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
 // ------------------------------------- Скидки ---------------------------------------------------------- //
 
-@defineHistorizableCustom(discount, 'Разрешать скидки', yesNo, name, departmentStore, name, baseGroup);
+@defineHistorizableCustom(discountDepartmentStore, 'Разрешать скидки', yesNo, name, departmentStore, name, baseGroup);
 
 FORM officer 'Должность'
     OBJECTS of=officer FIXED PANEL
@@ -2346,15 +2346,15 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
 defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
 @defineHistorizableDoubleDefaultCustom(labelItemDepartment, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
-labelBarcodeDepartmentVal (barcode, departmentStore, date) = labelItemDepartmentVal(skuBarcode(barcode), departmentStore, date);
+labelBarcodeDepartmentDate (barcode, departmentStore, date) = labelItemDepartmentDate(skuBarcode(barcode), departmentStore, date);
 
-CONSTRAINT labelItemDepartmentDate(item, departmentStore, date) AND NOT inLabelTypeDepartmentStore(labelItemDepartmentDate(item, departmentStore, date), departmentStore)
-    CHECKED BY labelItemDepartmentDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
+CONSTRAINT dataLabelItemDepartmentDate(item, departmentStore, date) AND NOT inLabelTypeDepartmentStore(dataLabelItemDepartmentDate(item, departmentStore, date), departmentStore)
+    CHECKED BY dataLabelItemDepartmentDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
 
 @defineHistorizableDouble(multiplierItemDepartment, 'Множитель', INTEGER, item, nameAttributeItem, departmentStore, name, labelGroup);
-multiplierItemDepartmentValOver (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
-                                                                               multiplierItemDepartmentVal(item, departmentStore, date);
-multiplierBarcodeDepartmentValOver (barcode, departmentStore, date) = multiplierItemDepartmentValOver(skuBarcode(barcode), departmentStore, date);
+valOverMultiplierItemDepartmentDate (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
+                                                                               multiplierItemDepartmentDate(item, departmentStore, date);
+valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentDate(skuBarcode(barcode), departmentStore, date);
 
 @defineHistorizableDouble(oldPriceItemDepartment, 'Старая цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, labelGroup);
 
@@ -2497,20 +2497,20 @@ FORM item 'Товар'
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
-    PROPERTIES      nameIsSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, d, dt), dialogIsSupplierItemDepartmentOver(sp, i, d),
-                    nameBanSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND nameBanSupplierItemDepartmentDate(sp, i, d, dt), dialogBanSupplierItemDepartmentOver(sp, i, d),
-                    priceSupplierItemDepartmentOver(sp, i, d, dt) BACKGROUND priceSupplierItemDepartmentDate(sp, i, d, dt), dialogPriceSupplierItemDepartmentOver(sp, i, d),
-                    markupItemDepartmentOver(i, d, dt) BACKGROUND markupItemDepartmentDate(i, d, dt), dialogMarkupItemDepartmentOver(i, d)
-    PROPERTIES      retailPriceItemDepartmentOver(i, d, dt) BACKGROUND retailPriceItemDepartmentDate(i, d, dt), dialogRetailPriceItemDepartmentOver(i, d),
-                    maxReserveItemDepartmentOver(i, d, dt) BACKGROUND maxReserveItemDepartmentDate(i, d, dt), dialogMaxReserveItemDepartmentOver(i, d),
-                    minReserveItemDepartmentOver(i, d, dt) BACKGROUND minReserveItemDepartmentDate(i, d, dt), dialogMinReserveItemDepartmentOver(i, d),
-                    nameBanRevaluationItemDepartmentOver(i, d, dt) BACKGROUND nameBanRevaluationItemDepartmentDate(i, d, dt), dialogBanRevaluationItemDepartmentOver(i, d),
-                    nameInActionItemDepartmentOver(i, d, dt) BACKGROUND nameInActionItemDepartmentDate(i, d, dt), dialogInActionItemDepartmentOver(i, d),
-                    marginProductionItemDepartmentOver(i, d, dt) BACKGROUND marginProductionItemDepartmentDate(i, d, dt), dialogMarginProductionItemDepartmentOver(i, d),
-                    discountItemDepartmentOver(i, d, dt) BACKGROUND discountItemDepartmentDate(i, d, dt), dialogDiscountItemDepartmentOver(i, d),
-                    nameLabelItemDepartmentOver(i, d, dt) BACKGROUND labelItemDepartmentDate(i, d, dt), dialogLabelItemDepartmentOver(i, d),
-                    multiplierItemDepartmentOver(i, d, dt) BACKGROUND multiplierItemDepartmentDate(i, d, dt), dialogMultiplierItemDepartmentOver(i, d),
-                    oldPriceItemDepartmentOver(i, d, dt) BACKGROUND oldPriceItemDepartmentDate(i, d, dt), dialogOldPriceItemDepartmentOver(i, d)
+    PROPERTIES      overNameIsSupplierItemDepartmentDate(sp, i, d, dt) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, d, dt), overDialogIsSupplierItemDepartmentDate(sp, i, d),
+                    overNameBanSupplierItemDepartmentDate(sp, i, d, dt) BACKGROUND dataBanSupplierItemDepartmentDate(sp, i, d, dt), overDialogBanSupplierItemDepartmentDate(sp, i, d),
+                    overPriceSupplierItemDepartmentDate(sp, i, d, dt) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, d, dt), overDialogPriceSupplierItemDepartmentDate(sp, i, d),
+                    overMarkupItemDepartmentDate(i, d, dt) BACKGROUND dataMarkupItemDepartmentDate(i, d, dt), overDialogMarkupItemDepartmentDate(i, d)
+    PROPERTIES      overRetailPriceItemDepartmentDate(i, d, dt) BACKGROUND dataRetailPriceItemDepartmentDate(i, d, dt), overDialogRetailPriceItemDepartmentDate(i, d),
+                    overMaxReserveItemDepartmentDate(i, d, dt) BACKGROUND dataMaxReserveItemDepartmentDate(i, d, dt), overDialogMaxReserveItemDepartmentDate(i, d),
+                    overMinReserveItemDepartmentDate(i, d, dt) BACKGROUND dataMinReserveItemDepartmentDate(i, d, dt), overDialogMinReserveItemDepartmentDate(i, d),
+                    overNameBanRevaluationItemDepartmentDate(i, d, dt) BACKGROUND dataNameBanRevaluationItemDepartmentDate(i, d, dt), overDialogBanRevaluationItemDepartmentDate(i, d),
+                    overNameInActionItemDepartmentDate(i, d, dt) BACKGROUND dataNameInActionItemDepartmentDate(i, d, dt), overDialogInActionItemDepartmentDate(i, d),
+                    overMarginProductionItemDepartmentDate(i, d, dt) BACKGROUND dataMarginProductionItemDepartmentDate(i, d, dt), overDialogMarginProductionItemDepartmentDate(i, d),
+                    overDiscountItemDepartmentDate(i, d, dt) BACKGROUND dataDiscountItemDepartmentDate(i, d, dt), overDialogDiscountItemDepartmentDate(i, d),
+                    overNameLabelItemDepartmentDate(i, d, dt) BACKGROUND dataLabelItemDepartmentDate(i, d, dt), overDialogLabelItemDepartmentDate(i, d),
+                    overMultiplierItemDepartmentDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentDate(i, d, dt), overDialogMultiplierItemDepartmentDate(i, d),
+                    overOldPriceItemDepartmentDate(i, d, dt) BACKGROUND dataOldPriceItemDepartmentDate(i, d, dt), overDialogOldPriceItemDepartmentDate(i, d)
 
     EDIT item OBJECT i
 ;
@@ -3394,7 +3394,7 @@ raceQuantityConsignment 'Количество ездок' (consignment) = ABSTRA
 
 recipientConsignment 'Получатель (ИД)' = ABSTRACT legalEntity (consignment);
 UNPRecipientConsignment 'УНП получателя' (consignment) = UNPLegalEntity(recipientConsignment(consignment));
-addressRecipientConsignment 'Юридический адрес получателя' (consignment) = addressLegalEntityVal(recipientConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+addressRecipientConsignment 'Юридический адрес получателя' (consignment) = addressLegalEntityDate(recipientConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressRecipientConsignment(consignment),
@@ -3403,12 +3403,12 @@ unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION 
 nameDepartmentStoreConsignment 'Отдел документа' (consignment) = name(departmentStoreConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 senderConsignment 'Отправитель ИД' (consignment) = companyDepartmentStore(departmentStoreConsignment(consignment));
 UNPSenderConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(senderConsignment(consignment));
-addressSenderConsignment 'Юридический адрес отправителя' (consignment) = addressLegalEntityVal(senderConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+addressSenderConsignment 'Юридический адрес отправителя' (consignment) = addressLegalEntityDate(senderConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 fullNameSenderConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(senderConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 UNPTransportPayerConsignment 'УНП заказчика перевозки' (consignment) = UNPLegalEntity(transportPayerConsignment(consignment));
 addressTransportPayerConsignment 'Юридический адрес заказчика перевозки' (consignment) =
-    addressLegalEntityVal(transportPayerConsignment(consignment), dateConsignment(consignment));
+    addressLegalEntityDate(transportPayerConsignment(consignment), dateConsignment(consignment));
 fullNameTransportPayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
     fullNameLegalEntity(transportPayerConsignment(consignment)) ;
 
@@ -3572,10 +3572,10 @@ nameControlSupplierDepartmentStore 'Контролировать ассорти�
 overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE
     (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
     controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
-    sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
+    sureSupplierDepartmentStoreDate(supplier, departmentStore, date) == yesNo.yes;
 
 isYesControlSupplierDepartmentStore(supplier, departmentStore) = controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
-isYesSureSupplierDepartmentStoreVal(supplier, departmentStore, date) = sureSupplierDepartmentStoreVal(supplier, departmentStore, date) == yesNo.yes;
+isYesSureSupplierDepartmentStoreDate(supplier, departmentStore, date) = sureSupplierDepartmentStoreDate(supplier, departmentStore, date) == yesNo.yes;
 
 //numberContractSupplier 'Договор по умолчанию' (supplier) = numberContract(userContractSupplier(supplier));
 defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
@@ -3692,7 +3692,7 @@ FORM supplier 'Поставщик'
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
 
     PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore
-    PROPERTIES       nameSureSupplierDepartmentStoreOver(s, d, dt) BACKGROUND nameSureSupplierDepartmentStoreDate(s, d, dt), dialogSureSupplierDepartmentStoreOver(s, d)
+    PROPERTIES       overNameSureSupplierDepartmentStoreDate(s, d, dt) BACKGROUND dataSureSupplierDepartmentStoreDate(s, d, dt), overDialogSureSupplierDepartmentStoreDate(s, d)
 
 //    PROPERTIES(s,c) equalsSupplierContract
     PROPERTIES(s,a) equalsLegalEntityAccount
@@ -3717,7 +3717,7 @@ FORM supplier 'Поставщик'
         FILTER 'Показывать только с заполненным полем: e-mail' 'F9' emailOrderSupplierDepartmentStore(s, d)
         FILTER 'Показывать только с заполненным полем: контактная инф-ия' 'F8' contactSupplierDepartmentStore(s, d)
         FILTER 'Показывать только с заполненным полем: контролировать пост-ка' 'F7' isYesControlSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: обязателен заказ поставщику' 'F6' isYesSureSupplierDepartmentStoreVal(s, d, dt)
+        FILTER 'Показывать только с заполненным полем: обязателен заказ поставщику' 'F6' isYesSureSupplierDepartmentStoreDate(s, d, dt)
 
     EDIT supplier OBJECT s
 ;
@@ -3921,7 +3921,7 @@ FORM departmentStore 'Отдел магазина'
                     quantityCashChangeOneOperationAccountDepartmentStore, commonNameMRPDepartmentStore, nameOfficerMRPDepartmentStore,
                     commonNameBookkeeperDepartmentStore, nameOfficerBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore,
                     nameOfficerPersonCheckDepartmentStore, nameRevaluationCommitteeDepartmentStore,
-                    nameRegisterCommitteeDepartmentStore, nameWastageCommitteeDepartmentStore, nameDiscount, dialogDiscount
+                    nameRegisterCommitteeDepartmentStore, nameWastageCommitteeDepartmentStore, nameDiscountDepartmentStore, dialogDiscountDepartmentStore
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
@@ -3958,9 +3958,9 @@ DESIGN departmentStore FROM DEFAULT {
                     ADD PROPERTY (resolveOrderItemDepartmentStore);
                     ADD PROPERTY (quantityCashChangeOneOperationAccountDepartmentStore);
                 };
-            ADD d.controlDepartmentStoreGroup{
-                    ADD PROPERTY (nameDiscount);
-                };
+            ADD d.controlDepartmentStoreGroup {
+                ADD PROPERTY (nameDiscountDepartmentStore);
+            }
             ADD d.printDepartmentStoreGroup;
         };
 
@@ -6196,11 +6196,11 @@ customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
 fullNameCustomerSpecification 'Полное наименование' (specification) = fullNameLegalEntity(customerSpecification(specification)) IN customerGroup;
 UNPCustomerSpecification 'УНП покупателя' (specification) = UNPLegalEntity(customerSpecification(specification)) IN customerGroup;
-addressCustomerSpecification 'Юридический адрес' (specification) = addressLegalEntityVal(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
+addressCustomerSpecification 'Юридический адрес' (specification) = addressLegalEntityDate(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
 nameOwnershipCustomerSpecification 'Форма собственности' (specification) = nameOwnershipLegalEntity(customerSpecification(specification)) IN customerGroup;
 postAddressCustomerSpecification 'Почтовый адрес' (specification) = postAddressLegalEntity(customerSpecification(specification)) IN customerGroup;
 managerCustomerSpecification 'Руководитель' (specification) = managerLegalEntity(customerSpecification(specification)) IN customerGroup;
-phoneCustomerSpecification 'Телефон покупателя' (specification) = phoneLegalEntityVal(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
+phoneCustomerSpecification 'Телефон покупателя' (specification) = phoneLegalEntityDate(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
 
 objectiveAcquiringSpecification(specification) = DATA objectiveAcquiring (specification) IN idGroup;
 nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN documentPrmGroup;
@@ -6208,7 +6208,7 @@ nameObjectiveAcquiringSpecification 'Цель приобретения' (specifi
 accountCustomerSpecification 'Р/сч. покупателя ИД' (specification) = overrideAccountLegalEntity(customerSpecification(specification));
 dataAccountCustomerSpecification 'Р/сч. покупателя' (specification) = dataAccount(accountCustomerSpecification(specification));
 nameBankAccountCustomerSpecification 'Банк покупателя' (specification) = nameBankAccount(accountCustomerSpecification(specification));
-addressBankAccountCustomerSpecification 'Адрес банка покупателя' (specification) = addressBankVal(bankAccount(accountCustomerSpecification(specification)), dateSpecification(specification));
+addressBankAccountCustomerSpecification 'Адрес банка покупателя' (specification) = addressBankDate(bankAccount(accountCustomerSpecification(specification)), dateSpecification(specification));
 MFOBankAccountCustomerSpecification 'Код МФО банка покупателя' (specification) = MFOBankAccount(accountCustomerSpecification(specification));
 departmentBankAccountCustomerSpecification 'Отдел банка покупателя' (specification) = departmentBankAccount(accountCustomerSpecification(specification));
 CBUBankAccountCustomerSpecification 'ЦБУ банка покупателя' (specification) = CBUBankAccount(accountCustomerSpecification(specification));
@@ -6223,17 +6223,17 @@ noOverdueSpecificationDate 'Непросрочена' (specification, date) = da
 companySpecification 'Компания ИД' (specification) = companyDepartmentStore(departmentStoreSpecification(specification));
 UNPCompanySpecification 'УНП компании' (specification) = UNPLegalEntity(companySpecification(specification));
 fullNameCompanySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(companySpecification(specification));
-addressCompanySpecification 'Юридический адрес компании' (specification) = addressLegalEntityVal(companySpecification(specification), dateSpecification(specification));
+addressCompanySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(companySpecification(specification), dateSpecification(specification));
 
 accountCompanySpecification 'Р/сч. компании ИД' (specification) = overrideAccountLegalEntity(companySpecification(specification));
 dataAccountCompanySpecification 'Р/сч. компании' (specification) = dataAccount(accountCompanySpecification(specification));
 
 nameBankAccountCompanySpecification 'Банк компании' (specification) = nameBankAccount(accountCompanySpecification(specification));
-addressBankAccountCompanySpecification 'Адрес банка компании' (specification) = addressBankVal(bankAccount(accountCompanySpecification(specification)), dateSpecification(specification));
+addressBankAccountCompanySpecification 'Адрес банка компании' (specification) = addressBankDate(bankAccount(accountCompanySpecification(specification)), dateSpecification(specification));
 MFOBankAccountCompanySpecification 'Код МФО банка компании' (specification) = MFOBankAccount(accountCompanySpecification(specification));
 departmentBankAccountCompanySpecification 'Отдел банка компании' (specification) = departmentBankAccount(accountCompanySpecification(specification));
 CBUBankAccountCompanySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountCompanySpecification(specification));
-phoneCompanySpecification 'Телефон компании' (specification) = phoneLegalEntityVal(companySpecification(specification), dateSpecification(specification)) IN customerGroup;
+phoneCompanySpecification 'Телефон компании' (specification) = phoneLegalEntityDate(companySpecification(specification), dateSpecification(specification)) IN customerGroup;
 
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
@@ -6485,7 +6485,7 @@ invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumShipmentDetail(li
 // ------ Запись значений по умолчанию ----- //
 
 supplierPriceShipmentDetail(shipmentDetail) <-
-    priceSupplierItemDepartmentVal (supplierShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    priceSupplierItemDepartmentDate (supplierShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 nonRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) =
@@ -6502,7 +6502,7 @@ supplierRangeShipmentDetail(shipmentDetail) <-
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailMarkupShipmentDetail(shipmentDetail) <-
-    markupItemDepartmentVal (itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
+    markupItemDepartmentDate(itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailRangeShipmentDetail(shipmentDetail) <-
@@ -6514,7 +6514,7 @@ wareShipmentDetail(shipmentDetail) <-
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 warePriceShipmentDetail (shipmentDetail) <-
-    warePriceVal (wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
+    warePriceDate(wareShipmentDetail (shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(wareShipmentDetail(shipmentDetail));
 
 nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = [X*(Y+100)*(Z+100)/10000] (
@@ -7368,7 +7368,7 @@ descriptionPriceTransactionDocument (document) += descriptionUserPriceChange(doc
 isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
     retailPriceUserPriceChangeDetail(userPriceChangeDetail) < curRetailPriceUserPriceChangeDetail(userPriceChangeDetail)
     IF banMarkdownItem(itemUserPriceChangeDetail(userPriceChangeDetail)) == TRUE;
-//    IF banRevaluationItemDepartmentVal(
+//    IF banRevaluationItemDepartmentDate(
 //        itemUserPriceChangeDetail(userPriceChangeDetail),
 //        departmentStoreUserPriceChangeDetail(userPriceChangeDetail),
 //        dateUserPriceChangeDetail(userPriceChangeDetail)) == yesNo.yes;
@@ -7797,7 +7797,7 @@ sumQuantityItemOrderSupplier 'Заказ(единиц)' (orderSupplier, item) = 
 sumQuantityItemOrderSupplier (orderSupplier, item) <- (UNION OVERRIDE 1 IF item IS item, quantityPackItem(item)) * packQuantityItemOrderSupplier(orderSupplier, item)
                                                       WHEN CHANGED(packQuantityItemOrderSupplier(orderSupplier, item));
 priceSupplierItemOrderSupplier 'Цена поставщика' (orderSupplier, item) = DATA NUMERIC[14,2] (orderSupplier, item);
-priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentOver(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
+priceSupplierItemOrderSupplier (orderSupplier, item) <- priceSupplierItemDepartmentDate(supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier))
     WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 
 supplierRangeItemDateOrderSupplier 'Шкала' (orderSupplier, item) = DATA range (orderSupplier, item) IN idGroup;
@@ -7810,15 +7810,15 @@ dataSupplierRangeOrderSupplier 'НДС поставщика, %' (orderSupplier, 
                    dataActingRateRangeDate(supplierRangeItemDateOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 CONSTRAINT taxRange(supplierRangeItemDateOrderSupplier(orderSupplier, item)) != tax.taxNDS CHECKED BY supplierRangeItemDateOrderSupplier MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-retailPriceItemOrderSupplierVal 'Розничная цена' (orderSupplier, item) =
-    retailPriceItemDepartmentVal(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+retailPriceItemOrderSupplierDate 'Розничная цена' (orderSupplier, item) =
+    retailPriceItemDepartmentDate(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 retailPriceItemOrderSupplier 'Розничная цена' (orderSupplier, item) =
-    UNION OVERRIDE 0 IF (orderSupplier IS orderSupplier AND item IS item), retailPriceItemOrderSupplierVal(orderSupplier, item);
+    UNION OVERRIDE 0 IF (orderSupplier IS orderSupplier AND item IS item), retailPriceItemOrderSupplierDate(orderSupplier, item);
 
 wareOrderSupplier 'Посуда (ИД)' (orderSupplier, item) = DATA ware (orderSupplier, item);
 wareOrderSupplier (orderSupplier, item) <- wareItem(item) WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 nameWareOrderSupplier 'Посуда' (orderSupplier, item) = name(wareOrderSupplier(orderSupplier, item));
-warePriceOrderSupplier 'Цена посуды' (orderSupplier, item) = warePriceVal(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
+warePriceOrderSupplier 'Цена посуды' (orderSupplier, item) = warePriceDate(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 dataRangeWareOrderSupplier 'Шкала(ИД)' (orderSupplier, item) = DATA range (orderSupplier, item) IN idGroup;
 dataRangeWareOrderSupplier (orderSupplier, item) <- rangeWareVal(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier))
                                                     WHEN CHANGED(wareOrderSupplier(orderSupplier, item));
@@ -7866,7 +7866,7 @@ totalFullSumOrderSupplier 'Общая сумма заказа с НДС' (orderS
     GROUP SUM fullSumItemOrderSupplier(orderSupplier, item) BY orderSupplier IN orderSupplierGroup;
 
 nameinActionItemOrderSupplier 'Товар акции' (orderSupplier, item) =
-    nameInActionItemDepartmentOver(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
+    nameInActionItemDepartmentDate(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
 banMovementDepartmentStoreOrderSupplier 'Запрет на внутреннее перемещение товара' (orderSupplier, item) =
     banMovementDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 topItem 'Топ' (orderSupplier, item) = topDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
@@ -7878,16 +7878,16 @@ castFiveObjectsToString100 =
 //если разбивать формулу на 2 строки выдает ошибку
 
 isItemInOrderSupplier 'Товар в заказе' (orderSupplier, item) = packQuantityItemOrderSupplier(orderSupplier, item) > 0;
-lastOrderSupplierVal 'Последний заказ(ИД)' (orderSupplier, item) =
+lastOrderSupplierDate 'Последний заказ(ИД)' (orderSupplier, item) =
      PARTITION PREV orderSupplier AND isItemInOrderSupplier(orderSupplier, item)
      BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier), item
      ORDER dateOrderSupplier(orderSupplier);
 lastOrderSupplier 'Последний заказ' (orderSupplier, item) =
-     castFiveObjectsToString100(seriesNumberObject(lastOrderSupplierVal(orderSupplier, item)),
-                                dateOrderSupplier(lastOrderSupplierVal(orderSupplier, item)),
-                                packQuantityItemOrderSupplier(lastOrderSupplierVal(orderSupplier, item), item),
-                                retailPriceItemOrderSupplier(lastOrderSupplierVal(orderSupplier, item), item),
-                                nameSupplierOrderSupplier(lastOrderSupplierVal(orderSupplier, item))
+     castFiveObjectsToString100(seriesNumberObject(lastOrderSupplierDate(orderSupplier, item)),
+                                dateOrderSupplier(lastOrderSupplierDate(orderSupplier, item)),
+                                packQuantityItemOrderSupplier(lastOrderSupplierDate(orderSupplier, item), item),
+                                retailPriceItemOrderSupplier(lastOrderSupplierDate(orderSupplier, item), item),
+                                nameSupplierOrderSupplier(lastOrderSupplierDate(orderSupplier, item))
      );
 
 quantityDaysNextOrder 'Дней до поставки' (orderSupplier) =
@@ -7947,10 +7947,10 @@ recommendCountOrderSupplier 'Рекомендуемый заказ' (orderSuppli
                (minQuantityOrderItem(item) IF orderSupplier IS orderSupplier))
     IF quantityNeededOrderSupplierItem(orderSupplier, item) > 0;
 
-isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentVal (
+isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItemDepartmentDate(
     supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) != yesNo.yes;
 
-isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentVal(
+isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentDate(
     supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 
 isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
@@ -7993,7 +7993,7 @@ isSupplierShipmentOrder 'Заявка поставщика поставки' (sh
 
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
-CONSTRAINT sureSupplierDepartmentStoreVal(supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment)) == yesNo.yes
+CONSTRAINT sureSupplierDepartmentStoreDate(supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment)) == yesNo.yes
     AND NOT sumOrdersShipment (shipment)  MESSAGE 'Отсутствует обязательный заказ для данного поставщика';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
@@ -9208,12 +9208,12 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         }
     } ELSE {
         // бежим по всем типам ценников из управленческих параметров
-        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelBarcodeDepartmentVal(barcode, departmentStore, date), departmentStore, date](l, departmentStore, date)) DO {
+        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelBarcodeDepartmentDate(barcode, departmentStore, date), departmentStore, date](l, departmentStore, date)) DO {
             // для каждого создаем по операции печати ценников
             ADDOBJ labelTransaction;
             FOR t == addedObject() DO {
-                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentVal(barcode, departmentStore, date) == l;
-                SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- multiplierBarcodeDepartmentValOver(barcode, departmentStore, date);
+                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelBarcodeDepartmentDate(barcode, departmentStore, date) == l;
+                SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- valOverMultiplierBarcodeDepartmentDate(barcode, departmentStore, date);
                 SET labelTypeLabelTransaction(t) <- l AS labelType;
                 EXEC createLabelTransactionFillParams(t AS labelTransaction, departmentStore AS departmentStore);
                 // вызываем печатную форму для каждого из них
@@ -9512,7 +9512,7 @@ toPrintInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM
 companyWriteOff (writeOff) = companyDepartmentStore(departmentStoreWriteOff(writeOff));
 nameCompanyWriteOff 'Компания' (writeOff) = name(companyWriteOff(writeOff));
 nameStoreWriteOff 'Магазин' (writeOff) = nameStoreDepartmentStore(departmentStoreWriteOff(writeOff));
-addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityVal(companyWriteOff(writeOff), dateWriteOff(writeOff));
+addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(companyWriteOff(writeOff), dateWriteOff(writeOff));
 UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
 
 wastageCommitteeWriteOff (writeOff) = DATA wastageCommittee (writeOff) IN idGroup;
@@ -12900,8 +12900,6 @@ DESIGN torgSales FROM DEFAULT {
 
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
-inSupplierItemDepartmentOver(sp, i, dep, t) = isSupplierItemDepartmentOver(sp, i, dep, t) == yesNo.yes;
-
 FORM isSupplierItemDepartmentStore 'Ассортимент поставщиков'
 
     OBJECTS t=DATE FIXED PANEL
@@ -12920,12 +12918,12 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
     ORDER BY          nameDep
-    PROPERTIES        nameIsSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND nameIsSupplierItemDepartmentDate(sp, i, dep, t), dialogIsSupplierItemDepartmentOver(sp, i, dep),
-                      priceSupplierItemDepartmentOver(sp, i, dep, t) BACKGROUND priceSupplierItemDepartmentDate(sp, i, dep, t), dialogPriceSupplierItemDepartmentOver(sp, i, dep)
+    PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
+                      overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           hasParentItemGroupSku(g, i)
     FILTERGROUP filters10
-        FILTER 'Показывать поставляемые товары' 'F10' inSupplierItemDepartmentOver(sp, i, dep, t) DEFAULT
+        FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentDate(sp, i, dep, t) == yesNo.yes DEFAULT
 ;
 
 DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
@@ -13305,8 +13303,8 @@ NAVIGATOR {
             ADD addDelayContract;
             ADD dialogDelayContract;
             ADD genTimeTable;
-            ADD addDiscount;
-            ADD dialogDiscount;
+            ADD addDiscountDepartmentStore;
+            ADD dialogDiscountDepartmentStore;
             ADD addTimeTable;
             ADD dialogTimeTable;
             ADD orderSupplier;
