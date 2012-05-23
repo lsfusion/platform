@@ -3710,7 +3710,7 @@ FORM supplier 'Поставщик'
         inCompanyContract(co, c),
         inSupplierLicense(s, l)
     FILTERGROUP filters1
-        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F5' isInCompanySupplier(co, s) DEFAULT
+        FILTER 'Показывать юр. лица с которыми есть договор' 'F5' isInCompanySupplier(co, s) DEFAULT
 
     FILTERGROUP filters9
         FILTER 'Показывать только с заполненными полями' 'F10' overrideSupplierDepartmentStoreDate(s, d, dt)
