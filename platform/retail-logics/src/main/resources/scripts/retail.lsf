@@ -490,6 +490,8 @@ META defineDocumentHeaderRevaluation (object)
     nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
     revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
         WHEN object IS object;
+
+    showRevaluation###object 'Есть переоценка' (object) = DATA BOOLEAN (object) IN documentPrmGroup;
 END
 
 // ------------------------- Ссылка на "parent" объекты ---------------------------------- //
@@ -8578,7 +8580,6 @@ META metaCodeInputMultipleItems (object)
 
 END
 
-
 META metaCodeInputMultipleItemsBill (object)
 
     inputMultipleItems###object 'Подбор товаров (продажа)' = ACTION (object) {
@@ -9675,16 +9676,19 @@ quantityDisparityDetailItemDisparity 'Кол-во для закачки в об�
 toPrintActOfRevaluationDisparity 'Акт переоценки (приход)' (disparity) = toPrintActOfRevaluation(uniquePriceChangeDisparity(disparity)) IN printGroup;
 toPrintActOfRevaluationInputDisparity 'Акт переоценки (остатки)' (disparity) = toPrintActOfRevaluation(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
 
+@metaCodeInputMultipleItems(disparity);
+
 FORM disparity 'Пересортица'
 
-    OBJECTS dis=disparity FIXED PANEL
+    OBJECTS dis=disparity FIXED PANEL, d=disparityDetail
 
     PROPERTIES(dis) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
                     dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
-                    inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity, numberDisposalDisparity, nameRevaluationCommitteeDisparity
-
-    OBJECTS d=disparityDetail
+                    inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
+                    showRevaluationDisparity, numberDisposalDisparity SHOWIF showRevaluationDisparity(dis),
+                    nameRevaluationCommitteeDisparity SHOWIF showRevaluationDisparity(dis),
+                    inputMultipleItemsDisparity TODRAW d
 
     PROPERTIES(d)   indexDisparityDetail,
                     barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUnitOfMeasureItemDisparityDetail,
@@ -9724,7 +9728,9 @@ DESIGN disparity FROM DEFAULT {
                     ADD PROPERTY(dateDisparity);
                     ADD PROPERTY(timeDisparity);
                 }
-                ADD dis.documentPrmGroup;
+                ADD dis.documentPrmGroup{
+                    POSITION PROPERTY(showRevaluationDisparity) TO THE RIGHT PROPERTY(numberDisposalDisparity);
+                }
             }
                 ADD dis.documentSumGroup {
                     childConstraints = TO THE BOTTOM;
@@ -9973,24 +9979,24 @@ DESIGN shipments FROM DEFAULT {
         askConfirm = TRUE;
     }
 
-    s.printGroup {
+    ADD s.printGroup BEFORE functions.box {
         childConstraints = TO THE BOTTOM;
         fillHorizontal = 1;
     }
 
-    s.historyGroup {
+    ADD s.historyGroup BEFORE functions.box {
         childConstraints = TO THE BOTTOM;
         fillHorizontal = 1;
     }
-    s.postedGroup {
+    ADD s.postedGroup BEFORE functions.box {
         childConstraints = TO THE BOTTOM;
         fillHorizontal = 1;
     }
+
     POSITION s.historyGroup TO THE LEFT s.postedGroup;
     POSITION s.postedGroup TO THE LEFT s.printGroup;
     POSITION s.historyGroup TO THE LEFT s.printGroup;
 
-    ADD d.grid.box BEFORE s.historyGroup;
 }
 
 //-------------------------------Печатная форма---------------------------------//
