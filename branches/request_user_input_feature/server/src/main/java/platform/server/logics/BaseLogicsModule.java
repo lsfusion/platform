@@ -2238,6 +2238,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private final FilterEntity[] remapFilters;
 
         SelectFromListFormEntity(ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+            super(null, null);
+
             this.remapObject = remapObject;
             this.remapFilters = remapFilters;
 

@@ -26,14 +26,10 @@ public class ClientFormDockable extends FormDockable {
         super(formSID, factory, navigator,null);
     }
 
-    private ClientFormController getClientForm(ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    private ClientFormController getClientForm(ClientNavigator navigator, RemoteFormInterface remoteForm) {
         if (clientForm == null) {
             clientForm = new ClientFormController(remoteForm, navigator);
         }
-        return clientForm;
-    }
-
-    public ClientFormController getClientForm() {
         return clientForm;
     }
 

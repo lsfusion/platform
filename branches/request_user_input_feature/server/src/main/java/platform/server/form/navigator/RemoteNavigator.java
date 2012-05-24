@@ -792,14 +792,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
-        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, newSession, checkOnOk, interactive, null);
     }
 
     @Override
-    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, this, checkOnOk);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

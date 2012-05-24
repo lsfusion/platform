@@ -178,14 +178,14 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive)  throws SQLException {
-        return Context.context.get().createFormInstance(formEntity, mapObjects, session, newSession, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive)  throws SQLException {
+        return Context.context.get().createFormInstance(formEntity, mapObjects, session, newSession, checkOnOk, interactive);
     }
-    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
-        return Context.context.get().createRemoteForm(formInstance, checkOnOk);
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
+        return Context.context.get().createRemoteForm(formInstance);
     }
-    public RemoteForm createReportForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) throws SQLException { //
-        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, false), false);
+    public RemoteForm createReportForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, false, false));
     }
 
     public interface RequestDialog {

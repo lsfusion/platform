@@ -1,10 +1,8 @@
 package platform.server;
 
 import platform.interop.action.ClientAction;
-import platform.interop.form.UserInputResult;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
-import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
@@ -30,8 +28,8 @@ public interface Context {
     void pushActionMessage(String segment);
     String popActionMessage();
 
-    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive)  throws SQLException;
-    RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk);
+    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive)  throws SQLException;
+    RemoteForm createRemoteForm(FormInstance formInstance);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 
     ObjectValue requestUserObject(ExecutionContext.RequestDialog requestDialog) throws SQLException;

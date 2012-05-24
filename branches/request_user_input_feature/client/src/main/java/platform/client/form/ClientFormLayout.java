@@ -217,6 +217,7 @@ public class ClientFormLayout extends JPanel {
             }
             if (keyBinding != null && !keyBinding.isEmpty()) {
                 keyBinding.values().iterator().next().keyPressed(e);
+                return true;
             }
         }
 

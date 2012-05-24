@@ -14,7 +14,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.DataSession;
 
@@ -62,6 +61,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               classListener,
               computer,
               singletonMap(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
+              false,
+              false,
               true,
               additionalFilters
         );

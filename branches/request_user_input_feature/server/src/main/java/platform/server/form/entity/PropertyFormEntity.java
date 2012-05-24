@@ -1,12 +1,9 @@
 package platform.server.form.entity;
 
-import platform.server.classes.DateClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.NotNullFilterEntity;
-import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 
@@ -16,6 +13,8 @@ import java.util.Map;
 public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
     public <P extends PropertyInterface> PropertyFormEntity(CalcProperty<P> property, AbstractGroup recognizeGroup) {
+        super(null, null);
+
         GroupObjectEntity groupObject = new GroupObjectEntity(genID());
         Map<P, ObjectEntity> mapObjects = new HashMap<P, ObjectEntity>();
         for(Map.Entry<P, ValueClass> propInterface : property.getInterfaceClasses(true).entrySet()) {

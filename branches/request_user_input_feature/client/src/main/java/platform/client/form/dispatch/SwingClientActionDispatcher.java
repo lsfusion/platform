@@ -252,15 +252,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(SleepClientAction action) {
-
-        try {
-            Thread.sleep(action.millis);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public Object execute(MessageFileClientAction action) {
 
         try {
@@ -358,7 +349,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public int execute(ConfirmClientAction action) {
-        return JOptionPane.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.YES_NO_OPTION);
+        return SwingUtils.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.QUESTION_MESSAGE);
     }
 
     public class ExtendedMessageDialog extends JDialog {
@@ -408,10 +399,16 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(DenyCloseFormClientAction action) {
+    public void execute(PrintPreviewClientAction action) {
     }
 
-    public void execute(ApplyClientAction action) {
+    public void execute(RunExcelClientAction action) {
+    }
+
+    public void execute(RunEditReportClientAction action) {
+    }
+
+    public void execute(HideFormClientAction action) {
     }
 
     public void execute(ProcessFormChangesClientAction action) {

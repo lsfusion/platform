@@ -1,18 +1,17 @@
 package platform.client.form;
 
 import com.google.common.base.Throwables;
-import platform.client.ClientResourceBundle;
 import platform.interop.form.RemoteDialogInterface;
-import platform.interop.remote.SelectedObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.EventObject;
 
 public class ClientDialog extends ClientModalForm {
+
+    // todo: удалить все эти поля вмест с ObjectPropertyEditor
     public final static int NOT_CHOSEN = 0;
     public final static int VALUE_CHOSEN = 1;
 
@@ -24,8 +23,10 @@ public class ClientDialog extends ClientModalForm {
 
     private RemoteDialogInterface remoteDialog;
 
-    public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent, boolean isDailog) {
-        super(owner, dialog, false, isDailog); // обозначаем parent'а и модальность
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent, boolean isDialog) {
+        super(owner, dialog, false, isDialog);
+
+        remoteDialog = dialog;
 
         this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
 
@@ -68,46 +69,5 @@ public class ClientDialog extends ClientModalForm {
         } else {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
         }
-    }
-
-    // необходим чтобы в диалоге менять формы (панели)
-    protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
-        remoteDialog = (RemoteDialogInterface) remoteForm;
-
-        return new ClientFormController(remoteDialog, null, isDialog, true, false) {
-            @Override
-            void nullPressed() {
-                result = VALUE_CHOSEN;
-                dialogValue = null;
-                displayValue = null;
-
-                super.nullPressed();
-                hideDialog();
-            }
-
-            @Override
-            public boolean okPressed() {
-                result = VALUE_CHOSEN;
-                try {
-                    SelectedObject selectedObject = remoteDialog.getSelectedObject();
-                    dialogValue = selectedObject.value;
-                    displayValue = selectedObject.displayValue;
-                } catch (RemoteException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
-                }
-
-                if (super.okPressed()) {
-                    hideDialog();
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            void closePressed() {
-                super.closePressed();
-                hideDialog();
-            }
-        };
     }
 }

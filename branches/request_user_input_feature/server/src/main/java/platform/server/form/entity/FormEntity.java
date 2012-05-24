@@ -8,24 +8,31 @@ import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
+import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
+import platform.interop.form.layout.SimplexComponentDirections;
+import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.interop.navigator.FormShowType;
-import platform.server.classes.DateClass;
+import platform.server.classes.ColorClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.form.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
@@ -35,16 +42,48 @@ import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
+
+import static platform.base.ApiResourceBundle.getString;
+import static platform.server.logics.property.derived.DerivedProperty.*;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
+
+    public static final CalcPropertyMapImplement isFullClient = DerivedProperty.createLogical(true);
+    public static final CalcPropertyMapImplement isDebug = DerivedProperty.createLogical(false);
+    public static final CalcPropertyMapImplement isDialog = DerivedProperty.createLogical(false);
+    public static final CalcPropertyMapImplement isModal = DerivedProperty.createLogical(false);
+    public static final CalcPropertyMapImplement isNewSession = DerivedProperty.createLogical(true);
+    public static final CalcPropertyMapImplement isDataChanged = DerivedProperty.createLogical(false);
+
+    public static final PrintActionProperty printActionProperty = new PrintActionProperty();
+    public static final EditActionProperty editActionProperty = new EditActionProperty();
+    public static final XlsActionProperty xlsActionProperty = new XlsActionProperty();
+    public static final NullActionProperty nullActionProperty = new NullActionProperty();
+    public static final RefreshActionProperty refreshActionProperty = new RefreshActionProperty();
+    public static final ApplyActionProperty applyActionProperty = new ApplyActionProperty();
+    public static final CancelActionProperty cancelActionProperty = new CancelActionProperty();
+    public static final OkActionProperty okActionProperty = new OkActionProperty();
+    public static final CloseActionProperty closeActionProperty = new CloseActionProperty();
+
+    private PropertyDrawEntity printActionPropertyDraw;
+    private PropertyDrawEntity editActionPropertyDraw;
+    private PropertyDrawEntity xlsActionPropertyDraw;
+    private PropertyDrawEntity nullActionPropertyDraw;
+    private PropertyDrawEntity refreshActionPropertyDraw;
+    private PropertyDrawEntity applyActionPropertyDraw;
+    private PropertyDrawEntity cancelActionPropertyDraw;
+    private PropertyDrawEntity okActionPropertyDraw;
+    private PropertyDrawEntity closeActionPropertyDraw;
 
     public HashMap<Object, List<ActionPropertyObjectEntity<?>>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
 
@@ -62,6 +101,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
+    @SuppressWarnings("UnusedDeclaration")
     public FormEntity() {
     }
 
@@ -82,10 +122,116 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         logger.info("Initializing form " + caption + "...");
 
         isPrintForm = iisPrintForm;
+
+        printActionPropertyDraw = addFormButton(printActionProperty, null, isFullClient, isDialog, false);
+        editActionPropertyDraw = addFormButton(editActionProperty, null, isFullClient, isDialog, false, isDebug);
+        xlsActionPropertyDraw = addFormButton(xlsActionProperty, null, isFullClient, isDialog, false);
+        nullActionPropertyDraw = addFormButton(nullActionProperty, null, isDialog);
+        refreshActionPropertyDraw = addPropertyDraw(refreshActionProperty);
+        applyActionPropertyDraw = addFormButton(applyActionProperty, isDataChanged, isNewSession);
+        cancelActionPropertyDraw = addFormButton(cancelActionProperty, isDataChanged, isNewSession);
+        okActionPropertyDraw= addFormButton(okActionProperty, null, isModal);
+        closeActionPropertyDraw = addFormButton(closeActionProperty, null, isModal);
+
+        applyActionPropertyDraw.propertyBackground = addPropertyObject(
+                new LCP(createAnd(new ArrayList(), createStatic(Color.green, ColorClass.instance), isDataChanged).property)
+        );
     }
 
-    public boolean shouldProceedDefaultDraw() {
-        return true;
+    private PropertyDrawEntity addFormButton(ActionProperty actionProperty, CalcPropertyMapImplement enableIf, Object... showIfs) {
+        List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
+        CalcPropertyMapImplement showIfImplement = DerivedProperty.createTrue();
+        for (int i = 0; i < showIfs.length; i++) {
+            CalcPropertyMapImplement showIf = (CalcPropertyMapImplement) showIfs[i];
+            boolean not = (i < showIfs.length - 1) && (showIfs[i+1] instanceof Boolean) && (!(Boolean) showIfs[i+1]);
+            if (not) {
+                i++;
+                showIfImplement = createAndNot(interfaces, showIfImplement, showIf);
+            } else {
+                showIfImplement = createAnd(interfaces, showIfImplement, showIf);
+            }
+        }
+
+        PropertyDrawEntity propertyDraw = addPropertyDraw(
+                enableIf == null ? actionProperty : createIfAction(new ArrayList(), enableIf, new ActionPropertyMapImplement(actionProperty), null, false).property
+        );
+
+        propertyDraw.propertyCaption = addPropertyObject(
+                new LCP(createAnd(new ArrayList(), createStatic(actionProperty.caption), showIfImplement).property)
+        );
+
+        return propertyDraw;
+    }
+
+    public FormView createDefaultRichDesign() {
+        DefaultFormView design = new DefaultFormView(this);
+
+        ContainerView mainContainer = design.getMainContainer();
+
+        ContainerView formButtonContainer = design.createContainer();
+
+        formButtonContainer.setDescription(getString("form.layout.service.buttons"));
+        formButtonContainer.setSID("serviceButtons123123");
+        formButtonContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        mainContainer.add(formButtonContainer);
+
+        PropertyDrawView printFunction = design.get(printActionPropertyDraw);
+        setupFormButton(printFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getPrintKeyStroke(), "print.png");
+
+        PropertyDrawView xlsFunction = design.get(xlsActionPropertyDraw);
+        setupFormButton(xlsFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getXlsKeyStroke(), "xls.png");
+
+        PropertyDrawView editFunction = design.get(editActionPropertyDraw);
+        setupFormButton(editFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getEditKeyStroke(), "editReport.png");
+
+        PropertyDrawView nullFunction = design.get(nullActionPropertyDraw);
+        setupFormButton(nullFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getNullKeyStroke(), null);
+
+        PropertyDrawView refreshFunction = design.get(refreshActionPropertyDraw);
+        setupFormButton(refreshFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getRefreshKeyStroke(), "refresh.png");
+
+        PropertyDrawView applyFunction = design.get(applyActionPropertyDraw);
+        applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
+        setupFormButton(applyFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getApplyKeyStroke(), null);
+
+        PropertyDrawView cancelFunction = design.get(cancelActionPropertyDraw);
+        // KeyStrokes.getEscape(!isModal),
+        setupFormButton(cancelFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCancelKeyStroke(), null);
+
+        PropertyDrawView okFunction = design.get(okActionPropertyDraw);
+        okFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
+        // KeyStrokes.getEnter(isDialog() ? 0 : InputEvent.CTRL_DOWN_MASK),
+        setupFormButton(okFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getOkKeyStroke(), null);
+
+        PropertyDrawView closeFunction = design.get(closeActionPropertyDraw);
+        setupFormButton(closeFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCloseKeyStroke(), null);
+
+        formButtonContainer.add(printFunction);
+        formButtonContainer.add(xlsFunction);
+        formButtonContainer.add(editFunction);
+        formButtonContainer.add(nullFunction);
+        formButtonContainer.add(refreshFunction);
+        formButtonContainer.add(applyFunction);
+        formButtonContainer.add(cancelFunction);
+        formButtonContainer.add(okFunction);
+        formButtonContainer.add(closeFunction);
+
+        return design;
+    }
+
+    private void setupFormButton(PropertyDrawView printFunction, SimplexComponentDirections directions, KeyStroke editKey, String iconPath) {
+        printFunction.getConstraints().directions = directions;
+        printFunction.editKey = editKey;
+        printFunction.focusable = false;
+        printFunction.entity.setEditType(PropertyEditType.EDITABLE);
+
+        if (iconPath != null) {
+            printFunction.showEditKey = false;
+            printFunction.setFixedSize(ApplyActionProperty.BUTTON_SIZE);
+            printFunction.design.setIconPath(iconPath);
+        } else {
+            printFunction.preferredSize = ApplyActionProperty.BUTTON_SIZE;
+        }
     }
 
     public void addFixedFilter(FilterEntity filter) {
@@ -431,6 +577,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return result;
     }
 
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property) {
+        return addPropertyDraw(property, new HashMap<P, PropertyObjectInterfaceEntity>());
+    }
+
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
         return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null));
     }
@@ -438,9 +588,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement) {
         PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
 
-        if (shouldProceedDefaultDraw()) {
-            propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
-        }
+        propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
 
         if (propertyImplement.property.getSID() != null) {
             String propertySID = propertyImplement.property.getSID(); //BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
@@ -700,10 +848,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void addHintsNoUpdate(CalcProperty prop) {
         if (!hintsNoUpdate.contains(prop))
             hintsNoUpdate.add(prop);
-    }
-
-    public FormView createDefaultRichDesign() {
-        return new DefaultFormView(this);
     }
 
     private FormView richDesign;

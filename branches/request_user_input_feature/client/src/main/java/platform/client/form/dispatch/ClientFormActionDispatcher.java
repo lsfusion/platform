@@ -2,15 +2,11 @@ package platform.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import platform.client.form.ClientFormController;
-import platform.client.form.classes.ClassDialog;
-import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.action.*;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ServerResponse;
 
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
@@ -52,23 +48,20 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         getFormController().setBusy(busy);
     }
 
-    private void denyFormClose() {
-        getFormController().setCanClose(false);
+    public void execute(PrintPreviewClientAction action) {
+        getFormController().runReport();
     }
 
-    public void execute(LogMessageClientAction action) {
-        super.execute(action);
-        if (action.failed) {
-            denyFormClose();
-        }
+    public void execute(RunExcelClientAction action) {
+        getFormController().runExcel();
     }
 
-    public void execute(DenyCloseFormClientAction action) {
-        denyFormClose();
+    public void execute(RunEditReportClientAction action) {
+        getFormController().runEditReport();
     }
 
-    public void execute(ApplyClientAction action) {
-        getFormController().apply(false);
+    public void execute(HideFormClientAction action) {
+        getFormController().hideForm();
     }
 
     public void execute(ProcessFormChangesClientAction action) {

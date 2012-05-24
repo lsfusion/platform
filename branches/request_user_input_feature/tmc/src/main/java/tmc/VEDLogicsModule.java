@@ -7,7 +7,6 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.PropertyEditType;
-import platform.interop.action.ApplyClientAction;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ListClientAction;
 import platform.interop.action.MessageClientAction;
@@ -4125,7 +4124,7 @@ public class VEDLogicsModule extends LogicsModule {
                 orderSalePayCash.change(null, context, document);
                 orderSalePayCard.change(sumWithDiscountObligationOrder.read(context, document), context, document);
 
-                context.addAction(new ApplyClientAction());
+                context.apply(VEDBL);
             } else
                 context.addAction(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
         }

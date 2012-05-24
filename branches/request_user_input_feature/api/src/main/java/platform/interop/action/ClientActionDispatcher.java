@@ -3,8 +3,6 @@ package platform.interop.action;
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
-    public void execute(DenyCloseFormClientAction action);
-
     public void execute(FormClientAction action);
 
     public void execute(DialogClientAction action);
@@ -14,8 +12,6 @@ public interface ClientActionDispatcher {
     public void execute(ExportFileClientAction action);
 
     public Object execute(ImportFileClientAction action);
-
-    public void execute(SleepClientAction action);
 
     public Object execute(MessageFileClientAction action);
 
@@ -31,11 +27,17 @@ public interface ClientActionDispatcher {
 
     public void execute(LogMessageClientAction action);
 
-    public void execute(ApplyClientAction action);
-
     public void execute(OpenFileClientAction action);
 
     public void execute(AudioClientAction action);
+
+    public void execute(PrintPreviewClientAction action);
+
+    public void execute(RunExcelClientAction action);
+
+    public void execute(RunEditReportClientAction action);
+
+    public void execute(HideFormClientAction action);
 
     public void execute(ProcessFormChangesClientAction action);
 

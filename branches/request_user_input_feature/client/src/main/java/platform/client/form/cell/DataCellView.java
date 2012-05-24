@@ -122,7 +122,7 @@ public class DataCellView extends JPanel implements CellView {
         table.setValue(ivalue);
     }
 
-    public void setBackground(Object background) {
+    public void setBackgroundColor(Color background) {
         if (nullEquals(table.getBackgroundColor(), background)) {
             return;
         }
@@ -133,7 +133,7 @@ public class DataCellView extends JPanel implements CellView {
         repaint();
     }
 
-    public void setForeground(Object foreground) {
+    public void setForegroundColor(Color foreground) {
         if (nullEquals(table.getForegroundColor(), foreground)) {
             return;
         }

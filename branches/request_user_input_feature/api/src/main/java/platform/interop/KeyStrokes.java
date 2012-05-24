@@ -10,6 +10,10 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
     }
 
+    public static KeyStroke getEnter(int modifiers) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, modifiers);
+    }
+
     public static KeyStroke getAltEnter() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
     }
@@ -50,32 +54,46 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
     }
 
-    public static KeyStroke getPrintKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK);
+    //---- form buttons keystrokes
+    public static KeyStroke getApplyKeyStroke() {
+        return getEnter(InputEvent.ALT_DOWN_MASK);
+    }
+
+    public static KeyStroke getCancelKeyStroke() {
+        return getEscape(false);
+    }
+
+    public static KeyStroke getCloseKeyStroke() {
+        return getEscape(true);
     }
 
     public static KeyStroke getEditKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getXlsKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
-    }
-
     public static KeyStroke getNullKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
+    }
+
+    public static KeyStroke getOkKeyStroke() {
+        return getEnter(InputEvent.CTRL_DOWN_MASK);
+    }
+
+    public static KeyStroke getPrintKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getRefreshKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getApplyKeyStroke(int modifiers) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, modifiers);
+    public static KeyStroke getXlsKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
     }
+    //----
 
-    public static KeyStroke getCancelKeyStroke(boolean single) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, single ? 0 : InputEvent.ALT_DOWN_MASK);
+    public static KeyStroke getEscape(boolean alt) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, alt ? InputEvent.ALT_DOWN_MASK : 0);
     }
 
     public static KeyStroke getFilterKeyStroke(int modifier) {
@@ -88,14 +106,6 @@ public class KeyStrokes {
 
     public static KeyStroke getSwitchClassViewKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
-    }
-
-    public static KeyStroke getForwardTraversalKeyStroke() {
-        return getTab();
-    }
-
-    public static KeyStroke getBackwardTraversalKeyStroke() {
-        return getShiftTab();
     }
 
     public static KeyStroke getRemoveFiltersKeyStroke() {
@@ -158,16 +168,8 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.CHAR_UNDEFINED);
     }
 
-    public static boolean isEnterEvent(EventObject event) {
-        return isKeyEvent(event, KeyEvent.VK_ENTER);
-    }
-
     public static boolean isEscapeEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
-    }
-
-    public static boolean isGroupCorrectionEvent(EventObject event) {
-        return event instanceof KeyEvent && getKeyStrokeForEvent((KeyEvent) event).equals(getGroupCorrectionKeyStroke());
     }
 
     public static boolean isObjectEditorDialogEvent(EventObject event) {

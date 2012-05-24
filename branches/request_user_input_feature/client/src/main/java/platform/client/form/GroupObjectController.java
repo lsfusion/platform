@@ -9,7 +9,6 @@ import platform.client.form.panel.PanelShortcut;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
-import platform.interop.FormEventType;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 
@@ -306,7 +305,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         if (classView == ClassViewType.GRID) {
             grid.updateRowBackgroundValues(rowBackground);
         } else {
-            panel.updateRowBackgroundValue(BaseUtils.singleValue(rowBackground));
+            panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
         }
     }
 
@@ -314,7 +313,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         if (classView == ClassViewType.GRID) {
             grid.updateRowForegroundValues(rowForeground);
         } else {
-            panel.updateRowForegroundValue(BaseUtils.singleValue(rowForeground));
+            panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
         }
     }
 
@@ -381,17 +380,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         return grid.getSelectedValue(cell, columnKey);
     }
 
-    public String getConfirmApplyMessage() {
-        String message = "";
-        for (ClientObject object : groupObject.objects) {
-            if (object.addOnEvent.contains(FormEventType.APPLY) || object.addOnEvent.contains(FormEventType.OK)) {
-                message += getString("form.create.new") + " " + object.getCaption() + " ?";
-            }
-        }
-
-        return message;
-    }
-
     public void quickEditFilter(KeyEvent initFilterKeyEvent) {
         quickEditFilter(initFilterKeyEvent, null);
     }
@@ -402,10 +390,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void selectProperty(ClientPropertyDraw propertyDraw) {
         grid.selectProperty(propertyDraw);
-    }
-
-    public boolean hasActiveFilter() {
-        return grid.hasActiveFilter();
     }
 
     public void moveComponent(Component component, int destination) {

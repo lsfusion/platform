@@ -6,10 +6,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ConfirmClientAction;
-import platform.interop.action.DenyCloseFormClientAction;
-import platform.interop.action.LogMessageClientAction;
+import platform.interop.action.*;
 import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ServerResponse;
@@ -73,90 +70,32 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public final T BL;
 
-    public SecurityPolicy securityPolicy;
-
-    public CustomClass getCustomClass(int classID) {
-        return BL.LM.baseClass.findClassID(classID);
-    }
-
-    private Set<CalcProperty> hintsIncrementTable;
-    private List<CalcProperty> hintsIncrementList = null;
-    private List<CalcProperty> getHintsIncrementList() {
-        if(hintsIncrementList==null) {
-            hintsIncrementList = new ArrayList<CalcProperty>();
-            for(Property property : BL.getPropertyList())
-                if(property instanceof CalcProperty && hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
-                    hintsIncrementList.add((CalcProperty) property);
-        }
-        return hintsIncrementList;
-    }
-    
-    Set<CalcProperty> hintsNoUpdate = new HashSet<CalcProperty>();
-
-    public final DataSession session;
-    public final NoUpdate noUpdate = new NoUpdate();
-    public final IncrementProps increment = new IncrementProps();
-    
-    public void addHintNoUpdate(CalcProperty property) {
-        hintsNoUpdate.add(property);
-        noUpdate.add(property);
-    }
-
-    public boolean isHintIncrement(CalcProperty property) {
-        return hintsIncrementTable.contains(property);
-    }
-    public boolean allowHintIncrement(CalcProperty property) {
-        return true;
-    }
-    public void addHintIncrement(CalcProperty property) {
-        hintsIncrementList = null;
-        usedProperties = null;
-        boolean noHint = hintsIncrementTable.add(property);
-        assert noHint;
-        try {
-            readIncrement(property);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private <P extends PropertyInterface> void rereadIncrement(CalcProperty<P> property) throws SQLException {
-        increment.remove(property, session.sql);
-        readIncrement(property);
-    }
-
-    private <P extends PropertyInterface> void readIncrement(CalcProperty<P> property) throws SQLException {
-        if(property.hasChanges(this))
-            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, session.env));
-    }
-
-    public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
-        for(CalcProperty property : hintsIncrementTable)
-            if(property.hasChanges(changes, true)) // если зависит от changes - drop'аем
-                increment.remove(property, session.sql);
-    }
-
-    public Set<CalcProperty> getUpdateProperties(PropertyChanges propChanges) {
-        return CalcProperty.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().add(propChanges), true);
-    }
-
-    public Set<CalcProperty> getUpdateProperties() {
-        return CalcProperty.hasChanges(getUsedProperties(), getPropertyChanges(), false);
-    }
-
-    private final WeakReference<FocusListener<T>> weakFocusListener;
-    public FocusListener<T> getFocusListener() {
-        return weakFocusListener.get();
-    }
-
-    private final WeakReference<CustomClassListener> weakClassListener;
-    public CustomClassListener getClassListener() {
-        return weakClassListener.get();
-    }
-
     public final FormEntity<T> entity;
 
     public final InstanceFactory instanceFactory;
+
+    public final SecurityPolicy securityPolicy;
+
+    private Map<ObjectEntity, ? extends ObjectValue> mapObjects = null;
+    public final List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
+    public final List<TreeGroupInstance> treeGroups = new ArrayList<TreeGroupInstance>();
+
+    // собсно этот объект порядок колышет столько же сколько и дизайн представлений
+    public final List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
+
+    private Collection<ObjectInstance> objects;
+
+    public final boolean checkOnOk;
+
+    //todo:
+    public final boolean isFullClient = false;
+
+    //todo:
+    public final boolean isModal = false;
+
+    public final boolean isNewSession;
+
+    private final boolean interactive;
 
     // для импорта конструктор, объекты пустые
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
@@ -168,10 +107,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, mapObjects, interactive, null);
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, mapObjects, false, false, interactive, null);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isNewSession, boolean checkOnOk, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
         lateInit(noUpdate, increment, session);
         this.session = session;
         this.entity = entity;
@@ -267,6 +206,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             this.mapObjects = mapObjects;
         }
         this.interactive = interactive;
+        this.isNewSession = isNewSession;
+        this.checkOnOk = checkOnOk;
     }
 
     public FormUserPreferences loadUserPreferences() {
@@ -339,8 +280,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    private Map<ObjectEntity, ? extends ObjectValue> mapObjects = null;
-
     public boolean areObjectsFound() {
         assert !interactive;
         for(Entry<ObjectEntity, ? extends ObjectValue> mapObjectInstance : mapObjects.entrySet())
@@ -349,15 +288,84 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return true;
     }
 
-    private boolean interactive = true;
+    public CustomClass getCustomClass(int classID) {
+        return BL.LM.baseClass.findClassID(classID);
+    }
 
-    public List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
-    public List<TreeGroupInstance> treeGroups = new ArrayList<TreeGroupInstance>();
+    private Set<CalcProperty> hintsIncrementTable;
+    private List<CalcProperty> hintsIncrementList = null;
+    private List<CalcProperty> getHintsIncrementList() {
+        if(hintsIncrementList==null) {
+            hintsIncrementList = new ArrayList<CalcProperty>();
+            for(Property property : BL.getPropertyList())
+                if(property instanceof CalcProperty && hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
+                    hintsIncrementList.add((CalcProperty) property);
+        }
+        return hintsIncrementList;
+    }
 
-    // собсно этот объект порядок колышет столько же сколько и дизайн представлений
-    public List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
+    Set<CalcProperty> hintsNoUpdate = new HashSet<CalcProperty>();
 
-    private Collection<ObjectInstance> objects;
+    public final DataSession session;
+    public final NoUpdate noUpdate = new NoUpdate();
+    public final IncrementProps increment = new IncrementProps();
+
+    public void addHintNoUpdate(CalcProperty property) {
+        hintsNoUpdate.add(property);
+        noUpdate.add(property);
+    }
+
+    public boolean isHintIncrement(CalcProperty property) {
+        return hintsIncrementTable.contains(property);
+    }
+    public boolean allowHintIncrement(CalcProperty property) {
+        return true;
+    }
+    public void addHintIncrement(CalcProperty property) {
+        hintsIncrementList = null;
+        usedProperties = null;
+        boolean noHint = hintsIncrementTable.add(property);
+        assert noHint;
+        try {
+            readIncrement(property);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <P extends PropertyInterface> void rereadIncrement(CalcProperty<P> property) throws SQLException {
+        increment.remove(property, session.sql);
+        readIncrement(property);
+    }
+
+    private <P extends PropertyInterface> void readIncrement(CalcProperty<P> property) throws SQLException {
+        if(property.hasChanges(this))
+            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, session.env));
+    }
+
+    public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
+        for(CalcProperty property : hintsIncrementTable)
+            if(property.hasChanges(changes, true)) // если зависит от changes - drop'аем
+                increment.remove(property, session.sql);
+    }
+
+    public Set<CalcProperty> getUpdateProperties(PropertyChanges propChanges) {
+        return CalcProperty.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().add(propChanges), true);
+    }
+
+    public Set<CalcProperty> getUpdateProperties() {
+        return CalcProperty.hasChanges(getUsedProperties(), getPropertyChanges(), false);
+    }
+
+    private final WeakReference<FocusListener<T>> weakFocusListener;
+    public FocusListener<T> getFocusListener() {
+        return weakFocusListener.get();
+    }
+
+    private final WeakReference<CustomClassListener> weakClassListener;
+    public CustomClassListener getClassListener() {
+        return weakClassListener.get();
+    }
 
     @ManualLazy
     public Collection<ObjectInstance> getObjects() {
@@ -1026,12 +1034,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return usedProperties;
     }
 
-    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession, boolean interactive) throws SQLException {
-        return createForm(form, mapObjects, session, newSession, interactive);
-    }
-
-    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
-        return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, interactive);
+    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOK, boolean interactive) throws SQLException {
+        return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, newSession, checkOnOK, interactive, null);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
@@ -1043,7 +1047,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         object.groupTo.addSeek(object, value, false);
     }
-
 
     public void forceChangeObject(ValueClass cls, ObjectValue value) throws SQLException {
 
@@ -1532,5 +1535,118 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public boolean isInTransaction() {
         return false;
+    }
+
+    public boolean isFullClient() {
+        return isFullClient;
+    }
+
+    public boolean isDebug() {
+        //todo:
+        return false;
+    }
+
+    public boolean isDialog() {
+        //todo:
+        return false;
+    }
+
+    public boolean isModal() {
+        return isModal;
+    }
+
+    public boolean isNewSession() {
+        return isNewSession;
+    }
+
+    public boolean isDataChanged() {
+        return session.hasStoredChanges();
+    }
+
+    public void formApply(List<ClientAction> actions) throws SQLException {
+        //todo: ... && isModal
+        if (tryApplyChanges(actions)) {
+            actions.add(new HideFormClientAction());
+        }
+    }
+
+    private boolean tryApplyChanges(List<ClientAction> actions) throws SQLException {
+        if (!askApplyConfirmation()) {
+            return false;
+        }
+
+        if (entity.hasClientApply()) {
+            if (!checkApply(actions)) {
+                return false;
+            } else {
+                Context.context.get().requestUserInteraction(entity.getClientActionOnApply(this));
+            }
+        }
+
+        return apply(null, actions);
+    }
+
+    private boolean askApplyConfirmation() {
+        String confirmMsg = "";
+        for (GroupObjectInstance group : groups) {
+            for (ObjectInstance object : group.objects) {
+                if (object.needToAskToCreateNewObject()) {
+                    confirmMsg += getString("form.create.new.object") + " " + object.getCaption() + " ?";
+                }
+            }
+        }
+
+        if (!confirmMsg.isEmpty()) {
+            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", confirmMsg));
+            return (result == JOptionPane.YES_OPTION);
+        }
+
+        return true;
+    }
+
+    public void formCancel(List<ClientAction> actions) throws SQLException {
+        if (session.hasStoredChanges()) {
+            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
+            if (result == JOptionPane.YES_OPTION) {
+                cancel();
+            }
+        }
+    }
+
+    public void formClose(List<ClientAction> actions) throws SQLException {
+        if (isNewSession && dataChanged) {
+            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.close.form")));
+            if (result != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
+        actions.addAll(fireOnClose());
+        actions.add(new HideFormClientAction());
+    }
+
+    public void formNull(List<ClientAction> actions) throws SQLException {
+        actions.addAll(fireOnNull());
+        actions.add(new HideFormClientAction());
+    }
+
+    public void formOk(List<ClientAction> actions) throws SQLException {
+        if (checkOnOk) {
+            if (!checkApply(actions)) {
+                return;
+            }
+        }
+
+        actions.addAll(fireOnOk());
+
+        if (isNewSession && !tryApplyChanges(actions)) {
+            return;
+        }
+
+        actions.add(new HideFormClientAction());
+    }
+
+    public void formRefresh(List<ClientAction> actions) throws SQLException {
+        refreshData();
     }
 }

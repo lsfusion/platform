@@ -314,8 +314,8 @@ public class GridTable extends ClientPropertyTable {
 
         if (form.isDialog()) {
             //вырезаем ввод в диалоге, чтобы закрывал диалог
-            inputMap.put(KeyStrokes.getApplyKeyStroke(0), "none");
-            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getApplyKeyStroke(0), "none");
+            inputMap.put(KeyStrokes.getOkKeyStroke(), "none");
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getOkKeyStroke(), "none");
         }
     }
 

@@ -13,16 +13,17 @@ import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.action.CheckFailed;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ProcessFormChangesClientAction;
-import platform.interop.action.UpdateCurrentClassClientAction;
-import platform.interop.form.*;
+import platform.interop.action.*;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ServerResponse;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.form.entity.*;
+import platform.server.form.entity.CalcPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectHierarchy;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.listener.RemoteFormListener;
@@ -30,7 +31,6 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ServerResourceBundle;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
@@ -47,6 +47,7 @@ import java.util.concurrent.Executors;
 import static platform.base.BaseUtils.deserializeObject;
 import static platform.base.BaseUtils.serializeObject;
 import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
@@ -57,18 +58,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
-    private final boolean checkOnOk;
-
     public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener) throws RemoteException {
-        this(form, richDesign, port, remoteFormListener, false);
-    }
-
-    public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener, boolean checkOnOk) throws RemoteException {
         super(port);
 
         this.form = form;
         this.richDesign = richDesign;
-        this.checkOnOk = checkOnOk;
+
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
             remoteFormListener.formCreated(this);
@@ -321,7 +316,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 }
 
             } catch (JRException e) {
-                throw new RuntimeException(ServerResourceBundle.getString("form.instance.error.creating.design"), e);
+                throw new RuntimeException(getString("form.instance.error.creating.design"), e);
             }
         }
         return ret;
@@ -365,7 +360,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
             return designs;
         } catch (JRException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.instance.error.creating.design"), e);
+            throw new RuntimeException(getString("form.instance.error.creating.design"), e);
         }
     }
 
@@ -458,6 +453,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             updateCurrentClass = null;
         }
 
+        boolean hasDenyAction = false;
+        boolean hasHideAction = false;
+
+        for (Iterator<ClientAction> iterator = actions.iterator(); iterator.hasNext(); ) {
+            ClientAction action = iterator.next();
+            if (action instanceof DenyCloseFormClientAction) {
+                hasDenyAction = true;
+                iterator.remove();
+            } else if (action instanceof HideFormClientAction) {
+                hasHideAction = true;
+                iterator.remove();
+            }
+        }
+
+        if (hasHideAction && !hasDenyAction) {
+            actions.add(new HideFormClientAction());
+        }
 
         ServerResponse result = new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
         actions.clear();
@@ -727,64 +739,22 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.entity.getSID();
     }
 
-    public void refreshData() {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            form.refreshData();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean hasClientActionOnApply() {
-        emitExceptionIfHasActiveInvocation();
-        return form.entity.hasClientApply();
-    }
-
-    public ClientAction getClientActionOnApply() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            List<ClientAction> actions = new ArrayList<ClientAction>();
-            if (!form.checkApply(actions)) {
-                return new CheckFailed(actions);
-            } else {
-                return form.entity.getClientActionOnApply(form);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ServerResponse applyChanges() throws RemoteException {
+    public ServerResponse applyPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return executeWithFormChanges(new TRunnable() {
             @Override
-            public void run() {
-                applyChanges(actions);
+            public void run() throws Throwable {
+                form.formApply(actions);
             }
         });
     }
 
-    public void applyChanges(List<ClientAction> actions) {
-        try {
-            form.apply(null, actions);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ServerResponse okPressed() throws RemoteException {
+    public ServerResponse cancelPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return executeWithFormChanges(new TRunnable() {
             @Override
-            public void run() throws Exception {
-                if (checkOnOk) {
-                    if (!form.checkApply(actions)) {
-                        return;
-                    }
-                }
-
-                actions.addAll(form.fireOnOk());
+            public void run() throws Throwable {
+                form.formCancel(actions);
             }
         });
     }
@@ -794,7 +764,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
-                actions.addAll(form.fireOnClose());
+                form.formClose(actions);
             }
         });
     }
@@ -804,7 +774,27 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
-                actions.addAll(form.fireOnNull());
+                form.formNull(actions);
+            }
+        });
+    }
+
+    public ServerResponse okPressed() throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithFormChanges(new TRunnable() {
+            @Override
+            public void run() throws Exception {
+                form.formOk(actions);
+            }
+        });
+    }
+
+    public ServerResponse refreshPressed() throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithFormChanges(new TRunnable() {
+            @Override
+            public void run() throws Throwable {
+                form.formRefresh(actions);
             }
         });
     }
@@ -821,57 +811,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.loadUserPreferences();
     }
 
-    public void cancelChanges() {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            form.cancel();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public byte[] getBaseClassByteArray(int objectID) {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        try {
-            form.getObjectInstance(objectID).getBaseClass().serialize(new DataOutputStream(outStream));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return outStream.toByteArray();
-    }
-
-    public byte[] getChildClassesByteArray(int objectID, int classID) {
-
-        List<CustomClass> childClasses = (((CustomObjectInstance) form.getObjectInstance(objectID)).baseClass).findClassID(classID).children;
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        DataOutputStream dataStream = new DataOutputStream(outStream);
-        try {
-            dataStream.writeInt(childClasses.size());
-            for (CustomClass cls : childClasses) {
-                cls.serialize(dataStream);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return outStream.toByteArray();
-    }
-
-    public RemoteFormInterface createForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
-        try {
-            FormInstance<T> formInstance = form.createForm(formEntity, mapObjects, false, false);
-            if(!formInstance.areObjectsFound())
-                return null;
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, getRemoteFormListener());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
-    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener(), checkOnOk);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -887,8 +830,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
-        return form.createForm(formEntity, mapObjects, session, newSession, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+        return form.createForm(formEntity, mapObjects, session, newSession, checkOnOk, interactive);
     }
 
     @Override

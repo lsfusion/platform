@@ -9,6 +9,7 @@ import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.actions.ChangeObjectActionProperty;
@@ -29,8 +30,13 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public GroupObjectEntity groupTo;
 
     public String caption;
+
     public String getCaption() {
-        return !BaseUtils.isRedundantString(caption)?caption:baseClass.toString();
+        return !BaseUtils.isRedundantString(caption)
+               ? caption
+               : !BaseUtils.isRedundantString(baseClass.toString())
+                 ? baseClass.toString()
+                 : ServerResourceBundle.getString("logics.undefined.object");
     }
 
     public Set<FormEventType> addOnEvent = new HashSet<FormEventType>();
@@ -78,10 +84,12 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
+        pool.writeObject(outStream, addOnEvent);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         groupTo = (GroupObjectEntity) pool.deserializeObject(inStream);
+        addOnEvent = pool.readObject(inStream);
         baseClass = TypeSerializer.deserializeValueClass(pool.context.BL, inStream);
         caption = pool.readString(inStream);
     }

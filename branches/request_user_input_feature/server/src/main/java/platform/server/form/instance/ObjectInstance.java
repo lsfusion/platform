@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.interop.FormEventType;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
@@ -96,5 +97,9 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public Collection<ObjectInstance> getObjectInstances() {
         return Collections.singletonList(this);
+    }
+
+    public boolean needToAskToCreateNewObject() {
+        return entity.addOnEvent.contains(FormEventType.APPLY) || entity.addOnEvent.contains(FormEventType.OK);
     }
 }

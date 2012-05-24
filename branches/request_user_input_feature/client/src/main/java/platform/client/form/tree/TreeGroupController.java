@@ -202,11 +202,11 @@ public class TreeGroupController extends AbstractGroupObjectController {
     }
 
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
-        panel.updateRowBackgroundValue(BaseUtils.singleValue(rowBackground));
+        panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
     }
 
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
-        panel.updateRowForegroundValue(BaseUtils.singleValue(rowForeground));
+        panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {

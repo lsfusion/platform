@@ -2,7 +2,6 @@ package platform.interop.form;
 
 import platform.interop.ClassViewType;
 import platform.interop.RemoteContextInterface;
-import platform.interop.action.ClientAction;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
@@ -31,8 +30,6 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 
     boolean canChangeClass(int objectID) throws RemoteException;
-
-    boolean hasClientActionOnApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
 
     // операции без ответа, можно pendiть до первой операции с ответом
 
@@ -72,23 +69,21 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                               Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException;
 
-    void refreshData() throws RemoteException;
-
-    void cancelChanges() throws RemoteException;
-
     void expandGroupObject(int groupId, byte[] bytes) throws RemoteException;
 
     void collapseGroupObject(int groupId, byte[] bytes) throws RemoteException;
 
     void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
-    ClientAction getClientActionOnApply() throws RemoteException;
-
-    ServerResponse okPressed() throws RemoteException;
+    ServerResponse applyPressed() throws RemoteException;
+    ServerResponse cancelPressed() throws RemoteException;
     ServerResponse closedPressed() throws RemoteException;
+    //edit;
     ServerResponse nullPressed() throws RemoteException;
-
-    ServerResponse applyChanges() throws RemoteException;
+    ServerResponse okPressed() throws RemoteException;
+    //print;
+    ServerResponse refreshPressed() throws RemoteException;
+    //xls;
 
     void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 

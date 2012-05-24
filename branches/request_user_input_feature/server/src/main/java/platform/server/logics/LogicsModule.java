@@ -651,7 +651,7 @@ public abstract class LogicsModule {
         return addIfAProp(false, params);    }
 
     protected LAP addIfAProp(boolean not, Object... params) {
-        return addIfAProp(null, not, params);
+        return addIfAProp("if", not, params);
     }
     protected LAP addIfAProp(String caption, Object... params) {
         return addIfAProp(caption, false, params);

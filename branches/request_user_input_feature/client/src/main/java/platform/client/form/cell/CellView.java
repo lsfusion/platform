@@ -3,6 +3,7 @@ package platform.client.form.cell;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
+import java.awt.*;
 
 public interface CellView {
     JComponent getComponent();
@@ -11,7 +12,7 @@ public interface CellView {
     void forceEdit();
     void setCaption(String caption);
     void setToolTip(String caption);
-    void setBackground(Object background);
-    void setForeground(Object foreground);
+    void setBackgroundColor(Color background);
+    void setForegroundColor(Color foreground);
     void changeViewType(ClassViewType type);
 }

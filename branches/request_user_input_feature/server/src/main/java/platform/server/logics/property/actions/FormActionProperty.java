@@ -83,7 +83,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
 
     public void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
 
-        final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, !form.isPrintForm);
+        final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, checkOnOk, !form.isPrintForm);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(
@@ -105,7 +105,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
 
             context.requestUserInteraction(
                     new FormClientAction(form.isPrintForm, newSession, isModal,
-                            context.createRemoteForm(newFormInstance, checkOnOk))
+                            context.createRemoteForm(newFormInstance))
             );
 
             FormCloseType formResult = newFormInstance.getFormResult();

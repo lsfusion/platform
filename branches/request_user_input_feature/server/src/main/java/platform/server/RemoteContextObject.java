@@ -155,11 +155,11 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 
-    public RemoteForm createRemoteForm(FormInstance formInstance, boolean checkOnOk) {
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
     }
 

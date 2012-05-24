@@ -238,14 +238,28 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(new SumUnionProperty(sID,caption,listInterfaces,operands),BaseUtils.reverse(mapInterfaces));
     }
 
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, PropertyInterface> createLogical(boolean value) {
+        return value ? createTrue() : createFalse();
+    }
+
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createTrue() {
         return createStatic(true, LogicalClass.instance);
     }
+
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createFalse() {
+        return new CalcPropertyMapImplement<ClassPropertyInterface, T>(new SessionDataProperty(genID(), "sys", LogicalClass.instance));
+//        return new CalcPropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance, new HashMap<PropertyInterface, T>());
+    }
+
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNotNull(CalcPropertyInterfaceImplement<T> notNull) {
         return createAnd(getUsedInterfaces(notNull), DerivedProperty.<T>createTrue(), notNull);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
         return new CalcPropertyMapImplement<PropertyInterface,T>(new ValueProperty(genID(),"sys", value, valueClass),new HashMap<PropertyInterface, T>());
+    }
+
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createStatic(String value) {
+        return createStatic(value, StringClass.get(value.length()));
     }
 
     public static <T extends PropertyInterface> GroupProperty createAnyGProp(CalcProperty<T> property) {

@@ -58,8 +58,6 @@ public class ObjectView implements ServerIdentitySerializable {
         pool.serializeObject(outStream, groupObject, serializationType);
         pool.writeString(outStream, entity.caption);
 
-        pool.writeObject(outStream, entity.addOnEvent);
-
         entity.baseClass.serialize(outStream);
         pool.serializeObject(outStream, classChooser, serializationType);
     }

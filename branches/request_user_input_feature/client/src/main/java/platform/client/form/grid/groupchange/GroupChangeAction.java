@@ -1,13 +1,11 @@
 package platform.client.form.grid.groupchange;
 
-import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.grid.GridTable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 public class GroupChangeAction extends AbstractAction {
     private GridTable gridTable;
@@ -37,15 +35,15 @@ public class GroupChangeAction extends AbstractAction {
             ColumnProperty mainProperty = dlg.getMainProperty();
             ColumnProperty getterProperty = dlg.getGetterProperty();
 
-            try {
-                if (getterProperty != null) {
-                    form.groupChangePropertyDraw(mainProperty.property, mainProperty.columnKey, getterProperty.property, getterProperty.columnKey);
-                } else {
+//            try {
+//                if (getterProperty != null) {
+//                    form.groupChangePropertyDraw(mainProperty.property, mainProperty.columnKey, getterProperty.property, getterProperty.columnKey);
+//                } else {
 //                    form.changePropertyDraw(mainProperty.property, mainProperty.columnKey, dlg.getSelectedValue(), true, true);
-                }
-            } catch (IOException ioe) {
-                throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.error"), ioe);
-            }
+//                }
+//            } catch (IOException ioe) {
+//                throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.error"), ioe);
+//            }
         }
     }
 

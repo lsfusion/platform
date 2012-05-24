@@ -1,7 +1,5 @@
 package platform.client.form;
 
-import com.google.common.base.Throwables;
-import platform.client.ClientResourceBundle;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
@@ -10,7 +8,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 
 import static platform.client.SwingUtils.*;
 
@@ -25,7 +22,7 @@ public class ClientModalForm extends JDialog {
     }
 
     public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession, boolean isDialog) {
-        super(getWindow(owner), ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
+        super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
 
         this.remoteForm = remoteForm;
         this.newSession = newSession;
@@ -37,16 +34,22 @@ public class ClientModalForm extends JDialog {
         // делаем, чтобы не выглядел как диалог
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        try {
-            form = createFormController(isDialog);
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
+        form = createFormController(isDialog);
+
         setTitle(form.getCaption());
 
         add(form.getComponent(), BorderLayout.CENTER);
 
         createUIHandlers();
+    }
+
+    protected ClientFormController createFormController(boolean isDialog) {
+        return new ClientFormController(remoteForm, null, isDialog, true, newSession) {
+            @Override
+            public void hideForm() {
+                hideDialog();
+            }
+        };
     }
 
     private void createUIHandlers() {
@@ -82,34 +85,6 @@ public class ClientModalForm extends JDialog {
 
     protected void windowActivatedFirstTime() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
-    }
-
-    protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
-        return new ClientFormController(remoteForm, null, false, true, newSession) {
-            @Override
-            public boolean okPressed() {
-                if (super.okPressed()) {
-                    hideDialog();
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            void closePressed() {
-                if (newSession && dataChanged
-                        && JOptionPane.YES_OPTION != showConfirmDialog(getComponent(),
-                                                                       ClientResourceBundle.getString("form.do.you.really.want.to.close.form"),
-                                                                       null,
-                                                                       JOptionPane.WARNING_MESSAGE)) {
-                    return;
-                }
-
-                super.closePressed();
-
-                hideDialog();
-            }
-        };
     }
 
     public final void hideDialog() {

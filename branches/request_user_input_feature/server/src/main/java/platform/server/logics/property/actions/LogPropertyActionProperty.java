@@ -1,25 +1,19 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.interop.action.LogMessageClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyFormEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormRow;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyDrawInstance;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.DataSession;
-import platform.server.session.NoPropertyTableUsage;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -40,7 +34,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Cust
         
         String result = "";
         for(FormRow formRow : context.createFormInstance(new PropertyFormEntity(property, session.recognizeGroup),
-                                                new HashMap<ObjectEntity, DataObject>(), session, false, false).getFormData(30).rows) {
+                                                new HashMap<ObjectEntity, DataObject>(), session, false, false, false).getFormData(30).rows) {
             String rowResult = property.toString() + '\n';
             for(Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {
                                                         public Set<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам

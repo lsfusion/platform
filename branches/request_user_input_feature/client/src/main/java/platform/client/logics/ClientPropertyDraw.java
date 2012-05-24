@@ -268,13 +268,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return format;
     }
 
-    public String getFullCaption() {
-
-        String fullCaption = caption;
-        if (showEditKey && editKey != null) {
-            fullCaption += " (" + SwingUtils.getKeyStrokeCaption(editKey) + ")";
+    public String getFullCaption(String caption) {
+        if (caption == null) {
+            caption = this.caption;
         }
-        return fullCaption;
+
+        return showEditKey && editKey != null
+               ? caption + " (" + SwingUtils.getKeyStrokeCaption(editKey) + ")"
+               : caption;
+    }
+
+    public String getFullCaption() {
+        return getFullCaption(caption);
     }
 
     public String getSID() {

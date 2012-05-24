@@ -24,6 +24,8 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
 
     private CellViewListener listener;
 
+    private Color defaultBackground;
+
     private final ClientPropertyDraw key;
     private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
@@ -42,6 +44,8 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
 
     public ActionCellView(final ClientPropertyDraw ikey, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
         super(ikey.getFullCaption());
+
+        this.defaultBackground = getBackground();
         this.key = ikey;
         this.columnKey = icolumnKey;
         this.form = iform;
@@ -85,14 +89,19 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
 
     public void setCaption(String caption) {
         this.caption = caption;
-        setText(caption);
+        setText(key.getFullCaption(caption));
     }
 
-    public void setBackground(Object background) {
-        // пока не highlight'им
+    public void setBackgroundColor(Color background) {
+        setBackground(background == null ? defaultBackground : background);
     }
 
-    public void setForeground(Object background) {
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+    }
+
+    public void setForegroundColor(Color background) {
         // пока не highlight'им
     }
 
@@ -107,15 +116,18 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
 
     public void changeViewType(ClassViewType type) {
         toToolbar = (type == ClassViewType.GRID);
-        setCaption(caption);
         setPreferredSize(null);
         setDefaultSizes();
     }
 
     private void setDefaultSizes() {
         int height = toToolbar ? ToolbarGridButton.BUTTON_SIZE.height : key.getPreferredHeight(this);
-        setMinimumSize(new Dimension(0, height));
-        setMaximumSize(new Dimension(32767, height));
+
+        int minimumWidth = key.minimumSize != null ? key.getMinimumWidth(this) : 0;
+        int maximumWidth = key.maximumSize != null ? key.getMaximumWidth(this) : 32767;
+
+        setMinimumSize(new Dimension(minimumWidth, height));
+        setMaximumSize(new Dimension(maximumWidth, height));
     }
 
     @Override

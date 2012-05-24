@@ -7,6 +7,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -41,7 +42,6 @@ public class PropertyController implements CellViewListener {
         this.columnKey = columnKey;
 
         view = key.getPanelComponent(form, columnKey);
-        view.setCaption(key.getFullCaption());
 
         if (key.focusable != null) {
             view.getComponent().setFocusable(key.focusable);
@@ -120,11 +120,11 @@ public class PropertyController implements CellViewListener {
         view.setToolTip(caption);
     }
 
-    public void setBackground(Object color) {
-        view.setBackground(color);
+    public void setBackgroundColor(Color color) {
+        view.setBackgroundColor(color);
     }
 
-    public void setForeground(Object color) {
-        view.setForeground(color);
+    public void setForegroundColor(Color color) {
+        view.setForegroundColor(color);
     }
 }

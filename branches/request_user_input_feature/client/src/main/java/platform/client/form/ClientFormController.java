@@ -23,8 +23,6 @@ import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.action.CheckFailed;
-import platform.interop.action.ClientAction;
 import platform.interop.form.*;
 
 import javax.swing.*;
@@ -68,8 +66,6 @@ public class ClientFormController {
 
     public boolean dataChanged;
 
-    private boolean canClose = true;
-
     private Color defaultApplyBackground;
 
     private boolean defaultOrdersInitialized = false;
@@ -82,11 +78,11 @@ public class ClientFormController {
 
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
-    public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) throws IOException, ClassNotFoundException {
+    public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
         this(remoteForm, clientNavigator, false, false, true);
     }
 
-    public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator, boolean isDialog, boolean isModal, boolean isNewSession) throws IOException, ClassNotFoundException {
+    public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator, boolean isDialog, boolean isModal, boolean isNewSession) {
         this.isDialog = isDialog;
         this.isModal = isModal;
         this.isNewSession = isNewSession;
@@ -106,14 +102,17 @@ public class ClientFormController {
             }
         };
 
-        form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
-//        form = new ClientForm(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+        try {
+            form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-        if (remoteForm instanceof RemoteObjectProxy) {
-            ((RemoteObjectProxy) remoteForm).blockedScreen = form.blockedScreen;
+            if (remoteForm instanceof RemoteObjectProxy) {
+                ((RemoteObjectProxy) remoteForm).blockedScreen = form.blockedScreen;
+            }
+
+            initializeForm();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
-
-        initializeForm();
     }
 
     public boolean isDialog() {
@@ -337,14 +336,14 @@ public class ClientFormController {
         KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
         KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
         KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
-        KeyStroke okKeyStroke = KeyStrokes.getApplyKeyStroke(isDialog() ? 0 : InputEvent.CTRL_DOWN_MASK);
-        KeyStroke closeKeyStroke = KeyStrokes.getCancelKeyStroke(true);
-        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(InputEvent.ALT_DOWN_MASK);
-        KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke(!isModal);
+        KeyStroke okKeyStroke = KeyStrokes.getOkKeyStroke();
+        KeyStroke closeKeyStroke = KeyStrokes.getCloseKeyStroke();
+        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke();
+        KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke();
 
         // Добавляем стандартные кнопки
 
-        if (Main.module.isFull() && !isDialog()) {
+        if (Main.module.isFull() && !isDialog) {
             addClientFunction(form.getPrintFunction(), printKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     printPressed();
@@ -688,20 +687,6 @@ public class ClientFormController {
         processServerResponse(remoteForm.pasteMulticellValue(reCells, value));
     }
 
-    public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
-                                        ClientPropertyDraw getterProperty, ClientGroupObjectValue getterColumnKey) throws IOException {
-        assert false;
-        // для глобальных свойств пока не может быть отложенных действий
-        if (mainProperty.getGroupObject() != null) {
-            SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
-        }
-
-//        processServerResponse(
-//                remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize())
-//        );
-        refresh();
-    }
-
     public void changeGridClass(ClientObject object, ClientObjectClass cls) throws IOException {
         commitOrCancelCurrentEditing();
 
@@ -841,64 +826,6 @@ public class ClientFormController {
         }
     }
 
-    public void refresh() {
-        commitOrCancelCurrentEditing();
-        try {
-            remoteForm.refreshData();
-            applyRemoteChanges();
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.refreshing.form"), e);
-        }
-    }
-
-    public void apply(boolean needConfirm) {
-        commitOrCancelCurrentEditing();
-
-        try {
-            if (needConfirm && !askApplyConfirmation()) {
-                return;
-            }
-
-            Object clientResult = null;
-            if (remoteForm.hasClientActionOnApply()) {
-                ClientAction actionOnApply = remoteForm.getClientActionOnApply();
-                if (actionOnApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
-                    actionOnApply.dispatch(actionDispatcher);
-                    setCanClose(false);
-                    return;
-                } else {
-                    try {
-                        clientResult = actionOnApply.dispatch(actionDispatcher);
-                    } catch (Exception e) {
-                        throw new RuntimeException(getString("form.error.applying.changes"), e);
-                    }
-                }
-            }
-
-            processServerResponse(remoteForm.applyChanges());
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.applying.changes"), e);
-        }
-    }
-
-    private boolean askApplyConfirmation() {
-        String confirmMsg = "";
-        for (ClientGroupObject group : form.groupObjects) {
-            if (controllers.containsKey(group)) {
-                confirmMsg += controllers.get(group).getConfirmApplyMessage();
-            }
-        }
-
-        if (!confirmMsg.isEmpty()) {
-            if (!(SwingUtils.showConfirmDialog(getComponent(), confirmMsg, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                setCanClose(false);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public byte[] getPropertyChangeType(ClientPropertyDraw property, ClientGroupObjectValue key, boolean aggValue) throws IOException {
         assert false;
 //        return remoteForm.getPropertyChangeType(property.getID(), key.serialize(), aggValue);
@@ -909,10 +836,6 @@ public class ClientFormController {
         formLayout.dropCaches();
     }
 
-    public ClientFormActionDispatcher getActionDispatcher() {
-        return actionDispatcher;
-    }
-
     public void closed() {
         // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
         // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
@@ -921,14 +844,6 @@ public class ClientFormController {
 
     public Dimension calculatePreferredSize() {
         return formLayout.calculatePreferredSize();
-    }
-
-    public boolean isCanClose() {
-        return canClose;
-    }
-
-    public void setCanClose(boolean canClose) {
-        this.canClose = canClose;
     }
 
     public Boolean needToHideProperty(ClientPropertyDraw property){
@@ -945,8 +860,11 @@ public class ClientFormController {
         return new FormUserPreferences(columnPreferences);
     }
 
-    void printPressed() {
-        commitOrCancelCurrentEditing();
+    public void hideForm() {
+        //do nothing by default
+    }
+
+    public void runReport() {
         try {
             Main.frame.runReport(remoteForm, false, getUserPreferences());
         } catch (Exception e) {
@@ -954,13 +872,11 @@ public class ClientFormController {
         }
     }
 
-    void xlsPressed() {
-        commitOrCancelCurrentEditing();
+    public void runExcel() {
         Main.module.runExcel(remoteForm, getUserPreferences());
     }
 
-    void editPressed() {
-        commitOrCancelCurrentEditing();
+    public void runEditReport() {
         try {
             Map<String, String> pathMap = Main.frame.getReportPath(remoteForm, getUserPreferences());
 
@@ -975,51 +891,59 @@ public class ClientFormController {
         }
     }
 
-    void cancelPressed() {
+    private void printPressed() {
         commitOrCancelCurrentEditing();
-        if (dataChanged) {
-            try {
-                if (SwingUtils.showConfirmDialog(getComponent(), getString("form.do.you.really.want.to.undo.changes"), null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
-                    remoteForm.cancelChanges();
-                    applyRemoteChanges();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(getString("form.error.undoing.changes"), e);
-            }
+        runReport();
+    }
+
+    private void xlsPressed() {
+        commitOrCancelCurrentEditing();
+        runExcel();
+    }
+
+    private void editPressed() {
+        commitOrCancelCurrentEditing();
+        runEditReport();
+    }
+
+    private void cancelPressed() {
+        commitOrCancelCurrentEditing();
+        try {
+            processServerResponse(remoteForm.cancelPressed());
+        } catch (IOException e) {
+            throw new RuntimeException(getString("form.error.undoing.changes"), e);
         }
     }
 
-    void applyPressed() {
+    private void applyPressed() {
         commitOrCancelCurrentEditing();
-        apply(true);
-    }
-
-    void refreshPressed() {
-        commitOrCancelCurrentEditing();
-        refresh();
-    }
-
-    public boolean okPressed() {
-        if (!commitCurrentEditing()) {
-             return false;
+        try {
+            processServerResponse(remoteForm.applyPressed());
+        } catch (IOException e) {
+            throw new RuntimeException(getString("form.error.applying.changes"), e);
         }
+    }
 
-        setCanClose(true);
+    private void refreshPressed() {
+        commitOrCancelCurrentEditing();
+        try {
+            processServerResponse(remoteForm.refreshPressed());
+        } catch (IOException e) {
+            throw new RuntimeException(getString("form.error.refreshing.form"), e);
+        }
+    }
 
+    public void okPressed() {
+        commitOrCancelCurrentEditing();
         try {
             processServerResponse(remoteForm.okPressed());
-
-            if (isNewSession) {
-                apply(true);
-            }
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
-
-        return isCanClose();
     }
 
     void closePressed() {
+        commitOrCancelCurrentEditing();
         try {
             processServerResponse(remoteForm.closedPressed());
         } catch (IOException e) {
@@ -1028,6 +952,7 @@ public class ClientFormController {
     }
 
     void nullPressed() {
+        commitOrCancelCurrentEditing();
         try {
             processServerResponse(remoteForm.nullPressed());
         } catch (IOException e) {

@@ -34,8 +34,8 @@ public class DataCellViewTable extends SingleCellTable {
         return backgroundColor;
     }
 
-    public void setBackgroundColor(Object background) {
-        this.backgroundColor = (Color) background;
+    public void setBackgroundColor(Color background) {
+        this.backgroundColor = background;
     }
 
     public Color getBackgroundColor() {
@@ -46,8 +46,8 @@ public class DataCellViewTable extends SingleCellTable {
         return foregroundColor;
     }
 
-    public void setForegroundColor(Object background) {
-        this.foregroundColor = (Color) background;
+    public void setForegroundColor(Color background) {
+        this.foregroundColor = background;
     }
 
     public Color getForegroundColor() {

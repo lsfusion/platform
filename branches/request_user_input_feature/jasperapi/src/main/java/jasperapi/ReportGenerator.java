@@ -49,7 +49,7 @@ public class ReportGenerator {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator(RemoteFormInterface remoteForm, TimeZone timeZone) throws ClassNotFoundException, IOException {
+    public ReportGenerator(RemoteFormInterface remoteForm, TimeZone timeZone) {
         form = remoteForm;
         reportTimeZone = timeZone;
     }

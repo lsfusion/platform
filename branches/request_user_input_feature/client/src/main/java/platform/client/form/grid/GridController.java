@@ -235,11 +235,11 @@ public class GridController {
                         public void actionPerformed(ActionEvent e) {
                             try {
                                 dialog = new HideSettingsButton.HideSettingsDialog(Main.frame, table, form);
+                                dialog.setVisible(true);
+                                form.applyRemoteChanges();
                             } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }
-                            dialog.setVisible(true);
-                            form.refresh();
                         }
                     });
                 }
@@ -371,10 +371,6 @@ public class GridController {
             filterController.quickEditFilter(initFilterKeyEvent, propertyDraw);
             table.selectProperty(propertyDraw);
         }
-    }
-
-    public boolean hasActiveFilter() {
-        return filterController != null && filterController.hasActiveFilter();
     }
 
     boolean hidden = false;

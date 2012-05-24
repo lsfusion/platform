@@ -1,8 +1,10 @@
 package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
-import platform.interop.action.ClientAction;
-import platform.interop.form.*;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.RemoteDialogInterface;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ServerResponse;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
@@ -228,28 +230,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    @PendingRemoteMethod
-    public void refreshData() throws RemoteException {
-        logRemoteMethodStartCall("refreshData");
-        target.refreshData();
+    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
+        target.saveUserPreferences(preferences, forAllUsers);
     }
 
     @ImmutableMethod
-    public boolean hasClientActionOnApply() throws RemoteException {
-        logRemoteMethodStartCall("hasClientActionOnApply");
-        return target.hasClientActionOnApply();
-    }
-
-    public ClientAction getClientActionOnApply() throws RemoteException {
-        logRemoteMethodStartCall("getClientActionOnApply");
-        return target.getClientActionOnApply();
-    }
-
-    public ServerResponse applyChanges() throws RemoteException {
-        logRemoteMethodStartCall("applyChanges");
-        ServerResponse result = target.applyChanges();
-        logRemoteMethodEndCall("applyChanges", result);
-        return result;
+    public FormUserPreferences loadUserPreferences() throws RemoteException {
+        return target.loadUserPreferences();
     }
 
     public ServerResponse okPressed() throws RemoteException {
@@ -273,20 +260,25 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
-        target.saveUserPreferences(preferences, forAllUsers);
+    public ServerResponse refreshPressed() throws RemoteException {
+        logRemoteMethodStartCall("refreshPressed");
+        ServerResponse result = target.refreshPressed();
+        logRemoteMethodEndCall("refreshPressed", result);
+        return result;
     }
 
-    @ImmutableMethod
-    public FormUserPreferences loadUserPreferences() throws RemoteException {
-        return target.loadUserPreferences();
+    public ServerResponse applyPressed() throws RemoteException {
+        logRemoteMethodStartCall("applyPressed");
+        ServerResponse result = target.applyPressed();
+        logRemoteMethodEndCall("applyPressed", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void cancelChanges() throws RemoteException {
-        logRemoteMethodStartVoidCall("cancelChanges");
-        target.cancelChanges();
-        logRemoteMethodEndVoidCall("cancelChanges");
+    public ServerResponse cancelPressed() throws RemoteException {
+        logRemoteMethodStartCall("cancelPressed");
+        ServerResponse result = target.cancelPressed();
+        logRemoteMethodEndCall("cancelPressed", result);
+        return result;
     }
 
     @PendingRemoteMethod
