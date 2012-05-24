@@ -1398,6 +1398,24 @@ FORM countries 'Страны'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
+CLASS labelFormat 'Формат этикетки' : named;
+idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
+idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;
+fileLabelFormat = DATA CUSTOMFILE (labelFormat);
+loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN baseGroup;
+fileMessageLabelFormat = DATA CUSTOMFILE (labelFormat);
+loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN baseGroup;
+labelFormatPackItem 'Формат этикетки' = DATA labelFormat(item);
+idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN baseGroup;
+scalesModelLabelFormat 'Модель весов'= DATA scalesModel (labelFormat);
+nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));
+
+FORM labelFormats 'Форматы этикеток весов'
+    OBJECTS c=labelFormat
+    PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
@@ -1609,6 +1627,11 @@ titleOriginCashBarcode 'Наименование для касс' = DATA STRING[
 
 titleScalesSkuBarcode 'Наименование для весов' = nameScalesAttributeItem(skuBarcode(barcode));
 titleCashSkuBarcode 'Наименование для касс' = nameCashAttributeItem(skuBarcode(barcode));
+
+daysExpiryMachineryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
+hoursExpiryMachineryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
+labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
+compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -2457,7 +2480,7 @@ FORM item 'Товар'
 
                   // Дополнительные
                   passScalesItem, isMarkItem, isLoafCutItem,
-                  compositionScalesItem, storageTemperatureItem, banSailItem,
+                  compositionScalesItem, idLabelFormatPackItem, storageTemperatureItem, banSailItem,
 
                   importerPriceItem, dialogImporterPriceItem,
                   dataSupplierRangeItem, dataActingRateSupplierRangeItem, dialogSupplierRangeItem,
@@ -4106,6 +4129,7 @@ nameFlashScalesModel 'Модель весов/версия прошивки' = n
 maxTextScalesModel 'MAX допустимое колич.дополнительных текстов' = DATA INTEGER (scalesModel) IN baseGroup;
 folderScalesModel 'Папка на сервере весов с драйвером весов' = DATA STRING[200] (scalesModel) IN baseGroup;
 compositionScalesModel 'Число знаков в доп.тексте(составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
+nameToScalesModel (scalesModel) = GROUP UNIQUE scalesModel BY name (scalesModel) WHERE scalesModel IS scalesModel;
 
 CLASS modelCheck 'Модель чекера';
 TABLE modelCheck (modelCheck);
@@ -8790,6 +8814,10 @@ orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransa
 inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
 priceMachineryPriceTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (machineryPriceTransaction, barcode);
+daysExpiryMachineryPriceTransactionBarcode 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (machineryPriceTransaction, barcode);
+hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
+labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
+compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
 
 TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
@@ -8802,6 +8830,14 @@ lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransa
 
 transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
     nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionDaysExpiryBarcodeGroupMachinery 'Текущий срок годности в днях в оборудовании' (barcode, groupMachinery)  =
+    daysExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionHoursExpiryBarcodeGroupMachinery 'Текущий срок годности в часах в оборудовании' (barcode, groupMachinery)  =
+    hoursExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionLabelFormatBarcodeGroupMachinery 'Формат этикетки' (barcode, groupMachinery)  =
+    labelFormatMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionCompositionBarcodeGroupMachinery 'Состав товара' (barcode, groupMachinery)  =
+    compositionMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
@@ -8902,6 +8938,11 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
                                                                        AND inGroupMachineryItem(groupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
                                                                        AND activeBarcode(barcode);
             SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, groupMachinery());
+            SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionDaysExpiryBarcodeGroupMachinery(barcode, groupMachinery());
+            SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionHoursExpiryBarcodeGroupMachinery(barcode, groupMachinery());
+            SET labelFormatMachineryPriceTransactionBarcode(t, barcode) <- transactionLabelFormatBarcodeGroupMachinery(barcode, groupMachinery());
+            SET compositionMachineryPriceTransactionBarcode(t, barcode) <- transactionCompositionBarcodeGroupMachinery(barcode, groupMachinery());
+
             SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
         }
         EXEC apply();
@@ -8959,6 +9000,10 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
                 ELSE
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
+                SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- daysExpiryMachineryBarcode(barcode);
+                SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryMachineryBarcode(barcode);
+                SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatMachineryBarcode(barcode);
+                SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionMachineryBarcode(barcode);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }
             SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
@@ -9016,7 +9061,9 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
 
     OBJECTS b = barcode
     PROPERTIES(b) READONLY barcodeEx
-    PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode
+    PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
+     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
+     compositionMachineryPriceTransactionBarcode FORCE PANEL
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 
     EDIT machineryPriceTransaction OBJECT t;
@@ -9037,7 +9084,9 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
 
     OBJECTS b = barcode
     PROPERTIES(b)    barcodeEx
-    PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode
+    PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
+    daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
+    labelFormatMachineryPriceTransactionBarcode
 
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 
@@ -13063,6 +13112,7 @@ NAVIGATOR {
             NEW equipmentScales 'Весы'{
                 ADD groupsScales;
                 ADD scalesModels;
+                ADD labelFormats;
             }
             NEW equipmentChecks 'Прайс чекеры'{
                 ADD groupsCheck;

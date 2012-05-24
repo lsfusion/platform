@@ -28,5 +28,7 @@ public interface RetailRemoteInterface extends RemoteLogicsInterface {
     void errorEquipmentServerReport(String equipmentServer, Throwable exception) throws RemoteException, SQLException;
     
     EquipmentServerSettings readEquipmentServerSettings(String equipmentServer) throws RemoteException, SQLException;
+    
+    List<byte[][]> readLabelFormats (List<String> scalesModelsList) throws RemoteException, SQLException;
    
 }

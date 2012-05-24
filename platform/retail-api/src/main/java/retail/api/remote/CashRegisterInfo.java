@@ -17,9 +17,4 @@ public class CashRegisterInfo extends MachineryInfo {
         this.directory = directory;
         this.roundSales = roundSales;
     }
-
-    public CashRegisterInfo(Integer number, String cashRegisterNumber, String nameModel, String handlerModel,
-                            String port, String directory) {
-        new CashRegisterInfo(number, cashRegisterNumber, nameModel, handlerModel, port, directory, null);
-    }
 }

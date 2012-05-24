@@ -118,6 +118,10 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             itemQuery.properties.put("barcodeEx", retailLM.getLPByName("barcodeEx").getExpr(barcodeExpr));
             itemQuery.properties.put("nameMachineryPriceTransactionBarcode", retailLM.getLPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("priceMachineryPriceTransactionBarcode", retailLM.getLPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("daysExpiryMachineryPriceTransactionBarcode", retailLM.getLPByName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("hoursExpiryMachineryPriceTransactionBarcode", retailLM.getLPByName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("labelFormatMachineryPriceTransactionBarcode", retailLM.getLPByName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("compositionMachineryPriceTransactionBarcode", retailLM.getLPByName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
 
             itemQuery.and(retailLM.getLPByName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
 
@@ -127,7 +131,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String barcode = (String) entry.getValue().get("barcodeEx");
                 String name = (String) entry.getValue().get("nameMachineryPriceTransactionBarcode");
                 Double price = (Double) entry.getValue().get("priceMachineryPriceTransactionBarcode");
-                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price));
+                Double daysExpiry = (Double) entry.getValue().get("daysExpiryMachineryPriceTransactionBarcode");
+                Integer hoursExpiry = (Integer) entry.getValue().get("hoursExpiryMachineryPriceTransactionBarcode");
+                Integer labelFormat = (Integer) entry.getValue().get("labelFormatMachineryPriceTransactionBarcode");
+                String composition = (String) entry.getValue().get("compositionMachineryPriceTransactionBarcode");
+                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, labelFormat, composition));
             }
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {
@@ -160,7 +168,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     String numberCashRegister = (String) values.getValue().get("numberCashRegister");
                     String nameModel = (String) values.getValue().get("nameCashRegisterModelCashRegister");
                     String handlerModel = (String) values.getValue().get("handlerCashRegisterModelCashRegister");
-                    cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister));
+                    cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, null));
                 }
 
                 transactionList.add(new TransactionCashRegisterInfo((Integer) transactionObject.getValue(),
@@ -182,8 +190,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 scalesQuery.properties.put("handlerScalesModelScales", retailLM.getLPByName("handlerScalesModelScales").getExpr(scalesKey));
                 scalesQuery.and(isScales.property.getExpr(scalesKeys).getWhere());
                 scalesQuery.and(retailLM.getLPByName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
-                if (snapshotTransaction)
-                    scalesQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
+                //if (snapshotTransaction)
+                //    scalesQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
 
@@ -196,7 +204,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 }
 
                 transactionList.add(new TransactionScalesInfo((Integer) transactionObject.getValue(),
-                        dateTimeCode, itemTransactionList, scalesInfoList));
+                        dateTimeCode, itemTransactionList, scalesInfoList, snapshotTransaction));
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("checkPriceTransaction"))) {
                 List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
@@ -710,6 +718,38 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         retailLM.getLPByName("succeededMachineryPriceTransaction").execute(true, session,
                 session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
         session.apply(this);
+    }
+
+    @Override
+    public List<byte[][]> readLabelFormats(List<String> scalesModelsList) throws SQLException {
+        DataSession session = createSession();
+
+        List<byte[][]> fileLabelFormats = new ArrayList<byte[][]>();
+        
+        for(String scalesModel : scalesModelsList) {
+
+        DataObject scalesModelObject =  new DataObject(retailLM.getLPByName("nameToScalesModel").read(session, session.modifier, new DataObject(scalesModel)), (ConcreteClass) retailLM.getClassByName("scalesModel"));
+            
+        LP isLabelFormat = LM.is(retailLM.getClassByName("labelFormat"));
+
+        Map<Object, KeyExpr> labelFormatKeys = isLabelFormat.getMapKeys();
+        KeyExpr labelFormatKey = BaseUtils.singleValue(labelFormatKeys);
+        Query<Object, Object> labelFormatQuery = new Query<Object, Object>(labelFormatKeys);
+
+        labelFormatQuery.properties.put("fileLabelFormat", retailLM.getLPByName("fileLabelFormat").getExpr(labelFormatKey));
+        labelFormatQuery.properties.put("fileMessageLabelFormat", retailLM.getLPByName("fileMessageLabelFormat").getExpr(labelFormatKey));
+        labelFormatQuery.and(isLabelFormat.property.getExpr(labelFormatKeys).getWhere());
+        labelFormatQuery.and(retailLM.getLPByName("scalesModelLabelFormat").getExpr(labelFormatKey).compare((scalesModelObject).getExpr(), Compare.EQUALS));
+        
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> labelFormatResult = labelFormatQuery.execute(session.sql);
+
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : labelFormatResult.entrySet()) {
+                byte[] fileLabelFormat = (byte[]) entry.getValue().get("fileLabelFormat");
+                byte[] fileMessageLabelFormat = (byte[]) entry.getValue().get("fileMessageLabelFormat");
+                fileLabelFormats.add(new byte[][] {fileLabelFormat, fileMessageLabelFormat});
+            }
+        }
+      return fileLabelFormats;
     }
 
     @Override
