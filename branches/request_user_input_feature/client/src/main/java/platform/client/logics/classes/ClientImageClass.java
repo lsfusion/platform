@@ -9,16 +9,22 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientImageClass extends ClientFileClass {
+public class ClientImageClass extends ClientStaticFormatFileClass {
 
     public final static ClientImageClass instance = new ClientImageClass();
 
-    private final String sID = "ImageClass";
+    public ClientImageClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientImageClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "ImageClass";
     }
 
     public byte getTypeId() {
@@ -46,7 +52,7 @@ public class ClientImageClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
     }
 
     @Override

@@ -1,7 +1,7 @@
 package roman;
 
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
@@ -17,7 +17,7 @@ import java.util.*;
 public class HugoBossPricatCSVImportActionProperty extends CustomReadValueActionProperty {
     private RomanLogicsModule LM;
 
-    private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.csv)", "csv");
+    private final CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы данных (*.csv)", "csv");
 
     public HugoBossPricatCSVImportActionProperty(String sID, RomanLogicsModule LM, ValueClass supplier) {
         super(sID, "Импортировать прайс (CSV)", new ValueClass[]{supplier});

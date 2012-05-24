@@ -5,7 +5,6 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LCP;
 
 import java.sql.SQLException;
 
@@ -46,7 +45,7 @@ public class AnyValuePropertyHolder {
                 && wordFileProperty.property.getType() == WordClass.instance
                 && imageFileProperty.property.getType() == ImageClass.instance
                 && pdfFileProperty.property.getType() == PDFClass.instance
-                && customFileProperty.property.getType() == CustomFileClass.instance
+                && customFileProperty.property.getType() == DynamicFormatFileClass.instance
                 && excelFileProperty.property.getType() == ExcelClass.instance
                 ;
 
@@ -115,7 +114,7 @@ public class AnyValuePropertyHolder {
         } else if (valueType instanceof PDFClass) {
             pdfFileProperty.change(value, context, keys);
 
-        } else if (valueType instanceof CustomFileClass) {
+        } else if (valueType instanceof DynamicFormatFileClass) {
             customFileProperty.change(value, context, keys);
 
         } else if (valueType instanceof ExcelClass) {
@@ -171,7 +170,7 @@ public class AnyValuePropertyHolder {
         } else if (valueType instanceof PDFClass) {
             return pdfFileProperty.read(context, keys);
 
-        } else if (valueType instanceof CustomFileClass) {
+        } else if (valueType instanceof DynamicFormatFileClass) {
             return customFileProperty.read(context, keys);
 
         } else if (valueType instanceof ExcelClass) {

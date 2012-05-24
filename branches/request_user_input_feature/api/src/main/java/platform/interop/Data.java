@@ -13,7 +13,7 @@ public class Data {
     public final static byte STRING = 8;
     public final static byte BYTEARRAY = 9;
     public final static byte BIT = 10;
-    public final static byte FILEACTION = 12;
+    public final static byte CUSTOMSTATICFORMATFILE = 12;
     public final static byte IMAGE = 13;
     public final static byte WORD = 14;
     public final static byte EXCEL = 15;
@@ -22,7 +22,7 @@ public class Data {
     public final static byte INSENSITIVESTRING = 18;
     public final static byte PDF = 19;
     public final static byte DATETIME = 20;
-    public final static byte CUSTOMFILECLASS = 21;
+    public final static byte DYNAMICFORMATFILE = 21;
     public final static byte TIME = 22;
     public final static byte COLOR = 23;
 }

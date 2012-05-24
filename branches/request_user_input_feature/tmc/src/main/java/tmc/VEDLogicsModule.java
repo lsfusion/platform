@@ -4294,7 +4294,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType(ExecutionContext context) {
-            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
 
         @Override
@@ -4355,7 +4355,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType(ExecutionContext context) {
-            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
 
@@ -4415,7 +4415,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType(ExecutionContext context) {
-            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
 
@@ -4488,7 +4488,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected DataClass getReadType(ExecutionContext context) {
-            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+            return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
 

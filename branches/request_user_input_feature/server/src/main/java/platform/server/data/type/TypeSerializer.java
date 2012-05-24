@@ -34,11 +34,11 @@ public class TypeSerializer {
         }
     }
 
-    public static Type deserializeType(DataInputStream inStream) throws IOException {
+    public static Type deserializeType(DataInputStream inStream, int version) throws IOException {
         if(inStream.readBoolean())
             return ObjectType.instance;
         else
-            return DataClass.deserialize(inStream);
+            return DataClass.deserialize(inStream, version);
     }
 
     public static ValueClass deserializeValueClass(BusinessLogics context, DataInputStream inStream) throws IOException {
@@ -61,12 +61,12 @@ public class TypeSerializer {
         if (type == Data.ACTION) return ActionClass.instance;
         if (type == Data.PDF) return PDFClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.CUSTOMFILECLASS) return CustomFileClass.instance;
+        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.instance;
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
 
         //todo:!!
-        if (type == Data.FILEACTION) return FileActionClass.getDefinedInstance(false, "", "");
+        if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.getDefinedInstance(false, "", "");
 
         throw new IOException();
     }

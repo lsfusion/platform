@@ -1838,7 +1838,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-        outDB.write('v'+1);  //для поддержки обратной совместимости
+        outDB.write('v'+2);  //для поддержки обратной совместимости
 
         outDB.writeInt(mapIndexes.size());
         for (Map.Entry<ImplementTable, Map<List<String>, Boolean>> mapIndex : mapIndexes.entrySet()) {
@@ -1879,7 +1879,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
-            SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
+            SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass, version);
             prevTables.put(prevTable.name, prevTable);
 
             ImplementTable implementTable = implementTables.get(prevTable.name);

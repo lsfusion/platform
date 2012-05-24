@@ -2,8 +2,8 @@ package roman;
 
 import jxl.read.biff.BiffException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 import platform.server.logics.property.ExecutionContext;
@@ -50,7 +50,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
     }
 
     protected DataClass getReadType(ExecutionContext context) {
-        return FileActionClass.getDefinedInstance(true, "Файл Excel (*.xls)", "xls *.*");
+        return CustomStaticFormatFileClass.getDefinedInstance(true, "Файл Excel (*.xls)", "xls *.*");
     }
 }
 

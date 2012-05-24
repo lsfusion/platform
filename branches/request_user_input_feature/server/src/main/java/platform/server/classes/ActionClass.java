@@ -21,7 +21,7 @@ public class ActionClass extends DataClass<Object> {
 
     private final static String sid = "ActionClass";
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected ActionClass() { super(ServerResourceBundle.getString("classes.action")); }

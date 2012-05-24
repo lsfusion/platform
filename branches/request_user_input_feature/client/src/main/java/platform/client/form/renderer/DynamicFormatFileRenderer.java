@@ -3,9 +3,9 @@ package platform.client.form.renderer;
 import platform.client.SwingUtils;
 import platform.client.logics.ClientPropertyDraw;
 
-public class CustomFileRenderer extends FilePropertyRenderer {
+public class DynamicFormatFileRenderer extends FilePropertyRenderer {
 
-    public CustomFileRenderer(ClientPropertyDraw property) {
+    public DynamicFormatFileRenderer(ClientPropertyDraw property) {
         super(property);
     }
 

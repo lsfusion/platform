@@ -1908,7 +1908,7 @@ public class BaseUtils {
         return extension;
     }
 
-    public static byte[] filesToBytes(boolean multiple, boolean custom, File... files) {
+    public static byte[] filesToBytes(boolean multiple, boolean custom, File... files) throws IOException {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
@@ -1930,6 +1930,9 @@ public class BaseUtils {
                 if (multiple)
                     outStream.writeInt(union.length);
                 outStream.write(union);
+
+                if(!multiple) // just in case
+                    break;
             }
 
             result = byteOutStream.toByteArray();

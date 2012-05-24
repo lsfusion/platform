@@ -1,8 +1,8 @@
 package roman;
 
 import platform.interop.ClassViewType;
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -21,7 +21,7 @@ import java.util.Iterator;
 public abstract class BaseImportActionProperty extends CustomReadValueActionProperty {
     protected final ClassPropertyInterface supplierInterface;
     protected RomanLogicsModule LM;
-    protected FileActionClass valueClass;
+    protected CustomStaticFormatFileClass valueClass;
 
     public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass) {
         this(LM, caption, supplierClass, "xls xlsx");
@@ -42,7 +42,7 @@ public abstract class BaseImportActionProperty extends CustomReadValueActionProp
             }
             extString = extString + "*." + ext;
         }
-        valueClass = FileActionClass.getDefinedInstance(true, "Файлы c данными (" + extString + ")", extensions);
+        valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными (" + extString + ")", extensions);
     }
 
     @Override

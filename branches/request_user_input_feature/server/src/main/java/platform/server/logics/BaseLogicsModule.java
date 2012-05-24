@@ -1513,8 +1513,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         protected DataClass getReadType(ExecutionContext context) {
-            FileClass fileClass = (FileClass) fileProperty.property.getType();
-            return FileActionClass.getInstance(false, fileClass.isCustom(), fileClass.toString(), fileClass.getExtensions());
+            return (FileClass) fileProperty.property.getType();
         }
 
         protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
@@ -1551,11 +1550,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = context.getKeyValue(classInterface);
-            byte[] fullData = (byte[]) fileProperty.read(context, objects);
-            if (getFileClass().isCustom()) {
-                context.addAction(new OpenFileClientAction(BaseUtils.getFile(fullData), BaseUtils.getExtension(fullData)));
-            } else
-                context.addAction(new OpenFileClientAction(fullData, BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
+            FileClass fileClass = getFileClass();
+            for(byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
+                if (fileClass instanceof DynamicFormatFileClass)
+                    context.addAction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
+                else
+                    context.addAction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass)fileClass).getOpenExtension(), ",")));
+            }
         }
 
         @Override

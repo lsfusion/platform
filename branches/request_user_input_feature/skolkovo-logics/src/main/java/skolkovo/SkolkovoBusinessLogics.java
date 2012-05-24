@@ -447,7 +447,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }
 
-                SkolkovoLM.allowedEmailLetterExpertVote.change(true, session, new DataObject(expertId, SkolkovoLM.expert), session.getDataObject(voteId, ObjectType.instance));
+                SkolkovoLM.allowedEmailLetterExpertVote.execute(session, new DataObject(expertId, SkolkovoLM.expert), session.getDataObject(voteId, ObjectType.instance));
             } finally {
                 session.close();
             }

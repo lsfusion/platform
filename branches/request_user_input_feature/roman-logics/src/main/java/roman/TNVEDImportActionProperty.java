@@ -1,7 +1,7 @@
 package roman;
 
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -31,7 +31,7 @@ public class TNVEDImportActionProperty extends CustomReadValueActionProperty {
     }
 
     private DataClass getFileClass() {
-        return FileActionClass.getDefinedInstance(false, "Файл базы данных \"DBF\"", "dbf");
+        return CustomStaticFormatFileClass.getDefinedInstance(false, "Файл базы данных \"DBF\"", "dbf");
     }
 
     protected DataClass getReadType(ExecutionContext context) {

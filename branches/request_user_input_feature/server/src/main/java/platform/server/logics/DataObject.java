@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
-import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.*;
@@ -193,7 +192,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         object = BaseUtils.deserializeObject(inStream);
 
-        objectClass = pool.context.BL.getDataClass(object, TypeSerializer.deserializeType(inStream));
+        objectClass = pool.context.BL.getDataClass(object, TypeSerializer.deserializeType(inStream, 9999999));
     }
 
     public Collection<ObjectInstance> getObjectInstances() {

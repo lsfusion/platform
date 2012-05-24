@@ -2086,7 +2086,7 @@ public abstract class LogicsModule {
 
     protected LAP addAAProp(String caption, CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(), caption,
-                (barcode != null) ? (CalcProperty)barcode.property : null, (barcodePrefix != null) ? ((CalcProperty)barcodePrefix.property) : null,
+                (barcode != null) ? (CalcProperty) barcode.property : null, (barcodePrefix != null) ? ((CalcProperty) barcodePrefix.property) : null,
                 quantity, customClass, LCP.toPropertyArray(properties)));
     }
 
@@ -2128,7 +2128,7 @@ public abstract class LogicsModule {
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "WordFile", captionPrefix + " Word file", classes, WordClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ImageFile", captionPrefix + " Image file", classes, ImageClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "PdfFile", captionPrefix + " Pdf file", classes, PDFClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, CustomFileClass.instance))),
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, DynamicFormatFileClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel fil", classes, ExcelClass.instance)))
         );
     }

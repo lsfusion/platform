@@ -21,11 +21,6 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
     protected final JFileChooser fileChooser = new JFileChooser();
     protected int returnValue;
 
-    //fixed file format constructors
-    public FilePropertyEditor(String description, String... extensions) {
-        this(false, description, extensions);
-    }
-
     public FilePropertyEditor(boolean multiple, String description, String... extensions) {
         super();
 
@@ -87,7 +82,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
         File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
 
         try {
-            return (!multiple && !custom) ? IOUtils.getFileBytes(files[0]) : BaseUtils.filesToBytes(multiple, custom, files);
+            return BaseUtils.filesToBytes(multiple, custom, files);
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.editor.cant.read.file") + " " + fileChooser.getSelectedFile());
         }

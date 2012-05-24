@@ -9,16 +9,22 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientPDFClass extends ClientFileClass {
+public class ClientPDFClass extends ClientStaticFormatFileClass {
 
     public final static ClientPDFClass instance = new ClientPDFClass();
 
-    private final String sID = "PDFClass";
+    public ClientPDFClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientPDFClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "PDFClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
@@ -36,7 +42,7 @@ public class ClientPDFClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.pdf"), "pdf");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.pdf"), "pdf");
     }
 
     @Override

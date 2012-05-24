@@ -3,15 +3,29 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.logics.ServerResourceBundle;
 
-public class ExcelClass extends FileClass {
+import java.io.DataInputStream;
+import java.io.IOException;
 
-    public final static ExcelClass instance = new ExcelClass();
-    private final static String sid = "ExcelClass";
-    static {
-        DataClass.storeClass(sid, instance);
+public class ExcelClass extends StaticFormatFileClass {
+
+    public final static ExcelClass instance = new ExcelClass(false);
+    public final static ExcelClass multipleInstance = new ExcelClass(true);
+
+    protected String getFileSID() {
+        return "ExcelClass";
     }
 
-    protected ExcelClass() {}
+    static {
+        DataClass.storeClass(instance, multipleInstance);
+    }
+
+    protected ExcelClass(boolean multiple) {
+        super(multiple);
+    }
+
+    public ExcelClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.excel.file");
@@ -25,11 +39,7 @@ public class ExcelClass extends FileClass {
         return Data.EXCEL;
     }
 
-    public String getSID() {
-        return sid;
-    }
-
-    public String getExtensions() {
+    public String getOpenExtension() {
         return "xls";
     }
 }

@@ -1,7 +1,7 @@
 package roman;
 
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
@@ -16,7 +16,7 @@ import java.util.*;
 public class PricatEDIImportActionProperty extends CustomReadValueActionProperty {
     private RomanLogicsModule LM;
 
-    private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.edi, *.txt)", "edi txt *.*");
+    private final CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы данных (*.edi, *.txt)", "edi txt *.*");
 
     public PricatEDIImportActionProperty(String sID, RomanLogicsModule LM, ValueClass supplier) {
         super(sID, "Импортировать прайс (EDI)", new ValueClass[]{supplier});

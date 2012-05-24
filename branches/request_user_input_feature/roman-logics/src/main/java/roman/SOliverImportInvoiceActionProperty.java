@@ -1,8 +1,8 @@
 package roman;
 
 import jxl.read.biff.BiffException;
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 import platform.server.logics.property.ExecutionContext;
@@ -42,7 +42,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
 
     @Override
     protected DataClass getReadType(ExecutionContext context) {
-        return FileActionClass.getDefinedInstance(true, "Файл данных (*.edi, *.txt)", "edi txt *.*");
+        return CustomStaticFormatFileClass.getDefinedInstance(true, "Файл данных (*.edi, *.txt)", "edi txt *.*");
     }
 }
 

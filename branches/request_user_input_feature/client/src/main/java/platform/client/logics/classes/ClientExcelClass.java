@@ -9,16 +9,22 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientExcelClass extends ClientFileClass {
+public class ClientExcelClass extends ClientStaticFormatFileClass {
 
     public final static ClientExcelClass instance = new ClientExcelClass();
 
-    private final String sID = "ExcelClass";
+    public ClientExcelClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientExcelClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "ExcelClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
@@ -36,7 +42,7 @@ public class ClientExcelClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
-        return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.excel.documents"), "xls", "xlsx");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.excel.documents"), "xls", "xlsx");
     }
 
     @Override

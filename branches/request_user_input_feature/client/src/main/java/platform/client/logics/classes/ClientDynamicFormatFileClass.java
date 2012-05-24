@@ -4,25 +4,31 @@ import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.FilePropertyEditor;
-import platform.client.form.renderer.CustomFileRenderer;
+import platform.client.form.renderer.DynamicFormatFileRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientCustomFileClass extends ClientFileClass {
+public class ClientDynamicFormatFileClass extends ClientFileClass {
 
-    public final static ClientCustomFileClass instance = new ClientCustomFileClass();
+    public final static ClientDynamicFormatFileClass instance = new ClientDynamicFormatFileClass();
 
-    private final String sID = "CustomFileClass";
+    public ClientDynamicFormatFileClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientDynamicFormatFileClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "CustomFileClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
-        return new CustomFileRenderer(property);
+        return new DynamicFormatFileRenderer(property);
     }
 
     @Override
@@ -31,12 +37,12 @@ public class ClientCustomFileClass extends ClientFileClass {
     }
 
     public byte getTypeId() {
-        return Data.CUSTOMFILECLASS;
+        return Data.DYNAMICFORMATFILE;
     }
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(false);
+        return new FilePropertyEditor(multiple);
     }
 
     @Override

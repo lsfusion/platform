@@ -9,16 +9,22 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientWordClass extends ClientFileClass {
+public class ClientWordClass extends ClientStaticFormatFileClass {
 
     public final static ClientWordClass instance = new ClientWordClass();
 
-    private final String sID = "WordClass";
+    public ClientWordClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientWordClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "WordClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
@@ -36,7 +42,7 @@ public class ClientWordClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
     }
 
     @Override

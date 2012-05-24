@@ -30,6 +30,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
     protected String caption;
 
+    public static void storeClass(DataClass... classes) {
+        for(DataClass cls : classes)
+            storeClass(cls.getSID(), cls);
+    }
+
     public static void storeClass(String sid, DataClass cls) {
         sidToClass.put(sid, cls);
     }
@@ -126,7 +131,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         outStream.writeByte(getTypeID());
     }
 
-    public static DataClass deserialize(DataInputStream inStream) throws IOException {
+    public static DataClass deserialize(DataInputStream inStream, int version) throws IOException {
         byte type = inStream.readByte();
 
         if (type == Data.INTEGER) return IntegerClass.instance;
@@ -137,16 +142,25 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         if (type == Data.DATE) return DateClass.instance;
         if (type == Data.STRING) return StringClass.get(inStream.readInt());
         if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
-        if (type == Data.IMAGE) return ImageClass.instance;
-        if (type == Data.WORD) return WordClass.instance;
-        if (type == Data.EXCEL) return ExcelClass.instance;
         if (type == Data.TEXT) return TextClass.instance;
         if (type == Data.YEAR) return YearClass.instance;
-        if (type == Data.PDF) return PDFClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.CUSTOMFILECLASS) return CustomFileClass.instance;
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
+
+        if(version>=2) { // обратная совместимость
+            if (type == Data.IMAGE) return new ImageClass(inStream);
+            if (type == Data.WORD) return new WordClass(inStream);
+            if (type == Data.EXCEL) return new ExcelClass(inStream);
+            if (type == Data.DYNAMICFORMATFILE) return new DynamicFormatFileClass(inStream);
+            if (type == Data.PDF) return new PDFClass(inStream);
+        } else {
+            if (type == Data.IMAGE) return ImageClass.instance;
+            if (type == Data.WORD) return WordClass.instance;
+            if (type == Data.EXCEL) return ExcelClass.instance;
+            if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.instance;
+            if (type == Data.PDF) return PDFClass.instance;
+        }
 
         throw new IOException();
     }
