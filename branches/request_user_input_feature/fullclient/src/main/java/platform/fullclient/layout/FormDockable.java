@@ -8,6 +8,7 @@ import platform.interop.form.RemoteFormInterface;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 
 // уничтожаемые формы
 abstract class FormDockable extends DefaultMultipleCDockable {
@@ -30,7 +31,7 @@ abstract class FormDockable extends DefaultMultipleCDockable {
     }
 
     protected FormDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory, boolean interactive, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, currentSession, interactive), userPreferences);
+        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, null, currentSession, interactive), userPreferences);
     }
 
     protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
@@ -38,7 +39,7 @@ abstract class FormDockable extends DefaultMultipleCDockable {
     }
 
     protected FormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, true, true), userPreferences);
+        this(formSID, navigator, true, factory, true, userPreferences);
     }
 
     private void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {

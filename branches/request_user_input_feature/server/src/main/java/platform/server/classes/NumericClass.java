@@ -81,7 +81,7 @@ public class NumericClass extends IntegralClass<Double> {
                 return numeric;
         NumericClass numeric = new NumericClass(length,precision);
         numerics.add(numeric);
-        DataClass.storeClass(numeric.getSID(), numeric);
+        DataClass.storeClass(numeric);
         return numeric;
     }
 

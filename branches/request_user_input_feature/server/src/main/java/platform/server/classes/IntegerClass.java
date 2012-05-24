@@ -13,10 +13,10 @@ import java.text.NumberFormat;
 
 public class IntegerClass extends IntegralClass<Integer> {
 
-    public final static IntegerClass instance = new IntegerClass(); 
-    private final static String sid = "IntegerClass";
+    public final static IntegerClass instance = new IntegerClass();
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected IntegerClass() { super(ServerResourceBundle.getString("classes.integer")); }
@@ -78,7 +78,7 @@ public class IntegerClass extends IntegralClass<Integer> {
     }
 
     public String getSID() {
-        return sid;
+        return "IntegerClass";
     }
 
     @Override

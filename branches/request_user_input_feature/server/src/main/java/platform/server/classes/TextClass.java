@@ -13,9 +13,9 @@ import java.text.Format;
 public class TextClass extends DataClass<String> {
 
     public final static TextClass instance = new TextClass();
-    private final static String sid = "TextClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected TextClass() { super(ServerResourceBundle.getString("classes.text")); }
@@ -85,7 +85,7 @@ public class TextClass extends DataClass<String> {
     }
 
     public String getSID() {
-        return sid;
+        return "TextClass";
     }
 
     public Stat getTypeStat() {

@@ -2,13 +2,10 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.caches.IdentityLazy;
-import platform.server.data.sql.SQLSyntax;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.*;
 
 public class CustomStaticFormatFileClass extends StaticFormatFileClass {
@@ -16,12 +13,8 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     private String filterDescription;
     private String[] filterExtensions;
 
-    private static String formatSID(boolean multiple, String filterDescription, String[] filterExtensions) {
-        return "FileActionClass[multiple=" + multiple + ",  filterDescription=" + filterDescription + "," + Arrays.toString(filterExtensions) + "]";
-    }
-
     protected String getFileSID() {
-        throw new RuntimeException("SID overrided");
+        return "CustomStaticFormatFileClass";
     }
 
     public DataClass getCompatible(DataClass compClass) {
@@ -56,24 +49,24 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return filterExtensions[0];
     }
 
-    private static HashMap<String, CustomStaticFormatFileClass> instances = new HashMap<String, CustomStaticFormatFileClass>();
+    private static List<CustomStaticFormatFileClass> instances = new ArrayList<CustomStaticFormatFileClass>();
 
     public static CustomStaticFormatFileClass getDefinedInstance(boolean multiple, String description, String extensions) {
         String[] fextensions = extensions.split(" ");
-        String sid = formatSID(multiple, description, fextensions);
-        CustomStaticFormatFileClass instance = instances.get(sid);
-        if (instance == null) {
-            instance = new CustomStaticFormatFileClass(multiple, description, fextensions);
-            instances.put(sid, instance);
-            DataClass.storeClass(instance);
-        }
+        
+        for(CustomStaticFormatFileClass instance : instances)
+            if(instance.multiple==multiple && instance.filterDescription.equals(description) && Arrays.equals(instance.filterExtensions, fextensions))
+                return instance;
+
+        CustomStaticFormatFileClass instance = new CustomStaticFormatFileClass(multiple, description, fextensions);
+        instances.add(instance);
+        DataClass.storeClass(instance);
         return instance;
     }
 
     @Override
-    @IdentityLazy
     public String getSID() {
-        return formatSID(multiple, filterDescription, filterExtensions);
+        return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions) + "]";
     }
 
     @Override

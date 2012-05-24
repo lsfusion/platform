@@ -32,11 +32,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public static void storeClass(DataClass... classes) {
         for(DataClass cls : classes)
-            storeClass(cls.getSID(), cls);
-    }
-
-    public static void storeClass(String sid, DataClass cls) {
-        sidToClass.put(sid, cls);
+            sidToClass.put(cls.getSID(), cls);
     }
 
     protected DataClass(String caption) {
@@ -152,6 +148,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
             if (type == Data.IMAGE) return new ImageClass(inStream);
             if (type == Data.WORD) return new WordClass(inStream);
             if (type == Data.EXCEL) return new ExcelClass(inStream);
+            if (type == Data.CUSTOMSTATICFORMATFILE) return new CustomStaticFormatFileClass(inStream);
             if (type == Data.DYNAMICFORMATFILE) return new DynamicFormatFileClass(inStream);
             if (type == Data.PDF) return new PDFClass(inStream);
         } else {

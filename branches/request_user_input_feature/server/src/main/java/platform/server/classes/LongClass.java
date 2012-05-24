@@ -14,9 +14,9 @@ import java.text.NumberFormat;
 public class LongClass extends IntegralClass<Long> {
 
     public final static LongClass instance = new LongClass();
-    private final static String sid = "LongClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected LongClass() { super(ServerResourceBundle.getString("classes.long.integer")); }
@@ -76,7 +76,7 @@ public class LongClass extends IntegralClass<Long> {
     }
 
     public String getSID() {
-        return sid;
+        return "LongClass";
     }
 
     @Override

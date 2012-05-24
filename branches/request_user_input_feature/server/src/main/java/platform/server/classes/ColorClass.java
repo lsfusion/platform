@@ -14,9 +14,9 @@ import java.text.Format;
 public class ColorClass extends DataClass {
 
     public final static ColorClass instance = new ColorClass();
-    private final static String sid = "ColorClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     public ColorClass() {
@@ -79,7 +79,7 @@ public class ColorClass extends DataClass {
 
     @Override
     public String getSID() {
-        return sid;
+        return "ColorClass";
     }
 
     @Override

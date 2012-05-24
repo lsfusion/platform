@@ -15,15 +15,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.Format;
-import java.text.SimpleDateFormat;
 
 public class DateTimeClass extends DataClass<Timestamp> {
 
     public final static DateTimeClass instance = new DateTimeClass();
-    private final static String sid = "DateTimeClass";
 
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected DateTimeClass() {
@@ -113,7 +111,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     public String getSID() {
-        return sid;
+        return "DateTimeClass";
     }
 
     public Stat getTypeStat() {

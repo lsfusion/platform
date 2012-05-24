@@ -437,26 +437,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return BL.getForms(formSet);
     }
 
-    public RemoteFormInterface createForm(String formSID, boolean currentSession, boolean interactive) {
-        return createForm(getFormEntity(formSID), currentSession, interactive);
-    }
-
     public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean currentSession, boolean interactive) {
-        RemoteForm form = (RemoteForm) createForm(formSID, currentSession, interactive);
-        for (String objectSID : initialObjects.keySet()) {
-            GroupObjectInstance groupObject = null;
-            ObjectInstance object = null;
-            for (GroupObjectInstance group : (List<GroupObjectInstance>) form.form.groups) {
-                for (ObjectInstance obj : group.objects) {
-                    if (obj.getsID().equals(objectSID)) {
-                        object = obj;
-                        groupObject = group;
-                        break;
+        RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), currentSession, interactive);
+        if(initialObjects != null) {
+            for (String objectSID : initialObjects.keySet()) {
+                GroupObjectInstance groupObject = null;
+                ObjectInstance object = null;
+                for (GroupObjectInstance group : (List<GroupObjectInstance>) form.form.groups) {
+                    for (ObjectInstance obj : group.objects) {
+                        if (obj.getsID().equals(objectSID)) {
+                            object = obj;
+                            groupObject = group;
+                            break;
+                        }
                     }
                 }
-            }
-            if (object != null) {
-                groupObject.addSeek(object, new DataObject(Integer.decode(initialObjects.get(objectSID)), object.getCurrentClass()), true);
+                if (object != null) {
+                    groupObject.addSeek(object, new DataObject(Integer.decode(initialObjects.get(objectSID)), object.getCurrentClass()), true);
+                }
             }
         }
         return form;

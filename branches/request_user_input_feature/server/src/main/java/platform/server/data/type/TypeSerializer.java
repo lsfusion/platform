@@ -52,19 +52,19 @@ public class TypeSerializer {
         if (type == Data.DATE) return DateClass.instance;
         if (type == Data.STRING) return StringClass.get(inStream.readInt());
         if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
-        if (type == Data.IMAGE) return ImageClass.instance;
-        if (type == Data.WORD) return WordClass.instance;
-        if (type == Data.EXCEL) return ExcelClass.instance;
         if (type == Data.TEXT) return TextClass.instance;
         if (type == Data.YEAR) return YearClass.instance;
         if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;
-        if (type == Data.PDF) return PDFClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
         if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.instance;
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
 
+        if (type == Data.IMAGE) return ImageClass.instance;
+        if (type == Data.WORD) return WordClass.instance;
+        if (type == Data.EXCEL) return ExcelClass.instance;
+        if (type == Data.PDF) return PDFClass.instance;
         //todo:!!
         if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.getDefinedInstance(false, "", "");
 
