@@ -104,6 +104,14 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     }
 
     @Override
+    public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(isAbstract())
+            return getInterfaceClasses();
+
+        return super.getInterfaceCommonClasses(commonValue);
+    }
+
+    @Override
     protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         assert finalized;
 

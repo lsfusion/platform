@@ -39,15 +39,11 @@ public class PropertySet<T extends PropertyInterface> {
         this(change.getMapValues(), change.getMapKeys(), change.where);
     }
 
-    public Collection<Map<T, DataObject>> executeClasses(DataSession session) throws SQLException {
-        return executeClasses(session.sql, session.env, session.baseClass);
-    }
-
-    public Collection<Map<T, DataObject>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
+    public Collection<Map<T, DataObject>> executeClasses(ExecutionEnvironment env) throws SQLException {
         if(mapKeys.isEmpty() && where.isTrue()) // оптимизация для нее в том числе mapValues ведется                     
             return Collections.singleton(mapValues);
             
-        return getQuery().executeClasses(session, env, baseClass).keySet();
+        return getQuery().executeClasses(env).keySet();
     }
 
     public PropertySet<T> and(Where andWhere) {

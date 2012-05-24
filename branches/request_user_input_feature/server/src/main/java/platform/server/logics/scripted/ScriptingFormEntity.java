@@ -102,14 +102,14 @@ public class ScriptingFormEntity {
                 assert groupObject.objects.size() == properties.size();
                 GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
 
-                List<PropertyObjectEntity> propertyObjects = new ArrayList<PropertyObjectEntity>();
+                List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<CalcPropertyObjectEntity>();
                 for (String sid : properties) {
                     if (sid != null)
-                        propertyObjects.add(form.addPropertyObject(LM.findLPByCompoundName(sid), groupObj.objects.toArray(new ObjectEntity[groupObj.objects.size()])));
+                        propertyObjects.add(form.addPropertyObject((LCP)LM.findLPByCompoundName(sid), groupObj.objects.toArray(new ObjectEntity[groupObj.objects.size()])));
                 }
 
                 if (!propertyObjects.isEmpty())
-                    groupObj.setIsParents(propertyObjects.toArray(new PropertyObjectEntity[propertyObjects.size()]));
+                    groupObj.setIsParents(propertyObjects.toArray(new CalcPropertyObjectEntity[propertyObjects.size()]));
             }
         }
         TreeGroupEntity tree = form.addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));

@@ -16,6 +16,7 @@ import platform.server.ParamMessage;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
+import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -87,6 +88,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     private Collection<ObjectInstance> objects;
 
     public final boolean checkOnOk;
+
+    public QueryEnvironment getQueryEnv() {
+        return session.env;
+    }
 
     public final boolean isFullClient;
 
@@ -337,7 +342,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     private <P extends PropertyInterface> void readIncrement(CalcProperty<P> property) throws SQLException {
         if(property.hasChanges(this))
-            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, session.env));
+            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, getQueryEnv()));
     }
 
     public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
@@ -646,7 +651,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
-        if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(session, this) != null)
+        if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null)
             return new ArrayList<ClientAction>();
 
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
@@ -685,7 +690,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             properties.add(getPropertyDraw(id));
         }
         GroupObjectInstance groupObject = properties.get(0).toDraw;
-        List<Map<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, session.env, this, BL.LM.baseClass, table.size()).keyList();
+        List<Map<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, getQueryEnv(), this, BL.LM.baseClass, table.size()).keyList();
 
         //создание объектов
         int availableQuantity = executeList.size();
@@ -750,7 +755,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), GroupType.SUM, new HashMap());
         Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
         query.properties.put("quant", expr);
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(this);
         Integer quantity = (Integer) result.getValue(0).get("quant");
         if (quantity != null) {
             return quantity;
@@ -768,7 +773,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         for (ObjectInstance object : columnKeys.keySet()) {
             keys.put(object, columnKeys.get(object).getExpr());
         }
-        Expr expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, new HashMap());
+        Expr expr = GroupExpr.create(new HashMap(), propertyDraw.getDrawInstance().getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, new HashMap());
 
         Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
         query.properties.put("sum", expr);
@@ -793,7 +798,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     keys.put(object, columnKeys.get(object).getExpr());
                 }
                 keyExprMap.put(property.getsID() + i, new KeyExpr("expr"));
-                exprMap.put(property.getsID() + i, property.propertyObject.getExpr(keys, this));
+                exprMap.put(property.getsID() + i, property.getDrawInstance().getExpr(keys, this));
             }
         }
 
@@ -827,7 +832,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 for (ObjectInstance object : columnKeys.keySet()) {
                     keys.put(object, columnKeys.get(object).getExpr());
                 }
-                Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), groupType, keyExprMap);
+                Expr expr = GroupExpr.create(exprMap, property.getDrawInstance().getExpr(keys, this), groupObject.getWhere(mapKeys, this), groupType, keyExprMap);
                 query.properties.put(property.getsID() + idIndex, expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());
@@ -836,7 +841,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
 
         Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(this);
         for (Map<Object, Object> one : result.keyList()) {
             List<Object> groupList = new ArrayList<Object>();
             List<Object> sumList = new ArrayList<Object>();
@@ -998,9 +1003,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         if(usedProperties == null) {
             usedProperties = new HashSet<CalcProperty>();
             for (PropertyDrawInstance<?> propertyDraw : properties) {
-                if(propertyDraw.propertyObject.property instanceof CalcProperty) {
-                    usedProperties.add((CalcProperty) propertyDraw.propertyObject.property);
-                }
+                usedProperties.add(propertyDraw.getDrawInstance().property);
                 if (propertyDraw.propertyCaption != null) {
                     usedProperties.add((CalcProperty) propertyDraw.propertyCaption.property);
                 }
@@ -1089,7 +1092,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return updated.objectUpdated(groupObjects);
     }
 
-    private boolean propertyUpdated(PropertyObjectInstance updated, Set<GroupObjectInstance> groupObjects, Collection<CalcProperty> changedProps) {
+    private boolean propertyUpdated(CalcPropertyObjectInstance updated, Set<GroupObjectInstance> groupObjects, Collection<CalcProperty> changedProps) {
         return dataUpdated(updated, changedProps)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
                 || objectUpdated(updated, groupObjects);
@@ -1145,7 +1148,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             selectProps.properties.put(propertyReader, propertyReader.getPropertyObjectInstance().getExpr(selectProps.mapKeys, this));
         }
 
-        OrderedMap<Map<ObjectInstance, DataObject>, Map<PropertyReaderInstance, ObjectValue>> queryResult = selectProps.executeClasses(session.sql, session.env, BL.LM.baseClass);
+        OrderedMap<Map<ObjectInstance, DataObject>, Map<PropertyReaderInstance, ObjectValue>> queryResult = selectProps.executeClasses(this, BL.LM.baseClass);
         for (PropertyReaderInstance propertyReader : propertyList) {
             Map<Map<ObjectInstance, DataObject>, ObjectValue> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, ObjectValue>();
             for (Entry<Map<ObjectInstance, DataObject>, Map<PropertyReaderInstance, ObjectValue>> resultRow : queryResult.entrySet())
@@ -1158,6 +1161,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     public FormChanges endApply() throws SQLException {
 
         assert interactive;
+
+        QueryEnvironment queryEnv = getQueryEnv();
 
         final FormChanges result = new FormChanges();
 
@@ -1177,7 +1182,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 result.classViews.put(group, group.curClassView);
             }
 
-            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.LM.baseClass, refresh, result, changedProps);
+            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, this, BL.LM.baseClass, refresh, result, changedProps);
             if(selectObjects!=null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 
@@ -1236,7 +1241,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             if(inInterface!=null) {
                 boolean read = refresh || !inInterface.equals(previous) // если изменилось представление
                         || groupUpdated(drawProperty.columnGroupObjects, UPDATED_CLASSVIEW); // изменились группы в колонки (так как отбираются только GRID)
-                if(read || propertyUpdated(drawProperty.propertyObject, drawGridObjects, changedProps)) {
+                if(read || propertyUpdated(drawProperty.getDrawInstance(), drawGridObjects, changedProps)) {
                     readProperties.put(drawProperty, drawGridObjects);
                     if(!inInterface) // говорим клиенту что свойство в панели
                         result.panelProperties.add(drawProperty);
@@ -1338,9 +1343,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         FormData result = new FormData();
 
         for (PropertyDrawInstance<?> property : propertyDraws)
-            query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, this));
+            query.properties.put(property, property.getDrawInstance().getExpr(query.mapKeys, this));
 
-        OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(session.sql, queryOrders, 0, session.env);
+        OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(this, queryOrders, 0);
         for (Entry<Map<ObjectInstance, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectInstance, Object> groupValue = new HashMap<ObjectInstance, Object>();
             for (GroupObjectInstance group : groups)
@@ -1404,7 +1409,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public Object read(CalcPropertyObjectInstance<?> property) throws SQLException {
-        return property.read(session, this);
+        return property.read(this);
     }
 
     public DialogInstance<T> createObjectDialog(CustomClass objectClass) throws SQLException {
@@ -1416,7 +1421,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         CustomClass objectClass = propertyValues.getDialogClass(session);
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
 
-        Object currentObject = propertyValues.read(session, this);
+        Object currentObject = propertyValues.read(this);
         if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
             currentObject = addObject((ConcreteCustomClass)objectClass).object;
         }
@@ -1433,7 +1438,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(session, this), instanceFactory.computer, additionalFilters, pullProps, isFullClient);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, additionalFilters, pullProps, isFullClient);
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);

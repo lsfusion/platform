@@ -154,11 +154,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public void fillObjects(Set<ObjectEntity> objects) {
     }
 
-    @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) {
-        return getDataObject().getValue();
-    }
-
     public boolean twins(TwinImmutableInterface o) {
         return getExpr().equals(((DataObject) o).getExpr());
     }

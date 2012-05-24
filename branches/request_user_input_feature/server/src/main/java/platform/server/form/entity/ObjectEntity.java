@@ -16,8 +16,6 @@ import platform.server.logics.property.actions.ChangeObjectActionProperty;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -75,11 +73,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void fillObjects(Set<ObjectEntity> objects) {
         objects.add(this);
-    }
-
-    @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) {
-        return factory.getInstance(this).getDataObject().getValue();
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

@@ -98,7 +98,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         for(PropertyDrawInstance<?> property : filterProperties(groups)) {
             if (property.columnGroupObjects.isEmpty()) {
                 Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, PropertyType.PLAIN);
-                newQuery.properties.put(propertyObject, property.propertyObject.getExpr(newQuery.mapKeys, form));
+                newQuery.properties.put(propertyObject, property.getDrawInstance().getExpr(newQuery.mapKeys, form));
                 types.put(propertyObject, property.propertyObject.getType());
 
                 if (property.propertyCaption != null) {
@@ -137,10 +137,10 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
             Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
             SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>>(
-                    form.session.sql, query, form.BL.LM.baseClass, form.session.env, keyTypes, propTypes);
+                    form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes);
 
             try {
-                OrderedMap<Map<ObjectInstance, Object>, Map<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form.session.sql, form.session.env, orders);
+                OrderedMap<Map<ObjectInstance, Object>, Map<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders);
 
                 List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<Pair<String, PropertyReaderInstance>>();
                 for(PropertyDrawInstance property : filterProperties(groups)) {
@@ -278,7 +278,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, form));
+        query.properties.put(property, property.getDrawInstance().getExpr(query.mapKeys, form));
         if (property.propertyCaption != null) {
             query.properties.put(property.propertyCaption, property.propertyCaption.getExpr(query.mapKeys, form));
         }
@@ -286,7 +286,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             query.properties.put(property.propertyFooter, property.propertyFooter.getExpr(query.mapKeys, form));
         }
 
-        return query.execute(form.session.sql, queryOrders, 0, form.session.env);
+        return query.execute(form, queryOrders, 0);
     }
 
     private Set<GroupObjectInstance> getPropertyDependencies(PropertyDrawInstance<?> property) {

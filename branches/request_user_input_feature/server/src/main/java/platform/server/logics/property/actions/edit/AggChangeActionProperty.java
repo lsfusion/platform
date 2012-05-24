@@ -68,7 +68,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
             );
 
             OrderedMap<Map<String,DataObject>,Map<String,ObjectValue>> values =
-                    new Query<String, String>(new HashMap<String, KeyExpr>(), singletonMap("value", groupExpr)).executeClasses(context.getSession());
+                    new Query<String, String>(new HashMap<String, KeyExpr>(), singletonMap("value", groupExpr)).executeClasses(context);
 
             if (values.size() != 0) {
                 ObjectValue convertWYSValue = singleValue(singleValue(values));

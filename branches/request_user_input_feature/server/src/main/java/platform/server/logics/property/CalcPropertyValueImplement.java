@@ -4,6 +4,7 @@ import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -30,9 +31,9 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
     public boolean canBeChanged(Modifier modifier) throws SQLException {
         return !property.getDataChanges(getPropertyChange(property.changeExpr), modifier).isEmpty();
     }
-    
-    public Object read(DataSession session, Modifier modifier) throws SQLException {
-        return property.read(session, mapping, modifier);
+
+    public Object read(FormInstance form) throws SQLException {
+        return property.read(form, mapping);
     }
 
     public CustomClass getDialogClass(DataSession session) {

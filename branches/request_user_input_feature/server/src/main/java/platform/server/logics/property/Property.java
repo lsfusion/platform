@@ -230,95 +230,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
     };
 
-    public Expr getExpr(Map<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, PropertyChanges.EMPTY);
-    }
-
-    public Expr getExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier) {
-        return getExpr(joinImplement, modifier.getPropertyChanges());
-    }
-    public Expr getExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {
-        return getExpr(joinImplement, propChanges, null);
-    }
-
-    public abstract Expr aspectGetExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
-
-    public IQuery<T, String> getQuery(PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) {
-        return getQuery(false, propChanges, queryType, interfaceValues);
-    }
-
-    @PackComplex
-    @Message("message.core.property.get.expr")
-    @ThisMessage
-    public IQuery<T, String> getQuery(boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) {
-        if(queryType==PropertyQueryType.FULLCHANGED) {
-            IQuery<T, String> query = getQuery(propClasses, propChanges, PropertyQueryType.RECURSIVE, interfaceValues);
-            Query<T, String> fullQuery = new Query<T, String>(query.getMapKeys());
-            Expr newExpr = query.getExpr("value");
-            fullQuery.properties.put("value", newExpr);
-            fullQuery.properties.put("changed", query.getExpr("changed").and(newExpr.getWhere().or(getExpr(fullQuery.mapKeys).getWhere())));
-            return fullQuery;
-        }
-            
-        Query<T, String> query = new Query<T,String>(BaseUtils.filterNotKeys(getMapKeys(), interfaceValues.keySet()));
-        Map<T, Expr> allKeys = BaseUtils.merge(interfaceValues, query.mapKeys);
-        WhereBuilder queryWheres = queryType.needChange() ? new WhereBuilder():null;
-        query.properties.put("value", aspectGetExpr(allKeys, propClasses, propChanges, queryWheres));
-        if(queryType.needChange())
-            query.properties.put("changed", ValueExpr.get(queryWheres.toWhere()));
-        return query;
-    }
-
-    public Expr getQueryExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWheres) {
-
-        Map<T, Expr> interfaceValues = new HashMap<T, Expr>(); Map<T, Expr> interfaceExprs = new HashMap<T, Expr>();
-        for(Map.Entry<T, ? extends Expr> entry : joinImplement.entrySet())
-            if(entry.getValue().isValue())
-                interfaceValues.put(entry.getKey(), entry.getValue());
-            else
-                interfaceExprs.put(entry.getKey(), entry.getValue());
-
-        IQuery<T, String> query = getQuery(propClasses, propChanges, changedWheres!=null?PropertyQueryType.CHANGED:PropertyQueryType.NOCHANGE, interfaceValues);
-
-        Join<String> queryJoin = query.join(interfaceExprs);
-        if(changedWheres!=null)
-            changedWheres.add(queryJoin.getExpr("changed").getWhere());
-        return queryJoin.getExpr("value");
-    }
-
-    @Message("message.core.property.get.expr")
-    @PackComplex
-    @ThisMessage
-    public Expr getJoinExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return aspectGetExpr(joinImplement, propClasses, propChanges, changedWhere);
-    }
-
-    public Expr getExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return getExpr(joinImplement, false, propChanges, changedWhere);
-    }
-
-    // в будущем propClasses можно заменить на PropertyTables propTables
-    public Expr getExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (isFull() && (Settings.instance.isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
-            return getQueryExpr(joinImplement, propClasses, propChanges, changedWhere);
-        else
-            return getJoinExpr(joinImplement, propClasses, propChanges, changedWhere);
-    }
-
     @IdentityLazy
     public Type getInterfaceType(T propertyInterface) { // true потому как может быть old не полный (в частности NewSessionAction)
         return getInterfaceClasses(true).get(propertyInterface).getType();
-    }
-
-    public QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges) {
-        return getUsedChanges(propChanges, false);
-    }
-
-    public abstract QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade);
-    // 2-й параметр - "сверху" есть каскадная сессия, поэтому eventChange'ы надо проверять полностью, а не только на where
-
-    public PropertyChanges getUsedChanges(PropertyChanges propChanges) {
-        return propChanges.filter(getUsedChanges(propChanges.getStruct()));
     }
 
     public String getSID() {
@@ -375,11 +289,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Map<T, T> getIdentityInterfaces() {
         return BaseUtils.toMap(new HashSet<T>(interfaces));
-    }
-
-    // используется если создаваемый WhereBuilder нужен только если задан changed
-    public static WhereBuilder cascadeWhere(WhereBuilder changed) {
-        return changed == null ? null : new WhereBuilder();
     }
 
     // по умолчанию заполняет свойства
@@ -555,10 +464,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
     
     public void prereadCaches() {
-        getClassWhere();
-        getClassWhere(true);
-        if(isFull())
-            getQuery(false, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, new HashMap<T, Expr>()).pack();
     }
 
     protected abstract Collection<Pair<Property<?>, LinkType>> calculateLinks();

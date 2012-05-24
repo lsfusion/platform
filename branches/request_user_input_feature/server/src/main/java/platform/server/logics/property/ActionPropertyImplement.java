@@ -51,12 +51,4 @@ public class ActionPropertyImplement<P extends PropertyInterface, T> {
     public int immutableHashCode() {
         return property.hashCode() * 31 + mapping.hashCode();
     }
-
-    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
-        return mapExpr(joinImplement, false, changes, changedWhere);
-    }
-
-    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        return property.getExpr(join(joinImplement), propClasses, changes, changedWhere);
-    }
 }

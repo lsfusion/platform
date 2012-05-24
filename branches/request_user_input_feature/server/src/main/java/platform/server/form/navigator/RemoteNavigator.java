@@ -208,7 +208,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
             query.properties.put("name", BL.LM.currentUserName.getExpr());
-            objectStream.writeObject(BaseUtils.nvl((String) query.execute(session.sql, session.env).singleValue().get("name"), "(без имени)").trim());
+            objectStream.writeObject(BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim());
 
             session.close();
         } catch (Exception e) {

@@ -15,6 +15,7 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
+import platform.server.data.QueryEnvironment;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
@@ -186,6 +187,10 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
     public RemoteForm createReportForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
         return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, false, false, false));
+    }
+
+    public QueryEnvironment getQueryEnv() {
+        return env.getQueryEnv();
     }
 
     public interface RequestDialog {

@@ -236,7 +236,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             CalcPropertyObjectEntity reportPathProp = node.getGroupList().get(0).reportPathProp;
             if (reportPathProp != null) {
                 CalcPropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
-                String reportPath = (String) propInstance.read(form.session, form);
+                String reportPath = (String) propInstance.read(form);
                 if (reportPath != null) {
                     String resourceName = "/" + getVariableCustomReportName(getReportPrefix(toExcel, groupId) + reportPath.trim());
                     iStream = getClass().getResourceAsStream(resourceName);

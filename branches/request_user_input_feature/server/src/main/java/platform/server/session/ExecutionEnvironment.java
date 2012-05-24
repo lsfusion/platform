@@ -1,9 +1,9 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
+import platform.server.data.QueryEnvironment;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
@@ -31,6 +31,9 @@ public class ExecutionEnvironment {
     public DataSession getSession() {
         return current.getSession();
     }
+    public QueryEnvironment getQueryEnv() {
+        return current.getQueryEnv();
+    }
     public Modifier getModifier() {
         return current.getModifier();
     }
@@ -53,7 +56,7 @@ public class ExecutionEnvironment {
 
     public <P extends PropertyInterface> List<ClientAction> change(DataChanges mapChanges) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>(); // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов, потом изменяем
-        for(Map.Entry<DataProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.read(current.getSession()).entrySet()) {
+        for(Map.Entry<DataProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.read(this).entrySet()) {
             for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
                 getSession().changeProperty(propRow.getKey(), row.getKey(), row.getValue().get("value"), !iterator.hasNext());
@@ -65,14 +68,14 @@ public class ExecutionEnvironment {
 
     public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(getSession()).entrySet())
+        for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(this).entrySet())
             actions.addAll(execute(property, row.getKey(), formEnv, row.getValue().get("value")));
         return actions;
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for(Map<P, DataObject> row : set.executeClasses(getSession()))
+        for(Map<P, DataObject> row : set.executeClasses(this))
             actions.addAll(execute(property, row, formEnv, null));
         return actions;
     }

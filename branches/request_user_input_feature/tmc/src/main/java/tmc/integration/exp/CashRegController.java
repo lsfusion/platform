@@ -44,7 +44,7 @@ public class CashRegController {
 
     public int getCashRegComPort(FormInstance formInstance) {
         try {
-            Integer result = (Integer) LM.cashRegComPort.read(formInstance.session.sql, formInstance, formInstance.session.env, formInstance.instanceFactory.computer.getDataObject());
+            Integer result = (Integer) LM.cashRegComPort.read(formInstance, formInstance.instanceFactory.computer.getDataObject());
             if (result == null)
                 return 0;
             else

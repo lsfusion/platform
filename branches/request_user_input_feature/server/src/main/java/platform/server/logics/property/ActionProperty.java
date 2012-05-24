@@ -69,14 +69,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return getWhereProperty().mapClassWhere(full);
     }
 
-    public QuickSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade) {
-        return getWhereProperty().property.getUsedChanges(propChanges, cascade);
-    }
-
-    public Expr aspectGetExpr(Map<P, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return ActionClass.TRUE.getExpr().and(getWhereProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
-    }
-
     public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
 
     @Override

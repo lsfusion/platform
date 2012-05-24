@@ -61,7 +61,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
         query.and(isExpert.getExpr(key).getWhere());
         
         String xml = "<experts>";
-        OrderedMap<Map<Object,DataObject>, Map<Object,ObjectValue>> result = query.executeClasses(context.getSession());
+        OrderedMap<Map<Object,DataObject>, Map<Object,ObjectValue>> result = query.executeClasses(context);
         for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
             Map<Object, ObjectValue> values = entry.getValue();
             
@@ -86,7 +86,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
             queryCluster.properties.put("nameShort", LM.nameNativeShort.getExpr(context.getModifier(), clusterKey));
             queryCluster.and(LM.inClusterExpert.getExpr(context.getModifier(), clusterKey, expertObj.getExpr()).getWhere());
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultCluster = queryCluster.execute(context.getSession());
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultCluster = queryCluster.execute(context);
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entryCluster : resultCluster.entrySet()) {
                 xml += "    <cluster>" + ((String)BaseUtils.singleValue(entryCluster.getValue())).trim() + "</cluster>\n";
             }
@@ -98,7 +98,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
             queryForesight.properties.put("comment", LM.commentExpertForesight.getExpr(context.getModifier(), expertObj.getExpr(), foresightKey));
             queryForesight.and(LM.inExpertForesight.getExpr(context.getModifier(), expertObj.getExpr(), foresightKey).getWhere());
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultForesight = queryForesight.execute(context.getSession());
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultForesight = queryForesight.execute(context);
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entryForesight : resultForesight.entrySet()) {
                 xml += "    <foresight>\n";
                 xml += "        <id>" + ((String)entryForesight.getValue().get("id")).trim() + "</id>\n";

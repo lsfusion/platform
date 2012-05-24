@@ -130,7 +130,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
         for (ResultField propertyName : propertyMap.keySet()) {
             CalcPropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));
-            query.properties.put(propertyName, propertyMap.get(propertyName).property.getExpr(propertyImplement.mapping));
+            query.properties.put(propertyName, ((LCP<PropertyInterface>)propertyMap.get(propertyName)).property.getExpr(propertyImplement.mapping));
         }
 
         OrderedMap<Map<PropertyInterface, Object>, Map<ResultField, Object>> result = query.execute(sqlSession);

@@ -11,6 +11,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.form.entity.LogFormEntity;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -51,17 +52,16 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         makeUserLoggable(LM, false);
     }
 
+    public Object read(FormInstance form, DataObject... objects) throws SQLException {
+        return property.read(form, getMapValues(objects));
+    }
+
     public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
-        Map<T, DataObject> mapValues = getMapValues(objects);
-        return property.read(session, mapValues, modifier, env);
+        return property.read(session, getMapValues(objects), modifier, env);
     }
 
     public Object read(ExecutionContext context, DataObject... objects) throws SQLException {
-        return read(context.getSession(), context.getModifier(), objects);
-    }
-
-    public Object read(DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
-        return read(session.sql, modifier, session.env, objects);
+        return read(context.getSession().sql, context.getModifier(), context.getQueryEnv(), objects);
     }
 
     public Object read(DataSession session, DataObject... objects) throws SQLException {
@@ -74,11 +74,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException {
-        return readClasses(context.getSession(), context.getModifier(), objects);
-    }
-
-    public ObjectValue readClasses(DataSession session, Modifier modifier, DataObject... objects) throws SQLException {
-        return readClasses(session, modifier, session.env, objects);
+        return readClasses(context.getSession(), context.getModifier(), context.getQueryEnv(), objects);
     }
 
     public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException {

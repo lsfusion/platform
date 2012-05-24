@@ -34,7 +34,7 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
     private Set<Map<ObjectInstance, DataObject>> getObjectGroupKeys(ExecutionContext context) throws SQLException {
         GroupObjectInstance groupObject = context.getGroupObjectInstance();
         Map<ObjectInstance, KeyExpr> groupKeys = groupObject.getMapKeys();
-        return new Query<ObjectInstance, Object>(groupKeys, groupObject.getWhere(groupKeys, context.getModifier())).executeClasses(context.getSession()).keySet();
+        return new Query<ObjectInstance, Object>(groupKeys, groupObject.getWhere(groupKeys, context.getModifier())).executeClasses(context).keySet();
     }
 
     @Override

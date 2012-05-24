@@ -13,7 +13,7 @@ import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyQueryType;
 import platform.server.session.PropertyChanges;
@@ -23,7 +23,7 @@ import java.util.Map;
 @Aspect
 public class WrapComplexityAspect {
 
-    <K extends PropertyInterface> Expr wrapComplexity(Expr expr, Where where, Property<K> property, Map<K, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
+    <K extends PropertyInterface> Expr wrapComplexity(Expr expr, Where where, CalcProperty<K> property, Map<K, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
         Expr wrapExpr = expr;
         if(expr.getComplexity(true) > Settings.instance.getLimitWrapComplexity()) {
             System.out.println("WRAP COMPLEX EXPR " + property + " : " + expr.getComplexity(true));
@@ -39,20 +39,20 @@ public class WrapComplexityAspect {
         return wrapExpr;
     }
 
-    public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, Property<T> property, Map<T, ? extends Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public <T extends PropertyInterface> Expr getJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty<T> property, Map<T, ? extends Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         if(Settings.instance.isDisableWrapComplexity() || !property.isFull()) // если ключей не хватает wrapp'ить нельзя
             return (Expr) thisJoinPoint.proceed();
-        WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
+        WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, propChanges, cascadeWhere}),
                 changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere);
     }
-    @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,boolean,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
+    @Around("execution(* platform.server.logics.property.CalcProperty.getJoinExpr(java.util.Map,boolean,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Map joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         return getJoinExpr(thisJoinPoint, property, joinExprs, propClasses, propChanges, changedWhere);
     }
 
-    public <T extends PropertyInterface> IQuery<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) throws Throwable {
+    public <T extends PropertyInterface> IQuery<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map<T, ? extends Expr> interfaceValues) throws Throwable {
         assert property.isFull();
         IQuery<T, String> query = (IQuery<T, String>) thisJoinPoint.proceed();
         
@@ -77,9 +77,9 @@ public class WrapComplexityAspect {
             return wrappedQuery;
         }
     }
-    @Around("execution(* platform.server.logics.property.Property.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) " +
+    @Around("execution(* platform.server.logics.property.CalcProperty.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) " +
             "&& target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
         return getQuery(thisJoinPoint, property, propClasses, propChanges, queryType, interfaceValues);
     }
 }

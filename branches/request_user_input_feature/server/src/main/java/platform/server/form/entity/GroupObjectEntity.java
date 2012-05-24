@@ -98,10 +98,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         reportPathProp = pool.deserializeObject(inStream);
     }
 
-    public Map<ObjectEntity, PropertyObjectEntity> isParent = null;
+    public Map<ObjectEntity, CalcPropertyObjectEntity> isParent = null;
 
-    public void setIsParents(PropertyObjectEntity... properties) {
-        isParent = new HashMap<ObjectEntity, PropertyObjectEntity>();
+    public void setIsParents(CalcPropertyObjectEntity... properties) {
+        isParent = new HashMap<ObjectEntity, CalcPropertyObjectEntity>();
         for (int i = 0; i < objects.size(); i++) {
             isParent.put(objects.get(i), properties[i]);
         }

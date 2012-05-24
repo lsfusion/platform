@@ -2,7 +2,7 @@ package platform.server.form.instance;
 
 public interface PropertyReaderInstance {
 
-    public PropertyObjectInstance getPropertyObjectInstance();
+    public CalcPropertyObjectInstance getPropertyObjectInstance();
 
     public byte getTypeID();
 

@@ -40,10 +40,10 @@ public class InstanceFactory {
                 objects.add(getInstance(object));
             }
 
-            Map<ObjectInstance, PropertyObjectInstance> parentInstances = null;
+            Map<ObjectInstance, CalcPropertyObjectInstance> parentInstances = null;
             if(entity.isParent !=null) {
-                parentInstances = new HashMap<ObjectInstance, PropertyObjectInstance>();
-                for(Map.Entry<ObjectEntity,PropertyObjectEntity> parentObject : entity.isParent.entrySet())
+                parentInstances = new HashMap<ObjectInstance, CalcPropertyObjectInstance>();
+                for(Map.Entry<ObjectEntity,CalcPropertyObjectEntity> parentObject : entity.isParent.entrySet())
                     parentInstances.put(getInstance(parentObject.getKey()), getInstance(parentObject.getValue()));
             }
 

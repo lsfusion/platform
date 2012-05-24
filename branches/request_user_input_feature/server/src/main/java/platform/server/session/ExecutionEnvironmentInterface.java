@@ -4,6 +4,7 @@ import platform.interop.action.ClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
+import platform.server.data.QueryEnvironment;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
@@ -23,6 +24,8 @@ import java.util.Map;
 public interface ExecutionEnvironmentInterface {
 
     DataSession getSession();
+
+    QueryEnvironment getQueryEnv();
 
     Modifier getModifier();
 

@@ -55,9 +55,8 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
         if(notNull) {
             Map<CalcPropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = BaseUtils.reverse(getMapInterfaces());
 
-            DataSession session = env.getSession();
-            for(Map<Interface<T>, DataObject> row : set.executeClasses(session)) {
-                DataObject aggrObject = session.addObject();
+            for(Map<Interface<T>, DataObject> row : set.executeClasses(env)) {
+                DataObject aggrObject = env.getSession().addObject();
 
                 Map<CalcPropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);
                 Map<T, DataObject> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, aggrObject), // aggrInterface = aggrObject, остальные из row'а читаем

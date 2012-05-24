@@ -68,8 +68,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         this.propertyForeground = propertyForeground;
     }
 
-    public PropertyObjectInstance getPropertyObjectInstance() {
-        return propertyObject;
+    public CalcPropertyObjectInstance getPropertyObjectInstance() {
+        return getDrawInstance();
+    }
+
+    public CalcPropertyObjectInstance<?> getDrawInstance() {
+        return propertyObject.getDrawProperty();
     }
 
     public byte getTypeID() {
@@ -89,7 +93,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class CaptionReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyCaption;
         }
 
@@ -108,7 +112,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class FooterReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyFooter;
         }
 
@@ -127,7 +131,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class BackgroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyBackground;
         }
 
@@ -146,7 +150,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public class ForegroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyForeground;
         }
 

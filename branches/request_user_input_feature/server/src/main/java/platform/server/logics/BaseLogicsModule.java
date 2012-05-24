@@ -208,7 +208,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP changeUser;
     protected LCP isServerRestarting;
     public LCP<PropertyInterface> barcode;
-    public LCP barcodeToObject;
+    public LCP<PropertyInterface> barcodeToObject;
     public LCP barcodeObjectName;
     public LCP equalsObjectBarcode;
     public LCP barcodePrefix;
@@ -261,7 +261,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP connectionUser;
     public LCP userNameConnection;
     public LCP connectionComputer;
-    public LCP connectionCurrentStatus;
+    public LCP<PropertyInterface> connectionCurrentStatus;
     public LCP connectionFormCount;
     public LCP connectionConnectTime;
     public LCP connectionDisconnectTime;

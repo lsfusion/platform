@@ -357,7 +357,7 @@ public class RomanLogicsModule extends LogicsModule {
     LCP sidCustomCategory4;
     LCP sidCustomCategory6;
     LCP sidCustomCategory9;
-    LCP sidCustomCategory10;
+    LCP<PropertyInterface> sidCustomCategory10;
     LCP certificatedCustomCategory10;
     LCP sidCustomCategoryOrigin;
     LCP numberIdCustomCategory10;
@@ -1227,7 +1227,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP logFreight;
 
     ConcreteCustomClass pricat;
-    LCP barcodePricat;
+    LCP<PropertyInterface> barcodePricat;
     LCP articleNumberPricat;
     LCP customCategoryOriginalPricat;
     LCP themeCodePricat;

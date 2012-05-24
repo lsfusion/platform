@@ -4,16 +4,11 @@ import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ActionPropertyMapImplement;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
-import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,5 +29,9 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
 
     public List<ClientAction> execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw) throws SQLException {
         return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, propertyDraw), requestValue);
+    }
+
+    public CalcPropertyObjectInstance<?> getDrawProperty() {
+        return property.getWhereProperty().mapObjects(mapping);
     }
 }

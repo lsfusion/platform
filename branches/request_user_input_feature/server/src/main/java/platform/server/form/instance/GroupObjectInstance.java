@@ -46,8 +46,8 @@ import static platform.interop.ClassViewType.HIDE;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
-    public final PropertyObjectInstance propertyBackground;
-    public final PropertyObjectInstance propertyForeground;
+    public final CalcPropertyObjectInstance propertyBackground;
+    public final CalcPropertyObjectInstance propertyForeground;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
@@ -91,7 +91,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, Map<ObjectInstance, PropertyObjectInstance> parent) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, Map<ObjectInstance, CalcPropertyObjectInstance> parent) {
 
         this.entity = entity;
 
@@ -392,7 +392,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return result;
     }
 
-    public final Map<ObjectInstance, PropertyObjectInstance> parent;
+    public final Map<ObjectInstance, CalcPropertyObjectInstance> parent;
 
     // поиски по свойствам\объектам
     public SeekObjects userSeeks = null;
@@ -455,7 +455,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             expandWhere = Where.TRUE;
 
         if(parent!=null) {
-            for(Map.Entry<ObjectInstance, PropertyObjectInstance> parentEntry : parent.entrySet())
+            for(Map.Entry<ObjectInstance, CalcPropertyObjectInstance> parentEntry : parent.entrySet())
                 expandExprs.put(parentEntry.getKey(), parentEntry.getValue().getExpr(mapKeys, modifier));
 
             Where nullWhere = Where.FALSE;
@@ -830,7 +830,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyBackground;
         }
 
@@ -849,7 +849,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public class RowForegroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyForeground;
         }
 

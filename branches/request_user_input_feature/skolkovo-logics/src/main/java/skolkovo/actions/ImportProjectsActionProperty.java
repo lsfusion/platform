@@ -25,6 +25,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
@@ -953,7 +954,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
     }
 
     public Map<String, Timestamp> importProjectsFromXML(PrivateInfo pInfo, String host) throws IOException, SQLException {
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = null;
+        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = null;
         List<Element> elementList = new ArrayList<Element>();
         try {
             URL url = new URL(host + "&show=projects&limit=2000");
@@ -980,9 +981,9 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
             pInfo.responseContents = null;
 
-            LCP isProject = LM.is(LM.project);
-            Map<Object, KeyExpr> keys = isProject.getMapKeys();
-            Query<Object, Object> query = new Query<Object, Object>(keys);
+            LCP<PropertyInterface> isProject = LM.is(LM.project);
+            Map<PropertyInterface, KeyExpr> keys = isProject.getMapKeys();
+            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
             query.properties.put("id", LM.sidProject.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("email", LM.emailClaimerProject.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
@@ -1057,7 +1058,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
         return calendar.getTime();
     }
 
-    public Map<String, Timestamp> makeImportList(PrivateInfo pInfo, OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elementList) {
+    public Map<String, Timestamp> makeImportList(PrivateInfo pInfo, OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elementList) {
         Map<String, Timestamp> projectList = new LinkedHashMap<String, Timestamp>();
         if (elementList != null) {
             Timestamp currentProjectDate;
@@ -1124,8 +1125,8 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                 " <- " + newName + "\n\tdate: " + oldDate + " <- " + newDate;
     }
 
-    public void fillSids(PrivateInfo pInfo, OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements) throws SQLException {
-        for (Map<Object, Object> key : data.keySet()) {
+    public void fillSids(PrivateInfo pInfo, OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elements) throws SQLException {
+        for (Map<PropertyInterface, Object> key : data.keySet()) {
             Map<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
                 Object email = project.get("email");
@@ -1163,7 +1164,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
         return null;
     }
 
-    public int getEmailRepeatings(OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
+    public int getEmailRepeatings(OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
         int repeatings = 0;
         for (Map<Object, Object> project : data.values()) {
             if (project.get("email") != null && project.get("email").toString().trim().toLowerCase().equals(email.toLowerCase())) {
@@ -1195,7 +1196,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
         return null;
     }
 
-    public void importProject(PrivateInfo pInfo, InputStream inputStream, String projectId, Timestamp currentProjectDate, ExecutionContext context) throws SQLException {
+    public void importProject(PrivateInfo pInfo, InputStream inputStream, String projectId, Timestamp currentProjectDate, ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         List<List<Object>> data = new ArrayList<List<Object>>();
         List<List<Object>> dataCluster = new ArrayList<List<Object>>();
         List<List<Object>> dataPatent = new ArrayList<List<Object>>();
@@ -1322,13 +1323,13 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     row.add(node.getChildText("emailProject"));
 
 
-                    LCP isCluster = LM.is(LM.cluster);
-                    Map<Object, KeyExpr> keys = isCluster.getMapKeys();
-                    Query<Object, Object> query = new Query<Object, Object>(keys);
+                    LCP<PropertyInterface> isCluster = LM.is(LM.cluster);
+                    Map<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
+                    Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
                     query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
                     query.properties.put("nameNativeShort", LM.nameNativeShort.getExpr(BaseUtils.singleValue(keys)));
                     query.and(isCluster.property.getExpr(keys).getWhere());
-                    OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
+                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
 
                     boolean fillOtherCluster = false;
                     Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
@@ -1664,13 +1665,13 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     row.add(node.getChildText("emailProject"));
 
 
-                    LCP isCluster = LM.is(LM.cluster);
-                    Map<Object, KeyExpr> keys = isCluster.getMapKeys();
-                    Query<Object, Object> query = new Query<Object, Object>(keys);
+                    LCP<PropertyInterface> isCluster = LM.is(LM.cluster);
+                    Map<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
+                    Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
                     query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
                     query.properties.put("nameNativeShort", LM.nameNativeShort.getExpr(BaseUtils.singleValue(keys)));
                     query.and(isCluster.property.getExpr(keys).getWhere());
-                    OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
+                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
 
                     boolean fillOtherCluster = false;
                     Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;

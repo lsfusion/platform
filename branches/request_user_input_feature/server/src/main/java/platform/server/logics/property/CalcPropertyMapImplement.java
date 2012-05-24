@@ -7,6 +7,11 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.CalcPropertyObjectEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.instance.CalcPropertyObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
@@ -105,19 +110,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public Object read(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {
-        return read(context.getSession(), interfaceValues, context.getModifier());
-    }
-
-    private Object read(DataSession session, Map<T, DataObject> interfaceValues, Modifier modifier) throws SQLException {
-        return property.read(session.sql, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
+        return property.read(context.getSession().sql, BaseUtils.join(mapping, interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
     public ObjectValue readClasses(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {
-        return readClasses(context.getSession(), interfaceValues, context.getModifier());
-    }
-
-    private ObjectValue readClasses(DataSession session, Map<T, DataObject> interfaceValues, Modifier modifier) throws SQLException {
-        return property.readClasses(session, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
+        return property.readClasses(context.getSession(), BaseUtils.join(mapping, interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
     public Collection<DataProperty> mapChangeProps() {
@@ -147,5 +144,9 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
                 result.put(entry.getValue(), commonClass);
         }
         return result;
+    }
+
+    public CalcPropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
+        return new CalcPropertyObjectInstance<P>(property, BaseUtils.join(mapping, mapObjects));
     }
 }

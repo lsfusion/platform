@@ -182,15 +182,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return null;
     }
 
-    public OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> executeClasses(DataSession session) throws SQLException {
-        return executeClasses(session.sql, session.env, session.baseClass);
-    }
-    public OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
+    public OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             return new OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>>(mapValues, Collections.singletonMap("value", exprValue));
 
-        return getQuery().executeClasses(session, env, baseClass);
+        return getQuery().executeClasses(env);
     }
 
     @IdentityLazy

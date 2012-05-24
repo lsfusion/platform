@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
@@ -33,6 +34,7 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
@@ -53,11 +55,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
     public static final CalcPropertyMapImplement isFullClient = DerivedProperty.createLogical(true);
-    public static final CalcPropertyMapImplement isDebug = DerivedProperty.createLogical(false);
-    public static final CalcPropertyMapImplement isDialog = DerivedProperty.createLogical(false);
-    public static final CalcPropertyMapImplement isModal = DerivedProperty.createLogical(false);
+    public static final CalcPropertyMapImplement isDebug = DerivedProperty.createFalse();
+    public static final CalcPropertyMapImplement isDialog = DerivedProperty.createFalse();
+    public static final CalcPropertyMapImplement isModal = DerivedProperty.createFalse();
     public static final CalcPropertyMapImplement isNewSession = DerivedProperty.createLogical(true);
-    public static final CalcPropertyMapImplement isDataChanged = DerivedProperty.createLogical(false);
 
     public static final PrintActionProperty printActionProperty = new PrintActionProperty();
     public static final EditActionProperty editActionProperty = new EditActionProperty();
@@ -122,13 +123,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         xlsActionPropertyDraw = addFormButton(xlsActionProperty, null, isFullClient, isDialog, false);
         nullActionPropertyDraw = addFormButton(nullActionProperty, null, isDialog);
         refreshActionPropertyDraw = addPropertyDraw(refreshActionProperty);
-        applyActionPropertyDraw = addFormButton(applyActionProperty, isDataChanged, isNewSession);
-        cancelActionPropertyDraw = addFormButton(cancelActionProperty, isDataChanged, isNewSession);
+        applyActionPropertyDraw = addFormButton(applyActionProperty, DataSession.isDataChanged.getImplement(), isNewSession);
+        cancelActionPropertyDraw = addFormButton(cancelActionProperty, DataSession.isDataChanged.getImplement(), isNewSession);
         okActionPropertyDraw= addFormButton(okActionProperty, null, isModal);
         closeActionPropertyDraw = addFormButton(closeActionProperty, null, isModal);
 
         applyActionPropertyDraw.propertyBackground = addPropertyObject(
-                new LCP(createAnd(new ArrayList(), createStatic(Color.green, ColorClass.instance), isDataChanged).property)
+                new LCP(createAnd(new ArrayList<ClassPropertyInterface>(), DerivedProperty.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance), DataSession.isDataChanged.getImplement()).property)
         );
     }
 

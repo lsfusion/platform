@@ -124,6 +124,10 @@ public class IncrementApply extends OverrideModifier implements ExecutionEnviron
         return session;
     }
 
+    public QueryEnvironment getQueryEnv() {
+        return session.env;
+    }
+
     public Modifier getModifier() {
         return this;
     }

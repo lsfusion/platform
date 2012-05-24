@@ -19,6 +19,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
@@ -123,11 +124,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {
                 List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
-                LCP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
+                LCP<PropertyInterface> isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
 
-                Map<Object, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
+                Map<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
                 KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
-                Query<Object, Object> cashRegisterQuery = new Query<Object, Object>(cashRegisterKeys);
+                Query<PropertyInterface, Object> cashRegisterQuery = new Query<PropertyInterface, Object>(cashRegisterKeys);
 
                 cashRegisterQuery.properties.put("directoryCashRegister", retailLM.getLCPByName("directoryCashRegister").getExpr(cashRegisterKey));
                 cashRegisterQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(cashRegisterKey));
@@ -141,9 +142,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 if (snapshotTransaction)
                     cashRegisterQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), cashRegisterKey).getWhere());
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
+                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
-                for (Map.Entry<Map<Object, Object>, Map<Object, Object>> values : cashRegisterResult.entrySet()) {
+                for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> values : cashRegisterResult.entrySet()) {
 
                     String directoryCashRegister = (String) values.getValue().get("directoryCashRegister");
                     String portMachinery = (String) values.getValue().get("portMachinery");
@@ -161,11 +162,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
                 String directory = (String) retailLM.getLCPByName("directoryGroupScales").read(session, groupObject);
 
-                LCP isScales = LM.is(retailLM.getClassByName("scales"));
+                LCP<PropertyInterface> isScales = LM.is(retailLM.getClassByName("scales"));
 
-                Map<Object, KeyExpr> scalesKeys = isScales.getMapKeys();
+                Map<PropertyInterface, KeyExpr> scalesKeys = isScales.getMapKeys();
                 KeyExpr scalesKey = BaseUtils.singleValue(scalesKeys);
-                Query<Object, Object> scalesQuery = new Query<Object, Object>(scalesKeys);
+                Query<PropertyInterface, Object> scalesQuery = new Query<PropertyInterface, Object>(scalesKeys);
 
                 scalesQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(scalesKey));
                 scalesQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(scalesKey));
@@ -176,7 +177,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 if (snapshotTransaction)
                     scalesQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
+                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
 
                 for (Map<Object, Object> values : scalesResult.values()) {
                     String portMachinery = (String) values.get("portMachinery");
@@ -191,11 +192,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("checkPriceTransaction"))) {
                 List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
-                LCP isCheck = LM.is(retailLM.getClassByName("check"));
+                LCP<PropertyInterface> isCheck = LM.is(retailLM.getClassByName("check"));
 
-                Map<Object, KeyExpr> checkKeys = isCheck.getMapKeys();
+                Map<PropertyInterface, KeyExpr> checkKeys = isCheck.getMapKeys();
                 KeyExpr checkKey = BaseUtils.singleValue(checkKeys);
-                Query<Object, Object> checkQuery = new Query<Object, Object>(checkKeys);
+                Query<PropertyInterface, Object> checkQuery = new Query<PropertyInterface, Object>(checkKeys);
 
                 checkQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(checkKey));
                 checkQuery.properties.put("nppMachinery", retailLM.getLCPByName("nppMachinery").getExpr(checkKey));
@@ -207,7 +208,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 if (snapshotTransaction)
                     checkQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), checkKey).getWhere());
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> checkResult = checkQuery.execute(session.sql);
+                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> checkResult = checkQuery.execute(session.sql);
 
                 for (Map<Object, Object> values : checkResult.values()) {
                     String portMachinery = (String) values.get("portMachinery");
@@ -223,11 +224,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("terminalPriceTransaction"))) {
                 List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
-                LCP isTerminal = LM.is(retailLM.getClassByName("terminal"));
+                LCP<PropertyInterface> isTerminal = LM.is(retailLM.getClassByName("terminal"));
 
-                Map<Object, KeyExpr> terminalKeys = isTerminal.getMapKeys();
+                Map<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
                 KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
-                Query<Object, Object> terminalQuery = new Query<Object, Object>(terminalKeys);
+                Query<PropertyInterface, Object> terminalQuery = new Query<PropertyInterface, Object>(terminalKeys);
 
                 terminalQuery.properties.put("directoryTerminal", retailLM.getLCPByName("directoryTerminal").getExpr(terminalKey));
                 terminalQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(terminalKey));
@@ -237,7 +238,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
                 terminalQuery.and(retailLM.getLCPByName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
+                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
                 for (Map<Object, Object> values : terminalResult.values()) {
                     String directory = (String) values.get("directoryTerminal");
@@ -278,11 +279,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             DataObject groupMachineryObject = (DataObject) groupMachinery[0];
             Integer roundSalesGroupMachinery = (Integer) groupMachinery[1];
 
-            LCP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
+            LCP<PropertyInterface> isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
 
-            Map<Object, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
+            Map<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
             KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
-            Query<Object, Object> cashRegisterQuery = new Query<Object, Object>(cashRegisterKeys);
+            Query<PropertyInterface, Object> cashRegisterQuery = new Query<PropertyInterface, Object>(cashRegisterKeys);
 
             cashRegisterQuery.properties.put("directoryCashRegister", retailLM.getLCPByName("directoryCashRegister").getExpr(cashRegisterKey));
             cashRegisterQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(cashRegisterKey));
@@ -294,9 +295,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
             cashRegisterQuery.and(retailLM.getLCPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> values : cashRegisterResult.entrySet()) {
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> values : cashRegisterResult.entrySet()) {
 
                 String directoryCashRegister = (String) values.getValue().get("directoryCashRegister");
                 String portMachinery = (String) values.getValue().get("portMachinery");
@@ -331,11 +332,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         for (Object groupMachinery : groupMachineryObjects) {
             DataObject groupMachineryObject = (DataObject) groupMachinery;
 
-            LCP isTerminal = LM.is(retailLM.getClassByName("terminal"));
+            LCP<PropertyInterface> isTerminal = LM.is(retailLM.getClassByName("terminal"));
 
-            Map<Object, KeyExpr> terminalKeys = isTerminal.getMapKeys();
+            Map<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
             KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
-            Query<Object, Object> terminalQuery = new Query<Object, Object>(terminalKeys);
+            Query<PropertyInterface, Object> terminalQuery = new Query<PropertyInterface, Object>(terminalKeys);
 
             terminalQuery.properties.put("directoryTerminal", retailLM.getLCPByName("directoryTerminal").getExpr(terminalKey));
             terminalQuery.properties.put("portMachinery", retailLM.getLCPByName("portMachinery").getExpr(terminalKey));
@@ -346,9 +347,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
             terminalQuery.and(retailLM.getLCPByName("groupTerminalTerminal").getExpr(terminalKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> values : terminalResult.entrySet()) {
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> values : terminalResult.entrySet()) {
 
                 String directoryTerminal = (String) values.getValue().get("directoryTerminal");
                 String portMachinery = (String) values.getValue().get("portMachinery");
@@ -366,42 +367,42 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         DataSession session = createSession();
 
         List<LegalEntityInfo> legalEntityInfoList = new ArrayList<LegalEntityInfo>();
-        LCP isSupplier = LM.is(retailLM.getClassByName("supplier"));
+        LCP<PropertyInterface> isSupplier = LM.is(retailLM.getClassByName("supplier"));
 
-        Map<Object, KeyExpr> supplierKeys = isSupplier.getMapKeys();
+        Map<PropertyInterface, KeyExpr> supplierKeys = isSupplier.getMapKeys();
         KeyExpr supplierKey = BaseUtils.singleValue(supplierKeys);
-        Query<Object, Object> supplierQuery = new Query<Object, Object>(supplierKeys);
+        Query<PropertyInterface, Object> supplierQuery = new Query<PropertyInterface, Object>(supplierKeys);
 
         supplierQuery.properties.put("name", retailLM.baseLM.name.getExpr(supplierKey));
         supplierQuery.and(isSupplier.property.getExpr(supplierKeys).getWhere());
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> supplierResult = supplierQuery.execute(session.sql);
+        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> supplierResult = supplierQuery.execute(session.sql);
         try {
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : supplierResult.entrySet()) {
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : supplierResult.entrySet()) {
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
                 DataObject terminalHandbookTypeObject = ((StaticCustomClass) retailLM.findClassByCompoundName("terminalHandbookType")).getDataObject("supplier");
-                String type = (String) retailLM.getLCPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
+                String type = (String) retailLM.getLCPByName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-        LCP isCustomer = LM.is(retailLM.getClassByName("customer"));
+        LCP<PropertyInterface> isCustomer = LM.is(retailLM.getClassByName("customer"));
 
-        Map<Object, KeyExpr> customerKeys = isCustomer.getMapKeys();
+        Map<PropertyInterface, KeyExpr> customerKeys = isCustomer.getMapKeys();
         KeyExpr customerKey = BaseUtils.singleValue(customerKeys);
-        Query<Object, Object> customerQuery = new Query<Object, Object>(customerKeys);
+        Query<PropertyInterface, Object> customerQuery = new Query<PropertyInterface, Object>(customerKeys);
 
         customerQuery.properties.put("name", retailLM.baseLM.name.getExpr(customerKey));
         customerQuery.and(isCustomer.property.getExpr(customerKeys).getWhere());
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> customerResult = customerQuery.execute(session.sql);
+        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> customerResult = customerQuery.execute(session.sql);
         try {
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : customerResult.entrySet()) {
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : customerResult.entrySet()) {
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
                 DataObject terminalHandbookTypeObject = ((StaticCustomClass) retailLM.findClassByCompoundName("terminalHandbookType")).getDataObject("customer");
-                String type = (String) retailLM.getLCPByName("idTerminalHandbookType").read(session, session.modifier, terminalHandbookTypeObject);
+                String type = (String) retailLM.getLCPByName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -409,11 +410,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         }
 
         List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList = new ArrayList<TerminalDocumentTypeInfo>();
-        LCP isTerminalDocumentType = LM.is(retailLM.getClassByName("terminalDocumentType"));
+        LCP<PropertyInterface> isTerminalDocumentType = LM.is(retailLM.getClassByName("terminalDocumentType"));
 
-        Map<Object, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
+        Map<PropertyInterface, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
         KeyExpr terminalDocumentTypeKey = BaseUtils.singleValue(terminalDocumentTypeKeys);
-        Query<Object, Object> terminalDocumentTypeQuery = new Query<Object, Object>(terminalDocumentTypeKeys);
+        Query<PropertyInterface, Object> terminalDocumentTypeQuery = new Query<PropertyInterface, Object>(terminalDocumentTypeKeys);
         terminalDocumentTypeQuery.properties.put("idTerminalDocumentType", retailLM.getLCPByName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
         terminalDocumentTypeQuery.properties.put("nameTerminalDocumentType", retailLM.getLCPByName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
         terminalDocumentTypeQuery.properties.put("nameInHandbook1TerminalDocumentType", retailLM.getLCPByName("nameInHandbook1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
@@ -422,7 +423,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         terminalDocumentTypeQuery.properties.put("idTerminalHandbookType2TerminalDocumentType", retailLM.getLCPByName("idTerminalHandbookType2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
         terminalDocumentTypeQuery.and(isTerminalDocumentType.property.getExpr(terminalDocumentTypeKeys).getWhere());
 
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
+        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
 
         for (Map<Object, Object> values : terminalDocumentTypeResult.values()) {
             String id = (String) values.get("idTerminalDocumentType");
@@ -588,7 +589,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             message = message.substring(0, message.length() - 2);
 
             DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
-            Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+            Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, new DataObject(equipmentServer, StringClass.get(20)));
             retailLM.getLCPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
             retailLM.getLCPByName("dataEquipmentServerLog").change(message, session, logObject);
             retailLM.getLCPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
@@ -686,7 +687,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             String message = "Загружено записей: " + dataTerminalDocument.size();
 
             DataObject logObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerLog"));
-            Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equServerID, StringClass.get(20)));
+            Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, new DataObject(equServerID, StringClass.get(20)));
             retailLM.getLCPByName("equipmentServerEquipmentServerLog").change(equipmentServerObject, session, logObject);
             retailLM.getLCPByName("dataEquipmentServerLog").change(message, session, logObject);
             retailLM.getLCPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
@@ -722,7 +723,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             RemoteException, SQLException {
         DataSession session = createSession();
         DataObject errorObject = session.addObject((ConcreteCustomClass) retailLM.getClassByName("equipmentServerError"));
-        Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
+        Object equipmentServerObject = retailLM.getLCPByName("sidToEquipmentServer").read(session, new DataObject(equipmentServer, StringClass.get(20)));
         retailLM.getLCPByName("equipmentServerEquipmentServerError").change(equipmentServerObject, session, errorObject);
         retailLM.getLCPByName("dataEquipmentServerError").change(exception.toString(), session, errorObject);
         OutputStream os = new ByteArrayOutputStream();
@@ -737,8 +738,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     public EquipmentServerSettings readEquipmentServerSettings(String equipmentServer) throws SQLException {
         DataSession session = createSession();
-        Integer equipmentServerID = (Integer) retailLM.getLCPByName("sidToEquipmentServer").read(session, session.modifier, new DataObject(equipmentServer, StringClass.get(20)));
-        Integer delay = (Integer) retailLM.getLCPByName("delayEquipmentServer").read(session, session.modifier, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
+        Integer equipmentServerID = (Integer) retailLM.getLCPByName("sidToEquipmentServer").read(session, new DataObject(equipmentServer, StringClass.get(20)));
+        Integer delay = (Integer) retailLM.getLCPByName("delayEquipmentServer").read(session, new DataObject(equipmentServerID, (ConcreteClass) retailLM.getClassByName("equipmentServer")));
         return new EquipmentServerSettings(delay);
     }
 

@@ -6,8 +6,6 @@ import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -62,7 +60,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         Set<Map<I, DataObject>> rows;
         RECURSIVE:
         do {
-            rows = readRows(context.getSession(), context.getKeys(), context.getModifier());
+            rows = readRows(context);
             if (!rows.isEmpty()) {
                 execElse = false;
             }
@@ -84,15 +82,15 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return result;
     }
 
-    private Set<Map<I, DataObject>> readRows(DataSession session, Map<PropertyInterface, DataObject> keys, Modifier modifier) throws SQLException {
-        Query<I, CalcPropertyInterfaceImplement<I>> query = new Query<I, CalcPropertyInterfaceImplement<I>>(innerInterfaces, crossJoin(mapInterfaces, keys));
+    private Set<Map<I, DataObject>> readRows(ExecutionContext<PropertyInterface> context) throws SQLException {
+        Query<I, CalcPropertyInterfaceImplement<I>> query = new Query<I, CalcPropertyInterfaceImplement<I>>(innerInterfaces, crossJoin(mapInterfaces, context.getKeys()));
         Map<I,Expr> mapExprs = query.getMapExprs();
 
-        query.and(ifProp.mapExpr(mapExprs, modifier).getWhere());
+        query.and(ifProp.mapExpr(mapExprs, context.getModifier()).getWhere());
         for (CalcPropertyInterfaceImplement<I> order : orders.keySet()) {
-            query.properties.put(order, order.mapExpr(mapExprs, modifier));
+            query.properties.put(order, order.mapExpr(mapExprs, context.getModifier()));
         }
-        return query.executeClasses(session, orders).keySet();
+        return query.executeClasses(context, orders).keySet();
     }
 
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {

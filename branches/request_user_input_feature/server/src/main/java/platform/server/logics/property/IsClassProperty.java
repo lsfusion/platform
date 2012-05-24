@@ -109,9 +109,10 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     @Override
     protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         ValueClass valueClass = getInterfaceClass();
-        if(valueClass instanceof ConcreteObjectClass)
-            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = set.executeClasses(env.getSession()).iterator(); iterator.hasNext(); )
+        if(valueClass instanceof ConcreteObjectClass) {
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = set.executeClasses(env).iterator(); iterator.hasNext(); )
                 env.changeClass(null, BaseUtils.singleValue(iterator.next()), notNull ? (ConcreteObjectClass) valueClass : env.getSession().baseClass.unknown, !iterator.hasNext());
+        }
     }
 
     public static Set<CalcProperty> getParentProps(CustomClass customClass) {

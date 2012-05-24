@@ -98,7 +98,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             query.and(table.join(BaseUtils.singleValue(mapKeys)).getWhere());
             query.properties.put("value", BL.VEDLM.baseLM.barcodeToObject.property.getExpr(mapKeys));
 
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session);
 
             for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> row : result.entrySet()) {
 

@@ -88,7 +88,7 @@ public abstract class DataTable extends GlobalTable {
                 notNullQuery.getWhere().or(exprQuant.getWhere());
                 notNullQuery.properties.put(property, exprQuant);
             }
-            Map<Map<Object, Object>, Map<Object, Object>> notNullResult = notNullQuery.execute(session.sql, session.env);
+            Map<Map<Object, Object>, Map<Object, Object>> notNullResult = notNullQuery.execute(session);
             if (notNullResult.size() != 0){
                 Map<Object, Object> notNulls = BaseUtils.singleValue(notNullResult);
                 int sparseColumns = 0;

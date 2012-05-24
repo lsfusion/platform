@@ -1,7 +1,6 @@
 package platform.server.data.query;
 
 import platform.base.*;
-import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
@@ -21,16 +20,17 @@ import platform.server.data.translator.*;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.filterKeys;
-import static platform.base.BaseUtils.immutableCast;
-import static platform.base.BaseUtils.join;
+import static platform.base.BaseUtils.*;
 
 // запрос JoinSelect
 public class Query<K,V> extends IQuery<K,V> {
@@ -318,11 +318,32 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(DataSession session) throws SQLException {
-        return execute(session.sql, session.env);
+        return execute(session, new OrderedMap<V, Boolean>(), 0);
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(ExecutionContext context) throws SQLException {
+        return execute(context.getEnv());
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(ExecutionEnvironment env) throws SQLException {
+        DataSession session = env.getSession();
+        return execute(session.sql, env.getQueryEnv());
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(FormInstance form) throws SQLException {
+        return execute(form, new OrderedMap<V, Boolean>(), 0);
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException {
         return execute(session,new OrderedMap<V, Boolean>(),0, env);
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(DataSession session, OrderedMap<V, Boolean> orders, int selectTop) throws SQLException {
+        return execute(session.sql, orders,selectTop, session.env);
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(FormInstance form, OrderedMap<V, Boolean> orders, int selectTop) throws SQLException {
+        return execute(form.session.sql, orders, selectTop, form.getQueryEnv());
     }
 
     @Message("message.query.execute")
@@ -331,15 +352,11 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass, QueryEnvironment.empty);
+        return executeClasses(session, QueryEnvironment.empty, baseClass);
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session) throws SQLException {
-        return executeClasses(session, session.baseClass);
-    }
-
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, BaseClass baseClass) throws SQLException {
-        return executeClasses(session.sql, session.env, baseClass);
+        return executeClasses(session.sql, session.env, session.baseClass);
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
@@ -360,11 +377,21 @@ public class Query<K,V> extends IQuery<K,V> {
             result.put(orderRow.getKey(), BaseUtils.filterKeys(orderRow.getValue(), properties.keySet()));
         return result;
     }
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, OrderedMap<? extends V, Boolean> orders) throws SQLException {
-        return executeClasses(session, orders, 0);
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(ExecutionContext context) throws SQLException {
+        return executeClasses(context, new OrderedMap<V, Boolean>());
     }
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, OrderedMap<? extends V, Boolean> orders, int orderTop) throws SQLException {
-        return executeClasses(session.sql, orders, orderTop, session.baseClass, session.env);
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(ExecutionContext context, OrderedMap<? extends V, Boolean> orders) throws SQLException {
+        return executeClasses(context.getEnv(), orders);
+    }
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
+        return executeClasses(env, new OrderedMap<V, Boolean>());
+    }
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(ExecutionEnvironment env, OrderedMap<? extends V, Boolean> orders) throws SQLException {
+        DataSession session = env.getSession();
+        return executeClasses(session.sql, orders, 0, session.baseClass, env.getQueryEnv());
+    }
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(FormInstance formInstance, BaseClass baseClass) throws SQLException {
+        return executeClasses(formInstance.session.sql, new OrderedMap<V, Boolean>(), 0, formInstance.session.baseClass, formInstance.getQueryEnv());
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, OrderedMap<? extends V, Boolean> orders, int selectTop, BaseClass baseClass, QueryEnvironment env) throws SQLException {
@@ -403,9 +430,9 @@ public class Query<K,V> extends IQuery<K,V> {
         compile(session.syntax).outSelect(session, env);
     }
 
-    public void outClassesSelect(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
+    public void outClassesSelect(SQLSession session, BaseClass baseClass) throws SQLException {
         // выведем на экран
-        OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = executeClasses(session, env, baseClass);
+        OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = executeClasses(session, baseClass);
 
         for(Map.Entry<Map<K, DataObject>, Map<V, ObjectValue>> rowMap : result.entrySet()) {
             for(Map.Entry<K, DataObject> key : rowMap.getKey().entrySet()) {

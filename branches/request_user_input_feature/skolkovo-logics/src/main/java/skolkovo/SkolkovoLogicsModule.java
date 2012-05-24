@@ -43,6 +43,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -5512,16 +5513,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
             if (codeForesightObject != null)
                 codeForesight = codeForesightObject.toString().trim();
 
-            LCP isForesight = is(foresight);
-            Map<Object, KeyExpr> keys = isForesight.getMapKeys();
+            LCP<PropertyInterface> isForesight = is(foresight);
+            Map<PropertyInterface, KeyExpr> keys = isForesight.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
-            Query<Object, Object> query = new Query<Object, Object>(keys);
+            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
             query.properties.put("sidForesight", sidForesight.getExpr(BaseUtils.singleValue(keys)));
             query.and(isForesight.property.getExpr(keys).getWhere());
             query.and(clusterForesight.getExpr(context.getModifier(), key).compare(clusterObject.getExpr(), Compare.EQUALS));
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> rows : result.entrySet()) {
                 DataObject foresightNewObject = new DataObject(rows.getKey().get(((OrderedMap) keys).getKey(0)), foresight);
                 if (rows.getValue().get("sidForesight").toString().startsWith(codeForesight) && (!"".equals(codeForesight)))
                     inProjectForesight.change(valueInProjectForesight, context, projectObject, foresightNewObject);
@@ -7527,7 +7528,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             query.properties.put("documentType", typeDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
             query.properties.put("languageDocument", languageDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
 
-            for (Map<String, Object> row : query.execute(context.getSession()).values()) {
+            for (Map<String, Object> row : query.execute(context).values()) {
                 DataObject documentObject = context.addObject(document);
                 projectDocument.change(projectObject.getValue(), context, documentObject);
                 typeDocument.change(row.get("documentType"), context, documentObject);
@@ -7654,7 +7655,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
                 DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), cluster);
-                Object clusterSID = sidCluster.read(context.getSession(), clusterObject);
+                Object clusterSID = sidCluster.read(context, clusterObject);
                 if (clusterSID != null)
                     prefix = clusterSID.toString();
             }
@@ -7750,8 +7751,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
                 int countForeign = 1;
                 int countNative = 1;
-                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
-                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                int size = query.executeClasses(context).entrySet().size();
+                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                     row.getKey().get("nonRussianSpecialist");
                     row.getValue().get("fullNameNonRussianSpecialist");
                     row.getValue().get("fileForeignResumeNonRussianSpecialist");
@@ -8045,7 +8046,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             int previousBusiness = 0;
 //            int previousTechnical = 0;
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                 if (!row.getValue().get("business").isNull())
                     previousBusiness++;
                 previousResults.put(row.getKey().get("key"), (DataObject) row.getValue().get("vote"));
@@ -8075,7 +8076,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.util.List<DataObject> expertVotedBusiness = new ArrayList<DataObject>();
             java.util.List<DataObject> expertVotedTechnical = new ArrayList<DataObject>();
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                 DataObject objExpert = row.getKey().get("key");
 
                 boolean business = row.getValue().get("business").getValue() != null;
@@ -8216,7 +8217,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.sql.Date datePrev = null;
             DataObject votePrevObject = null;
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(context).entrySet()) {
                 java.sql.Date dateCur = (java.sql.Date) row.getValue().get("dateStartVote").getValue();
                 if (dateCur != null && dateCur.getTime() < dateStart.getTime() && (datePrev == null || dateCur.getTime() > datePrev.getTime())) {
                     datePrev = dateCur;
@@ -8231,7 +8232,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
 
             Set<DataObject> experts = new HashSet<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                 experts.add(row.getKey().get("key"));
             }
 

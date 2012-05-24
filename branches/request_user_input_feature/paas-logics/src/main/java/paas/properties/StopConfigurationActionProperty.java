@@ -27,7 +27,7 @@ public class StopConfigurationActionProperty extends CustomActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         DataObject confObj = context.getSingleKeyValue();
 
-        Integer port = (Integer) paas.paasLM.configurationPort.read(context.getSession(), confObj);
+        Integer port = (Integer) paas.paasLM.configurationPort.read(context, confObj);
         if (port == null) {
             context.addAction(new MessageClientAction("Порт не задан.", "Ошибка!"));
             return;

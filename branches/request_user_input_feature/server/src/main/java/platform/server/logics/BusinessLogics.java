@@ -330,7 +330,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     ).compare(new DataObject(strHostName), Compare.EQUALS)
             );
 
-            Set<Map<String, Object>> keys = q.execute(session.sql, session.env).keySet();
+            Set<Map<String, Object>> keys = q.execute(session).keySet();
             if (keys.size() == 0) {
                 DataObject addObject = session.addObject(LM.computer);
                 LM.hostname.change(strHostName, session, addObject);
@@ -453,7 +453,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             q.and(q.mapKeys.get("userId").compare(new DataObject(userId, LM.customUser), Compare.EQUALS));
 
             OrderedMap<Object, Boolean> orderBy = new OrderedMap(BaseUtils.toList("pOrder"), false);
-            Set<Map<String, Object>> keys = q.execute(session.sql, orderBy, 0, session.env).keySet();
+            Set<Map<String, Object>> keys = q.execute(session, orderBy, 0).keySet();
             if (keys.size() != 0) {
                 for (Map<String, Object> keyMap : keys) {
                     result.add((Integer) keyMap.get("policyId"));
@@ -875,7 +875,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
             query.and(BaseUtils.singleValue(query.mapKeys).isClass(LM.systemUser));
-            Set<Map<String, Object>> rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
+            Set<Map<String, Object>> rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
             if (rows.size() == 0) { // если нету добавим
                 systemUserObject = (Integer) session.addObject(LM.systemUser).object;
                 session.apply(this);
@@ -884,7 +884,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             query = new Query<String, Object>(Collections.singleton("key"));
             query.and(LM.hostname.getExpr(session.modifier, BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
-            rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
+            rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
             if (rows.size() == 0) { // если нету добавим
                 DataObject computerObject = session.addObject(LM.computer);
                 systemComputer = (Integer) computerObject.object;
@@ -1327,17 +1327,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void fillDaysOff() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        LCP generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
+        LCP<PropertyInterface> generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
 
-        Map<Object, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
+        OrderedMap<PropertyInterface, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
 
-        Query<Object, Object> query = new Query<Object, Object>(keys);
+        Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
         query.properties.put("id", generateOrDefaultCountry.property.getExpr(keys));
 
         query.and(generateOrDefaultCountry.property.getExpr(keys).getWhere());
 
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
-        for (Map<Object, Object> key : result.keyList()) {
+        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        for (Map<PropertyInterface, Object> key : result.keyList()) {
             Integer id = (Integer) BaseUtils.singleValue(key);
             generateDates(id);
         }

@@ -1,7 +1,6 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.interop.action.ClientAction;
 import platform.interop.action.LogMessageClientAction;
@@ -26,6 +25,7 @@ import platform.server.form.navigator.UserController;
 import platform.server.logics.*;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
@@ -361,6 +361,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     }
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass, boolean groupLast) throws SQLException {
+        boolean hadStoredChanges = hasStoredChanges();
+
         if(toClass==null) toClass = baseClass.unknown;
 
         Set<CustomClass> addClasses = new HashSet<CustomClass>();
@@ -376,13 +378,27 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
         if(groupLast) // по тем по кому не было restart'а new -> to
             updateProperties(getFilterChanges(addClasses, removeClasses));
+
+        aspectChange(hadStoredChanges);
     }
 
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException {
+        boolean hadStoredChanges = hasStoredChanges();
+        
         changeProperty(property, keys, newValue, sql, groupLast);
-
+        
         if(groupLast) // по тем по кому не было restart'а new -> to
             updateProperties(getFilterChanges(property));
+
+        aspectChange(hadStoredChanges);
+    }
+
+    public static final SessionDataProperty isDataChanged = new SessionDataProperty("isDataChanged", "Is data changed", LogicalClass.instance);
+    private void aspectChange(boolean hadStoredChanges) throws SQLException {
+        if(!hadStoredChanges) {
+            changeProperty(isDataChanged, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(true, LogicalClass.instance), true);
+            updateProperties(getFilterChanges(isDataChanged));
+        }
     }
 
     public void updateProperties(PropertyChanges changes) throws SQLException {
@@ -621,7 +637,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
                 pendingExecute.put(property, pendingPropExecute);
             }
 
-            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = propertyChange.executeClasses(sql, env, baseClass).iterator(); iterator.hasNext();) {
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = propertyChange.executeClasses(transactEnv).iterator(); iterator.hasNext();) {
                 Map<ClassPropertyInterface, DataObject> executeRow = iterator.next();
 
                 if(pendingPropExecute!=null)
@@ -634,7 +650,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
         return transactEnv.isInTransaction();
     }
-
+/*
     @Message("message.session.apply.check")
     public <T extends PropertyInterface> boolean check(@ParamMessage CalcProperty<T> property, IncrementApply incrementApply, List<ClientAction> actions) throws SQLException {
         assert property.noDB();
@@ -672,7 +688,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
                     }
                     interfaceIndex++;
                 }
-                OrderedMap<Map<T, Object>, Map<String, Object>> detailedResult = detailed.execute(sql, env);
+                OrderedMap<Map<T, Object>, Map<String, Object>> detailedResult = detailed.execute(this);
 
                 String resultString = property.toString() + '\n';
                 for (Map.Entry<Map<T,Object>, Map<String,Object>> row : detailedResult.entrySet()) {
@@ -704,10 +720,14 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
         return true;
     }
-
+  */
     @Message("message.session.apply.auto.execute")
     public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, List<ClientAction> actions, boolean groupLast) throws SQLException {
         property.execute(new ExecutionContext(context, null, new ExecutionEnvironment(this), actions, null, groupLast));
+    }
+
+    public QueryEnvironment getQueryEnv() {
+        return env;
     }
 
     public final QueryEnvironment env = new QueryEnvironment() {
