@@ -39,6 +39,7 @@
 	<field name="grossWeightConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="UNPRecipientConsignment" class="java.lang.String"/>
 	<field name="UNPSenderConsignment" class="java.lang.String"/>
 	<field name="UNPTransportPayerConsignment" class="java.lang.String"/>
@@ -59,7 +60,6 @@
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
 	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="grossWeightConsignmentDetail" class="java.lang.Double"/>
-	<field name="noteInnerFlowDetail" class="java.lang.String"/>
 	<summary>
 		<band height="494">
 			<textField>
@@ -112,7 +112,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumVATConsignmentDetail}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="256" y="159" width="141" height="12"/>
@@ -220,7 +220,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumInvoiceConsignmentDetail}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="84" y="332" width="17" height="12"/>

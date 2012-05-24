@@ -62,8 +62,7 @@
 	<field name="fullNameTransportPayerConsignment" class="java.lang.String"/>
 	<field name="countConsignmentDetailConsignment" class="java.lang.Integer"/>
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="sumWareReturnSupplier" class="java.lang.Double"/>
-	<field name="totalSumSupplierPriceWithWareReturnSupplier" class="java.lang.Double"/>
+	<field name="wareSumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameItemConsignmentDetail" class="java.lang.String"/>
 	<field name="shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
@@ -75,18 +74,17 @@
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
 	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="grossWeightConsignmentDetail" class="java.lang.Double"/>
-	<field name="noteInnerFlowDetail" class="java.lang.String"/>
-	<field name="nameWareReturnSupplierDetail" class="java.lang.String"/>
-	<field name="priceWareReturnSupplierDetail" class="java.lang.Double"/>
-	<field name="dataWareRangeReturnSupplierDetail" class="java.lang.Double"/>
-	<field name="sumWareReturnSupplierDetail" class="java.lang.Double"/>
-	<field name="totalSumWareWithoutVATReturnSupplierDetail" class="java.lang.Double"/>
-	<field name="sumDetailVatWareReturnSupplierDetail" class="java.lang.Double"/>
-	<field name="priceWareWithoutVATReturnSupplierDetail" class="java.lang.Double"/>
-	<field name="isReturnSupplierConsignment" class="java.lang.Boolean"/>
+	<field name="noteConsignmentDetail" class="java.lang.String"/>
+	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
+	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
+	<field name="dataWareRangeConsignmentDetail" class="java.lang.Double"/>
+	<field name="wareSupplierSumConsignmentDetail" class="java.lang.Double"/>
+	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
+	<field name="wareSupplierPriceConsignmentDetail" class="java.lang.Double"/>
+	<field name="isWareConsignment" class="java.lang.Boolean"/>
 	<field name="seriesObject" class="java.lang.String"/>
 	<field name="numberObject" class="java.lang.String"/>
-	<field name="totalSumWareReturnSupplierDetail" class="java.lang.Double"/>
+	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumKgGrossWeightConsignment" class="java.lang.Double"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
@@ -889,7 +887,7 @@
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{noteInnerFlowDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{noteConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="369" y="0" width="53" height="12"/>
@@ -1007,10 +1005,10 @@
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="287" y="0" width="42" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1019,11 +1017,11 @@
 				<textElement textAlignment="Center">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataWareRangeReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dataWareRangeConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="490" y="0" width="65" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1047,7 +1045,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="329" y="0" width="40" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1056,11 +1054,11 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sumDetailVatWareReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{wareVATSumConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="240" y="0" width="47" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1069,11 +1067,11 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalSumWareWithoutVATReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{wareSupplierSumConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="24" height="12" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Dashed"/>
@@ -1086,7 +1084,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="369" y="0" width="53" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1095,11 +1093,11 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalSumWareReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{wareSumConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1108,11 +1106,11 @@
 				<textElement textAlignment="Right">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{priceWareWithoutVATReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{wareSupplierPriceConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="24" y="0" width="112" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1122,11 +1120,11 @@
 					<font size="9" isItalic="true"/>
 					<paragraph firstLineIndent="10" leftIndent="2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameWareReturnSupplierDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameWareConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="168" y="0" width="30" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1139,7 +1137,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="422" y="0" width="38" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -1152,7 +1150,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="460" y="0" width="30" height="12">
-					<printWhenExpression><![CDATA[$F{isReturnSupplierConsignment} != null && $F{priceWareReturnSupplierDetail} != null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>

@@ -3470,15 +3470,6 @@ countConsignmentDetailConsignment 'Количество строк' (consignment
 quantityConsignmentDetailConsignment 'Количество (всего)' (consignment) = GROUP SUM quantityConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
-sumConsignmentDetailConsignment 'Стоимость (всего)' (consignment) = GROUP SUM sumConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-sumVATConsignmentDetailConsignment 'Сумма НДС (всего)' (consignment) = GROUP SUM sumVATConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-sumInvoiceConsignmentDetailConsignment 'Сумма с НДС (всего)' (consignment) = GROUP SUM sumInvoiceConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
 packQuantityConsignmentDetailConsignment 'Общее количество грузовых мест' (consignment) = GROUP SUM packQuantityConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
@@ -3486,6 +3477,16 @@ grossWeightConsignmentDetailConsignment 'Общая масса груза, т.' 
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;;
 
 sumKgGrossWeightConsignment 'Общая масса груза, кг.'(consignment) = grossWeightConsignmentDetailConsignment(consignment)*1000;
+
+
+//sumConsignmentDetailConsignment 'Стоимость (всего)' (consignment) = GROUP SUM sumConsignmentDetail(consignmentDetail)
+//                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
+
+//sumVATConsignmentDetailConsignment 'Сумма НДС (всего)' (consignment) = GROUP SUM sumVATConsignmentDetail(consignmentDetail)
+//                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
+
+//sumInvoiceConsignmentDetailConsignment 'Сумма с НДС (всего)' (consignment) = GROUP SUM sumInvoiceConsignmentDetail(consignmentDetail)
+//                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 // Посуда на возврате
 isWareConsignment 'Возврат поставщику' (consignment) = ABSTRACT BOOLEAN (consignment);
@@ -3500,6 +3501,18 @@ dataWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = AB
 wareVATSumConsignmentDetail 'Сумма НДС по посуде' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
 wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
 wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
+
+sumIaWConsignmentDetail 'Сумма с посудой без НДС' (consignmentDetail) = sumConsignmentDetail(consignmentDetail) (+) wareSupplierSumConsignmentDetail(consignmentDetail);
+sumConsignmentDetailConsignment 'Сумма с посудой без НДС' (consignment) = GROUP SUM sumIaWConsignmentDetail(consignmentDetail)
+                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
+
+sumVATIaWConsignmentDetail 'Сумма НДС' (consignmentDetail) = sumVATConsignmentDetail(consignmentDetail) (+) wareVATSumConsignmentDetail(consignmentDetail);
+sumVATConsignmentDetailConsignment 'Сумма НДС (всего)' (consignment) = GROUP SUM sumVATIaWConsignmentDetail(consignmentDetail)
+                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
+
+sumInvoiceIaWConsignmentDetail 'Сумма с НДС' (consignmentDetail) = sumInvoiceConsignmentDetail(consignmentDetail) (+) wareSumConsignmentDetail(consignmentDetail);
+sumInvoiceConsignmentDetailConsignment 'Сумма c НДС (всего)' (consignment) = GROUP SUM sumInvoiceIaWConsignmentDetail(consignmentDetail)
+                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 
 // ----------------------------------- Договор ------------------------------------------ //
@@ -5935,8 +5948,8 @@ TABLE pageInventory (pageInventory);
 @defineDocumentRelationCustom(listInventory, pageInventory);
 @defineDocumentDetailIndexCustom(listInventory, pageInventory);
 
-namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
-                                           ('Страница ', indexPageInventory(pageInventory)) IN baseGroup;
+namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '\' Страница \' || \' \' || CAST($1 AS TEXT)']
+                                           (indexPageInventory(pageInventory)) IN baseGroup;
 
 CLASS pageInventoryDetail 'Строка';
 TABLE pageInventoryDetail (pageInventoryDetail);
@@ -6213,8 +6226,11 @@ CLASS specificationDetail 'Строка счет-фактуры';
 @defineDocumentHeaderRetailSum(specification);
 @defineDocumentHeaderCalcVATSum(specification);
 
-descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))']
-            ('Счет-фактура № ', seriesNumberSpecificationDetail(specificationDetail), ' от ', ' ', dateSpecificationDetail(specificationDetail));
+//descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))']
+//            ('С/ф № ', seriesNumberSpecificationDetail(specificationDetail), ' от ', ' ', dateSpecificationDetail(specificationDetail));
+
+descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '\'С-ф № \' || \' \' || CAST($1 AS TEXT) || \' от \' || \' \' || CAST($2 AS TEXT)']
+            (seriesNumberSpecificationDetail(specificationDetail), dateSpecificationDetail(specificationDetail));
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -6402,6 +6418,7 @@ sumConsignmentDetail (consignmentDetail) += retailSumStatementDetail (consignmen
 vatConsignmentDetail (consignmentDetail) += dataCalcRangeStatementDetail (consignmentDetail);
 sumVATConsignmentDetail (consignmentDetail) += calcVATSumStatementDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += retailSumStatementDetail (consignmentDetail);
+noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDetail);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
@@ -7053,7 +7070,7 @@ wareSumConsignmentDetailConsignment  (consignment) += wareSumReturnSupplierDetai
 supplierSumConsignmentDetailConsignment (consignment) += supplierSumReturnSupplierDetailReturnSupplier (consignment);
 
 priceConsignmentDetail (consignmentDetail) += supplierPriceReturnSupplierDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += supplierSumReturnSupplierDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += supplierISumReturnSupplierDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += dataSupplierRangeReturnSupplierDetail (consignmentDetail);
 sumVATConsignmentDetail (consignmentDetail) += supplierVATISumReturnSupplierDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += invoiceISumReturnSupplierDetail (consignmentDetail);
@@ -9312,7 +9329,7 @@ META metaCodeConsignmentTwo(prop, caption)
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      noteInnerFlowDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
+                      noteConsignmentDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
                       dataWareRangeConsignmentDetail, wareVATSumConsignmentDetail, wareSupplierPriceConsignmentDetail,
                       wareSupplierSumConsignmentDetail
 
@@ -9347,7 +9364,7 @@ META metaCodeTransportConsignment(prop, caption)
 
         PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteInnerFlowDetail,
+                      packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
                       nameWareConsignmentDetail, warePriceConsignmentDetail, dataWareRangeConsignmentDetail,
                       wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                       wareVATSumConsignmentDetail, wareSumConsignmentDetail
@@ -9376,9 +9393,9 @@ FORM consignment 'Форма заполнения атрибутов накла�
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment, sumKgGrossWeightConsignment,
+                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
-                   countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment
+                   countConsignmentDetailConsignment
 
 
     OBJECTS d=consignmentDetail
@@ -9472,13 +9489,6 @@ DESIGN consignment FROM DEFAULT {
                         ADD PROPERTY(fullNameRecipientConsignment);
                         ADD PROPERTY(UNPRecipientConsignment);
                         ADD PROPERTY(addressRecipientConsignment);
-                    }
-                    NEW row33 {
-                        title = 'Суммы документа';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(sumKgGrossWeightConsignment);
-                        ADD PROPERTY(supplierSumConsignmentDetailConsignment);
-                        ADD PROPERTY(wareSumConsignmentDetailConsignment);
                     }
                 }
             }
