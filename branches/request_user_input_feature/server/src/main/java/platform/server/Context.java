@@ -28,7 +28,7 @@ public interface Context {
     void pushActionMessage(String segment);
     String popActionMessage();
 
-    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive)  throws SQLException;
+    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive)  throws SQLException;
     RemoteForm createRemoteForm(FormInstance formInstance);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 

@@ -125,7 +125,7 @@ public final class LoginAction {
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
-            remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId, false);
+            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId, false);
             if (remoteNavigator == null) {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;

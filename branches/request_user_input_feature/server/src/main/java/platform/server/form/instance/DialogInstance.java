@@ -37,8 +37,9 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           CustomClassListener classListener,
                           ObjectEntity dialogEntity,
                           Object dialogValue,
-                          PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null);
+                          PropertyObjectInterfaceInstance computer,
+                          boolean isFullClient) throws SQLException {
+        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null, isFullClient);
     }
 
     private final Set<PullChangeProperty> pullProps;
@@ -52,7 +53,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer,
                           Set<FilterEntity> additionalFilters,
-                          Set<PullChangeProperty> pullProps) throws SQLException {
+                          Set<PullChangeProperty> pullProps,
+                          boolean isFullClient) throws SQLException {
         super(entity,
               BL,
               session,
@@ -61,6 +63,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               classListener,
               computer,
               singletonMap(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
+              isFullClient,
+              true,
               false,
               false,
               true,
@@ -79,6 +83,11 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                 if(pullProp.isChangeBetween(property))
                     return false;
         return super.allowHintIncrement(property);
+    }
+
+    @Override
+    public boolean isDialog() {
+        return true;
     }
 
     public ObjectValue getDialogObjectValue() {

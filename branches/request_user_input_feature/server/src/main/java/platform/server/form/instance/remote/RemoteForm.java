@@ -830,8 +830,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
-        return form.createForm(formEntity, mapObjects, session, newSession, checkOnOk, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+        return form.createForm(formEntity, mapObjects, session, isModal, newSession, checkOnOk, interactive);
     }
 
     @Override

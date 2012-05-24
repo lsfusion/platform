@@ -71,6 +71,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     T BL;
     SQLSession sql;
 
+    private final boolean isFullClient;
+
     private ClientCallBackController client;
 
     private DataObject user;
@@ -83,21 +85,27 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(T BL, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public RemoteNavigator(T BL, boolean isFullClient, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
-        client = new ClientCallBackController(port);
+        this.isFullClient = isFullClient;
+
+        this.client = new ClientCallBackController(port);
         this.BL = BL;
-        classCache = new ClassCache();
+        this.classCache = new ClassCache();
 
-        securityPolicy = currentUser.getSecurityPolicy();
+        this.securityPolicy = currentUser.getSecurityPolicy();
 
-        user = new DataObject(currentUser.ID, this.BL.LM.customUser);
+        this.user = new DataObject(currentUser.ID, this.BL.LM.customUser);
         this.computer = new DataObject(computer, this.BL.LM.computer);
         this.sql = this.BL.createSQL();
     }
 
     WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
+
+    public boolean isFullClient() {
+        return isFullClient;
+    }
 
     public void changeCurrentUser(DataObject user) throws SQLException {
         this.user = user;
@@ -463,7 +471,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
     private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
 
-    public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession, boolean interactive) {
+    private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession, boolean interactive) {
         try {
             RemoteForm remoteForm = invalidatedForms.remove(formEntity);
             if (remoteForm == null) {
@@ -475,7 +483,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                     session = createSession();
                 }
 
-                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, interactive);
+                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, isFullClient, interactive);
                 // все равно подошли объекты или нет
 
                 remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
@@ -490,6 +498,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
         FormEntity newFormEntity = FormEntity.deserialize(BL, formState);
+        //todo: isFull <- true
         return createForm(newFormEntity, false, true);
     }
 
@@ -792,8 +801,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
-        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, newSession, checkOnOk, interactive, null);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, isFullClient, isModal, newSession, checkOnOk, interactive, null);
     }
 
     @Override

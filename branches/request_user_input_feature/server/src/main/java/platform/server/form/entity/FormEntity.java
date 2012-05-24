@@ -8,11 +8,8 @@ import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
-import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
-import platform.interop.form.layout.SimplexComponentDirections;
-import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ColorClass;
 import platform.server.classes.ValueClass;
@@ -21,10 +18,8 @@ import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LAP;
@@ -51,7 +46,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
-import static platform.base.ApiResourceBundle.getString;
 import static platform.server.logics.property.derived.DerivedProperty.*;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
@@ -75,15 +69,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static final OkActionProperty okActionProperty = new OkActionProperty();
     public static final CloseActionProperty closeActionProperty = new CloseActionProperty();
 
-    private PropertyDrawEntity printActionPropertyDraw;
-    private PropertyDrawEntity editActionPropertyDraw;
-    private PropertyDrawEntity xlsActionPropertyDraw;
-    private PropertyDrawEntity nullActionPropertyDraw;
-    private PropertyDrawEntity refreshActionPropertyDraw;
-    private PropertyDrawEntity applyActionPropertyDraw;
-    private PropertyDrawEntity cancelActionPropertyDraw;
-    private PropertyDrawEntity okActionPropertyDraw;
-    private PropertyDrawEntity closeActionPropertyDraw;
+    public PropertyDrawEntity printActionPropertyDraw;
+    public PropertyDrawEntity editActionPropertyDraw;
+    public PropertyDrawEntity xlsActionPropertyDraw;
+    public PropertyDrawEntity nullActionPropertyDraw;
+    public PropertyDrawEntity refreshActionPropertyDraw;
+    public PropertyDrawEntity applyActionPropertyDraw;
+    public PropertyDrawEntity cancelActionPropertyDraw;
+    public PropertyDrawEntity okActionPropertyDraw;
+    public PropertyDrawEntity closeActionPropertyDraw;
 
     public HashMap<Object, List<ActionPropertyObjectEntity<?>>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
 
@@ -161,77 +155,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         );
 
         return propertyDraw;
-    }
-
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = new DefaultFormView(this);
-
-        ContainerView mainContainer = design.getMainContainer();
-
-        ContainerView formButtonContainer = design.createContainer();
-
-        formButtonContainer.setDescription(getString("form.layout.service.buttons"));
-        formButtonContainer.setSID("serviceButtons123123");
-        formButtonContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        mainContainer.add(formButtonContainer);
-
-        PropertyDrawView printFunction = design.get(printActionPropertyDraw);
-        setupFormButton(printFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getPrintKeyStroke(), "print.png");
-
-        PropertyDrawView xlsFunction = design.get(xlsActionPropertyDraw);
-        setupFormButton(xlsFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getXlsKeyStroke(), "xls.png");
-
-        PropertyDrawView editFunction = design.get(editActionPropertyDraw);
-        setupFormButton(editFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getEditKeyStroke(), "editReport.png");
-
-        PropertyDrawView nullFunction = design.get(nullActionPropertyDraw);
-        setupFormButton(nullFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getNullKeyStroke(), null);
-
-        PropertyDrawView refreshFunction = design.get(refreshActionPropertyDraw);
-        setupFormButton(refreshFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getRefreshKeyStroke(), "refresh.png");
-
-        PropertyDrawView applyFunction = design.get(applyActionPropertyDraw);
-        applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
-        setupFormButton(applyFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getApplyKeyStroke(), null);
-
-        PropertyDrawView cancelFunction = design.get(cancelActionPropertyDraw);
-        // KeyStrokes.getEscape(!isModal),
-        setupFormButton(cancelFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCancelKeyStroke(), null);
-
-        PropertyDrawView okFunction = design.get(okActionPropertyDraw);
-        okFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
-        // KeyStrokes.getEnter(isDialog() ? 0 : InputEvent.CTRL_DOWN_MASK),
-        setupFormButton(okFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getOkKeyStroke(), null);
-
-        PropertyDrawView closeFunction = design.get(closeActionPropertyDraw);
-        setupFormButton(closeFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCloseKeyStroke(), null);
-
-        formButtonContainer.add(printFunction);
-        formButtonContainer.add(xlsFunction);
-        formButtonContainer.add(editFunction);
-        formButtonContainer.add(nullFunction);
-        formButtonContainer.add(refreshFunction);
-        formButtonContainer.add(applyFunction);
-        formButtonContainer.add(cancelFunction);
-        formButtonContainer.add(okFunction);
-        formButtonContainer.add(closeFunction);
-
-        return design;
-    }
-
-    private void setupFormButton(PropertyDrawView printFunction, SimplexComponentDirections directions, KeyStroke editKey, String iconPath) {
-        printFunction.getConstraints().directions = directions;
-        printFunction.editKey = editKey;
-        printFunction.focusable = false;
-        printFunction.entity.setEditType(PropertyEditType.EDITABLE);
-
-        if (iconPath != null) {
-            printFunction.showEditKey = false;
-            printFunction.setFixedSize(ApplyActionProperty.BUTTON_SIZE);
-            printFunction.design.setIconPath(iconPath);
-        } else {
-            printFunction.preferredSize = ApplyActionProperty.BUTTON_SIZE;
-        }
     }
 
     public void addFixedFilter(FilterEntity filter) {
@@ -848,6 +771,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void addHintsNoUpdate(CalcProperty prop) {
         if (!hintsNoUpdate.contains(prop))
             hintsNoUpdate.add(prop);
+    }
+
+    public FormView createDefaultRichDesign() {
+        return new DefaultFormView(this);
     }
 
     private FormView richDesign;

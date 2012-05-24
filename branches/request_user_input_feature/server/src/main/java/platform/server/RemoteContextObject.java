@@ -14,7 +14,6 @@ import platform.interop.form.UserInputResult;
 import platform.interop.remote.RemoteObject;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.SystemClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
@@ -38,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import static platform.base.BaseUtils.nevl;
-import static platform.base.BaseUtils.nullInnerJoin;
 import static platform.base.BaseUtils.serializeObject;
 import static platform.server.data.type.TypeSerializer.serializeType;
 
@@ -155,7 +152,7 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 

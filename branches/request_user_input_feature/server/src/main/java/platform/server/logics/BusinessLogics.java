@@ -10,7 +10,6 @@ import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -157,7 +156,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
 
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer, boolean forceCreateNew) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) {
         if (getRestartController().isPendingRestart()) {
             return null;
         }
@@ -186,15 +185,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             RemoteNavigator navigator = forceCreateNew ? null : navigators.get(key);
 
             if (navigator != null) {
-                navigator.invalidate();
-                if (navigator.isBusy()) {
+                if (navigator.isFullClient() != isFullClient) {
+                    //создаём новый навигатор, если поменялся тип клиента
                     navigator = null;
-                    removeNavigator(key);
+                } else {
+                    navigator.invalidate();
+                    if (navigator.isBusy()) {
+                        navigator = null;
+                        removeNavigator(key);
+                    }
                 }
             }
 
             if (navigator == null) {
-                navigator = new RemoteNavigator(this, user, computer, exportPort);
+                navigator = new RemoteNavigator(this, isFullClient, user, computer, exportPort);
                 addNavigator(key, navigator, universalPassword);
             }
 
@@ -753,7 +757,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             synchronizeDB();
 
-            if (!"true".equals(System.getProperty(BusinessLogicsBootstrap.PLATFORM_SERVER_ISDEBUG))) {
+            if (!BusinessLogicsBootstrap.isDebug()) {
                 prereadCaches();
             }
 
@@ -839,7 +843,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         createModules();
         initModules();
 
-        if (!"true".equals(System.getProperty(BusinessLogicsBootstrap.PLATFORM_SERVER_ISDEBUG))) {
+        if (!BusinessLogicsBootstrap.isDebug()) {
             synchronizeForms();
             synchronizeGroupProperties();
             synchronizeProperties();
@@ -2538,13 +2542,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    // создает форму не интерактивную (не для чтения)
-    public RemoteFormInterface createForm(DataSession session, FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
+    @Override
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, true, isModal, newSession, checkOnOk, interactive, null);
+    }
+
+    @Override
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T) this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, false);
-            if(!formInstance.areObjectsFound())
-                return null;
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, null);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

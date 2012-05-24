@@ -34,7 +34,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Cust
         
         String result = "";
         for(FormRow formRow : context.createFormInstance(new PropertyFormEntity(property, session.recognizeGroup),
-                                                new HashMap<ObjectEntity, DataObject>(), session, false, false, false).getFormData(30).rows) {
+                                                new HashMap<ObjectEntity, DataObject>(), session, false, false, false, false).getFormData(30).rows) {
             String rowResult = property.toString() + '\n';
             for(Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {
                                                         public Set<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
