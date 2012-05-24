@@ -115,7 +115,7 @@ CLASS declaration 'Таможенная декларация' : transaction;
 CLASS preparedDeclaration 'Подготовленная декларация' : declaration;
 CLASS registeredDeclaration 'Зарегистрованная декларация' : preparedDeclaration;
 
-CLASS declarationDetail 'Позиция декларации';
+CLASS declarationDetail 'Позиция декларации' : batch;
 
 TABLE declarationSku (declaration, sku);
 TABLE declarationDetail (declarationDetail);
@@ -130,6 +130,9 @@ nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(
 sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup MINCHARWIDTH 10;
 beginDeclaration 'Начало обработки' = DATA TIME (declaration) IN baseGroup;
 endDeclaration 'Конец обработки' = DATA TIME (declaration) IN baseGroup;
+
+dateTimeDeclaration 'Дата/время' (declaration) = toDateTime(date(declaration), endDeclaration(declaration));
+
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
@@ -162,7 +165,10 @@ quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) 
 
 @defineAggregationDouble(declaration, sku, declarationDetail, quantityDeclarationSku);
 
-dateDeclarationDetail 'Дата декларации' (declarationDetail) = date(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
+dateTimeDeclarationDetail 'Дата/время декларации' (declarationDetail) = dateTimeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
+
+customStoreDeclarationDetail 'СВХ (ИД)' (declarationDetail) = customStoreDeclaration(declarationDeclarationDetail(declarationDetail)) IN idGroup;
+nameCustomStoreDeclarationDetail 'СВХ' (declarationDetail) = name(customStoreDeclarationDetail(declarationDetail)) IN baseGroup;
 
 numberDeclarationDetail 'Номер строки' (declarationDetail) =
         PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
@@ -268,6 +274,13 @@ priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDeta
 
 priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(priceDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
+
+dateTimeBalanceSkuLedger(batch) += dateTimeDeclarationDetail(batch);
+skuBalanceSkuLedger(batch) += skuDeclarationDetail(batch);
+stockBalanceSkuLedger(batch) += customStoreDeclarationDetail(batch);
+quantityBatch (batch) += quantityDeclarationDetail(batch);
+supplierPriceBatch (batch) += priceDeclarationDetail(batch);
+
 
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX
@@ -563,6 +576,9 @@ FORM declaration 'Декларация'
 
 DESIGN declaration FROM DEFAULT{
     main {
+         d.panel {
+            childConstraints = TO THE RIGHTBOTTOM;
+         }
 //        NEW document.box BEFORE dd.box {
 //            type = TABBED;
 //            ADD ii.box;
