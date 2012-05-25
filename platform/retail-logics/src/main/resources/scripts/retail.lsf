@@ -3507,7 +3507,7 @@ wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consig
 wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
 
 sumIaWConsignmentDetail 'Сумма с посудой без НДС' (consignmentDetail) = sumConsignmentDetail(consignmentDetail) (+) wareSupplierSumConsignmentDetail(consignmentDetail);
-sumConsignmentDetailConsignment 'Сумма с посудой без НДС' (consignment) = GROUP SUM sumIaWConsignmentDetail(consignmentDetail)
+sumConsignmentDetailConsignment 'Сумма с посудой без НДС (всего)' (consignment) = GROUP SUM sumIaWConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 sumVATIaWConsignmentDetail 'Сумма НДС' (consignmentDetail) = sumVATConsignmentDetail(consignmentDetail) (+) wareVATSumConsignmentDetail(consignmentDetail);
@@ -5940,9 +5940,13 @@ nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] 
                                                   ('Опись ', indexListInventory(listInventory)) IN listInventoryGroup;
 
 committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
-nameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
-nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
-nameEmployeeListInventory 'Члены комиссии' (listInventory) = nameEmployeeCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup;
+nameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameOfficerChairmanListInventory 'Должность председателя' (listInventory)  = nameOfficerChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeListInventory 'Члены комиссии' (listInventory) = nameEmployeeCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+inListInventoryEmployee 'Является членом комиссии' (listInventory, employee) = inCommitteeEmployee(committeeListInventory(listInventory), employee);
+
+dateListInventory 'Дата' (listInventory) = dateInventory(inventoryListInventory(listInventory));
 
 CLASS pageInventory 'Страница описи';
 TABLE pageInventory (pageInventory);
@@ -5952,7 +5956,7 @@ TABLE pageInventory (pageInventory);
 @defineDocumentRelationCustom(listInventory, pageInventory);
 @defineDocumentDetailIndexCustom(listInventory, pageInventory);
 
-namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '\' Страница \' || \' \' || CAST($1 AS TEXT)']
+namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '\'Страница\' || \' \' || CAST($1 AS TEXT)']
                                            (indexPageInventory(pageInventory)) IN baseGroup;
 
 CLASS pageInventoryDetail 'Строка';
@@ -6039,8 +6043,8 @@ countPageInventoryCollationSheet 'К-во страниц' (collationSheet) =
     GROUP SUM 1 IF pageInventory IS pageInventory BY collationSheetListInventory(listInventoryPageInventory(pageInventory));
 
 countPageInventoryDetailListInventory 'Кол-во строк' (listInventory) = GROUP SUM countPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
-quantityPageInventoryDetailListInventory 'Кол-во по описям' (listInventory) = GROUP SUM quantityPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
-accountSumPageInventoryDetailListInventory 'Сумма по описям' (listInventory) = GROUP SUM accountSumPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+quantityPageInventoryDetailListInventory 'Кол-во товара' (listInventory) = GROUP SUM quantityPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
+accountSumPageInventoryDetailListInventory 'Сумма товара' (listInventory) = GROUP SUM accountSumPageInventoryDetailPageInventory(pageInventory) BY listInventoryPageInventory(pageInventory) IN documentSumGroup;
 
 countPageInventoryDetailDepartmentStoreInventory 'Кол-во строк' (departmentStore, inventory) =
     GROUP SUM countPageInventoryDetailListInventory(listInventory) BY departmentStoreListInventory(listInventory), inventoryListInventory(listInventory) IN documentSumGroup;
@@ -6054,6 +6058,16 @@ quantityPageInventoryDetailCollationSheetItem 'Кол-во по описям' (c
 accountPricePageInventoryDetailCollationSheetItem 'Цена по описям' (collationSheet, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)), itemPageInventoryDetail(pageInventoryDetail);
 accountSumPageInventoryDetailCollationSheetItem 'Сумма по описям' (collationSheet, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
     BY collationSheetPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
+
+quantityPageInventoryDetailListInventoryItem 'Кол-во в описе' (listInventory, item) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
+accountPricePageInventoryDetailListInventoryItem 'Цена в описе' (listInventory, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
+accountSumPageInventoryDetailListInventoryItem 'Сумма в описе' (listInventory, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
+    BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
+
+indexListInventoryItem '№ п/п' (listInventory, item) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventoryItem(listInventory, item)>0 ORDER item;
+countIndexListInventory 'Количество наименований товара'(listInventory) = GROUP SUM 1 IF  quantityPageInventoryDetailListInventoryItem(listInventory, item)>0
+    BY listInventory IN documentSumGroup;
 
 quantityPageInventoryDetailCollationSheet 'Кол-во по описям' (collationSheet) =
     GROUP SUM quantityPageInventoryDetailCollationSheetItem(collationSheet, item) BY collationSheet;
@@ -6704,6 +6718,7 @@ wastageCommitteeWastage (wastage) = wastageCommitteeShipment(shipmentWastage(was
 inWastageEmployee (wastage, employee) = inCommitteeEmployee(wastageCommitteeWastage(wastage), employee);
 nameWastageCommitteeWastage 'Комиссия' (wastage) = name(wastageCommitteeWastage(wastage));
 commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS employee;
+nameOfficerEmployeeEmployee 'Должность' (employee) = nameOfficerEmployee(employee) AND employee IS employee;
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 CLASS reasonOff 'Причина списания' : named;
@@ -9414,7 +9429,7 @@ FORM consignment 'Форма заполнения атрибутов накла�
 
     OBJECTS d=consignmentDetail
 
-    PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+    PROPERTIES(d) nameItemConsignmentDetail READONLY, shortNameUnitOfMeasureConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
                   packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
                   nameWareConsignmentDetail, warePriceConsignmentDetail, dataWareRangeConsignmentDetail,
@@ -9444,6 +9459,7 @@ DESIGN consignment FROM DEFAULT {
                         childConstraints = TO THE BOTTOM;
                         NEW wor21 {
                             childConstraints = TO THE RIGHT;
+                            ADD PROPERTY(countConsignmentDetailConsignment);
                             ADD PROPERTY(quantityConsignmentDetailConsignment);
                             ADD PROPERTY(packQuantityConsignmentDetailConsignment);
                             ADD PROPERTY(grossWeightConsignmentDetailConsignment);
@@ -10745,6 +10761,80 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
     ADD functions.box;
 }
 
+//------------------------------------Печатная форма описи------------------------------------------//
+
+nameCompanyListInventory 'Компания' (listInventory) = name(companyDepartmentStore(departmentStoreListInventory(listInventory)));
+nameStoreListInventory 'Магазин' (listInventory) = name(storeDepartmentStore(departmentStoreListInventory(listInventory)));
+
+FORM listInventoryPrint 'Опись' PRINT
+
+    OBJECTS         li=listInventory FIXED PANEL
+    PROPERTIES (li) dateListInventory, nameCompanyListInventory, nameStoreListInventory, nameDepartmentStoreListInventory,
+                    nameInventoryListInventory, nameListInventory, noteListInventory, committeeListInventory,
+                    nameCommitteeListInventory, nameChairmanCommitteeListInventory, nameOfficerChairmanListInventory, nameEmployeeListInventory,
+                    countPageInventoryListInventory, countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory,
+                    accountSumPageInventoryDetailListInventory, countIndexListInventory
+
+    OBJECTS t=DATETIME FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
+    OBJECTS         i=item
+    PROPERTIES (li,i) indexListInventoryItem
+    PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY   commonName, nameOfficerEmployee
+
+    OBJECTS a=employee
+    PROPERTIES(a) READONLY   commonNameEmployee, nameOfficerEmployeeEmployee
+
+    FILTERS        inListInventoryEmployee(li, e),
+                   inListInventoryEmployee(li, a),
+                   quantityPageInventoryDetailListInventoryItem(li,i)>0
+
+;
+
+DESIGN listInventoryPrint FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD li.box {
+            childConstraints = TO THE RIGHTBOTTOM;
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                ADD li.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(nameInventoryListInventory);
+                    ADD PROPERTY(nameListInventory);
+                }
+                ADD li.inventoryCommitteeGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+                ADD li.documentPrmGroup;
+
+
+            }
+            ADD li.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+                PROPERTY(countPageInventoryListInventory) {
+                    caption = 'Количество страниц';
+                }
+            }
+        }
+
+        ADD i.box;
+        ADD e.box;
+        ADD a.box;
+        ADD functions.box;
+    }
+}
+
+toPrintListInventoryTime 'Опись' (listInventory, time) =
+    ACTION FORM listInventoryPrint OBJECTS li=(listInventory AS listInventory), t=(time AS DATETIME) IMAGE 'print.png' IN printGroup CONFIRM;
+
+toPrintListInventory 'Опись' (listInventory) = toPrintListInventoryTime(listInventory, currentDateTime());
+
 //------------------------------------Формы для инвентаризации------------------------------------------//
 
 FORM nameDepartmentInventory 'Подразделения для инвентаризации'
@@ -10793,9 +10883,10 @@ dialogItemByCollationSheet 'Добавить товар' (collationSheet) = [ACT
 
 FORM listInventory 'Опись'
     OBJECTS         li=listInventory FIXED PANEL
-    PROPERTIES (li) nameListInventory, nameDepartmentStoreListInventory, nameInventoryListInventory, noteListInventory,
+    PROPERTIES (li) nameDepartmentStoreListInventory, nameInventoryListInventory, nameListInventory, noteListInventory,
                     nameCommitteeListInventory, nameChairmanCommitteeListInventory, nameEmployeeListInventory,
-                    countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory, accountSumPageInventoryDetailListInventory, countPageInventoryListInventory
+                    countPageInventoryListInventory, countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory,
+                    accountSumPageInventoryDetailListInventory
 
     OBJECTS         pl=pageInventory
     PROPERTIES(pl)  namePageInventory, notePageInventory FORCE PANEL, countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, accountSumPageInventoryDetailPageInventory, ADDOBJ, delete
@@ -10804,8 +10895,13 @@ FORM listInventory 'Опись'
     PROPERTIES (dp) indexPageInventoryDetail, barcodeExPageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail, accountPricePageInventoryDetail,
                     accountSumPageInventoryDetail, ADDOBJ, delete
 
-    FILTERS listInventoryPageInventory(pl) == li,
-            pageInventoryPageInventoryDetail(dp) == pl
+    OBJECTS         i=item
+    PROPERTIES (li,i) indexListInventoryItem
+    PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
+
+    FILTERS pageInventoryPageInventoryDetail(dp) == pl,
+            quantityPageInventoryDetailListInventoryItem(li,i)>0
 
 EDIT listInventory OBJECT li
 ;
@@ -10813,17 +10909,44 @@ EDIT listInventory OBJECT li
 DESIGN listInventory FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD li.box {
+            childConstraints = TO THE RIGHT;
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                ADD li.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameInventoryListInventory);
+                    ADD PROPERTY(nameListInventory);
+                }
+                ADD li.inventoryCommitteeGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+                ADD li.documentPrmGroup;
 
-        li.box {
-            childConstraints = TO THE BOTTOM;
-            POSITION li.inventoryCommitteeGroup TO THE LEFT li.documentSumGroup;
+
+            }
+            ADD li.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+                PROPERTY(countPageInventoryListInventory) {
+                    caption = 'Количество страниц';
+                }
+            }
         }
-        POSITION pl.box TO THE LEFT dp.box;
-        pl.box {
-            fillHorizontal = 1;
-            childConstraints = TO THE BOTTOM;
-        };
-        dp.box {fillHorizontal = 2;}
+        NEW wor {
+            childConstraints = TO THE RIGHT;
+            ADD pl.box {
+                fillHorizontal = 1;
+            }
+            NEW case1 {
+                fillHorizontal = 2;
+                type = TABBED;
+
+                ADD dp.box;
+                ADD i.box;
+            }
+        }
+        ADD functions.box;
     }
 }
 
@@ -10843,6 +10966,7 @@ FORM inventory 'Инвентаризация'
 
     PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li), //delete SHOWIF isDraftListInventory(li),      //FORCE PANEL
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
+
 
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, accountSumPageInventoryDetailPageInventory, dumb1
 
@@ -10957,6 +11081,9 @@ DESIGN inventory FROM DEFAULT {
                         panelLocation = TOOLBAR;
                         askConfirm = TRUE;
                     }
+                    PROPERTY (toPrintListInventory(li)) {
+                        panelLocation = TOOLBAR;
+                    }
                 }
 
                 NEW x.box { title = 'Сличительные ведомости';
@@ -10998,26 +11125,36 @@ FORM inventories 'Инвентаризации'
 ;
 
 DESIGN inventories FROM DEFAULT {
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 25;
-    }
-    PROPERTY (delete(in)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-    in.historyGroup {
+    main {
         childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-    in.postedGroup {
-        childConstraints = TO THE BOTTOM;
-        fillHorizontal = 1;
-    }
-    POSITION in.historyGroup TO THE LEFT in.postedGroup;
-    ADD il.grid.box BEFORE in.historyGroup;
-    il.grid.box {title = 'Товары с недостачей (излишком)';};
-}
 
+        ADD in.box {
+            PROPERTY(objectClassName) {
+                preferredCharWidth = 25;
+            }
+            PROPERTY (delete(in)) {
+                panelLocation = TOOLBAR;
+                askConfirm = TRUE;
+            }
+        }
+        ADD il.box {
+            title = 'Товары с недостачей (излишком)';
+        }
+        NEW row {
+            childConstraints = TO THE RIGHT;
+
+            ADD in.historyGroup {
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 1;
+            }
+            ADD in.postedGroup {
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 1;
+            }
+        }
+        ADD functions.box;
+    }
+}
 
 //---------------------------Акты переоценок-------------------------------------//
 
@@ -13241,6 +13378,7 @@ NAVIGATOR {
         ADD wastagePrint;
         ADD naturalLossPrint;
         ADD writeOffPrint;
+        ADD listInventoryPrint;
     }
 
     ADD adminElement TO formsTree {
