@@ -11081,9 +11081,6 @@ DESIGN inventory FROM DEFAULT {
                         panelLocation = TOOLBAR;
                         askConfirm = TRUE;
                     }
-                    PROPERTY (toPrintListInventory(li)) {
-                        panelLocation = TOOLBAR;
-                    }
                 }
 
                 NEW x.box { title = 'Сличительные ведомости';
