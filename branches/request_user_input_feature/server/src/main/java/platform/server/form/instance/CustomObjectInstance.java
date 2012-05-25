@@ -35,10 +35,6 @@ public class CustomObjectInstance extends ObjectInstance {
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
     }
 
-    public boolean isAddOnEvent(FormEventType event) {
-        return entity.addOnEvent.contains(event);
-    }
-
     public CustomObjectInstance(ObjectEntity entity, CustomClass baseClass) {
         super(entity);
         this.baseClass = baseClass;

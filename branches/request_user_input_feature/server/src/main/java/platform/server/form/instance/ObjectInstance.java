@@ -31,10 +31,6 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return entity.getCaption();
     }
 
-    public boolean isResetOnApply() {
-        return entity.resetOnApply;
-    }
-
     public ObjectInstance(ObjectEntity entity) {
         super(entity);
         this.entity = entity;
@@ -97,9 +93,5 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public Collection<ObjectInstance> getObjectInstances() {
         return Collections.singletonList(this);
-    }
-
-    public boolean needToAskToCreateNewObject() {
-        return entity.addOnEvent.contains(FormEventType.APPLY) || entity.addOnEvent.contains(FormEventType.OK);
     }
 }

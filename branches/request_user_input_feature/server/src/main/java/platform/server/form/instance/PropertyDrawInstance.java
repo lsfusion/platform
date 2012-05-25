@@ -1,18 +1,13 @@
 package platform.server.form.instance;
 
-import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
-import platform.interop.form.ServerResponse;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.ChangeObjectActionProperty;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {

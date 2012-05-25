@@ -14,7 +14,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.*;
 import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
@@ -25,7 +24,6 @@ import platform.server.form.navigator.UserController;
 import platform.server.logics.*;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
@@ -583,7 +581,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         }
 
         if (onlyCheck) {
-            incrementApply.cancel();
+            incrementApply.cancel(actions);
             return true;
         }
 
@@ -853,7 +851,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
     }
 
-    public ExecutionEnvironmentInterface cancel() throws SQLException {
+    public ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException {
         restart(true);
         return this;
     }

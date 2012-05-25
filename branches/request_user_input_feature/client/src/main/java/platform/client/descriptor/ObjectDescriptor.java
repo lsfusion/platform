@@ -17,21 +17,17 @@ import java.util.Set;
 
 public class ObjectDescriptor extends ContextIdentityObject implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable, CustomConstructible {
 
-    public Set<FormEventType> addOnEvent = new HashSet<FormEventType>();
-
     public ClientObject client;
     public GroupObjectDescriptor groupTo;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
-        pool.writeObject(outStream, addOnEvent);
         getBaseClass().serialize(outStream);
         pool.writeString(outStream, client.caption);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         groupTo = (GroupObjectDescriptor) pool.deserializeObject(inStream);
-        addOnEvent = pool.readObject(inStream);
 
         client = pool.context.getObject(ID);
     }
@@ -66,16 +62,6 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
 
     public ClientClass getBaseClass() {
         return client.baseClass;
-    }
-
-    public void setAddOnEvent(List<FormEventType> addOnEvent) {
-        this.addOnEvent.clear();
-        this.addOnEvent.addAll(addOnEvent);
-        updateDependency(this, "addOnEvent");
-    }
-
-    public List<FormEventType> getAddOnEvent() {
-        return new ArrayList<FormEventType>(addOnEvent);
     }
 
     public String getInstanceCode(){

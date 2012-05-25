@@ -13,6 +13,7 @@ import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ColorClass;
+import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
@@ -23,6 +24,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
@@ -892,6 +894,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         outStream.writeUTF(showType.name());
     }
 
+    public void setAddOnTransaction(ObjectEntity entity, LogicsModule lm) {
+        setAddOnEvent(entity, lm, FormEventType.INIT, FormEventType.APPLY, FormEventType.CANCEL);
+    }
+
+    public void setAddOnEvent(ObjectEntity entity, LogicsModule lm, FormEventType... events) {
+        addActionsOnEvent(addPropertyObject(lm.getSimpleAddObjectAction((CustomClass) entity.baseClass)), events);
+    }
+
     public void addActionsOnObjectChange(ObjectEntity object, ActionPropertyObjectEntity... actions) {
         addActionsOnObjectChange(object, false, actions);
     }
@@ -900,12 +910,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         addActionsOnEvent(object, drop, actions);
     }
 
-    public void addActionsOnApply(ActionPropertyObjectEntity... actions) {
-        addActionsOnEvent(FormEventType.APPLY, false, actions);
+    public void addActionsOnEvent(ActionPropertyObjectEntity action, Object... events) {
+        for(Object event : events)
+            addActionsOnEvent(event, action);
     }
 
-    public void addActionsOnOk(ActionPropertyObjectEntity... actions) {
-        addActionsOnEvent(FormEventType.OK, false, actions);
+    public void addActionsOnEvent(Object eventObject, ActionPropertyObjectEntity<?>... actions) {
+        addActionsOnEvent(eventObject, false, actions);
     }
 
     public void addActionsOnEvent(Object eventObject, boolean drop, ActionPropertyObjectEntity<?>... actions) {

@@ -1,23 +1,16 @@
 package platform.server.session;
 
-import org.apache.poi.ss.formula.Formula;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.ParamMessage;
-import platform.server.Settings;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.MapValuesIterable;
-import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.data.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -30,7 +23,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.crossJoin;
-import static platform.base.BaseUtils.objectInstancer;
 
 // вообщем то public потому как иначе aspect не ловит
 public class IncrementApply extends OverrideModifier implements ExecutionEnvironmentInterface {
@@ -109,7 +101,7 @@ public class IncrementApply extends OverrideModifier implements ExecutionEnviron
     }
 
     boolean rollbacked = false;
-    public ExecutionEnvironmentInterface cancel() throws SQLException {
+    public ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException {
         assert !rollbacked;
 
         // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы

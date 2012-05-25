@@ -4097,7 +4097,7 @@ public class RomanLogicsModule extends LogicsModule {
             objOrder = addSingleGroupObject(order, "Заказ");
             if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objOrder);
-                objOrder.setAddOnEvent(FormEventType.INIT);
+                setAddOnEvent(objOrder, RomanLogicsModule.this, FormEventType.INIT);
             }
 
             addPropertyDraw(objOrder, baseLM.date, sidDocument, nameDestinationDestinationDocument, dateFromOrder, dateToOrder, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument);
@@ -4324,7 +4324,7 @@ public class RomanLogicsModule extends LogicsModule {
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objInvoice);
-                objInvoice.setAddOnEvent(FormEventType.INIT);
+                setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
             }
 
             addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -5477,7 +5477,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objFreightBox = addSingleGroupObject(2, "freightBox", freightBox, "Короба для транспортировки", baseLM.barcode);
             setEditType(objFreightBox, PropertyEditType.READONLY);
@@ -5513,7 +5513,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objPallet = addSingleGroupObject(2, "pallet", pallet, "Паллеты для транспортировки", baseLM.barcode);
             setEditType(objPallet, PropertyEditType.READONLY);
@@ -5550,7 +5550,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objSku = addSingleGroupObject(sku, "Товары", baseLM.barcode);
             setEditType(objSku, PropertyEditType.READONLY);
@@ -5585,7 +5585,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(objCreate, baseLM.delete);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, baseLM.delete);
             setEditType(objStamp, PropertyEditType.READONLY);
@@ -8061,7 +8061,7 @@ public class RomanLogicsModule extends LogicsModule {
 //            addActionsOnOk(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
 //            addActionsOnOk(addPropertyObject(addItemSIDArticleSupplierColorSizeBarcode, objSIDArticleComposite, objSupplier, objColorSupplier, objSizeSupplier, objBarcode));
 
-            addActionsOnOk(addPropertyObject(addItemArticleCompositeColorSizeBarcode, objArticleComposite, objColorSupplier, objSizeSupplier, objBarcode));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addItemArticleCompositeColorSizeBarcode, objArticleComposite, objColorSupplier, objSizeSupplier, objBarcode));
         }
 
         @Override
@@ -8170,13 +8170,13 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             if (barcode) {
-                addActionsOnOk(addPropertyObject(addSetPropertyAProp(baseLM.equalsObjectBarcode, 1, 2, baseLM.vtrue), objSku, objBarcode));
+                addActionsOnEvent(FormEventType.OK, addPropertyObject(addSetPropertyAProp(baseLM.equalsObjectBarcode, 1, 2, baseLM.vtrue), objSku, objBarcode));
             } else {
-                addActionsOnOk(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
+                addActionsOnEvent(FormEventType.OK, addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
                 if (box)
-                    addActionsOnOk(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
+                    addActionsOnEvent(FormEventType.OK, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
                 else
-                    addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
+                    addActionsOnEvent(FormEventType.OK, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
             }
 
             setEditType(PropertyEditType.READONLY);

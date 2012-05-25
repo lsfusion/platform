@@ -149,7 +149,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public void cancel() throws SQLException {
-        getEnv().cancel();
+        getEnv().cancel(actions);
     }
 
     public void emitExceptionIfNotInFormSession() {

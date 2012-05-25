@@ -12,6 +12,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
@@ -5092,7 +5093,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setEditType(openApplicationProjectAction, PropertyEditType.EDITABLE);
             setEditType(exportProjectDocumentsAction, PropertyEditType.EDITABLE);
 
-            addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(setPositiveResultForesightCheckProject, objProject));
 
             setPageSize(0);
 
@@ -5128,7 +5129,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", commentForesightCheckProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnOk(addPropertyObject(setNegativeResultForesightCheckProject, objProject));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(setNegativeResultForesightCheckProject, objProject));
 
             rejectForesightCheckProject = addIfAProp(actionGroup, "rejectForesightCheckProject", "Не прошла проверку на соответствие форсайту", true, resultForesightCheckProject, 1,
                     addMFAProp(actionGroup, "Не прошла проверку на соответствие форсайту", this, new ObjectEntity[]{objProject}, true), 1);
@@ -5314,12 +5315,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objComment = addSingleGroupObject(TextClass.instance, "Комментарий", baseLM.objectValue);
             objComment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnOk(addPropertyObject(addSetPropertyAProp(projectActionProject, 1, addCProp(projectAction, "preliminary")), objProject));
-            
-            addActionsOnOk(addPropertyObject(addJoinAProp(
-                    addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, changeLegalCheck, resultLegalCheck),
-                    1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
-                    ), objProject, objComment));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addSetPropertyAProp(projectActionProject, 1, addCProp(projectAction, "preliminary")), objProject));
+
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addJoinAProp(
+                        addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, changeLegalCheck, resultLegalCheck),
+                        1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
+                        ), objProject, objComment));
 
             acceptPreliminaryLegalCheckProject = addIfAProp(actionGroup, "acceptPreliminaryLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)",
                     addJProp(and(false, true), needLegalCheckStatusProject, 1, isStatusProject, 1, isPreliminaryAndStatusProject, 1), 1,
@@ -5357,10 +5358,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objComment = addSingleGroupObject(TextClass.instance, "Комментарий", baseLM.objectValue);
             objComment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnOk(addPropertyObject(addJoinAProp(
-                    addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, resultLegalCheck),
-                    1, 2, addCProp(legalCheckResult, "negativeLegalCheckResult"))
-                                             , objProject, objComment));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addJoinAProp(
+                        addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, resultLegalCheck),
+                        1, 2, addCProp(legalCheckResult, "negativeLegalCheckResult"))
+                                                 , objProject, objComment));
 
             rejectLegalCheckProject = addIfAProp(actionGroup, "rejectLegalCheckProject", "Не прошла юридическую проверку", needLegalCheckStatusProject, 1,
                     addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1);

@@ -282,6 +282,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP onlyNotZero;
 
     public LAP delete;
+    public LAP dropString;
 
     public LAP apply;
 
@@ -751,6 +752,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), numberToDOW, numberDOWInDate, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
+        dropString = addAProp(new DropObjectActionProperty(StringClass.get(13)));
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 

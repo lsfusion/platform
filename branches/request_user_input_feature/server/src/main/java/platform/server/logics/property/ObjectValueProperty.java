@@ -10,7 +10,7 @@ import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.actions.ChangeObjectActionProperty;
+import platform.server.logics.property.actions.ChangeReadObjectActionProperty;
 import platform.server.session.PropertyChanges;
 
 import java.util.Collections;
@@ -47,7 +47,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     @IdentityLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        return new ChangeObjectActionProperty(null, getInterface().interfaceClass).getImplement(Collections.singletonList(getInterface()));
+        return new ChangeReadObjectActionProperty(null, getInterface().interfaceClass).getImplement(Collections.singletonList(getInterface()));
     }
 
     private ClassPropertyInterface getInterface() {

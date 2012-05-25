@@ -105,8 +105,8 @@ public class ExecutionEnvironment {
         current.apply(BL, actions);
     }
 
-    public void cancel() throws SQLException {
-        current = current.cancel();
+    public void cancel(List<ClientAction> actions) throws SQLException {
+        current = current.cancel(actions);
     }
 
     public ObjectValue getLastUserInput() {

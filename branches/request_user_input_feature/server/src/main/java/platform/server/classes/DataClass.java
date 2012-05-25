@@ -192,7 +192,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public ObjectInstance newInstance(ObjectEntity entity) {
-        assert entity.addOnEvent.isEmpty();
         return new DataObjectInstance(entity, this);
     }
 

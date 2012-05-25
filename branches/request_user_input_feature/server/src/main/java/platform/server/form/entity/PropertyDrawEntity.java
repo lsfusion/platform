@@ -11,7 +11,6 @@ import platform.server.form.instance.*;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.ChangeObjectActionProperty;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;

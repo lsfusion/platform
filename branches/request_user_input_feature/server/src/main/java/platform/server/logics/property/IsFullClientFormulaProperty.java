@@ -9,7 +9,7 @@ public class IsFullClientFormulaProperty extends CurrentEnvironmentFormulaProper
     public final static IsFullClientFormulaProperty instance = new IsFullClientFormulaProperty();
 
     private IsFullClientFormulaProperty() {
-        super("IsFullClient", ServerResourceBundle.getString("logics.property.current.isFullClient"), SQLSession.isFullClientParam, LogicalClass.instance);
+        super("IsFullClient", ServerResourceBundle.getString("logics.property.current.isfullclient"), SQLSession.isFullClientParam, LogicalClass.instance);
 
         finalizeInit();
     }

@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ListClientAction;
@@ -1823,7 +1824,7 @@ public class VEDLogicsModule extends LogicsModule {
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
-            objBarcode.resetOnApply = true;
+            addActionsOnEvent(FormEventType.APPLY, addPropertyObject(baseLM.dropString, objBarcode));
 
             addPropertyDraw(baseLM.reverseBarcode);
 
@@ -1908,7 +1909,7 @@ public class VEDLogicsModule extends LogicsModule {
             if (toAdd) {
                 objDoc.groupTo.initClassView = ClassViewType.PANEL;
                 objDoc.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-                objDoc.setAddOnTransaction();
+                setAddOnTransaction(objDoc, VEDLogicsModule.this);
             } else {
                 addPropertyDraw(orderUserName, objDoc);
                 addObjectActions(this, objDoc);

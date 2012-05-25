@@ -38,7 +38,6 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.BusinessLogicsBootstrap;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
@@ -202,7 +201,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
 
         applyFilters();
-        addObjectOnTransaction(FormEventType.INIT);
+        fireOnInit();
 
         if(!interactive) {
             endApply();
@@ -881,26 +880,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         dataChanged = session.hasChanges();
     }
 
-    void addObjectOnTransaction(FormEventType event) throws SQLException {
-        for (ObjectInstance object : getObjects()) {
-            if (object instanceof CustomObjectInstance) {
-                CustomObjectInstance customObject = (CustomObjectInstance) object;
-                if (customObject.isAddOnEvent(event)) {
-                    addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
-                }
-            }
-            if (object.isResetOnApply())
-                object.groupTo.dropSeek(object);
-        }
-    }
-
     public boolean checkApply(List<ClientAction> actions) throws SQLException {
         return session.check(BL, actions);
     }
 
     public boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
-        actions.addAll(fireOnApply());
-
         if (entity.isSynchronizedApply)
             synchronized (entity) {
                 return syncApply(actions);
@@ -932,7 +916,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         fillHints(true);
 
         refreshData();
-        addObjectOnTransaction(FormEventType.APPLY);
+        actions.addAll(fireOnApply());
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
@@ -940,7 +924,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return true;
     }
 
-    public ExecutionEnvironmentInterface cancel() throws SQLException {
+    public ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException {
         session.restart(true);
 
         fillHints(true);
@@ -949,7 +933,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         for (ObjectInstance object : getObjects())
             if (object instanceof CustomObjectInstance)
                 ((CustomObjectInstance) object).updateCurrentClass(session);
-        addObjectOnTransaction(FormEventType.CANCEL);
+        actions.addAll(fireOnCancel());
 
         dataChanged = true;
 
@@ -1470,8 +1454,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return fireEvent(object.entity);
     }
 
+    public List<ClientAction> fireOnInit() throws SQLException {
+        return fireEvent(FormEventType.INIT);
+    }
+
     public List<ClientAction> fireOnApply() throws SQLException {
         return fireEvent(FormEventType.APPLY);
+    }
+
+    public List<ClientAction> fireOnCancel() throws SQLException {
+        return fireEvent(FormEventType.CANCEL);
     }
 
     public List<ClientAction> fireOnOk() throws SQLException {
@@ -1579,7 +1571,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         String confirmMsg = "";
         for (GroupObjectInstance group : groups) {
             for (ObjectInstance object : group.objects) {
-                if (object.needToAskToCreateNewObject()) {
+                if (false) {
                     confirmMsg += getString("form.create.new.object") + " " + object.getCaption() + " ?";
                 }
             }
@@ -1597,7 +1589,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         if (session.hasStoredChanges()) {
             int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
             if (result == JOptionPane.YES_OPTION) {
-                cancel();
+                cancel(actions);
             }
         }
     }

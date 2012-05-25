@@ -10,7 +10,7 @@ public class IsDebugFormulaProperty extends CurrentEnvironmentFormulaProperty {
     public final static IsDebugFormulaProperty instance = new IsDebugFormulaProperty();
 
     private IsDebugFormulaProperty() {
-        super("IsDebug", ServerResourceBundle.getString("logics.property.current.isDebug"), SQLSession.isDebugParam, LogicalClass.instance);
+        super("IsDebug", ServerResourceBundle.getString("logics.property.current.isdebug"), SQLSession.isDebugParam, LogicalClass.instance);
 
         finalizeInit();
     }
