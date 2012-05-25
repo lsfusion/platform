@@ -19,6 +19,7 @@ IMPORT Document;
 dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 
 GROUP printGroup 'Печатные формы' : baseGroup;
+GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
 
 //------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
@@ -7828,10 +7829,17 @@ TABLE orderSupplierItem(orderSupplier, item);
 
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier)) IN documentHeaderGroup;
+companyOrderSupplier 'Компания заказа' (orderSupplier) =
+    fullNameLegalEntity(companyStore(storeDepartmentStore(departmentStoreOrderSupplier(orderSupplier)))) IN documentHeaderGroup;
+
+castSubject = FORMULA STRING[100] '\'Заказ № \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
+subjectOrderSupplier (orderSupplier) =
+    castSubject(seriesObject(orderSupplier), numberObject(orderSupplier), companyOrderSupplier(orderSupplier)) IN documentHeaderGroup;
 
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 UNPSupplierOrderSupplier 'УНП поставщика' (orderSupplier) = UNPLegalEntity(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
+emailSupplierOrderSupplier 'E-mail поставщика' (orderSupplier) = emailLegalEntity(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 curDateOrderSupplier (orderSupplier) <- currentDate() WHEN ASSIGNED(departmentStoreOrderSupplier(orderSupplier));
@@ -8437,6 +8445,53 @@ DESIGN orderSupplier FROM DEFAULT {
     }
 }
 
+FORM orderSupplierPrint 'Заказ поставщику' PRINT
+
+    OBJECTS o=orderSupplier FIXED PANEL
+
+    PROPERTIES(o)          nameNumeratorObject, numberObject, seriesObject,
+                           setValueNumeratedObject, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
+                           quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
+                           companyOrderSupplier, nameSupplierOrderSupplier, UNPSupplierOrderSupplier,
+                           emailSupplierOrderSupplier, totalSumOrderSupplier,
+                           totalSumVatOrderSupplier, totalFullSumOrderSupplier, allowablePercentOrderSupplier
+    PROPERTIES(o) READONLY completePercentageOrderSupplier
+
+    OBJECTS i=item
+
+    PROPERTIES(i) READONLY nameAttributeItem , barcodeBarcodeSku
+    ORDER BY               nameAttributeItem
+
+    PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
+
+    PROPERTIES(i) quantityPackItem, minQuantityOrderItem
+    PROPERTIES FORCE PANEL nameWareOrderSupplier(o, i)
+    PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
+                                    nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
+                                    lastOrderSupplier(o, i), warePriceOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
+                                    dataWareRangeOrderSupplier(o, i)
+
+    PROPERTIES             currentBalanceOrderSupplierItem(o, i), quantityToSellNextOrder(o, i), minReserveItem(i), recommendCountOrderSupplier(o, i)
+    PROPERTIES(o, i)       priceSupplierItemOrderSupplier, numberSupplierRangeOrderSupplier,
+                           dataSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
+                           fullSumItemOrderSupplier
+
+    FILTERS isSupplierItemDepartmentOrderSupplier(o, i),
+            isBanSupplierItemDepartmentOrderSupplier(o, i)
+
+    FILTERGROUP filters1
+        FILTER 'Показывать только заказанные позиции' 'F10' sumQuantityItemOrderSupplier(o, i) DEFAULT
+
+;
+
+toPrintOrderSupplier 'Печать заказа поставщику' (orderSupplier) = ACTION FORM orderSupplierPrint OBJECTS o IMAGE 'print.png' IN printGroup CONFIRM;
+
+emailPrintOrderSupplier 'Отослать заказ поставщику' (orderSupplier) =
+    ACTION EMAIL FROM companyOrderSupplier(orderSupplier)
+                 SUBJECT subjectOrderSupplier(orderSupplier)
+                 TO emailSupplierOrderSupplier(orderSupplier)
+                 INLINE orderSupplierPrint OBJECTS o = orderSupplier IN emailGroup CONFIRM;
+
 FORM orderSuppliers 'Заказы поставщику'
 
     OBJECTS o=orderSupplier
@@ -8448,6 +8503,8 @@ FORM orderSuppliers 'Заказы поставщику'
     PROPERTIES(o)          ADDFORM, EDITFORM SHOWIF isDraftOrderSupplier(o), delete FORCE PANEL SHOWIF isDraftOrderSupplier(o),
                            postOrderSupplier SHOWIF isDraftOrderSupplier(o), unpostOrderSupplier SHOWIF isPostedOrderSupplier(o)
     PROPERTIES(o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES(o) FORCE PANEL toPrintOrderSupplier, emailPrintOrderSupplier
 
     OBJECTS i=item
 
@@ -8463,6 +8520,7 @@ FORM orderSuppliers 'Заказы поставщику'
                                fullSumItemOrderSupplier
 
     FILTERS sumQuantityItemOrderSupplier(o, i)
+
     //        isSupplierItemDepartmentOrderSupplier(o, i),
     //        isBanSupplierItemDepartmentOrderSupplier(o, i)
 ;
@@ -8482,8 +8540,10 @@ DESIGN orderSuppliers FROM DEFAULT{
         fillHorizontal = 1;
     };
     POSITION o.historyGroup TO THE LEFT o.postedGroup;
+    ADD o.printGroup BEFORE functions.box;
+    ADD o.emailGroup BEFORE functions.box;
+    POSITION o.emailGroup TO THE RIGHT o.printGroup;
 }
-
 
 // ----------------------------------- Разрешать поставки ------------------------------------------- //
 
@@ -13375,6 +13435,7 @@ NAVIGATOR {
         ADD wastagePrint;
         ADD naturalLossPrint;
         ADD writeOffPrint;
+        ADD orderSupplierPrint;
         ADD listInventoryPrint;
     }
 
