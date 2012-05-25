@@ -15,6 +15,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.KeyEqual;
@@ -113,6 +114,9 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(new HashMap<T, DataObject>(), mapKeys, expr, where);
     }
 
+    public static <P extends PropertyInterface> PropertyChange<P> TRUE() {
+        return new PropertyChange<P>(new HashMap<P, KeyExpr>(), ValueExpr.TRUE, Where.TRUE);
+    }
     public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr) {
         this(mapKeys, expr, expr.getWhere());
     }

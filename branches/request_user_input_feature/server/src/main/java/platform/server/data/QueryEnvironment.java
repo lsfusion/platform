@@ -6,11 +6,16 @@ public interface QueryEnvironment {
 
     ParseInterface getSQLUser();
 
+    ParseInterface getIsFullClient();
     ParseInterface getSQLComputer();
     ParseInterface getIsServerRestarting();
 
     public final static QueryEnvironment empty = new QueryEnvironment() {
         public ParseInterface getSQLUser() {
+            return ParseInterface.empty;
+        }
+
+        public ParseInterface getIsFullClient() {
             return ParseInterface.empty;
         }
 

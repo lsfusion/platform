@@ -275,6 +275,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         public DataObject getCurrentComputer() {
             return weakThis.get().computer.getDataObject();
         }
+
+        public boolean isFullClient() {
+            return weakThis.get().isFullClient();
+        }
     }
 
     private DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -483,7 +487,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                     session = createSession();
                 }
 
-                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, isFullClient, interactive);
+                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, interactive);
                 // все равно подошли объекты или нет
 
                 remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
@@ -802,7 +806,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
-        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, isFullClient, isModal, newSession, checkOnOk, interactive, null);
+        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, isModal, newSession, checkOnOk, interactive, null);
     }
 
     @Override

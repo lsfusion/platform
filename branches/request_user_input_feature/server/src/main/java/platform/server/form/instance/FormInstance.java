@@ -93,8 +93,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return session.env;
     }
 
-    public final boolean isFullClient;
-
     public final boolean isModal;
 
     public final boolean isNewSession;
@@ -103,15 +101,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     // для импорта конструктор, объекты пустые
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, true, false);
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, false);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, boolean isFullClient, boolean interactive) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), isFullClient, false, false, false, interactive, null);
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, boolean interactive) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), false, true, false, interactive, null);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isFullClient, boolean isModal, boolean isNewSession, boolean checkOnOk, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
-        lateInit(noUpdate, increment, session);
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean isNewSession, boolean checkOnOk, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
+        this.isNewSession = isNewSession;
+        this.isModal = isModal;
+        this.checkOnOk = checkOnOk;
+        this.interactive = interactive;
+
+        lateInit(envModifier, noUpdate, increment, session);
         this.session = session;
         this.entity = entity;
         this.BL = BL;
@@ -205,11 +208,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             endApply();
             this.mapObjects = mapObjects;
         }
-        this.isFullClient = isFullClient;
-        this.isNewSession = isNewSession;
-        this.isModal = isModal;
-        this.checkOnOk = checkOnOk;
-        this.interactive = interactive;
     }
 
     public FormUserPreferences loadUserPreferences() {
@@ -1035,7 +1033,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOK, boolean interactive) throws SQLException {
-        return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isFullClient, isModal, newSession, checkOnOK, interactive, null);
+        return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, newSession, checkOnOK, interactive, null);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
@@ -1414,7 +1412,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public DialogInstance<T> createObjectDialog(CustomClass objectClass) throws SQLException {
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
-        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer, isFullClient);
+        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer);
     }
 
     public DialogInstance<T> createObjectEditorDialog(CalcPropertyValueImplement propertyValues) throws SQLException {
@@ -1428,7 +1426,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         return currentObject == null
                ? null
-               : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer, isFullClient);
+               : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
     }
 
     public DialogInstance<T> createChangeEditorDialog(CalcPropertyValueImplement propertyValues, GroupObjectInstance groupObject, CalcProperty filterProperty) throws SQLException {
@@ -1438,7 +1436,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, additionalFilters, pullProps, isFullClient);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, additionalFilters, pullProps);
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
@@ -1455,7 +1453,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         Set<FilterEntity> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, additionalFilters, new HashSet<PullChangeProperty>(), isFullClient);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, additionalFilters, new HashSet<PullChangeProperty>());
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
@@ -1537,14 +1535,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public boolean isInTransaction() {
         return false;
-    }
-
-    public boolean isFullClient() {
-        return isFullClient;
-    }
-
-    public boolean isDebug() {
-        return BusinessLogicsBootstrap.isDebug();
     }
 
     public boolean isDialog() {
@@ -1643,6 +1633,35 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
 
         actions.add(new HideFormClientAction());
+    }
+
+    private EnvironmentModifier envModifier = new EnvironmentModifier();
+    private class EnvironmentModifier extends BaseMutableModifier {
+
+        private EnvironmentModifier() {
+            addChanges(calculateProperties());
+        }
+
+        @Override
+        protected boolean isFinal() {
+            return true;
+        }
+
+        @Override
+        protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
+            if(property.equals(FormEntity.isDialog) && isDialog())
+                return PropertyChange.TRUE();
+            if(property.equals(FormEntity.isModal) && isModal())
+                return PropertyChange.TRUE();
+            if(property.equals(FormEntity.isNewSession) && isNewSession())
+                return PropertyChange.TRUE();
+            return null;
+        }
+
+        @Override
+        protected Collection<CalcProperty> calculateProperties() {
+            return BaseUtils.<CalcProperty>toList(FormEntity.isDialog, FormEntity.isModal, FormEntity.isNewSession);
+        }
     }
 
     public void formRefresh(List<ClientAction> actions) throws SQLException {

@@ -37,9 +37,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           CustomClassListener classListener,
                           ObjectEntity dialogEntity,
                           Object dialogValue,
-                          PropertyObjectInterfaceInstance computer,
-                          boolean isFullClient) throws SQLException {
-        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null, isFullClient);
+                          PropertyObjectInterfaceInstance computer) throws SQLException {
+        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null);
     }
 
     private final Set<PullChangeProperty> pullProps;
@@ -53,8 +52,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer,
                           Set<FilterEntity> additionalFilters,
-                          Set<PullChangeProperty> pullProps,
-                          boolean isFullClient) throws SQLException {
+                          Set<PullChangeProperty> pullProps) throws SQLException {
         super(entity,
               BL,
               session,
@@ -63,7 +61,6 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               classListener,
               computer,
               singletonMap(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
-              isFullClient,
               true,
               false,
               false,

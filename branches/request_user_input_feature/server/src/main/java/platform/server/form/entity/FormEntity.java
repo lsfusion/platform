@@ -13,6 +13,7 @@ import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ColorClass;
+import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -54,11 +55,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
-    public static final CalcPropertyMapImplement isFullClient = DerivedProperty.createLogical(true);
-    public static final CalcPropertyMapImplement isDebug = DerivedProperty.createFalse();
-    public static final CalcPropertyMapImplement isDialog = DerivedProperty.createFalse();
-    public static final CalcPropertyMapImplement isModal = DerivedProperty.createFalse();
-    public static final CalcPropertyMapImplement isNewSession = DerivedProperty.createLogical(true);
+    public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
+    public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
+    public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
+    public static final SessionDataProperty isModal = new SessionDataProperty("isModal", "Is modal", LogicalClass.instance);
+    public static final SessionDataProperty isNewSession = new SessionDataProperty("isNewSession", "Is new session", LogicalClass.instance);
 
     public static final PrintActionProperty printActionProperty = new PrintActionProperty();
     public static final EditActionProperty editActionProperty = new EditActionProperty();
@@ -118,15 +119,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         isPrintForm = iisPrintForm;
 
-        printActionPropertyDraw = addFormButton(printActionProperty, null, isFullClient, isDialog, false);
-        editActionPropertyDraw = addFormButton(editActionProperty, null, isFullClient, isDialog, false, isDebug);
-        xlsActionPropertyDraw = addFormButton(xlsActionProperty, null, isFullClient, isDialog, false);
-        nullActionPropertyDraw = addFormButton(nullActionProperty, null, isDialog);
+        printActionPropertyDraw = addFormButton(printActionProperty, null, isFullClient.getImplement(), isDialog.getImplement(), false);
+        editActionPropertyDraw = addFormButton(editActionProperty, null, isFullClient.getImplement(), isDialog.getImplement(), false, isDebug.getImplement());
+        xlsActionPropertyDraw = addFormButton(xlsActionProperty, null, isFullClient.getImplement(), isDialog.getImplement(), false);
+        nullActionPropertyDraw = addFormButton(nullActionProperty, null, isDialog.getImplement());
         refreshActionPropertyDraw = addPropertyDraw(refreshActionProperty);
-        applyActionPropertyDraw = addFormButton(applyActionProperty, DataSession.isDataChanged.getImplement(), isNewSession);
-        cancelActionPropertyDraw = addFormButton(cancelActionProperty, DataSession.isDataChanged.getImplement(), isNewSession);
-        okActionPropertyDraw= addFormButton(okActionProperty, null, isModal);
-        closeActionPropertyDraw = addFormButton(closeActionProperty, null, isModal);
+        applyActionPropertyDraw = addFormButton(applyActionProperty, DataSession.isDataChanged.getImplement(), isNewSession.getImplement());
+        cancelActionPropertyDraw = addFormButton(cancelActionProperty, DataSession.isDataChanged.getImplement(), isNewSession.getImplement());
+        okActionPropertyDraw= addFormButton(okActionProperty, null, isModal.getImplement());
+        closeActionPropertyDraw = addFormButton(closeActionProperty, null, isModal.getImplement());
 
         applyActionPropertyDraw.propertyBackground = addPropertyObject(
                 new LCP(createAnd(new ArrayList<ClassPropertyInterface>(), DerivedProperty.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance), DataSession.isDataChanged.getImplement()).property)

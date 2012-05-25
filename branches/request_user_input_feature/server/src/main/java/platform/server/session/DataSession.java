@@ -735,16 +735,22 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
             return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
         }
 
+        public ParseInterface getIsFullClient() {
+            return new LogicalParseInterface() {
+                public boolean isTrue() {
+                    return computer.isFullClient();
+                }
+            };
+        }
+
         public ParseInterface getSQLComputer() {
             return new TypeObject(computer.getCurrentComputer().object, ObjectType.instance);
         }
 
         public ParseInterface getIsServerRestarting() {
-            return new StringParseInterface() {
-                public String getString(SQLSyntax syntax) {
-                    return isServerRestarting.isServerRestarting()
-                           ? LogicalClass.instance.getString(true, syntax)
-                           : SQLSyntax.NULL;
+            return new LogicalParseInterface() {
+                public boolean isTrue() {
+                    return isServerRestarting.isServerRestarting();
                 }
             };
         }

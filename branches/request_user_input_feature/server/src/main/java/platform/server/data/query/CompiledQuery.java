@@ -27,6 +27,7 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
+import platform.server.logics.BusinessLogicsBootstrap;
 import platform.server.logics.ServerResourceBundle;
 
 import java.sql.SQLException;
@@ -1139,6 +1140,12 @@ public class CompiledQuery<K,V> {
         mapValues.put(SQLSession.userParam, env.getSQLUser());
         mapValues.put(SQLSession.computerParam, env.getSQLComputer());
         mapValues.put(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
+        mapValues.put(SQLSession.isFullClientParam, env.getIsFullClient());
+        mapValues.put(SQLSession.isDebugParam, new LogicalParseInterface() {
+            public boolean isTrue() {
+                return BusinessLogicsBootstrap.isDebug();
+            }
+        });
 
         return mapValues;
     }

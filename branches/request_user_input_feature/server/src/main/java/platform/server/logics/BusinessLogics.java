@@ -871,6 +871,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 public DataObject getCurrentComputer() {
                     return new DataObject(0, LM.computer);
                 }
+                public boolean isFullClient() {
+                    return false;
+                }
             });
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
@@ -1538,9 +1541,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 return new DataObject(systemUserObject, LM.systemUser);
             }
         }, new ComputerController() {
-
             public DataObject getCurrentComputer() {
                 return new DataObject(systemComputer, LM.computer);
+            }
+            public boolean isFullClient() {
+                return false;
             }
         });
     }
@@ -2544,7 +2549,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
-        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, true, isModal, newSession, checkOnOk, interactive, null);
+        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, isModal, newSession, checkOnOk, interactive, null);
     }
 
     @Override
