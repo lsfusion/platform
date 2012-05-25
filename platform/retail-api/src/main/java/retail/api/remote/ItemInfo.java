@@ -10,9 +10,12 @@ public class ItemInfo implements Serializable {
     public Integer hoursExpiry;
     public Integer labelFormat;
     public String composition;
+    public boolean isWeightItem;
+    public Integer numberGroupItem;
+    public String nameGroupItem;
 
-    public ItemInfo(String barcodeEx, String name, Double price, Double daysExpiry, Integer hoursExpiry, 
-                    Integer labelFormat, String composition) {
+    public ItemInfo(String barcodeEx, String name, Double price, Double daysExpiry, Integer hoursExpiry,
+                    Integer labelFormat, String composition, boolean isWeightItem, Integer numberGroupItem, String nameGroupItem) {
         this.barcodeEx = barcodeEx;
         this.name = name;
         this.price = price;
@@ -20,5 +23,8 @@ public class ItemInfo implements Serializable {
         this.hoursExpiry = hoursExpiry;
         this.labelFormat = labelFormat;
         this.composition = composition;
+        this.isWeightItem = isWeightItem;
+        this.numberGroupItem = numberGroupItem;
+        this.nameGroupItem = nameGroupItem;
     }
 }
