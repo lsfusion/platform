@@ -15,15 +15,15 @@ hasParentStockGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND chi
 hasParentStockGroup 'Уровень' (child, parent) = TRUE AND hasParentStockGroupLevel(child, parent);
 
 
-CLASS ABSTRACT stock 'Склад' : named;
-TABLE stock(stock);
+CLASS ABSTRACT stock2 'Склад' : named;
+TABLE stock2(stock2);
 
-stockGroupStock (stock) = ABSTRACT stockGroup (stock);
+stockGroupStock (stock2) = ABSTRACT stockGroup (stock2);
 
-CLASS ABSTRACT sku 'SKU';
-TABLE sku(sku);
+CLASS ABSTRACT sku2 'SKU';
+TABLE sku2(sku2);
 
-nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
+nameSku 'Наименование' (sku2) = ABSTRACT STRING[200] (sku2) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
 
 
 CLASS ABSTRACT balanceSkuLedger 'Изменение остатка по товару';
@@ -46,16 +46,16 @@ CLASS ABSTRACT inTransferBalanceSkuLedger 'Внутренний приход п�
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeBalanceSkuLedger 'Дата/время' = ABSTRACT DATETIME (balanceSkuLedger) PERSISTENT INDEXED;
-dateBalanceSkuLedger 'Дата' (ledger) = dateInTime(dateTimeBalanceSkuLedger(ledger)) PERSISTENT;
+dateBalanceSkuLedger'Дата' (ledger) = dateInTime(dateTimeBalanceSkuLedger(ledger)) PERSISTENT;
 
 orderBalanceSkuLedger (ledger) = LIST(dateTimeBalanceSkuLedger(ledger), ledger);
 
 isPostedBalanceSkuLedger 'Закрыт' = ABSTRACT BOOLEAN (balanceSkuLedger) PERSISTENT;
 
-skuBalanceSkuLedger = ABSTRACT sku (balanceSkuLedger) PERSISTENT INDEXED;
+skuBalanceSkuLedger = ABSTRACT sku2 (balanceSkuLedger) PERSISTENT INDEXED;
 nameSkuBalanceSkuLedger 'SKU' (ledger) = nameSku(skuBalanceSkuLedger(ledger));
 
-stockBalanceSkuLedger = ABSTRACT stock(balanceSkuLedger) PERSISTENT INDEXED;
+stockBalanceSkuLedger = ABSTRACT stock2(balanceSkuLedger) PERSISTENT INDEXED;
 nameStockBalanceSkuLedger 'Склад' (ledger) = name(stockBalanceSkuLedger(ledger));
 
 descriptionBalanceSkuLedger 'Название документа' = ABSTRACT STRING[200] (balanceSkuLedger);
@@ -86,46 +86,46 @@ signedQuantityBalanceSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantity
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
-currentBalanceSkuLedger 'Текущий остаток' (sku, stock) = GROUP SUM signedQuantityBalanceSkuLedger (ledger) AND isPostedBalanceSkuLedger(ledger)
+currentBalanceSkuLedger 'Текущий остаток' (sku2, stock2) = GROUP SUM signedQuantityBalanceSkuLedger (ledger) AND isPostedBalanceSkuLedger(ledger)
                                                           BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger) PERSISTENT;
-countBalanceSkuLedger 'Кол-во движений' (sku, stock) = GROUP SUM 1 AND signedQuantityBalanceSkuLedger (ledger) AND isPostedBalanceSkuLedger(ledger)
+countBalanceSkuLedger 'Кол-во движений' (sku2, stock2) = GROUP SUM 1 AND signedQuantityBalanceSkuLedger (ledger) AND isPostedBalanceSkuLedger(ledger)
                                                           BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger) PERSISTENT;
 
-quantityInSkuStockDate (sku, stock, date) = GROUP SUM quantityInBalanceSkuLedger(ledger) AND isPostedBalanceSkuLedger(ledger)
+quantityInSkuStockDate (sku2, stock2, date) = GROUP SUM quantityInBalanceSkuLedger(ledger) AND isPostedBalanceSkuLedger(ledger)
                                                   BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateBalanceSkuLedger(ledger) PERSISTENT;
 
-quantityOutSkuStockDate (sku, stock, date) = GROUP SUM quantityOutBalanceSkuLedger(ledger) AND isPostedBalanceSkuLedger(ledger)
+quantityOutSkuStockDate (sku2, stock2, date) = GROUP SUM quantityOutBalanceSkuLedger(ledger) AND isPostedBalanceSkuLedger(ledger)
                                                    BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateBalanceSkuLedger(ledger) PERSISTENT;
 
-quantitySkuStockDate (sku, stock, date) = quantityInSkuStockDate(sku, stock, date)
+quantitySkuStockDate (sku2, stock2, date) = quantityInSkuStockDate(sku2, stock2, date)
                                           (+)
-                                          quantityOutSkuStockDate(sku, stock, date) PERSISTENT;
+                                          quantityOutSkuStockDate(sku2, stock2, date) PERSISTENT;
 
-signedQuantitySkuStockDate (sku, stock, date) = quantityInSkuStockDate(sku, stock, date)
+signedQuantitySkuStockDate (sku2, stock2, date) = quantityInSkuStockDate(sku2, stock2, date)
                                                 (-)
-                                                quantityOutSkuStockDate(sku, stock, date) PERSISTENT;
+                                                quantityOutSkuStockDate(sku2, stock2, date) PERSISTENT;
 
 // без учета текущей даты/времени
-balanceBSkuLedgerDate 'Остаток на начало дня' (sku, stock, date) = UNION SUM currentBalanceSkuLedger(sku, stock) AND date IS DATE,
-                                                                                         -[GROUP SUM signedQuantitySkuStockDate (sku, stock, dateIn) AND dateIn >= (date AS DATE)
-                                                                                                 BY sku, stock, date](sku, stock, date);
+balanceBSkuLedgerDate 'Остаток на начало дня' (sku2, stock2, date) = UNION SUM currentBalanceSkuLedger(sku2, stock2) AND date IS DATE,
+                                                                                         -[GROUP SUM signedQuantitySkuStockDate (sku2, stock2, dateIn) AND dateIn >= (date AS DATE)
+                                                                                                 BY sku2, stock2, date](sku2, stock2, date);
 
 // с учетом текущей даты/времени
-balanceASkuLedgerDate 'Остаток на конец дня' (sku, stock, date) = UNION SUM currentBalanceSkuLedger(sku, stock) AND date IS DATE,
-                                                                                         -[GROUP SUM signedQuantitySkuStockDate (sku, stock, dateIn) AND dateIn > (date AS DATE)
-                                                                                                 BY sku, stock, date](sku, stock, date);
+balanceASkuLedgerDate 'Остаток на конец дня' (sku2, stock2, date) = UNION SUM currentBalanceSkuLedger(sku2, stock2) AND date IS DATE,
+                                                                                         -[GROUP SUM signedQuantitySkuStockDate (sku2, stock2, dateIn) AND dateIn > (date AS DATE)
+                                                                                                 BY sku2, stock2, date](sku2, stock2, date);
 
 // без учета текущей даты/времени
-balanceBSkuLedgerDateTime 'Остаток на начало дня' (sku, stock, dateTime) = UNION SUM currentBalanceSkuLedger(sku, stock) AND dateTime IS DATETIME,
+balanceBSkuLedgerDateTime 'Остаток на начало дня' (sku2, stock2, dateTime) = UNION SUM currentBalanceSkuLedger(sku2, stock2) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM signedQuantityBalanceSkuLedger (ledger) AND dateTimeBalanceSkuLedger(ledger) >= (dateTime AS DATETIME) AND isPostedBalanceSkuLedger(ledger)
-                                                                         BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateTime](sku, stock, dateTime);
+                                                                         BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateTime](sku2, stock2, dateTime);
 
 // с учетом текущей даты/времени
-balanceASkuLedgerDateTime 'Остаток на конец дня' (sku, stock, dateTime) = UNION SUM currentBalanceSkuLedger(sku, stock) AND dateTime IS DATETIME,
+balanceASkuLedgerDateTime 'Остаток на конец дня' (sku2, stock2, dateTime) = UNION SUM currentBalanceSkuLedger(sku2, stock2) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM signedQuantityBalanceSkuLedger (ledger) AND dateTimeBalanceSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceSkuLedger(ledger)
-                                                                         BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateTime](sku, stock, dateTime);
+                                                                         BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateTime](sku2, stock2, dateTime);
 
-dateLastMovedSkuStock 'Дата последнего движения товара' (sku, stock) =
+dateLastMovedSkuStock 'Дата последнего движения товара' (sku2, stock2) =
     GROUP MAX dateTimeBalanceSkuLedger(ledger)
     BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger) PERSISTENT;
 
@@ -135,7 +135,7 @@ signedCostBalanceSkuLedgerBatch (ledger, batch) = IF ledger IS outBalanceSkuLedg
                                                         THEN -costBalanceSkuLedgerBatch(ledger, batch)
                                                         ELSE costBalanceSkuLedgerBatch(ledger, batch);
 
-currentBalanceBatchLedger 'Текущий остаток' (batch, stock) = GROUP SUM signedCostBalanceSkuLedgerBatch (ledger, batch) AND isPostedBalanceSkuLedger(ledger)
+currentBalanceBatchLedger 'Текущий остаток' (batch, stock2) = GROUP SUM signedCostBalanceSkuLedgerBatch (ledger, batch) AND isPostedBalanceSkuLedger(ledger)
                                                           BY batch, stockBalanceSkuLedger(ledger) PERSISTENT;
 
 costedBalanceSkuLedger 'Расписано' (ledger) = GROUP SUM costBalanceSkuLedgerBatch (ledger, batch) BY ledger PERSISTENT;
@@ -146,13 +146,13 @@ quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND bat
 
 dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (batch) PERSISTENT INDEXED;
 isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
-skuBatch 'SKU (ИД)' (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
+skuBatch 'SKU (ИД)' (batch) = ABSTRACT sku2 (batch) PERSISTENT INDEXED;
 supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
 
-currentBalanceBatch 'Остаток (всего)' = GROUP SUM currentBalanceBatchLedger(batch, stock) BY batch PERSISTENT;
+currentBalanceBatch 'Остаток (всего)' = GROUP SUM currentBalanceBatchLedger(batch, stock2) BY batch PERSISTENT;
 
 quantityOutUserBalanceSkuLedgerBatch (ledger, batch) = quantityOutUserBalanceSkuLedger(ledger) AND batch == batchOutUserBalanceSkuLedger(ledger);
 quantityOutAutoBalanceSkuLedgerBatch (ledger, batch) =

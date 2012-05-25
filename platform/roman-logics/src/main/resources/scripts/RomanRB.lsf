@@ -986,7 +986,6 @@ FORM discountPriceChangeDocuments 'Распродажи'
 ;
 
 
-
 toCreatePriceChangeDocument 'Расценка фрахта' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceChangeDocument;
     FOR p == addedObject() DO {
@@ -1027,6 +1026,8 @@ minSumClientArticleAction 'Мин. накопленная сумма' = DATA NUM
 minSumCheckArticleAction 'Мин. сумма чека' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
 
 // документы товародвижения
+CLASS warehouse 'Склад' : stock2;
+
 CLASS customsFlow 'Расход с СВХ' : historyObject, numberedObject;
 CLASS customsFlowDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger;
 CLASS customsFlowPosted 'Закрытый расход с СВХ' : customsFlow, postedObject;

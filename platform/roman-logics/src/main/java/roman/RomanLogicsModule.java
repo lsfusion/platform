@@ -1295,7 +1295,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         store = addConcreteClass("store", "Магазин", destination, baseClass.named);
 
-        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("sku")); //
+        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("sku2")); //
 
         article = addAbstractClass("article", "Артикул", baseClass);
         articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);
@@ -1329,7 +1329,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipDimension = addConcreteClass("shipDimension", "Разрез поставки", baseClass);
 
-        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("stock"));
+        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("stock2"));
 
         freightUnit = addAbstractClass("freightUnit", "Машиноместо", baseClass);
 
@@ -1409,7 +1409,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
 
-        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"));
+        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock2"));
 
 
         creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);
