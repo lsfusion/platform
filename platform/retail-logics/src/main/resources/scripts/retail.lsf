@@ -1635,7 +1635,7 @@ daysExpiryMachineryBarcode 'Срок годности в днях' = daysExpiryP
 hoursExpiryMachineryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
 labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
-isWeightMachineryBarcode 'Состав товара' = isWeightItem(skuBarcode(barcode));
+isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
 canonicalNameItemGroupMachineryBarcode 'Группа товара' = canonicalNameItemGroupSku(skuBarcode(barcode));
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -6060,10 +6060,10 @@ accountPricePageInventoryDetailCollationSheetItem 'Цена по описям' (
 accountSumPageInventoryDetailCollationSheetItem 'Сумма по описям' (collationSheet, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
     BY collationSheetPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
 
-quantityPageInventoryDetailListInventoryItem 'Кол-во в описе' (listInventory, item) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
+quantityPageInventoryDetailListInventoryItem 'Кол-во в описи' (listInventory, item) = GROUP SUM quantityPageInventoryDetail(pageInventoryDetail)
     BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
-accountPricePageInventoryDetailListInventoryItem 'Цена в описе' (listInventory, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
-accountSumPageInventoryDetailListInventoryItem 'Сумма в описе' (listInventory, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
+accountPricePageInventoryDetailListInventoryItem 'Цена в описи' (listInventory, item) = GROUP EQUAL accountPricePageInventoryDetail(pageInventoryDetail) BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
+accountSumPageInventoryDetailListInventoryItem 'Сумма в описи' (listInventory, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
     BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
 
 indexListInventoryItem '№ п/п' (listInventory, item) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventoryItem(listInventory, item)>0 ORDER item;
@@ -10963,7 +10963,7 @@ FORM listInventory 'Опись'
     FILTERS pageInventoryPageInventoryDetail(dp) == pl,
             quantityPageInventoryDetailListInventoryItem(li,i)>0
 
-EDIT listInventory OBJECT li
+    EDIT listInventory OBJECT li
 ;
 
 DESIGN listInventory FROM DEFAULT {

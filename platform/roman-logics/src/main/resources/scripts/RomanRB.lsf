@@ -1,13 +1,14 @@
 MODULE RB;
 
 IMPORT BaseLogicsModule;
-IMPORT RomanLogicsModule;
 
 IMPORT Utils;
 IMPORT Stock;
 IMPORT Numerator;
 IMPORT Document;
 IMPORT Historizable;
+
+IMPORT RomanLogicsModule;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
 
@@ -1026,7 +1027,7 @@ minSumClientArticleAction 'Мин. накопленная сумма' = DATA NUM
 minSumCheckArticleAction 'Мин. сумма чека' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
 
 // документы товародвижения
-CLASS warehouse 'Склад' : stock2;
+CLASS warehouse 'Склад' : stock;
 
 CLASS customsFlow 'Расход с СВХ' : historyObject, numberedObject;
 CLASS customsFlowDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger;
