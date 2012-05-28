@@ -488,7 +488,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 }
 
                 remoteForm = createRemoteForm(
-                        createFormInstance(formEntity, new HashMap<ObjectEntity, DataObject>(), session, isModal, currentSession, false, interactive)
+                        createFormInstance(formEntity, new HashMap<ObjectEntity, DataObject>(), session, isModal, !currentSession, false, interactive)
                 );
             }
             openForms.put(formEntity, remoteForm);
