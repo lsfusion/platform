@@ -15,6 +15,11 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     public T property;
     public Map<P, PropertyObjectInterfaceEntity> mapping;
 
+    protected PropertyObjectEntity() {
+        //нужен для десериализации
+        creationScript = null;
+    }
+
     public String toString() {
         return property.toString();
     }
@@ -76,6 +81,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         String propertySID = inStream.readUTF();
 
         property = (T) pool.context.BL.getProperty(propertySID);
+
         mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
 
         int size = inStream.readInt();

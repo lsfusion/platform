@@ -18,6 +18,8 @@ public class GetRemoteChangesHandler extends FormChangesActionHandler<GetRemoteC
     public FormChangesResult executeEx(GetRemoteChanges action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        return getRemoteChanges(form, form.remoteForm.refreshPressed());
+        //todo:
+        return null;
+//        return getRemoteChanges(form, form.remoteForm.refreshPressed());
     }
 }

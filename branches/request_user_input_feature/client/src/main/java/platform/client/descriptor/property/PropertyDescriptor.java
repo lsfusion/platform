@@ -1,5 +1,7 @@
 package platform.client.descriptor.property;
 
+import platform.client.descriptor.ObjectDescriptor;
+import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -7,8 +9,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
-public class PropertyDescriptor extends AbstractNodeDescriptor implements ClientIdentitySerializable {
+public abstract class PropertyDescriptor extends AbstractNodeDescriptor implements ClientIdentitySerializable {
     public String caption;
     private String sID;
     public String toolTip;
@@ -43,4 +46,5 @@ public class PropertyDescriptor extends AbstractNodeDescriptor implements Client
         return sID;
     }
 
+    public abstract PropertyObjectDescriptor createPropertyObject(Map<PropertyInterfaceDescriptor, ObjectDescriptor> mapping);
 }

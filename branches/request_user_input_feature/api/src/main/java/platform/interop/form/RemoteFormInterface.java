@@ -44,8 +44,6 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     ServerResponse pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
 
-    boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
-
     void switchClassView(int groupID) throws RemoteException;
 
     void changeClassView(int groupID, ClassViewType classView) throws RemoteException;
@@ -75,15 +73,9 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
-    ServerResponse applyPressed() throws RemoteException;
-    ServerResponse cancelPressed() throws RemoteException;
     ServerResponse closedPressed() throws RemoteException;
-    //edit;
-    ServerResponse nullPressed() throws RemoteException;
+
     ServerResponse okPressed() throws RemoteException;
-    //print;
-    ServerResponse refreshPressed() throws RemoteException;
-    //xls;
 
     void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 

@@ -5109,10 +5109,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
             return design;
         }
     }
@@ -5140,10 +5140,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
 
             design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
             design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
@@ -5332,10 +5332,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
 
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).panelLabelAbove = true;
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).constraints.fillHorizontal = 1;
@@ -5372,10 +5372,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
 
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).panelLabelAbove = true;
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).constraints.fillHorizontal = 1;

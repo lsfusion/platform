@@ -1,15 +1,16 @@
 package platform.client.serialization;
 
+import platform.base.context.ApplicationContext;
+import platform.base.serialization.SerializationPool;
 import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
 import platform.client.descriptor.property.AbstractGroupDescriptor;
-import platform.client.descriptor.property.PropertyDescriptor;
+import platform.client.descriptor.property.ActionPropertyDescriptor;
+import platform.client.descriptor.property.CalcPropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.form.panel.location.ClientShortcutPanelLocation;
 import platform.client.form.panel.location.ClientToolbarPanelLocation;
 import platform.client.logics.*;
-import platform.base.context.ApplicationContext;
-import platform.base.serialization.SerializationPool;
 
 
 public class ClientSerializationPool extends SerializationPool<ClientForm> {
@@ -31,7 +32,8 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(GroupObjectDescriptor.class);
         addMapping(TreeGroupDescriptor.class);
         addMapping(PropertyDrawDescriptor.class);
-        addMapping(PropertyDescriptor.class);
+        addMapping(CalcPropertyDescriptor.class);
+        addMapping(ActionPropertyDescriptor.class);
         addMapping(AbstractGroupDescriptor.class);
 
         addMapping(PropertyFilterDescriptor.class);
@@ -49,7 +51,8 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
 
         addMapping(DataObjectDescriptor.class);
         addMapping(ObjectDescriptor.class);
-        addMapping(PropertyObjectDescriptor.class);
+        addMapping(CalcPropertyObjectDescriptor.class);
+        addMapping(ActionPropertyObjectDescriptor.class);
 
         addMapping(ClientForm.class);
         addMapping(ClientComponent.class);
@@ -63,7 +66,6 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientPropertyDraw.class);
         addMapping(ClientRegularFilter.class);
         addMapping(ClientRegularFilterGroup.class);
-        addMapping(ClientFunction.class);
         addMapping(ClientToolbarPanelLocation.class);
         addMapping(ClientShortcutPanelLocation.class);
     }

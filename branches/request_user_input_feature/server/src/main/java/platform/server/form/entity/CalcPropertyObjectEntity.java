@@ -10,6 +10,10 @@ import java.util.Map;
 
 public class CalcPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, CalcProperty<P>> implements OrderEntity<CalcPropertyObjectInstance<P>> {
 
+    public CalcPropertyObjectEntity() {
+        //нужен для десериализации
+    }
+
     public CalcPropertyObjectEntity(CalcProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript) {
         super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, creationScript);
     }

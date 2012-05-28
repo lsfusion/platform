@@ -130,13 +130,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {
-        logRemoteMethodStartCall("getCompatibleProperties");
-        boolean[] result = target.getCompatibleProperties(mainPropertyID, propertiesIDs);
-        logRemoteMethodEndCall("getCompatibleProperties", result);
-        return result;
-    }
-
     public boolean canChangeClass(int objectID) throws RemoteException {
         logRemoteMethodStartCall("canChangeClass");
         boolean result = target.canChangeClass(objectID);
@@ -250,34 +243,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartCall("closedPressed");
         ServerResponse result = target.closedPressed();
         logRemoteMethodEndCall("closedPressed", result);
-        return result;
-    }
-
-    public ServerResponse nullPressed() throws RemoteException {
-        logRemoteMethodStartCall("nullPressed");
-        ServerResponse result = target.nullPressed();
-        logRemoteMethodEndCall("nullPressed", result);
-        return result;
-    }
-
-    public ServerResponse refreshPressed() throws RemoteException {
-        logRemoteMethodStartCall("refreshPressed");
-        ServerResponse result = target.refreshPressed();
-        logRemoteMethodEndCall("refreshPressed", result);
-        return result;
-    }
-
-    public ServerResponse applyPressed() throws RemoteException {
-        logRemoteMethodStartCall("applyPressed");
-        ServerResponse result = target.applyPressed();
-        logRemoteMethodEndCall("applyPressed", result);
-        return result;
-    }
-
-    public ServerResponse cancelPressed() throws RemoteException {
-        logRemoteMethodStartCall("cancelPressed");
-        ServerResponse result = target.cancelPressed();
-        logRemoteMethodEndCall("cancelPressed", result);
         return result;
     }
 

@@ -7,7 +7,8 @@ import platform.server.form.view.*;
 import platform.server.form.view.panellocation.ShortcutPanelLocationView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 
@@ -25,7 +26,8 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(GroupObjectEntity.class);
         addMapping2(TreeGroupEntity.class);
         addMapping2(PropertyDrawEntity.class);
-        addMapping2(Property.class);
+        addMapping2(CalcProperty.class);
+        addMapping2(ActionProperty.class);
         addMapping2(AbstractGroup.class);
 
         addMapping2(PropertyFilterEntity.class);
@@ -43,7 +45,8 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
 
         addMapping2(DataObject.class);
         addMapping2(ObjectEntity.class);
-        addMapping2(PropertyObjectEntity.class);
+        addMapping2(CalcPropertyObjectEntity.class);
+        addMapping2(ActionPropertyObjectEntity.class);
 
         addMapping2(FormView.class);
         addMapping2(ComponentView.class);
@@ -57,7 +60,6 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(PropertyDrawView.class);
         addMapping2(RegularFilterView.class);
         addMapping2(RegularFilterGroupView.class);
-        addMapping2(FunctionView.class);
         addMapping2(ToolbarPanelLocationView.class);
         addMapping2(ShortcutPanelLocationView.class);
     }

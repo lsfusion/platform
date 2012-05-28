@@ -8,9 +8,7 @@ import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
-import platform.client.form.cell.ActionCellView;
 import platform.client.form.cell.CellView;
-import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
@@ -23,7 +21,6 @@ import platform.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -147,35 +144,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
-    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form, key, true);
-        if (changeType == null) {
-            return null;
-        }
-
-        if (askConfirm &&
-                !(value == null && changeType instanceof ClientActionClass && !(ownerComponent instanceof ActionCellView))) {
-            int n = JOptionPane.showConfirmDialog(
-                    SwingUtilities.getRoot(ownerComponent),
-                    baseType.getConfirmMessage() + (caption != null ? " \"" + caption + "\"?" : ""),
-                    "LS Fusion",
-                    JOptionPane.YES_NO_OPTION);
-            if (n != JOptionPane.YES_OPTION) {
-                return null;
-            }
-        }
-
-        return changeType.getChangeEditorComponent(ownerComponent, form, this, value);
-    }
-
-    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form, key, true);
-        return changeType == null
-               ? null
-               : changeType.getObjectEditorComponent(ownerComponent, form, this, value);
-    }
-
-
     public PropertyEditorComponent getValueEditorComponent(ClientFormController form, Object value) {
         return baseType.getValueEditorComponent(form, this, value);
     }
@@ -286,35 +254,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    private ClientType getPropertyChangeType(ClientFormController form, ClientGroupObjectValue key, boolean aggValue) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.getPropertyChangeType(this, key, aggValue)));
-        if (inStream.readBoolean()) {
-            return null;
-        }
-
-        return ClientTypeSerializer.deserialize(inStream);
-    }
-
     public Object parseString(ClientFormController form, ClientGroupObjectValue key, String s, boolean isDataChanging) throws ParseException {
         try {
             return baseType.parseString(s);
         } catch (Exception e) {
             throw new ParseException(getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
         }
-
-
-        //TODO: repair Ctrl+V
-//        ClientType changeType;
-//        try {
-//            changeType = isDataChanging ? getPropertyChangeType(form, key, false) : baseType;
-//            if (changeType == null) {
-//                throw new ParseException(getString("logics.propertyview.can.not.be.changed"), 0);
-//            }
-//
-//            return changeType.parseString(s);
-//        } catch (IOException e) {
-//            throw new ParseException(getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
-//        }
     }
 
     public String formatString(Object obj) throws ParseException {

@@ -33,9 +33,11 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
 import platform.server.logics.property.actions.flow.ReturnActionProperty;
+import platform.server.logics.property.actions.form.*;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
@@ -185,6 +187,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP redColor;
     public LCP yellowColor;
+
+    public LAP formPrint;
+    public LAP formEdit;
+    public LAP formXls;
+    public LAP formNull;
+    public LAP formRefresh;
+    public LAP formApply;
+    public LAP formCancel;
+    public LAP formOk;
+    public LAP formClose;
 
     public LCP daysInclBetweenDates;
     public LCP weeksInclBetweenDates;
@@ -758,6 +770,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         redColor = addCProp(ColorClass.instance, Color.RED);
         yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
+
+        formPrint = addProperty(null, new LAP(new PrintActionProperty()));
+        formEdit = addProperty(null, new LAP(new EditActionProperty()));
+        formXls = addProperty(null, new LAP(new XlsActionProperty()));
+        formNull = addProperty(null, new LAP(new NullActionProperty()));
+        formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
+        formApply = addProperty(null, new LAP(new platform.server.logics.property.actions.form.ApplyActionProperty()));
+        formCancel = addProperty(null, new LAP(new platform.server.logics.property.actions.form.CancelActionProperty()));
+        formOk = addProperty(null, new LAP(new OkActionProperty()));
+        formClose = addProperty(null, new LAP(new CloseActionProperty()));
 
         notZero = addJProp(diff2, 1, vzero);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);

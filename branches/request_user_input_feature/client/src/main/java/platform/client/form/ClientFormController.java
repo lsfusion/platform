@@ -7,11 +7,9 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.Log;
 import platform.client.Main;
-import platform.client.StartupProperties;
 import platform.client.SwingUtils;
 import platform.client.form.dispatch.ClientFormActionDispatcher;
 import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
-import platform.client.form.queries.ToolbarGridButton;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
@@ -20,14 +18,16 @@ import platform.client.navigator.ClientNavigator;
 import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.form.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -156,8 +156,6 @@ public class ClientFormController {
         applyUserProperties();
 
         initializeControllers();
-
-        initializeButtons();
 
         initializeRegularFilters();
 
@@ -330,90 +328,6 @@ public class ClientFormController {
         return simpleDispatcher;
     }
 
-    private void initializeButtons() throws RemoteException {
-        KeyStroke printKeyStroke = KeyStrokes.getPrintKeyStroke();
-        KeyStroke editKeyStroke = KeyStrokes.getEditKeyStroke();
-        KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
-        KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
-        KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
-        KeyStroke okKeyStroke = KeyStrokes.getOkKeyStroke();
-        KeyStroke closeKeyStroke = KeyStrokes.getCloseKeyStroke();
-        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke();
-        KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke();
-
-        // Добавляем стандартные кнопки
-
-        if (Main.module.isFull() && !isDialog) {
-            addClientFunction(form.getPrintFunction(), printKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    printPressed();
-                }
-            });
-
-            String isDebug = System.getProperty(StartupProperties.PLATFORM_CLIENT_ISDEBUG);
-            if(isDebug != null && isDebug.equals("true"))
-                addClientFunction(form.getEditFunction(), editKeyStroke, new AbstractAction() {
-                    public void actionPerformed(ActionEvent ae) {
-                        editPressed();
-                    }
-                });
-
-            addClientFunction(form.getXlsFunction(), xlsKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    xlsPressed();
-                }
-            });
-        }
-
-        addClientFunction(form.getRefreshFunction(), refreshKeyStroke, new AbstractAction() {
-            public void actionPerformed(ActionEvent ae) {
-                refreshPressed();
-            }
-        });
-
-        if (isDialog) {
-            addClientFunction(form.getNullFunction(), nullKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    nullPressed();
-                }
-            });
-        }
-
-        if (isNewSession) {
-            buttonApply = addClientFunction(form.getApplyFunction(), applyKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    applyPressed();
-                }
-            });
-            if (buttonApply != null) {
-                buttonApply.setEnabled(false);
-            }
-
-            buttonCancel = addClientFunction(form.getCancelFunction(), cancelKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    cancelPressed();
-                }
-            });
-            if (buttonCancel != null) {
-                buttonCancel.setEnabled(false);
-            }
-        }
-
-        if (isModal) {
-            addClientFunction(form.getOkFunction(), okKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    okPressed();
-                }
-            });
-
-            addClientFunction(form.getCloseFunction(), closeKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    closePressed();
-                }
-            });
-        }
-    }
-
     private void applyUserProperties() throws RemoteException {
         commitOrCancelCurrentEditing();
         FormUserPreferences preferences = remoteForm.loadUserPreferences();
@@ -427,33 +341,6 @@ public class ClientFormController {
                         property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
                 }
             }
-    }
-
-    private JButton addClientFunction(ClientFunction function, final KeyStroke keyStroke, final AbstractAction functionAction) {
-        if (function.visible) {
-            JButton actionButton;
-            String caption = function.caption + " (" + SwingUtils.getKeyStrokeCaption(keyStroke) + ")";
-            if (function.iconPath == null) {
-                functionAction.putValue(Action.NAME, caption);
-                actionButton = new JButton(functionAction);
-            } else {
-                actionButton = new ToolbarGridButton(function.iconPath, caption) {
-                    @Override
-                    public void addListener() {
-                        addActionListener(functionAction);
-                    }
-                };
-                Dimension buttonSize = new Dimension(28, 28);
-                actionButton.setMaximumSize(buttonSize);
-                actionButton.setPreferredSize(buttonSize);
-            }
-            actionButton.setFocusable(false);
-
-            formLayout.add(function, actionButton);
-            formLayout.addBinding(keyStroke, function.type + "FunctionAction", functionAction);
-            return actionButton;
-        }
-        return null;
     }
 
     private void initializeDefaultOrders() throws IOException {
@@ -610,36 +497,6 @@ public class ClientFormController {
 
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
         return remoteForm.continueServerInvocation(actionResults);
-    }
-
-    public RemoteDialogInterface createChangeEditorDialog(ClientPropertyDraw property) throws RemoteException {
-        assert false;
-//        return remoteForm.createChangeEditorDialog(property.getID());
-        return null;
-    }
-
-    public RemoteDialogInterface createObjectEditorDialog(ClientPropertyDraw property) throws RemoteException {
-        assert false;
-//        return remoteForm.createObjectEditorDialog(property.getID());
-        return null;
-    }
-
-    public Object getPropertyChangeValue(ClientPropertyDraw property) throws RemoteException {
-        assert false;
-//        return remoteForm.getPropertyChangeValue(property.getID());
-        return null;
-    }
-
-    public boolean[] getCompatibleProperties(ClientPropertyDraw mainProperty, ClientPropertyDraw[] otherProperties) throws RemoteException {
-        assert false;
-/*        int n = otherProperties.length;
-        int propertiesIDs[] = new int[n];
-        for (int i = 0; i < n; ++i) {
-            propertiesIDs[i] = otherProperties[i].getID();
-        }
-
-        return remoteForm.getCompatibleProperties(mainProperty.getID(), propertiesIDs);*/
-        return new boolean[0];
     }
 
     public void gainedFocus() {
@@ -826,12 +683,6 @@ public class ClientFormController {
         }
     }
 
-    public byte[] getPropertyChangeType(ClientPropertyDraw property, ClientGroupObjectValue key, boolean aggValue) throws IOException {
-        assert false;
-//        return remoteForm.getPropertyChangeType(property.getID(), key.serialize(), aggValue);
-        return new byte[0];
-    }
-
     public void dropLayoutCaches() {
         formLayout.dropCaches();
     }
@@ -891,48 +742,6 @@ public class ClientFormController {
         }
     }
 
-    private void printPressed() {
-        commitOrCancelCurrentEditing();
-        runReport();
-    }
-
-    private void xlsPressed() {
-        commitOrCancelCurrentEditing();
-        runExcel();
-    }
-
-    private void editPressed() {
-        commitOrCancelCurrentEditing();
-        runEditReport();
-    }
-
-    private void cancelPressed() {
-        commitOrCancelCurrentEditing();
-        try {
-            processServerResponse(remoteForm.cancelPressed());
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.undoing.changes"), e);
-        }
-    }
-
-    private void applyPressed() {
-        commitOrCancelCurrentEditing();
-        try {
-            processServerResponse(remoteForm.applyPressed());
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.applying.changes"), e);
-        }
-    }
-
-    private void refreshPressed() {
-        commitOrCancelCurrentEditing();
-        try {
-            processServerResponse(remoteForm.refreshPressed());
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.refreshing.form"), e);
-        }
-    }
-
     public void okPressed() {
         commitOrCancelCurrentEditing();
         try {
@@ -946,15 +755,6 @@ public class ClientFormController {
         commitOrCancelCurrentEditing();
         try {
             processServerResponse(remoteForm.closedPressed());
-        } catch (IOException e) {
-            throw new RuntimeException(getString("form.error.closing.dialog"), e);
-        }
-    }
-
-    void nullPressed() {
-        commitOrCancelCurrentEditing();
-        try {
-            processServerResponse(remoteForm.nullPressed());
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }

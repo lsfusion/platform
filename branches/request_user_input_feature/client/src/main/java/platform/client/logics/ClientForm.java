@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable,
-                                                          AbstractForm<ClientContainer, ClientComponent, ClientFunction>,
+                                                          AbstractForm<ClientContainer, ClientComponent>,
                                                           ApplicationContextHolder {
 
     public KeyStroke keyStroke = null;
@@ -43,54 +43,8 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
     public Map<String, String> blockedScreen = new HashMap<String, String>();
 
-    private ClientFunction printFunction;
-    private ClientFunction editFunction;
-    private ClientFunction xlsFunction;
-    private ClientFunction nullFunction;
-    private ClientFunction refreshFunction;
-    private ClientFunction applyFunction;
-    private ClientFunction cancelFunction;
-    private ClientFunction okFunction;
-    private ClientFunction closeFunction;
-
     public ClientContainer getMainContainer() {
         return mainContainer;
-    }
-
-    public ClientFunction getPrintFunction() {
-        return printFunction;
-    }
-
-    public ClientFunction getEditFunction() {
-        return editFunction;
-    }
-
-    public ClientFunction getXlsFunction() {
-        return xlsFunction;
-    }
-
-    public ClientFunction getNullFunction() {
-        return nullFunction;
-    }
-
-    public ClientFunction getRefreshFunction() {
-        return refreshFunction;
-    }
-
-    public ClientFunction getApplyFunction() {
-        return applyFunction;
-    }
-
-    public ClientFunction getCancelFunction() {
-        return cancelFunction;
-    }
-
-    public ClientFunction getOkFunction() {
-        return okFunction;
-    }
-
-    public ClientFunction getCloseFunction() {
-        return closeFunction;
     }
 
     private ApplicationContext context;
@@ -111,16 +65,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         this.context = context;
 
         mainContainer = new ClientContainer(getContext());
-
-        printFunction = new ClientFunction(getContext());
-        editFunction = new ClientFunction(getContext());
-        xlsFunction = new ClientFunction(getContext());
-        nullFunction = new ClientFunction(getContext());
-        refreshFunction = new ClientFunction(getContext());
-        applyFunction = new ClientFunction(getContext());
-        cancelFunction = new ClientFunction(getContext());
-        okFunction = new ClientFunction(getContext());
-        closeFunction = new ClientFunction(getContext());
     }
 
     public List<ClientObject> getObjects() {
@@ -230,16 +174,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
             outStream.writeBoolean(entry.getValue());
         }
 
-        pool.serializeObject(outStream, printFunction);
-        pool.serializeObject(outStream, editFunction);
-        pool.serializeObject(outStream, xlsFunction);
-        pool.serializeObject(outStream, nullFunction);
-        pool.serializeObject(outStream, refreshFunction);
-        pool.serializeObject(outStream, applyFunction);
-        pool.serializeObject(outStream, cancelFunction);
-        pool.serializeObject(outStream, okFunction);
-        pool.serializeObject(outStream, closeFunction);
-
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
@@ -258,16 +192,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
             ClientPropertyDraw order = pool.deserializeObject(inStream);
             defaultOrders.put(order, inStream.readBoolean());
         }
-
-        printFunction = pool.deserializeObject(inStream);
-        editFunction = pool.deserializeObject(inStream);
-        xlsFunction = pool.deserializeObject(inStream);
-        nullFunction = pool.deserializeObject(inStream);
-        refreshFunction = pool.deserializeObject(inStream);
-        applyFunction = pool.deserializeObject(inStream);
-        cancelFunction = pool.deserializeObject(inStream);
-        okFunction = pool.deserializeObject(inStream);
-        closeFunction = pool.deserializeObject(inStream);
 
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);

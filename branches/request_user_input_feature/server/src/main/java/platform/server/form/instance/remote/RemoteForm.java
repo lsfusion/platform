@@ -606,23 +606,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-//        try {
-//            Property mainProperty = form.getPropertyDraw(mainID).getChangeInstance(form.BL, form).property;
-
-            int n = propertiesIDs.length;
-            boolean result[] = new boolean[n];
-/*            for (int i = 0; i < n; ++i) {
-                Property property = form.getPropertyDraw(propertiesIDs[i]).getChangeInstance(form.BL, form).property;
-                result[i] = mainProperty.getType().isCompatible( property.getType() );
-            }*/
-            return result;
-  //      } catch (SQLException e) {
-  //          return null;
-  //      }
-    }
-
     public boolean canChangeClass(int objectID) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return form.canChangeClass((CustomObjectInstance) form.getObjectInstance(objectID));
@@ -739,26 +722,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.entity.getSID();
     }
 
-    public ServerResponse applyPressed() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
-            @Override
-            public void run() throws Throwable {
-                form.formApply(actions);
-            }
-        });
-    }
-
-    public ServerResponse cancelPressed() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
-            @Override
-            public void run() throws Throwable {
-                form.formCancel(actions);
-            }
-        });
-    }
-
     public ServerResponse closedPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return executeWithFormChanges(new TRunnable() {
@@ -769,32 +732,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse nullPressed() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
-            @Override
-            public void run() throws Exception {
-                form.formNull(actions);
-            }
-        });
-    }
-
     public ServerResponse okPressed() throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         return executeWithFormChanges(new TRunnable() {
             @Override
             public void run() throws Exception {
                 form.formOk(actions);
-            }
-        });
-    }
-
-    public ServerResponse refreshPressed() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
-            @Override
-            public void run() throws Throwable {
-                form.formRefresh(actions);
             }
         });
     }

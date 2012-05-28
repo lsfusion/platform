@@ -1,18 +1,19 @@
 package platform.server.logics.property.actions.form;
 
+import platform.base.ApiResourceBundle;
 import platform.interop.action.RunExcelClientAction;
-import platform.server.classes.ValueClass;
+import platform.server.form.entity.FormEntity;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.sql.SQLException;
 
-public class EditActionProperty extends CustomActionProperty {
+public class EditActionProperty extends FormToolbarActionProperty {
 
     public EditActionProperty() {
-//        super("formEditAction", ApiResourceBundle.getString("form.layout.edit"), new ValueClass[0]);
-        super("formEditAction", "", new ValueClass[0]);
+        super("formEditAction", ApiResourceBundle.getString("form.layout.edit"), false, null,
+              new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDebug, FormEntity.isDialog}, new boolean[] {false, false, true});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

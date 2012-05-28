@@ -1,17 +1,16 @@
 package platform.server.logics.property.actions.form;
 
 import platform.base.ApiResourceBundle;
-import platform.server.classes.ValueClass;
+import platform.server.form.entity.FormEntity;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.sql.SQLException;
 
-public class NullActionProperty extends CustomActionProperty {
+public class NullActionProperty extends FormToolbarActionProperty {
 
     public NullActionProperty() {
-        super("formNullAction", ApiResourceBundle.getString("form.layout.reset"), new ValueClass[0]);
+        super("formNullAction", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.isDialog);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

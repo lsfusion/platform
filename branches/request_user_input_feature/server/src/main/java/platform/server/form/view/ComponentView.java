@@ -66,6 +66,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.panelLocation = panelLocation;
     }
 
+    public boolean removeFromParent() {
+        return container != null && container.remove(this);
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container, serializationType);

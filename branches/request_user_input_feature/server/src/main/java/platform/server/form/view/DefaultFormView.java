@@ -7,7 +7,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.TreeGroupEntity;
-import platform.server.logics.property.actions.form.ApplyActionProperty;
+import platform.server.logics.property.actions.form.FormToolbarActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static platform.base.ApiResourceBundle.getString;
 
 public class DefaultFormView extends FormView {
     protected transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();
@@ -140,13 +138,6 @@ public class DefaultFormView extends FormView {
     }
 
     private void initFormButtons() {
-        ContainerView formButtonContainer = createContainer();
-
-        formButtonContainer.setDescription(getString("form.layout.service.buttons"));
-        formButtonContainer.setSID("serviceButtons123123");
-        formButtonContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        mainContainer.add(formButtonContainer);
-
         PropertyDrawView printFunction = get(entity.printActionPropertyDraw);
         setupFormButton(printFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getPrintKeyStroke(), "print.png");
 
@@ -197,10 +188,10 @@ public class DefaultFormView extends FormView {
 
         if (iconPath != null) {
             printFunction.showEditKey = false;
-            printFunction.setFixedSize(ApplyActionProperty.BUTTON_SIZE);
+            printFunction.setFixedSize(FormToolbarActionProperty.BUTTON_SIZE);
             printFunction.design.setIconPath(iconPath);
         } else {
-            printFunction.preferredSize = ApplyActionProperty.BUTTON_SIZE;
+            printFunction.preferredSize = FormToolbarActionProperty.BUTTON_SIZE;
         }
     }
 

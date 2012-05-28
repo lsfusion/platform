@@ -18,6 +18,8 @@ public class CancelChangesHandler extends FormChangesActionHandler<CancelChanges
     public FormChangesResult executeEx(CancelChanges action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        return getRemoteChanges(form, form.remoteForm.cancelPressed());
+//        return getRemoteChanges(form, form.remoteForm.cancelPressed());
+        //todo:
+        return null;
     }
 }

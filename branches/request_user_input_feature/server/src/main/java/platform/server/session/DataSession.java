@@ -21,7 +21,10 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.navigator.ComputerController;
 import platform.server.form.navigator.IsServerRestartingController;
 import platform.server.form.navigator.UserController;
-import platform.server.logics.*;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
@@ -394,7 +397,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     public static final SessionDataProperty isDataChanged = new SessionDataProperty("isDataChanged", "Is data changed", LogicalClass.instance);
     private void aspectChange(boolean hadStoredChanges) throws SQLException {
         if(!hadStoredChanges) {
-            changeProperty(isDataChanged, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(true, LogicalClass.instance), true);
+            changeProperty(isDataChanged, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(true, LogicalClass.instance), sql, true);
             updateProperties(getFilterChanges(isDataChanged));
         }
     }

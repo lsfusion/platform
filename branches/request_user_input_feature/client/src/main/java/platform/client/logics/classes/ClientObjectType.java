@@ -8,7 +8,6 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.DataCellView;
 import platform.client.form.editor.IntegerPropertyEditor;
-import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -16,16 +15,13 @@ import platform.gwt.view.classes.GObjectType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
 import platform.interop.Data;
-import platform.interop.form.RemoteDialogInterface;
 
 import java.awt.*;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import static platform.client.ClientResourceBundle.getString;
 import static platform.interop.Compare.*;
 
 public class ClientObjectType implements ClientType, ClientTypeClass {
@@ -77,19 +73,12 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
         assert false:"shouldn't be used anymore";
-        try {
-            return new ObjectPropertyEditor(ownerComponent, form.createChangeEditorDialog(property), true);
-        } catch (RemoteException e) {
-            throw new RuntimeException(getString("errors.error.getting.editing.value"), e);
-        }
+        return null;
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         assert false:"shouldn't be used anymore";
-        RemoteDialogInterface remoteDialog = form.createObjectEditorDialog(property);
-        return remoteDialog == null
-               ? null
-               : new ObjectPropertyEditor(ownerComponent, remoteDialog, false);
+        return null;
     }
 
     public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {

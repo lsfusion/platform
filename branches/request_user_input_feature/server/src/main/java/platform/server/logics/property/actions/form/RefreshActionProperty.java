@@ -1,17 +1,15 @@
 package platform.server.logics.property.actions.form;
 
-import platform.server.classes.ValueClass;
+import platform.base.ApiResourceBundle;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 
 import java.sql.SQLException;
 
-public class RefreshActionProperty extends CustomActionProperty {
+public class RefreshActionProperty extends FormToolbarActionProperty {
 
     public RefreshActionProperty() {
-//        super("formRefreshAction", ApiResourceBundle.getString("form.layout.refresh"), new ValueClass[0]);
-        super("formRefreshAction", "", new ValueClass[0]);
+        super("formRefreshAction", ApiResourceBundle.getString("form.layout.refresh"), false);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

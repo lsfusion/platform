@@ -7,10 +7,15 @@ import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.CustomClass;
-import platform.server.form.instance.*;
+import platform.server.form.instance.InstanceFactory;
+import platform.server.form.instance.Instantiable;
+import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionPropertyMapImplement;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
@@ -215,14 +220,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        propertyObject = (PropertyObjectEntity<P, ?>) pool.deserializeObject(inStream);
-        toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
+        propertyObject = pool.deserializeObject(inStream);
+        toDraw = pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
-        propertyCaption = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyReadOnly = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyFooter = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyBackground = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
-        propertyForeground = (CalcPropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyCaption = pool.deserializeObject(inStream);
+        propertyReadOnly = pool.deserializeObject(inStream);
+        propertyFooter = pool.deserializeObject(inStream);
+        propertyBackground = pool.deserializeObject(inStream);
+        propertyForeground = pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         if (inStream.readBoolean())

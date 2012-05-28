@@ -1,7 +1,6 @@
 package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
@@ -12,7 +11,7 @@ import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
 import platform.interop.action.ClientAction;
 import platform.interop.navigator.FormShowType;
-import platform.server.classes.ColorClass;
+import platform.server.Context;
 import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
@@ -23,6 +22,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.ServerResourceBundle;
@@ -30,28 +30,21 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.form.*;
-import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
-
-import static platform.server.logics.property.derived.DerivedProperty.*;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
@@ -62,16 +55,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
     public static final SessionDataProperty isModal = new SessionDataProperty("isModal", "Is modal", LogicalClass.instance);
     public static final SessionDataProperty isNewSession = new SessionDataProperty("isNewSession", "Is new session", LogicalClass.instance);
-
-    public static final PrintActionProperty printActionProperty = new PrintActionProperty();
-    public static final EditActionProperty editActionProperty = new EditActionProperty();
-    public static final XlsActionProperty xlsActionProperty = new XlsActionProperty();
-    public static final NullActionProperty nullActionProperty = new NullActionProperty();
-    public static final RefreshActionProperty refreshActionProperty = new RefreshActionProperty();
-    public static final ApplyActionProperty applyActionProperty = new ApplyActionProperty();
-    public static final CancelActionProperty cancelActionProperty = new CancelActionProperty();
-    public static final OkActionProperty okActionProperty = new OkActionProperty();
-    public static final CloseActionProperty closeActionProperty = new CloseActionProperty();
 
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
@@ -121,44 +104,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         isPrintForm = iisPrintForm;
 
-        printActionPropertyDraw = addFormButton(printActionProperty, null, isFullClient.getImplement(), isDialog.getImplement(), false);
-        editActionPropertyDraw = addFormButton(editActionProperty, null, isFullClient.getImplement(), isDialog.getImplement(), false, isDebug.getImplement());
-        xlsActionPropertyDraw = addFormButton(xlsActionProperty, null, isFullClient.getImplement(), isDialog.getImplement(), false);
-        nullActionPropertyDraw = addFormButton(nullActionProperty, null, isDialog.getImplement());
-        refreshActionPropertyDraw = addPropertyDraw(refreshActionProperty);
-        applyActionPropertyDraw = addFormButton(applyActionProperty, DataSession.isDataChanged.getImplement(), isNewSession.getImplement());
-        cancelActionPropertyDraw = addFormButton(cancelActionProperty, DataSession.isDataChanged.getImplement(), isNewSession.getImplement());
-        okActionPropertyDraw= addFormButton(okActionProperty, null, isModal.getImplement());
-        closeActionPropertyDraw = addFormButton(closeActionProperty, null, isModal.getImplement());
+        BaseLogicsModule baseLM = Context.context.get().getBL().LM;
 
-        applyActionPropertyDraw.propertyBackground = addPropertyObject(
-                new LCP(createAnd(new ArrayList<ClassPropertyInterface>(), DerivedProperty.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance), DataSession.isDataChanged.getImplement()).property)
-        );
-    }
-
-    private PropertyDrawEntity addFormButton(ActionProperty actionProperty, CalcPropertyMapImplement enableIf, Object... showIfs) {
-        List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
-        CalcPropertyMapImplement showIfImplement = DerivedProperty.createTrue();
-        for (int i = 0; i < showIfs.length; i++) {
-            CalcPropertyMapImplement showIf = (CalcPropertyMapImplement) showIfs[i];
-            boolean not = (i < showIfs.length - 1) && (showIfs[i+1] instanceof Boolean) && (!(Boolean) showIfs[i+1]);
-            if (not) {
-                i++;
-                showIfImplement = createAndNot(interfaces, showIfImplement, showIf);
-            } else {
-                showIfImplement = createAnd(interfaces, showIfImplement, showIf);
-            }
-        }
-
-        PropertyDrawEntity propertyDraw = addPropertyDraw(
-                enableIf == null ? actionProperty : createIfAction(new ArrayList(), enableIf, new ActionPropertyMapImplement(actionProperty), null, false).property
-        );
-
-        propertyDraw.propertyCaption = addPropertyObject(
-                new LCP(createAnd(new ArrayList(), createStatic(actionProperty.caption), showIfImplement).property)
-        );
-
-        return propertyDraw;
+        printActionPropertyDraw = addPropertyDraw(baseLM.formPrint);
+        editActionPropertyDraw = addPropertyDraw(baseLM.formEdit);
+        xlsActionPropertyDraw = addPropertyDraw(baseLM.formXls);
+        nullActionPropertyDraw = addPropertyDraw(baseLM.formNull);
+        refreshActionPropertyDraw = addPropertyDraw(baseLM.formRefresh);
+        applyActionPropertyDraw = addPropertyDraw(baseLM.formApply);
+        cancelActionPropertyDraw = addPropertyDraw(baseLM.formCancel);
+        okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
+        closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
     }
 
     public void addFixedFilter(FilterEntity filter) {
@@ -355,9 +311,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         for (GroupObjectEntity groupOld : groups) {
             assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
-            for (ObjectEntity obj : group.objects)
-                for (ObjectEntity objOld : groupOld.objects)
+            for (ObjectEntity obj : group.objects) {
+                for (ObjectEntity objOld : groupOld.objects) {
                     assert obj.getID() != objOld.getID() && !obj.getSID().equals(objOld.getSID());
+                }
+            }
         }
         groups.add(group);
     }
@@ -409,8 +367,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                 addPropertyDraw((AbstractNode) group, upClasses, useObjSubsets, objects);
             } else if (group instanceof LP) {
                 this.addPropertyDraw((LP) group, objects);
-            } else if (group instanceof LP[])
-                this.addPropertyDraw((LP[])group, objects);
+            } else if (group instanceof LP[]) {
+                this.addPropertyDraw((LP[]) group, objects);
+            }
         }
     }
 
@@ -579,10 +538,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return new ActionPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
     }
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
-        if(property instanceof LCP)
-            return addPropertyObject((LCP<?>)property, objects);
-        else
-            return addPropertyObject((LAP<?>)property, objects);
+        if (property instanceof LCP) {
+            return addPropertyObject((LCP<?>) property, objects);
+        } else {
+            return addPropertyObject((LAP<?>) property, objects);
+        }
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
@@ -610,8 +570,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<PropertyDrawEntity> getPropertyDrawList(LP...properties) {
         List<PropertyDrawEntity> list = new ArrayList<PropertyDrawEntity>();
-        for(LP property : properties)
-           list.add(getPropertyDraw(property));
+        for (LP property : properties) {
+            list.add(getPropertyDraw(property));
+        }
         return list;
     }
 
@@ -682,10 +643,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         int cnt = 0;
         for (PropertyDrawEntity<?> propertyDraw : propertyDraws) {
             if (propertyDraw.propertyObject.property == property) {
-                if (cnt == index)
+                if (cnt == index) {
                     return propertyDraw;
-                else
+                } else {
                     cnt++;
+                }
             }
         }
 
@@ -738,34 +700,39 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public Set<CalcProperty> hintsIncrementTable = new HashSet<CalcProperty>();
 
     public void addHintsIncrementTable(LP... props) {
-        for (LP prop : props)
+        for (LP prop : props) {
             hintsIncrementTable.add((CalcProperty) prop.property);
+        }
     }
 
     public void addHintsIncrementTable(CalcProperty... props) {
-        for (CalcProperty prop : props)
+        for (CalcProperty prop : props) {
             hintsIncrementTable.add(prop);
+        }
     }
 
     public Set<CalcProperty> hintsNoUpdate = new HashSet<CalcProperty>();
 
     public void addHintsNoUpdate(GroupObjectEntity groupObject) {
-        for (PropertyDrawEntity property : getProperties(groupObject))
-            if(property.propertyObject.property instanceof CalcProperty) {
+        for (PropertyDrawEntity property : getProperties(groupObject)) {
+            if (property.propertyObject.property instanceof CalcProperty) {
                 addHintsNoUpdate((CalcProperty) property.propertyObject.property);
             }
+        }
     }
 
     public void addHintsNoUpdate(AbstractGroup group) {
-        for (Property property : group.getProperties())
-            if(property instanceof CalcProperty) {
+        for (Property property : group.getProperties()) {
+            if (property instanceof CalcProperty) {
                 addHintsNoUpdate((CalcProperty) property);
             }
+        }
     }
 
     public void addHintsNoUpdate(LCP... props) {
-        for (LCP prop : props)
+        for (LCP prop : props) {
             addHintsNoUpdate(prop);
+        }
     }
 
     protected void addHintsNoUpdate(LCP prop) {
@@ -773,8 +740,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addHintsNoUpdate(CalcProperty prop) {
-        if (!hintsNoUpdate.contains(prop))
+        if (!hintsNoUpdate.contains(prop)) {
             hintsNoUpdate.add(prop);
+        }
     }
 
     public FormView createDefaultRichDesign() {
@@ -1040,8 +1008,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void setReadOnlyIf(CalcPropertyObjectEntity condition) {
         for (PropertyDrawEntity propertyView : propertyDraws) {
-            if (propertyView != getPropertyDraw(condition))
+            if (propertyView != getPropertyDraw(condition)) {
                 setReadOnlyIf(propertyView, condition);
+            }
         }
     }
 
@@ -1051,8 +1020,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void setReadOnlyIf(GroupObjectEntity groupObject, CalcPropertyObjectEntity condition) {
         for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
-            if (propertyView != getPropertyDraw(condition))
+            if (propertyView != getPropertyDraw(condition)) {
                 setReadOnlyIf(propertyView, condition);
+            }
         }
     }
 
@@ -1117,8 +1087,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setPageSize(int pageSize) {
-        for (GroupObjectEntity group : groups)
+        for (GroupObjectEntity group : groups) {
             group.pageSize = pageSize;
+        }
     }
 
     public void setNeedVerticalScroll(boolean scroll) {

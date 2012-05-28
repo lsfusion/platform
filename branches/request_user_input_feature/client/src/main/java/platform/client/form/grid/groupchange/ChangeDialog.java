@@ -17,9 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 import static javax.swing.JOptionPane.CANCEL_OPTION;
@@ -234,12 +231,13 @@ public class ChangeDialog extends JDialog {
             valueTable.setProperty(property);
             valueTable.setValue(gridTable.getSelectedValue(property, columnProperty.columnKey));
 
-            try {
-                selectedValue = form.getPropertyChangeValue(property);
-            } catch (RemoteException e) {
-                logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.retrieve.property.value"));
-                selectedValue = null;
-            }
+            //todo: this is broken
+//            try {
+//                selectedValue = form.getPropertyChangeValue(property);
+//            } catch (RemoteException e) {
+//                logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.retrieve.property.value"));
+//                selectedValue = null;
+//            }
 
             revalidate();
         }
@@ -310,23 +308,24 @@ public class ChangeDialog extends JDialog {
             ClientPropertyDraw property = iproperty.property;
             ClientGroupObjectValue columnKey = iproperty.columnKey;
 
-            boolean compatible[];
-            try {
-                compatible = form.getCompatibleProperties(property, model.getColumnProperties());
-            } catch (RemoteException e) {
-                logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.error.reading.is.compatible"), e);
-                compatible = new boolean[model.getColumnCount()];
-            }
-
-            List<ColumnProperty> options = new ArrayList<ColumnProperty>();
-            for (int i = 0; i < model.getColumnCount(); ++i) {
-                if (compatible[i] && !(model.getColumnProperty(i).getID() == property.getID() && columnKey.equals(model.getColumnKey(i)))) {
-                    options.add(new ColumnProperty(model, i));
-                }
-            }
-
-            cbGetterProperties.setModel(new DefaultComboBoxModel(options.toArray()));
-            revalidate();
+            //todo: this is broken
+//            boolean compatible[];
+//            try {
+//                compatible = form.getCompatibleProperties(property, model.getColumnProperties());
+//            } catch (RemoteException e) {
+//                logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.error.reading.is.compatible"), e);
+//                compatible = new boolean[model.getColumnCount()];
+//            }
+//
+//            List<ColumnProperty> options = new ArrayList<ColumnProperty>();
+//            for (int i = 0; i < model.getColumnCount(); ++i) {
+//                if (compatible[i] && !(model.getColumnProperty(i).getID() == property.getID() && columnKey.equals(model.getColumnKey(i)))) {
+//                    options.add(new ColumnProperty(model, i));
+//                }
+//            }
+//
+//            cbGetterProperties.setModel(new DefaultComboBoxModel(options.toArray()));
+//            revalidate();
         }
 
         @Override
