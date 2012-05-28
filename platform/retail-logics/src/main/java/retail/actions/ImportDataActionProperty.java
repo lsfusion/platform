@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class ImportDataActionProperty extends ScriptingActionProperty {
+public class ImportDataActionProperty extends ScriptingActionProperty<RetailBusinessLogics> {
     private ScriptingLogicsModule retailLM;
 
     public ImportDataActionProperty(RetailBusinessLogics BL) {

@@ -15,9 +15,6 @@ IMPORT Numerator;
 IMPORT Stock;
 IMPORT Document;
 
-// todo : сейчас background нифига не видит в другом модуле
-dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
-
 GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -4851,36 +4848,6 @@ FORM papers 'Документы качества'
     PROPERTIES(p)  ADDFORM, EDITFORM, delete
     ORDER BY objectClassName
 ;
-
-//---------------------------- Товар на оборудовании ----------------------------------------//
-
-CLASS stage 'Ячейка';
-TABLE stage(stage);
-TABLE stageGroupMachinery(stage, groupMachinery);
-
-valueStage 'Ячейка' = DATA INTEGER (stage) IN baseGroup;
-barcodeStageGroupMachinery 'Штрих-код ИД' = DATA barcode (stage, groupMachinery) IN idGroup;
-priceStageGroupMachinery 'Розничная цена для штрих-кода' (stage, groupMachinery) = DATA NUMERIC[14,2] (stage, groupMachinery) IN baseGroup;
-dateStageGroupMachinery 'Дата истечения срока годности' (stage, groupMachinery) = DATA DATE (stage, groupMachinery) IN baseGroup;
-timeStageGroupMachinery 'Время истечения срока годности' (stage, groupMachinery) = DATA INTEGER (stage, groupMachinery) IN baseGroup;
-stockStageGroupMachinery 'Остаток на момент передачи' (stage, groupMachinery) = DATA NUMERIC[14,3] (stage, groupMachinery) IN baseGroup;
-
-barcodeBarcodeStageGroupMachinery 'Штрих-код' (stage, groupMachinery) = barcodeEx(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
-//nameSkuBarcodeStageGroupMachinery 'Товар' (stage, groupMachinery) = nameSkuBarcode(barcodeStageGroupMachinery(stage, groupMachinery)) IN baseGroup;
-//titleScalesBarcodeStageGroupMachinery 'Наименование для весов' (stage, groupMachinery) = titleScalesBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//titleCashBarcodeStageGroupMachinery 'Наименование для касс' (stage, groupMachinery) = titleCashBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//amountBarcodeStageGroupMachinery 'Количество (сколько списать при продаже)' (stage, groupMachinery) = amountBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//removeBarcodeStageGroupMachinery 'Заблокирован (удален с оборудования)' (stage, groupMachinery) = removeBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-//commentRemoveBarcodeStageGroupMachinery 'Причина блокировки' (stage, groupMachinery) = commentRemoveBarcode(barcodeStageGroupMachinery(stage, groupMachinery));
-
-FORM stages 'Товары на оборудовании'
-OBJECTS gr=groupMachinery
-OBJECTS st=stage
-PROPERTIES(gr) READONLY nameDepartmentStoreGroupMachinery, nameGroupMachinery, transferGroupMachinery
-PROPERTIES(st) valueStage
-PROPERTIES(st, gr)  barcodeBarcodeStageGroupMachinery, priceStageGroupMachinery, dateStageGroupMachinery,
-                    timeStageGroupMachinery, stockStageGroupMachinery
-FILTERS  barcodeStageGroupMachinery(st, gr);
 
 //---------------------------- Ценовые регистры ----------------------------------------//
 
@@ -13402,6 +13369,7 @@ NAVIGATOR {
             ADD banks;
         }
         NEW equipment 'Оборудование' {
+            ADD equipmentServer;
             NEW equipmentCashRegisters 'Кассы'{
                 ADD groupsCashRegister;
                 ADD cashRegistersModels;
@@ -13421,9 +13389,7 @@ NAVIGATOR {
                 ADD groupsTerminalDocumentType;
                 ADD handbooksTerminalDocumentType;
             }
-            ADD stages;
             ADD labelTypes;
-            ADD equipmentServer;
         }
         NEW producing 'Производство'{
             ADD cuttings;

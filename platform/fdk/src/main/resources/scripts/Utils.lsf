@@ -2,6 +2,8 @@ MODULE Utils;
 
 IMPORT BaseLogicsModule;
 
+dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
+
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 stringEqualsAll(string) = string == 'Все';
