@@ -4851,80 +4851,15 @@ FORM papers 'Документы качества'
 
 //---------------------------- Ценовые регистры ----------------------------------------//
 
-META defineItemDepartmentStoreLedger(prefix, caption, type)
-
-    dateTime###prefix##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (prefix##Ledger) PERSISTENT INDEXED;
-    date###prefix##Ledger 'Дата' (ledger) = dateInTime(dateTime###prefix##Ledger(ledger)) PERSISTENT;
-
-    isPosted###prefix##Ledger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (prefix##Ledger) PERSISTENT;
-
-    item###prefix##Ledger (ledger) = ABSTRACT item (prefix##Ledger) PERSISTENT INDEXED;
-
-    departmentStore###prefix##Ledger (ledger) = ABSTRACT departmentStore (prefix##Ledger) PERSISTENT INDEXED;
-
-    description###prefix##Ledger 'Название документа' (ledger) = ABSTRACT STRING[200] (prefix##Ledger) PERSISTENT;
-
-    prefix###prefix##Ledger caption (ledger) = ABSTRACT type (prefix##Ledger) PERSISTENT;
+META defineItemDepartmentStoreLedger(type, prefix, caption)
+    @defineHistorizableLedgerDouble(type, item, departmentStore, prefix, caption);
 
     nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
     nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
-//    date###prefix##Ledger 'Дата' (ledger) = dateInTime(dateTime###prefix##Ledger(ledger)) PERSISTENT;
-
-    // todo : переделать на concat и deconcat
-
-    orderT###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
-
-    concatLedgerB###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX orderT###prefix##Ledger(ledger) AND
-        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) < (dateTime AS DATETIME)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
-
-    ledgerB###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerB###prefix##DateTime(item, departmentStore, dateTime)[2];
-
-    concatLedgerA###prefix##DateTime (item, departmentStore, dateTime) = GROUP MAX orderT###prefix##Ledger(ledger) AND
-        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), dateTime;
-
-    ledgerA###prefix##DateTime (item, departmentStore, dateTime) = concatLedgerA###prefix##DateTime(item, departmentStore, dateTime)[2];
-
-    concatLedgerCurrent###prefix (item, departmentStore) = GROUP MAX orderT###prefix##Ledger(ledger) AND
-        isPosted###prefix##Ledger(ledger)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
-
-    prefix##BLedgerDateTime caption##' (до)' (item, departmentStore, dateTime) = prefix###prefix##Ledger(ledgerB###prefix##DateTime(item, departmentStore, dateTime));
-    prefix##ALedgerDateTime caption##' (после)' (item, departmentStore, dateTime) = prefix###prefix##Ledger(ledgerA###prefix##DateTime(item, departmentStore, dateTime));
-                           //На дату//
-    orderD###prefix##Ledger = LIST(date###prefix##Ledger(ledger), ledger) PERSISTENT;
-
-    concatLedgerB###prefix##Date (item, departmentStore, date) = GROUP MAX orderD###prefix##Ledger(ledger) AND
-        isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) < (date AS DATE)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), date;
-
-    ledgerB###prefix##Date (item, departmentStore, date) = concatLedgerB###prefix##Date(item, departmentStore, date)[2];
-
-    concatLedgerA###prefix##Date (item, departmentStore, date) = GROUP MAX orderD###prefix##Ledger(ledger) AND
-        isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) <= (date AS DATE)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger), date;
-
-    ledgerA###prefix##Date (item, departmentStore, date) = concatLedgerA###prefix##Date(item, departmentStore, date)[2];
-
-    concatLedgerCurrentDate###prefix (item, departmentStore) = GROUP MAX orderD###prefix##Ledger(ledger) AND
-        isPosted###prefix##Ledger(ledger)
-        BY item###prefix##Ledger(ledger), departmentStore###prefix##Ledger(ledger);
-
-    prefix##BLedgerDate caption##' (до)' (item, departmentStore, date) = prefix###prefix##Ledger(ledgerB###prefix##Date(item, departmentStore, date));
-    prefix##ALedgerDate caption##' (после)' (item, departmentStore, date) = prefix###prefix##Ledger(ledgerA###prefix##Date(item, departmentStore, date));
-
-    currentLedger###prefix (item, departmentStore) = concatLedgerCurrent###prefix(item, departmentStore)[2];
-    current###prefix##Ledger caption (item, departmentStore) = prefix###prefix##Ledger(currentLedger###prefix(item, departmentStore));
 END
 
 META implementItemDepartmentStoreLedgerCustom(prefix, concrete, concretePrefix)
-    dateTime###prefix##Ledger (ledger) += dateTime###concrete##Detail(ledger);
-    isPosted###prefix##Ledger (ledger) += isPosted###concrete##Detail(ledger);
-    item###prefix##Ledger (ledger) += item###concrete##Detail(ledger);
-    departmentStore###prefix##Ledger (ledger) += departmentStore###concrete##Detail(ledger);
-    description###prefix##Ledger (ledger) += description###concrete##Detail(ledger);
-    prefix###prefix##Ledger (ledger) += concretePrefix###concrete##Detail(ledger);
+    @implementHistorizableLedgerDouble(item, departmentStore, prefix, concrete, concretePrefix);
 END
 
 META implementItemDepartmentStoreLedger(prefix, concrete)
@@ -4948,7 +4883,7 @@ END
 CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
 TABLE warePriceLedger (warePriceLedger);
 
-@defineItemDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(NUMERIC[14,2], warePrice, 'Цена посуды');
 wareWarePriceLedger(ledger) = ABSTRACT ware (warePriceLedger) PERSISTENT;
 nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
 currentWareLedger 'Посуда' (item, departmentStore) = wareWarePriceLedger(currentLedgerWarePrice(item, departmentStore));
@@ -4956,15 +4891,15 @@ wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledg
 
 CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
 TABLE importerPriceLedger (importerPriceLedger);
-@defineItemDepartmentStoreLedger(importerPrice, 'Цена изготовителя', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(NUMERIC[14,2], importerPrice, 'Цена изготовителя');
 
 CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщика';
 TABLE supplierPriceLedger (supplierPriceLedger);
-@defineItemDepartmentStoreLedger(supplierPrice, 'Цена поставщика', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(NUMERIC[14,2], supplierPrice, 'Цена поставщика');
 
 CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
 TABLE retailRangeLedger (retailRangeLedger);
-@defineItemDepartmentStoreLedger(retailRange, 'НДС', range);
+@defineItemDepartmentStoreLedger(range, retailRange, 'НДС');
 dataRetailRangeRetailRangeLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
 dataRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
             dataActingRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
@@ -4975,11 +4910,11 @@ currentDataRetailRangeLedger 'НДС, %' (item, departmentStore) =
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
-@defineItemDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(NUMERIC[14,2], retailPrice, 'Розничная цена');
 
 CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
 TABLE accountPriceLedger (accountPriceLedger);
-@defineItemDepartmentStoreLedger(accountPrice, 'Учетная цена', NUMERIC[14,2]);
+@defineItemDepartmentStoreLedger(NUMERIC[14,2], accountPrice, 'Учетная цена');
 
 META derivePriceLedgerOnItemChangePrefix (ledger, concrete, prefixP, prefixI)
     prefixP###ledger###concrete##Detail (detail)  <- ledger##BLedgerDateTime(

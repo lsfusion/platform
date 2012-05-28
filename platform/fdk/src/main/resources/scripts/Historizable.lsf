@@ -184,7 +184,7 @@ META defineHistorizableTriple(property, caption, type, object1, object1Identity,
     dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT property DEFAULT;
     overDialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT over###property##Date;
 END
-// -------------------- Свойство объект1-объект2-объект3-дата для yesNo со значением по-умолчанию НЕТ---------------------------- //
+// -------------------- Свойство объект1-объект2-объект3-дата ---------------------------- //
 
 META defineHistorizableTripleDefaultCustom(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, object3, object3Identity, fixedCharWidth, group)
     data###property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
@@ -223,4 +223,75 @@ META defineHistorizableTripleDefaultCustom(property, defaultProperty, caption, t
 
     dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT typeIdentity###property DEFAULT;
     over###dialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT over###typeIdentity###property##Date;
+END
+
+// ----------------------------------- Historizable Ledger -------------------------------------- //
+
+META defineHistorizableLedgerDouble(type, key0, key1, prefix, caption)
+    dateTime###prefix##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (prefix##Ledger) PERSISTENT INDEXED;
+    date###prefix##Ledger 'Дата' (ledger) = dateInTime(dateTime###prefix##Ledger(ledger)) PERSISTENT;
+
+    isPosted###prefix##Ledger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (prefix##Ledger) PERSISTENT;
+
+    key0###prefix##Ledger (ledger) = ABSTRACT key0 (prefix##Ledger) PERSISTENT INDEXED;
+
+    key1###prefix##Ledger (ledger) = ABSTRACT key1 (prefix##Ledger) PERSISTENT INDEXED;
+
+    description###prefix##Ledger 'Описание' (ledger) = ABSTRACT STRING[200] (prefix##Ledger) PERSISTENT;
+
+    prefix###prefix##Ledger caption (ledger) = ABSTRACT type (prefix##Ledger) PERSISTENT;
+
+    orderT###prefix##Ledger = LIST(dateTime###prefix##Ledger(ledger), ledger) PERSISTENT;
+
+    concatLedgerB###prefix##DateTime (key0, key1, dateTime) = GROUP MAX orderT###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) < (dateTime AS DATETIME)
+        BY key0###prefix##Ledger(ledger), key1###prefix##Ledger(ledger), dateTime;
+
+    ledgerB###prefix##DateTime (key0, key1, dateTime) = concatLedgerB###prefix##DateTime(key0, key1, dateTime)[2];
+
+    concatLedgerA###prefix##DateTime (key0, key1, dateTime) = GROUP MAX orderT###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND dateTime###prefix##Ledger(ledger) <= (dateTime AS DATETIME)
+        BY key0###prefix##Ledger(ledger), key1###prefix##Ledger(ledger), dateTime;
+
+    ledgerA###prefix##DateTime (key0, key1, dateTime) = concatLedgerA###prefix##DateTime(key0, key1, dateTime)[2];
+
+    concatLedgerCurrent###prefix (key0, key1) = GROUP MAX orderT###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger)
+        BY key0###prefix##Ledger(ledger), key1###prefix##Ledger(ledger);
+
+    prefix##BLedgerDateTime caption##' (до)' (key0, key1, dateTime) = prefix###prefix##Ledger(ledgerB###prefix##DateTime(key0, key1, dateTime));
+    prefix##ALedgerDateTime caption##' (после)' (key0, key1, dateTime) = prefix###prefix##Ledger(ledgerA###prefix##DateTime(key0, key1, dateTime));
+
+    orderD###prefix##Ledger = LIST(date###prefix##Ledger(ledger), ledger) PERSISTENT;
+
+    concatLedgerB###prefix##Date (key0, key1, date) = GROUP MAX orderD###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) < (date AS DATE)
+        BY key0###prefix##Ledger(ledger), key1###prefix##Ledger(ledger), date;
+
+    ledgerB###prefix##Date (key0, key1, date) = concatLedgerB###prefix##Date(key0, key1, date)[2];
+
+    concatLedgerA###prefix##Date (key0, key1, date) = GROUP MAX orderD###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger) AND date###prefix##Ledger(ledger) <= (date AS DATE)
+        BY key0###prefix##Ledger(ledger), key1###prefix##Ledger(ledger), date;
+
+    ledgerA###prefix##Date (key0, key1, date) = concatLedgerA###prefix##Date(key0, key1, date)[2];
+
+    concatLedgerCurrentDate###prefix (key0, key1) = GROUP MAX orderD###prefix##Ledger(ledger) AND
+        isPosted###prefix##Ledger(ledger)
+        BY key0###prefix##Ledger(ledger), key1###prefix##Ledger(ledger);
+
+    prefix##BLedgerDate caption##' (до)' (key0, key1, date) = prefix###prefix##Ledger(ledgerB###prefix##Date(key0, key1, date));
+    prefix##ALedgerDate caption##' (после)' (key0, key1, date) = prefix###prefix##Ledger(ledgerA###prefix##Date(key0, key1, date));
+
+    currentLedger###prefix (key0, key1) = concatLedgerCurrent###prefix(key0, key1)[2];
+    current###prefix##Ledger caption (key0, key1) = prefix###prefix##Ledger(currentLedger###prefix(key0, key1));
+END
+
+META implementHistorizableLedgerDouble(key0, key1, prefix, concrete, concretePrefix)
+    dateTime###prefix##Ledger (ledger) += dateTime###concrete##Detail(ledger);
+    isPosted###prefix##Ledger (ledger) += isPosted###concrete##Detail(ledger);
+    key0###prefix##Ledger (ledger) += key0###concrete##Detail(ledger);
+    key1###prefix##Ledger (ledger) += key1###concrete##Detail(ledger);
+    description###prefix##Ledger (ledger) += description###concrete##Detail(ledger);
+    prefix###prefix##Ledger (ledger) += concretePrefix###concrete##Detail(ledger);
 END
