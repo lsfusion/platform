@@ -449,8 +449,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return BL.getForms(formSet);
     }
 
-    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean currentSession, boolean interactive) {
-        RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), currentSession, interactive);
+    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean currentSession, boolean interactive) {
+        RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), isModal, currentSession, interactive);
         if(initialObjects != null) {
             for (String objectSID : initialObjects.keySet()) {
                 GroupObjectInstance groupObject = null;
@@ -475,7 +475,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
     private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
 
-    private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession, boolean interactive) {
+    private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean currentSession, boolean interactive) {
         try {
             RemoteForm remoteForm = invalidatedForms.remove(formEntity);
             if (remoteForm == null) {
@@ -487,10 +487,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                     session = createSession();
                 }
 
-                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, interactive);
-                // все равно подошли объекты или нет
-
-                remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
+                remoteForm = createRemoteForm(
+                        createFormInstance(formEntity, new HashMap<ObjectEntity, DataObject>(), session, isModal, currentSession, false, interactive)
+                );
             }
             openForms.put(formEntity, remoteForm);
 
@@ -502,8 +501,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
         FormEntity newFormEntity = FormEntity.deserialize(BL, formState);
-        //todo: isFull <- true
-        return createForm(newFormEntity, false, true);
+        return createForm(newFormEntity, false, false, true);
     }
 
     public void saveForm(String formSID, byte[] formState) throws RemoteException {

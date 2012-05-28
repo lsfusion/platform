@@ -1464,6 +1464,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
+	|   confirmPDB=confirmActionPropertyDefinitionBody[context, dynamic] { $property = $confirmPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	|	classPDB=changeClassActionPropertyDefinitionBody[context, dynamic] { $property = $classPDB.property; }
@@ -1570,7 +1571,19 @@ emailActionFormObjects[List<String> context, boolean dynamic] returns [OrderedMa
 			(',' obj=ID '=' objValueExpr=propertyExpression[context, dynamic] { $mapObjects.put($obj.text, $objValueExpr.property); })*
 		)?
 	;
-	
+
+confirmActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	int length = 2000;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedConfirmProp(length, $pe.property);
+	}
+}
+	:	'CONFIRM' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )? 
+	;
+		
 messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	int length = 2000;

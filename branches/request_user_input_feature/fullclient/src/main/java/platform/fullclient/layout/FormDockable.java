@@ -8,7 +8,6 @@ import platform.interop.form.RemoteFormInterface;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.HashMap;
 
 // уничтожаемые формы
 abstract class FormDockable extends DefaultMultipleCDockable {
@@ -31,7 +30,7 @@ abstract class FormDockable extends DefaultMultipleCDockable {
     }
 
     protected FormDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory, boolean interactive, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, null, currentSession, interactive), userPreferences);
+        this(formSID, factory, navigator, navigator.remoteNavigator.createForm(formSID, null, false, currentSession, interactive), userPreferences);
     }
 
     protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
