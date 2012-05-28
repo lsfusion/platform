@@ -27,6 +27,7 @@
       <keyword name="APPLY" />
       <keyword name="AS" />
       <keyword name="ASC" />
+      <keyword name="ASCHANGE" />
       <keyword name="ASSIGNED" />
       <keyword name="ATTACH" />
       <keyword name="AUTOAPPLY" />
@@ -38,6 +39,7 @@
       <keyword name="BOTTOM" />
       <keyword name="BREAK" />
       <keyword name="BY" />
+      <keyword name="CAPTION" />
       <keyword name="CASCADE" />
       <keyword name="CASE" />
       <keyword name="CC" />
@@ -119,6 +121,7 @@
       <keyword name="INDEXED" />
       <keyword name="INIT" />
       <keyword name="INLINE" />
+      <keyword name="INPUT" />
       <keyword name="INTEGER" />
       <keyword name="INTERSECT" />
       <keyword name="IS" />
@@ -151,6 +154,7 @@
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
+      <keyword name="ONCHANGE" />
       <keyword name="OPENFILE" />
       <keyword name="OR" />
       <keyword name="ORDER" />
@@ -175,6 +179,7 @@
       <keyword name="REGEXP" />
       <keyword name="REMOVE" />
       <keyword name="REPORTFILE" />
+      <keyword name="REQUEST" />
       <keyword name="RESOLVE" />
       <keyword name="RETURN" />
       <keyword name="RGB" />

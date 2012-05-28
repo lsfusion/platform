@@ -466,14 +466,19 @@ sexcel 'Excel' (store) = DATA EXCELFILE (store) IN base;
 scolor 'Color' (store) = DATA COLOR (store) IN base;
 
 testRequestInput 'Тестование REQUEST input' = ACTION(s) {
-    REQUEST COLOR {
-        REQUEST COLOR INPUT;
-        IF (requestedColor() == #FF0000) THEN {
-            SET requestedColor() <- #00FF00;
-        }
-    };
+    CONFIRM 'Быть или не быть?' LENGTH 100;
 
-    SET scolor(s) IF s IS store <- requestedColor();
+    IF (confirmed()) THEN {
+        REQUEST COLOR {
+            REQUEST COLOR INPUT;
+            IF (requestedColor() == #FF0000) THEN {
+                SET requestedColor() <- #00FF00;
+            }
+            SET scolor(s) IF s IS store <- requestedColor();
+        }
+    } ELSE {
+        MESSAGE 'Нет... ';
+    }
 };
 
 FORM storeArticle 'По складам'

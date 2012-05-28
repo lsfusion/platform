@@ -2032,8 +2032,10 @@ public abstract class LogicsModule {
 
     protected LAP addMAProp(AbstractGroup group, String message, String caption) {
         int length = message.length();
-        return addJoinAProp(addMAProp(caption, length),
-                addCProp(StringClass.get(length), message));
+        return addJoinAProp(
+                addMAProp(caption, length),
+                addCProp(StringClass.get(length), message)
+        );
     }
 
     protected LAP addMAProp(String caption, int length) {
@@ -2042,6 +2044,27 @@ public abstract class LogicsModule {
 
     protected LAP addMAProp(AbstractGroup group, String caption, int length) {
         return addProperty(group, new LAP(new MessageActionProperty(genSID(), caption, length)));
+    }
+
+
+    protected LAP addConfirmAProp(String message, String caption) {
+        return addConfirmAProp(null, message, caption);
+    }
+
+    protected LAP addConfirmAProp(AbstractGroup group, String message, String caption) {
+        int length = message.length();
+        return addJoinAProp(
+                addConfirmAProp(caption, length),
+                addCProp(StringClass.get(length), message)
+        );
+    }
+
+    protected LAP addConfirmAProp(String caption, int length) {
+        return addConfirmAProp(null, caption, length);
+    }
+
+    protected LAP addConfirmAProp(AbstractGroup group, String caption, int length) {
+        return addProperty(group, new LAP(new ConfirmActionProperty(genSID(), caption, length, getConfirmedProperty())));
     }
 
     protected LAP addLFAProp(LCP lp) {
@@ -2082,8 +2105,8 @@ public abstract class LogicsModule {
 
     protected LAP addAAProp(String caption, CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(), caption,
-                (barcode != null) ? (CalcProperty) barcode.property : null, (barcodePrefix != null) ? ((CalcProperty) barcodePrefix.property) : null,
-                quantity, customClass, LCP.toPropertyArray(properties)));
+                                                    (barcode != null) ? (CalcProperty) barcode.property : null, (barcodePrefix != null) ? ((CalcProperty) barcodePrefix.property) : null,
+                                                    quantity, customClass, LCP.toPropertyArray(properties)));
     }
 
     @IdentityLazy
@@ -2094,7 +2117,12 @@ public abstract class LogicsModule {
 
     @IdentityLazy
     public LCP getAddedObjectProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", new ValueClass[0], baseLM.baseClass)));
+        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass)));
+    }
+
+    @IdentityLazy
+    public LCP getConfirmedProperty() {
+        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("confirmed", "Confirmed", LogicalClass.instance)));
     }
 
     @IdentityLazy
@@ -2125,7 +2153,7 @@ public abstract class LogicsModule {
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ImageFile", captionPrefix + " Image file", classes, ImageClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "PdfFile", captionPrefix + " Pdf file", classes, PDFClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "CustomFile", captionPrefix + " Custom file", classes, DynamicFormatFileClass.instance))),
-                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel fil", classes, ExcelClass.instance)))
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "ExcelFile", captionPrefix + " Excel file", classes, ExcelClass.instance)))
         );
     }
 
@@ -2136,7 +2164,7 @@ public abstract class LogicsModule {
 
     @IdentityLazy
     public LCP getFormResultProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", new ValueClass[0], baseLM.formResult)));
+        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", baseLM.formResult)));
     }
 
     @IdentityLazy
