@@ -1093,9 +1093,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LAP addItemBarcode;
     private LAP barcodeActionSeekFreightBox;
     private LCP currentPalletFreightBox;
-    private LAP barcodeActionCheckPallet;
     private LAP barcodeActionCheckFreightBox;
-    private LAP barcodeActionCheckChangedFreightBox;
     private LAP packingListFormFreightBox;
     private LAP packingListFormRoute;
     LCP quantitySupplierBoxBoxShipmentRouteSku;
@@ -3444,9 +3442,6 @@ public class RomanLogicsModule extends LogicsModule {
         seekRouteShipmentSkuRoute = addAProp(new SeekRouteActionProperty());
 
         barcodeActionSeekPallet = addSetPropertyAProp("Найти палету", addJProp(true, isCurrentPallet, baseLM.barcodeToObject, 1), 1, baseLM.vtrue);
-        barcodeActionCheckPallet = addJoinAProp("Проверка паллеты",
-                addIfAProp(addJProp(baseLM.andNot1, is(freightBox), 1, currentPalletFreightBox, 1), 1,
-                        addStopActionProp("Для маршрута выбранного короба не задана паллета", "Поиск по штрих-коду")), baseLM.barcodeToObject, 1);
         barcodeActionSeekFreightBox = addSetPropertyAProp("Найти короб для транспортировки", addJProp(true, isCurrentFreightBox, baseLM.barcodeToObject, 1), 1, baseLM.vtrue);
         barcodeActionSetPallet = addSetPropertyAProp("Установить паллету", addJProp(true, isCurrentPalletFreightBox, baseLM.barcodeToObject, 1), 1, baseLM.vtrue);
         barcodeActionSetStore = addSetPropertyAProp("Установить магазин", addJProp(true, isStoreFreightBoxSupplierBox, baseLM.barcodeToObject, 1, 2), 1, 2, baseLM.vtrue);
@@ -3481,13 +3476,11 @@ public class RomanLogicsModule extends LogicsModule {
         createPallet = addJoinAProp("Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
         createStamp = addAProp(actionGroup, new CreateStampActionProperty());
 
-        barcodeActionCheckFreightBox = addJoinAProp("Проверка короба для транспортировки",
-                addIfAProp(addJProp(and(false, true), is(sku), 2, is(route), 1, currentFreightBoxRoute, 1), 1, 2,
-                        addStopActionProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду")), 1, baseLM.barcodeToObject, 2);
-
-        barcodeActionCheckChangedFreightBox = addJoinAProp("Проверка короба для транспортировки (скомплектован)",
-                addIfAProp(addJProp(and(false, true), is(sku), 2, is(route), 1, addJProp(freightFreightBox, currentFreightBoxRoute, 1), 1), 1, 2,
-                        addStopActionProp("Текущей короб находится в скомплектованном фрахте", "Поиск по штрих-коду")), 1, baseLM.barcodeToObject, 2);
+        LP isSkuBarcode = addJProp(is(sku), baseLM.barcodeToObject, 1);
+        barcodeActionCheckFreightBox = addListAProp(addIfAProp("Проверка короба для транспортировки", addJProp(baseLM.andNot1, isSkuBarcode, 2, currentFreightBoxRoute, 1), 1, 2,
+                addListAProp(addMAProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"), baseLM.flowReturn)), 1, 2,
+                addIfAProp("Проверка короба для транспортировки (скомплектован)", addJProp(baseLM.and1, isSkuBarcode, 2, addJProp(freightFreightBox, currentFreightBoxRoute, 1), 1), 1, 2,
+                        addListAProp(addMAProp("Текущей короб находится в скомплектованном фрахте", "Поиск по штрих-коду"), baseLM.flowReturn)), 1, 2);
 
         cloneItem = addAProp(new CloneItemActionProperty());
 
@@ -5019,13 +5012,12 @@ public class RomanLogicsModule extends LogicsModule {
                             1, skuBarcodeObject, 2, 3),
                     objShipment, objBarcode, objRoute));
 
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckChangedFreightBox, objRoute, objBarcode));
-
             if (box) {
-                addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addListAProp(barcodeActionCheckFreightBox, 3, 4,
+                        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, 1, 2, 3, 4), objShipment, objSupplierBox, objRoute, objBarcode));
             } else {
-                addActionsOnObjectChange(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addListAProp(barcodeActionCheckFreightBox, 2, 3,
+                        addSimpleShipmentDetailSimpleShipmentRouteBarcode, 1, 2, 3), objShipment, objRoute, objBarcode));
             }
 
 //            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));

@@ -507,14 +507,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return read(context.getSession().sql, new HashMap(), context.getModifier(), context.getQueryEnv());
     }
 
-    public Object read(SQLSession session, Map<T, DataObject> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
+    public Object read(SQLSession session, Map<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
         String readValue = "readvalue";
         Query<T, Object> readQuery = new Query<T, Object>(new ArrayList<T>());
-        readQuery.properties.put(readValue, getExpr(DataObject.getMapExprs(keys), modifier));
+        readQuery.properties.put(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier));
         return BaseUtils.singleValue(readQuery.execute(session, env)).get(readValue);
     }
 
-    public Object read(FormInstance form, Map<T, DataObject> keys) throws SQLException {
+    public Object read(FormInstance form, Map<T, ? extends ObjectValue> keys) throws SQLException {
         return read(form.session.sql, keys, form, form.getQueryEnv());
     }
 

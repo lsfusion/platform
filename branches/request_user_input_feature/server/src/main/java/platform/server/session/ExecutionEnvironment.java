@@ -11,6 +11,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -69,28 +70,25 @@ public class ExecutionEnvironment {
     public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
         for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(this).entrySet())
-            actions.addAll(execute(property, row.getKey(), formEnv, row.getValue().get("value")));
+            execute(property, row.getKey(), formEnv, row.getValue().get("value"), actions);
         return actions;
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
         for(Map<P, DataObject> row : set.executeClasses(this))
-            actions.addAll(execute(property, row, formEnv, null));
+            execute(property, row, formEnv, null, actions);
         return actions;
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue requestInput) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>();
+    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue requestInput, List<ClientAction> actions) throws SQLException {
         ExecutionContext<P> context = new ExecutionContext<P>(change, null, this, actions, formEnv, true);
 
         if(requestInput != null) {
             context = context.pushUserInput(requestInput);
         }
 
-        property.execute(context);
-
-        return actions;
+        return property.execute(context);
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {

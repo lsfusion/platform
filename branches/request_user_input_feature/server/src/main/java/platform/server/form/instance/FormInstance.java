@@ -96,7 +96,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public final boolean isNewSession;
 
-    private final boolean interactive;
+    private boolean interactive = true; // важно для assertion'а в endApply
 
     // для импорта конструктор, объекты пустые
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
@@ -111,7 +111,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         this.isNewSession = isNewSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
-        this.interactive = interactive;
 
         lateInit(envModifier, noUpdate, increment, session);
         this.session = session;
@@ -207,6 +206,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             endApply();
             this.mapObjects = mapObjects;
         }
+
+        this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
     }
 
     public FormUserPreferences loadUserPreferences() {
@@ -673,12 +674,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 }
             }
         }
-
-        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory);
+        
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
         if(editAction!=null)
-            return editAction.getRemappedPropertyObject(keys).
-                    execute(new ExecutionEnvironment(this), requestValue, property);
-        return new ArrayList<ClientAction>();
+            editAction.getRemappedPropertyObject(keys).
+                    execute(new ExecutionEnvironment(this), requestValue, property, actions);
+        return actions;
     }
 
     public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
@@ -1482,21 +1484,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     private List<ClientAction> fireEvent(Object eventObject) throws SQLException {
-        List<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         List<ClientAction> clientActions = new ArrayList<ClientAction>();
+
+        List<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         if (actionsOnEvent != null) {
-            AUTOACTIONS:
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
-                ActionPropertyObjectInstance<?> autoActionInstance = instanceFactory.getInstance(autoAction);
-                if (autoActionInstance.isInInterface(null)) {
-                    List<ClientAction> actions = autoActionInstance.execute(new ExecutionEnvironment(this));
-                    for (ClientAction clientAction : actions) {
-                        clientActions.add(clientAction);
-                        if (clientAction instanceof DenyCloseFormClientAction) {
-                            break AUTOACTIONS;
-                        }
-                    }
-                }
+                ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
+                if(autoInstance.isInInterface(null)) // для проверки null'ов
+                    autoInstance.execute(new ExecutionEnvironment(this), clientActions);
             }
         }
 

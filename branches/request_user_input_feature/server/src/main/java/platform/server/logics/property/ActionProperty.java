@@ -1,19 +1,15 @@
 package platform.server.logics.property;
 
 import platform.base.Pair;
-import platform.base.QuickSet;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
-import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
-import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -102,7 +98,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public List<ClientAction> execute(Map<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
-        return env.execute(this, keys, formEnv, null);
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        env.execute(this, keys, formEnv, null, actions);
+        return actions;
     }
 
     public ValueClass getValueClass() {

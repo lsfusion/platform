@@ -586,10 +586,6 @@ public abstract class LogicsModule {
                             addChangeClassAProp(caption), 1, addCProp(baseClass.objectClass, cls.getSID()));
     }
 
-    protected LAP addStopActionProp(String caption, String header) {
-        return addAProp(new StopActionProperty(genSID(), caption, header));
-    }
-
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(Object... params) {
         return addSetPropertyAProp("sys", params);
     }

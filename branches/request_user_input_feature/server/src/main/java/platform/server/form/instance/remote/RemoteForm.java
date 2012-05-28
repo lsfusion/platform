@@ -453,24 +453,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             updateCurrentClass = null;
         }
 
-        boolean hasDenyAction = false;
-        boolean hasHideAction = false;
-
-        for (Iterator<ClientAction> iterator = actions.iterator(); iterator.hasNext(); ) {
-            ClientAction action = iterator.next();
-            if (action instanceof DenyCloseFormClientAction) {
-                hasDenyAction = true;
-                iterator.remove();
-            } else if (action instanceof HideFormClientAction) {
-                hasHideAction = true;
-                iterator.remove();
-            }
-        }
-
-        if (hasHideAction && !hasDenyAction) {
-            actions.add(new HideFormClientAction());
-        }
-
         ServerResponse result = new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
         actions.clear();
         return result;

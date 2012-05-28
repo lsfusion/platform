@@ -39,7 +39,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public OrderedMap<String, String> contextMenuBindings;
     public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
 
-    public ActionPropertyObjectEntity<?> getEditAction(String actionId) {
+    public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
         // ?? тут или нет
         if (isReadOnly()) {
             return null;
@@ -52,17 +52,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         Property<P> property = propertyObject.property;
         if (actionId.equals(ServerResponse.GROUP_CHANGE))
-            return getEditAction(ServerResponse.CHANGE).getGroupChange();
+            return getEditAction(ServerResponse.CHANGE, entity).getGroupChange();
 
         if (isSelector())
-            return getSelectorAction(property);
+            return getSelectorAction(property, entity);
 
         ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
         return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);
     }
 
-    private ActionPropertyObjectEntity<?> getSelectorAction(Property<P> property) {
-        Map<P, ObjectEntity> groupObjects = BaseUtils.filterValues(propertyObject.mapping, toDraw.objects); // берем нижний объект в toDraw
+    private ActionPropertyObjectEntity<?> getSelectorAction(Property<P> property, FormEntity entity) {
+        Map<P, ObjectEntity> groupObjects = BaseUtils.filterValues(propertyObject.mapping, getToDraw(entity).objects); // берем нижний объект в toDraw
         for (ObjectEntity objectInstance : groupObjects.values()) {
             if (objectInstance.baseClass instanceof CustomClass) {
                 CustomActionProperty dialogAction = objectInstance.getChangeAction(property);

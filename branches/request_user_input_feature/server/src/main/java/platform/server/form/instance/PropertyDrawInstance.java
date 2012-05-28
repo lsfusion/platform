@@ -3,6 +3,7 @@ package platform.server.form.instance;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
@@ -12,8 +13,8 @@ import java.util.List;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory) {
-        ActionPropertyObjectEntity editAction = entity.getEditAction(actionId);
+    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, FormEntity entity) {
+        ActionPropertyObjectEntity editAction = this.entity.getEditAction(actionId, entity);
         if(editAction!=null)
             return instanceFactory.getInstance(editAction);
         return null;
