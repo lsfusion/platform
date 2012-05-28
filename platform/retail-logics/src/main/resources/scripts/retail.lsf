@@ -8112,6 +8112,7 @@ DESIGN preliminaryOrder FROM DEFAULT {
 
 tmpGTT = SESSION DATA genTimeTable();
 tmpDate = SESSION DATA DATE();
+tmpDateP = SESSION DATA DATE();
 tmpDateS = SESSION DATA DATE();
 
 
@@ -8124,7 +8125,7 @@ createGenTimeTable 'Создать график поставок' = ACTION (depa
         SET startDateGenTimeTable(gt) <- currentDate();
         SET endDateGenTimeTable(gt) <- sumDate(currentDate(), 30);
         SET dayBeforeGenTimeTable(gt) <- 1;
-        SET periodGenTimeTable(gt) <- 1;
+        SET periodGenTimeTable(gt) <- 0;
         SET dayAfterGenTimeTable(gt) <- 1;
         SET inAllMonthGenTable(gt) <- TRUE;
         //SET dayLastOrderGenTimeTable(gt) <- dateLastPreliminaryOrder(departmentStore, supplier, startDateGenTimeTable(gt));
@@ -8189,17 +8190,20 @@ createGenTimeTable 'Создать график поставок' = ACTION (depa
             SET tmpDate() <- startDateGenTimeTable(tmpGTT());
             // итерируемся по всем датам через 1 день
             WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
-                IF inMonthGenTimeTable(tmpGTT(), monthInDate(tmpDate())) AND inDayGenTimeTable(tmpGTT(), DOWInDate(tmpDate())) THEN {
-                    ADDOBJ preliminaryOrder;
-                    FOR o == addedObject() DO {
-                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
-                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
-                        SET dateSupplyPreliminaryOrder(o) <- tmpDate();
-                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
+                SET tmpDateP() <- tmpDate();
+                WHILE tmpDate() < sumDate(tmpDateP(), 7) AND tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
+                    IF inMonthGenTimeTable(tmpGTT(), monthInDate(tmpDate())) AND inDayGenTimeTable(tmpGTT(), DOWInDate(tmpDate())) THEN {
+                        ADDOBJ preliminaryOrder;
+                        FOR o == addedObject() DO {
+                            SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
+                            SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
+                            SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
+                            SET dateSupplyPreliminaryOrder(o) <- tmpDate();
+                            SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
+                        };
                     };
+                    SET tmpDate() <- sumDate(tmpDate(), 1);
                 };
-                //SET tmpDate() <- sumDate(tmpDate(), 1);
                 SET tmpDate() <- sumDate(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
             };
         };
