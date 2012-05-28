@@ -1167,6 +1167,28 @@ FORM labelTypes 'Типы ценников'
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 ;
 
+//---------------------------- Этикетки в весы ----------------------------------------//
+
+CLASS labelFormat 'Формат этикетки' : named;
+
+idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
+idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;
+
+fileLabelFormat = DATA CUSTOMFILE (labelFormat);
+loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN baseGroup;
+
+fileMessageLabelFormat = DATA CUSTOMFILE (labelFormat);
+loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN baseGroup;
+
+scalesModelLabelFormat 'Модель весов'= DATA scalesModel (labelFormat);
+nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));
+
+FORM labelFormats 'Форматы этикеток весов'
+    OBJECTS c=labelFormat
+    PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Наименование' : publicGroup;
 GROUP rateGroup 'Нормы' : publicGroup;
@@ -1323,6 +1345,9 @@ isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmen
 isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
 passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
 
+labelFormatPackItem = DATA labelFormat(item);
+idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
+
 //substanceGroup
 percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
 percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
@@ -1398,24 +1423,6 @@ FORM country 'Страна'
 FORM countries 'Страны'
     OBJECTS c=country
     PROPERTIES(c) READONLY name, sidCountry, residentCountry
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
-
-CLASS labelFormat 'Формат этикетки' : named;
-idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
-idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;
-fileLabelFormat = DATA CUSTOMFILE (labelFormat);
-loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN baseGroup;
-fileMessageLabelFormat = DATA CUSTOMFILE (labelFormat);
-loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN baseGroup;
-labelFormatPackItem 'Формат этикетки' = DATA labelFormat(item);
-idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN baseGroup;
-scalesModelLabelFormat 'Модель весов'= DATA scalesModel (labelFormat);
-nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));
-
-FORM labelFormats 'Форматы этикеток весов'
-    OBJECTS c=labelFormat
-    PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
