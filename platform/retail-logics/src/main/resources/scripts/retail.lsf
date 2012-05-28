@@ -5913,7 +5913,7 @@ nameDepartmentInventory 'Отделы документа' (inventory) =
     GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
 
 typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory);
-nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = name(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+nameTypeOfAdditionInventory 'Тип инвентаризации' (inventory) = name(typeOfAdditionInventory(inventory)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = DATA typeOfAddition (departmentStore, inventory);
 nameUserTypeOfAdditionDepartmentStoreInventory 'Тип инвентаризации' (departmentStore, inventory) = name(userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory)) IN inventoryGroup;
@@ -5957,8 +5957,8 @@ TABLE pageInventory (pageInventory);
 @defineDocumentRelationCustom(listInventory, pageInventory);
 @defineDocumentDetailIndexCustom(listInventory, pageInventory);
 
-namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '\'Страница\' || \' \' || CAST($1 AS TEXT)']
-                                           (indexPageInventory(pageInventory)) IN baseGroup;
+namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
+                                           ('Страница ', indexPageInventory(pageInventory)) IN baseGroup;
 
 CLASS pageInventoryDetail 'Строка';
 TABLE pageInventoryDetail (pageInventoryDetail);
@@ -5975,7 +5975,7 @@ barcodePageInventoryDetail(pageInventoryDetail) = DATA barcode (pageInventoryDet
 
 barcodeExPageInventoryDetail 'Штрих-код' (pageInventoryDetail) = barcodeEx(barcodePageInventoryDetail(pageInventoryDetail));
 itemPageInventoryDetail (pageInventoryDetail) =  skuBarcode(barcodePageInventoryDetail(pageInventoryDetail));
-nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAttributeItem(itemPageInventoryDetail(pageInventoryDetail)) IN recognizeGroup;
+nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAttributeItem(itemPageInventoryDetail(pageInventoryDetail)) IN recognizeGroup MINCHARWIDTH 20 PREFCHARWIDTH 50;
 
 @defineDocumentDetailIndex(pageInventory);
 
@@ -6020,7 +6020,7 @@ nameCollationSheetListInventory 'Название сл. ведомости' (lis
 collationSheetPageInventoryDetail (pageInventoryDetail) = collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
 
 typeOfAdditionCollationSheet(collationSheet)= typeOfAdditionDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet));
-nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = name(typeOfAdditionCollationSheet(collationSheet)) IN baseGroup;
+nameTypeOfAdditionCollationSheet 'Тип сличительной ведомости' (collationSheet) = name(typeOfAdditionCollationSheet(collationSheet)) IN baseGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 inInventoryDepartmentStoreListInventoryPageInventoryPageInventoryDetail (inventory, departmentStore, listInventory, pageInventory, pageInventoryDetail) = UNION OVERRIDE
     pageInventoryPageInventoryDetail(pageInventoryDetail) == pageInventory AND listInventory AND departmentStore AND inventory,
@@ -6066,7 +6066,7 @@ accountPricePageInventoryDetailListInventoryItem 'Цена в описи' (listI
 accountSumPageInventoryDetailListInventoryItem 'Сумма в описи' (listInventory, item) = GROUP SUM accountSumPageInventoryDetail(pageInventoryDetail)
     BY listInventoryPageInventoryDetail(pageInventoryDetail), itemPageInventoryDetail(pageInventoryDetail);
 
-indexListInventoryItem '№ п/п' (listInventory, item) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventoryItem(listInventory, item)>0 ORDER item;
+indexListInventoryItem '№ п/п' (listInventory, item) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventoryItem(listInventory, item)>0 BY listInventory ORDER nameAttributeItem(item);
 countIndexListInventory 'Количество наименований товара'(listInventory) = GROUP SUM 1 IF  quantityPageInventoryDetailListInventoryItem(listInventory, item)>0
     BY listInventory IN documentSumGroup;
 
@@ -6195,7 +6195,7 @@ quantityInInventoryDetail = -quantityShortageCollationSheetItem(collationSheetIn
 itemInventoryDetail(inventoryDetail) = UNION EXCLUSIVE itemOutInventoryDetail(inventoryDetail),
                                                        itemInInventoryDetail(inventoryDetail) PERSISTENT;
 nameAttributeItemInventoryDetail 'Товар' (inventoryDetail) = nameAttributeItem(itemInventoryDetail(inventoryDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
-barcodeExInventoryDetail 'Щтрих-код' (inventoryDetail) =  barcodeBarcodeSku(itemInventoryDetail(inventoryDetail));
+barcodeExInventoryDetail 'Штрих-код' (inventoryDetail) =  barcodeBarcodeSku(itemInventoryDetail(inventoryDetail));
 
 quantityInventoryDetail 'Кол-во недостачи' (inventoryDetail) = quantityShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
 accountSumInventoryDetail 'Сумма недостачи' (inventoryDetail) = accountSumShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
@@ -10960,7 +10960,8 @@ FORM listInventory 'Опись'
     PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
-    FILTERS pageInventoryPageInventoryDetail(dp) == pl,
+    FILTERS listInventoryPageInventory(pl) == li,
+            pageInventoryPageInventoryDetail(dp) == pl,
             quantityPageInventoryDetailListInventoryItem(li,i)>0
 
     EDIT listInventory OBJECT li
@@ -11003,7 +11004,9 @@ DESIGN listInventory FROM DEFAULT {
                 type = TABBED;
 
                 ADD dp.box;
-                ADD i.box;
+                ADD i.box {
+                    title = 'Опись-товар';
+                }
             }
         }
         ADD functions.box;
@@ -11033,6 +11036,12 @@ FORM inventory 'Инвентаризация'
     OBJECTS          dp=pageInventoryDetail
     PROPERTIES (dp)  READONLY indexPageInventoryDetail, barcodeExPageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail,
                      accountPricePageInventoryDetail, accountSumPageInventoryDetail
+
+    OBJECTS         it=item
+    PROPERTIES (li,it) indexListInventoryItem
+    PROPERTIES (it)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (li,it) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
+
 
     OBJECTS          cs=collationSheet
 
@@ -11064,7 +11073,8 @@ FORM inventory 'Инвентаризация'
             includeDepartmentStoreInventory(ds, in),
             inventoryCollationSheet(cs) == in,
             includeCollationSheetItem(cs, i),
-            hasParentItemGroupSku(g, i)
+            hasParentItemGroupSku(g, i),
+            quantityPageInventoryDetailListInventoryItem(li,it)>0
 
     ORDER BY nameAttributeItem
 
@@ -11114,12 +11124,13 @@ DESIGN inventory FROM DEFAULT {
         }
 
         NEW secondCase BEFORE functions.box {
-                type = TABBED;
-                NEW z.box { title = 'Описи';
-                    fillVertical = 5;
-                    ADD treeDepartmentStore.box { fillHorizontal = 2;};
-                    ADD dp.box  {fillHorizontal = 3;};
-                    POSITION treeDepartmentStore.box TO THE LEFT dp.box;
+            type = TABBED;
+            NEW z.box { title = 'Описи';
+                fillVertical = 5;
+                childConstraints = TO THE RIGHT;
+                ADD treeDepartmentStore.box {
+                    fillHorizontal = 2;
+
                     PROPERTY(objectClassName) {
                             preferredCharWidth = 15;
                     }
@@ -11142,23 +11153,32 @@ DESIGN inventory FROM DEFAULT {
                         askConfirm = TRUE;
                     }
                 }
-
-                NEW x.box { title = 'Сличительные ведомости';
-                    fillVertical = 5;
-
-                    ADD cs.box  { fillVertical = 1;};
-
-                    NEW firstCase { title = 'Пересчитанный товар';
-                        fillVertical = 4;
-                        ADD treeGroup.box { title = 'Товарные группы';};
-                        ADD i.box;
-                        POSITION treeGroup.box TO THE LEFT i.box;
-                            treeGroup.box{ fillHorizontal = 1.5;}
-                            i.box{ fillHorizontal = 3.5;}
-
-                    ADD PROPERTY(dialogItemByCollationSheet(cs)) IN i.panel;
+                NEW case1  {
+                    type = TABBED;
+                    fillHorizontal = 3;
+                    ADD dp.box;
+                    ADD it.box {
+                        title = 'Опись-товар';
                     }
                 }
+            }
+
+            NEW x.box { title = 'Сличительные ведомости';
+                fillVertical = 5;
+
+                ADD cs.box  { fillVertical = 1;};
+
+                NEW firstCase { title = 'Пересчитанный товар';
+                    fillVertical = 4;
+                    ADD treeGroup.box { title = 'Товарные группы';};
+                    ADD i.box;
+                    POSITION treeGroup.box TO THE LEFT i.box;
+                        treeGroup.box{ fillHorizontal = 1.5;}
+                        i.box{ fillHorizontal = 3.5;}
+
+                ADD PROPERTY(dialogItemByCollationSheet(cs)) IN i.panel;
+                }
+            }
 
         }
     }
@@ -11175,10 +11195,43 @@ FORM inventories 'Инвентаризации'
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 
     OBJECTS il=inventoryDetail
-    PROPERTIES(il) READONLY barcodeExInventoryDetail, nameAttributeItemInventoryDetail, quantityInventoryDetail, accountSumInventoryDetail, nameDepartmentStoreInventoryDetail
-    FILTERS                 inventoryInventoryDetail(il)==in
+    PROPERTIES(il) READONLY nameDepartmentStoreInventoryDetail, barcodeExInventoryDetail, nameAttributeItemInventoryDetail, quantityInventoryDetail, accountSumInventoryDetail
 
-    ORDER BY        nameDepartmentStoreInventoryDetail
+    OBJECTS li=listInventory
+
+    PROPERTIES(li) READONLY nameListInventory, nameDepartmentStoreListInventory, countIndexListInventory,
+                   quantityPageInventoryDetailListInventory, accountSumPageInventoryDetailListInventory
+
+    OBJECTS         i=item
+    PROPERTIES (li,i) indexListInventoryItem
+    PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
+
+    PROPERTIES(li)  toPrintListInventory
+
+    OBJECTS          cs=collationSheet
+
+    PROPERTIES (cs)  READONLY nameCollationSheet, nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
+                     quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
+                     accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet
+
+    OBJECTS          it=item
+    PROPERTIES (it)   READONLY nAItem=nameAttributeItem, barcodeBarcodeSku
+
+    PROPERTIES(cs, it) READONLY quantityPageInventoryDetailCollationSheetItem, quantityBalanceCollationSheetItem, quantityShortageCollationSheetItem
+    PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,i) BACKGROUND differentPriceCollationSheetItem(cs, i),
+                     accountPriceBalanceCollationSheetItem(cs, i) BACKGROUND differentPriceCollationSheetItem(cs, i)
+
+    PROPERTIES(cs, it) READONLY accountSumPageInventoryDetailCollationSheetItem, accountSumBalanceCollationSheetItem, accountSumShortageCollationSheetItem
+
+    FILTERS         inventoryInventoryDetail(il)==in,
+                    inventoryListInventory(li)==in,
+                    quantityPageInventoryDetailListInventoryItem(li,i)>0,
+                    inventoryCollationSheet(cs) == in,
+                    includeCollationSheetItem(cs, it)
+
+    ORDER BY        nameDepartmentStoreInventoryDetail, nameAttributeItemInventoryDetail, nameDepartmentStoreListInventory,
+                    nameDepartmentStoreCollationSheet, indexListInventoryItem, nAItem
 ;
 
 DESIGN inventories FROM DEFAULT {
@@ -11194,8 +11247,27 @@ DESIGN inventories FROM DEFAULT {
                 askConfirm = TRUE;
             }
         }
-        ADD il.box {
-            title = 'Товары с недостачей (излишком)';
+        NEW wor {
+
+            type = TABBED;
+            NEW wor1 {
+                title = 'Товары';
+                ADD il.box {
+                    title = 'Товары с недостачей (излишком)';
+                }
+            }
+            NEW wor2 {
+                title = 'Описи';
+                childConstraints = TO THE RIGHT;
+                ADD li.box;
+                ADD i.box;
+            }
+            NEW wor3 {
+                title = 'Ведомости';
+                childConstraints = TO THE RIGHT;
+                ADD cs.box;
+                ADD it.box;
+            }
         }
         NEW row {
             childConstraints = TO THE RIGHT;
