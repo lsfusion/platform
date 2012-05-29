@@ -8587,13 +8587,14 @@ DESIGN printTimeTable FROM DEFAULT {
             caption = 'Дата (по)';
         }
     }
+    ADD d.box BEFORE p.box;
 
-        p.box {fillHorizontal = 4;}
+    ADD p.box BEFORE functions.box;
 
-        PROPERTY (delete(p)) {
-            panelLocation = TOOLBAR;
-            askConfirm = TRUE;
-            }
+    PROPERTY (delete(p)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
     POSITION d.box TO THE BOTTOM interval.box;
 }
 

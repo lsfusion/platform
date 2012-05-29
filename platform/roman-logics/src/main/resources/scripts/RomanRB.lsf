@@ -1055,6 +1055,18 @@ skuBalanceSkuLedger (ledger) += skuCustomsFlowDetail (ledger);
 stockBalanceSkuLedger (ledger) += customStoreCustomsFlowDetail (ledger);
 quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCustomsFlowDetail (outUserBalanceSkuLedger);
 
+totalFlowBDeclarationDetailDateTime 'Расход по партии из декларации' (declarationDetail, dateTime) =
+    GROUP SUM quantityCustomsFlowDetail (customsFlowDetail)
+    IF declarationDetailCustomsFlowDetail (customsFlowDetail) == declarationDetail
+        AND dateTimeCustomsFlowDetail (customsFlowDetail) < (dateTime AS DATETIME)
+    BY declarationDetailCustomsFlowDetail (customsFlowDetail), dateTimeCustomsFlowDetail (customsFlowDetail);
+
+totalFlowBDeclarationDetailCustomsFlow 'Расход по партии из декларации' (declarationDetail, customsFlow) =
+   totalFlowBDeclarationDetailDateTime (declarationDetail, dateTimeCustomsFlow (customsFlow));
+
+balanceBDeclarationDetailCustomsFlow 'Остаток по партии из декларации' (declarationDetail, customsFlow) =
+   quantityDeclarationDetail (declarationDetail) - totalFlowBDeclarationDetailCustomsFlow (declarationDetail, customsFlow);
+
 inCustomsFlowDeclaration 'Отгрузка по декларации' (customsFlow, declaration) = DATA BOOLEAN (customsFlow, declaration)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
@@ -1064,6 +1076,12 @@ isCustomsDeclarationCustomsFlow 'Отгрузка с СВХ декларации
 CONSTRAINT customsFlowDetail IS customsFlowDetail
     AND NOT inCustomsFlowDeclaration(customsFlowCustomsFlowDetail(customsFlowDetail),
             declarationDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)))
+    CHECKED BY declarationDetailCustomsFlowDetail
+    MESSAGE 'Строка отгрузки не соответствует выбранным декларациям';
+
+CONSTRAINT customsFlowDetail IS customsFlowDetail
+    AND NOT balanceBDeclarationDetailCustomsFlow (declarationDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)),
+            customsFlowCustomsFlowDetail(customsFlowDetail))>0
     CHECKED BY declarationDetailCustomsFlowDetail
     MESSAGE 'Строка отгрузки не соответствует выбранным декларациям';
 
@@ -1089,7 +1107,6 @@ FORM declarationsCustomsFlow 'Декларации'
 
     PROPERTIES (c, de) inCustomsFlowDeclaration
     PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration
-
     FILTERS isCustomsDeclarationCustomsFlow (de, c)
    //         isAvailableOrderShipment (s, o),
    //         isPostedOrderSupplier(o)
@@ -1120,7 +1137,7 @@ FORM customsFlows 'Расходы с СВХ'
                    postCustomsFlow SHOWIF isDraftCustomsFlow(c), unpostCustomsFlow SHOWIF isPostedCustomsFlow(c)
 
     OBJECTS d = customsFlowDetail
-    PROPERTIES(d) isPostedBalanceSkuLedger, indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
+    PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
                   quantityCustomsFlowDetail
 
     FILTERS inCustomsFlowCustomsFlowDetail(c, d)
