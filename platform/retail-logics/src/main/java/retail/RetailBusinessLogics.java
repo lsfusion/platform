@@ -1,6 +1,7 @@
 package retail;
 
 import net.sf.jasperreports.engine.JRException;
+import org.exolab.castor.types.DateTime;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
@@ -100,7 +101,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             DataObject groupMachineryMPT = (DataObject) entry.getValue().get("groupMachineryMPT");
             DataObject transactionObject = entry.getKey().values().iterator().next();
             Boolean snapshotMPT = entry.getValue().get("snapshotMPT") instanceof DataObject;
-            transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), snapshotMPT});
+            transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), dateTimeMPT, snapshotMPT});
         }
 
         List<ItemInfo> itemTransactionList;
@@ -109,7 +110,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             DataObject groupObject = (DataObject) transaction[0];
             DataObject transactionObject = (DataObject) transaction[1];
             String dateTimeCode = (String) transaction[2];
-            Boolean snapshotTransaction = (Boolean) transaction[3];
+            Date date = new Date(((Timestamp) ((DataObject) transaction[3]).getValue()).getTime());
+            Boolean snapshotTransaction = (Boolean) transaction[4];
 
             itemTransactionList = new ArrayList<ItemInfo>();
             KeyExpr barcodeExpr = new KeyExpr("barcode");
@@ -118,14 +120,15 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             Query<Object, Object> itemQuery = new Query<Object, Object>(itemKeys);
             itemQuery.properties.put("barcodeEx", retailLM.getLPByName("barcodeEx").getExpr(barcodeExpr));
-            itemQuery.properties.put("nameMachineryPriceTransactionBarcode", retailLM.getLPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("priceMachineryPriceTransactionBarcode", retailLM.getLPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("daysExpiryMachineryPriceTransactionBarcode", retailLM.getLPByName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("hoursExpiryMachineryPriceTransactionBarcode", retailLM.getLPByName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("labelFormatMachineryPriceTransactionBarcode", retailLM.getLPByName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("compositionMachineryPriceTransactionBarcode", retailLM.getLPByName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("isWeightMachineryPriceTransactionBarcode", retailLM.getLPByName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("canonicalNameItemGroupMachineryPriceTransactionBarcode", retailLM.getLPByName("canonicalNameItemGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("name", retailLM.getLPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("price", retailLM.getLPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("daysExpiry", retailLM.getLPByName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("hoursExpiry", retailLM.getLPByName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("expirationDate", retailLM.getLPByName("expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("labelFormat", retailLM.getLPByName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("composition", retailLM.getLPByName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("isWeight", retailLM.getLPByName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("itemGroup", retailLM.getLPByName("itemGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
 
             itemQuery.and(retailLM.getLPByName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
 
@@ -133,17 +136,18 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : itemResult.entrySet()) {
                 String barcode = (String) entry.getValue().get("barcodeEx");
-                String name = (String) entry.getValue().get("nameMachineryPriceTransactionBarcode");
-                Double price = (Double) entry.getValue().get("priceMachineryPriceTransactionBarcode");
-                Double daysExpiry = (Double) entry.getValue().get("daysExpiryMachineryPriceTransactionBarcode");
-                Integer hoursExpiry = (Integer) entry.getValue().get("hoursExpiryMachineryPriceTransactionBarcode");
-                Integer labelFormat = (Integer) entry.getValue().get("labelFormatMachineryPriceTransactionBarcode");
-                String composition = (String) entry.getValue().get("compositionMachineryPriceTransactionBarcode");
-                Boolean isWeight = entry.getValue().get("isWeightMachineryPriceTransactionBarcode") != null;
-                String canonicalNameItemGroup = (String) entry.getValue().get("canonicalNameItemGroupMachineryPriceTransactionBarcode");
-                Integer numberGroupItem = canonicalNameItemGroup==null? 0: (Integer) retailLM.getLPByName("canonicalNameToItemGroup").read(session, session.modifier, new DataObject(canonicalNameItemGroup, StringClass.get(255)));
+                String name = (String) entry.getValue().get("name");
+                Double price = (Double) entry.getValue().get("price");
+                Double daysExpiry = (Double) entry.getValue().get("daysExpiry");
+                Integer hoursExpiry = (Integer) entry.getValue().get("hoursExpiry");
+                Date expirationDate = (Date) entry.getValue().get("expirationDate");
+                Integer labelFormat = (Integer) entry.getValue().get("labelFormat");
+                String composition = (String) entry.getValue().get("composition");
+                Boolean isWeight = entry.getValue().get("isWeight") != null;
+                Integer numberItemGroup = (Integer) entry.getValue().get("itemGroup");
+                String canonicalNameItemGroup = (String) retailLM.getLPByName("canonicalNameItemGroup").read(session, session.modifier, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
 
-                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, labelFormat, composition, isWeight, numberGroupItem, canonicalNameItemGroup));
+                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expirationDate, labelFormat, composition, isWeight, numberItemGroup==null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
             }
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {
@@ -180,11 +184,13 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 }
 
                 transactionList.add(new TransactionCashRegisterInfo((Integer) transactionObject.getValue(),
-                        dateTimeCode, itemTransactionList, cashRegisterInfoList));
+                        dateTimeCode, date, itemTransactionList, cashRegisterInfoList));
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("scalesPriceTransaction"))) {
                 List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
                 String directory = (String) retailLM.getLPByName("directoryGroupScales").read(session, groupObject);
+                String pieceItemCodeGroupScales = (String) retailLM.getLPByName("pieceItemCodeGroupScales").read(session, groupObject);
+                String weightItemCodeGroupScales = (String) retailLM.getLPByName("weightItemCodeGroupScales").read(session, groupObject);
 
                 LP isScales = LM.is(retailLM.getClassByName("scales"));
 
@@ -208,7 +214,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     Integer nppMachinery = (Integer) values.get("nppMachinery");
                     String nameModel = (String) values.get("nameScalesModelScales");
                     String handlerModel = (String) values.get("handlerScalesModelScales");
-                    scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory));
+                    scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory,
+                            pieceItemCodeGroupScales, weightItemCodeGroupScales));
                 }
 
                 transactionList.add(new TransactionScalesInfo((Integer) transactionObject.getValue(),
@@ -553,18 +560,18 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         List<List<Object>> dataPayment = new ArrayList<List<Object>>();
 
-        if(salesInfoList!=null)
-        for (SalesInfo sale : salesInfoList) {
-            if (sale.quantityBillDetail < 0)
-                dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
-                        sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                        sale.discountSumBillDetail));
-            else
-                dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
-                        sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                        sale.discountSumBillDetail));
-            dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
-        }
+        if (salesInfoList != null)
+            for (SalesInfo sale : salesInfoList) {
+                if (sale.quantityBillDetail < 0)
+                    dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
+                            sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
+                            sale.discountSumBillDetail));
+                else
+                    dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
+                            sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
+                            sale.discountSumBillDetail));
+                dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
+            }
 
         List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
                 numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField,
@@ -593,7 +600,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, sidTypePaymentField,
                 sumPaymentField, numberPaymentField);
 
-        if (salesInfoList!=null && salesInfoList.size() != 0) {
+        if (salesInfoList != null && salesInfoList.size() != 0) {
             String message = "Загружено записей: " + (dataSale.size() + dataReturn.size());
             List<String> cashRegisterNumbers = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();

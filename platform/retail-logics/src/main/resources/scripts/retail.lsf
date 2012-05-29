@@ -701,8 +701,6 @@ nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для �
 maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
-canonicalNameToItemGroup (itemGroup) = GROUP UNIQUE itemGroup BY canonicalNameItemGroup (itemGroup) WHERE itemGroup IS itemGroup;
-
 // формы за формами товара
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
@@ -1087,6 +1085,8 @@ inTradingNetworkStoreTypeStoreDepartment (tradingNetwork, storeType, store, depa
     storeTypeDepartmentStore(department) == storeType AND tradingNetwork AND NOT store,
     tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork;
+
+expirationDateSkuDepartmentStore 'Крайний срок годности'= DATA DATE (sku, departmentStore) IN baseGroup;
 
 //---------------------------- Ценники ----------------------------------------//
 
@@ -1619,8 +1619,8 @@ hoursExpiryMachineryBarcode 'Срок годности в часах' = hoursExp
 labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
-canonicalNameItemGroupMachineryBarcode 'Группа товара' = canonicalNameItemGroupSku(skuBarcode(barcode));
-
+itemGroupMachineryBarcode 'Группа товара' = itemGroupSku(skuBarcode(barcode));
+expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expirationDateSkuDepartmentStore(skuBarcode(barcode), departmentStore);
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
@@ -4229,6 +4229,8 @@ roundSalesGroupMachinery 'Округление цен до' = DATA INTEGER (grou
 cellGroupScales 'Помещать на ценники номера ячеек с этой группы' = DATA BOOLEAN (groupScales) IN baseGroup;
 sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
 directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
+pieceItemCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+weightItemCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
 
 departmentStoreGroupMachinery 'Подразделение (ИД)' = DATA departmentStore (groupMachinery);
 nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) = name(departmentStoreGroupMachinery(groupMachinery)) IN baseGroup;
@@ -4442,6 +4444,7 @@ FORM groupScales 'Группа весов'
     PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                     roundSalesGroupMachinery,
                     transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
+                    pieceItemCodeGroupScales, weightItemCodeGroupScales,
                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grs)
 
     OBJECTS s=scales
@@ -4455,7 +4458,8 @@ FORM groupScales 'Группа весов'
 FORM groupsScales 'Группы весов'
     OBJECTS grs=groupScales
     PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
-                         transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales
+                         transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
+                         pieceItemCodeGroupScales, weightItemCodeGroupScales
     PROPERTIES(grs) ADDFORM, EDITFORM, delete
 
     OBJECTS s=scales
@@ -8845,8 +8849,8 @@ hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в час
 labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
 compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
 isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
-canonicalNameItemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA STRING[255] (machineryPriceTransaction, barcode);
-
+itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
+expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
 TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
 lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
@@ -8868,9 +8872,10 @@ transactionCompositionBarcodeGroupMachinery 'Состав товара' (barcode
     compositionMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 isWeightBarcodeGroupMachinery 'Весовой товар' (barcode, groupMachinery)  =
     isWeightMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-canonicalNameItemGroupBarcodeGroupMachinery 'Весовой товар' (barcode, groupMachinery)  =
-    canonicalNameItemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-
+itemGroupBarcodeGroupMachinery 'Группа товара' (barcode, groupMachinery)  =
+    itemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+expirationDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
+    expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
@@ -8975,7 +8980,8 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
             SET labelFormatMachineryPriceTransactionBarcode(t, barcode) <- transactionLabelFormatBarcodeGroupMachinery(barcode, groupMachinery());
             SET compositionMachineryPriceTransactionBarcode(t, barcode) <- transactionCompositionBarcodeGroupMachinery(barcode, groupMachinery());
             SET isWeightMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcodeGroupMachinery(barcode, groupMachinery());
-            SET canonicalNameItemGroupMachineryPriceTransactionBarcode(t, barcode) <- canonicalNameItemGroupBarcodeGroupMachinery(barcode, groupMachinery());
+            SET itemGroupMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcodeGroupMachinery(barcode, groupMachinery());
+            SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
             SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
         }
         EXEC apply();
@@ -9038,7 +9044,8 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatMachineryBarcode(barcode);
                 SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionMachineryBarcode(barcode);
                 SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
-                SET canonicalNameItemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- canonicalNameItemGroupMachineryBarcode(barcode);
+                SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
+                SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }
             SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
@@ -9094,12 +9101,12 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
     PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
                   snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
 
-    OBJECTS b = barcode
+    OBJECTS b = barcode, d = departmentStore
     PROPERTIES(b) READONLY barcodeEx
     PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
-     canonicalNameItemGroupMachineryPriceTransactionBarcode FORCE PANEL,
      daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
-     isWeightMachineryPriceTransactionBarcode, compositionMachineryPriceTransactionBarcode FORCE PANEL
+     isWeightMachineryPriceTransactionBarcode, expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
+     compositionMachineryPriceTransactionBarcode FORCE PANEL
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 
     EDIT machineryPriceTransaction OBJECT t;
@@ -9122,6 +9129,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     PROPERTIES(b)    barcodeEx
     PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
+    expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
     labelFormatMachineryPriceTransactionBarcode
 
     FILTERS inMachineryPriceTransactionBarcode(t, b)
@@ -12636,6 +12644,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     PROPERTIES(i, dep) READONLY currentBalanceSkuLedger, currentImporterPriceLedger, currentSupplierPriceLedger,
                                 currentAccountPriceLedger, currentDataRetailRangeLedger, currentRetailPriceLedger,
                                 currentWarePriceLedger, dateLastMovedSkuStock, averageSoldItemDepartmentStore
+    PROPERTIES(i, dep)          expirationDateSkuDepartmentStore
 
     PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
 

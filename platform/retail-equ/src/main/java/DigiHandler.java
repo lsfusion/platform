@@ -1,10 +1,10 @@
 import platform.base.IOUtils;
 import retail.api.remote.*;
+import sun.util.calendar.BaseCalendar;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DigiHandler extends ScalesHandler {
 
@@ -14,18 +14,20 @@ public class DigiHandler extends ScalesHandler {
     @Override
     public void sendTransaction(TransactionScalesInfo transactionInfo, List<ScalesInfo> machineryInfoList) throws IOException {
 
-        List<String> directoriesList = new ArrayList<String>();
         List<String> scalesModelsList = new ArrayList<String>();
+        Map<String, ScalesInfo> directoriesScalesInfoMap = new HashMap<String, ScalesInfo>();
         for (ScalesInfo scalesInfo : machineryInfoList) {
-            if ((scalesInfo.port != null) && (!directoriesList.contains(scalesInfo.port.trim())))
-                directoriesList.add(scalesInfo.port.trim());
-            if ((scalesInfo.directory != null) && (!directoriesList.contains(scalesInfo.directory.trim())))
-                directoriesList.add(scalesInfo.directory.trim());
+            if((scalesInfo.directory!=null)&&(!directoriesScalesInfoMap.containsKey(scalesInfo.directory.trim())))
+            directoriesScalesInfoMap.put(scalesInfo.directory.trim(), scalesInfo);
+            if((scalesInfo.port!=null)&&(!directoriesScalesInfoMap.containsKey(scalesInfo.port.trim())))
+                directoriesScalesInfoMap.put(scalesInfo.port.trim(), scalesInfo);
             if ((scalesInfo.nameModel != null) && (!scalesModelsList.contains(scalesInfo.nameModel.trim())))
                 scalesModelsList.add(scalesInfo.nameModel.trim());
         }
 
-        for (String directory : directoriesList) {
+        for (Map.Entry<String, ScalesInfo> entry : directoriesScalesInfoMap.entrySet()) {
+
+            String directory = entry.getKey();
 
             if (transactionInfo.snapshot) {
                 try {
@@ -73,15 +75,19 @@ public class DigiHandler extends ScalesHandler {
             for (ItemInfo item : transactionInfo.itemsList) {
 
                 String recordNumber = addZeros(item.barcodeEx, 8, false);
-                String statusCode = "7C000DA003"; //54000DA003
+                String statusCode = item.isWeightItem ? "7C000DA003" : "7D000DA003";
                 String price = addZeros(String.valueOf(item.price.intValue()), 8, false);
-                String daysExpiry = addZeros(String.valueOf(item.daysExpiry == null ? null : item.daysExpiry.intValue()), 4, false);
+
+                int deltaDaysExpiry = (int)((item.expirationDate.getTime() - System.currentTimeMillis())/1000/3600/24);
+                String daysExpiry = addZeros(String.valueOf(item.daysExpiry == null ? (deltaDaysExpiry>=0 ? deltaDaysExpiry : 0): item.daysExpiry.intValue()), 4, false);
                 String hoursExpiry = addZeros(addZeros(String.valueOf(item.hoursExpiry), 2, false), 4, true);
                 String labelFormat = addZeros(Integer.toHexString(item.labelFormat != null ? item.labelFormat : 0), 2, false);
 
                 String barcodeFormat = "05";
+                String pieceItemCode = entry.getValue().pieceItemCodeGroupScales != null ? entry.getValue().pieceItemCodeGroupScales : "21";
+                String weightItemCode = entry.getValue().weightItemCodeGroupScales != null ? entry.getValue().weightItemCodeGroupScales : "20";
+                String barcode = (item.isWeightItem ? weightItemCode : pieceItemCode) + item.barcodeEx.substring(0, 5) + "000000" + (item.isWeightItem ? "1" : "2");
 
-                String barcode = "20" + item.barcodeEx + "0000001";
                 String len = addZeros(Integer.toHexString((recordNumber + statusCode + price + labelFormat + barcodeFormat +
                         barcode + daysExpiry + hoursExpiry +
                         itemNameCompositionToASCII(item.name, item.composition) + "0C00").length() / 2 + 2), 4, false).toUpperCase();
