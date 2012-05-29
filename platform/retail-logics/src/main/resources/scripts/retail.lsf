@@ -4435,7 +4435,7 @@ showFilterItemsGroupMachinery 'Выбрать группы' (groupMachinery) = A
 FORM cashRegister 'Касса'
     OBJECTS c=cashRegister FIXED PANEL
     PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
-                  dateCashRegister, statusCashRegister, resultCashRegister
+                  dateCashRegister
     EDIT cashRegister OBJECT c
 ;
 
@@ -4494,7 +4494,7 @@ FORM groupCashRegister 'Группа касс'
 
     OBJECTS c=cashRegister
     PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
-                    dateCashRegister, statusCashRegister, resultCashRegister, ADDOBJ, delete
+                    dateCashRegister, ADDOBJ, delete
 
     FILTERGROUP filters2
         FILTER 'Показывать только для данной группы' 'F10' isGroupCashRegisterCashRegister(grc, c) DEFAULT
@@ -4511,7 +4511,7 @@ FORM groupsCashRegister 'Группы касс'
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
                            useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
-                           dateCashRegister, statusCashRegister, resultCashRegister
+                           dateCashRegister
     FILTERS isGroupCashRegisterCashRegister(grc, c)
 ;
 
