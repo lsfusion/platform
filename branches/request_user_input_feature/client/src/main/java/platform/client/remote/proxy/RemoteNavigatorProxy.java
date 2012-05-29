@@ -184,4 +184,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     public ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException {
         return target.continueNavigatorAction(actionResults);
     }
+
+    @Override
+    public ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException {
+        return target.throwInNavigatorAction(clientException);
+    }
 }

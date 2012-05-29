@@ -65,7 +65,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
                     for (int i = beginIndex; i < actions.length; i++) {
                         ClientAction action = actions[i];
-                        Object dispatchResult = action.dispatch(this);
+                        Object dispatchResult;
+                        try {
+                            dispatchResult = action.dispatch(this);
+                        } catch (Exception ex) {
+                            handleClientActionException(ex);
+                            break;
+                        }
 
                         if (dispatchingPaused) {
                             currentServerResponse = serverResponse;
@@ -95,6 +101,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
+    }
+
+    protected void handleClientActionException(Exception ex) throws IOException {
     }
 
     protected void handleDispatchException(Exception e) throws IOException {

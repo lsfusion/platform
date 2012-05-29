@@ -753,7 +753,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-    private RemotePausableInvocation<ServerResponse> currentInvocation = null;
+    private RemotePausableInvocation currentInvocation = null;
 
     @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
@@ -768,24 +768,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
 
         final ActionProperty property = ((NavigatorAction) element).getProperty();
-        currentInvocation = new RemotePausableInvocation<ServerResponse>(pausablesExecutor) {
+        currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
-                threads.add(Thread.currentThread());
-                try {
-                    DataSession session = createSession();
-                    List<ClientAction> actions = property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
-                    session.apply(BL);
-                    session.close();
-                    return new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
-                } finally {
-                    threads.remove(Thread.currentThread());
-                }
-            }
-
-            @Override
-            protected ServerResponse handleUserInteractionRequest(ClientAction... actions) throws RemoteException {
-                return new ServerResponse(actions);
+                DataSession session = createSession();
+                List<ClientAction> actions = property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
+                session.apply(BL);
+                session.close();
+                return new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
             }
         };
 
@@ -795,6 +785,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     @Override
     public ServerResponse continueNavigatorAction(Object[] actionResults) throws RemoteException {
         return currentInvocation.resumeAfterUserInteraction(actionResults);
+    }
+
+    @Override
+    public ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException {
+        return currentInvocation.resumWithException(clientException);
     }
 
     @Override

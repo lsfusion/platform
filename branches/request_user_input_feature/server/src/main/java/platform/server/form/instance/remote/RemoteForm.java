@@ -608,11 +608,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         form.changeClassView(form.getGroupObjectInstance(groupID), classView);
     }
 
-    public void changeClassView(int groupID, String classViewName) {
-        emitExceptionIfHasActiveInvocation();
-        form.changeClassView(form.getGroupObjectInstance(groupID), ClassViewType.valueOf(classViewName));
-    }
-
     public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
@@ -778,10 +773,38 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
-    private RemotePausableInvocation<ServerResponse> currentInvocation = null;
+    public ServerResponse executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
+        return executeWithFormChanges(new TRunnable() {
+            @Override
+            public void run() throws Throwable {
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
-    private ServerResponse executeServerInvocation(RemotePausableInvocation<ServerResponse> invocation) throws RemoteException {
+                RemoteForm.this.actions.addAll(form.executeEditAction(propertyDraw, actionSID, keys));
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                    if (keys.size() > 0) {
+                        logger.info("   columnKeys: ");
+                        for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
+                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                        }
+                    }
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("   current object's values: ");
+                        for (ObjectInstance obj : form.getObjects()) {
+                            logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
+    private RemotePausableInvocation currentInvocation = null;
+    private ServerResponse executeServerInvocation(RemotePausableInvocation invocation) throws RemoteException {
         emitExceptionIfHasActiveInvocation();
 
         currentInvocation = invocation;
@@ -789,76 +812,21 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private ServerResponse executeWithFormChanges(final TRunnable runnable) throws RemoteException {
-        return executeServerInvocation(new RemotePausableInvocation<ServerResponse>(pausablesExecutor) {
-            @Override
-            protected void runInvocation() throws Throwable {
-                threads.add(Thread.currentThread());
-                try {
-                    runnable.run();
-                } finally {
-                    threads.remove(Thread.currentThread());
-                }
-            }
-
-            @Override
-            protected ServerResponse handleUserInteractionRequest(ClientAction... actions) {
-                return new ServerResponse(actions);
-            }
-
-            @Override
-            protected ServerResponse handleFinished() throws RemoteException {
-                return prepareRemoteChangesResponse();
-            }
-        });
-    }
-
-    public ServerResponse executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
-        return executeServerInvocation(new RemotePausableInvocation<ServerResponse>(pausablesExecutor) {
+        return executeServerInvocation(new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
-                threads.add(Thread.currentThread());
-                try {
-                    PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                    Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
-
-                    List<ClientAction> actions = form.executeEditAction(propertyDraw, actionSID, keys);
-
-                    if (logger.isInfoEnabled()) {
-                        logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
-                        if (keys.size() > 0) {
-                            logger.info("   columnKeys: ");
-                            for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                                logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                            }
-                        }
-
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("   current object's values: ");
-                            for (ObjectInstance obj : form.getObjects()) {
-                                logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                            }
-                        }
-                    }
-
-                    if (actions != null) {
-                        RemoteForm.this.actions.addAll(actions);
-                    }
-
-                    return actions != null ? ServerResponse.edited : ServerResponse.finished;
-                } finally {
-                    threads.remove(Thread.currentThread());
-                }
-            }
-
-            @Override
-            protected ServerResponse handleUserInteractionRequest(ClientAction... actions) {
-                return new ServerResponse(actions);
+                runnable.run();
+                return prepareRemoteChangesResponse();
             }
         });
     }
 
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
         return currentInvocation.resumeAfterUserInteraction(actionResults);
+    }
+
+    public ServerResponse throwInServerInvocation(Exception clientException) throws RemoteException {
+        return currentInvocation.resumWithException(clientException);
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {

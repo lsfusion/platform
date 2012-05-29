@@ -499,6 +499,10 @@ public class ClientFormController {
         return remoteForm.continueServerInvocation(actionResults);
     }
 
+    public ServerResponse throwInServerInvocation(Exception ex) throws RemoteException {
+        return remoteForm.throwInServerInvocation(ex);
+    }
+
     public void gainedFocus() {
         //remoteForm может быть == null, если сработал closed, и тогда ничего вызывать не надо
         if (!isEditing() && remoteForm != null) {

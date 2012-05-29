@@ -34,6 +34,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
+    protected void handleClientActionException(Exception ex) throws IOException {
+        getFormController().throwInServerInvocation(ex);
+    }
+
+    @Override
     protected void handleDispatchException(Exception e) throws IOException {
         setFormBusy(false);
         super.handleDispatchException(e);

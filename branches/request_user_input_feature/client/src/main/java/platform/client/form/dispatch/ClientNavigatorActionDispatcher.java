@@ -4,6 +4,7 @@ import platform.client.navigator.ClientNavigator;
 import platform.interop.action.UpdateCurrentClassClientAction;
 import platform.interop.form.ServerResponse;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 
 public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher {
@@ -16,6 +17,11 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     @Override
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
         return clientNavigator.remoteNavigator.continueNavigatorAction(actionResults);
+    }
+
+    @Override
+    protected void handleClientActionException(Exception ex) throws IOException {
+        clientNavigator.remoteNavigator.throwInNavigatorAction(ex);
     }
 
     @Override

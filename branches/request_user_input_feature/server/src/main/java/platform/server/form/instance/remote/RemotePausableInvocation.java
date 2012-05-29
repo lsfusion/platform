@@ -1,25 +1,31 @@
 package platform.server.form.instance.remote;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import platform.base.ExceptionUtils;
 import platform.interop.action.ClientAction;
+import platform.interop.form.ServerResponse;
+import platform.server.RemoteContextObject;
 
-import javax.mail.MethodNotSupportedException;
 import java.rmi.RemoteException;
 import java.util.concurrent.ExecutorService;
 
-public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, RemoteException> {
+public abstract class RemotePausableInvocation extends PausableInvocation<ServerResponse, RemoteException> {
+    private final RemoteContextObject remoteObject;
+
     /**
      * @param invocationsExecutor
      */
-    public RemotePausableInvocation(ExecutorService invocationsExecutor) {
+    public RemotePausableInvocation(ExecutorService invocationsExecutor, RemoteContextObject remoteObject) {
         super(invocationsExecutor);
+        this.remoteObject = remoteObject;
     }
 
-    private T invocationResult = null;
+    private ServerResponse invocationResult = null;
 
     private ClientAction[] actions;
     private Object[] actionResults;
+    private Exception clientException;
 
     /**
      * рабочий поток
@@ -33,16 +39,27 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
             throw new RuntimeException("Thread was interrupted");
         }
 
+        if (clientException != null) {
+            Exception ex = clientException;
+            clientException = null;
+            Throwables.propagate(ex);
+        }
+
         return actionResults;
     }
 
     /**
      * основной поток
      */
-    public final T resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
+    public final ServerResponse resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
         Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
 
         this.actionResults = actionResults;
+        return resume();
+    }
+
+    public final ServerResponse resumWithException(Exception clientException) throws RemoteException {
+        this.clientException = clientException;
         return resume();
     }
 
@@ -52,7 +69,12 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
      * @throws Throwable
      */
     protected void runInvocation() throws Throwable {
-        invocationResult = callInvocation();
+        remoteObject.threads.add(Thread.currentThread());
+        try {
+            invocationResult = callInvocation();
+        } finally {
+            remoteObject.threads.remove(Thread.currentThread());
+        }
     }
 
     /**
@@ -63,7 +85,7 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
      * @return
      * @throws Throwable
      */
-    protected T callInvocation() throws Throwable {
+    protected ServerResponse callInvocation() throws Throwable {
         return null;
     }
 
@@ -73,19 +95,12 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
      * @return
      * @throws RemoteException
      */
-    protected T handleFinished() throws RemoteException {
+    protected ServerResponse handleFinished() throws RemoteException {
         return invocationResult;
     }
 
-    /**
-     * основной поток
-     */
-    protected T handleUserInteractionRequest(ClientAction... actions) throws Exception {
-        throw new MethodNotSupportedException("User interation request isn't supported on this invocation");
-    }
-
     @Override
-    protected T handleThrows(Throwable t) throws RemoteException {
+    protected ServerResponse handleThrows(Throwable t) throws RemoteException {
         throw ExceptionUtils.propogateRemoteException(t);
     }
 
@@ -93,9 +108,9 @@ public abstract class RemotePausableInvocation<T> extends PausableInvocation<T, 
      * основной поток
      */
     @Override
-    protected final T handlePaused() throws RemoteException {
+    protected final ServerResponse handlePaused() throws RemoteException {
         try {
-            return handleUserInteractionRequest(actions);
+            return new ServerResponse(actions);
         } catch (Exception e) {
             throw ExceptionUtils.propogateRemoteException(e);
         }

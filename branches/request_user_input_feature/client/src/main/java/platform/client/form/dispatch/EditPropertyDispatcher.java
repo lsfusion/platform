@@ -48,11 +48,6 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         }
     }
 
-    @Override
-    protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
-        getFormController().applyRemoteChanges();
-    }
-
     /**
      * @return true, если на сервере вызван action для редактирования
      */
