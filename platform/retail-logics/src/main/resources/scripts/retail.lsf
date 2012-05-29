@@ -5817,6 +5817,12 @@ CLASS inventoryPosted 'Инвентаризация (закрытая)' : invent
 nameInventory 'Название инвентаризации' = DATA STRING[100] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 infoInventory 'Дополнительная информация по инвентаризации' = DATA STRING[500] (inventory) IN documentPrmGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
+timeFromInventory 'Начато' (inventory) =DATA DATETIME (inventory) IN documentPrmGroup;
+timeToInventory 'Закончено' (inventory) =DATA DATETIME (inventory) IN documentPrmGroup;
+
+employeeInventory 'Зав.маг.' (inventory) =DATA employee (inventory);
+nameEmployeeInventory  'Зав. магазином' (inventory) = commonName(employeeInventory(inventory)) IN documentPrmGroup;
+
 includeDepartmentStoreInventory 'Вкл' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
 nameDepartmentInventory 'Отделы документа' (inventory) =
     GROUP CONCAT name(departmentStore) IF includeDepartmentStoreInventory(departmentStore, inventory), ', ' BY inventory IN inventoryGroup MINCHARWIDTH 50 PREFCHARWIDTH 150;
@@ -5833,6 +5839,14 @@ typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) = UNION OVERR
 CONSTRAINT includeDepartmentStoreInventory(departmentStore, inventory) AND NOT typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) MESSAGE 'Ошибка: обязательно задавать тип сличительной ведомости для выбранного отдела';
 userTypeOfAdditionDepartmentStoreInventory(departmentStore, inventory) => includeDepartmentStoreInventory(departmentStore, inventory) RESOLVE FALSE;
 
+committeeInventory(inventory) = DATA inventoryCommittee (inventory) IN idGroup;
+nameCommitteeInventory 'Название комиссии' (inventory) = commonName(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameChairmanCommitteeInventory 'Председатель комиссии' (inventory) = nameChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameOfficerChairmanInventory 'Должность председателя' (inventory)  = nameOfficerChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeByInventory 'Члены комиссии' (inventory) = nameEmployeeCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+inInventoryEmployee 'Является членом комиссии' (inventory, employee) = inCommitteeEmployee(committeeInventory(inventory), employee);
+
+
 CLASS listInventory 'Опись (открытая)';
 TABLE listInventory (listInventory);
 
@@ -5842,14 +5856,19 @@ CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, poste
 @defineDocumentHeaderDepartmentStore(listInventory);
 @defineDocumentHeaderNote(listInventory);
 
-@defineDocumentRelationCustom(inventory, listInventory);
+//@defineDocumentRelationCustom(inventory, listInventory);
+inventoryListInventory = DATA inventory (listInventory) IN idGroup AUTOSET;
+inInventoryListInventory(inventory, listInventory) = inventoryListInventory(listInventory) == inventory;
+
 @defineDocumentDetailIndexCustom(inventory, listInventory);
 
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory)) IN listInventoryGroup;
 nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
                                                   ('Опись ', indexListInventory(listInventory)) IN listInventoryGroup;
 
-committeeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
+
+userCommitteeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
+committeeListInventory(listInventory) = UNION OVERRIDE committeeInventory(inventoryListInventory(listInventory)), userCommitteeListInventory(listInventory);
 nameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameOfficerChairmanListInventory 'Должность председателя' (listInventory)  = nameOfficerChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -5940,6 +5959,17 @@ descriptionCollationSheet 'Название документа' (collationSheet)
     [FORMULA STRING[200] '\'Сличительная ведомость \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
     nameCollationSheet(collationSheet), dateCollationSheet(collationSheet));
 
+prevDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) =DATA DATE (collationSheet) IN baseGroup;
+
+inventoryPrevDepartmentStoreInventory (departmentStore, inventory) = PARTITION PREV inventory IF includeDepartmentStoreInventory(departmentStore, inventory) AND isPostedInventory(inventory)
+    BY departmentStore ORDER DESC dateInventory(inventory);
+
+datePrevCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = PARTITION PREV dateCollationSheet(collationSheet)
+    //IF includeDepartmentStoreInventory(departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet)) AND isPostedInventory(inventoryCollationSheet(collationSheet))
+    BY departmentStoreCollationSheet(collationSheet) ORDER  dateCollationSheet(collationSheet);
+
+overDateCollationSheet 'Дата предыдущей инвентаризации' (collationSheet) = UNION OVERRIDE datePrevCollationSheet(collationSheet), prevDateCollationSheet(collationSheet);
+
 GROUP inventoryGroup 'Информация об инвентаризации' : publicGroup;
 GROUP collationSheetGroup 'Информация о сличительных ведомостях' : baseGroup;
 GROUP listInventoryGroup 'Информация об описях' : baseGroup;
@@ -6008,6 +6038,7 @@ quantityBalanceCollationSheet 'Кол-во по остаткам' (collationShee
 accountSumBalanceCollationSheet 'Сумма по остаткам' (collationSheet) =
     GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
 
+
 quantityShortageCollationSheetItem 'Кол-во недостачи' (collationSheet, item) =
     quantityBalanceCollationSheetItem(collationSheet, item) (-) quantityPageInventoryDetailCollationSheetItem(collationSheet, item) PERSISTENT;
 accountSumShortageCollationSheetItem 'Сумма недостачи' (collationSheet, item) =
@@ -6017,6 +6048,16 @@ quantityShortageCollationSheet 'Кол-во недостачи' (collationSheet)
     GROUP SUM quantityShortageCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
 accountSumShortageCollationSheet 'Сумма недостачи' (collationSheet) =
     GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
+
+accountSumItemBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) =
+    GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet PERSISTENT;
+accountSumContainerBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) =
+    GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet PERSISTENT;
+
+accountSumItemPageInventoryDetailCollationSheet 'Сумма по описям, товар' (collationSheet) =
+    GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet;
+accountSumContainerPageInventoryDetailCollationSheet 'Сумма по описям, тара' (collationSheet) =
+    GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet;
 
 accountSumItemShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) =
     GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet;
@@ -10925,13 +10966,45 @@ DESIGN listInventory FROM DEFAULT {
         ADD functions.box;
     }
 }
+nameCompanyCollationSheet 'Компания' (collationSheet) = nameCompanyDepartmentStore(departmentStoreCollationSheet(collationSheet));
+nameStoreCollationSheet 'Магазин' (collationSheet) = nameStoreDepartmentStore(departmentStoreCollationSheet(collationSheet));
+committeeCollationSheet = committeeInventory(inventoryCollationSheet(collationSheet));
+nameCommitteeCollationSheet 'Название комиссии' (collationSheet) = commonName(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameChairmanCommitteeCollationSheet 'Председатель комиссии' (collationSheet) = nameChairmanCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameOfficerChairmanCollationSheet 'Должность председателя' (collationSheet)  = nameOfficerChairmanCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeCollationSheet 'Члены комиссии' (collationSheet) = nameEmployeeCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+inCollationSheetEmployee 'Является членом комиссии' (collationSheet, employee) = inCommitteeEmployee(committeeCollationSheet(collationSheet), employee);
+
+FORM  collationSheetPrint 'Ведомость' PRINT
+
+    OBJECTS          cs=collationSheet FIXED PANEL
+
+    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameCompanyCollationSheet, nameStoreCollationSheet, nameCommitteeCollationSheet,
+                     nameChairmanCommitteeCollationSheet, nameOfficerChairmanCollationSheet, nameEmployeeCollationSheet
+    PROPERTIES (cs)  SELECTOR nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
+                     quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
+                     accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
+                     countListInventoryCollationSheet, countPageInventoryCollationSheet, overDateCollationSheet
+    PROPERTIES (cs)  accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet, accountSumItemPageInventoryDetailCollationSheet,
+                     accountSumContainerPageInventoryDetailCollationSheet, accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY   commonName, nameOfficerEmployee
+
+    FILTERS        inCollationSheetEmployee(cs, e)
+
+
+//collationSheetListInventory
+;
+
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                      nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
                      noteInventory, infoInventory, nameDepartmentInventory, dialogDepartmentByInventory, convertPriceInventory,
-                     fillBalanceInventory
+                     fillBalanceInventory, timeFromInventory, timeToInventory, nameEmployeeInventory,
+                     nameCommitteeInventory, nameChairmanCommitteeInventory, nameEmployeeByInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageInventory
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageInventory(pl)
@@ -10963,7 +11036,7 @@ FORM inventory 'Инвентаризация'
                      quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                      accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
                      countListInventoryCollationSheet, countPageInventoryCollationSheet
-    PROPERTIES (cs)  dialogItemByCollationSheet, convertPriceCollationSheet, delete
+    PROPERTIES (cs)  dialogItemByCollationSheet, overDateCollationSheet, convertPriceCollationSheet, delete
 
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -11025,6 +11098,26 @@ DESIGN inventory FROM DEFAULT {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(noteInventory);
                         ADD PROPERTY(infoInventory);
+                    }
+                    NEW headerRow2Col1Row3 {
+                        ADD in.inventoryCommitteeGroup {
+                            childConstraints = TO THE RIGHT;
+                        }
+                    }
+
+                    NEW headerRow2Col1Row4 {
+                        childConstraints = TO THE RIGHT;
+
+                        NEW headerRow2Col1Row41 {
+                            title = 'Снятие остатков';
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY(timeFromInventory);
+                            ADD PROPERTY(timeToInventory);
+                        }
+                        NEW headerRow2Col1Row42 {
+                            title = 'Руководство';
+                            ADD PROPERTY(nameEmployeeInventory);
+                        }
                     }
                 }
                 NEW actionContainer {
@@ -13421,6 +13514,7 @@ NAVIGATOR {
         ADD writeOffPrint;
         ADD orderSupplierPrint;
         ADD listInventoryPrint;
+        ADD collationSheetPrint;
     }
 
     ADD adminElement TO formsTree {
