@@ -4206,8 +4206,8 @@ EDIT terminalModel OBJECT t;
 CLASS equipmentServer 'Сервер оборудования' : named;
 TABLE equipmentServer (equipmentServer);
 sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
-sidToEquipmentServer(equipmentServer)  = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
-delayEquipmentServer 'Задержка'= DATA INTEGER(equipmentServer) IN baseGroup;
+sidToEquipmentServer(equipmentServer) = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
+delayEquipmentServer 'Период обновления (в миллисекундах)' = DATA INTEGER (equipmentServer) IN baseGroup;
 
 //---------------------------- Ошибки сервера оборудования ----------------------------//
 CLASS equipmentServerError 'Ошибки';
@@ -4308,8 +4308,6 @@ cashRegisterModelCashRegister 'Модель ИД' = DATA cashRegisterModel (cash
 directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
 nameCashRegisterModelCashRegister 'Модель кассы' (cashRegister) = name(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
 handlerCashRegisterModelCashRegister 'Обработчик кассы' (cashRegister) = handlerModel(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
-statusCashRegister 'Статус кассы (на момент посл.передачи)' = DATA STRING[200] (cashRegister) IN baseGroup;
-resultCashRegister 'Результат передачи на кассу товаров' = DATA STRING[200] (cashRegister) IN baseGroup;
 dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
 
 terminalModelTerminal 'Модель ИД' = DATA terminalModel (terminal) IN idGroup;
@@ -6432,14 +6430,7 @@ sidNumberSeriesToShipmentDetail (sid, number, series) = GROUP UNIQUE shipmentDet
 
 numberSeriesToShipment (number, series) = GROUP UNIQUE shipment BY numberObject(shipment), seriesObject(shipment) WHERE shipment IS shipment;
 
-consigneeShipment 'Грузополучатель' (shipment) =
-    [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
-    nameCompanyDepartmentStore(departmentStoreShipment(shipment)),
-    name(storeDepartmentStore(departmentStoreShipment(shipment))),
-    nameDepartmentStoreShipment(shipment)) IN documentPrmGroup;
-
 carryingChargesShipment 'Транспортные расходы' (shipment) = DATA NUMERIC[16,2] (shipment) IN documentSumGroup;
-
 
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
@@ -8064,6 +8055,11 @@ FORM ordersShipment 'Заказы'
             isAvailableOrderShipment (s, o),
             isPostedOrderSupplier(o)
 ;
+
+DESIGN ordersShipment FROM DEFAULT {
+    PROPERTY(seriesNumberObject(s)) { focusable = FALSE; }
+    PROPERTY(dateShipment(s)) { focusable = FALSE; }
+}
 
 dialogOrdersShipment 'Заказы' (shipment) = ACTION FORM ordersShipment OBJECTS s MODAL SHORTCUT ordersShipment DEFAULT;
 
@@ -13435,9 +13431,9 @@ NAVIGATOR {
 
     NEW processes 'Бизнес-процессы' TO formsToolbar {
         NEW orders 'Заказы' {
+            ADD isSupplierItemDepartmentStore;
             ADD timeTableDate;
             ADD printTimeTable;
-            ADD isSupplierItemDepartmentStore;
             ADD orderSuppliers;
         }
         NEW incomeShipments 'Поставки' {
