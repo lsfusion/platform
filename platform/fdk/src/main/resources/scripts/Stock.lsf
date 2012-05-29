@@ -3,17 +3,10 @@ MODULE Stock;
 IMPORT BaseLogicsModule;
 
 IMPORT Utils;
+IMPORT Hierarchy;
 
 CLASS ABSTRACT stockGroup 'Группа складов' : named;
-TABLE stockGroup(stockGroup);
-
-parentStockGroup = ABSTRACT stockGroup (stockGroup);
-
-hasParentStockGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS stockGroup AND parent == child
-                                                                  STEP 2l AND parent == parentStockGroup($parent) PERSISTENT;
-
-hasParentStockGroup 'Уровень' (child, parent) = TRUE AND hasParentStockGroupLevel(child, parent);
-
+@defineHierarchyAbstract(stockGroup);
 
 CLASS ABSTRACT stock 'Склад' : named;
 TABLE stock(stock);

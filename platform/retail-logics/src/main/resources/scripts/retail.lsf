@@ -10,6 +10,7 @@ MODULE retail;
 IMPORT BaseLogicsModule;
 
 IMPORT Utils;
+IMPORT Hierarchy;
 IMPORT Historizable;
 IMPORT Numerator;
 IMPORT Stock;
@@ -688,19 +689,8 @@ END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
-TABLE itemGroup(itemGroup);
-TABLE itemGroupItemGroup (itemGroup, itemGroup);
 
-parentItemGroup = DATA itemGroup (itemGroup); //AUTOSET;  --  пока не имеет смысла проставляет не ту группу
-
-hasParentItemGroupLevel 'Уровень' (child, parent) = RECURSION 1l AND child IS itemGroup AND parent == child
-                                                                  STEP 2l AND parent == parentItemGroup($parent) PERSISTENT;
-
-hasParentItemGroup 'Уровень' (child, parent) = TRUE AND hasParentItemGroupLevel(child, parent);
-
-nameParentItemGroup 'Родительская группа' = name(parentItemGroup(itemGroup));
-maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
-minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
+@defineHierarchy(itemGroup);
 
 pieceNumeratorItemGroup = DATA numerator (itemGroup);
 namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
@@ -708,21 +698,10 @@ namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для ш
 weightNumeratorItemGroup = DATA numerator (itemGroup);
 nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
 
-childNumberItemGroup 'Кол-во непосредственных потомков' (itemGroup) = GROUP SUM 1 BY parentItemGroup(group) PERSISTENT;
-
-isLeafItemGroup 'Лист' (itemGroup) = itemGroup IS itemGroup AND NOT childNumberItemGroup(itemGroup) PERSISTENT;
-
-TABLE itemGroupStructure(itemGroup, itemGroup, LONG);
-
-hasParentAndLeafItemGroup (child, parent) = hasParentItemGroup(child, parent) AND isLeafItemGroup(child);
-
-canonicalNameItemGroup 'Каноническое имя' (itemGroup) = castToString255(
-                           [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC hasParentItemGroupLevel(child, parent)](itemGroup))
-
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
+minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
 canonicalNameToItemGroup (itemGroup) = GROUP UNIQUE itemGroup BY canonicalNameItemGroup (itemGroup) WHERE itemGroup IS itemGroup;
-//levelItemGroup 'Уровень' (itemGroup) = GROUP SUM 1 IF hasParentItemGroup(child, parent) BY child PERSISTENT;
 
 // формы за формами товара
 
@@ -1236,7 +1215,7 @@ canonicalNameItemGroupSku 'Группа товара' (sku) = canonicalNameItemG
 
 TABLE itemGroupSku (itemGroup, sku);
 
-hasParentItemGroupSku (itemGroup, sku) = hasParentItemGroup(itemGroupSku(sku), itemGroup) PERSISTENT;
+isParentItemGroupSku (itemGroup, sku) = isParentItemGroupItemGroup(itemGroupSku(sku), itemGroup) PERSISTENT;
 
 //descriptionGroup
 captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
@@ -1590,7 +1569,7 @@ nameScalesAttributeItem 'Наименование для весов' (item) = ca
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute)](item))
                 PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
 
-nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND hasParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
+nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
 
 nameAttributeStatisticGroupItem 'Наименование' (statisticGroup, item) = nameAttributeItem(item) AND hasParentStatisticGroupSku(statisticGroup, item) PERSISTENT INDEXED;
 // ---------------------------------------------------------------------------------------- //
@@ -1614,7 +1593,7 @@ dateBarcode 'Дата действия' = UNION OVERRIDE 2001_01_01 IF barcode I
 skuBarcode = DATA sku(barcode) IN baseGroup;
 nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
 
-hasParentItemGroupBarcode (itemGroup, barcode) = hasParentItemGroupSku(itemGroup, skuBarcode(barcode));
+hasParentItemGroupBarcode (itemGroup, barcode) = isParentItemGroupSku(itemGroup, skuBarcode(barcode));
 
 barcodeToDate 'Штрих-код на дату' (string, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode) PERSISTENT;
 
@@ -2766,8 +2745,8 @@ FORM itemGroups 'Товарные группы'
     ORDER BY canonicalNameItemGroup
 
     FILTERGROUP filters
-        FILTER 'Все листья' 'F10' hasParentAndLeafItemGroup(cg, g) DEFAULT
-        FILTER 'Всех потомков' 'F9' hasParentItemGroup(cg, g)
+        FILTER 'Все листья' 'F10' isParentLeafItemGroupItemGroup(cg, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' isParentItemGroupItemGroup(cg, g)
         FILTER 'Только непосредственных потомков' 'F8' parentItemGroup(cg) == g
 ;
 
@@ -4416,7 +4395,7 @@ FORM filterItemsGroupMachinery 'Фильтрация по группам тов�
     PROPERTIES(cg) READONLY canonicalNameItemGroup
     PROPERTIES(gm, cg)      inGroupMachineryItemGroup
     ORDER BY canonicalNameItemGroup
-    FILTERS hasParentAndLeafItemGroup(cg, g)
+    FILTERS isParentLeafItemGroupItemGroup(cg, g)
 
     FILTERGROUP filters
         FILTER 'Только выбранные группы' 'F10' inGroupMachineryItemGroup(gm, cg)
@@ -10879,7 +10858,7 @@ FORM collationSheetItem 'Товары для добавления в сличи�
 
     PROPERTIES(cs, i) inManyCollationSheetItem
 
-    FILTERS hasParentItemGroupSku(g, i)
+    FILTERS isParentItemGroupSku(g, i)
     ORDER BY nameAttributeItem
 ;
 
@@ -11056,7 +11035,7 @@ FORM inventory 'Инвентаризация'
             includeDepartmentStoreInventory(ds, in),
             inventoryCollationSheet(cs) == in,
             includeCollationSheetItem(cs, i),
-            hasParentItemGroupSku(g, i),
+            isParentItemGroupSku(g, i),
             quantityPageInventoryDetailListInventoryItem(li,it)>0
 
     ORDER BY nameAttributeItem
@@ -12548,7 +12527,7 @@ FORM balanceItemDepartment 'Остатки на дату'
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
-    FILTERS           hasParentItemGroupSku(g, i),
+    FILTERS           isParentItemGroupSku(g, i),
                       inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
 
@@ -13263,7 +13242,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
     FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    FILTERS           hasParentItemGroupSku(g, i)
+    FILTERS           isParentItemGroupSku(g, i)
     FILTERGROUP filters10
         FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentDate(sp, i, dep, t) == yesNo.yes DEFAULT
 ;
