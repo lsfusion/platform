@@ -6757,7 +6757,10 @@ noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
 
 noteConsignmentDetail (consignmentDetail) += noteInnerFlowDetail (consignmentDetail);
 
+showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow) IN documentPrmGroup;
+
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
+
 
 CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : inTransferBalanceSkuLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
@@ -6795,6 +6798,8 @@ senderDepartmentInnerArrival (innerArrival) = DATA departmentStore(innerArrival)
 nameSenderDepartmentInnerArrival 'Отдел-отправитель' (innerArrival) = name(senderDepartmentInnerArrival(innerArrival)) IN documentPrmGroup;
 senderDepartmentInnerArrival (innerArrival) <- departmentStoreInnerFlow(innerFlowInnerArrival(innerArrival))
     WHEN CHANGED(innerFlowInnerArrival(innerArrival));
+
+showWareInnerArrival 'Есть посуда' (innerArrival) = DATA BOOLEAN (innerArrival) IN documentPrmGroup;
 
 CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != departmentStoreInnerArrival(innerArrival) CHECKED BY innerFlowInnerArrival
     MESSAGE 'Накладная с другого отдела';
@@ -11502,7 +11507,8 @@ DESIGN userPriceChanges FROM DEFAULT {
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
     PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
-                   nameRecipientDepartmentInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow, retailSumInnerFlowDetailInnerFlow
+                   nameRecipientDepartmentInnerFlow, showWareInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow,
+                   retailSumInnerFlowDetailInnerFlow
 
     PROPERTIES (f) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -11516,7 +11522,8 @@ FORM innerFlow 'Расход в другой отдел'
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                    quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
-                   dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
+                   dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail SHOWIF showWareInnerFlow(f),
+                   warePriceInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d, cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
@@ -11587,7 +11594,8 @@ DESIGN innerFlow FROM DEFAULT{
                 }
 
                 ADD f.documentPrmGroup {
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE BOTTOM;
+                    POSITION PROPERTY(noteInnerFlow) TO THE RIGHT PROPERTY(showWareInnerFlow);
                 }
             }
 
@@ -11716,9 +11724,10 @@ toPrintActOfRevaluationInnerArrival 'Акт переоценки' (innerArrival)
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
-    PROPERTIES (a) nameDepartmentStoreInnerArrival, numberInnerArrival SHOWIF departmentStoreInnerArrival(a), seriesInnerArrival SHOWIF departmentStoreInnerArrival(a),
-                   dateInnerArrival SHOWIF innerFlowInnerArrival(a), timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
-                   toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a),
+    PROPERTIES (a) nameDepartmentStoreInnerArrival, numberInnerArrival SHOWIF departmentStoreInnerArrival(a),
+                   seriesInnerArrival SHOWIF departmentStoreInnerArrival(a), dateInnerArrival SHOWIF innerFlowInnerArrival(a),
+                   timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
+                   toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), showWareInnerArrival,
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), quantityInnerArrivalDetailInnerArrival SHOWIF innerFlowInnerArrival(a),
                    retailSumInnerArrivalDetailInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF needToPriceChangeInnerArrival(a),
                    nameRevaluationCommitteeInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
@@ -11726,8 +11735,10 @@ FORM innerArrival 'Приход из другого отдела'
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a)
                    indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
-                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail, supplierPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
-                   dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail, warePriceInnerArrivalDetail, retailPriceInnerArrivalDetail,
+                   quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
+                   supplierPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
+                   dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail SHOWIF showWareInnerArrival(a),
+                   warePriceInnerArrivalDetail SHOWIF showWareInnerArrival(a), retailPriceInnerArrivalDetail,
                    retailSumInnerArrivalDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
                    curWarePriceInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
@@ -11778,6 +11789,7 @@ DESIGN innerArrival FROM DEFAULT{
 
                     ADD a.documentPrmGroup {
                         childConstraints = TO THE BOTTOM;
+                        POSITION PROPERTY(noteInnerArrival) TO THE RIGHT PROPERTY(showWareInnerArrival);
                     }
 
                     NEW headerCol1Actions {
