@@ -40,7 +40,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
 
-    public void dispatchResponse(ServerResponse serverResponse) throws IOException {
+    public final void dispatchResponse(ServerResponse serverResponse) throws IOException {
         assert serverResponse != null;
 
         try {
@@ -429,5 +429,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public Object execute(RequestUserInputClientAction action) {
         //по умолчанию всегда canceled
         return UserInputResult.canceled;
+    }
+
+    @Override
+    public void execute(EditNotPerformedClientAction action) {
     }
 }

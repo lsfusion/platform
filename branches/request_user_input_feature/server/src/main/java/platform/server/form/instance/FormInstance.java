@@ -55,7 +55,8 @@ import java.util.Map.Entry;
 
 import static platform.base.BaseUtils.mergeSet;
 import static platform.base.BaseUtils.toOrderedMap;
-import static platform.interop.ClassViewType.*;
+import static platform.interop.ClassViewType.GRID;
+import static platform.interop.ClassViewType.HIDE;
 import static platform.interop.Order.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -644,9 +645,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
-        if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null)
-            return new ArrayList<ClientAction>();
+        if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
+            return Arrays.<ClientAction>asList(EditNotPerformedClientAction.instance);
+        }
 
+        boolean confirmationAsked = false;
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
             //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
@@ -667,19 +670,36 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     }
                 }
 
+                confirmationAsked = true;
+
                 int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
                 if (result != JOptionPane.YES_OPTION) {
                     return new ArrayList<ClientAction>();
                 }
             }
         }
-        
-        List<ClientAction> actions = new ArrayList<ClientAction>();
+
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
-        if(editAction!=null)
-            editAction.getRemappedPropertyObject(keys).
-                    execute(new ExecutionEnvironment(this), requestValue, property, actions);
-        return actions;
+        if (editAction != null) {
+            List<ClientAction> actions = new ArrayList<ClientAction>();
+            editAction.getRemappedPropertyObject(keys).execute(
+                    new ExecutionEnvironment(this), requestValue, property, actions
+            );
+
+            if (confirmationAsked) {
+                //считаем, что если спрашивали подтверждение, то редактирование в любом случае произошло...
+                for (Iterator<ClientAction> it = actions.iterator(); it.hasNext(); ) {
+                    ClientAction action = it.next();
+                    if (action == EditNotPerformedClientAction.instance) {
+                        it.remove();
+                    }
+                }
+            }
+
+            return actions;
+        }
+
+        return Arrays.<ClientAction>asList(EditNotPerformedClientAction.instance);
     }
 
     public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {

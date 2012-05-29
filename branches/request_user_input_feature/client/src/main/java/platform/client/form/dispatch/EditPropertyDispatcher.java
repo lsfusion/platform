@@ -7,6 +7,7 @@ import platform.client.form.EditPropertyHandler;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;
+import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.ServerResponse;
 import platform.interop.form.UserInputResult;
@@ -21,6 +22,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     protected final EditPropertyHandler handler;
     private boolean valueRequested = false;
 
+    private boolean editPerformed;
     private ClientType readType;
     private Object oldValue;
 
@@ -40,6 +42,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         Preconditions.checkState(!handler.getForm().isBusy(), "There is already server interaction in progress");
 
         readType = null;
+        editPerformed = true;
         try {
             ServerResponse response = handler.getForm().executeEditAction(property, columnKey, actionSID);
             return internalDispatchResponse(response);
@@ -54,8 +57,6 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     private boolean internalDispatchResponse(ServerResponse response) throws IOException {
         assert response != null;
 
-        boolean editPerformed = response.resumeInvocation || response.actions != null;
-
         dispatchResponse(response);
         if (readType != null) {
             if (!internalRequestValue(readType, oldValue)) {
@@ -64,7 +65,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             return true;
         }
 
-        return editPerformed;
+        return readType != null || response.resumeInvocation || editPerformed;
     }
 
     private boolean internalRequestValue(ClientType readType, Object oldValue) throws IOException {
@@ -102,5 +103,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         pauseDispatching();
 
         return null;
+    }
+
+    @Override
+    public void execute(EditNotPerformedClientAction action) {
+        editPerformed = false;
     }
 }

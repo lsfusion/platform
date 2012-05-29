@@ -1,12 +1,14 @@
 package platform.server.logics.property.actions.edit;
 
+import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.form.instance.*;
+import platform.server.form.instance.DialogInstance;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
@@ -17,8 +19,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import static platform.base.BaseUtils.*;
-import static platform.server.logics.ServerResourceBundle.getString;
+import static platform.base.BaseUtils.reverse;
 
 public class DefaultChangeActionProperty<P extends PropertyInterface> extends CustomActionProperty {
 
@@ -43,43 +44,46 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
 
         final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 
-        if (!context.getSecurityPolicy().property.change.checkPermission(implement.property))
-            return;
+        if (context.getSecurityPolicy().property.change.checkPermission(implement.property)) {
+            Type changeType = implement.property.getType();
 
-        Type changeType = implement.property.getType();
-
-        if(!(formInstance.entity.isActionOnChange(implement.property) || propertyValues.canBeChanged(modifier)))
-            return;
-
-        ObjectValue changeValue;
-        if (changeType instanceof DataClass) {
-            Object oldValue = null;
-            //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
-            if (!(changeType instanceof FileClass)) {
-                oldValue = implement.read(context, keys);
-            }
-            changeValue = context.requestUserData((DataClass) changeType, oldValue);
-        } else if (changeType instanceof ObjectType) {
-            if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
-                context.requestUserObject(new ExecutionContext.RequestDialog() {
-                    public DialogInstance createDialog() throws SQLException {
-                        return formInstance.createObjectEditorDialog(propertyValues);
+            if (formInstance.entity.isActionOnChange(implement.property) || propertyValues.canBeChanged(modifier)) {
+                ObjectValue changeValue;
+                if (changeType instanceof DataClass) {
+                    Object oldValue = null;
+                    //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
+                    if (!(changeType instanceof FileClass)) {
+                        oldValue = implement.read(context, keys);
                     }
-                });
+                    changeValue = context.requestUserData((DataClass) changeType, oldValue);
+                } else if (changeType instanceof ObjectType) {
+                    if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
+                        context.requestUserObject(new ExecutionContext.RequestDialog() {
+                            public DialogInstance createDialog() throws SQLException {
+                                return formInstance.createObjectEditorDialog(propertyValues);
+                            }
+                        });
+                        return;
+                    } else {
+                        changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
+                            public DialogInstance createDialog() throws SQLException {
+                                return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
+                            }
+                        });
+                    }
+                } else {
+                    throw new RuntimeException("not supported");
+                }
+
+                if (changeValue != null) {
+                    implement.change(keys, context.getEnv(), changeValue);
+                }
+
                 return;
-            } else {
-                changeValue = context.requestUserObject(new ExecutionContext.RequestDialog() {
-                    public DialogInstance createDialog() throws SQLException {
-                        return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
-                    }
-                });
             }
-        } else
-            throw new RuntimeException("not supported");
-
-        if(changeValue != null) {
-            implement.change(keys, context.getEnv(), changeValue);
         }
+
+        context.addAction(EditNotPerformedClientAction.instance);
     }
 //            if(GROUP_CHANGE.equals(editActionSID))
 //                implement.execute(getGroupChange(groupObject, modifier, keys, objectInstances, changeValue), context.getEnv(), objectInstances);

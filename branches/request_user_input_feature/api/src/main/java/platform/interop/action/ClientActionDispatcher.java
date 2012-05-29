@@ -44,4 +44,6 @@ public interface ClientActionDispatcher {
     public void execute(UpdateCurrentClassClientAction action);
 
     public Object execute(RequestUserInputClientAction action);
+
+    public void execute(EditNotPerformedClientAction action);
 }
