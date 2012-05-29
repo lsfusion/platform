@@ -901,14 +901,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return eventActions.get(eventObject);
     }
 
-    public boolean hasClientApply() {
-        return false;
-    }
-
-    public ClientAction getClientActionOnApply(FormInstance<T> form) {
-        return null; // будем возвращать именно null, чтобы меньше данных передавалось        
-    }
-
     public boolean isActionOnChange(CalcProperty property) {
         return false;
     }

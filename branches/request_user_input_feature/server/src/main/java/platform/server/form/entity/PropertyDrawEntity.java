@@ -32,6 +32,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public PropertyObjectEntity<P, ?> propertyObject;
     
+    public void setPropertyObject(PropertyObjectEntity<P, ?> propertyObject) {
+        this.propertyObject = propertyObject;
+    }
+    
     public GroupObjectEntity toDraw;
 
     public String mouseBinding;

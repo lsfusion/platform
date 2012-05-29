@@ -125,7 +125,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
                 }
             }
 
-            if (!seekOnOk.isEmpty() && formResult == FormCloseType.OK) {
+            if (formResult == FormCloseType.OK) {
                 for (ObjectEntity object : seekOnOk) {
                     try {
                         ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
@@ -139,7 +139,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
                     }
                 }
             }
-            if (!closeProperties.isEmpty() && formResult == FormCloseType.CLOSE) {
+            if (formResult == FormCloseType.CLOSE) {
                 for (ActionPropertyObjectEntity<?> property : closeProperties) {
                     try {
                         newFormInstance.instanceFactory.getInstance(property).execute(new ExecutionEnvironment(newFormInstance), new ArrayList<ClientAction>());

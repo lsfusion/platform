@@ -1,13 +1,14 @@
 package tmc.integration.exp.FiscalRegister;
 
 import com.jacob.com.Dispatch;
+import platform.interop.action.ClientAction;
 import platform.interop.action.ExecuteClientAction;
 import platform.interop.action.ClientActionDispatcher;
 
 import java.io.IOException;
 
 
-public class CashRegPrintReceiptAction extends ExecuteClientAction {
+public class CashRegPrintReceiptAction implements ClientAction {
     final static int FONT = 2;
 
     ReceiptInstance receipt;
@@ -25,8 +26,8 @@ public class CashRegPrintReceiptAction extends ExecuteClientAction {
         dispose = disposeProperty != null && disposeProperty.equals("true");
     }
 
-    @Override
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
+
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
 
         if (dispose) {
             FiscalReg.dispose("Before PrintReceipt");
@@ -105,5 +106,7 @@ public class CashRegPrintReceiptAction extends ExecuteClientAction {
         if (dispose) {
             FiscalReg.dispose("After PrintReceipt");
         }
+
+        return true;
     }
 }

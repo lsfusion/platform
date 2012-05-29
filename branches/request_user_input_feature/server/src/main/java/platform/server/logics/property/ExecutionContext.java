@@ -144,6 +144,10 @@ public class ExecutionContext<P extends PropertyInterface> {
         changeClass(objectInstance, object, getSession().baseClass.findConcreteClassID(clsID < 0 ? null : clsID));
     }
 
+    public boolean checkApply(BusinessLogics BL) throws SQLException {
+        return getSession().check(BL, actions);
+    }
+
     public void apply(BusinessLogics BL) throws SQLException {
         getEnv().apply(BL, actions);
     }

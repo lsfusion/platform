@@ -14,6 +14,7 @@ import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
+import platform.server.Context;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
@@ -37,6 +38,7 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -56,10 +58,7 @@ import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * User: DAle
@@ -2546,6 +2545,22 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
+    private abstract class PrintFiscalAroundApplyActionProperty extends CustomActionProperty {
+
+        private PrintFiscalAroundApplyActionProperty(String sID) {
+            super(sID, baseLM.apply.property.caption, new ValueClass[]{});
+        }
+
+        protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            ClientAction printAction = getClientActionOnApply((FormInstance<VEDBusinessLogics>) context.getFormInstance());
+            // если чек напечатался
+            if(printAction==null || (context.checkApply(VEDBL) && (Boolean)context.requestUserInteraction(printAction)))
+                context.apply(VEDBL);
+        }
+
+        protected abstract ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance);
+    }
+
     public class CommitSaleCheckRetailFormEntity extends SaleRetailFormEntity {
 
         public ObjectEntity objObligation;
@@ -2606,6 +2621,10 @@ public class VEDLogicsModule extends LogicsModule {
             getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             addPropertyDraw(accumulatedClientSum, objDoc);
             getPropertyDraw(accumulatedClientSum).forceViewType = ClassViewType.HIDE;
+            
+            if(toAdd)
+                applyActionPropertyDraw.setPropertyObject(new ActionPropertyObjectEntity<ClassPropertyInterface>(
+                   new PrintCommitSaleCheckActionProperty(), new HashMap<ClassPropertyInterface, PropertyObjectInterfaceEntity>()));
         }
 
         @Override
@@ -2670,15 +2689,14 @@ public class VEDLogicsModule extends LogicsModule {
             return design;
         }
 
-        @Override
-        public boolean hasClientApply() {
-            return toAdd;
-        }
 
-        @Override
-        public ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
-            if (toAdd) {
+        private class PrintCommitSaleCheckActionProperty extends PrintFiscalAroundApplyActionProperty {
 
+            private PrintCommitSaleCheckActionProperty() {
+                super("PrintCommitSaleCheck");
+            }
+
+            protected ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
                 ObjectInstance obligation = formInstance.instanceFactory.getInstance(objObligation);
 
@@ -2691,8 +2709,7 @@ public class VEDLogicsModule extends LogicsModule {
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle), getPropertyDraw(orderUserName),
                         getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum), getPropertyDraw(discountSumOrder, objDoc),
                         BaseUtils.toSet(obligation.groupTo),getPropertyDraw(baseLM.objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(baseLM.barcode, objObligation));
-            } else
-                return super.getClientActionOnApply(formInstance);
+            }
         }
 
         public ClientAction getPrintOrderAction(FormInstance<?> formInstance) {
@@ -3046,6 +3063,10 @@ public class VEDLogicsModule extends LogicsModule {
 
             CalcPropertyObjectEntity shopImplement = addPropertyObject(currentShop);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectOutOrder, objInner), Compare.EQUALS, shopImplement));
+
+            if(toAdd)
+                applyActionPropertyDraw.setPropertyObject(new ActionPropertyObjectEntity<ClassPropertyInterface>(
+                        new ReturnSaleCheckActionProperty(), new HashMap<ClassPropertyInterface, PropertyObjectInterfaceEntity>()));
         }
 
         @Override
@@ -3080,15 +3101,13 @@ public class VEDLogicsModule extends LogicsModule {
             return design;
         }
 
-        @Override
-        public boolean hasClientApply() {
-            return toAdd;
-        }
+        private class ReturnSaleCheckActionProperty extends PrintFiscalAroundApplyActionProperty {
 
-        @Override
-        public ClientAction getClientActionOnApply(FormInstance formInstance) {
-            if (toAdd) {
+            private ReturnSaleCheckActionProperty() {
+                super("ReturnSaleCheck");
+            }
 
+            protected ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
                 ObjectInstance inner = formInstance.instanceFactory.getInstance(objInner);
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
@@ -3100,10 +3119,8 @@ public class VEDLogicsModule extends LogicsModule {
                         getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt), null, null,
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle),
                         getPropertyDraw(orderUserName), null, null, null, null, null, null, null);
-            } else
-                return super.getClientActionOnApply(formInstance);
+            }
         }
-
     }
 
     private class SpecificationSupplierFormEntity extends FormEntity {
@@ -3693,25 +3710,20 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(orderUserName, objDoc);
             getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             addPropertyDraw(accumulatedClientSum, objDoc);
+
+
+            if(toAdd)
+                applyActionPropertyDraw.setPropertyObject(new ActionPropertyObjectEntity<ClassPropertyInterface>(
+                        new PrintSaleCheckCertActionProperty(), new HashMap<ClassPropertyInterface, PropertyObjectInterfaceEntity>()));
         }
 
-        @Override
-        public boolean hasClientApply() {
-            return toAdd;
-        }
+        private class PrintSaleCheckCertActionProperty extends PrintFiscalAroundApplyActionProperty {
 
-        @Override
-        protected Font getDefaultFont() {
-            if (toAdd)
-                return FONT_MEDIUM_BOLD;
-            else
-                return super.getDefaultFont();
-        }
+            private PrintSaleCheckCertActionProperty() {
+                super("PrintSaleCheckCert");
+            }
 
-        @Override
-        public ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
-            if (toAdd) {
-
+            protected ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance) {
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
                 ObjectInstance obligation = formInstance.instanceFactory.getInstance(objObligation);
 
@@ -3723,9 +3735,16 @@ public class VEDLogicsModule extends LogicsModule {
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null,
                         getPropertyDraw(orderUserName), getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum),
                         null, null, null, null, null);
+            }
+        }
 
-            } else
-                return super.getClientActionOnApply(formInstance);
+
+        @Override
+        protected Font getDefaultFont() {
+            if (toAdd)
+                return FONT_MEDIUM_BOLD;
+            else
+                return super.getDefaultFont();
         }
 
         @Override

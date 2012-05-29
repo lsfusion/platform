@@ -23,10 +23,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CashRegController {
 
@@ -65,18 +62,16 @@ public class CashRegController {
                                                      PropertyDrawEntity<?> clientSumProp, PropertyDrawEntity<?> discountProp, Set<GroupObjectInstance> obligationGrObj,
                                                      PropertyDrawEntity<?> obligationName, PropertyDrawEntity<?> obligationSum, PropertyDrawEntity<?> obligationBarcode) {
 
-        List<ClientAction> actions = new ArrayList<ClientAction>();
-
         cashRegComPort = getCashRegComPort(formInstance);
         if (cashRegComPort > 0) {
-            actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
+            return new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
                     classGroups, priceProp, quantityProp, nameProp,
                     sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp,
                     orderArticleSaleDiscount, orderArticleSaleDiscountSum, cashierProp, clientNameProp,
-                    clientSumProp, discountProp, obligationGrObj, obligationName, obligationSum, obligationBarcode)));
+                    clientSumProp, discountProp, obligationGrObj, obligationName, obligationSum, obligationBarcode));
 
         }
-        return new ListClientAction(actions);
+        return null;
     }
 
 

@@ -1547,19 +1547,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     private boolean tryApplyChanges(List<ClientAction> actions) throws SQLException {
-        if (!askApplyConfirmation()) {
-            return false;
-        }
+        return askApplyConfirmation() && apply(null, actions);
 
-        if (entity.hasClientApply()) {
-            if (!checkApply(actions)) {
-                return false;
-            } else {
-                Context.context.get().requestUserInteraction(entity.getClientActionOnApply(this));
-            }
-        }
-
-        return apply(null, actions);
     }
 
     private boolean askApplyConfirmation() {
