@@ -598,11 +598,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
     }
 
-    public void switchClassView(int groupID) {
-        emitExceptionIfHasActiveInvocation();
-        form.switchClassView(form.getGroupObjectInstance(groupID));
-    }
-
     public void changeClassView(int groupID, ClassViewType classView) {
         emitExceptionIfHasActiveInvocation();
         form.changeClassView(form.getGroupObjectInstance(groupID), classView);

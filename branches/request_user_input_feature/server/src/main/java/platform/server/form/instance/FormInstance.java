@@ -510,16 +510,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public void switchClassView(GroupObjectInstance group) {
-        ClassViewType newClassView = switchView(group.curClassView);
+    public void changeClassView(GroupObjectInstance group, ClassViewType newClassView) {
         if (group.entity.isAllowedClassView(newClassView)) {
-            changeClassView(group, newClassView);
+            group.curClassView = newClassView;
+            group.updated = group.updated | UPDATED_CLASSVIEW;
         }
-    }
-
-    public void changeClassView(GroupObjectInstance group, ClassViewType show) {
-        group.curClassView = show;
-        group.updated = group.updated | UPDATED_CLASSVIEW;
     }
 
     // сстандартные фильтры

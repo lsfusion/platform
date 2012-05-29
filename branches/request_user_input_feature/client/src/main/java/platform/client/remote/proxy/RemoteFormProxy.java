@@ -145,13 +145,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void switchClassView(int groupID) throws RemoteException {
-        logRemoteMethodStartVoidCall("switchClassView");
-        target.switchClassView(groupID);
-        logRemoteMethodEndVoidCall("switchClassView");
-    }
-
-    @PendingRemoteMethod
     public void changeClassView(int groupID, ClassViewType classView) throws RemoteException {
         logRemoteMethodStartVoidCall("changeClassView");
         target.changeClassView(groupID, classView);

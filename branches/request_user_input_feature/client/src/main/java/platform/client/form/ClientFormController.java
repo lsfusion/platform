@@ -556,13 +556,8 @@ public class ClientFormController {
     }
 
     public void switchClassView(ClientGroupObject groupObject) throws IOException {
-        commitOrCancelCurrentEditing();
-
-        SwingUtils.stopSingleAction(groupObject.getActionID(), true);
-
-        remoteForm.switchClassView(groupObject.getID());
-
-        applyRemoteChanges();
+        ClassViewType newClassView = ClassViewType.switchView(controllers.get(groupObject).classView);
+        changeClassView(groupObject, newClassView);
     }
 
     public void changeClassView(ClientGroupObject groupObject, ClassViewType show) throws IOException {
@@ -571,7 +566,6 @@ public class ClientFormController {
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         remoteForm.changeClassView(groupObject.getID(), show);
-
         applyRemoteChanges();
     }
 

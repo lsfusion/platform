@@ -53,8 +53,6 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     ServerResponse pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
 
-    void switchClassView(int groupID) throws RemoteException;
-
     void changeClassView(int groupID, ClassViewType classView) throws RemoteException;
 
     void changeGridClass(int objectID, int idClass) throws RemoteException;
