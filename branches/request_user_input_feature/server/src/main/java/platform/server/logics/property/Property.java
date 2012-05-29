@@ -3,31 +3,20 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.Pair;
-import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
 import platform.interop.form.ServerResponse;
-import platform.server.Message;
 import platform.server.Settings;
-import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.PackComplex;
 import platform.server.classes.ActionClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.*;
-import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.query.IQuery;
-import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
-import platform.server.data.query.Query;
 import platform.server.data.type.Type;
-import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
@@ -38,16 +27,13 @@ import platform.server.form.view.panellocation.ShortcutPanelLocationView;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
-import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
-import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
-import platform.server.session.StructChanges;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -109,6 +95,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public ClassViewType forceViewType;
 
     public Boolean askConfirm;
+    public String askConfirmMessage;
 
     public String toString() {
         return caption;
@@ -301,9 +288,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         if (shouldBeLast != null)
             entity.shouldBeLast = shouldBeLast;
-
         if (forceViewType != null)
             entity.forceViewType = forceViewType;
+        if (askConfirm != null)
+            entity.askConfirm = askConfirm;
+        if (askConfirmMessage != null)
+            entity.askConfirmMessage = askConfirmMessage;
 
         //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
         if (panelLocation != null && panelLocation.isShortcutLocation() && ((ShortcutPanelLocation) panelLocation).getOnlyProperty() != null) {
@@ -335,8 +325,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             propertyView.regexpMessage = regexpMessage;
         if (echoSymbols != null)
             propertyView.echoSymbols = echoSymbols;
-        if (askConfirm != null)
-            propertyView.askConfirm = askConfirm;
 
         if (panelLocation != null) {
             PanelLocationView panelLocationView = panelLocation.convertToView();

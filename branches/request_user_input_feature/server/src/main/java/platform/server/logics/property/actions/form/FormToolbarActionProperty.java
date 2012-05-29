@@ -8,7 +8,6 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
-import platform.server.logics.property.derived.DerivedProperty;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -45,9 +44,7 @@ public abstract class FormToolbarActionProperty extends CustomActionProperty {
 
     @Override
     public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty() {
-        return enableIf != null
-               ? DerivedProperty.createAnd(new ArrayList(), super.getWhereProperty(), enableIf.getImplement())
-               : super.getWhereProperty();
+        return enableIf == null ? super.getWhereProperty() : enableIf.getImplement();
     }
 
     private void setupToolbarButton(FormEntity form, PropertyDrawEntity propertyDraw) {
@@ -64,7 +61,7 @@ public abstract class FormToolbarActionProperty extends CustomActionProperty {
             nots.add(showIfNots[i]);
         }
 
-        CalcPropertyMapImplement showIfImplement = createAnd(interfaces, DerivedProperty.createTrue(), ands, nots);
+        CalcPropertyMapImplement showIfImplement = createAnd(interfaces, createTrue(), ands, nots);
 
         propertyDraw.propertyCaption = form.addPropertyObject(
                 new LCP(createAnd(new ArrayList(), createStatic(showCaption ? caption : ""), showIfImplement).property)

@@ -33,7 +33,6 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
-import platform.server.logics.property.actions.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
 import platform.server.logics.property.actions.flow.ReturnActionProperty;
@@ -193,7 +192,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formXls;
     public LAP formNull;
     public LAP formRefresh;
-    public LAP formApply;
     public LAP formCancel;
     public LAP formOk;
     public LAP formClose;
@@ -296,7 +294,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP delete;
     public LAP dropString;
 
-    public LAP apply;
+    public LAP<?> apply;
 
     public LAP flowBreak;
     public LAP flowReturn;
@@ -776,7 +774,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formXls = addProperty(null, new LAP(new XlsActionProperty()));
         formNull = addProperty(null, new LAP(new NullActionProperty()));
         formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
-        formApply = addProperty(null, new LAP(new platform.server.logics.property.actions.form.ApplyActionProperty()));
         formCancel = addProperty(null, new LAP(new platform.server.logics.property.actions.form.CancelActionProperty()));
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));

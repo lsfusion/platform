@@ -68,8 +68,6 @@ public class PropertyDrawView extends ComponentView {
     public String caption;
     public boolean clearText;
 
-    public boolean askConfirm;
-
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -217,7 +215,6 @@ public class PropertyDrawView extends ComponentView {
         }
 
         outStream.writeBoolean(entity.propertyObject.property.checkEquals());
-        outStream.writeBoolean(askConfirm);
         outStream.writeBoolean(clearText);
 
         MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property instanceof CalcProperty ?

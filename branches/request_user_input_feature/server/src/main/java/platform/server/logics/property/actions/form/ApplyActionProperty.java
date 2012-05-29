@@ -4,6 +4,7 @@ import platform.base.ApiResourceBundle;
 import platform.server.classes.ColorClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -18,12 +19,16 @@ import static platform.server.logics.property.derived.DerivedProperty.createAnd;
 import static platform.server.logics.property.derived.DerivedProperty.createStatic;
 
 public class ApplyActionProperty extends FormToolbarActionProperty {
-    public ApplyActionProperty() {
-        super("formApplyAction", ApiResourceBundle.getString("form.layout.apply"), DataSession.isDataChanged, FormEntity.isNewSession);
+    private final BusinessLogics BL;
+
+    public ApplyActionProperty(BusinessLogics BL) {
+        super("apply", ApiResourceBundle.getString("form.layout.apply"), DataSession.isDataChanged, FormEntity.isNewSession);
+
+        this.BL = BL;
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formApply(context.getActions());
+        context.apply(BL);
     }
 
     @Override

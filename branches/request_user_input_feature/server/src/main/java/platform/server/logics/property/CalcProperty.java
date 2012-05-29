@@ -137,9 +137,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.checkChange = type;
         this.checkProperties = checkProperties;
 
-        ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction = DerivedProperty.createListAction(new ArrayList<ClassPropertyInterface>(), BaseUtils.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
-                lm.baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>()),
-                new LogPropertyActionProperty<T>(this).getImplement()));
+        ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
+                DerivedProperty.createListAction(
+                        new ArrayList<ClassPropertyInterface>(),
+                        BaseUtils.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
+                                lm.baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>()),
+                                new LogPropertyActionProperty<T>(this).getImplement()
+                        )
+                );
         constraintAction.mapEventAction(DerivedProperty.createAnyGProp(this).getImplement(), 0);
         lm.addProp(constraintAction.property);
     }

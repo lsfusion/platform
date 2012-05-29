@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.server.logics.ServerResourceBundle.getString;
+
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
@@ -111,7 +113,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         xlsActionPropertyDraw = addPropertyDraw(baseLM.formXls);
         nullActionPropertyDraw = addPropertyDraw(baseLM.formNull);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.formRefresh);
-        applyActionPropertyDraw = addPropertyDraw(baseLM.formApply);
+        applyActionPropertyDraw = addPropertyDraw(baseLM.apply);
         cancelActionPropertyDraw = addPropertyDraw(baseLM.formCancel);
         okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
         closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
@@ -867,6 +869,28 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setAddOnEvent(ObjectEntity entity, LogicsModule lm, FormEventType... events) {
+        boolean needApplyConfirm = false;
+        boolean needOkConfirm = false;
+        for (FormEventType event : events) {
+            if (event == FormEventType.APPLY) {
+                needApplyConfirm = true;
+            } else if (event == FormEventType.APPLY) {
+                needOkConfirm = true;
+            }
+        }
+
+        if (needOkConfirm) {
+            okActionPropertyDraw.askConfirm = true;
+            okActionPropertyDraw.askConfirmMessage = (okActionPropertyDraw.askConfirmMessage == null ? "" : okActionPropertyDraw.askConfirmMessage)
+                    + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
+        }
+
+        if (needApplyConfirm) {
+            applyActionPropertyDraw.askConfirm = true;
+            applyActionPropertyDraw.askConfirmMessage = (applyActionPropertyDraw.askConfirmMessage == null ? "" : applyActionPropertyDraw.askConfirmMessage)
+                    + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
+        }
+
         addActionsOnEvent(addPropertyObject(lm.getSimpleAddObjectAction((CustomClass) entity.baseClass)), events);
     }
 

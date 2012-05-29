@@ -75,7 +75,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     protected Format format;
 
     public boolean checkEquals;
-    public boolean askConfirm;
 
     protected String sID;
 
@@ -348,7 +347,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         columnGroupObjects = pool.deserializeList(inStream);
 
         checkEquals = inStream.readBoolean();
-        askConfirm = inStream.readBoolean();
         clearText = inStream.readBoolean();
 
         tableName = pool.readString(inStream);

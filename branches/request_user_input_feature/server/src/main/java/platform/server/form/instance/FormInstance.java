@@ -654,18 +654,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
             //ask confirm logics...
-            PropertyDrawView propertyView = entity.getRichDesign().get(property.getEntity());
-            if (propertyView.askConfirm) {
+            PropertyDrawEntity propertyDraw = property.getEntity();
+            if (propertyDraw.askConfirm) {
                 String msg;
-                if (property.propertyObject.getType() instanceof ActionClass) {
-                    msg = getString("form.instance.do.you.really.want.to.take.action");
+                if (propertyDraw.askConfirmMessage != null) {
+                    msg = propertyDraw.askConfirmMessage;
                 } else {
-                    msg = getString("form.instance.do.you.really.want.to.edit.property");
-                }
-
-                String caption = propertyView.getCaption();
-                if (caption != null) {
-                    msg += " \"" + caption + "\"?";
+                    if (property.propertyObject.getType() instanceof ActionClass) {
+                        msg = getString("form.instance.do.you.really.want.to.take.action");
+                    } else {
+                        msg = getString("form.instance.do.you.really.want.to.edit.property");
+                    }
+                    PropertyDrawView propertyView = entity.getRichDesign().get(propertyDraw);
+                    String caption = propertyView.getCaption();
+                    if (caption != null) {
+                        msg += " \"" + caption + "\"?";
+                    }
                 }
 
                 int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
@@ -923,6 +927,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
         actions.add(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
+        if (isModal) {
+            actions.add(new HideFormClientAction());
+        }
         return true;
     }
 
@@ -1536,39 +1543,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return isNewSession;
     }
 
-    public boolean isDataChanged() {
-        return session.hasStoredChanges();
-    }
-
-    public void formApply(List<ClientAction> actions) throws SQLException {
-        if (tryApplyChanges(actions) && isModal) {
-            actions.add(new HideFormClientAction());
-        }
-    }
-
-    private boolean tryApplyChanges(List<ClientAction> actions) throws SQLException {
-        return askApplyConfirmation() && apply(null, actions);
-
-    }
-
-    private boolean askApplyConfirmation() {
-        String confirmMsg = "";
-        for (GroupObjectInstance group : groups) {
-            for (ObjectInstance object : group.objects) {
-                if (false) {
-                    confirmMsg += getString("form.create.new.object") + " " + object.getCaption() + " ?";
-                }
-            }
-        }
-
-        if (!confirmMsg.isEmpty()) {
-            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", confirmMsg));
-            return (result == JOptionPane.YES_OPTION);
-        }
-
-        return true;
-    }
-
     public void formCancel(List<ClientAction> actions) throws SQLException {
         if (session.hasStoredChanges()) {
             int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
@@ -1604,7 +1578,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         actions.addAll(fireOnOk());
 
-        if (isNewSession && !tryApplyChanges(actions)) {
+        if (isNewSession && !apply(null, actions)) {
             return;
         }
 

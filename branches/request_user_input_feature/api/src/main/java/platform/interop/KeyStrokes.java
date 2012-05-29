@@ -5,6 +5,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EventObject;
 
+@SuppressWarnings("MagicConstant")
 public class KeyStrokes {
     public static KeyStroke getEnter() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
@@ -60,11 +61,11 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getCancelKeyStroke() {
-        return getEscape(false);
+        return getEscape(0);
     }
 
     public static KeyStroke getCloseKeyStroke() {
-        return getEscape(true);
+        return getEscape(InputEvent.SHIFT_DOWN_MASK);
     }
 
     public static KeyStroke getEditKeyStroke() {
@@ -92,8 +93,8 @@ public class KeyStrokes {
     }
     //----
 
-    public static KeyStroke getEscape(boolean alt) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, alt ? InputEvent.ALT_DOWN_MASK : 0);
+    public static KeyStroke getEscape(int modifier) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, modifier);
     }
 
     public static KeyStroke getFilterKeyStroke(int modifier) {
