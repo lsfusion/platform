@@ -5801,8 +5801,8 @@ infoInventory 'Дополнительная информация по инвен
 timeFromInventory 'Начато' (inventory) =DATA DATETIME (inventory) IN documentPrmGroup;
 timeToInventory 'Закончено' (inventory) =DATA DATETIME (inventory) IN documentPrmGroup;
 
-employeeInventory 'Зав.маг.' (inventory) =DATA employee (inventory);
-nameEmployeeInventory  'Зав. магазином' (inventory) = commonName(employeeInventory(inventory)) IN documentPrmGroup;
+headManInventory 'Зав.маг.' (inventory) =DATA employee (inventory);
+nameHeadManInventory  'Зав. магазином' (inventory) = commonName(headManInventory(inventory)) IN documentPrmGroup;
 
 includeDepartmentStoreInventory 'Вкл' = DATA BOOLEAN (departmentStore, inventory) IN inventoryGroup;
 nameDepartmentInventory 'Отделы документа' (inventory) =
@@ -5824,7 +5824,7 @@ committeeInventory(inventory) = DATA inventoryCommittee (inventory) IN idGroup;
 nameCommitteeInventory 'Название комиссии' (inventory) = commonName(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeInventory 'Председатель комиссии' (inventory) = nameChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameOfficerChairmanInventory 'Должность председателя' (inventory)  = nameOfficerChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
-nameEmployeeByInventory 'Члены комиссии' (inventory) = nameEmployeeCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
+nameEmployeeInventory 'Члены комиссии' (inventory) = nameEmployeeCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 inInventoryEmployee 'Является членом комиссии' (inventory, employee) = inCommitteeEmployee(committeeInventory(inventory), employee);
 
 
@@ -5837,7 +5837,6 @@ CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, poste
 @defineDocumentHeaderDepartmentStore(listInventory);
 @defineDocumentHeaderNote(listInventory);
 
-//@defineDocumentRelationCustom(inventory, listInventory);
 inventoryListInventory = DATA inventory (listInventory) IN idGroup AUTOSET;
 inInventoryListInventory(inventory, listInventory) = inventoryListInventory(listInventory) == inventory;
 
@@ -6016,8 +6015,8 @@ accountSumBalanceCollationSheetItem 'Сумма по остаткам' (collatio
 
 quantityBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) =
     GROUP SUM quantityBalanceCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
-accountSumBalanceCollationSheet 'Сумма по остаткам' (collationSheet) =
-    GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
+accountSumBalanceCollationSheet 'Сумма по остаткам' (collationSheet) =  round0(
+    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) BY collationSheet](collationSheet)) PERSISTENT;
 
 
 quantityShortageCollationSheetItem 'Кол-во недостачи' (collationSheet, item) =
@@ -6027,23 +6026,23 @@ accountSumShortageCollationSheetItem 'Сумма недостачи' (collationS
 
 quantityShortageCollationSheet 'Кол-во недостачи' (collationSheet) =
     GROUP SUM quantityShortageCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
-accountSumShortageCollationSheet 'Сумма недостачи' (collationSheet) =
-    GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
+accountSumShortageCollationSheet 'Сумма недостачи' (collationSheet) = round0(
+    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) BY collationSheet](collationSheet)) PERSISTENT;
 
-accountSumItemBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) =
-    GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet PERSISTENT;
-accountSumContainerBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) =
-    GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet PERSISTENT;
+accountSumItemBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) = round0(
+    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet)) PERSISTENT;
+accountSumContainerBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) = round0(
+    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet)) PERSISTENT;
 
-accountSumItemPageInventoryDetailCollationSheet 'Сумма по описям, товар' (collationSheet) =
-    GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet;
-accountSumContainerPageInventoryDetailCollationSheet 'Сумма по описям, тара' (collationSheet) =
-    GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet;
+accountSumItemPageInventoryDetailCollationSheet 'Сумма по описям, товар' (collationSheet) = round0(
+    [GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
+accountSumContainerPageInventoryDetailCollationSheet 'Сумма по описям, тара' (collationSheet) = round0(
+    [GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
 
-accountSumItemShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) =
-    GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet;
-accountSumContainerShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) =
-    GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet;
+accountSumItemShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) = round0(
+    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
+accountSumContainerShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
+    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
 
 differentPriceCollationSheetItem(collationSheet, item) = accountPricePageInventoryDetailCollationSheetItem(collationSheet, item) != accountPriceBalanceCollationSheetItem(collationSheet, item);
 
@@ -10789,11 +10788,7 @@ FORM listInventoryPrint 'Опись' PRINT
     OBJECTS e=employee
     PROPERTIES(e) READONLY   commonName, nameOfficerEmployee
 
-    OBJECTS a=employee
-    PROPERTIES(a) READONLY   commonNameEmployee, nameOfficerEmployeeEmployee
-
     FILTERS        inListInventoryEmployee(li, e),
-                   inListInventoryEmployee(li, a),
                    quantityPageInventoryDetailListInventoryItem(li,i)>0
 
 ;
@@ -10828,7 +10823,6 @@ DESIGN listInventoryPrint FROM DEFAULT {
 
         ADD i.box;
         ADD e.box;
-        ADD a.box;
         ADD functions.box;
     }
 }
@@ -10964,12 +10958,17 @@ nameOfficerChairmanCollationSheet 'Должность председателя' 
 nameEmployeeCollationSheet 'Члены комиссии' (collationSheet) = nameEmployeeCommittee(committeeCollationSheet(collationSheet)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 inCollationSheetEmployee 'Является членом комиссии' (collationSheet, employee) = inCommitteeEmployee(committeeCollationSheet(collationSheet), employee);
 
+timeFromCollationSheet 'Снятие остатков начато' (collationSheet) = timeFromInventory(inventoryCollationSheet(collationSheet));
+timeToCollationSheet 'Снятие остатков закончено' (collationSheet) = timeToInventory(inventoryCollationSheet(collationSheet));
+nameHeadManCollationSheet  'Зав. магазином' (collationSheet) = nameHeadManInventory(inventoryCollationSheet(collationSheet));
+
 FORM  collationSheetPrint 'Ведомость' PRINT
 
     OBJECTS          cs=collationSheet FIXED PANEL
 
     PROPERTIES (cs)  SELECTOR nameCollationSheet, nameCompanyCollationSheet, nameStoreCollationSheet, nameCommitteeCollationSheet,
-                     nameChairmanCommitteeCollationSheet, nameOfficerChairmanCollationSheet, nameEmployeeCollationSheet
+                     nameChairmanCommitteeCollationSheet, nameOfficerChairmanCollationSheet, nameEmployeeCollationSheet,
+                     timeFromCollationSheet, timeToCollationSheet, dateCollationSheet, nameHeadManCollationSheet
     PROPERTIES (cs)  SELECTOR nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet,
                      quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                      accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
@@ -10977,23 +10976,18 @@ FORM  collationSheetPrint 'Ведомость' PRINT
     PROPERTIES (cs)  accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet, accountSumItemPageInventoryDetailCollationSheet,
                      accountSumContainerPageInventoryDetailCollationSheet, accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
 
-    OBJECTS e=employee
-    PROPERTIES(e) READONLY   commonName, nameOfficerEmployee
-
-    FILTERS        inCollationSheetEmployee(cs, e)
-
-
-//collationSheetListInventory
 ;
 
+toPrintCollationSheet 'Ведомость' (collationSheet) =
+    ACTION FORM collationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup CONFIRM;
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                      nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
                      noteInventory, infoInventory, nameDepartmentInventory, dialogDepartmentByInventory, convertPriceInventory,
-                     fillBalanceInventory, timeFromInventory, timeToInventory, nameEmployeeInventory,
-                     nameCommitteeInventory, nameChairmanCommitteeInventory, nameEmployeeByInventory
+                     fillBalanceInventory, timeFromInventory, timeToInventory, nameHeadManInventory,
+                     nameCommitteeInventory, nameChairmanCommitteeInventory, nameEmployeeInventory
 
     TREE treeDepartmentStore ds=departmentStore, li=listInventory, pl=pageInventory
     PROPERTIES       READONLY name(ds),  nameListInventory(li), namePageInventory(pl)
@@ -11105,7 +11099,7 @@ DESIGN inventory FROM DEFAULT {
                         }
                         NEW headerRow2Col1Row42 {
                             title = 'Руководство';
-                            ADD PROPERTY(nameEmployeeInventory);
+                            ADD PROPERTY(nameHeadManInventory);
                         }
                     }
                 }
@@ -11218,6 +11212,7 @@ FORM inventories 'Инвентаризации'
                      accountPriceBalanceCollationSheetItem(cs, i) BACKGROUND differentPriceCollationSheetItem(cs, i)
 
     PROPERTIES(cs, it) READONLY accountSumPageInventoryDetailCollationSheetItem, accountSumBalanceCollationSheetItem, accountSumShortageCollationSheetItem
+    PROPERTIES(cs)  toPrintCollationSheet
 
     FILTERS         inventoryInventoryDetail(il)==in,
                     inventoryListInventory(li)==in,

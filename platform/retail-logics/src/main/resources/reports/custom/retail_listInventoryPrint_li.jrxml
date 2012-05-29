@@ -21,9 +21,6 @@
 	<parameter name="e_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="e_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="e_params" class="java.util.Map"/>
-	<parameter name="a_report" class="net.sf.jasperreports.engine.JasperReport"/>
-	<parameter name="a_source" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<parameter name="a_params" class="java.util.Map"/>
 	<field name="li" class="java.lang.Integer"/>
 	<field name="dateListInventory" class="java.util.Date"/>
 	<field name="nameCompanyListInventory" class="java.lang.String"/>
@@ -48,17 +45,7 @@
 	<group name="textGroup5">
 		<groupExpression><![CDATA[String.valueOf($F{li})]]></groupExpression>
 		<groupHeader>
-			<band splitType="Prevent">
-				<printWhenExpression><![CDATA[$F{committeeListInventory}!=null]]></printWhenExpression>
-				<subreport>
-					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
-					<parametersMapExpression><![CDATA[$P{a_params}]]></parametersMapExpression>
-					<dataSourceExpression><![CDATA[$P{a_source}]]></dataSourceExpression>
-					<subreportExpression><![CDATA[$P{a_report}]]></subreportExpression>
-				</subreport>
-			</band>
 			<band height="60">
-				<printWhenExpression><![CDATA[$F{committeeListInventory}==null]]></printWhenExpression>
 				<line>
 					<reportElement x="399" y="5" width="138" height="1"/>
 				</line>
