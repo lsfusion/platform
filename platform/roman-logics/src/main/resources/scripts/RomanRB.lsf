@@ -192,6 +192,7 @@ importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationD
                                                                                 declarationDeclarationDetail(declarationDetail),
                                                                                 skuDeclarationDetail(declarationDetail))) IN idGroup;
 
+
 articleDeclarationDetail 'Артикул товара (ИД)' (declarationDetail) = articleSku(skuDeclarationDetail(declarationDetail)) IN idGroup;
 sidArticleDeclarationDetail 'Артикул товара' (declarationDetail) = sidArticle(articleDeclarationDetail(declarationDetail));
 
@@ -493,6 +494,10 @@ inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice)
 inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
                                                                                   BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
 
+inFreightBoxDeclarationDetail 'Связка' (freightBox, declarationDetail) = quantityImporterStockSku(importerDeclarationDetail(declarationDetail),
+                                                                                                  freightBox AS freightBox,
+                                                                                                  skuDeclarationDetail(declarationDetail)) AND freightFreightBox(freightBox) == freightDeclarationDetail(declarationDetail);
+                                                                                                  //inDeclarationDetailInnerInvoice(declarationDetail, uniqueImporterFreight(importerDeclarationDetail(declarationDetail), freightFreightBox(freightBox)));
 
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                                               BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
@@ -572,6 +577,12 @@ FORM declaration 'Декларация'
     PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
 
     FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
+
+    OBJECTS f=freightBox
+    PROPERTIES (f) barcode
+    PROPERTIES (f, dd) inFreightBoxDeclarationDetail
+
+    FILTERS inFreightBoxDeclarationDetail(f, dd)
 
     EDIT declaration OBJECT d
 ;
@@ -981,7 +992,8 @@ FORM discountPriceChangeDocuments 'Распродажи'
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (d, a) READONLY ratePriceChangeDocumentArticle, priceInRateBBasePriceChangeDocumentArticle, priceBBasePriceChangeDocumentArticle, priceBDiscountPriceChangeDocumentArticle, priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
+    PROPERTIES (d, a) READONLY ratePriceChangeDocumentArticle, priceInRateBBasePriceChangeDocumentArticle, priceBBasePriceChangeDocumentArticle,
+                               priceBDiscountPriceChangeDocumentArticle, priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
 
     FILTERS inArticlePriceChangeDocument(d, a)
 ;
@@ -1027,8 +1039,6 @@ minSumClientArticleAction 'Мин. накопленная сумма' = DATA NUM
 minSumCheckArticleAction 'Мин. сумма чека' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
 
 // документы товародвижения
-CLASS warehouse 'Склад' : stock;
-
 CLASS customsFlow 'Расход с СВХ' : historyObject, numberedObject;
 CLASS customsFlowDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger;
 CLASS customsFlowPosted 'Закрытый расход с СВХ' : customsFlow, postedObject;
@@ -1043,6 +1053,10 @@ declarationDetailCustomsFlowDetail 'Партия (ИД)' = DATA declarationDetai
 batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCustomsFlowDetail (outUserBalanceSkuLedger);
 
 skuCustomsFlowDetail 'Товар (ИД)' (customsFlowDetail) = skuDeclarationDetail (declarationDetailCustomsFlowDetail(customsFlowDetail));
+sidColorSkuCustomsFlowDetail 'Код цвета' (customsFlowDetail) = sidColorSupplierItem(skuCustomsFlowDetail(customsFlowDetail));
+nameColorSkuCustomsFlowDetail 'Цвет' (customsFlowDetail) = nameColorSupplierItem(skuCustomsFlowDetail(customsFlowDetail));
+sidSizeSkuCustomsFlowDetail 'Размер' (customsFlowDetail) = sidSizeSupplierItem(skuCustomsFlowDetail(customsFlowDetail));
+
 sidArticleCustomsFlowDetail 'Артикул товара' (customsFlowDetail) = sidArticleDeclarationDetail (declarationDetailCustomsFlowDetail(customsFlowDetail));
 nameArticleSkuCustomsFlowDetail 'Наименование' (customsFlowDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)));
 
@@ -1099,6 +1113,56 @@ toFillCustomsFlowDetailsCustomsFlow 'Заполнить документ из д
     };
 } CONFIRM;
 
+
+// Приход на склад
+CLASS warehouse 'Склад' : stock;
+
+CLASS inWarehouseFlow 'Приход на склад' : historyObject, numberedObject;
+CLASS inWarehouseFlowPosted 'Закрытый расход с СВХ' : inWarehouseFlow, postedObject;
+
+CLASS inWarehouseFlowDetail 'Строка прихода на склад' : inBalanceSkuLedger;
+
+@defineDocumentBasePosted(inWarehouseFlow);
+
+@defineDocumentStock(inWarehouseFlow, warehouse, 'Оптовый склад');
+
+@defineDocumentDetailQuantity(inWarehouseFlow);
+
+customFlowInWarehouseFlow 'Расход прихода (ИД)' = DATA customsFlow(inWarehouseFlow) IN idGroup;
+numberCustomFlowInWarehouseFlow 'Расход прихода (номер)' (inWarehouseFlow) = numberObject(customFlowInWarehouseFlow(inWarehouseFlow)) IN baseGroup;
+seriesCustomFlowInWarehouseFlow 'Расход прихода (серия)' (inWarehouseFlow) = seriesObject(customFlowInWarehouseFlow(inWarehouseFlow)) IN baseGroup;
+
+customsFlowDetailInWarehouseDetail 'Партия (ИД)' = DATA customsFlowDetail(inWarehouseFlowDetail);
+
+inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlow) = customFlowInWarehouseFlow(inWarehouseFlow) == customsFlow;
+
+//inWarehouseFlowInWarehouseFlowDetail 'Партия (ИД)' = DATA inWarehouseFlow(inWarehouseFlowDetail) IN idGroup;
+//warehouseInWarehouseFlow 'Склад прихода (ИД)' = DATA warehouse(inWarehouseFlow) IN idGroup;
+
+skuInWarehouseFlowDetail 'Товар (ИД)' (inWarehouseFlowDetail) = skuCustomsFlowDetail(customsFlowDetailInWarehouseDetail(inWarehouseFlowDetail));
+sidArticleInWarehouseFlowDetail 'Артикул товара' (inWarehouseFlowDetail) = sidArticle(articleSku(skuInWarehouseFlowDetail(inWarehouseFlowDetail)));
+
+
+dateTimeBalanceSkuLedger (ledger) += dateTimeInWarehouseFlowDetail(ledger);
+skuBalanceSkuLedger (ledger) += skuInWarehouseFlowDetail (ledger);
+stockBalanceSkuLedger (ledger) += warehouseInWarehouseFlow (ledger);
+quantityInAutoBalanceSkuLedger (inAutoBalanceSkuLedger) += quantityInWarehouseFlowDetail(inAutoBalanceSkuLedger);
+
+
+toFillInWarehouseDetailsInWarehouseFlow 'Заполнить приход по расходу' =  ACTION (inWarehouseFlow) {
+    FOR inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlowCustomsFlowDetail(customsFlowDetail)) DO {
+        ADDOBJ inWarehouseFlowDetail;
+        FOR w == addedObject() DO {
+            SET inWarehouseFlowInWarehouseFlowDetail(w) <- inWarehouseFlow AS inWarehouseFlow;
+            SET customsFlowDetailInWarehouseDetail(w) <- customsFlowDetail AS customsFlowDetail;
+            SET quantityInWarehouseFlowDetail(w) <- quantityCustomsFlowDetail(customsFlowDetail);
+        };
+    };
+} CONFIRM;
+
+
+
+
 FORM declarationsCustomsFlow 'Декларации'
     OBJECTS c=customsFlow FIXED PANEL
     PROPERTIES (c) READONLY numberObject, seriesObject, dateCustomsFlow, nameCustomStoreCustomsFlow, nameStoreCustomsFlow
@@ -1120,8 +1184,8 @@ FORM customsFlow 'Расход с СВХ'
                    declarationsCustomsFlow, showFormDeclarationsCustomsFlow, toFillCustomsFlowDetailsCustomsFlow
 
     OBJECTS d = customsFlowDetail
-    PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail,  nameArticleSkuCustomsFlowDetail,
-                  quantityCustomsFlowDetail
+    PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
+                  sidColorSkuCustomsFlowDetail, nameColorSkuCustomsFlowDetail, sidSizeSkuCustomsFlowDetail, quantityCustomsFlowDetail
     PROPERTIES(d) ADDOBJ, delete
 
     FILTERS inCustomsFlowCustomsFlowDetail(c, d)
@@ -1138,7 +1202,7 @@ FORM customsFlows 'Расходы с СВХ'
 
     OBJECTS d = customsFlowDetail
     PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
-                  quantityCustomsFlowDetail
+                  sidColorSkuCustomsFlowDetail, nameColorSkuCustomsFlowDetail, sidSizeSkuCustomsFlowDetail, quantityCustomsFlowDetail
 
     FILTERS inCustomsFlowCustomsFlowDetail(c, d)
 ;
@@ -1149,6 +1213,47 @@ DESIGN customsFlows FROM DEFAULT {
         askConfirm = TRUE;
     }
 }
+
+
+FORM inWarehouseFlow 'Приход на оптовый склад'
+    OBJECTS w = inWarehouseFlow FIXED PANEL
+    PROPERTIES (w) numberObject, seriesObject, dateInWarehouseFlow, timeInWarehouseFlow, numberCustomFlowInWarehouseFlow,
+                   seriesCustomFlowInWarehouseFlow, toFillInWarehouseDetailsInWarehouseFlow
+
+    OBJECTS d = inWarehouseFlowDetail
+    PROPERTIES(d) indexInWarehouseFlowDetail, customsFlowDetailInWarehouseDetail, sidArticleInWarehouseFlowDetail,
+                  quantityInWarehouseFlowDetail
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
+
+    EDIT inWarehouseFlow OBJECT w
+;
+
+FORM inWarehouseFlows 'Приходы на оптовый склад'
+    OBJECTS w = inWarehouseFlow
+    PROPERTIES (w) numberObject, seriesObject, dateInWarehouseFlow, timeInWarehouseFlow
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftInWarehouseFlow(w), delete FORCE PANEL SHOWIF isDraftInWarehouseFlow(w),
+                   postInWarehouseFlow SHOWIF isDraftInWarehouseFlow(w), unpostInWarehouseFlow SHOWIF isPostedInWarehouseFlow(w)
+
+    OBJECTS d = inWarehouseFlowDetail
+    PROPERTIES(d) isPostedBalanceSkuLedger, indexInWarehouseFlowDetail, customsFlowDetailInWarehouseDetail, sidArticleInWarehouseFlowDetail,
+                  quantityInWarehouseFlowDetail
+
+    FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
+;
+
+DESIGN inWarehouseFlows FROM DEFAULT {
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+
+
+
 
 
 FORM balanceItemDepartment 'Остатки'
@@ -1178,10 +1283,6 @@ NAVIGATOR {
         ADD discountPriceChangeDocuments;
         ADD freights;
         ADD coefficientRetails;
-    }
-
-    shipment {
-        ADD freights;
     }
 
     adminElement {
