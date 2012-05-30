@@ -97,10 +97,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyMapImplement<P, P>(this, getIdentityInterfaces());
     }
 
-    public List<ClientAction> execute(Map<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>();
-        env.execute(this, keys, formEnv, null, actions);
-        return actions;
+    public void execute(Map<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
+        env.execute(this, keys, formEnv, null);
     }
 
     public ValueClass getValueClass() {

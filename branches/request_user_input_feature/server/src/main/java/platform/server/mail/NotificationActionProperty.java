@@ -3,7 +3,6 @@ package platform.server.mail;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
-import platform.base.Result;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
@@ -116,7 +115,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         if (smtpHost == null || emailFromNotification == null) {
             String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
             logger.error(errorMessage);
-            context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+            context.pendUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
         } else {
             EmailSender sender = new EmailSender(smtpHost.trim(),BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
             try {
@@ -124,7 +123,7 @@ public class NotificationActionProperty extends CustomActionProperty {
             } catch (Exception e) {
                 String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
                 logger.error(errorMessage);
-                context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+                context.pendUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
                 e.printStackTrace();
             }
         }

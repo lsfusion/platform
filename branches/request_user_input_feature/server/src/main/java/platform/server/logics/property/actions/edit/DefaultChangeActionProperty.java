@@ -83,7 +83,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
             }
         }
 
-        context.addAction(EditNotPerformedClientAction.instance);
+        context.pendUserInteraction(EditNotPerformedClientAction.instance);
     }
 //            if(GROUP_CHANGE.equals(editActionSID))
 //                implement.execute(getGroupChange(groupObject, modifier, keys, objectInstances, changeValue), context.getEnv(), objectInstances);

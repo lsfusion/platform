@@ -5460,10 +5460,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
         @Override
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
@@ -7570,7 +7566,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                 if (file == null)
                     file = generateApplicationFile(context, projectObject, false, newRegulation, complete);
-                context.addAction(new OpenFileClientAction(file, "pdf"));
+                context.pendUserInterfaction(new OpenFileClientAction(file, "pdf"));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -7614,10 +7610,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(genSID(), "Сгенерировать SID экспертов", new ValueClass[]{expert});
 
             expertInterface = interfaces.iterator().next();
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
         }
 
         @Override
@@ -7687,11 +7679,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(genSID(), "Подключить документы", new ValueClass[]{project});
 
             projectInterface = interfaces.iterator().next();
-        }
-
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
         }
 
         @Override
@@ -7928,11 +7915,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными", "*");
         }
 
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
         protected DataClass getReadType(ExecutionContext context) {
             return DoubleClass.instance;
         }
@@ -8106,12 +8088,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             Integer required = requiredTotal - previousResults.size();
             Integer requiredBusiness = Math.max(nvl((Integer) requiredBusinessQuantity.read(context), 0) - previousBusiness, 0);
             if (required > expertVoted.size() + expertNew.size()) {
-                context.addAction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
+                context.pendUserInterfaction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
                 return;
             }
 
             if (r2Foresight && (requiredBusiness > expertNewBusiness.size() + expertVotedBusiness.size())) {
-                context.addAction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
+                context.pendUserInterfaction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
                 return;
             }
 
@@ -8160,7 +8142,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             includeExpertInVote(rand, context, voteObject, expertNewTechnical, expertNewBusiness, false);
                         } else {
                             if (expertVotedTechnical.isEmpty()) {
-                                context.addAction(new MessageClientAction("Недостаточно технических экспертов по форсайту", "Генерация заседания"));
+                                context.pendUserInterfaction(new MessageClientAction("Недостаточно технических экспертов по форсайту", "Генерация заседания"));
                                 return;
                             }
                             includeExpertInVote(rand, context, voteObject, expertVotedTechnical, expertVotedBusiness, false);
@@ -8199,10 +8181,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             voteInterface = i.next();
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
         }
 
         @Override

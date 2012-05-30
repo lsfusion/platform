@@ -52,6 +52,6 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Cust
             }
             result += "    " + rowResult + '\n';
         }
-        context.getActions().add(new LogMessageClientAction(result, true));
+        context.pendUserInteraction(new LogMessageClientAction(result, true));
     }
 }

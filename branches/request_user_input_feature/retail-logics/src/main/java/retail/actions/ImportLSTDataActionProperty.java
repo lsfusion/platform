@@ -112,11 +112,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemGroupKey, parentGroupKey), propsParent);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -148,11 +144,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemGroupKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -185,11 +177,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(wareKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -347,11 +335,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey,
                 brandKey, countryKey, barcodeKey, supplierRangeKey, retailRangeKey, wareKey, rangeKey, rateWasteKey), props);
         service.synchronize(true, false);
-        if (session.hasChanges()) {
-            String result = session.apply(BL);
-            if (result != null)
-                context.addAction(new MessageClientAction(result, "Ошибка"));
-        }
+        session.apply(BL);
         session.close();
     }
 
@@ -387,11 +371,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 DataSession session = BL.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, departmentStoreKey/*, wareKey, rangeKey*/), props);
                 service.synchronize(true, false);
-                if (session.hasChanges()) {
-                    String result = session.apply(BL);
-                    if (result != null)
-                        context.addAction(new MessageClientAction(result, "Ошибка"));
-                }
+                session.apply(BL);
                 session.close();
                 System.out.println("done prices " + start);
             }
@@ -491,11 +471,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 DataSession session = BL.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(shipmentKey, supplierKey, departmentStoreKey, shipmentDetailKey, itemKey, supplierRangeKey, retailRangeKey), props);
                 service.synchronize(true, false);
-                if (session.hasChanges()) {
-                    String result = session.apply(BL);
-                    if (result != null)
-                        context.addAction(new MessageClientAction(result, "Ошибка"));
-                }
+                session.apply(BL);
                 session.close();
 
                 System.out.println("done shipment " + start);
@@ -554,11 +530,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 DataSession session = BL.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, itemKey, departmentStoreKey, logicalKey), props);
                 service.synchronize(true, false);
-                if (session.hasChanges()) {
-                    String result = session.apply(BL);
-                    if (result != null)
-                        context.addAction(new MessageClientAction(result, "Ошибка"));
-                }
+                session.apply(BL);
                 session.close();
 
                 System.out.println("done assortment " + start);
@@ -636,12 +608,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, tradingNetworkKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
-
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -713,11 +680,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, ownershipKey, accountKey, bankKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -789,11 +752,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(customerKey, ownershipKey, accountKey, bankKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -848,11 +807,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey, tradingNetworkKey, storeTypeKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -892,11 +847,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(departmentStoreKey, storeKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -939,11 +890,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(bankKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {
@@ -978,11 +925,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             DataSession session = BL.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(rateWasteKey), props);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                String result = session.apply(BL);
-                if (result != null)
-                    context.addAction(new MessageClientAction(result, "Ошибка"));
-            }
+            session.apply(BL);
             session.close();
 
         } catch (xBaseJException e) {

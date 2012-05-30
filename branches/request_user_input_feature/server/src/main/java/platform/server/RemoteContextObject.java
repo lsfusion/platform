@@ -143,6 +143,16 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     }
 
     @Override
+    public String getLogMessage() {
+        throw new UnsupportedOperationException("getLogMessage is not supported");
+    }
+
+    @Override
+    public void pendUserInteraction(ClientAction action) {
+        throw new UnsupportedOperationException("pendUserInteraction is not supported");
+    }
+
+    @Override
     public Object requestUserInteraction(ClientAction action) {
         return requestUserInteraction(new ClientAction[]{action})[0];
     }

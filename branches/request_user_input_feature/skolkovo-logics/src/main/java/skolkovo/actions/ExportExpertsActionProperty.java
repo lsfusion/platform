@@ -113,6 +113,6 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
 
         xml += "</experts>\n";
 
-        context.addAction(new ExportFileClientAction("experts.xml", xml, "utf-8"));
+        context.pendUserInterfaction(new ExportFileClientAction("experts.xml", xml, "utf-8"));
     }
 }

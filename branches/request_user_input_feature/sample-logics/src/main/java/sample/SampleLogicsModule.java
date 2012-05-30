@@ -145,9 +145,7 @@ public class SampleLogicsModule extends LogicsModule {
             ObjectValue result = context.requestUserData(IntegerClass.instance, null);
             if (result!=null) {
                 Object value = result.getValue();
-                context.addActions(
-                        articleDescription.change(value == null ? null : "Descr # " + value, context.getSession(), context.getSingleKeyValue())
-                );
+                articleDescription.change(value == null ? null : "Descr # " + value, context.getSession(), context.getSingleKeyValue());
             }
         }
     }

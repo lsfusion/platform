@@ -39,6 +39,6 @@ public interface ExecutionEnvironmentInterface {
 
     void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException;
 
-    boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException;
-    ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException;
+    boolean apply(BusinessLogics<?> BL) throws SQLException;
+    ExecutionEnvironmentInterface cancel() throws SQLException;
 }

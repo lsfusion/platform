@@ -17,6 +17,6 @@ public class PrintActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.addAction(new PrintPreviewClientAction());
+        context.pendUserInterfaction(new PrintPreviewClientAction());
     }
 }

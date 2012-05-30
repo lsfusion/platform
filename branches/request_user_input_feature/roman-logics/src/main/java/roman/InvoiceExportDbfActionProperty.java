@@ -37,7 +37,7 @@ public class InvoiceExportDbfActionProperty extends CustomActionProperty {
         try {
             InvoiceExporter exporter = new InvoiceExporter(context.getKeys());
             exporter.extractData();
-            context.addAction(new ExportFileClientAction("invoice.dbf", IOUtils.getFileBytes(dbfInvoice.getFFile())));
+            context.pendUserInterfaction(new ExportFileClientAction("invoice.dbf", IOUtils.getFileBytes(dbfInvoice.getFFile())));
             tempDbfInvoice.delete();
         } catch (Exception e) {
             throw new RuntimeException(e);

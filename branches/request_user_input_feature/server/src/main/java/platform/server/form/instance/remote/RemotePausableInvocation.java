@@ -2,12 +2,18 @@ package platform.server.form.instance.remote;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import platform.base.ArrayInstancer;
+import platform.base.BaseUtils;
 import platform.base.ExceptionUtils;
 import platform.interop.action.ClientAction;
+import platform.interop.action.LogMessageClientAction;
 import platform.interop.form.ServerResponse;
 import platform.server.RemoteContextObject;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 public abstract class RemotePausableInvocation extends PausableInvocation<ServerResponse, RemoteException> {
@@ -23,9 +29,25 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     private ServerResponse invocationResult = null;
 
+    protected List<ClientAction> pendingActions = new ArrayList<ClientAction>();
     private ClientAction[] actions;
     private Object[] actionResults;
     private Exception clientException;
+
+    public final String getLogMessage() {
+        String result = "";
+        for(ClientAction action : pendingActions)
+            if(action instanceof LogMessageClientAction)
+                result = (result.length()==0?"":result + '\n') + ((LogMessageClientAction)action).message;
+        return result;
+    } 
+    
+    /**
+     * рабочий поток
+     */
+    public final void pendUserInterfaction(ClientAction action) {
+        pendingActions.add(action);
+    }
 
     /**
      * рабочий поток
@@ -104,13 +126,24 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         throw ExceptionUtils.propogateRemoteException(t);
     }
 
+    // в сам Client не особо положишь так как ArrayInstancer из другого модуля
+    public final static ArrayInstancer<ClientAction> instancer = new ArrayInstancer<ClientAction>() {
+        public ClientAction[] newArray(int size) {
+            return new ClientAction[size];
+        }
+    };
     /**
      * основной поток
      */
     @Override
     protected final ServerResponse handlePaused() throws RemoteException {
         try {
-            return new ServerResponse(actions);
+            ServerResponse result = new ServerResponse(BaseUtils.add(pendingActions, actions, instancer));
+
+            pendingActions.clear();
+            actions = null;
+
+            return result;
         } catch (Exception e) {
             throw ExceptionUtils.propogateRemoteException(e);
         }

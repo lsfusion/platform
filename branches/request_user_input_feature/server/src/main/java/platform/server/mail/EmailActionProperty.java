@@ -153,7 +153,7 @@ public class EmailActionProperty extends CustomActionProperty {
         } catch (Exception e) {
             String errorMessage = getString("mail.failed.to.send.mail") + " : " + e.toString();
             logger.error(errorMessage);
-            context.addAction(new MessageClientAction(errorMessage, getString("mail.sending")));
+            context.pendUserInterfaction(new MessageClientAction(errorMessage, getString("mail.sending")));
 
             logError(context, getString("mail.failed.to.send.mail") + " : " + e.toString());
             e.printStackTrace();
@@ -281,6 +281,6 @@ public class EmailActionProperty extends CustomActionProperty {
 
     private void logError(ExecutionContext context, String errorMessage) {
         logger.error(errorMessage);
-        context.addAction(new MessageClientAction(errorMessage, getString("mail.sending")));
+        context.pendUserInterfaction(new MessageClientAction(errorMessage, getString("mail.sending")));
     }
 }

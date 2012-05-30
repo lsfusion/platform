@@ -227,6 +227,6 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
         }
 
-        context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
     }
 }

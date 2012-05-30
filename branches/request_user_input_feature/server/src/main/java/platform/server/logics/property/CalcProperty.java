@@ -83,20 +83,20 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         changeExpr = new PullExpr(toString() + " value");
     }
 
-    public List<ClientAction> change(ExecutionContext context, Object value) throws SQLException {
-        return change(context.getEnv(), value);
+    public void change(ExecutionContext context, Object value) throws SQLException {
+        change(context.getEnv(), value);
     }
 
-    public List<ClientAction> change(ExecutionEnvironment env, Object value) throws SQLException {
-        return change(new HashMap<T, DataObject>(), env, value);
+    public void change(ExecutionEnvironment env, Object value) throws SQLException {
+        change(new HashMap<T, DataObject>(), env, value);
     }
 
-    public List<ClientAction> change(Map<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException {
-        return change(keys, context.getEnv(), value);
+    public void change(Map<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException {
+        change(keys, context.getEnv(), value);
     }
 
-    public List<ClientAction> change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
-        return getImplement().change(keys, env, value);
+    public void change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+        getImplement().change(keys, env, value);
     }
 
     public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, int options, LogicsModule lm) {

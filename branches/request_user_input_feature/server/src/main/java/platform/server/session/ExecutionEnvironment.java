@@ -46,43 +46,36 @@ public class ExecutionEnvironment {
         return current.isInTransaction();
     }
 
-    public <P extends PropertyInterface> List<ClientAction> change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
+    public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
         current.fireChange(property, change);
 
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
             userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);
-        return change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, current.getModifier()));
+        change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, current.getModifier()));
     }
 
-    public <P extends PropertyInterface> List<ClientAction> change(DataChanges mapChanges) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>(); // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов, потом изменяем
+    public <P extends PropertyInterface> void change(DataChanges mapChanges) throws SQLException {
         for(Map.Entry<DataProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.read(this).entrySet()) {
             for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
                 getSession().changeProperty(propRow.getKey(), row.getKey(), row.getValue().get("value"), !iterator.hasNext());
             }
         }
-        return actions;
-
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>();
+    public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
         for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(this).entrySet())
-            execute(property, row.getKey(), formEnv, row.getValue().get("value"), actions);
-        return actions;
+            execute(property, row.getKey(), formEnv, row.getValue().get("value"));
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>();
+    public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
         for(Map<P, DataObject> row : set.executeClasses(this))
-            execute(property, row, formEnv, null, actions);
-        return actions;
+            execute(property, row, formEnv, null);
     }
 
-    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue requestInput, List<ClientAction> actions) throws SQLException {
-        ExecutionContext<P> context = new ExecutionContext<P>(change, null, this, actions, formEnv, true);
+    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue requestInput) throws SQLException {
+        ExecutionContext<P> context = new ExecutionContext<P>(change, null, this, formEnv, true);
 
         if(requestInput != null) {
             context = context.pushUserInput(requestInput);
@@ -99,12 +92,12 @@ public class ExecutionEnvironment {
         current.changeClass(objectInstance, object, cls, groupLast);
     }
 
-    public void apply(BusinessLogics BL, List<ClientAction> actions) throws SQLException {
-        current.apply(BL, actions);
+    public void apply(BusinessLogics BL) throws SQLException {
+        current.apply(BL);
     }
 
-    public void cancel(List<ClientAction> actions) throws SQLException {
-        current = current.cancel(actions);
+    public void cancel() throws SQLException {
+        current = current.cancel();
     }
 
     public ObjectValue getLastUserInput() {

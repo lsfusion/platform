@@ -2,8 +2,7 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.Pair;
-import platform.interop.action.ClientAction;
-import platform.interop.action.LogMessageClientAction;
+import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
@@ -488,20 +487,20 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         return incrementChange.properties;
     }
 
-    public String apply(BusinessLogics<?> BL) throws SQLException {
-        ArrayList<ClientAction> actions = new ArrayList<ClientAction>();
-        if(apply(BL, actions))
+    public String applyMessage(BusinessLogics<?> BL) throws SQLException {
+        if(apply(BL))
             return null;
         else
-            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
+            return Context.context.get().getLogMessage();
+//            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
-        return apply(BL, actions, false);
+    public boolean apply(BusinessLogics<?> BL) throws SQLException {
+        return apply(BL, false);
     }
 
-    public boolean check(BusinessLogics BL, List<ClientAction> actions) throws SQLException {
-        return apply(BL, actions, true);
+    public boolean check(BusinessLogics BL) throws SQLException {
+        return apply(BL, true);
     }
 
     public static <T extends PropertyInterface> boolean fitKeyClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
@@ -562,7 +561,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         changeTable.drop(sql);
     }
 
-    public boolean apply(final BusinessLogics<?> BL, List<ClientAction> actions, boolean onlyCheck) throws SQLException {
+    public boolean apply(final BusinessLogics<?> BL, boolean onlyCheck) throws SQLException {
+        if(!hasChanges())
+            return true;
+
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
             applyObject = addObject(sessionClass);
@@ -577,14 +579,14 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
             if(property instanceof ActionProperty && ((ActionProperty)property).event!=null)
-                if(!executeEventAction((ActionProperty) property, incrementApply, actions, pendingExecutes)) // действия
+                if(!executeEventAction((ActionProperty) property, incrementApply, pendingExecutes)) // действия
                     return false;
             if(property instanceof CalcProperty && ((CalcProperty)property).isStored()) // постоянно-хранимые свойства
                 readStored((CalcProperty<PropertyInterface>) property, incrementApply, BL);
         }
 
         if (onlyCheck) {
-            incrementApply.cancel(actions);
+            incrementApply.cancel();
             return true;
         }
 
@@ -607,7 +609,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         for(Map.Entry<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute : pendingExecutes.entrySet())
             for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = pendingExecute.getValue().iterator(); iterator.hasNext(); ) {
                 Map<ClassPropertyInterface, DataObject> context = iterator.next();
-                executePending(pendingExecute.getKey(), context, actions, !iterator.hasNext());
+                executePending(pendingExecute.getKey(), context, !iterator.hasNext());
             }
 
         return true;
@@ -625,7 +627,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
         }
     }
 
-    public boolean executeEventAction(@ParamMessage ActionProperty property, IncrementApply incrementApply, List<ClientAction> actions,
+    public boolean executeEventAction(@ParamMessage ActionProperty property, IncrementApply incrementApply,
                                       Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute) throws SQLException {
         ExecutionEnvironment transactEnv = new ExecutionEnvironment(incrementApply);
         assert transactEnv.isInTransaction();
@@ -645,7 +647,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
                     // иначе "pend'им" выполнение, но уже с новыми классами
                     pendingPropExecute.add(getCurrentObjects(executeRow));
                 else
-                    property.execute(new ExecutionContext(executeRow, null, transactEnv, actions, null, !iterator.hasNext()));
+                    property.execute(new ExecutionContext(executeRow, null, transactEnv, null, !iterator.hasNext()));
             }
         }
 
@@ -723,8 +725,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     }
   */
     @Message("message.session.apply.auto.execute")
-    public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, List<ClientAction> actions, boolean groupLast) throws SQLException {
-        property.execute(new ExecutionContext(context, null, new ExecutionEnvironment(this), actions, null, groupLast));
+    public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, boolean groupLast) throws SQLException {
+        property.execute(new ExecutionContext(context, null, new ExecutionEnvironment(this), null, groupLast));
     }
 
     public QueryEnvironment getQueryEnv() {
@@ -854,7 +856,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
     public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
     }
 
-    public ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException {
+    public ExecutionEnvironmentInterface cancel() throws SQLException {
         restart(true);
         return this;
     }

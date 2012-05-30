@@ -48,7 +48,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new LAP<P>(property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(mapping)));
     }
     
-    public List<ClientAction> execute(PropertyChange<T> change, ExecutionEnvironment env, FormEnvironment<T> form) throws SQLException {
-        return env.execute(property, change.map(mapping), form==null ? null : form.map(mapping));
+    public void execute(PropertyChange<T> change, ExecutionEnvironment env, FormEnvironment<T> form) throws SQLException {
+        env.execute(property, change.map(mapping), form==null ? null : form.map(mapping));
     }
 }

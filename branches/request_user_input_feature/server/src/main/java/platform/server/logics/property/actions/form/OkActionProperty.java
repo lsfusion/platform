@@ -14,6 +14,6 @@ public class OkActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formOk(context.getActions());
+        context.getFormInstance().formOk();
     }
 }

@@ -14,6 +14,6 @@ public class NullActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formNull(context.getActions());
+        context.getFormInstance().formNull();
     }
 }

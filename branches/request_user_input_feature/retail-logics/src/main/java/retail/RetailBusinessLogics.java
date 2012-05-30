@@ -18,7 +18,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -598,7 +597,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
                 paymentProperties).synchronize(true);
 
-        return session.apply(this);
+        return session.applyMessage(this);
     }
 
     @Override
@@ -693,7 +692,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             retailLM.getLCPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
         }
 
-        return session.apply(this);
+        return session.applyMessage(this);
     }
 
     @Override

@@ -2,7 +2,6 @@ package tmc.integration.exp;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ListClientAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
@@ -252,14 +251,13 @@ public class CashRegController {
                                             PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                             PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp) {
 
-        List<ClientAction> actions = new ArrayList<ClientAction>();
         int comPort = getCashRegComPort(formInstance);
         if (comPort > 0) {
-            actions.add(new NonFiscalPrintAction(createOrderTxt(formInstance,
+            return new NonFiscalPrintAction(createOrderTxt(formInstance,
                     classGroups, priceProp, quantityProp,
-                    nameProp, sumProp, toPayProp, barcodeProp), comPort));
+                    nameProp, sumProp, toPayProp, barcodeProp), comPort);
         }
-        return new ListClientAction(actions);
+        return null;
     }
 
 
@@ -357,7 +355,7 @@ public class CashRegController {
             if (comPort == 0) {
                 return;
             }
-            context.addAction(new ReportAction(type, comPort));
+            context.pendUserInterfaction(new ReportAction(type, comPort));
         }
     }
 
@@ -375,7 +373,7 @@ public class CashRegController {
             if (comPort == 0) {
                 return;
             }
-            context.addAction(new MessageAction(type, comPort));
+            context.pendUserInterfaction(new MessageAction(type, comPort));
         }
     }
 
@@ -439,7 +437,7 @@ public class CashRegController {
                 if (comPort == 0) {
                     return;
                 }
-                context.addAction(new MoneyOperationAction(type, comPort, (Double) countValue));
+                context.pendUserInterfaction(new MoneyOperationAction(type, comPort, (Double) countValue));
             }
         }
     }

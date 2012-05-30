@@ -48,7 +48,7 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
             files.put("G316.DBF", IOUtils.getFileBytes(dbfG316.getFFile()));
             files.put("G40.DBF", IOUtils.getFileBytes(dbfG40.getFFile()));
             files.put("GB.DBF", IOUtils.getFileBytes(dbfGB.getFFile()));
-            context.addAction(new ExportFileClientAction(files));
+            context.pendUserInterfaction(new ExportFileClientAction(files));
 
             tempDecl02.delete();
             tempDobl.delete();

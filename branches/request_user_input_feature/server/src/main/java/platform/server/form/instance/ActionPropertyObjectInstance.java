@@ -24,12 +24,12 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         return new ActionPropertyObjectInstance<P>(property, remap(mapKeyValues));
     }
 
-    public FlowResult execute(ExecutionEnvironment env, List<ClientAction> actions) throws SQLException {
-        return execute(env, null, null, actions);
+    public FlowResult execute(ExecutionEnvironment env) throws SQLException {
+        return execute(env, null, null);
     }
 
-    public FlowResult execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw, List<ClientAction> actions) throws SQLException {
-        return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, propertyDraw), requestValue, actions);
+    public FlowResult execute(ExecutionEnvironment env, ObjectValue requestValue, PropertyDrawInstance propertyDraw) throws SQLException {
+        return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, propertyDraw), requestValue);
     }
 
     public CalcPropertyObjectInstance<?> getDrawProperty() {

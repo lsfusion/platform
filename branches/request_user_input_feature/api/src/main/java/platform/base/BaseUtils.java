@@ -1285,6 +1285,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <T> T[] add(List<T> list1, T[] array2, ArrayInstancer<T> instancer) {
+        T[] result = instancer.newArray(list1.size() + array2.length);
+        for(int i=0;i<list1.size();i++)
+            result[i] = list1.get(i);
+        System.arraycopy(array2, 0, result, list1.size(), array2.length);
+        return result;
+    }
+
     public static class GenericTypeInstancer<T> implements ArrayInstancer<T> {
         private final Class arrayType;
         public GenericTypeInstancer(Class<T> arrayType) {

@@ -36,6 +36,8 @@ public interface Context {
     ObjectValue requestUserData(DataClass dataClass, Object oldValue);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
+    String getLogMessage();
+    void pendUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
     Object[] requestUserInteraction(ClientAction... actions);
 }

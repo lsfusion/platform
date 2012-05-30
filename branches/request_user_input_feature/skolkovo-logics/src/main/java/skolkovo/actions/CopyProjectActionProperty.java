@@ -34,10 +34,6 @@ public class CopyProjectActionProperty extends CustomActionProperty {
         projectInterface = i.next();
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        throw new RuntimeException("no need");
-    }
-
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 

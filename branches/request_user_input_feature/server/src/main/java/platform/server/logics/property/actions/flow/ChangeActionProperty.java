@@ -36,7 +36,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
         Expr writeExpr = writeFrom.mapExpr(innerExprs, context.getModifier());
 
         if(useEditAction) {
-            context.addActions(getWriteAction().execute(new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere), context.getEnv(), context.getForm().map(BaseUtils.crossValues(writeTo.mapping, mapInterfaces))));
+            getWriteAction().execute(new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere), context.getEnv(), context.getForm().map(BaseUtils.crossValues(writeTo.mapping, mapInterfaces)));
             return;
         }
 
@@ -44,7 +44,7 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
             changeWhere = changeWhere.and(writeExpr.getWhere().or(
                     writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere()));
 
-        context.addActions(context.getEnv().change(writeTo.property, new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere))); // нет FormEnvironment так как заведомо не action
+        context.getEnv().change(writeTo.property, new PropertyChange<P>(toValues, toKeys, writeExpr, changeWhere)); // нет FormEnvironment так как заведомо не action
     }
 
     private ActionPropertyMapImplement<?, P> getWriteAction() {

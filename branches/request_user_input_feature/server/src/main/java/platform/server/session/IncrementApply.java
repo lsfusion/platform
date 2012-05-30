@@ -1,7 +1,6 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.classes.BaseClass;
@@ -96,12 +95,12 @@ public class IncrementApply extends OverrideModifier implements ExecutionEnviron
         return super.getPropertyChanges();
     }
 
-    public boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+    public boolean apply(BusinessLogics<?> BL) throws SQLException {
         throw new RuntimeException("apply is not allowed in event");
     }
 
     boolean rollbacked = false;
-    public ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException {
+    public ExecutionEnvironmentInterface cancel() throws SQLException {
         assert !rollbacked;
 
         // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы

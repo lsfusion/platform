@@ -17,6 +17,6 @@ public class XlsActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.addAction(new RunExcelClientAction());
+        context.pendUserInterfaction(new RunExcelClientAction());
     }
 }

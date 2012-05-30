@@ -48,16 +48,16 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
     }
 
-    public List<ClientAction> change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
-        return change(keys, env, env.getSession().getObjectValue(value, property.getType()));
+    public void change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+        change(keys, env, env.getSession().getObjectValue(value, property.getType()));
     }
 
     public <K extends PropertyInterface> CalcPropertyMapImplement<P, K> map(Map<T, K> remap) {
         return new CalcPropertyMapImplement<P, K>(property, BaseUtils.join(mapping, remap));
     }
 
-    public List<ClientAction> change(Map<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue) throws SQLException {
-        return env.change(property, mapValues(keys).getPropertyChange(objectValue.getExpr()));
+    public void change(Map<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue) throws SQLException {
+        env.change(property, mapValues(keys).getPropertyChange(objectValue.getExpr()));
     }
 
     public Map<T,ValueClass> mapInterfaceClasses() {

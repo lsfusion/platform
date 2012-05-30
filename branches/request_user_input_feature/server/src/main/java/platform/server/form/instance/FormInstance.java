@@ -636,17 +636,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             session.changeClass(objectInstance, dataObject, cls, groupLast);
     }
 
-    public boolean canChangeClass(CustomObjectInstance object) {
-        return securityPolicy.cls.edit.change.checkPermission(object.currentClass);
+    public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
+        executeEditAction(property, editActionSID, keys, null);
     }
 
-    public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
-        return executeEditAction(property, editActionSID, keys, null);
-    }
-
-    public List<ClientAction> executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
+    public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
         if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
-            return Arrays.<ClientAction>asList(EditNotPerformedClientAction.instance);
+            return;
         }
 
         boolean confirmationAsked = false;
@@ -674,32 +670,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
                 int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
                 if (result != JOptionPane.YES_OPTION) {
-                    return new ArrayList<ClientAction>();
+                    return;
                 }
             }
         }
-
+        
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
-        if (editAction != null) {
-            List<ClientAction> actions = new ArrayList<ClientAction>();
-            editAction.getRemappedPropertyObject(keys).execute(
-                    new ExecutionEnvironment(this), requestValue, property, actions
-            );
-
-            if (confirmationAsked) {
-                //считаем, что если спрашивали подтверждение, то редактирование в любом случае произошло...
-                for (Iterator<ClientAction> it = actions.iterator(); it.hasNext(); ) {
-                    ClientAction action = it.next();
-                    if (action == EditNotPerformedClientAction.instance) {
-                        it.remove();
-                    }
-                }
-            }
-
-            return actions;
-        }
-
-        return Arrays.<ClientAction>asList(EditNotPerformedClientAction.instance);
+        if(editAction!=null)
+            editAction.getRemappedPropertyObject(keys).
+                    execute(new ExecutionEnvironment(this), requestValue, property);
     }
 
     public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
@@ -901,17 +880,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         dataChanged = session.hasChanges();
     }
 
-    public boolean checkApply(List<ClientAction> actions) throws SQLException {
-        return session.check(BL, actions);
+    public boolean checkApply() throws SQLException {
+        return session.check(BL);
     }
 
-    public boolean apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+    public boolean apply(BusinessLogics<?> BL) throws SQLException {
         if (entity.isSynchronizedApply)
             synchronized (entity) {
-                return syncApply(actions);
+                return syncApply();
             }
         else
-            return syncApply(actions);
+            return syncApply();
     }
 
     private void fillHints(boolean restart) throws SQLException {
@@ -928,8 +907,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         noUpdate.addAll(hintsNoUpdate);
     }
     
-    private boolean syncApply(List<ClientAction> actions) throws SQLException {
-        boolean succeeded = session.apply(BL, actions);
+    private boolean syncApply() throws SQLException {
+        boolean succeeded = session.apply(BL);
 
         if (!succeeded)
             return false;
@@ -937,18 +916,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         fillHints(true);
 
         refreshData();
-        actions.addAll(fireOnApply());
+        fireOnApply();
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
-        actions.add(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
+        Context.context.get().pendUserInteraction(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
         if (isModal) {
-            actions.add(new HideFormClientAction());
+            Context.context.get().pendUserInteraction(new HideFormClientAction());
         }
         return true;
     }
 
-    public ExecutionEnvironmentInterface cancel(List<ClientAction> actions) throws SQLException {
+    public ExecutionEnvironmentInterface cancel() throws SQLException {
         session.restart(true);
 
         fillHints(true);
@@ -957,7 +936,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         for (ObjectInstance object : getObjects())
             if (object instanceof CustomObjectInstance)
                 ((CustomObjectInstance) object).updateCurrentClass(session);
-        actions.addAll(fireOnCancel());
+        fireOnCancel();
 
         dataChanged = true;
 
@@ -1072,12 +1051,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public void changeObject(PropertyObjectInterfaceInstance objectInstance, ObjectValue objectValue, List<ClientAction> actions) throws SQLException {
+    public void changeObject(PropertyObjectInterfaceInstance objectInstance, ObjectValue objectValue) throws SQLException {
         if(objectInstance instanceof ObjectInstance) {
             ObjectInstance object = (ObjectInstance) objectInstance;
 
             seekObject(object, objectValue);
-            actions.addAll(fireObjectChanged(object)); // запускаем все Action'ы, которые следят за этим объектом
+            fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
         }
     }
 
@@ -1308,7 +1287,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public FormData getFormData(int orderTop) throws SQLException {
-        return getFormData(properties, groups, orderTop);
+        List<PropertyDrawInstance> calcProps = new ArrayList<PropertyDrawInstance>();
+        for(PropertyDrawInstance property : properties)
+            if(property.propertyObject instanceof CalcPropertyObjectInstance)
+                calcProps.add(property);
+        return getFormData(calcProps, groups, orderTop);
     }
 
     public FormData getFormData(Collection<PropertyDrawInstance> propertyDraws, Collection<GroupObjectInstance> classGroups) throws SQLException {
@@ -1474,50 +1457,46 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     // ---------------------------------------- Events ----------------------------------------
 
-    private List<ClientAction> fireObjectChanged(ObjectInstance object) throws SQLException {
-        return fireEvent(object.entity);
+    private void fireObjectChanged(ObjectInstance object) throws SQLException {
+        fireEvent(object.entity);
     }
 
-    public List<ClientAction> fireOnInit() throws SQLException {
-        return fireEvent(FormEventType.INIT);
+    public void fireOnInit() throws SQLException {
+        fireEvent(FormEventType.INIT);
     }
 
-    public List<ClientAction> fireOnApply() throws SQLException {
-        return fireEvent(FormEventType.APPLY);
+    public void fireOnApply() throws SQLException {
+        fireEvent(FormEventType.APPLY);
     }
 
-    public List<ClientAction> fireOnCancel() throws SQLException {
-        return fireEvent(FormEventType.CANCEL);
+    public void fireOnCancel() throws SQLException {
+        fireEvent(FormEventType.CANCEL);
     }
 
-    public List<ClientAction> fireOnOk() throws SQLException {
+    public void fireOnOk() throws SQLException {
         formResult = FormCloseType.OK;
-        return fireEvent(FormEventType.OK);
+        fireEvent(FormEventType.OK);
     }
 
-    public List<ClientAction> fireOnClose() throws SQLException {
+    public void fireOnClose() throws SQLException {
         formResult = FormCloseType.CLOSE;
-        return fireEvent(FormEventType.CLOSE);
+        fireEvent(FormEventType.CLOSE);
     }
 
-    public List<ClientAction> fireOnNull() throws SQLException {
+    public void fireOnNull() throws SQLException {
         formResult = FormCloseType.NULL;
-        return fireEvent(FormEventType.NULL);
+        fireEvent(FormEventType.NULL);
     }
 
-    private List<ClientAction> fireEvent(Object eventObject) throws SQLException {
-        List<ClientAction> clientActions = new ArrayList<ClientAction>();
-
+    private void fireEvent(Object eventObject) throws SQLException {
         List<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
                 if(autoInstance.isInInterface(null)) // для проверки null'ов
-                    autoInstance.execute(new ExecutionEnvironment(this), clientActions);
+                    autoInstance.execute(new ExecutionEnvironment(this));
             }
         }
-
-        return clientActions;
     }
 
     public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
@@ -1558,16 +1537,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return isNewSession;
     }
 
-    public void formCancel(List<ClientAction> actions) throws SQLException {
+    public void formCancel() throws SQLException {
         if (session.hasStoredChanges()) {
             int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
             if (result == JOptionPane.YES_OPTION) {
-                cancel(actions);
+                cancel();
             }
         }
     }
 
-    public void formClose(List<ClientAction> actions) throws SQLException {
+    public void formClose() throws SQLException {
         if (isNewSession && dataChanged) {
             int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
@@ -1575,29 +1554,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             }
         }
 
-        actions.addAll(fireOnClose());
-        actions.add(new HideFormClientAction());
+        fireOnClose();
+        Context.context.get().pendUserInteraction(new HideFormClientAction());
     }
 
-    public void formNull(List<ClientAction> actions) throws SQLException {
-        actions.addAll(fireOnNull());
-        actions.add(new HideFormClientAction());
+    public void formNull() throws SQLException {
+        fireOnNull();
+        
+        Context.context.get().pendUserInteraction(new HideFormClientAction());
     }
 
-    public void formOk(List<ClientAction> actions) throws SQLException {
+    public void formOk() throws SQLException {
         if (checkOnOk) {
-            if (!checkApply(actions)) {
+            if (!checkApply()) {
                 return;
             }
         }
 
-        actions.addAll(fireOnOk());
+        fireOnOk();
 
-        if (isNewSession && !apply(null, actions)) {
+        if (isNewSession && !apply(null)) {
             return;
         }
 
-        actions.add(new HideFormClientAction());
+        Context.context.get().pendUserInteraction(new HideFormClientAction());
     }
 
     private EnvironmentModifier envModifier = new EnvironmentModifier();
@@ -1629,7 +1609,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public void formRefresh(List<ClientAction> actions) throws SQLException {
+    public void formRefresh() throws SQLException {
         refreshData();
     }
 }

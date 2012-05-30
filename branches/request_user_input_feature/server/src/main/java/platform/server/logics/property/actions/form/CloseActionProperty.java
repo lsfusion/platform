@@ -13,6 +13,6 @@ public class CloseActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formClose(context.getActions());
+        context.getFormInstance().formClose();
     }
 }

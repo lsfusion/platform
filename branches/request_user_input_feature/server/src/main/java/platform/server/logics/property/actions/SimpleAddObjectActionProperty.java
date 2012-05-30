@@ -37,9 +37,7 @@ public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty
         DataObject object = context.addObject((ConcreteCustomClass) readClass);
 
         if (storeNewObjectProperty != null && object != null) {
-            context.addActions(
-                    storeNewObjectProperty.change(object.getValue(), context)
-            );
+            storeNewObjectProperty.change(object.getValue(), context);
         }
     }
 

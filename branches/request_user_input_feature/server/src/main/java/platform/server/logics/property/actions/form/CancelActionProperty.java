@@ -14,6 +14,6 @@ public class CancelActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formCancel(context.getActions());
+        context.getFormInstance().formCancel();
     }
 }

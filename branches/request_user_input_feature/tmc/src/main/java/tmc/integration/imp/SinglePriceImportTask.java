@@ -206,7 +206,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             } catch (SQLException e) {
             }
 
-            String apply = session.apply(BL);
+            String apply = session.applyMessage(BL);
             if(apply==null) {
                 System.out.println("OK");
                 try {

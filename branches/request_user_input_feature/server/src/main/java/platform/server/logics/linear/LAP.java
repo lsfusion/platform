@@ -24,8 +24,8 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public List<ClientAction> execute(DataSession session, DataObject... objects) throws SQLException {
-        return property.execute(getMapValues(objects), new ExecutionEnvironment(session), null);
+    public void execute(DataSession session, DataObject... objects) throws SQLException {
+        property.execute(getMapValues(objects), new ExecutionEnvironment(session), null);
     }
 
     public FlowResult execute(ExecutionContext<?> context, DataObject... objects) throws SQLException {

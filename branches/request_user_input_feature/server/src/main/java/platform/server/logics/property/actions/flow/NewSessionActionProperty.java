@@ -41,8 +41,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
         innerContext.getSession().close();
 
-        context.addActions(innerContext.getActions());
-
         FormInstance<?> formInstance = context.getFormInstance();
         if (formInstance != null) {
             formInstance.refreshData();

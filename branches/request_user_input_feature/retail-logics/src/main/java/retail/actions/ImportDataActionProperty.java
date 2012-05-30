@@ -44,7 +44,7 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
 
             // Close the result set, statement and the connection
         } catch (SQLException e) {
-            context.addAction(new MessageClientAction("Ошибка при подключении к базе данных : " + e.getLocalizedMessage(), "Импорт данных"));
+            context.pendUserInterfaction(new MessageClientAction("Ошибка при подключении к базе данных : " + e.getLocalizedMessage(), "Импорт данных"));
         } finally {
             if (conn != null)
                 conn.close();

@@ -195,7 +195,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     SkolkovoLM.commentEnoughDocumentsExpertVote.change(voteInfo.enoughDocumentsComment, session, vo.expertObj, vo.voteObj);
                 }
 
-                String result = session.apply(this);
+                String result = session.applyMessage(this);
                 if (result != null) {
                     throw new RuntimeException("Не удалось сохранить информацию о голосовании : " + result);
                 }
@@ -424,7 +424,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     SkolkovoLM.commentExpertForesight.change(foresightInfo.comment, session, expertObj, foresightObj);
                 }
 
-                String result = session.apply(this);
+                String result = session.applyMessage(this);
                 if (result != null) {
                     throw new RuntimeException("Не удалось сохранить информацию о профиле эксперта : " + result);
                 }
@@ -551,7 +551,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     SkolkovoLM.confirmedConferenceExpert.change(true, session, confObj, expertObj);
                 else
                     SkolkovoLM.rejectedConferenceExpert.change(true, session, confObj, expertObj);
-                String apply = session.apply(this);
+                String apply = session.applyMessage(this);
                 if (apply != null) {
                     throw new RuntimeException("Не удалось сохранить информацию о участии : " + apply);
                 }

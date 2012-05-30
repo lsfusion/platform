@@ -38,10 +38,6 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
         projectInterface = i.next();
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        throw new RuntimeException("no need");
-    }
-
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         this.session = context.getSession();
@@ -141,7 +137,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
             putFileIfNotNull(files, LM.fileMinutesOfMeetingExpertCollegiumProject.read(context, projectObject), "Протокол заседания экспертной коллегии", true);
             putFileIfNotNull(files, LM.fileWrittenConsentClaimerProject.read(context, projectObject), "Письменное согласие заявителя", true);
 
-            context.addAction(new ExportFileClientAction(files));
+            context.pendUserInterfaction(new ExportFileClientAction(files));
 
             System.gc();
 

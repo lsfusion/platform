@@ -772,10 +772,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 DataSession session = createSession();
-                List<ClientAction> actions = property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
+                property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
                 session.apply(BL);
                 session.close();
-                return new ServerResponse(actions.toArray(new ClientAction[actions.size()]), false);
+                return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
             }
         };
 
@@ -790,6 +790,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     @Override
     public ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException {
         return currentInvocation.resumWithException(clientException);
+    }
+
+    public String getLogMessage() {
+        return currentInvocation.getLogMessage();
+    }
+
+    public void pendUserInteraction(ClientAction action) {
+        currentInvocation.pendUserInterfaction(action);
     }
 
     @Override

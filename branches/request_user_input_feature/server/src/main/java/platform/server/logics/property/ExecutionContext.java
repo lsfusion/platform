@@ -38,17 +38,15 @@ import static platform.base.BaseUtils.join;
 public class ExecutionContext<P extends PropertyInterface> {
     private final Map<P, DataObject> keys;
     private final ObjectValue pushedUserInput;
-    private final List<ClientAction> actions;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
     private final ExecutionEnvironment env;
     private final FormEnvironment<P> form;
 
-    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, List<ClientAction> actions, FormEnvironment<P> form, boolean groupLast) {
+    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, FormEnvironment<P> form, boolean groupLast) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.env = env;
-        this.actions = actions;
         this.form = form;
         this.groupLast = groupLast;
     }
@@ -85,16 +83,8 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env.getSession();
     }
 
-    public List<ClientAction> getActions() {
-        return actions;
-    }
-
-    public void addAction(ClientAction action) {
-        actions.add(action);
-    }
-
-    public void addActions(List<ClientAction> actions) {
-        this.actions.addAll(actions);
+    public void pendUserInterfaction(ClientAction action) {
+        Context.context.get().pendUserInteraction(action);
     }
 
     public FormInstance<?> getFormInstance() {
@@ -145,15 +135,15 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public boolean checkApply(BusinessLogics BL) throws SQLException {
-        return getSession().check(BL, actions);
+        return getSession().check(BL);
     }
 
     public void apply(BusinessLogics BL) throws SQLException {
-        getEnv().apply(BL, actions);
+        getEnv().apply(BL);
     }
 
     public void cancel() throws SQLException {
-        getEnv().cancel(actions);
+        getEnv().cancel();
     }
 
     public void emitExceptionIfNotInFormSession() {
@@ -163,7 +153,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, newEnv, new ArrayList<ClientAction>(), form, groupLast);
+        return new ExecutionContext<P>(keys, pushedUserInput, newEnv, form, groupLast);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, Map<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -179,7 +169,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, env, actions, form, groupLast);
+        return new ExecutionContext<T>(keys, pushedUserInput, env, form, groupLast);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
@@ -199,6 +189,10 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     public interface RequestDialog {
         DialogInstance createDialog() throws SQLException;
+    }
+
+    public void pendUserInteraction(ClientAction action) {
+        Context.context.get().pendUserInteraction(action);
     }
 
     public Object requestUserInteraction(ClientAction action) {

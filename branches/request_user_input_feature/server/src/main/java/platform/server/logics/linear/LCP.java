@@ -82,28 +82,28 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     // execute'ы без Form'
-    public List<ClientAction> change(Object value, DataSession session, DataObject... objects) throws SQLException {
-        return change(value, new ExecutionEnvironment(session), objects);
+    public void change(Object value, DataSession session, DataObject... objects) throws SQLException {
+        change(value, new ExecutionEnvironment(session), objects);
     }
 
-    public List<ClientAction> change(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
-        return change(value, context.getEnv(), objects);
+    public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
+        change(value, context.getEnv(), objects);
     }
 
-    public List<ClientAction> change(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
-        return change(value, context.getEnv(), keys);
+    public void change(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
+        change(value, context.getEnv(), keys);
     }
 
-    public List<ClientAction> change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
-        return change(value, env, getMapValues(objects));
+    public void change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
+        change(value, env, getMapValues(objects));
     }
 
-    public List<ClientAction> change(Object value, ExecutionEnvironment env, Map<T, DataObject> keys) throws SQLException {
+    public void change(Object value, ExecutionEnvironment env, Map<T, DataObject> keys) throws SQLException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
         }
-        return property.change(keys, env, value);
+        property.change(keys, env, value);
     }
 
     public void makeUserLoggable(BaseLogicsModule LM, boolean lazyInit) {

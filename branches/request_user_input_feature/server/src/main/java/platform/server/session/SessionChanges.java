@@ -34,5 +34,5 @@ public interface SessionChanges {
     // узнает список изменений произошедших без него
     public Collection<CalcProperty> update(FormInstance<?> toUpdate) throws SQLException;
 
-    public String apply(BusinessLogics<?> BL) throws SQLException;
+    public String applyMessage(BusinessLogics<?> BL) throws SQLException;
 }

@@ -40,7 +40,7 @@ public class ChangeReadObjectActionProperty extends CustomActionProperty {
                 } else
                     changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue);
                 if(changeValue!=null)
-                    formInstance.changeObject(objectInstance, changeValue, context.getActions());
+                    formInstance.changeObject(objectInstance, changeValue);
             }
         }
     }

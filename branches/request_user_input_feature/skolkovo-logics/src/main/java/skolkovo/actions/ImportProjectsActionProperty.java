@@ -896,10 +896,6 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
         propertiesObjectivesForeign.add(new ImportProperty(foreignProjectObjectivesField, LM.foreignProjectObjectives.getMapping(objectivesKey)));
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        throw new RuntimeException("no need");
-    }
-
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
@@ -917,7 +913,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
 
             String host = getHost(pInfo);
             if (host == null) {
-                context.addAction(new MessageClientAction("Не задан web хост", "Импорт", true));
+                context.pendUserInterfaction(new MessageClientAction("Не задан web хост", "Импорт", true));
                 return;
             }
             Map<String, Timestamp> projects = importProjectsFromXML(pInfo, host);
@@ -947,7 +943,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     message = "Вся информация актуальна";
                 }
             }
-            context.addAction(new MessageClientAction(message, "Импорт", true));
+            context.pendUserInterfaction(new MessageClientAction(message, "Импорт", true));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -2236,7 +2232,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
             throw new RuntimeException(e);
         }
 
-        String sessionApply = pInfo.session.apply(BL);
+        String sessionApply = pInfo.session.applyMessage(BL);
         if (sessionApply != null) {
             String info = "failed to import project " + projectId + ". Constraint: " + sessionApply;
             pInfo.toLog += info;

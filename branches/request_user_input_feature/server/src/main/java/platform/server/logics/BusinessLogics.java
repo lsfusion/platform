@@ -1034,9 +1034,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1060,8 +1058,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
             service.synchronize(true, false);
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1103,8 +1100,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw), propsPropertyDraw, deletes);
             service.synchronize(true, false);
 
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1179,9 +1175,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1212,9 +1206,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1266,8 +1258,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             service = new IntegrationService(session, table2, asList(key, key2), props2);
             service.synchronize(true, false);
 
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1306,8 +1297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             new ExecutionEnvironment(session).change((CalcProperty) LM.connectionCurrentStatus.property, statusChanges);
 
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1787,8 +1777,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LM.baseClass.fillIDs(session, LM.name, LM.classSID);
 
-        if (session.hasChanges())
-            session.apply(this);
+        session.apply(this);
 
         session.close();
     }
@@ -2092,9 +2081,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             service = new IntegrationService(session, table2, asList(tableKey, tableColumnKey), properties2, deletes2);
             service.synchronize(true, false);
 
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
 
             session.close();
         } catch (Exception e) {
