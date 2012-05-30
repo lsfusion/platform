@@ -4,15 +4,11 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -137,7 +133,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
             putFileIfNotNull(files, LM.fileMinutesOfMeetingExpertCollegiumProject.read(context, projectObject), "Протокол заседания экспертной коллегии", true);
             putFileIfNotNull(files, LM.fileWrittenConsentClaimerProject.read(context, projectObject), "Письменное согласие заявителя", true);
 
-            context.pendUserInterfaction(new ExportFileClientAction(files));
+            context.delayUserInterfaction(new ExportFileClientAction(files));
 
             System.gc();
 

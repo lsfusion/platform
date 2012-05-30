@@ -113,7 +113,7 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                     LM.mexxImportPricesInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[3], ByteArrayClass.instance)),supplier);
                 }
             }
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (IOException
                 e) {
             e.printStackTrace();

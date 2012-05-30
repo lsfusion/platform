@@ -83,8 +83,8 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env.getSession();
     }
 
-    public void pendUserInterfaction(ClientAction action) {
-        Context.context.get().pendUserInteraction(action);
+    public void delayUserInterfaction(ClientAction action) {
+        Context.context.get().delayUserInteraction(action);
     }
 
     public FormInstance<?> getFormInstance() {
@@ -192,7 +192,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public void pendUserInteraction(ClientAction action) {
-        Context.context.get().pendUserInteraction(action);
+        Context.context.get().delayUserInteraction(action);
     }
 
     public Object requestUserInteraction(ClientAction action) {

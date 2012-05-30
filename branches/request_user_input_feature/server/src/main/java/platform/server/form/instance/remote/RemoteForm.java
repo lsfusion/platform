@@ -805,7 +805,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
-                return prepareRemoteChangesResponse(pendingActions);
+                return prepareRemoteChangesResponse(delayedActions);
             }
         });
     }
@@ -822,8 +822,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return currentInvocation.getLogMessage();
     }
 
-    public void pendUserInteraction(ClientAction action) {
-        currentInvocation.pendUserInterfaction(action);
+    public void delayUserInteraction(ClientAction action) {
+        currentInvocation.delayUserInterfaction(action);
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {

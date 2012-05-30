@@ -14,7 +14,6 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
 import platform.interop.form.layout.ContainerType;
@@ -30,8 +29,6 @@ import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.*;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
@@ -7566,7 +7563,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                 if (file == null)
                     file = generateApplicationFile(context, projectObject, false, newRegulation, complete);
-                context.pendUserInterfaction(new OpenFileClientAction(file, "pdf"));
+                context.delayUserInterfaction(new OpenFileClientAction(file, "pdf"));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -8088,12 +8085,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             Integer required = requiredTotal - previousResults.size();
             Integer requiredBusiness = Math.max(nvl((Integer) requiredBusinessQuantity.read(context), 0) - previousBusiness, 0);
             if (required > expertVoted.size() + expertNew.size()) {
-                context.pendUserInterfaction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
+                context.delayUserInterfaction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
                 return;
             }
 
             if (r2Foresight && (requiredBusiness > expertNewBusiness.size() + expertVotedBusiness.size())) {
-                context.pendUserInterfaction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
+                context.delayUserInterfaction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
                 return;
             }
 
@@ -8142,7 +8139,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             includeExpertInVote(rand, context, voteObject, expertNewTechnical, expertNewBusiness, false);
                         } else {
                             if (expertVotedTechnical.isEmpty()) {
-                                context.pendUserInterfaction(new MessageClientAction("Недостаточно технических экспертов по форсайту", "Генерация заседания"));
+                                context.delayUserInterfaction(new MessageClientAction("Недостаточно технических экспертов по форсайту", "Генерация заседания"));
                                 return;
                             }
                             includeExpertInVote(rand, context, voteObject, expertVotedTechnical, expertVotedBusiness, false);

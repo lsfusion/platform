@@ -17,6 +17,6 @@ public class EditActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.pendUserInterfaction(new RunExcelClientAction());
+        context.delayUserInterfaction(new RunExcelClientAction());
     }
 }

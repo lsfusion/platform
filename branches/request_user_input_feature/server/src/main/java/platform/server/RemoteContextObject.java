@@ -148,8 +148,8 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     }
 
     @Override
-    public void pendUserInteraction(ClientAction action) {
-        throw new UnsupportedOperationException("pendUserInteraction is not supported");
+    public void delayUserInteraction(ClientAction action) {
+        throw new UnsupportedOperationException("delayUserInteraction is not supported");
     }
 
     @Override

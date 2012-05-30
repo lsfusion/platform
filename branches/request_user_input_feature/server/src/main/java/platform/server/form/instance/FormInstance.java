@@ -642,10 +642,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
         if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
+            Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
 
-        boolean confirmationAsked = false;
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
             //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
@@ -666,19 +666,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                     }
                 }
 
-                confirmationAsked = true;
-
                 int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
                 if (result != JOptionPane.YES_OPTION) {
                     return;
                 }
             }
         }
-        
+
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
-        if(editAction!=null)
-            editAction.getRemappedPropertyObject(keys).
-                    execute(new ExecutionEnvironment(this), requestValue, property);
+        if (editAction != null) {
+            editAction.getRemappedPropertyObject(keys).execute(
+                    new ExecutionEnvironment(this), requestValue, property
+            );
+        } else {
+            Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
+        }
     }
 
     public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
@@ -920,9 +922,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
-        Context.context.get().pendUserInteraction(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
+        Context.context.get().delayUserInteraction(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
         if (isModal) {
-            Context.context.get().pendUserInteraction(new HideFormClientAction());
+            Context.context.get().delayUserInteraction(new HideFormClientAction());
         }
         return true;
     }
@@ -1555,13 +1557,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
 
         fireOnClose();
-        Context.context.get().pendUserInteraction(new HideFormClientAction());
+        Context.context.get().delayUserInteraction(new HideFormClientAction());
     }
 
     public void formNull() throws SQLException {
         fireOnNull();
         
-        Context.context.get().pendUserInteraction(new HideFormClientAction());
+        Context.context.get().delayUserInteraction(new HideFormClientAction());
     }
 
     public void formOk() throws SQLException {
@@ -1577,7 +1579,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             return;
         }
 
-        Context.context.get().pendUserInteraction(new HideFormClientAction());
+        Context.context.get().delayUserInteraction(new HideFormClientAction());
     }
 
     private EnvironmentModifier envModifier = new EnvironmentModifier();

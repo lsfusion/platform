@@ -29,7 +29,7 @@ public class StopConfigurationActionProperty extends CustomActionProperty {
 
         Integer port = (Integer) paas.paasLM.configurationPort.read(context, confObj);
         if (port == null) {
-            context.pendUserInterfaction(new MessageClientAction("Порт не задан.", "Ошибка!"));
+            context.delayUserInterfaction(new MessageClientAction("Порт не задан.", "Ошибка!"));
             return;
         }
 

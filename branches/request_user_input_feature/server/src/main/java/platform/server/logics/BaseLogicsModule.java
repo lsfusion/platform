@@ -1574,9 +1574,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             FileClass fileClass = getFileClass();
             for(byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
                 if (fileClass instanceof DynamicFormatFileClass)
-                    context.pendUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
+                    context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
                 else
-                    context.pendUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(), ",")));
+                    context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(), ",")));
             }
         }
 
@@ -1636,10 +1636,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             DataObject user = context.getSingleKeyValue();
             if (context.getFormInstance().BL.requiredPassword) {
-                context.pendUserInterfaction(new UserReloginClientAction(context.getFormInstance().BL.getUserName(user).trim()));
+                context.delayUserInterfaction(new UserReloginClientAction(context.getFormInstance().BL.getUserName(user).trim()));
             } else {
                 context.getSession().user.changeCurrentUser(user);
-                context.pendUserInterfaction(new UserChangedClientAction());
+                context.delayUserInterfaction(new UserChangedClientAction());
             }
         }
     }
@@ -1657,7 +1657,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             String message = BL.checkAggregations(sqlSession);
             sqlSession.commitTransaction();
 
-            context.pendUserInterfaction(new MessageClientAction(getString("logics.check.aggregation.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.aggregation.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));
         }
     }
 
@@ -1674,7 +1674,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
             sqlSession.commitTransaction();
 
-            context.pendUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
         }
     }
 
@@ -1699,7 +1699,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             BL.recalculateAggregationTableColumn(sqlSession, propertySID.trim());
             sqlSession.commitTransaction();
 
-            context.pendUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
         }
     }
 
@@ -1716,7 +1716,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             BL.packTables(sqlSession, tableFactory.getImplementTables());
             sqlSession.commitTransaction();
 
-            context.pendUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
         }
     }
 
@@ -1732,7 +1732,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             session.apply(BL);
             session.close();
 
-            context.pendUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
         }
     }
 

@@ -52,7 +52,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
             }.getTable();
 
             new IntegrationService(context.getSession(), table, Arrays.asList(colorKey), properties).synchronize();
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -8245,7 +8245,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ObjectValue supplier = supplierDocument.readClasses(context, document);
             if (supplier.isNull()) {
-                context.pendUserInterfaction(new MessageClientAction("Не выбран поставщик", "Ввод товара"));
+                context.delayUserInterfaction(new MessageClientAction("Не выбран поставщик", "Ввод товара"));
                 return;
             }
 
@@ -8274,7 +8274,7 @@ public class RomanLogicsModule extends LogicsModule {
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject objCreateStamp = context.getKeyValue(createStampInterface);
             if ((firstNumberCreationStamp.read(context, objCreateStamp) == null) || (lastNumberCreationStamp.read(context, objCreateStamp) == null)) {
-                context.pendUserInterfaction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
+                context.delayUserInterfaction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
                 return;
             }
 
@@ -8282,7 +8282,7 @@ public class RomanLogicsModule extends LogicsModule {
             String stringFinish = (String) lastNumberCreationStamp.read(context, objCreateStamp);
 
             if (stringStart.length() != stringFinish.length()) {
-                context.pendUserInterfaction(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
+                context.delayUserInterfaction(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
                 return;
             }
 
@@ -8290,7 +8290,7 @@ public class RomanLogicsModule extends LogicsModule {
             Integer finish = Integer.parseInt(stringFinish);
 
             if ((finish - start) > 3000) {
-                context.pendUserInterfaction(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
+                context.delayUserInterfaction(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
                 return;
             }
 
@@ -8375,7 +8375,7 @@ public class RomanLogicsModule extends LogicsModule {
             ObjectInstance objectInstance = (ObjectInstance) context.getObjectInstance(routeInterface);
             if (!objRouteResult.equals(objectInstance.getObjectValue())) {
                 try {
-                    context.pendUserInterfaction(new AudioClientAction(getClass().getResourceAsStream(
+                    context.delayUserInterfaction(new AudioClientAction(getClass().getResourceAsStream(
                             objRouteResult.equals(objRouteRB) ? "/audio/rb.wav" : "/audio/rf.wav"
                     )));
                 } catch (IOException e) {

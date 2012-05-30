@@ -355,7 +355,7 @@ public class CashRegController {
             if (comPort == 0) {
                 return;
             }
-            context.pendUserInterfaction(new ReportAction(type, comPort));
+            context.delayUserInterfaction(new ReportAction(type, comPort));
         }
     }
 
@@ -373,7 +373,7 @@ public class CashRegController {
             if (comPort == 0) {
                 return;
             }
-            context.pendUserInterfaction(new MessageAction(type, comPort));
+            context.delayUserInterfaction(new MessageAction(type, comPort));
         }
     }
 
@@ -437,7 +437,7 @@ public class CashRegController {
                 if (comPort == 0) {
                     return;
                 }
-                context.pendUserInterfaction(new MoneyOperationAction(type, comPort, (Double) countValue));
+                context.delayUserInterfaction(new MoneyOperationAction(type, comPort, (Double) countValue));
             }
         }
     }

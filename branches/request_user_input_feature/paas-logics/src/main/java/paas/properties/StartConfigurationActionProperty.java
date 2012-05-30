@@ -35,7 +35,7 @@ public class StartConfigurationActionProperty extends CustomActionProperty {
         } catch (Exception e) {
             logger.warn("Ошибка при попытке запустить приложение: ", e);
 
-            context.pendUserInterfaction(new MessageClientAction(e.getMessage(), "Ошибка!"));
+            context.delayUserInterfaction(new MessageClientAction(e.getMessage(), "Ошибка!"));
         }
     }
 

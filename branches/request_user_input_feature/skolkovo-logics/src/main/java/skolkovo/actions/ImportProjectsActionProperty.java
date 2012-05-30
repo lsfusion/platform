@@ -11,14 +11,11 @@ import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -913,7 +910,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
 
             String host = getHost(pInfo);
             if (host == null) {
-                context.pendUserInterfaction(new MessageClientAction("Не задан web хост", "Импорт", true));
+                context.delayUserInterfaction(new MessageClientAction("Не задан web хост", "Импорт", true));
                 return;
             }
             Map<String, Timestamp> projects = importProjectsFromXML(pInfo, host);
@@ -943,7 +940,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     message = "Вся информация актуальна";
                 }
             }
-            context.pendUserInterfaction(new MessageClientAction(message, "Импорт", true));
+            context.delayUserInterfaction(new MessageClientAction(message, "Импорт", true));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

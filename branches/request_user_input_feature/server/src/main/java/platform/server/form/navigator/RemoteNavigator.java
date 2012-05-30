@@ -775,7 +775,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
                 session.apply(BL);
                 session.close();
-                return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+                return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
         };
 
@@ -796,8 +796,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return currentInvocation.getLogMessage();
     }
 
-    public void pendUserInteraction(ClientAction action) {
-        currentInvocation.pendUserInterfaction(action);
+    public void delayUserInteraction(ClientAction action) {
+        currentInvocation.delayUserInterfaction(action);
     }
 
     @Override

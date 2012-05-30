@@ -115,7 +115,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         if (smtpHost == null || emailFromNotification == null) {
             String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
             logger.error(errorMessage);
-            context.pendUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+            context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
         } else {
             EmailSender sender = new EmailSender(smtpHost.trim(),BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
             try {
@@ -123,7 +123,7 @@ public class NotificationActionProperty extends CustomActionProperty {
             } catch (Exception e) {
                 String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
                 logger.error(errorMessage);
-                context.pendUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+                context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
                 e.printStackTrace();
             }
         }

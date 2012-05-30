@@ -2,8 +2,6 @@ package platform.server.form.instance.remote;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import platform.base.ArrayInstancer;
-import platform.base.BaseUtils;
 import platform.base.ExceptionUtils;
 import platform.interop.action.ClientAction;
 import platform.interop.action.LogMessageClientAction;
@@ -13,6 +11,7 @@ import platform.server.RemoteContextObject;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -29,31 +28,35 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     private ServerResponse invocationResult = null;
 
-    protected List<ClientAction> pendingActions = new ArrayList<ClientAction>();
-    private ClientAction[] actions;
+    protected List<ClientAction> delayedActions = new ArrayList<ClientAction>();
+    private int neededActionResultsCnt = -1;
+
     private Object[] actionResults;
     private Exception clientException;
 
     public final String getLogMessage() {
         String result = "";
-        for(ClientAction action : pendingActions)
-            if(action instanceof LogMessageClientAction)
-                result = (result.length()==0?"":result + '\n') + ((LogMessageClientAction)action).message;
+        for (ClientAction action : delayedActions) {
+            if (action instanceof LogMessageClientAction) {
+                result = (result.length() == 0 ? "" : result + '\n') + ((LogMessageClientAction) action).message;
+            }
+        }
         return result;
     } 
     
     /**
      * рабочий поток
      */
-    public final void pendUserInterfaction(ClientAction action) {
-        pendingActions.add(action);
+    public final void delayUserInterfaction(ClientAction action) {
+        delayedActions.add(action);
     }
 
     /**
      * рабочий поток
      */
     public final Object[] pauseForUserInteraction(ClientAction... actions) {
-        this.actions = actions;
+        neededActionResultsCnt = actions.length;
+        Collections.addAll(delayedActions, actions);
 
         try {
             pause();
@@ -67,7 +70,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
             Throwables.propagate(ex);
         }
 
-        return actionResults;
+        return Arrays.copyOfRange(actionResults, actionResults.length - neededActionResultsCnt, actionResults.length);
     }
 
     /**
@@ -126,22 +129,14 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         throw ExceptionUtils.propogateRemoteException(t);
     }
 
-    // в сам Client не особо положишь так как ArrayInstancer из другого модуля
-    public final static ArrayInstancer<ClientAction> instancer = new ArrayInstancer<ClientAction>() {
-        public ClientAction[] newArray(int size) {
-            return new ClientAction[size];
-        }
-    };
     /**
      * основной поток
      */
     @Override
     protected final ServerResponse handlePaused() throws RemoteException {
         try {
-            ServerResponse result = new ServerResponse(BaseUtils.add(pendingActions, actions, instancer));
-
-            pendingActions.clear();
-            actions = null;
+            ServerResponse result = new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]));
+            delayedActions.clear();
 
             return result;
         } catch (Exception e) {

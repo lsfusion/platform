@@ -4143,7 +4143,7 @@ public class VEDLogicsModule extends LogicsModule {
 
                 context.apply(VEDBL);
             } else
-                context.pendUserInterfaction(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
+                context.delayUserInterfaction(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
         }
 
         @Override
@@ -4163,7 +4163,7 @@ public class VEDLogicsModule extends LogicsModule {
             FormInstance<?> remoteForm = context.getFormInstance();
             ClientAction printOrderAction = ((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm);
             if(printOrderAction!=null)
-                context.pendUserInterfaction(printOrderAction);
+                context.delayUserInterfaction(printOrderAction);
         }
 
         @Override
@@ -4210,7 +4210,7 @@ public class VEDLogicsModule extends LogicsModule {
                 throw new RuntimeException(e);
             }
 
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно выгружены", "Экспорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно выгружены", "Экспорт"));
         }
     }
 
@@ -4308,7 +4308,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         protected DataClass getReadType(ExecutionContext context) {
@@ -4369,7 +4369,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         protected DataClass getReadType(ExecutionContext context) {
@@ -4429,7 +4429,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         protected DataClass getReadType(ExecutionContext context) {
@@ -4502,7 +4502,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
-            context.pendUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         protected DataClass getReadType(ExecutionContext context) {
@@ -4525,7 +4525,7 @@ public class VEDLogicsModule extends LogicsModule {
             PropertyChange change = articleQuantity.getChange(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), docKey, articleKey);
             context.getEnv().change((CalcProperty) articleQuantity.property, change);
 
-            context.pendUserInterfaction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
+            context.delayUserInterfaction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }
     }
 

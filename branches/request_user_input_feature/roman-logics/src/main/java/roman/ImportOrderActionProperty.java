@@ -235,9 +235,9 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, false);
         }
 
-        context.pendUserInterfaction(new
+        context.delayUserInterfaction(new
 
-                MessageClientAction("Данные были успешно приняты", "Импорт")
+                                      MessageClientAction("Данные были успешно приняты", "Импорт")
 
         );
     }

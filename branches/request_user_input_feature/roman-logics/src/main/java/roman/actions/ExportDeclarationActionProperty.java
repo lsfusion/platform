@@ -274,7 +274,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             files.put("TSware.csv", IOUtils.getFileBytes(fileTSware));
             files.put("TSmarkings.csv", IOUtils.getFileBytes(fileTSMarkings));
             files.put("TSDocs44.csv", IOUtils.getFileBytes(fileTSDocs44));
-            context.pendUserInterfaction(new ExportFileClientAction(files));
+            context.delayUserInterfaction(new ExportFileClientAction(files));
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
