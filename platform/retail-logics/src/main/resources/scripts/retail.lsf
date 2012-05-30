@@ -15,6 +15,7 @@ IMPORT Historizable;
 IMPORT Numerator;
 IMPORT Stock;
 IMPORT Document;
+IMPORT Tax;
 
 GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP emailGroup 'E-mail' : baseGroup;
@@ -157,17 +158,17 @@ META defineDocumentDetailInvoicePrice (object)
             UNION OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
 
     supplierRange###object##Detail(detail) = DATA range (object##Detail);
-    numberSupplierRange###object##Detail 'НДС поставщика, номер' (detail) = dataRange(supplierRange###object##Detail(detail)) IN priceDetailGroup;
-    dataSupplierRange###object##Detail 'НДС поставщика,%' (detail) = dataActingRateRangeDate
+    numberSupplierRange###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierRange###object##Detail(detail)) IN priceDetailGroup;
+    dataSupplierRange###object##Detail 'НДС поставщика,%' (detail) = dataRateRangeDate
         (supplierRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(supplierRange###object##Detail(detail)) != tax.taxNDS CHECKED BY supplierRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(supplierRange###object##Detail(detail)) != tax.taxVAT CHECKED BY supplierRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 END
 
 META defineDocumentDetailWareRangePrefix (object, prefix, caption)
     prefix###wareRange###object##Detail (detail) = rangeWareVal(prefix###ware###object##Detail(detail), date###object##Detail(detail));
-    prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = dataRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
-    prefix###dataWareRange###object##Detail 'НДС посуды, %'###caption (detail) = dataActingRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+    prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = numberRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
+    prefix###dataWareRange###object##Detail 'НДС посуды, %'###caption (detail) = dataRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 END
 META defineDocumentDetailWareRange (object)
     @defineDocumentDetailWareRangePrefix(object,,);
@@ -194,11 +195,11 @@ END
 
 META defineDocumentDetailOutPricePrefix (object, prefix, caption)
     prefix###retailRange###object##Detail = DATA range (object##Detail);
-    prefix###numberRetailRange###object##Detail 'НДС розничный, номер'###caption (detail) = dataRange(prefix###retailRange###object##Detail(detail)) IN priceDetailGroup;
+    prefix###numberRetailRange###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailRange###object##Detail(detail)) IN priceDetailGroup;
     prefix###dataRetailRange###object##Detail 'НДС розничный, %'###caption (detail) =
-       dataActingRateRangeDate(prefix###retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+       dataRateRangeDate(prefix###retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxNDS CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
     @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
 END
@@ -217,14 +218,14 @@ END
 
 META defineDocumentDetailCalcRange (object)
     calcRange###object##Detail = DATA range (object##Detail);
-    calcRange###object##Detail (detail) <- rangeToTaxStore(tax.taxNDS,
+    calcRange###object##Detail (detail) <- rangeVATTaxTaxUnit(tax.taxVAT,
                                 storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
 
-    numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = dataRange(calcRange###object##Detail(detail));
+    numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = numberRange(calcRange###object##Detail(detail));
     dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
-       dataActingRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
+       dataRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
 
-    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxNDS CHECKED BY calcRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxVAT CHECKED BY calcRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 END
 
 META defineDocumentDetailAccountPrice (object)
@@ -547,7 +548,7 @@ META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP
 
     prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###dataWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
-          dataActingRateRangeDate(rangeWareVal(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
+          dataRateRangeDate(rangeWareVal(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
                                                                        date###aggrObject##Detail(detail));
 
     prefixA###warePrice###aggrObject##Detail 'Цена посуды'###caption (detail) = prefixP###warePrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
@@ -953,8 +954,9 @@ END
 
 // ----------------------------------- Магазин ----------------------------------------- //
 
-CLASS store 'Магазин' : stockGroup, externalObject;
+CLASS store 'Магазин' : stockGroup, externalObject, taxUnit;
 TABLE store (store);
+
 CLASS region 'Регион' : named;
 TABLE region (region);
 
@@ -969,6 +971,9 @@ nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseG
 addressStore 'Адрес магазина' = DATA STRING[100] (store);
 regionStore 'Регион магазина ИД' = DATA region (store);
 nameRegionStore 'Регион для стат. отчета' (store) = name(regionStore(store));
+
+taxUnitGroupTaxUnit(store) += companyStore(store);
+descriptionTaxUnit(store) += string2(name(store), addressStore(store));
 
 storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) AUTOSET;
 parentStockGroup (store) += storeTypeStore(store);
@@ -1914,90 +1919,17 @@ isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSI
 
 //---------------------------- Налоги ----------------------------------------//
 
-GROUP supplierNDSGroup 'НДС поставщика' : retailGroup;
-GROUP retailNDSGroup 'НДС розничный' : retailGroup;
+GROUP supplierVATGroup 'НДС поставщика' : retailGroup;
+GROUP retailVATGroup 'НДС розничный' : retailGroup;
 
-CLASS STATIC tax 'Налоги'
-{
-    taxNDS 'НДС',
-    taxNP 'Налог с продаж'      // пусть будет для теста
-};
-
-nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
-
-CLASS range 'Шкала';
-TABLE range(range);
-dataRange 'Шкала' = DATA INTEGER (range) AGGPROP;
-
-CLASS rate 'История изменений шкалы' : historyObject;
-TABLE rate(rate);
-rangeRate 'Шкала ИД' = DATA range (rate) IN idGroup;
-taxRange 'Налог ИД' = DATA tax (range) IN idGroup;
-nameTaxRange 'Налог' (range) = name(taxRange(range)) IN baseGroup;
-
-maxDataRangeTax(tax) = UNION OVERRIDE 0 IF tax IS tax, [GROUP MAX dataRange(range) BY taxRange(range)](tax);
-nextDataRangeTax(tax) = maxDataRangeTax(tax) + 1;
-
-addNewRange 'Добавить шкалу' = ACTION (tax) {
-    ADDOBJ range;
-    SET dataRange(r) IF r == addedObject() <- nextDataRangeTax(tax);
-} TOOLBAR IMAGE 'add.png';
-
-CLASS STATIC rangeType 'Для каких подразделений действует шкала'
-{
-    common 'Общий',
-    units 'Для подразделений'
-};
-rangeTypeRange 'Тип ИД' = DATA rangeType (range) IN idGroup;
-nameRangeTypeRange 'Тип действия' = name(rangeTypeRange(range)) IN baseGroup;
-inRangeStoreDefault 'Вкл.' (range, store) = DATA BOOLEAN (range, store) IN baseGroup;
-inRangeStore 'Вкл.' (range, store) = inRangeStoreDefault(range, store)  IF rangeTypeRange(range) == rangeType.units IN baseGroup;
-isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
-
-rangeTypeRange(range) <- rangeType.common WHEN ASSIGNED(range IS range);     /// потом согласовать, какое значение должно быть по-умолчанию ///
-
-dataRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup;
-dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
-dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
-
-quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
-CONSTRAINT range IS range AND NOT rangeTypeRange(range)  MESSAGE 'ошибка: Не выбран тип действия для шкалы';
-CONSTRAINT rate IS rate AND NOT dataRate(rate)  MESSAGE 'ошибка: Не указано значение ставки';
-
-inTaxNDSRangeStore(range, store) = inRangeStore(range, store) AND tax.taxNDS == taxRange(range);
-rangeToTaxStore 'Шкала по налогу и складу' (tax, store) = GROUP UNIQUE range BY taxRange(range), store WHERE inTaxNDSRangeStore(range, store);
-
-inRangeRate(range, rate) = rangeRate(rate) == range;
-inTaxRange(tax, range) = taxRange(range) == tax;
-
-actingRateDate(rate, date) = rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE;
-actingRateRangeDate(range, date) = GROUP MAX actingRateDate(rate, date) BY rangeRate(rate), date;
-dataActingRateRangeDate 'На дату' (range, date) = dataRate(actingRateRangeDate(range, date));
-actingRateRange 'Действующая ставка (ИД)' (range) = actingRateRangeDate(range, currentDate()) IN idGroup PERSISTENT;
-dataActingRateRange 'Действующая ставка' (range) = dataRate(actingRateRange(range)) IN baseGroup;
-dateFromActingRateRange 'Действует с' (range) = dateFromRate(actingRateRange(range)) IN baseGroup;
-dateToActingRateRange 'Действует по' (range) = dateToRate(actingRateRange(range)) IN baseGroup;
-nameUserCreatedActingRateRange 'Создан пользователем' (range) = nameUserCreated(actingRateRange(range)) IN baseGroup;
-
-quantityActingRateRangeDate(range, date) = GROUP SUM 1 IF actingRateDate(rate, date) BY rangeRate(rate), date;
-
-quantityActingRateRange 'Количество действующих историй' (range) = quantityActingRateRangeDate(range, currentDate());
-//CONSTRAINT quantityActingRateRange(range) > 1 MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок';
-
-rateToRate (rt1, rt2) = UNION OVERRIDE dateFromRate(rt2) <= dateFromRate(rt1),
-                                       dateToRate(rt1) < dateFromRate(rt2);
-
-
-CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT rateToRate (rt1, rt2)  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок / или не задано: действует с';
-
-supplierTaxNDSItem(item) = tax.taxNDS IF item IS item IN idGroup;
-nameSupplierTaxNDSItem(item) = name(supplierTaxNDSItem(item));
+supplierTaxVATItem(item) = tax.taxVAT IF item IS item IN idGroup;
+nameSupplierTaxVATItem(item) = name(supplierTaxVATItem(item));
 
 supplierRangeItemDate 'Шкала' (item, date) = DATA range (item, DATE) IN idGroup;
-dataSupplierRangeItemDate 'Шкала' (item, date) = dataRange(supplierRangeItemDate(item, date)) IN supplierNDSGroup;
+numberSupplierRangeItemDate 'Шкала' (item, date) = numberRange(supplierRangeItemDate(item, date)) IN supplierVATGroup;
 
 dateSupplierRangeItemDate (item, date) = GROUP MAX dateIn AND supplierRangeItemDate(item, dateIn) AND dateIn <= (date AS DATE) BY item, date;
-dataActingSupplierRangeItemDate 'НДС поставщика,%' (item, date) = dataActingRateRangeDate(supplierRangeItemDate(item, date), date) IN supplierNDSGroup;
+dataSupplierRangeItemDate 'НДС поставщика,%' (item, date) = dataRateRangeDate(supplierRangeItemDate(item, date), date) IN supplierVATGroup;
 
 supplierRangeItemVal 'На дату' (item, date) = supplierRangeItemDate(item, dateSupplierRangeItemDate(item, date)) IN idGroup;
 supplierRangeItem 'Шкала' (item) = supplierRangeItemDate(item, dateSupplierRangeItemDate(item, currentDate())) IN idGroup;
@@ -2005,14 +1937,14 @@ supplierRangeItem 'Шкала' (item) = supplierRangeItemDate(item, dateSupplier
 taxSupplierItem(item) = taxRange(supplierRangeItem(item)) IN idGroup;
 nameTaxSupplierItem 'Налог' (item) = nameTaxRange(supplierRangeItem(item)) IN baseGroup;
 
-dataSupplierRangeItem 'Шкала НДС' (item) = dataRange(supplierRangeItem(item)) IN supplierNDSGroup;
-dataActingRateSupplierRangeItem 'НДС поставщика,%' (item) = dataActingRateRange(supplierRangeItem(item)) IN supplierNDSGroup;
+numberSupplierRangeItem 'Шкала НДС' (item) = numberRange(supplierRangeItem(item)) IN supplierVATGroup;
+dataCurrentRateSupplierRangeItem 'НДС поставщика,%' (item) = dataCurrentRateRange(supplierRangeItem(item)) IN supplierVATGroup;
 
-CONSTRAINT taxRange(supplierRangeItemDate(item, date)) != tax.taxNDS CHECKED BY supplierRangeItemDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(supplierRangeItemDate(item, date)) != tax.taxVAT CHECKED BY supplierRangeItemDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addSupplierRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES nameAttributeItem(i) READONLY, OBJVALUE(d), dataSupplierRangeItemDate(i, d), dataActingSupplierRangeItemDate(i, d)
+    PROPERTIES nameAttributeItem(i) READONLY, OBJVALUE(d), numberSupplierRangeItemDate(i, d), dataSupplierRangeItemDate(i, d)
 ;
 
 DESIGN addSupplierRangeItem FROM DEFAULT {
@@ -2024,7 +1956,7 @@ addSupplierRangeItem 'Добавить' (item) = ACTION FORM addSupplierRangeIte
 FORM supplierRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
     PROPERTIES       nameAttributeItem(i) READONLY, addSupplierRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
-    PROPERTIES(i, d) dataSupplierRangeItemDate, dataActingSupplierRangeItemDate
+    PROPERTIES(i, d) numberSupplierRangeItemDate, dataSupplierRangeItemDate
     FILTERS supplierRangeItemDate(i, d)
 ;
 
@@ -2032,13 +1964,13 @@ DESIGN supplierRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-dialogSupplierRangeItem 'Шкала' (item) = ACTION FORM supplierRangeItem OBJECTS i MODAL SHORTCUT dataSupplierRangeItem DEFAULT;
+dialogSupplierRangeItem 'Шкала' (item) = ACTION FORM supplierRangeItem OBJECTS i MODAL SHORTCUT numberSupplierRangeItem DEFAULT;
 
 retailRangeItemDate 'Шкала' (item, date) = DATA range (item, DATE) IN idGroup;
-dataRetailRangeItemDate 'Шкала' (item, date) = dataRange(retailRangeItemDate(item, date)) IN retailNDSGroup;
+numberRetailRangeItemDate 'Шкала' (item, date) = numberRange(retailRangeItemDate(item, date)) IN retailVATGroup;
 
 dateRetailRangeItemDate (item, date) = GROUP MAX dateIn AND retailRangeItemDate(item, dateIn) AND dateIn <= (date AS DATE) BY item, date;
-dataActingRetailRangeItemDate 'Розничный НДС' (item, date) = dataActingRateRangeDate(retailRangeItemDate(item, date), date) IN retailNDSGroup;
+dataRetailRangeItemDate 'Розничный НДС' (item, date) = dataRateRangeDate(retailRangeItemDate(item, date), date) IN retailVATGroup;
 
 retailRangeItemVal 'На дату' (item, date) = retailRangeItemDate(item, dateRetailRangeItemDate(item, date)) IN idGroup;
 retailRangeItem 'Шкала' (item) = retailRangeItemDate(item, dateRetailRangeItemDate(item, currentDate())) IN idGroup;
@@ -2046,14 +1978,14 @@ retailRangeItem 'Шкала' (item) = retailRangeItemDate(item, dateRetailRangeI
 taxRetailItem(item) = taxRange(retailRangeItem(item)) IN idGroup;
 nameTaxRetailItem 'Налог' (item) = nameTaxRange(retailRangeItem(item)) IN baseGroup;
 
-dataRetailRangeItem 'Шкала НДС' (item) = dataRange(retailRangeItem(item)) IN retailNDSGroup;
-dataActingRateRetailRangeItem 'Розничный НДС' (item) = dataActingRateRange(retailRangeItem(item)) IN retailNDSGroup;
+numberRetailRangeItem 'Шкала НДС' (item) = numberRange(retailRangeItem(item)) IN retailVATGroup;
+dataCurrentRateRetailRangeItem 'Розничный НДС' (item) = dataCurrentRateRange(retailRangeItem(item)) IN retailVATGroup;
 
-CONSTRAINT taxRange(retailRangeItem(item)) != tax.taxNDS CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(retailRangeItem(item)) != tax.taxVAT CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 FORM addRetailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES nameAttributeItem(i) READONLY, OBJVALUE(d), dataRetailRangeItemDate(i, d), dataActingRetailRangeItemDate(i, d)
+    PROPERTIES nameAttributeItem(i) READONLY, OBJVALUE(d), numberRetailRangeItemDate(i, d), dataRetailRangeItemDate(i, d)
 ;
 
 DESIGN addRetailRangeItem FROM DEFAULT {
@@ -2065,120 +1997,23 @@ addRetailRangeItem 'Добавить' (item) = ACTION FORM addRetailRangeItem OB
 FORM retailRangeItem 'Добавить Шкалу'
     OBJECTS i=item FIXED PANEL, d=DATE
     PROPERTIES       nameAttributeItem(i) READONLY, addRetailRangeItem(i) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY
-    PROPERTIES(i, d) dataRetailRangeItemDate, dataActingRetailRangeItemDate
+    PROPERTIES(i, d) numberRetailRangeItemDate, dataRetailRangeItemDate
     FILTERS retailRangeItemDate(i, d)
 ;
 DESIGN retailRangeItem FROM DEFAULT {
     PROPERTY(nameAttributeItem(i)) { focusable = FALSE; }
 };
 
-dialogRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT dataRetailRangeItem DEFAULT;
+dialogRetailRangeItem 'Шкала' (item) = ACTION FORM retailRangeItem OBJECTS i MODAL SHORTCUT numberRetailRangeItem DEFAULT;
 
-toShowDataRangeItem(item) = TRUE IF item IS item AND dataActingRateSupplierRangeItem(item); // dataSupplierRateRangeItem(item);
-
-inCompanyStore (company, store) = companyStore(store) == company;
-isInCompanyStore (company, store)  = UNION OVERRIDE  companyStore(store) == company, store IS store AND NOT company;
-
-
-dataActingRateRangeToRange 'Шкала по значению' (doubleValue) = GROUP UNIQUE range BY dataActingRateRange (range);
-
-toShowAddNDSValue(tax) = tax == tax.taxNDS;
-addNDSValue 'Добавить значение НДС' = ACTION (tax, number, value) {
-    ADDOBJ range;
-    FOR rn == addedObject() DO {
-       SET rangeTypeRange(rn) <- rangeType.common;
-       SET taxRange(rn) <- tax AS tax;
-       SET dataRange(rn) <- number AS INTEGER;
-       ADDOBJ rate;
-       FOR ra == addedObject() DO {
-          SET rangeRate(ra) <- rn AS range;
-          SET dataRate(ra) <- value AS NUMERIC[10,5];
-          SET dateFromRate(ra) <- 2001_01_01;
-       };
-    };
+fillVATDefaultValues 'Заполнить значения НДС по умолчанию' = ACTION () {
+    EXEC addTaxNumberValue(1, 0);
+    EXEC addTaxNumberValue(2, 9.09);
+    EXEC addTaxNumberValue(3, 16.67);
+    EXEC addTaxNumberValue(4, 10);
+    EXEC addTaxNumberValue(5, 20);
+    EXEC addTaxNumberValue(6, 24);
 };
-
-fillNDSDefaultValues 'Заполнить значения НДС по умолчанию' = [ACTION (tax) {
-    EXEC addNDSValue(tax AS tax, 1, 0);
-    EXEC addNDSValue(tax AS tax, 2, 9.09);
-    EXEC addNDSValue(tax AS tax, 3, 16.67);
-    EXEC addNDSValue(tax AS tax, 4, 10);
-    EXEC addNDSValue(tax AS tax, 5, 20);
-    EXEC addNDSValue(tax AS tax, 6, 24);
-}](tax) AND tax==tax.taxNDS;
-
-FORM tax 'Налог'
-    OBJECTS           t=tax FIXED PANEL, ra=range
-    PROPERTIES(t)     name, nameTax, addNewRange TODRAW ra
-
-    PROPERTIES(ra)    dataRange, nameRangeTypeRange, delete
-    PROPERTIES(ra)    READONLY dataActingRateRange, dateFromActingRateRange, dateToActingRateRange
-
-    OBJECTS           rt=rate
-    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
-
-    TREE treeCompanyStore a=STRING[3], co=company
-
-    PROPERTIES READONLY OBJVALUE(a), name(co)
-
-    OBJECTS           s=store
-    PROPERTIES(s)     name, addressStore
-
-    PROPERTIES(ra, s) inRangeStore SHOWIF isUnitsTypeRange(ra)
-
-    PROPERTIES(t)     fillNDSDefaultValues SHOWIF toShowAddNDSValue(t) TODRAW t FORCE PANEL
-
-    FILTERS           stringEqualsAll(a),
-                      inRangeRate(ra, rt),
-                      inTaxRange(t, ra),
-                      isInCompanyStore(co, s)
-
-    FILTERGROUP filters6
-        FILTER 'Показывать магазины только для данного налога' 'F10' inRangeStore(ra, s)
-
-    EDIT tax OBJECT t
-;
-
-DESIGN tax FROM DEFAULT {
-    main {
-       NEW secondCase BEFORE functions.box {
-            ADD s.box {
-                fillHorizontal = 3.8;
-            };
-            ADD treeCompanyStore.box {
-                title = 'компании';
-                fillHorizontal = 1.2;
-            };
-            POSITION treeCompanyStore.box TO THE LEFT s.box;
-       }
-       NEW firstCase BEFORE secondCase {
-            ADD ra.box {
-                fillHorizontal = 2.5;
-            };
-            ADD rt.box {
-                fillHorizontal = 2.5;
-            };
-            POSITION ra.box TO THE LEFT rt.box;
-       }
-    }
-}
-
-FORM taxes 'Налоги'
-    OBJECTS           t=tax
-    PROPERTIES(t)     READONLY name, nameTax
-    PROPERTIES(t)     EDITFORM, delete
-
-    OBJECTS           ra=range
-    PROPERTIES(ra)    READONLY dataRange, dataActingRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserCreatedActingRateRange, nameRangeTypeRange, quantityRateRange
-
-    OBJECTS           s=store
-    PROPERTIES(s)     READONLY name, addressStore
-
-    PROPERTIES(ra, s) READONLY inRangeStore
-
-    FILTERS  inTaxRange(t, ra),
-             inRangeStore(ra, s)
-;
 
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
@@ -2382,14 +2217,11 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 // Посуда
 @defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
 
-taxNDSWare(ware) = tax.taxNDS IF ware IS ware IN idGroup;
-nameTaxNDSWare(ware) = name(taxNDSWare(ware));
-
 rangeWareDate 'Шкала' (ware, date) = DATA range (ware, DATE) IN idGroup;
-dataRangeWareDate 'Шкала' (ware, date) = dataRange(rangeWareDate(ware, date));
+numberRangeWareDate 'Шкала' (ware, date) = numberRange(rangeWareDate(ware, date));
 
 dateRangeWareDate (ware, date) = GROUP MAX dateIn AND rangeWareDate(ware, dateIn) AND dateIn <= (date AS DATE) BY ware, date;
-dataActingRateRangeWareDate 'НДС,%' (ware, date) = dataActingRateRangeDate(rangeWareDate(ware, date), dateRangeWareDate (ware, date));
+dataRateRangeWareDate 'НДС,%' (ware, date) = dataRateRangeDate(rangeWareDate(ware, date), dateRangeWareDate (ware, date));
 
 rangeWareVal 'На дату' (ware, date) = rangeWareDate(ware, dateRangeWareDate(ware, date)) IN baseGroup;
 rangeWare 'Шкала' (ware) = rangeWareDate(ware, dateRangeWareDate(ware, currentDate())) IN baseGroup;
@@ -2397,15 +2229,15 @@ rangeWare 'Шкала' (ware) = rangeWareDate(ware, dateRangeWareDate(ware, curr
 taxRangeWare(ware) = taxRange(rangeWare(ware)) IN idGroup;
 nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
 
-dataRangeWare 'Шкала НДС' (ware) = dataRange(rangeWare(ware)) IN baseGroup;
-dataActingRateRangeWare 'НДС,%' (ware) = dataActingRateRange(rangeWare(ware)) IN baseGroup;
+numberRangeWare 'Шкала НДС' (ware) = numberRange(rangeWare(ware)) IN baseGroup;
+dataCurrentRateRangeWare 'НДС,%' (ware) = dataCurrentRateRange(rangeWare(ware)) IN baseGroup;
 
-CONSTRAINT taxRange(rangeWareDate(ware, date)) != tax.taxNDS CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(rangeWareDate(ware, date)) != tax.taxVAT CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 FORM addRangeWare 'Добавить Шкалу'
     OBJECTS w=ware FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(w) READONLY, OBJVALUE(d), dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
+    PROPERTIES name(w) READONLY, OBJVALUE(d), numberRangeWareDate(w, d), dataRateRangeWareDate(w, d)
 ;
 
 DESIGN addRangeWare FROM DEFAULT {
@@ -2417,24 +2249,24 @@ addRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODA
 FORM rangeWare 'Добавить Шкалу'
 OBJECTS w=ware FIXED PANEL, d=DATE
 PROPERTIES name(w) READONLY, addRangeWare(w) TODRAW d, OBJVALUE(d) READONLY,
-           dataRangeWareDate(w, d), dataActingRateRangeWareDate(w, d)
+           numberRangeWareDate(w, d), dataRateRangeWareDate(w, d)
 FILTERS rangeWareDate(w, d);
 
 DESIGN rangeWare FROM DEFAULT {
 PROPERTY(name(w)) { focusable = FALSE; }
 };
 
-dialogRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SHORTCUT dataRangeWare DEFAULT;
+dialogRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SHORTCUT numberRangeWare DEFAULT;
 
 FORM ware 'Посуда'
 OBJECTS w=ware FIXED PANEL
 PROPERTIES(w) name, warePrice, dialogWarePrice
-PROPERTIES(w) dataRangeWare, dataActingRateRangeWare, dialogRangeWare
+PROPERTIES(w) numberRangeWare, dataCurrentRateRangeWare, dialogRangeWare
 EDIT ware OBJECT w;
 
 FORM wares 'Посуда'
 OBJECTS w=ware
-PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, dialogWarePrice, dataRangeWare, dataActingRateRangeWare
+PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, dialogWarePrice, numberRangeWare, dataCurrentRateRangeWare
 PROPERTIES(w)          ADDFORM, EDITFORM, delete
 DIALOG ware OBJECT w;
 
@@ -2471,8 +2303,8 @@ FORM item 'Товар'
                   compositionScalesItem, idLabelFormatPackItem, storageTemperatureItem, banSailItem,
 
                   importerPriceItem, dialogImporterPriceItem,
-                  dataSupplierRangeItem, dataActingRateSupplierRangeItem, dialogSupplierRangeItem,
-                  dataRetailRangeItem, dataActingRateRetailRangeItem, dialogRetailRangeItem,
+                  numberSupplierRangeItem, dataCurrentRateSupplierRangeItem, dialogSupplierRangeItem,
+                  numberRetailRangeItem, dataCurrentRateRetailRangeItem, dialogRetailRangeItem,
                   percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem,
                   isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i),
 
@@ -3553,7 +3385,7 @@ GROUP supplierGroup 'Информация о поставщике' : publicGroup
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
 
-CLASS company 'Компания' : legalEntity;
+CLASS company 'Компания' : legalEntity, taxUnitGroup;
 TABLE company (company);
 
 CLASS customer 'Покупатель' : legalEntity;
@@ -4881,13 +4713,13 @@ TABLE supplierPriceLedger (supplierPriceLedger);
 CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
 TABLE retailRangeLedger (retailRangeLedger);
 @defineItemDepartmentStoreLedger(range, retailRange, 'НДС');
-dataRetailRangeRetailRangeLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
+dataRetailRangeRetailRangeLedger 'НДС, %' (ledger) = dataRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
 dataRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
-            dataActingRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+            dataRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
 dataRetailRangeALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
-            dataActingRateRangeDate(retailRangeALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
+            dataRateRangeDate(retailRangeALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
 currentDataRetailRangeLedger 'НДС, %' (item, departmentStore) =
-            dataActingRateRange(currentRetailRangeLedger(item, departmentStore));
+            dataCurrentRateRange(currentRetailRangeLedger(item, departmentStore));
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
@@ -4964,7 +4796,7 @@ quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger
 retailSumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
 
 retailRangeSalesLedger (ledger) = ABSTRACT range (salesLedger) PERSISTENT;
-dataRetailRangeSalesLedger 'НДС, %' (ledger) = dataActingRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
+dataRetailRangeSalesLedger 'НДС, %' (ledger) = dataRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
 
 retailVATSumSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         retailSumSalesLedger(ledger), dataRetailRangeSalesLedger(ledger));
@@ -7800,11 +7632,11 @@ supplierRangeItemDateOrderSupplier 'Шкала' (orderSupplier, item) = DATA ran
 supplierRangeItemDateOrderSupplier (orderSupplier, item) <- supplierRangeItemVal(item, dateOrderSupplier(orderSupplier))
                                                              WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 numberSupplierRangeOrderSupplier 'НДС поставщика, номер' (orderSupplier, item) =
-    dataRange(supplierRangeItemDateOrderSupplier(orderSupplier, item));
+    numberRange(supplierRangeItemDateOrderSupplier(orderSupplier, item));
 dataSupplierRangeOrderSupplier 'НДС поставщика, %' (orderSupplier, item) =
     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
-                   dataActingRateRangeDate(supplierRangeItemDateOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
-CONSTRAINT taxRange(supplierRangeItemDateOrderSupplier(orderSupplier, item)) != tax.taxNDS CHECKED BY supplierRangeItemDateOrderSupplier MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+                   dataRateRangeDate(supplierRangeItemDateOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
+CONSTRAINT taxRange(supplierRangeItemDateOrderSupplier(orderSupplier, item)) != tax.taxVAT CHECKED BY supplierRangeItemDateOrderSupplier MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 retailPriceItemOrderSupplierDate 'Розничная цена' (orderSupplier, item) =
     retailPriceItemDepartmentDate(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
@@ -7819,9 +7651,9 @@ dataRangeWareOrderSupplier 'Шкала(ИД)' (orderSupplier, item) = DATA range
 dataRangeWareOrderSupplier (orderSupplier, item) <- rangeWareVal(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier))
                                                     WHEN CHANGED(wareOrderSupplier(orderSupplier, item));
 numberDataRangeWareOrderSupplier 'Шкала НДС посуды' (orderSupplier, item) =
-    dataRange(dataRangeWareOrderSupplier(orderSupplier, item));
+    numberRange(dataRangeWareOrderSupplier(orderSupplier, item));
 dataWareRangeOrderSupplier 'НДС посуды, %' (orderSupplier, item) =
-    dataActingRateRangeDate(dataRangeWareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
+    dataRateRangeDate(dataRangeWareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 
 sumWareOrderSupplier 'Сумма по посуде' (orderSupplier, item) =
     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
@@ -13323,7 +13155,8 @@ numeratorOrder(order) = numeratorObject(order) AND order IS order;
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, itemDepartmentStoreAverageInterval, calcCurrentQuantitySoldInterval;
+    PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, itemDepartmentStoreAverageInterval, calcCurrentQuantitySoldInterval,
+                 fillVATDefaultValues;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//

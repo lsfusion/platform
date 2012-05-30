@@ -1,7 +1,6 @@
 package retail;
 
 import net.sf.jasperreports.engine.JRException;
-import org.exolab.castor.types.DateTime;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
@@ -44,6 +43,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public ScriptingLogicsModule Numerator;
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule Document;
+    public ScriptingLogicsModule Tax;
 
     ScriptingLogicsModule retailLM;
 
@@ -64,6 +64,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
         Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
         Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
+        Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
         retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
     }
 

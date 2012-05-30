@@ -57,7 +57,7 @@
 	<field name="quantitySpecificationDetail" class="java.lang.Double"/>
 	<field name="retailPriceSpecificationDetail" class="java.lang.Double"/>
 	<field name="sumWithoutNDSSpecificationDetail" class="java.lang.Double"/>
-	<field name="dataActingRateRangeSpecificationDetail" class="java.lang.Double"/>
+	<field name="dataCalcRateRangeSpecificationDetail" class="java.lang.Double"/>
 	<field name="sumNDSSpecificationDetail" class="java.lang.Double"/>
 	<field name="totalSumNDSSpecificationDetail" class="java.lang.Double"/>
 	<field name="sumSpecificationDetail" class="java.lang.Double"/>
@@ -653,7 +653,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataActingRateRangeSpecificationDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dataCalcRangeSpecificationDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="50" height="12"/>
