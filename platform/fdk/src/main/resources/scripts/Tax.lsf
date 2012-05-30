@@ -69,16 +69,16 @@ TABLE rate(rate);
 rangeRate = DATA range (rate) IN idGroup;
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
 
-dataRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup NOT NULL;
+valueRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup NOT NULL;
 dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
 dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
 
 rateRangeDate(range, date) = GROUP MAX rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE
                                          BY rangeRate(rate), date;
-dataRateRangeDate 'На дату' (range, date) = dataRate(rateRangeDate(range, date));
+valueRateRangeDate 'На дату' (range, date) = valueRate(rateRangeDate(range, date));
 
 currentRateRange (range) = rateRangeDate(range, currentDate()) IN idGroup PERSISTENT;
-dataCurrentRateRange 'Действующая ставка' (range) = dataRate(currentRateRange(range)) IN baseGroup;
+valueCurrentRateRange 'Действующая ставка' (range) = valueRate(currentRateRange(range)) IN baseGroup;
 
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(currentRateRange(range)) IN baseGroup;
 dateToActingRateRange 'Действует по' (range) = dateToRate(currentRateRange(range)) IN baseGroup;
@@ -87,7 +87,7 @@ nameUserCreatedActingRateRange 'Создан пользователем' (range)
 CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT (dateFromRate(rt2) <= dateFromRate(rt1) OR dateToRate(rt1) < dateFromRate(rt2))  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок / или не задано: действует с';
 
 // для импорта
-dataCurrentRangeValue 'Шкала по значению' (doubleValue) = GROUP UNIQUE range BY dataCurrentRateRange (range);
+valueCurrentRangeValue 'Шкала по значению' (doubleValue) = GROUP UNIQUE range BY valueCurrentRateRange (range);
 
 addTaxNumberValue 'Добавить значение НДС' = ACTION (number, value) {
     ADDOBJ range;
@@ -98,7 +98,7 @@ addTaxNumberValue 'Добавить значение НДС' = ACTION (number, v
        ADDOBJ rate;
        FOR ra == addedObject() DO {
           SET rangeRate(ra) <- rn AS range;
-          SET dataRate(ra) <- value AS NUMERIC[10,5];
+          SET valueRate(ra) <- value AS NUMERIC[10,5];
           SET dateFromRate(ra) <- 2001_01_01;
        };
     };
@@ -112,12 +112,12 @@ FORM tax 'Налог'
 
     OBJECTS           ra = range
     PROPERTIES(ra)    numberRange, nameRangeTypeRange, delete
-    PROPERTIES(ra)    READONLY dataCurrentRateRange, dateFromActingRateRange, dateToActingRateRange
+    PROPERTIES(ra)    READONLY valueCurrentRateRange, dateFromActingRateRange, dateToActingRateRange
     PROPERTIES(t)     addNewRange TODRAW ra
     FILTERS           taxRange(ra) == t
 
     OBJECTS           rt=rate
-    PROPERTIES(rt)    dataRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
+    PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
     FILTERS           rangeRate(rt) == ra
 
     TREE treeTaxUnit  a=STRING[3], ug = taxUnitGroup
@@ -165,7 +165,7 @@ FORM taxes 'Налоги'
     PROPERTIES(t)     EDITFORM, delete
 
     OBJECTS           ra=range
-    PROPERTIES(ra)    READONLY numberRange, dataCurrentRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserCreatedActingRateRange, nameRangeTypeRange, quantityRateRange
+    PROPERTIES(ra)    READONLY numberRange, valueCurrentRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserCreatedActingRateRange, nameRangeTypeRange, quantityRateRange
 
     OBJECTS           u=taxUnit
     PROPERTIES(u)     READONLY descriptionTaxUnit

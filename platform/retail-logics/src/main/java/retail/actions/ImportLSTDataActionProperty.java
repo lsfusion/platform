@@ -242,12 +242,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         ImportField isLoafCutItemField = new ImportField(retailLM.getLPByName("isLoafCutItem"));
         ImportField isWeightItemField = new ImportField(retailLM.getLPByName("isWeightItem"));
         ImportField compositionField = new ImportField(retailLM.getLPByName("compositionScalesItem"));
-        ImportField dataSuppliersRangeItemField = new ImportField(BL.Tax.getLPByName("dataRate"));
-        ImportField dataRetailRangeItemField = new ImportField(BL.Tax.getLPByName("dataRate"));
+        ImportField dataSuppliersRangeItemField = new ImportField(BL.Tax.getLPByName("valueRate"));
+        ImportField dataRetailRangeItemField = new ImportField(BL.Tax.getLPByName("valueRate"));
         ImportField quantityPackItemField = new ImportField(retailLM.getLPByName("quantityPackItem"));
         ImportField wareIDField = new ImportField(BL.LM.extSID);
         ImportField priceWareField = new ImportField(retailLM.getLPByName("warePriceDate"));
-        ImportField ndsWareField = new ImportField(BL.Tax.getLPByName("dataRate"));
+        ImportField ndsWareField = new ImportField(BL.Tax.getLPByName("valueRate"));
         ImportField rateWasteIDField = new ImportField(BL.LM.extSID);
 
         ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"),
@@ -269,16 +269,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
                 retailLM.getLPByName("barcodeToDate").getMapping(barcodeField, dateField));
 
         ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) BL.Tax.getClassByName("range"),
-                BL.Tax.getLPByName("dataCurrentRangeValue").getMapping(dataSuppliersRangeItemField));
+                BL.Tax.getLPByName("valueCurrentRangeValue").getMapping(dataSuppliersRangeItemField));
 
         ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) BL.Tax.getClassByName("range"),
-                BL.Tax.getLPByName("dataCurrentRangeValue").getMapping(dataRetailRangeItemField));
+                BL.Tax.getLPByName("valueCurrentRangeValue").getMapping(dataRetailRangeItemField));
 
         ImportKey<?> wareKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("ware"),
                 BL.LM.extSIDToObject.getMapping(wareIDField));
 
         ImportKey<?> rangeKey = new ImportKey((ConcreteCustomClass) BL.Tax.getClassByName("range"),
-                BL.Tax.getLPByName("dataCurrentRangeValue").getMapping(ndsWareField));
+                BL.Tax.getLPByName("valueCurrentRangeValue").getMapping(ndsWareField));
 
         ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("rateWaste"),
                 BL.LM.extSIDToObject.getMapping(rateWasteIDField));
@@ -427,8 +427,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
                 ImportField importerPriceShipmentDetail = new ImportField(retailLM.getLPByName("importerPriceShipmentDetail"));
                 ImportField retailPriceShipmentDetailField = new ImportField(retailLM.getLPByName("retailPriceShipmentDetail"));
                 ImportField retailMarkupShipmentDetailField = new ImportField(retailLM.getLPByName("retailMarkupShipmentDetail"));
-                ImportField dataSuppliersRangeField = new ImportField(BL.Tax.getLPByName("dataRate"));
-                ImportField dataRetailRangeField = new ImportField(BL.Tax.getLPByName("dataRate"));
+                ImportField dataSuppliersRangeField = new ImportField(BL.Tax.getLPByName("valueRate"));
+                ImportField dataRetailRangeField = new ImportField(BL.Tax.getLPByName("valueRate"));
                 ImportField toShowWareField = new ImportField(retailLM.getLPByName("toShowWareShipment"));
 
                 ImportKey<?> shipmentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("shipment"),
@@ -447,10 +447,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
                         BL.LM.extSIDToObject.getMapping(itemIDField));
 
                 ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) BL.Tax.getClassByName("range"),
-                        BL.Tax.getLPByName("dataCurrentRangeValue").getMapping(dataSuppliersRangeField));
+                        BL.Tax.getLPByName("valueCurrentRangeValue").getMapping(dataSuppliersRangeField));
 
                 ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) BL.Tax.getClassByName("range"),
-                        BL.Tax.getLPByName("dataCurrentRangeValue").getMapping(dataRetailRangeField));
+                        BL.Tax.getLPByName("valueCurrentRangeValue").getMapping(dataRetailRangeField));
 
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
