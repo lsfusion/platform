@@ -130,13 +130,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public boolean canChangeClass(int objectID) throws RemoteException {
-        logRemoteMethodStartCall("canChangeClass");
-        boolean result = target.canChangeClass(objectID);
-        logRemoteMethodEndCall("canChangeClass", result);
-        return result;
-    }
-
     @PendingRemoteMethod
     public void changeGridClass(int objectID, int idClass) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGridClass");
