@@ -6014,9 +6014,9 @@ accountSumBalanceCollationSheetItem 'Сумма по остаткам' (collatio
     quantityBalanceCollationSheetItem(collationSheet, item) * accountPriceBalanceCollationSheetItem(collationSheet, item);
 
 quantityBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) =
-    GROUP SUM quantityBalanceCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
+    GROUP SUM quantityBalanceCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
 accountSumBalanceCollationSheet 'Сумма по остаткам' (collationSheet) =  round0(
-    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) BY collationSheet](collationSheet)) PERSISTENT;
+    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet](collationSheet)) PERSISTENT;
 
 
 quantityShortageCollationSheetItem 'Кол-во недостачи' (collationSheet, item) =
@@ -6025,24 +6025,24 @@ accountSumShortageCollationSheetItem 'Сумма недостачи' (collationS
     accountSumBalanceCollationSheetItem(collationSheet, item) (-) accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) PERSISTENT;
 
 quantityShortageCollationSheet 'Кол-во недостачи' (collationSheet) =
-    GROUP SUM quantityShortageCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
+    GROUP SUM quantityShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet PERSISTENT;
 accountSumShortageCollationSheet 'Сумма недостачи' (collationSheet) = round0(
-    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) BY collationSheet](collationSheet)) PERSISTENT;
+    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) BY collationSheet](collationSheet)) PERSISTENT;
 
 accountSumItemBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) = round0(
-    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet)) PERSISTENT;
+    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet)) PERSISTENT;
 accountSumContainerBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) = round0(
-    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet)) PERSISTENT;
+    [GROUP SUM accountSumBalanceCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet)) PERSISTENT;
 
-accountSumItemPageInventoryDetailCollationSheet 'Сумма по описям, товар' (collationSheet) = round0(
-    [GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
-accountSumContainerPageInventoryDetailCollationSheet 'Сумма по описям, тара' (collationSheet) = round0(
-    [GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
+accountSumItemPageInventoryDetailCollationSheet 'Сумма по факту, товар' (collationSheet) = round0(
+    [GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
+accountSumContainerPageInventoryDetailCollationSheet 'Сумма по факту, тара' (collationSheet) = round0(
+    [GROUP SUM accountSumPageInventoryDetailCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
 
 accountSumItemShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) = round0(
-    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
+    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
 accountSumContainerShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
-    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
+    [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
 
 differentPriceCollationSheetItem(collationSheet, item) = accountPricePageInventoryDetailCollationSheetItem(collationSheet, item) != accountPriceBalanceCollationSheetItem(collationSheet, item);
 
@@ -11020,6 +11020,10 @@ FORM inventory 'Инвентаризация'
                      accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
                      countListInventoryCollationSheet, countPageInventoryCollationSheet
     PROPERTIES (cs)  dialogItemByCollationSheet, overDateCollationSheet, convertPriceCollationSheet, delete
+    PROPERTIES (cs)  FORCE PANEL accountSumItemPageInventoryDetailCollationSheet, accountSumContainerPageInventoryDetailCollationSheet,
+                     accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet,
+                     accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
+
 
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -11154,9 +11158,18 @@ DESIGN inventory FROM DEFAULT {
 
             NEW x.box { title = 'Сличительные ведомости';
                 fillVertical = 5;
-
-                ADD cs.box  { fillVertical = 1;};
-
+                NEW pop1 {
+                    childConstraints = TO THE RIGHT;
+                    ADD cs.grid.box  {
+                        fillVertical = 1;
+                        fillHorizontal = 4;
+                    }
+                    ADD cs.panel {
+                        title = 'Суммы товар/тара';
+                        childConstraints = TO THE BOTTOM;
+                        fillHorizontal = 1;
+                    }
+                }
                 NEW firstCase { title = 'Пересчитанный товар';
                     fillVertical = 4;
                     ADD treeGroup.box { title = 'Товарные группы';};
@@ -11204,12 +11217,16 @@ FORM inventories 'Инвентаризации'
                      quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                      accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet
 
+    PROPERTIES (cs)  FORCE PANEL accountSumItemPageInventoryDetailCollationSheet, accountSumContainerPageInventoryDetailCollationSheet,
+                     accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet,
+                     accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
+
     OBJECTS          it=item
     PROPERTIES (it)   READONLY nAItem=nameAttributeItem, barcodeBarcodeSku
 
     PROPERTIES(cs, it) READONLY quantityPageInventoryDetailCollationSheetItem, quantityBalanceCollationSheetItem, quantityShortageCollationSheetItem
-    PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,i) BACKGROUND differentPriceCollationSheetItem(cs, i),
-                     accountPriceBalanceCollationSheetItem(cs, i) BACKGROUND differentPriceCollationSheetItem(cs, i)
+    PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,it) BACKGROUND differentPriceCollationSheetItem(cs, it),
+                     accountPriceBalanceCollationSheetItem(cs, it) BACKGROUND differentPriceCollationSheetItem(cs, it)
 
     PROPERTIES(cs, it) READONLY accountSumPageInventoryDetailCollationSheetItem, accountSumBalanceCollationSheetItem, accountSumShortageCollationSheetItem
     PROPERTIES(cs)  toPrintCollationSheet
@@ -11229,6 +11246,7 @@ DESIGN inventories FROM DEFAULT {
         childConstraints = TO THE BOTTOM;
 
         ADD in.box {
+            fillVertical = 1;
             PROPERTY(objectClassName) {
                 preferredCharWidth = 25;
             }
@@ -11238,7 +11256,7 @@ DESIGN inventories FROM DEFAULT {
             }
         }
         NEW wor {
-
+            fillVertical = 2;
             type = TABBED;
             NEW wor1 {
                 title = 'Товары';

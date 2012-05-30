@@ -83,7 +83,7 @@ END
 
 META defineDocumentDetailStockCustom (object, detail, stockClass, stockCaption)
     stockClass###detail (idetail) = stockClass###object(object###detail(idetail));
-    name###stockClass###detail stockCaption (idetail) = name(stockClass###detail(idetail));
+    name###stockClass###detail stockCaption (idetail) = name(stockClass###detail(idetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 META defineDocumentDetailStock (object, stockClass, stockCaption)
     @defineDocumentDetailStockCustom (object, object##Detail, stockClass, stockCaption);
