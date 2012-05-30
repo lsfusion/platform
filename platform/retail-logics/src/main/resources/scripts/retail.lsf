@@ -166,7 +166,7 @@ META defineDocumentDetailInvoicePrice (object)
 END
 
 META defineDocumentDetailWareRangePrefix (object, prefix, caption)
-    prefix###wareRange###object##Detail (detail) = rangeWareVal(prefix###ware###object##Detail(detail), date###object##Detail(detail));
+    prefix###wareRange###object##Detail (detail) = rangeWareDate(prefix###ware###object##Detail(detail), date###object##Detail(detail));
     prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = numberRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
     prefix###dataWareRange###object##Detail 'НДС посуды, %'###caption (detail) = valueRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 END
@@ -548,7 +548,7 @@ META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP
 
     prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###dataWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
-          valueRateRangeDate(rangeWareVal(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
+          valueRateRangeDate(rangeWareDate(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
                                                                        date###aggrObject##Detail(detail));
 
     prefixA###warePrice###aggrObject##Detail 'Цена посуды'###caption (detail) = prefixP###warePrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
@@ -1170,6 +1170,52 @@ FORM labelFormats 'Форматы этикеток весов'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
+// ----------------------------------- Посуда ----------------------------------------- //
+
+CLASS ware 'Посуда' : named, externalObject;
+TABLE ware(ware);
+TABLE wareDate(ware, DATE);
+
+@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
+
+@defineHistorizableCustom(rangeWare, 'НДС', range, numberRange, ware, name, baseGroup);
+
+CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+dataValueRangeWareDate 'НДС, %' (item, date) = valueRateRangeDate(dataRangeWareDate(item, date), date) IN baseGroup;
+valueCurrentRateRangeWare 'НДС, %' (item) = valueCurrentRateRange(rangeWare(item)) IN baseGroup;
+
+EXTEND FORM addRangeWare
+    PROPERTIES READONLY dataValueRangeWareDate(a, d)
+;
+EXTEND FORM dialogRangeWare
+    PROPERTIES dataValueRangeWareDate(a, d)
+;
+
+// todo : нужно сделать через extend дизайна,
+DESIGN addRangeWare FROM DEFAULT {
+    PROPERTY(name(a)) { focusable = FALSE; }
+}
+DESIGN dialogRangeWare FROM DEFAULT {
+    PROPERTY(name(a)) { focusable = FALSE; }
+}
+
+FORM ware 'Посуда'
+    OBJECTS w=ware FIXED PANEL
+    PROPERTIES(w) name, warePrice, dialogWarePrice
+    PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare, dialogRangeWare
+
+    EDIT ware OBJECT w
+;
+
+FORM wares 'Посуда'
+    OBJECTS w=ware
+    PROPERTIES(w) READONLY name, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
+    PROPERTIES(w)          ADDFORM, EDITFORM, delete
+
+    DIALOG ware OBJECT w
+;
+
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Наименование' : publicGroup;
 GROUP rateGroup 'Нормы' : publicGroup;
@@ -1197,10 +1243,6 @@ TABLE legalEntity (legalEntity);
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
 
 TABLE itemDate (item, DATE);
-
-CLASS ware 'Посуда' : sku, named, externalObject;
-TABLE ware(ware);
-TABLE wareDate(ware, DATE);
 
 CLASS brand 'Бренд' : named, externalObject;
 TABLE brand(brand);
@@ -1956,7 +1998,7 @@ valueCurrentRateRetailRangeItem 'НДС розничный, %' (item) = valueCur
 EXTEND FORM addRetailRangeItem
     PROPERTIES READONLY dataValueRetailRangeItemDate(a, d)
 ;
-EXTEND FORM dialogSupplierRangeItem
+EXTEND FORM dialogRetailRangeItem
     PROPERTIES dataValueRetailRangeItemDate(a, d)
 ;
 
@@ -2166,62 +2208,6 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 @defineHistorizableDouble(markupItemDepartment, 'Торговая надбавка', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
 
 @defineHistorizableTripleYesNo(banSupplierItemDepartment, 'Запретить закупку', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
-
-// Посуда
-@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
-
-rangeWareDate 'Шкала' (ware, date) = DATA range (ware, DATE) IN idGroup;
-numberRangeWareDate 'Шкала' (ware, date) = numberRange(rangeWareDate(ware, date));
-
-dateRangeWareDate (ware, date) = GROUP MAX dateIn AND rangeWareDate(ware, dateIn) AND dateIn <= (date AS DATE) BY ware, date;
-valueRateRangeWareDate 'НДС,%' (ware, date) = valueRateRangeDate(rangeWareDate(ware, date), dateRangeWareDate (ware, date));
-
-rangeWareVal 'На дату' (ware, date) = rangeWareDate(ware, dateRangeWareDate(ware, date)) IN baseGroup;
-rangeWare 'Шкала' (ware) = rangeWareDate(ware, dateRangeWareDate(ware, currentDate())) IN baseGroup;
-
-taxRangeWare(ware) = taxRange(rangeWare(ware)) IN idGroup;
-nameTaxWare 'Налог' (ware) = nameTaxRange(rangeWare(ware)) IN baseGroup;
-
-numberRangeWare 'Шкала НДС' (ware) = numberRange(rangeWare(ware)) IN baseGroup;
-valueCurrentRateRangeWare 'НДС,%' (ware) = valueCurrentRateRange(rangeWare(ware)) IN baseGroup;
-
-CONSTRAINT taxRange(rangeWareDate(ware, date)) != tax.taxVAT CHECKED BY retailRangeItem MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-
-FORM addRangeWare 'Добавить Шкалу'
-    OBJECTS w=ware FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES name(w) READONLY, OBJVALUE(d), numberRangeWareDate(w, d), valueRateRangeWareDate(w, d)
-;
-
-DESIGN addRangeWare FROM DEFAULT {
-    PROPERTY(name(w)) { focusable = FALSE; }
-};
-
-addRangeWare 'Добавить' (ware) = ACTION FORM addRangeWare OBJECTS w MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-FORM rangeWare 'Добавить Шкалу'
-OBJECTS w=ware FIXED PANEL, d=DATE
-PROPERTIES name(w) READONLY, addRangeWare(w) TODRAW d, OBJVALUE(d) READONLY,
-           numberRangeWareDate(w, d), valueRateRangeWareDate(w, d)
-FILTERS rangeWareDate(w, d);
-
-DESIGN rangeWare FROM DEFAULT {
-PROPERTY(name(w)) { focusable = FALSE; }
-};
-
-dialogRangeWare 'Шкала' (ware) = ACTION FORM rangeWare OBJECTS w MODAL SHORTCUT numberRangeWare DEFAULT;
-
-FORM ware 'Посуда'
-OBJECTS w=ware FIXED PANEL
-PROPERTIES(w) name, warePrice, dialogWarePrice
-PROPERTIES(w) numberRangeWare, valueCurrentRateRangeWare, dialogRangeWare
-EDIT ware OBJECT w;
-
-FORM wares 'Посуда'
-OBJECTS w=ware
-PROPERTIES(w) READONLY barcodeBarcodeSku, name, warePrice, dialogWarePrice, numberRangeWare, valueCurrentRateRangeWare
-PROPERTIES(w)          ADDFORM, EDITFORM, delete
-DIALOG ware OBJECT w;
 
 FORM item 'Товар'
 
@@ -7601,7 +7587,7 @@ wareOrderSupplier (orderSupplier, item) <- wareItem(item) WHEN ASSIGNED(packQuan
 nameWareOrderSupplier 'Посуда' (orderSupplier, item) = name(wareOrderSupplier(orderSupplier, item));
 warePriceOrderSupplier 'Цена посуды' (orderSupplier, item) = warePriceDate(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 dataRangeWareOrderSupplier 'Шкала(ИД)' (orderSupplier, item) = DATA range (orderSupplier, item) IN idGroup;
-dataRangeWareOrderSupplier (orderSupplier, item) <- rangeWareVal(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier))
+dataRangeWareOrderSupplier (orderSupplier, item) <- rangeWareDate(wareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier))
                                                     WHEN CHANGED(wareOrderSupplier(orderSupplier, item));
 numberDataRangeWareOrderSupplier 'Шкала НДС посуды' (orderSupplier, item) =
     numberRange(dataRangeWareOrderSupplier(orderSupplier, item));
@@ -13422,8 +13408,8 @@ NAVIGATOR {
             ADD genTimeTables;
             ADD addWarePrice;
             ADD dialogWarePrice;
-            ADD rangeWare;
             ADD addRangeWare;
+            ADD dialogRangeWare;
             ADD addSupplierRangeItem;
             ADD dialogSupplierRangeItem;
             ADD addRetailRangeItem;
