@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="li" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="257"/>
 	<property name="ireport.y" value="165"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -283,7 +283,7 @@
 					<textElement>
 						<font size="10" isItalic="true" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{countIndexListInventory}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{countIndexListInventory})]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="15">

@@ -10309,7 +10309,8 @@ sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledge
 
 sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailSumContainerShipmentDetailShipment(ledger),
                                                                                         retailSumContainerInnerArrivalDetailInnerArrival(ledger),
-                                                                                        diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger) PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
+                                                                                        diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger),
+                                                                                        0.0 IF ledger IS parish PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
 
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOffDetailWriteOff(ledger),
                                                                        retailSumReturnSupplierDetailReturnSupplier(ledger),
@@ -10339,7 +10340,10 @@ sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (le
                                                                        retailSumContainerInnerFlowDetailInnerFlow(ledger),
                                                                        retailSumContainerStatementDetailStatement(ledger),
                                                                        retailSumContainerWastageDetailWastage(ledger),
-                                                                       accountSumContainerShortageCollationSheet(ledger) PERSISTENT IN ledgerByContainerGroup;
+                                                                       accountSumContainerShortageCollationSheet(ledger),
+                                                                       0.0 IF ledger IS zReport,
+                                                                       0.0 IF ledger IS saleDiscountDocument,
+                                                                       0.0 IF ledger IS consumption PERSISTENT IN ledgerByContainerGroup;
 //
 quantityIncAccountSumDocumentLedger 'Количество приходных док-ов' (departmentStore, dtFrom, dtTo)=
     GROUP SUM 1 IF incAccountSumDocumentLedger AS incAccountSumDocumentLedger AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
@@ -10451,7 +10455,7 @@ FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
     nameOfficerBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore, nameOfficerPersonCheckDepartmentStore
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
-               sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom), sumAccountADocumentLedgerDate(ds, dtTo)
+               sumAccountByItemADocumentLedgerDate(ds, dtTo), sumAccountByContainerADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
     PROPERTIES(ds, dtFrom, dtTo) quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
                totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
                subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
@@ -10501,7 +10505,7 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
                    totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
 //               subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
                    totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger
-    PROPERTIES READONLY sumAccountByItemADocumentLedgerDate(ds, dtFrom), sumAccountByContainerADocumentLedgerDate(ds, dtFrom)
+    PROPERTIES READONLY sumAccountByItemADocumentLedgerDate(ds, dtTo), sumAccountByContainerADocumentLedgerDate(ds, dtTo)
 
     PROPERTIES(ds, dtFrom, dtTo) FORCE PANEL toPrintAccountDocumentLedger
 
@@ -10794,7 +10798,7 @@ timeFromCollationSheet 'Снятие остатков начато' (collationSh
 timeToCollationSheet 'Снятие остатков закончено' (collationSheet) = timeToInventory(inventoryCollationSheet(collationSheet));
 nameHeadManCollationSheet  'Зав. магазином' (collationSheet) = nameHeadManInventory(inventoryCollationSheet(collationSheet));
 
-FORM  collationSheetPrint 'Ведомость' PRINT
+FORM  collationSheetPrint 'Результирующая ведомость' PRINT
 
     OBJECTS          cs=collationSheet FIXED PANEL
 
@@ -10805,13 +10809,43 @@ FORM  collationSheetPrint 'Ведомость' PRINT
                      quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                      accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
                      countListInventoryCollationSheet, countPageInventoryCollationSheet, overDateCollationSheet
-    PROPERTIES (cs)  accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet, accountSumItemPageInventoryDetailCollationSheet,
+    PROPERTIES (cs)  SELECTOR accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet, accountSumItemPageInventoryDetailCollationSheet,
                      accountSumContainerPageInventoryDetailCollationSheet, accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
 
 ;
 
-toPrintCollationSheet 'Ведомость' (collationSheet) =
+toPrintCollationSheet 'Резул. в-ть' (collationSheet) =
     ACTION FORM collationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup CONFIRM;
+
+FORM  detailCollationSheetPrint 'Сличительная ведомость' PRINT
+
+    OBJECTS          cs=collationSheet FIXED PANEL
+    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameCompanyCollationSheet, nameStoreCollationSheet, nameCommitteeCollationSheet,
+                     nameChairmanCommitteeCollationSheet, nameOfficerChairmanCollationSheet, nameEmployeeCollationSheet,
+                     nameTypeOfAdditionCollationSheet, nameDepartmentStoreCollationSheet, dateCollationSheet,
+                     quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
+                     accountSumPageInventoryDetailCollationSheet, accountSumBalanceCollationSheet, accountSumShortageCollationSheet,
+                     countListInventoryCollationSheet, countPageInventoryCollationSheet, overDateCollationSheet,
+                     accountSumItemPageInventoryDetailCollationSheet, accountSumContainerPageInventoryDetailCollationSheet,
+                     accountSumItemBalanceCollationSheet, accountSumContainerBalanceCollationSheet,
+                     accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
+
+    OBJECTS          i=item
+    PROPERTIES (i)   SELECTOR nameAttributeItem, barcodeBarcodeSku
+
+    PROPERTIES(cs, i) SELECTOR quantityPageInventoryDetailCollationSheetItem, quantityBalanceCollationSheetItem, quantityShortageCollationSheetItem
+    PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,i) BACKGROUND differentPriceCollationSheetItem(cs, i),
+                     accountPriceBalanceCollationSheetItem(cs, i) BACKGROUND differentPriceCollationSheetItem(cs, i)
+
+    PROPERTIES(cs, i) SELECTOR accountSumPageInventoryDetailCollationSheetItem, accountSumBalanceCollationSheetItem, accountSumShortageCollationSheetItem
+
+    FILTERS         includeCollationSheetItem(cs, i)
+
+    ORDER BY nameAttributeItem
+;
+
+toPrintDetailCollationSheet 'Слич. в-ть' (collationSheet) =
+    ACTION FORM detailCollationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup CONFIRM;
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
@@ -11061,7 +11095,7 @@ FORM inventories 'Инвентаризации'
                      accountPriceBalanceCollationSheetItem(cs, it) BACKGROUND differentPriceCollationSheetItem(cs, it)
 
     PROPERTIES(cs, it) READONLY accountSumPageInventoryDetailCollationSheetItem, accountSumBalanceCollationSheetItem, accountSumShortageCollationSheetItem
-    PROPERTIES(cs)  toPrintCollationSheet
+    PROPERTIES(cs)  toPrintCollationSheet, toPrintDetailCollationSheet
 
     FILTERS         inventoryInventoryDetail(il)==in,
                     inventoryListInventory(li)==in,
@@ -13358,6 +13392,7 @@ NAVIGATOR {
         ADD orderSupplierPrint;
         ADD listInventoryPrint;
         ADD collationSheetPrint;
+        ADD detailCollationSheetPrint;
     }
 
     ADD adminElement TO formsTree {
