@@ -16,6 +16,7 @@ IMPORT Numerator;
 IMPORT Stock;
 IMPORT Document;
 IMPORT Tax;
+IMPORT LegalEntity;
 
 GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP emailGroup 'E-mail' : baseGroup;
@@ -196,7 +197,7 @@ END
 META defineDocumentDetailOutPricePrefix (object, prefix, caption)
     prefix###retailRange###object##Detail = DATA range (object##Detail);
     prefix###numberRetailRange###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailRange###object##Detail(detail)) IN priceDetailGroup;
-    prefix###dataRetailRange###object##Detail 'НДС розничный, %'###caption (detail) =
+    prefix###valueRetailRange###object##Detail 'НДС розничный, %'###caption (detail) =
        valueRateRangeDate(prefix###retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
     CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -298,7 +299,7 @@ META defineDocumentDetailOutSumPrefix (object, prefix, caption)
     prefix###retailISum###object##Detail 'Розничная сумма (без посуды)'###caption (detail) = prefix###retailSum###object##Detail(detail) (-) prefix###wareSum###object##Detail(detail);
 
     prefix###retailVATISum###object##Detail 'Сумма НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
-                prefix###retailISum###object##Detail(detail), prefix###dataRetailRange###object##Detail(detail));
+                prefix###retailISum###object##Detail(detail), prefix###valueRetailRange###object##Detail(detail));
 
     prefix###retailVATSum###object##Detail 'Сумма НДС'###caption (detail) = prefix###retailVATISum###object##Detail(detail) (+) prefix###wareVATSum###object##Detail(detail);
 
@@ -544,7 +545,7 @@ META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP
     prefixA###supplierPrice###aggrObject##Detail 'Цена поставщика'###caption (detail) = prefixP###supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
     prefixA###retailRange###aggrObject##Detail (detail) = prefixP###retailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    prefixA###dataRetailRange###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###dataRetailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###valueRetailRange###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###valueRetailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
     prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###dataWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
@@ -677,7 +678,7 @@ META implementInputListRegisterDetail (concrete)
     dataWareRangeListRegisterDetail (inputListRegisterDetail) += dataWareRange###concrete##Detail (inputListRegisterDetail);
     importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkup###concrete##Detail (inputListRegisterDetail);
     markupSumListRegisterDetail (inputListRegisterDetail) += markupSum###concrete##Detail (inputListRegisterDetail);
-    dataRetailRangeListRegisterDetail (inputListRegisterDetail) += dataRetailRange###concrete##Detail (inputListRegisterDetail);
+    valueRetailRangeListRegisterDetail (inputListRegisterDetail) += valueRetailRange###concrete##Detail (inputListRegisterDetail);
     retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSum###concrete##Detail (inputListRegisterDetail);
     retailPriceListRegisterDetail (inputListRegisterDetail) += retailPrice###concrete##Detail (inputListRegisterDetail);
     retailSumListRegisterDetail (inputListRegisterDetail) += retailSum###concrete##Detail (inputListRegisterDetail);
@@ -1237,10 +1238,6 @@ GROUP displayGroup 'Свойства для отображения' : baseGroup;
 
 CLASS item 'Товар' : sku, externalObject;
 TABLE item(item);
-
-CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
-TABLE legalEntity (legalEntity);
-UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup FIXEDCHARWIDTH 9;
 
 TABLE itemDate (item, DATE);
 
@@ -2890,128 +2887,6 @@ FORM wastageCommitteeDialog 'Комиссии для списания отход
 
     DIALOG wastageCommittee OBJECT wc
 ;
-// ----------------------------------- Банк ------------------------------------------- //
-
-GROUP banksGroup 'Информация о банке' : baseGroup;
-
-CLASS bank 'Банк' : named, externalObject;
-TABLE bank (bank);
-TABLE bankDate (bank, DATE);
-
-MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
-departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
-CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN banksGroup;
-infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN banksGroup;
-
-@defineHistorizable(addressBank, 'Адрес банка', STRING[150], bank, name, banksGroup);
-
-FORM bank 'Банк'
-OBJECTS b=bank FIXED PANEL
-PROPERTIES(b)  name, addressBank, dialogAddressBank, MFOBank, departmentBank, CBUBank, infoBank
-EDIT bank OBJECT b;
-
-FORM banks 'Банки'
-OBJECTS b=bank
-PROPERTIES(b) READONLY name, addressBank, MFOBank, departmentBank, CBUBank, infoBank
-PROPERTIES(b) ADDFORM, EDITFORM, delete;
-
-// ----------------------------------- Расчетный счет ------------------------------------------ //
-
-GROUP accountGroup 'Банковская информация' : baseGroup;
-
-CLASS account 'Расчетный счет';
-TABLE account (account);
-
-bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
-
-dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
-dataAccountToAccount 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY dataAccount (account) WHERE account IS account;
-nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
-addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
-MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN accountGroup;
-departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN accountGroup;
-CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN accountGroup;
-noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
-
-// ----------------------------------- Форма собственности ------------------------------------------ //
-CLASS ownership 'Форма собственности' : named;
-TABLE ownership (ownership);
-shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN baseGroup FIXEDCHARWIDTH 6;
-shortNameToOwnership (string) = GROUP UNIQUE ownership BY shortNameOwnership (ownership) WHERE ownership IS ownership;
-
-FORM ownership 'Форма собственности'
-OBJECTS o=ownership FIXED PANEL
-PROPERTIES(o) name, shortNameOwnership;
-
-// ----------------------------------- Лицензия ------------------------------------------ //
-GROUP licenseGroup 'Лицензионная информация' : baseGroup;
-CLASS license 'Лицензия';
-TABLE license (license);
-
-dataLicense 'Номер лицензии' = DATA STRING[100] (license) IN licenseGroup;
-dateFromLicense 'Действует с ' = DATA DATE (license) IN licenseGroup;
-dateToLicense 'Действует по ' = DATA DATE (license) IN licenseGroup;
-
-//tabaccoLicense 'Табачная' = DATA BOOLEAN  (license) IN licensGroup;
-
-// ----------------------------------- Юридическое лицо ------------------------------------------ //
-
-GROUP lawGroup 'Юридическая информация' : publicGroup;
-GROUP contactGroup 'Контактная информация' : publicGroup;
-GROUP docGroup 'Для договора' : publicGroup;
-
-ownershipLegalEntity 'Форма собственности (ИД)' = DATA ownership (legalEntity) IN idGroup;
-
-nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
-shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN baseGroup;
-fullNameLegalEntity 'Наименование для накладных' = DATA STRING[200] (legalEntity) IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-//UNPLegalEntityToLegalEntity (UNPLegalEntity) = GROUP UNIQUE legalEntity BY UNPLegalEntity(legalEntity);
-OKPOLegalEntity 'Код по ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;     // подставить нужное потом значение
-OKYLPLegalEntity 'Код ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
-emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-residentLegalEntity 'Резидент РБ' = DATA BOOLEAN (legalEntity) IN lawGroup;
-manufacturerLegalEntity 'Производитель' = DATA BOOLEAN (legalEntity) IN lawGroup;
-
-legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
-userAccountLegalEntity 'Р/сч. (ИД)' = DATA account (legalEntity) IN idGroup;
-defaultAccountLegalEntity(legalEntity) = GROUP MAX account AS account BY legalEntityAccount(account);
-overrideAccountLegalEntity 'Основной р/сч.' (legalEntity) = UNION OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
-dataOverrideAccountLegalEntity 'Основной р/сч.' (legalEntity) = dataAccount(overrideAccountLegalEntity(legalEntity)) IN lawGroup;
-
-CONSTRAINT legalEntity != legalEntityAccount(userAccountLegalEntity(legalEntity)) CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
-equalsLegalEntityAccount 'Основной р/сч.' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
-
-legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license) IN idGroup;
-
-//userLicenseLegalEntity 'ЮЛ (ИД)' = DATA license (legalEntity) IN idGroup;
-//actingLicense 'Действующая, м/у датами' (license) = license AS license IF dateFromLicense(license) <= currentDate() AND NOT dateToLicense(license) < currentDate();
-actingLicenseDate 'Действующая между датами' (license, date) = license AS license IF dateFromLicense(license) <= date AND NOT dateToLicense(license) < date AND date AS DATE;
-actingLicenseLegalEntityDate 'Действующая на дату' (legalEntity, date) = GROUP MAX actingLicenseDate(license, date) BY legalEntityLicense(license), date;
-actingLicenseLegalEntity 'Действующая' (legalEntity) = actingLicenseLegalEntityDate(legalEntity, currentDate());
-dataActingLicenseLegalEntity 'Действующая лицензия' (legalEntity) = dataLicense(actingLicenseLegalEntity(legalEntity)) IN lawGroup;
-
-//actingLicenseLegalEntity (legalEntity) = GROUP MAX actingLicense(license) BY legalEntityLicense(license);        // сгруппировали по ID
-//overrideLicenseLegalEntity 'Действующая' (legalEntity) = UNION OVERRIDE defaultLicenseLegalEntity(legalEntity) IF dateFromLicense(defaultLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(defaultLicenseLegalEntity(legalEntity)) > currentDate(),
-//                                                                        userLicenseLegalEntity(legalEntity) IF dateFromLicense(userLicenseLegalEntity(legalEntity)) < currentDate() AND dateToLicense(userLicenseLegalEntity(legalEntity)) > currentDate();
-                        // работает как то не так, надо проверить //
-//CONSTRAINT legalEntity != legalEntityLicense(userLicenseLegalEntity(legalEntity)) CHECKED MESSAGE 'ошибка: Лицензия по умолчанию должен соответствовать лицензии Ю.Л.';
-//CONSTRAINT  dateFromLicense(overrideLicenseLegalEntity(legalEntity)) > currentDate() MESSAGE 'ошибка: действие лицензии еще не началось';
-//CONSTRAINT  dateToLicense(overrideLicenseLegalEntity(legalEntity)) < currentDate() MESSAGE 'ошибка: действие выбранной лицензии уже окончилось';
-//equalsLegalEntityLicense 'Действующая' (legalEntity, license) = userLicenseLegalEntity(legalEntity) == license IN lawGroup;
-
-// ----------------------------------- Юридическое лицо-дата ------------------------------------------ //
-
-TABLE legalEntityDate (legalEntity, DATE);
-
-@defineHistorizable(addressLegalEntity, 'Юридический адрес', STRING[150], legalEntity, name, baseGroup);
-@defineHistorizable(managerLegalEntity, 'Руководитель', STRING[100], legalEntity, name, lawGroup);
-@defineHistorizable(accountantLegalEntity, 'Главный бухгалтер', STRING[100], legalEntity, name, lawGroup);
-@defineHistorizable(postAddressLegalEntity, 'Почтовый адрес', STRING[150], legalEntity, name, lawGroup);
-@defineHistorizable(phoneLegalEntity, 'Телефон/факс', STRING[100], legalEntity, name, baseGroup);
-
 // ----------------------------------- Компания отдела ------------------------------------- //
 
 companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(departmentStore)) PERSISTENT;
@@ -3465,12 +3340,12 @@ FORM supplier 'Поставщик'
                   postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
                   accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
-                  residentLegalEntity, manufacturerLegalEntity, surePercentSupplier, allowablePercentSupplier,
+                  surePercentSupplier, allowablePercentSupplier,
                   afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier,
-                  returnLossSupplier, marksSupplier //dataActingLicenseLegalEntity, numberOverrideContractSupplier, dataOverrideAccountLegalEntity
+                  returnLossSupplier, marksSupplier //numberCurrentLicenseLegalEntity, numberOverrideContractSupplier, numberAccountLegalEntity
 
     OBJECTS a=account
-    PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    PROPERTIES(a) numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 
     OBJECTS co=company
     PROPERTIES(co) name
@@ -3481,7 +3356,7 @@ FORM supplier 'Поставщик'
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
 
     OBJECTS l=license
-    PROPERTIES(l) dataLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
+    PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
 
     OBJECTS d=departmentStore
     PROPERTIES(d) nameStoreDepartmentStore, name
@@ -3491,9 +3366,7 @@ FORM supplier 'Поставщик'
     PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore
     PROPERTIES       overNameSureSupplierDepartmentStoreDate(s, d, dt) BACKGROUND dataSureSupplierDepartmentStoreDate(s, d, dt), overDialogSureSupplierDepartmentStoreDate(s, d)
 
-//    PROPERTIES(s,c) equalsSupplierContract
     PROPERTIES(s,a) equalsLegalEntityAccount
-    //PROPERTIES(s,l) equalsLegalEntityLicense
 
     PROPERTIES(co, s)    numberOverrideContractCompanySupplier
     PROPERTIES(co, s, c) equalsCompanySupplierContract
@@ -3573,7 +3446,7 @@ DESIGN supplier FROM DEFAULT {
 
 FORM suppliers 'Поставщики'
     OBJECTS s=supplier
-    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
@@ -3585,7 +3458,7 @@ FORM company 'Компания'
                    UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 
     OBJECTS a=account
-    PROPERTIES(a)  dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
 
     OBJECTS s=supplier
     PROPERTIES(s) name
@@ -3645,7 +3518,7 @@ DESIGN company FROM DEFAULT {
 }
 FORM companies 'Компании'
     OBJECTS co=company
-    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, dataOverrideAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;
 
@@ -3654,10 +3527,9 @@ FORM customer 'Покупатель'
     PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
                        postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
                        accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
-                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
-                       residentLegalEntity
+                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier
     OBJECTS a=account
-    PROPERTIES(a)      dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
+    PROPERTIES(a)      numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
                        MFOBankAccount, noteAccount, ADDOBJ, delete
 
     PROPERTIES(cu, a) equalsLegalEntityAccount
@@ -4654,12 +4526,12 @@ TABLE supplierPriceLedger (supplierPriceLedger);
 CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
 TABLE retailRangeLedger (retailRangeLedger);
 @defineItemDepartmentStoreLedger(range, retailRange, 'НДС');
-dataRetailRangeRetailRangeLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
-dataRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
+valueRetailRangeRetailRangeLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
+valueRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
             valueRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
-dataRetailRangeALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
+valueRetailRangeALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
             valueRateRangeDate(retailRangeALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
-currentDataRetailRangeLedger 'НДС, %' (item, departmentStore) =
+currentValueRetailRangeLedger 'НДС, %' (item, departmentStore) =
             valueCurrentRateRange(currentRetailRangeLedger(item, departmentStore));
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
@@ -4737,10 +4609,10 @@ quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger
 retailSumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
 
 retailRangeSalesLedger (ledger) = ABSTRACT range (salesLedger) PERSISTENT;
-dataRetailRangeSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
+valueRetailRangeSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
 
 retailVATSumSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
-        retailSumSalesLedger(ledger), dataRetailRangeSalesLedger(ledger));
+        retailSumSalesLedger(ledger), valueRetailRangeSalesLedger(ledger));
 
 markupSumSalesLedger 'Надбавка' (ledger) = retailSumSalesLedger(ledger) - retailVATSumSalesLedger(ledger) - supplierSumBalanceSkuLedger(ledger);
 
@@ -4880,7 +4752,7 @@ importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (i
 
 markupSumListRegisterDetail 'Сумма надбавки' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
-dataRetailRangeListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+valueRetailRangeListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
 
 retailVATSumListRegisterDetail 'Сумма НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
@@ -4934,8 +4806,8 @@ META implementPriceChangeDocumentDetailPricePrefix (object, prefixA, prefixR)
     curSupplierPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###supplierPrice###object##Detail (priceChangeDocumentDetail);
     supplierPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += supplierPrice###object##Detail (priceChangeDocumentDetail);
 
-    curDataRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###dataRetailRange###object##Detail (priceChangeDocumentDetail);
-    dataRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += dataRetailRange###object##Detail (priceChangeDocumentDetail);
+    curValueRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###valueRetailRange###object##Detail (priceChangeDocumentDetail);
+    valueRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += valueRetailRange###object##Detail (priceChangeDocumentDetail);
 
     curRetailPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixR###retailPrice###object##Detail (priceChangeDocumentDetail);
     retailPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += retailPrice###object##Detail (priceChangeDocumentDetail);
@@ -4998,8 +4870,8 @@ importerPricePriceChangeDocumentDetail 'Цена изготовителя' (pric
 curSupplierPricePriceChangeDocumentDetail 'Цена поставщика (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 supplierPricePriceChangeDocumentDetail 'Цена поставщика' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 
-curDataRetailRangePriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
-dataRetailRangePriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
+curValueRetailRangePriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
+valueRetailRangePriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
 
 curRetailPricePriceChangeDocumentDetail 'Розничная цена (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
@@ -5130,7 +5002,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
                              curImporterPricePriceChangeDocumentDetail, importerPricePriceChangeDocumentDetail,
                              curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
-                             curDataRetailRangePriceChangeDocumentDetail, dataRetailRangePriceChangeDocumentDetail,
+                             curValueRetailRangePriceChangeDocumentDetail, valueRetailRangePriceChangeDocumentDetail,
                              curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
                              curWarePricePriceChangeDocumentDetail, warePricePriceChangeDocumentDetail
 
@@ -5967,8 +5839,8 @@ phoneCustomerSpecification 'Телефон покупателя' (specification)
 objectiveAcquiringSpecification(specification) = DATA objectiveAcquiring (specification) IN idGroup;
 nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN documentPrmGroup;
 
-accountCustomerSpecification 'Р/сч. покупателя ИД' (specification) = overrideAccountLegalEntity(customerSpecification(specification));
-dataAccountCustomerSpecification 'Р/сч. покупателя' (specification) = dataAccount(accountCustomerSpecification(specification));
+accountCustomerSpecification 'Р/сч. покупателя ИД' (specification) = accountLegalEntity(customerSpecification(specification));
+numberAccountCustomerSpecification 'Р/сч. покупателя' (specification) = numberAccount(accountCustomerSpecification(specification));
 nameBankAccountCustomerSpecification 'Банк покупателя' (specification) = nameBankAccount(accountCustomerSpecification(specification));
 addressBankAccountCustomerSpecification 'Адрес банка покупателя' (specification) = addressBankDate(bankAccount(accountCustomerSpecification(specification)), dateSpecification(specification));
 MFOBankAccountCustomerSpecification 'Код МФО банка покупателя' (specification) = MFOBankAccount(accountCustomerSpecification(specification));
@@ -5987,8 +5859,8 @@ UNPCompanySpecification 'УНП компании' (specification) = UNPLegalEnti
 fullNameCompanySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(companySpecification(specification));
 addressCompanySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(companySpecification(specification), dateSpecification(specification));
 
-accountCompanySpecification 'Р/сч. компании ИД' (specification) = overrideAccountLegalEntity(companySpecification(specification));
-dataAccountCompanySpecification 'Р/сч. компании' (specification) = dataAccount(accountCompanySpecification(specification));
+accountCompanySpecification 'Р/сч. компании ИД' (specification) = accountLegalEntity(companySpecification(specification));
+numberAccountCompanySpecification 'Р/сч. компании' (specification) = numberAccount(accountCompanySpecification(specification));
 
 nameBankAccountCompanySpecification 'Банк компании' (specification) = nameBankAccount(accountCompanySpecification(specification));
 addressBankAccountCompanySpecification 'Адрес банка компании' (specification) = addressBankDate(bankAccount(accountCompanySpecification(specification)), dateSpecification(specification));
@@ -6276,7 +6148,7 @@ warePriceShipmentDetail (shipmentDetail) <-
 nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = [X*(Y+100)*(Z+100)/10000] (
     supplierPriceShipmentDetail(shipmentDetail),
     (UNION OVERRIDE 0.0 IF shipmentDetail IS shipmentDetail, retailMarkupShipmentDetail(shipmentDetail)),
-    (UNION OVERRIDE 0.0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail)));
+    (UNION OVERRIDE 0.0 IF shipmentDetail IS shipmentDetail, valueRetailRangeShipmentDetail(shipmentDetail)));
 
 // todo : такой подход создает охрененную сложность на сохранении
 //markupPriceShipmentDetail 'Сумма торговой надбавки (за ед.)' (shipmentDetail) =
@@ -6285,7 +6157,7 @@ nonRoundRetailPriceShipmentDetail 'Цена розничная (неокругл
 //
 //saleVATPriceShipmentDetail 'Сумма розничного НДС (за ед.)' (shipmentDetail) =
 //    (supplierPriceShipmentDetail(shipmentDetail) (+) markupPriceShipmentDetail(shipmentDetail))*
-//    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, dataRetailRangeShipmentDetail(shipmentDetail))/100;
+//    (UNION OVERRIDE 0 IF shipmentDetail IS shipmentDetail, valueRetailRangeShipmentDetail(shipmentDetail))/100;
 
 //nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) (+) markupPriceShipmentDetail(shipmentDetail) (+) saleVATPriceShipmentDetail(shipmentDetail);
 
@@ -6499,7 +6371,7 @@ quantityOutAutoBalanceSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 recipientConsignment (consignment) += companyDepartmentStore(recipientDepartmentInnerFlow(consignment));
 priceConsignmentDetail (consignmentDetail) += retailPriceInnerFlowDetail(consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += retailSumInnerFlowDetail (consignmentDetail);
-vatConsignmentDetail (consignmentDetail) += dataRetailRangeInnerFlowDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueRetailRangeInnerFlowDetail (consignmentDetail);
 sumVATConsignmentDetail (consignmentDetail) += retailVATISumInnerFlowDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += retailSumInnerFlowDetail (consignmentDetail);
 
@@ -6518,7 +6390,7 @@ supplierMarkupInnerFlowDetail 'Оптовая надбавка' (innerFlowDetail
 // todo : все таки наверное нужно с собой тянуть надбавку (по крайней мере для реестра цен)
 retailMarkupInnerFlowDetail 'Торговая надбавка' (innerFlowDetail) =
     round3([(X*100/(100+Y)/Z-1)*100](
-    retailPriceInnerFlowDetail(innerFlowDetail), dataRetailRangeInnerFlowDetail(innerFlowDetail), importerPriceInnerFlowDetail(innerFlowDetail)));
+    retailPriceInnerFlowDetail(innerFlowDetail), valueRetailRangeInnerFlowDetail(innerFlowDetail), importerPriceInnerFlowDetail(innerFlowDetail)));
 
 noteInnerFlowDetail 'Примечание' (innerFlowDetail) =
     IF supplierMarkupInnerFlowDetail(innerFlowDetail)!=0
@@ -6593,7 +6465,7 @@ diffQuantityItemInnerArrival 'Расхождение' (item, innerArrival) =
 
 retailMarkupInnerArrivalDetail 'Торговая надбавка (расч.)' (innerArrivalDetail) =
     round3([(X*100/(100+Y)/Z-1)*100](
-    retailPriceInnerArrivalDetail(innerArrivalDetail), dataRetailRangeInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail)));
+    retailPriceInnerArrivalDetail(innerArrivalDetail), valueRetailRangeInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail)));
 
 supplierMarkupInnerArrivalDetail 'Оптовая надбавка (расч.)' (innerArrivalDetail) =
     (supplierPriceInnerArrivalDetail(innerArrivalDetail)/importerPriceInnerArrivalDetail(innerArrivalDetail) - 1)*100;
@@ -9350,7 +9222,7 @@ FORM listRegister 'Реестр цен (поставка)' PRINT
     PROPERTIES (d)  indexListRegisterDetail, barcodeExSkuListRegisterDetail, nameAttributeItemListRegisterDetail, shortNameUnitOfMeasureItemListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, dataSupplierRangeListRegisterDetail,
                     wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, dataWareRangeListRegisterDetail,
-                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, dataRetailRangeListRegisterDetail,
+                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
     FILTERS listRegisterListRegisterDetail(d) == l
@@ -9373,7 +9245,7 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
     PROPERTIES (d)  indexListRegisterDetail, barcodeExSkuListRegisterDetail, nameAttributeItemListRegisterDetail, shortNameUnitOfMeasureItemListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
                     wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, dataWareRangeListRegisterDetail,
-                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, dataRetailRangeListRegisterDetail,
+                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
     FILTERS listRegisterListRegisterDetail(d) == l
@@ -9521,10 +9393,10 @@ FORM specificationPrint 'Счет-фактура' PRINT
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) SELECTOR seriesNumberObject, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification,
                     fullNameCustomerSpecification, UNPCustomerSpecification, addressCustomerSpecification,
-                    dataAccountCustomerSpecification, nameBankAccountCustomerSpecification, addressBankAccountCustomerSpecification,
+                    numberAccountCustomerSpecification, nameBankAccountCustomerSpecification, addressBankAccountCustomerSpecification,
                     MFOBankAccountCustomerSpecification, departmentBankAccountCustomerSpecification, CBUBankAccountCustomerSpecification,
                     fullNameCompanySpecification, addressCompanySpecification, UNPCompanySpecification,
-                    dataAccountCompanySpecification, nameBankAccountCompanySpecification, addressBankAccountCompanySpecification,
+                    numberAccountCompanySpecification, nameBankAccountCompanySpecification, addressBankAccountCompanySpecification,
                     MFOBankAccountCompanySpecification, departmentBankAccountCompanySpecification, CBUBankAccountCompanySpecification,
                     nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneCompanySpecification,
                     quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
@@ -9574,11 +9446,11 @@ FORM disparity 'Пересортица'
     PROPERTIES      addDisparityDetailBarcode(dis) TODRAW d
 
     PROPERTIES (d)  FORCE PANEL importerPriceDisparityDetail, supplierPriceDisparityDetail, nameWareDisparityDetail,
-                                warePriceDisparityDetail, dataRetailRangeDisparityDetail, balanceBeforeDisparityDetail,
+                                warePriceDisparityDetail, valueRetailRangeDisparityDetail, balanceBeforeDisparityDetail,
                                 inputCurImporterPriceDisparityDetail, inputCurSupplierPriceDisparityDetail, inputCurNameWareDisparityDetail,
-                                inputCurWarePriceDisparityDetail, inputCurDataRetailRangeDisparityDetail, inputCurRetailPriceDisparityDetail,
+                                inputCurWarePriceDisparityDetail, inputCurValueRetailRangeDisparityDetail, inputCurRetailPriceDisparityDetail,
                                 inputImporterPriceDisparityDetail, inputSupplierPriceDisparityDetail, inputNameWareDisparityDetail,
-                                inputWarePriceDisparityDetail, inputDataRetailRangeDisparityDetail, inputBalanceBeforeDisparityDetail
+                                inputWarePriceDisparityDetail, inputValueRetailRangeDisparityDetail, inputBalanceBeforeDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
 
@@ -9623,7 +9495,7 @@ DESIGN disparity FROM DEFAULT {
                 ADD PROPERTY (supplierPriceDisparityDetail);
                 ADD PROPERTY (nameWareDisparityDetail);
                 ADD PROPERTY (warePriceDisparityDetail);
-                ADD PROPERTY (dataRetailRangeDisparityDetail);
+                ADD PROPERTY (valueRetailRangeDisparityDetail);
                 ADD PROPERTY (balanceBeforeDisparityDetail);
 
             }
@@ -9640,7 +9512,7 @@ DESIGN disparity FROM DEFAULT {
                     ADD PROPERTY (inputCurSupplierPriceDisparityDetail);
                     ADD PROPERTY (inputCurNameWareDisparityDetail);
                     ADD PROPERTY (inputCurWarePriceDisparityDetail);
-                    ADD PROPERTY (inputCurDataRetailRangeDisparityDetail);
+                    ADD PROPERTY (inputCurValueRetailRangeDisparityDetail);
                     ADD PROPERTY (inputCurRetailPriceDisparityDetail);
                 }
                 NEW row12{
@@ -9651,7 +9523,7 @@ DESIGN disparity FROM DEFAULT {
                     ADD PROPERTY (inputSupplierPriceDisparityDetail);
                     ADD PROPERTY (inputNameWareDisparityDetail);
                     ADD PROPERTY (inputWarePriceDisparityDetail);
-                    ADD PROPERTY (inputDataRetailRangeDisparityDetail);
+                    ADD PROPERTY (inputValueRetailRangeDisparityDetail);
                     ADD PROPERTY (inputBalanceBeforeDisparityDetail);
                 }
             }
@@ -9737,7 +9609,7 @@ FORM shipment 'Поставка'
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, dataSupplierRangeShipmentDetail,
                     supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
-                    warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail,
+                    warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail,
                     numberCustomsCertificateShipmentDetail SHOWIF toShowPapersShipment(s),  numberCertificateGGRShipmentDetail SHOWIF toShowPapersShipment(s),
                     numberCertificateConformityShipmentDetail SHOWIF toShowPapersShipment(s), numberStateExaminationShipmentDetail SHOWIF toShowPapersShipment(s),
@@ -9745,7 +9617,7 @@ FORM shipment 'Поставка'
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryItemShipmentDetail, isManufacturedItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
                                hintItemShipmentDetail, nameCountryItemShipmentDetail, nameBanRevaluationItemDepartmentShipmentDetail,
-                               curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curDataRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
+                               curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
 
@@ -9837,7 +9709,7 @@ FORM shipments 'Поставки'
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, dataSupplierRangeShipmentDetail,
                              supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
-                             numberRetailRangeShipmentDetail, dataRetailRangeShipmentDetail, retailMarkupShipmentDetail,
+                             numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail, retailMarkupShipmentDetail,
                              curRetailPriceShipmentDetail, retailPriceShipmentDetail
 
     FILTERS inShipmentShipmentDetail(s, d)
@@ -9950,12 +9822,12 @@ FORM returnSupplier 'Возврат поставщику'
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
                   dataSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
-                  nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
+                  nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                   retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
     PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d, cleanAllReturnSupplierDetailsReturnSupplier(r) FORCE PANEL TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
-                                    curRetailPriceReturnSupplierDetail(d), curDataRetailRangeReturnSupplierDetail(d),
+                                    curRetailPriceReturnSupplierDetail(d), curValueRetailRangeReturnSupplierDetail(d),
                                     controlExpiryItemReturnSupplierDetail(d), isManufacturedItemReturnSupplierDetail(d),
                                     isWeightItemReturnSupplierDetail(d), nameInActionItemDepartmentReturnSupplierDetail(d),
                                     hintItemReturnSupplierDetail(d), nameCountryItemReturnSupplierDetail(d),
@@ -9989,7 +9861,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                            commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
                            dataSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
-                           nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, dataRetailRangeReturnSupplierDetail,
+                           nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                            retailPriceReturnSupplierDetail
     FILTERS returnSupplierReturnSupplierDetail(d) == r
 ;
@@ -10012,7 +9884,7 @@ DESIGN returnSupplier FROM DEFAULT {
                     ADD PROPERTY(curImporterPriceReturnSupplierDetail);
                     ADD PROPERTY(curSupplierPriceReturnSupplierDetail);
                     ADD PROPERTY(curRetailPriceReturnSupplierDetail);
-                    ADD PROPERTY(curDataRetailRangeReturnSupplierDetail);
+                    ADD PROPERTY(curValueRetailRangeReturnSupplierDetail);
                 };
                 ADD d.itemDetailGroup;
                 NEW ware {
@@ -11148,7 +11020,7 @@ newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDet
 newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) = [roundM1(X+(X*Y)/100+(X+(X*Y)/100)*Z/100+F)](
     curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
     percMarkupUserPriceChange(userPriceChange),
-    curDataRetailRangeUserPriceChangeDetail(userPriceChangeDetail),
+    curValueRetailRangeUserPriceChangeDetail(userPriceChangeDetail),
     (UNION OVERRIDE 0.0 IF userPriceChangeDetail IS userPriceChangeDetail, curWarePriceUserPriceChangeDetail(userPriceChangeDetail)));
 
 
@@ -11224,8 +11096,8 @@ FORM userPriceChange 'Переоценка товаров'
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                    curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
-                   curNumberRetailRangeUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
-                   numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                   curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
+                   numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                    curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
                    curNumberWareRangeUserPriceChangeDetail, curDataWareRangeUserPriceChangeDetail,
                    numberWareRangeUserPriceChangeDetail, dataWareRangeUserPriceChangeDetail,
@@ -11274,7 +11146,7 @@ DESIGN userPriceChange FROM DEFAULT {
         PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(retailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
         PROPERTY(numberRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(dataRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(valueRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(warePriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(numberWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(dataWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
@@ -11306,8 +11178,8 @@ FORM userPriceChanges 'Переоценки товаров'
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                             curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                             curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
-                            curNumberRetailRangeUserPriceChangeDetail, curDataRetailRangeUserPriceChangeDetail,
-                            numberRetailRangeUserPriceChangeDetail, dataRetailRangeUserPriceChangeDetail,
+                            curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
+                            numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                             curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
                             curNumberWareRangeUserPriceChangeDetail, curDataWareRangeUserPriceChangeDetail,
                             numberWareRangeUserPriceChangeDetail, dataWareRangeUserPriceChangeDetail,
@@ -11373,7 +11245,7 @@ FORM innerFlow 'Расход в другой отдел'
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                    quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
-                   dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail SHOWIF showWareInnerFlow(f),
+                   valueRetailRangeInnerFlowDetail, nameWareInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    warePriceInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
@@ -11475,7 +11347,7 @@ FORM innerFlows 'Расходы в другие отделы'
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
-                            dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
+                            valueRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
                             retailPriceInnerFlowDetail, retailSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 ;
@@ -11552,7 +11424,7 @@ FORM innerFlowPosted 'Расходы в другие отделы'
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
-                            dataRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
+                            valueRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
                             retailPriceInnerFlowDetail, retailSumInnerFlowDetail
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
@@ -11588,11 +11460,11 @@ FORM innerArrival 'Приход из другого отдела'
                    indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
                    quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
                    supplierPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
-                   dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail SHOWIF showWareInnerArrival(a),
+                   valueRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail SHOWIF showWareInnerArrival(a),
                    warePriceInnerArrivalDetail SHOWIF showWareInnerArrival(a), retailPriceInnerArrivalDetail,
                    retailSumInnerArrivalDetail, ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
-                   curWarePriceInnerArrivalDetail, curDataRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
+                   curWarePriceInnerArrivalDetail, curValueRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
     PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d, cleanAllInnerArrivalDetailsInnerArrival(a) FORCE PANEL  TODRAW d // SHOWIF innerFlowInnerArrival(a)
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
@@ -11680,7 +11552,7 @@ FORM innerArrivals 'Приходы из других отделов'
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) READONLY indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
                             quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
-                            numberRetailRangeInnerArrivalDetail, dataRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail,
+                            numberRetailRangeInnerArrivalDetail, valueRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail,
                             warePriceInnerArrivalDetail, retailPriceInnerArrivalDetail, retailSumInnerArrivalDetail
 
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
@@ -11947,7 +11819,7 @@ FORM statement 'Отгрузка из розницы'
                     calcVATSumStatementDetail, retailSumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
 
-    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, warePriceStatementDetail, dataRetailRangeStatementDetail,
+    PROPERTIES (d)  FORCE PANEL importerPriceStatementDetail, supplierPriceStatementDetail, nameWareStatementDetail, warePriceStatementDetail, valueRetailRangeStatementDetail,
                                 curRetailPriceStatementDetail BACKGROUND differsPriceStatementDetail(d),
                                 articleItemStatementDetail, nameCountryItemStatementDetail,
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
@@ -12227,7 +12099,7 @@ FORM actOfStudy 'Акт проработки'
     PROPERTIES(sid) seriesNumberCuttingStudyInputDetail READONLY, showSeriesNumberCuttingStudyInputDetail
     PROPERTIES(sid) READONLY dateCuttingStudyInputDetail, descriptionCuttingStudyInputDetail,
                     percAllowancesCuttingStudyInputDetail, percLossesCuttingStudyInputDetail, percSweepsCuttingStudyInputDetail
-    PROPERTIES(sid) importerPriceStudyInputDetail, supplierPriceStudyInputDetail, numberRetailRangeStudyInputDetail, dataRetailRangeStudyInputDetail,
+    PROPERTIES(sid) importerPriceStudyInputDetail, supplierPriceStudyInputDetail, numberRetailRangeStudyInputDetail, valueRetailRangeStudyInputDetail,
                     retailPriceStudyInputDetail, quantityStudyInputDetail, retailSumStudyInputDetail,
                     totalPercGoodsStudyInputDetail BACKGROUND highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
 
@@ -12235,11 +12107,11 @@ FORM actOfStudy 'Акт проработки'
                     cleanAllStudyInputDetail FORCE PANEL
 
     PROPERTIES(sod) nameAttributeItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
-                    numberRetailRangeStudyOutputDetail, dataRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
+                    numberRetailRangeStudyOutputDetail, valueRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
                     retailPriceStudyOutputDetail, calculatedStudyOutputDetail, actualQuantityStudyOutputDetail, retailSumStudyOutputDetail
 
     PROPERTIES(sod) FORCE PANEL curImporterPriceStudyOutputDetail, curSupplierPriceStudyOutputDetail, curNumberRetailRangeStudyOutputDetail,
-                    curDataRetailRangeStudyOutputDetail, curRetailPriceStudyOutputDetail
+                    curValueRetailRangeStudyOutputDetail, curRetailPriceStudyOutputDetail
 
     FILTERS         actOfStudyStudyInputDetail(sid) == a,
                     studyInputDetailStudyOutputDetail(sod) == sid
@@ -12403,7 +12275,7 @@ FORM balanceItemDepartment 'Остатки на дату'
 
 
     PROPERTIES(i, dep, t) READONLY balanceASkuLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
-                                   accountPriceBLedgerDateTime, dataRetailRangeALedgerDateTime, retailPriceALedgerDateTime,
+                                   accountPriceBLedgerDateTime, valueRetailRangeALedgerDateTime, retailPriceALedgerDateTime,
                                    warePriceALedgerDateTime
 
     PROPERTIES(i, dep) READONLY dateLastMovedSkuStock
@@ -12440,7 +12312,7 @@ FORM balanceItemDepartment 'Остатки на дату'
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailRangeLedger
-    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, dataRetailRangeRetailRangeLedger
+    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
     FILTERS isPostedRetailRangeLedger(rvl) AND itemRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
     ORDER BY dateTimeRetailRangeLedger DESC
 
@@ -12505,7 +12377,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
 
     PROPERTIES(i, dep) READONLY currentBalanceSkuLedger, currentImporterPriceLedger, currentSupplierPriceLedger,
-                                currentAccountPriceLedger, currentDataRetailRangeLedger, currentRetailPriceLedger,
+                                currentAccountPriceLedger, currentValueRetailRangeLedger, currentRetailPriceLedger,
                                 currentWarePriceLedger, dateLastMovedSkuStock, averageSoldItemDepartmentStore
     PROPERTIES(i, dep)          expirationDateSkuDepartmentStore
 
@@ -12541,7 +12413,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailRangeLedger
-    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, dataRetailRangeRetailRangeLedger
+    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
     FILTERS isPostedRetailRangeLedger(rvl) AND itemRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
     ORDER BY dateTimeRetailRangeLedger DESC
 

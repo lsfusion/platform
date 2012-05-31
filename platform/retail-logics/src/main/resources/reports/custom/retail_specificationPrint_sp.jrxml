@@ -29,7 +29,7 @@
 	<field name="fullNameCustomerSpecification" class="java.lang.String"/>
 	<field name="UNPCustomerSpecification" class="java.lang.String"/>
 	<field name="addressCustomerSpecification" class="java.lang.String"/>
-	<field name="dataAccountCustomerSpecification" class="java.lang.String"/>
+	<field name="numberAccountCustomerSpecification" class="java.lang.String"/>
 	<field name="nameBankAccountCustomerSpecification" class="java.lang.String"/>
 	<field name="addressBankAccountCustomerSpecification" class="java.lang.String"/>
 	<field name="MFOBankAccountCustomerSpecification" class="java.lang.String"/>
@@ -38,7 +38,7 @@
 	<field name="fullNameCompanySpecification" class="java.lang.String"/>
 	<field name="addressCompanySpecification" class="java.lang.String"/>
 	<field name="UNPCompanySpecification" class="java.lang.String"/>
-	<field name="dataAccountCompanySpecification" class="java.lang.String"/>
+	<field name="numberAccountCompanySpecification" class="java.lang.String"/>
 	<field name="nameBankAccountCompanySpecification" class="java.lang.String"/>
 	<field name="addressBankAccountCompanySpecification" class="java.lang.String"/>
 	<field name="MFOBankAccountCompanySpecification" class="java.lang.String"/>
@@ -465,7 +465,7 @@
 					<font size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ПОСТАВЩИК И ЕГО АДРЕС: "+($F{fullNameCompanySpecification}!=null?$F{fullNameCompanySpecification}:"")+" "+($F{addressCompanySpecification}!=null?$F{addressCompanySpecification}:"")+
-", р/сч "+($F{dataAccountCompanySpecification}!=null?$F{dataAccountCompanySpecification}:"")+($F{CBUBankAccountCompanySpecification}!=null?(" в ЦБУ "+$F{CBUBankAccountCompanySpecification}):"")+
+", р/сч "+($F{numberAccountCompanySpecification}!=null?$F{numberAccountCompanySpecification}:"")+($F{CBUBankAccountCompanySpecification}!=null?(" в ЦБУ "+$F{CBUBankAccountCompanySpecification}):"")+
 " "+($F{departmentBankAccountCompanySpecification}!=null?$F{departmentBankAccountCompanySpecification}:"")+" "+($F{nameBankAccountCompanySpecification}!=null?$F{nameBankAccountCompanySpecification}:"")+
 ($F{addressBankAccountCompanySpecification}!=null?(", адрес банка "+$F{addressBankAccountCompanySpecification}):"")+($F{MFOBankAccountCompanySpecification}!=null?(", код "+$F{MFOBankAccountCompanySpecification}):"")+
 ($F{UNPCompanySpecification}!=null?(", УНП "+$F{UNPCompanySpecification}):"")+
@@ -483,7 +483,7 @@
 					<font size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ПЛАТЕЛЬЩИК И ЕГО АДРЕС: "+($F{fullNameCustomerSpecification}!=null?$F{fullNameCustomerSpecification}:"")+" "+($F{addressCustomerSpecification}!=null?$F{addressCustomerSpecification}:"")+
-", р/сч "+($F{dataAccountCustomerSpecification}!=null?$F{dataAccountCustomerSpecification}:"")+($F{CBUBankAccountCustomerSpecification}!=null?(" в ЦБУ "+$F{CBUBankAccountCustomerSpecification}):"")+
+", р/сч "+($F{numberAccountCustomerSpecification}!=null?$F{numberAccountCustomerSpecification}:"")+($F{CBUBankAccountCustomerSpecification}!=null?(" в ЦБУ "+$F{CBUBankAccountCustomerSpecification}):"")+
 " "+($F{departmentBankAccountCustomerSpecification}!=null?$F{departmentBankAccountCustomerSpecification}:"")+" "+($F{nameBankAccountCustomerSpecification}!=null?$F{nameBankAccountCustomerSpecification}:"")+
 ($F{addressBankAccountCustomerSpecification}!=null?(", адрес банка "+$F{addressBankAccountCustomerSpecification}):"")+", код "+($F{MFOBankAccountCustomerSpecification}!=null?$F{MFOBankAccountCustomerSpecification}:"")+
 ($F{UNPCustomerSpecification}!=null?(", УНП "+$F{UNPCustomerSpecification}):"")+

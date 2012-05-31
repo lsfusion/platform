@@ -74,7 +74,7 @@
 	<field name="invoiceSumShipmentDetail" class="java.lang.Double"/>
 	<field name="importerMarkupShipmentDetail" class="java.lang.Double"/>
 	<field name="markupSumShipmentDetail" class="java.lang.Double"/>
-	<field name="dataRetailRangeShipmentDetail" class="java.lang.Double"/>
+	<field name="valueRetailRangeShipmentDetail" class="java.lang.Double"/>
 	<field name="retailVATSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retailPriceShipmentDetail" class="java.lang.Double"/>
 	<field name="retailSumShipmentDetail" class="java.lang.Double"/>
@@ -402,7 +402,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataRetailRangeShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueRetailRangeShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
