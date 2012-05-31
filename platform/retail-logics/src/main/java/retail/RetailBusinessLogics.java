@@ -143,7 +143,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String composition = (String) entry.getValue().get("composition");
                 Boolean isWeight = entry.getValue().get("isWeight") != null;
                 Integer numberItemGroup = (Integer) entry.getValue().get("itemGroup");
-                String canonicalNameItemGroup = (String) retailLM.getLPByName("canonicalNameItemGroup").read(session, session.modifier, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
+                String canonicalNameItemGroup = numberItemGroup==null ? "" : (String) retailLM.getLPByName("canonicalNameItemGroup").read(session, session.modifier, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
 
                 itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expirationDate, labelFormat, composition, isWeight, numberItemGroup==null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
             }
