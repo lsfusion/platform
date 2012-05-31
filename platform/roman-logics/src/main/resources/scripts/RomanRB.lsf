@@ -36,6 +36,26 @@ META metaCodePriceBaseDiscount(document, caption)
 
 END
 
+// --------------------------- Имплементация остатков -------------------------- //
+
+//TABLE batchDepartmentStore(batch, departmentStore);
+
+META implementBalanceSkuLedgerSkuStock(concrete, stock)
+    dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
+   // isPostedBalanceSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
+   // descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
+    skuBalanceSkuLedger (ledger) += sku###concrete##Detail(ledger);
+    stockBalanceSkuLedger (ledger) += stock###concrete##Detail(ledger);
+END
+
+META implementBatch(concrete)
+    dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
+    //isPostedBatch (batch) += isPosted###concrete##Detail(batch);
+    //descriptionBatch (batch) += description###concrete##Detail(batch);
+    skuBatch (batch) += sku###concrete##Detail(batch);
+    //supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
+END
+
 //--------------------------------- Сертификаты --------------------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
 CLASS temporalCertificate 'Временный сертификат' : certificate;
@@ -277,14 +297,17 @@ priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDeta
 
 priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(priceDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
-
-dateTimeBalanceSkuLedger(ledger) += dateTimeDeclarationDetail(ledger);
-isPostedBalanceSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
-skuBalanceSkuLedger(ledger) += skuDeclarationDetail(ledger);
-stockBalanceSkuLedger(ledger) += customStoreDeclarationDetail(ledger);
-quantityBatch (ledger) += quantityDeclarationDetail(ledger);
+@implementBatch(declaration);
+//dateTimeBatch(ledger) += dateTimeDeclarationDetail(ledger);
+isPostedBatch (ledger) += TRUE IF ledger IS declarationDetail;
+//skuBatch(ledger) += skuDeclarationDetail(ledger);
+//quantityBatch (ledger) += quantityDeclarationDetail(ledger);
 supplierPriceBatch (ledger) += priceDeclarationDetail(ledger);
 
+@implementBalanceSkuLedgerSkuStock (declaration, customStore);
+
+isPostedBalanceSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
+quantityInAutoBalanceSkuLedger (ledger) += quantityDeclarationDetail(ledger);
 
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX
@@ -1063,10 +1086,9 @@ nameArticleSkuCustomsFlowDetail 'Наименование' (customsFlowDetail) =
 storeCustomsFlow 'Магазин (ИД)' (customsFlow) = DATA store (customsFlow);
 nameStoreCustomsFlow 'Магазин' (customsFlow) = name (storeCustomsFlow (customsFlow));
 
-dateTimeBalanceSkuLedger (ledger) += dateTimeCustomsFlowDetail (ledger);
+@implementBalanceSkuLedgerSkuStock (customsFlow, customStore);
+
 isPostedBalanceSkuLedger (ledger) += isPostedCustomsFlowDetail (ledger);
-skuBalanceSkuLedger (ledger) += skuCustomsFlowDetail (ledger);
-stockBalanceSkuLedger (ledger) += customStoreCustomsFlowDetail (ledger);
 quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCustomsFlowDetail (outUserBalanceSkuLedger);
 
 totalFlowBDeclarationDetailDateTime 'Расход по партии из декларации' (declarationDetail, dateTime) =
@@ -1142,12 +1164,10 @@ inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlow) = customFlowInWareho
 skuInWarehouseFlowDetail 'Товар (ИД)' (inWarehouseFlowDetail) = skuCustomsFlowDetail(customsFlowDetailInWarehouseDetail(inWarehouseFlowDetail));
 sidArticleInWarehouseFlowDetail 'Артикул товара' (inWarehouseFlowDetail) = sidArticle(articleSku(skuInWarehouseFlowDetail(inWarehouseFlowDetail)));
 
+@implementBalanceSkuLedgerSkuStock (inWarehouseFlow, warehouse);
 
-dateTimeBalanceSkuLedger (ledger) += dateTimeInWarehouseFlowDetail(ledger);
-skuBalanceSkuLedger (ledger) += skuInWarehouseFlowDetail (ledger);
-stockBalanceSkuLedger (ledger) += warehouseInWarehouseFlow (ledger);
-quantityInAutoBalanceSkuLedger (inAutoBalanceSkuLedger) += quantityInWarehouseFlowDetail(inAutoBalanceSkuLedger);
-
+currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
+    BY declarationDeclarationDetail (declarationDetail);
 
 toFillInWarehouseDetailsInWarehouseFlow 'Заполнить приход по расходу' =  ACTION (inWarehouseFlow) {
     FOR inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlowCustomsFlowDetail(customsFlowDetail)) DO {
@@ -1170,10 +1190,32 @@ FORM declarationsCustomsFlow 'Декларации'
     OBJECTS de=declaration
 
     PROPERTIES (c, de) inCustomsFlowDeclaration
-    PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration
+    PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration, currentBalanceDeclaration
     FILTERS isCustomsDeclarationCustomsFlow (de, c)
    //         isAvailableOrderShipment (s, o),
    //         isPostedOrderSupplier(o)
+;
+
+FORM costSkuLedger 'Себестоимость'
+    OBJECTS bil = balanceSkuLedger
+    PROPERTIES(bil) READONLY dateTimeBalanceSkuLedger, descriptionBalanceSkuLedger, skuBalanceSkuLedger, nameSkuBalanceSkuLedger, nameStockBalanceSkuLedger,
+                             quantityBalanceSkuLedger, costedBalanceSkuLedger
+    PROPERTIES(bil)          resetCostBalanceSkuLedgerBatch
+    ORDER BY dateTimeBalanceSkuLedger
+
+    FILTERGROUP needToCostBalanceSkuLedger
+        FILTER 'Нерасписанные строки' 'F9' needToCostBalanceSkuLedger(bil)
+
+    OBJECTS bt = batch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
+    PROPERTIES(bil, bt)     costBalanceSkuLedgerBatch FORCE GRID
+//    FILTERS skuBatch(bt) == skuBalanceSkuLedger(bil)
+    ORDER BY dateTimeBatch DESC
+
+    FILTERGROUP inBalanceSkuLedgerBatch
+        FILTER 'Только расписанные партии' 'F10' costBalanceSkuLedgerBatch (bil, bt) DEFAULT
+
+    PROPERTIES() setBalanceSkuLedgerBatchCost, resetBalanceSkuLedgerBatchCost, clearBalanceSkuLedgerBatchCost
 ;
 
 showFormDeclarationsCustomsFlow 'Декларации' (customsFlow) = ACTION FORM declarationsCustomsFlow OBJECTS c MODAL SHORTCUT declarationsCustomsFlow DEFAULT;
@@ -1192,6 +1234,12 @@ FORM customsFlow 'Расход с СВХ'
 
     EDIT customsFlow OBJECT c
 ;
+
+DESIGN customsFlow FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+}
 
 FORM customsFlows 'Расходы с СВХ'
     OBJECTS c = customsFlow
@@ -1252,10 +1300,6 @@ DESIGN inWarehouseFlows FROM DEFAULT {
 }
 
 
-
-
-
-
 FORM balanceItemDepartment 'Остатки'
     OBJECTS s=customStore
     PROPERTIES (s) name
@@ -1276,6 +1320,7 @@ NAVIGATOR {
         ADD innerInvoices;
         ADD customsFlows;
         ADD balanceItemDepartment;
+        ADD costSkuLedger;
     }
 
     prices {
