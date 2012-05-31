@@ -1403,8 +1403,8 @@ quantityDiscountItem 'Количество товара, при котором �
 fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN discountGroup;
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
 banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (item) IN retailGroup;
-minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
-maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
+//minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
+//maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA NUMERIC[14,2] (item) IN retailGroup;
 bonusItem 'Бонус получаемый по товару' = DATA NUMERIC[9,2] (item) IN documentGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA NUMERIC[8,3] (item) IN retailGroup;
@@ -1958,6 +1958,8 @@ isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSI
 
 @defineHistorizable(importerPriceItem, 'Цена импортёра', NUMERIC[14,3], item, nameAttributeItem, retailGroup);
 
+@defineHistorizable(minTradeAllowanceItem, 'MIN допустимая торговая надбавка, %', NUMERIC[8,3], item, nameAttributeItem, retailGroup);
+@defineHistorizable(maxTradeAllowanceItem, 'MAX допустимая торговая надбавка, %', NUMERIC[8,3], item, nameAttributeItem, retailGroup);
 
 //---------------------------- Налоги ----------------------------------------//
 
@@ -2244,8 +2246,8 @@ FORM item 'Товар'
                   importerPriceItem, dialogImporterPriceItem,
                   numberRangeSupplierRangeItem, valueCurrentRateSupplierRangeItem, dialogSupplierRangeItem,
                   numberRangeRetailRangeItem, valueCurrentRateRetailRangeItem, dialogRetailRangeItem,
-                  percentWholesaleMarkItem, minTradeAllowanceItem, maxTradeAllowanceItem, minAllowedRetailPriceItem,
-                  isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i),
+                  percentWholesaleMarkItem, minTradeAllowanceItem, dialogMinTradeAllowanceItem, maxTradeAllowanceItem, dialogMaxTradeAllowanceItem,
+                  minAllowedRetailPriceItem, isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i),
 
                   quantityDiscountItem, fixPriceItem, nameBanDiscountItem, dialogBanDiscountItem,
 
@@ -6589,9 +6591,19 @@ quantityItemInnerFlowInnerArrival 'Количество в расходе' (item
 diffQuantityItemInnerArrival 'Расхождение' (item, innerArrival) =
     quantityItemInnerFlowInnerArrival(item, innerArrival) (-) quantityInnerArrivalDetailItemInnerArrival(item, innerArrival);
 
-supplierMarkupInnerArrivalDetail 'Оптовая надбавка/торговая скидка, %' (detail) = DATA NUMERIC[6,2] (innerArrivalDetail) IN priceDetailGroup;
+retailMarkupInnerArrivalDetail 'Торговая надбавка (расч.)' (innerArrivalDetail) =
+    round3([(X*100/(100+Y)/Z-1)*100](
+    retailPriceInnerArrivalDetail(innerArrivalDetail), dataRetailRangeInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail)));
 
-retailMarkupInnerArrivalDetail 'Торговая надбавка, %'(innerArrivalDetail) = DATA NUMERIC[8,3] (innerArrivalDetail) IN baseGroup;
+supplierMarkupInnerArrivalDetail 'Оптовая надбавка (расч.)' (innerArrivalDetail) =
+    (supplierPriceInnerArrivalDetail(innerArrivalDetail)/importerPriceInnerArrivalDetail(innerArrivalDetail) - 1)*100;
+//retailMarkupInnerArrivalDetail 'Торговая надбавка, %'(innerArrivalDetail) = DATA NUMERIC[8,3] (innerArrivalDetail) IN baseGroup;
+//retailMarkupInnerArrivalDetail (innerArrivalDetail) <- calcRetailMarkupInnerArrivalDetail(innerArrivalDetail)
+//                                                    WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
+//supplierMarkupInnerArrivalDetail 'Оптовая надбавка/торговая скидка, %' (innerArrivalDetail) = DATA NUMERIC[8,3] (innerArrivalDetail) IN priceDetailGroup;
+//supplierMarkupInnerArrivalDetail (innerArrivalDetail) <- calcSupplierMarkupInnerArrivalDetail(innerArrivalDetail)
+//                                                    WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
+
 importerMarkupInnerArrivalDetail '% надбавки с уч. оптовой' (innerArrivalDetail) = [X*(100+Y)/100](
     retailMarkupInnerArrivalDetail(innerArrivalDetail), supplierMarkupInnerArrivalDetail(innerArrivalDetail));
 
@@ -6608,8 +6620,8 @@ toFillInnerArrivalDetailsInnerArrival 'Заполнить документ из 
             SET wareInnerArrivalDetail(d) <- wareInnerFlowDetail(innerFlowDetail);
             SET warePriceInnerArrivalDetail (d) <- warePriceInnerFlowDetail(innerFlowDetail);
             SET retailRangeInnerArrivalDetail (d) <- retailRangeInnerFlowDetail(innerFlowDetail);
-            SET supplierMarkupInnerArrivalDetail (d) <- supplierMarkupInnerFlowDetail(innerFlowDetail);
-            SET retailMarkupInnerArrivalDetail (d) <- retailMarkupInnerFlowDetail(innerFlowDetail);
+//            SET supplierMarkupInnerArrivalDetail (d) <- supplierMarkupInnerFlowDetail(innerFlowDetail);
+//            SET retailMarkupInnerArrivalDetail (d) <- retailMarkupInnerFlowDetail(innerFlowDetail);
         };
     };
 } CONFIRM;
@@ -10164,10 +10176,31 @@ DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
 CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
             supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail))
                 >
-            maxTradeAllowanceItem (itemShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
+            maxTradeAllowanceItemDate (itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
 
 CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) >
-    maxTradeAllowanceItem (itemPriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
+            maxTradeAllowanceItemDate (itemPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
+
+CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
+            supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
+                >
+            maxTradeAllowanceItemDate (itemInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail)) MESSAGE 'Превышена предельно допустимая наценка';
+
+
+CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
+            supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail))
+                <
+            minTradeAllowanceItemDate (itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
+
+CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) <
+            minTradeAllowanceItemDate (itemPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
+
+CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
+            supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
+                <
+            minTradeAllowanceItemDate (itemInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail)) MESSAGE 'Наценка меньше минимально допустимой';
+
+
 
 //------------------------------------ Изменение учетных сумм ------------------------------------------//
 
@@ -13416,6 +13449,10 @@ NAVIGATOR {
             ADD dialogRetailRangeItem;
             ADD addImporterPriceItem;
             ADD dialogImporterPriceItem;
+            ADD addMaxTradeAllowanceItem;
+            ADD dialogMaxTradeAllowanceItem;
+            ADD addMinTradeAllowanceItem;
+            ADD dialogMinTradeAllowanceItem;
             ADD addMaxReserveItemDepartment;
             ADD dialogMaxReserveItemDepartment;
             ADD addMinReserveItemDepartment;
