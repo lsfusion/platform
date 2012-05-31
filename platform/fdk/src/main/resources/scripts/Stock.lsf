@@ -131,6 +131,11 @@ signedCostBalanceSkuLedgerBatch (ledger, batch) = IF ledger IS outBalanceSkuLedg
 currentBalanceBatchLedger 'Текущий остаток' (batch, stock) = GROUP SUM signedCostBalanceSkuLedgerBatch (ledger, batch) AND isPostedBalanceSkuLedger(ledger)
                                                           BY batch, stockBalanceSkuLedger(ledger) PERSISTENT;
 
+balanceStockBatchDate 'Остаток на складе по партиям' (batch, stock, date) =
+    GROUP SUM signedCostBalanceSkuLedgerBatch (ledger, batch) AND isPostedBalanceSkuLedger(ledger) AND
+    dateTimeBalanceSkuLedger(ledger) <= (date AS DATETIME)
+    BY batch, stockBalanceSkuLedger(ledger), date;
+
 costedBalanceSkuLedger 'Расписано' (ledger) = GROUP SUM costBalanceSkuLedgerBatch (ledger, batch) BY ledger PERSISTENT;
 needToCostBalanceSkuLedger 'Требуется расчет себестоимости' (ledger) = quantityBalanceSkuLedger(ledger) > 0 AND isPostedBalanceSkuLedger(ledger)
                                                                         AND NOT quantityBalanceSkuLedger(ledger) == costedBalanceSkuLedger(ledger);
@@ -144,6 +149,8 @@ supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
+
+isSkuBatch (batch, sku) = skuBatch(batch) == sku;
 
 currentBalanceBatch 'Остаток (всего)' = GROUP SUM currentBalanceBatchLedger(batch, stock) BY batch PERSISTENT;
 

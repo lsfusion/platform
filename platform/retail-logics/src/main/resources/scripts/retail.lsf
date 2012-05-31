@@ -12477,6 +12477,71 @@ DESIGN costItemLedger FROM DEFAULT {
     }
 }
 
+FORM balanceStockBatchDate 'Остатки на складе по партиям на дату'
+
+    OBJECTS t=DATETIME FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
+    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
+    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY gname = name(g)
+    ORDER BY gname
+
+    OBJECTS           dsi=(dep=departmentStore, i=item)
+    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
+    FILTERS           isParentItemGroupSku(g, i),
+                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+
+
+    PROPERTIES(i, dep, t) READONLY balanceASkuLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
+                                   accountPriceBLedgerDateTime, retailPriceALedgerDateTime,
+                                   warePriceALedgerDateTime
+
+    PROPERTIES(i, dep) READONLY dateLastMovedSkuStock
+
+    PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' balanceASkuLedgerDateTime(i, dep, t) DEFAULT
+        FILTER 'Товары с движением не позднее' 'F9' dateLastMovedUnionBalanceItem(i, dep, t)
+
+    OBJECTS bt=batch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch
+    PROPERTIES(bt, dep, t) balanceStockBatchDate
+
+    FILTERS balanceStockBatchDate(bt, dep, t),
+            isSkuBatch(bt, i)
+
+;
+
+DESIGN balanceStockBatchDate FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW firstCase {
+                fillHorizontal = 1;
+                childConstraints = TO THE BOTTOM;
+                ADD t.box;
+                ADD treeStore.box {title = 'Магазины';};
+                ADD treeGroups.box {title = 'Товарные группы';};
+        }
+
+        NEW secondCase {
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD dsi.box {fillVertical = 2;}
+                ADD bt.box{fillVertical = 2;}
+
+        }
+        POSITION firstCase TO THE LEFT secondCase;
+
+        ADD functions.box;
+    }
+}
+
 //---------------------------------------------- Формы продаж -------------------------------------//
 
 FORM salesLedger 'Продажи по позициям'
@@ -13217,6 +13282,7 @@ NAVIGATOR {
         NEW balance 'Остатки' {
             ADD curBalanceItemDepartment;
             ADD balanceItemDepartment;
+            ADD balanceStockBatchDate;
         }
         NEW sales 'Продажи' {
             ADD salesLedger;
