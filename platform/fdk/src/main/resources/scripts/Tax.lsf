@@ -120,7 +120,7 @@ FORM tax 'Налог'
     PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
     FILTERS           rangeRate(rt) == ra
 
-    TREE treeTaxUnit  a=STRING[3], ug = taxUnitGroup
+    TREE treeTaxUnit  a=STRING[3], ug = taxUnitGroup PARENT parentTaxUnitGroup
     PROPERTIES READONLY OBJVALUE(a), name(ug)
     FILTERS           stringEqualsAll(a)
 

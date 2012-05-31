@@ -45,6 +45,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public ScriptingLogicsModule Document;
     public ScriptingLogicsModule Tax;
     public ScriptingLogicsModule LegalEntity;
+    public ScriptingLogicsModule Employee;
 
     ScriptingLogicsModule retailLM;
 
@@ -67,6 +68,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
         Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
         LegalEntity = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/LegalEntity.lsf"), LM, this));
+        Employee = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Employee.lsf"), LM, this));
         retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
     }
 

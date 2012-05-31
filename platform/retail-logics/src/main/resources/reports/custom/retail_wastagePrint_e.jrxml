@@ -17,7 +17,7 @@
 	</style>
 	<field name="e" class="java.lang.Integer"/>
 	<field name="commonName" class="java.lang.String"/>
-	<field name="nameOfficerEmployee" class="java.lang.String"/>
+	<field name="namePositionEmployee" class="java.lang.String"/>
 	<detail>
 		<band height="23">
 			<textField>

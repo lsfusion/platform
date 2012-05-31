@@ -39,7 +39,7 @@
 	<field name="datePriceChangeDocument" class="java.util.Date"/>
 	<field name="nameRevaluationCommitteePriceChangeDocument" class="java.lang.String"/>
 	<field name="commonNameChairmanPriceChangeDocument" class="java.lang.String"/>
-	<field name="nameOfficerChairmanPriceChangeDocument" class="java.lang.String"/>
+	<field name="namePositionChairmanPriceChangeDocument" class="java.lang.String"/>
 	<field name="commonNameEmployeeCommitteePriceChangeDocument" class="java.lang.String"/>
 	<field name="quantityPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
 	<field name="numberDisposalPriceChangeDocument" class="java.lang.String"/>

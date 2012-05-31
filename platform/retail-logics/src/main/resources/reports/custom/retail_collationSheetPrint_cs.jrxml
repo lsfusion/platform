@@ -27,7 +27,7 @@
 	<field name="nameStoreCollationSheet" class="java.lang.String"/>
 	<field name="nameCommitteeCollationSheet" class="java.lang.String"/>
 	<field name="nameChairmanCommitteeCollationSheet" class="java.lang.String"/>
-	<field name="nameOfficerChairmanCollationSheet" class="java.lang.String"/>
+	<field name="namePositionChairmanCollationSheet" class="java.lang.String"/>
 	<field name="nameEmployeeCollationSheet" class="java.lang.String"/>
 	<field name="timeFromCollationSheet" class="java.util.Date">
 		<fieldDescription><![CDATA[]]></fieldDescription>
@@ -575,7 +575,7 @@
 				<textElement textAlignment="Center">
 					<font size="8" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameOfficerChairmanCollationSheet}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{namePositionChairmanCollationSheet}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="159" y="348" width="138" height="8"/>

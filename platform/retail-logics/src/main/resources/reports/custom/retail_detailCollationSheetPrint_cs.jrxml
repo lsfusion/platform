@@ -27,7 +27,7 @@
 	<field name="nameStoreCollationSheet" class="java.lang.String"/>
 	<field name="nameCommitteeCollationSheet" class="java.lang.String"/>
 	<field name="nameChairmanCommitteeCollationSheet" class="java.lang.String"/>
-	<field name="nameOfficerChairmanCollationSheet" class="java.lang.String"/>
+	<field name="namePositionChairmanCollationSheet" class="java.lang.String"/>
 	<field name="nameEmployeeCollationSheet" class="java.lang.String"/>
 	<field name="nameTypeOfAdditionCollationSheet" class="java.lang.String"/>
 	<field name="nameDepartmentStoreCollationSheet" class="java.lang.String"/>

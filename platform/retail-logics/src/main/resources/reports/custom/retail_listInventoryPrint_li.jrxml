@@ -31,7 +31,7 @@
 	<field name="noteListInventory" class="java.lang.String"/>
 	<field name="nameCommitteeListInventory" class="java.lang.String"/>
 	<field name="nameChairmanCommitteeListInventory" class="java.lang.String"/>
-	<field name="nameOfficerChairmanListInventory" class="java.lang.String"/>
+	<field name="namePositionChairmanListInventory" class="java.lang.String"/>
 	<field name="nameEmployeeListInventory" class="java.lang.String"/>
 	<field name="countPageInventoryListInventory" class="java.lang.Integer"/>
 	<field name="countPageInventoryDetailListInventory" class="java.lang.Integer"/>
@@ -398,7 +398,7 @@
 					<textElement textAlignment="Center">
 						<font size="8" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{nameOfficerChairmanListInventory}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{namePositionChairmanListInventory}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="399" y="11" width="138" height="1"/>
