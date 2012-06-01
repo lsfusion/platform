@@ -1,7 +1,8 @@
 MODULE LegalEntity;
 
-IMPORT Historizable;
 IMPORT BaseLogicsModule;
+IMPORT Historizable;
+IMPORT Tax;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 
@@ -119,4 +120,9 @@ licenseLegalEntityDate 'Действующая на дату' (legalEntity, date
                                                                          BY legalEntityLicense(license), date;
 currentLicenseLegalEntity 'Действующая' (legalEntity) = licenseLegalEntityDate(legalEntity, currentDate());
 numberCurrentLicenseLegalEntity 'Действующая лицензия' (legalEntity) = numberLicense(currentLicenseLegalEntity(legalEntity)) IN lawGroup;
+
+// ------------------------------------ Собственные компании ----------------------------- //
+
+CLASS company 'Компания' : legalEntity, taxUnitGroup;
+TABLE company (company);
 

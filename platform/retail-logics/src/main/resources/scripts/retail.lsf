@@ -18,6 +18,7 @@ IMPORT Document;
 IMPORT Tax;
 IMPORT LegalEntity;
 IMPORT Employee;
+IMPORT Store;
 
 GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP emailGroup 'E-mail' : baseGroup;
@@ -46,22 +47,6 @@ META metaCodeShowItemAttribute (attribute, caption, group)
 END
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
-
-META defineDocumentHeaderDepartmentStore (object)
-    @defineDocumentHeaderStock(object, departmentStore, 'Отдел документа');
-END
-
-META defineDocumentDetailDepartmentStoreCustom (object, detail)
-   @defineDocumentDetailStockCustom (object, detail, departmentStore, 'Отдел документа');
-END
-META defineDocumentDetailDepartmentStore (object)
-    @defineDocumentDetailDepartmentStoreCustom (object, object##Detail);
-END
-
-META defineDocumentDepartmentStore (object)
-    @defineDocumentHeaderDepartmentStore(object);
-    @defineDocumentDetailDepartmentStore(object);
-END
 
 GROUP itemDetailGroup 'Товар' : publicGroup;
 
@@ -954,103 +939,31 @@ META implementBatch(concrete)
     supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
 END
 
-// ----------------------------------- Магазин ----------------------------------------- //
-
-CLASS store 'Магазин' : stockGroup, externalObject, taxUnit, employeeDivisionGroup;
-TABLE store (store);
-
-CLASS region 'Регион' : named;
-TABLE region (region);
-
-CLASS tradingNetwork 'Торговая сеть' : stockGroup, externalObject, employeeDivisionGroup; // "Рублевский", "Базар"
-TABLE tradingNetwork (tradingNetwork);
-
-CLASS storeType 'Формат магазина' : stockGroup, employeeDivisionGroup; //Мини, Супер, ...
-TABLE storeType (storeType);
-
-companyStore 'Юридическое лицо магазина (ИД)' = DATA company (store);
-nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseGroup;
-addressStore 'Адрес магазина' = DATA STRING[100] (store);
-regionStore 'Регион магазина ИД' = DATA region (store);
-nameRegionStore 'Регион для стат. отчета' (store) = name(regionStore(store));
-
-taxUnitGroupTaxUnit(store) += companyStore(store);
-descriptionTaxUnit(store) += string2(name(store), addressStore(store));
-
-storeTypeStore 'Формат магазина (ИД)' = DATA storeType (store) AUTOSET;
-parentStockGroup (store) += storeTypeStore(store);
-parentEmployeeDivisionGroup (store) += storeTypeStore(store);
-
-nameStoreTypeStore 'Формат магазина' (store) = name(storeTypeStore(store)) IN baseGroup;
-inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
-
-tradingNetworkStoreType 'Торговая сеть формата магазина (ИД)' = DATA tradingNetwork (storeType);
-parentStockGroup (storeType) += tradingNetworkStoreType(storeType);
-parentEmployeeDivisionGroup (storeType) += tradingNetworkStoreType(storeType);
-
-nameTradingNetworkStoreType 'Торговая сеть формата магазина' (storeType) = name(tradingNetworkStoreType(storeType)) IN baseGroup;
-nameToStoreType 'Формат магазина по имени и торговой сети' (name, tradingNetwork) = GROUP UNIQUE storeType BY name (storeType), tradingNetworkStoreType(storeType);
-
-tradingNetworkStore 'Торговая сеть магазина (ИД)' (store) = tradingNetworkStoreType(storeTypeStore(store));
-nameTradingNetworkStore 'Торговая сеть магазина' (store) = name(tradingNetworkStore(store)) IN baseGroup;
-inTradingNetworkStore (tradingNetwork, store) = tradingNetworkStore(store) == tradingNetwork;
-
-inTradingNetworkStoreTypeStore (tradingNetwork, storeType, store) = UNION OVERRIDE
-    storeTypeStore(store) == storeType AND tradingNetwork,
-    tradingNetworkStore(store) == tradingNetwork AND NOT storeType,
-    store IS store AND NOT storeType AND NOT tradingNetwork;
-
-inTradingNetworkStoreType(tradingNetwork, storeType) = tradingNetworkStoreType(storeType) == tradingNetwork;
-
-// ----------------------------------- Торговая площадь -------------------------------------------------- //
-
-CLASS tradingSquare 'Торговая площадь' : named;
-TABLE tradingSquare(tradingSquare);
-
-squareTradingSquare 'Размер торговой площади' = DATA NUMERIC[10,2] (tradingSquare) IN baseGroup;
-departmentStoreTradingSquare 'Отдел торговой площади (ИД)' = DATA departmentStore (tradingSquare);
-nameDepartmentStoreTradingSquare 'Отдел торговой площади' (tradingSquare) = name(departmentStoreTradingSquare(tradingSquare)) IN baseGroup;
-
-dateTradingSquare 'Дата' = DATA DATE (tradingSquare) IN baseGroup;
-dateTradingSquare (square) <- currentDate() WHEN ASSIGNED(square IS tradingSquare);
-
-FORM tradingSquare 'Торговая площадь'
-    OBJECTS s=tradingSquare FIXED PANEL
-    PROPERTIES(s) name, squareTradingSquare, nameDepartmentStoreTradingSquare, dateTradingSquare
-    EDIT tradingSquare OBJECT s
-;
-
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
-GROUP orderDepartmentStoreGroup 'Заказ' : publicGroup;
-GROUP controlDepartmentStoreGroup 'Контроль остатков' : publicGroup;
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
 
-CLASS departmentStore 'Отдел магазина' : stock, externalObject, employeeDivision;
-TABLE departmentStore (departmentStore);
+MRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
+nameMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) =
+    commonName (MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+namePositionMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
+    namePositionEmployee(MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 
-CLASS kafeteria 'Кафетерий' : departmentStore;
-CLASS tradingFloar 'Торговый зал' : departmentStore;
-CLASS wholesaleStock 'Оптовый склад' : departmentStore;
-CLASS placeOfAcceptance 'Приемный пункт' : departmentStore;
-CLASS restaurant 'Ресторан' : departmentStore;
-//CLASS stock 'Склад' : departmentStore; в дальнейшем будет распределительный центр
-CLASS manufactory 'Цех' : departmentStore;
+bookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
+nameBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+namePositionBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (должность)' =
+    namePositionEmployee(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 
-CLASS STATIC itemStatus 'Статус товара'
-{
-    notTransfer '0',
-    transfer '1',
-    delete '2',
-    requireTransfer '3',
-    requireDelete '4'
-};
+personCheckDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
+namePersonCheckDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+namePositionPersonCheckDepartmentStore 'Кто проверяет товарный отчет (должность)' =
+    namePositionEmployee(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 
-storeDepartmentStore = DATA store (departmentStore) AUTOSET;
-stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
-employeeDivisionGroupEmployeeDivision (departmentStore) += storeDepartmentStore(departmentStore);
-
-nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
+EXTEND FORM departmentStore
+    PROPERTIES(d)   nameMRPDepartmentStore, namePositionMRPDepartmentStore,
+                    nameBookkeeperDepartmentStore, namePositionBookkeeperDepartmentStore,
+                    namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
+;
 
 revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
 nameRevaluationCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
@@ -1058,11 +971,15 @@ isRevaluationCommitteeDepartmentStore 'По умолчанию' (revaluationComm
 CONSTRAINT revaluationCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(revaluationCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY revaluationCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
+EXTEND FORM departmentStore PROPERTIES nameRevaluationCommitteeDepartmentStore(d);
+
 registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA registerCommittee (departmentStore);
 nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(registerCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 isRegisterCommitteeDepartmentStore 'По умолчанию' (registerCommittee, departmentStore) = registerCommitteeDepartmentStore(departmentStore) == registerCommittee;
 CONSTRAINT registerCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(registerCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY registerCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+
+EXTEND FORM departmentStore PROPERTIES nameRegisterCommitteeDepartmentStore(d);
 
 wastageCommitteeDepartmentStore 'Комиссия для списания отходов (ИД)' = DATA wastageCommittee (departmentStore);
 nameWastageCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(wastageCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
@@ -1070,39 +987,9 @@ isWastageCommitteeDepartmentStore 'По умолчанию' (wastageCommittee, d
 CONSTRAINT wastageCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(wastageCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY wastageCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
-controlMinusRestsDepartmentStore 'Контроль за минусовыми остатками' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
-deleteItemMinusRestsDepartmentStore 'Удалять товары с отрицательным остатком с весов и касс?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
-controlMinusRestsContainerDepartmentStore 'Контроль за минусовыми остатками тары' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
-// controlAssortmentProviderDepartmentStore 'Контролировать ассортимент поставщиков в подразделении?' = DATA BOOLEAN (departmentStore);
-verifyOrderArrivalDepartmentStore 'Сверять заказ и приход в подразделении?' = DATA BOOLEAN (departmentStore) IN controlDepartmentStoreGroup;
-maxQuantityDeliveryHourDepartmentStore 'Максимальное допустимое число поставок в час' = DATA INTEGER (departmentStore) IN orderDepartmentStoreGroup;
-resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore 'Разрешить превысить количество поставок/час при ассортименте <' = DATA DOUBLE (departmentStore) IN orderDepartmentStoreGroup;
-resolveOrderItemDepartmentStore 'Разрешить заказ товара в подразделение?' = DATA BOOLEAN (departmentStore) IN orderDepartmentStoreGroup;
-quantityCashChangeOneOperationAccountDepartmentStore 'Количество кассовых смен в одном оперативном отчете' = DATA INTEGER (departmentStore) IN orderDepartmentStoreGroup;
-MRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNameMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) =
-    commonName (MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-bookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNameBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-personCheckDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
-commonNamePersonCheckDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-idTradingSquareDepartmentStore 'Торговая площадь отдела магазина' (departmentStore) = GROUP MAX tradingSquare BY departmentStoreTradingSquare(tradingSquare);   //максимизирует только по ID, переделать после расширения функционала
-defaultTradingSquareDepartmentStore 'Торговая площадь отдела магазина, кв.м.' (departmentStore) = squareTradingSquare(idTradingSquareDepartmentStore(departmentStore));
-tradingSquareStore 'Торговая площадь магазина' = GROUP SUM defaultTradingSquareDepartmentStore(departmentStore) BY storeDepartmentStore(departmentStore);
+EXTEND FORM departmentStore PROPERTIES nameWastageCommitteeDepartmentStore(d);
 
-@defineHistorizableCustom(discountDepartmentStore, 'Разрешать скидки', yesNo, name, departmentStore, name, baseGroup);
-
-inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
-inTradingSquareDepartmentStore(departmentStore, tradingSquare) = departmentStoreTradingSquare(tradingSquare) == departmentStore;
-
-storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(departmentStore)) PERSISTENT;
-tradingNetworkDepartmentStore(departmentStore) = tradingNetworkStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT;
-
-inTradingNetworkStoreTypeStoreDepartment (tradingNetwork, storeType, store, department) = UNION OVERRIDE
-    storeDepartmentStore(department) == store AND storeType AND tradingNetwork,
-    storeTypeDepartmentStore(department) == storeType AND tradingNetwork AND NOT store,
-    tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType,
-    department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork;
+//--------------------------------------Формы--------------------------------------------------------------------------//
 
 expirationDateSkuDepartmentStore 'Крайний срок годности'= DATA DATE (sku, departmentStore) IN baseGroup;
 
@@ -1134,13 +1021,13 @@ FORM labelType 'Тип ценника'
     OBJECTS l = labelType FIXED PANEL
     PROPERTIES(l) name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType
 
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY depName = name
-    FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+    FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, d)
     ORDER BY depName
 
     PROPERTIES inLabelTypeDepartmentStore(l, d), isDefaultLabelTypeDepartmentStore(l, d)
@@ -1826,17 +1713,6 @@ CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT inEmployeeDivisio
 CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, MRPDepartmentStore(departmentStore))
     CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
 
-// ----------------------------------- Цех ----------------------------------- //
-
-outDepartmentManufactory 'Подразделение, куда передаются изделия (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
-nameOutDepartmentManufactory 'Подразделение, куда передаются изделия' (manufactory) = name(outDepartmentManufactory(manufactory)) IN manufactoryGroup;
-inPriceDepartmentManufactory 'Подразделение, откуда брать цены (ИД)' (manufactory) = DATA departmentStore(manufactory) IN idGroup;
-nameInPriceDepartmentManufactory 'Подразделение, откуда брать цены ' (manufactory) = name(inPriceDepartmentManufactory(manufactory)) IN manufactoryGroup;
-marginPublicCateringManufactory 'Наценка общепита по умолчанию для формирования цены в подразделении' (manufactory) = DATA NUMERIC[8,3] (manufactory) IN manufactoryGroup;
-rawDepartmentStore 'Подразделения, из которых можно получить сырье' = DATA BOOLEAN (manufactory, departmentStore);
-
-inRawDepartmentStore(manufactory, departmentStore) = storeDepartmentStore(manufactory) == storeDepartmentStore(departmentStore);
-
 //----------------------------------- Для товара и подразделения ------------------------------------------//
 percentDiscountDepartmentItem 'Скидка на количество, % от розн.цены' = DATA NUMERIC[8,3] (departmentStore, item) IN discountGroup;
 
@@ -1844,8 +1720,6 @@ additionPriceDepartmentStoreItem 'Торговая надбавка в рубл�
 boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
 maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN retailGroup;
 netWeightManufacturerDepartmentStoreItem 'Вес нетто продукта для производства' = DATA NUMERIC[8,3] (departmentStore, item) IN manufactoryGroup;
-statusCashDepartmentStoreItem 'Статус товара на кассах (ИД)' = DATA itemStatus (departmentStore, item) IN idGroup;
-nameStatusCashDepartmentStoreItem 'Статус товара на кассах' = name(statusCashDepartmentStoreItem (departmentStore, item)) IN equipmentGroup;
 
 dateManufactureDepartmentStoreItem 'Дата изготовления' = DATA DATE (departmentStore, item) IN baseGroup;
 dateFitToDepartmentStoreItem 'Годен до' = DATA DATE (departmentStore, item) IN baseGroup;
@@ -2183,13 +2057,13 @@ FORM item 'Товар'
     FILTERS inSkuBarcode(i, b)
 
     // Управленческие параметры
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore (st, s)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore (st, s)
 
     OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
     PROPERTIES (d) name
-    FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
+    FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, d)
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
@@ -2496,14 +2370,14 @@ FORM registerCommittee 'Комиссия для реестра цен'
     PROPERTIES(c)      name, nameFormedManCommittee, nameCheckedManCommittee,
                        nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
 
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRegisterCommitteeDepartmentStore
-    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
     ORDER BY depName
 
     FILTERGROUP filters5
@@ -2559,14 +2433,14 @@ FORM revaluationCommittee 'Комиссия переоценки'
     OBJECTS c=revaluationCommittee FIXED PANEL
     PROPERTIES(c)      name, nameChairmanCommittee
 
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRevaluationCommitteeDepartmentStore
-    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
     ORDER BY depName
 
 
@@ -2622,14 +2496,14 @@ FORM inventoryCommittee 'Комиссия для инвентаризации'
     OBJECTS c=inventoryCommittee FIXED PANEL
     PROPERTIES(c)      name, nameChairmanCommittee
 
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision
-    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
     ORDER BY depName
 
     OBJECTS e=employee
@@ -2685,14 +2559,14 @@ FORM wastageCommittee 'Комиссия для списания отходов'
     OBJECTS c=wastageCommittee FIXED PANEL
     PROPERTIES(c)      name//, nameChairmanCommittee
 
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isWastageCommitteeDepartmentStore
-    FILTERS            inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
     ORDER BY depName
 
 
@@ -3056,9 +2930,6 @@ GROUP supplierGroup 'Информация о поставщике' : publicGroup
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
 
-CLASS company 'Компания' : legalEntity, taxUnitGroup;
-TABLE company (company);
-
 CLASS customer 'Покупатель' : legalEntity;
 TABLE customer (customer);
 
@@ -3187,7 +3058,7 @@ FORM contracts 'Договоры'
 ;
 
 FORM supplier 'Поставщик'
-    TREE treeStore y=STRING[3], t=tradingNetwork, st=storeType, so=store
+    TREE treeStore y=STRING[3], t=chainStores, st=storeType, so=store
     PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
 
     OBJECTS s=supplier FIXED PANEL, dt=DATE FIXED PANEL
@@ -3227,9 +3098,9 @@ FORM supplier 'Поставщик'
     PROPERTIES(co, s, c) equalsCompanySupplierContract
 
     FILTERS stringEqualsAll(y),
-        inTradingNetworkStoreType (t, st),
+        inChainStoresStoreType (t, st),
         inStoreTypeStore (st, so),
-        inTradingNetworkStoreTypeStoreDepartment(t, st, so, d),
+        inChainStoresStoreTypeStoreDepartment(t, st, so, d),
         inSupplierContract(s, c),
         inSupplierAccount(s, a),
         inCompanyContract(co, c),
@@ -3425,175 +3296,6 @@ FORM discountCards 'Дисконтные карты'
     PROPERTIES(d) READONLY numberDiscountCard, nameCustomerDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
-
-//---------------------------- по поставщикам и товарам ----------------------------------------
-
-//--------------------------------------Формы--------------------------------------------------------------------------//
-isManufactory (departmentStore) = departmentStore IS manufactory;
-
-namePositionMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
-    namePositionEmployee(MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-namePositionBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (должность)' =
-    namePositionEmployee(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-namePositionPersonCheckDepartmentStore 'Кто проверяет товарный отчет (должность)' =
-    namePositionEmployee(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-
-FORM departmentStore 'Отдел магазина'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d)   name, nameStoreDepartmentStore, controlMinusRestsDepartmentStore, deleteItemMinusRestsDepartmentStore, controlMinusRestsContainerDepartmentStore,
-                    verifyOrderArrivalDepartmentStore, maxQuantityDeliveryHourDepartmentStore, resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore, resolveOrderItemDepartmentStore,
-                    quantityCashChangeOneOperationAccountDepartmentStore, commonNameMRPDepartmentStore, namePositionMRPDepartmentStore,
-                    commonNameBookkeeperDepartmentStore, namePositionBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore,
-                    namePositionPersonCheckDepartmentStore, nameRevaluationCommitteeDepartmentStore,
-                    nameRegisterCommitteeDepartmentStore, nameWastageCommitteeDepartmentStore, nameDiscountDepartmentStore, dialogDiscountDepartmentStore
-
-    OBJECTS e=employee
-    PROPERTIES(e) READONLY userFirstName, userLastName
-    PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
-    FILTERS inEmployeeDivisionEmployee(d, e)
-
-    OBJECTS t=tradingSquare
-    PROPERTIES(t) squareTradingSquare, dateTradingSquare
-    PROPERTIES(t) ADDOBJ, delete
-    FILTERS inTradingSquareDepartmentStore(d, t)
-
-    OBJECTS d2=departmentStore
-    PROPERTIES(d2) READONLY name SHOWIF isManufactory(d)
-    PROPERTIES(d, d2) rawDepartmentStore SHOWIF isManufactory(d)
-    FILTERS inRawDepartmentStore(d, d2)
-    FILTERGROUP rawFilter
-        FILTER 'Подразделения из которых полуется сырье' 'F10' rawDepartmentStore(d, d2)
-
-    EDIT departmentStore OBJECT d
-;
-
-DESIGN departmentStore FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-        d.box{
-            childConstraints = TO THE RIGHTBOTTOM;
-            NEW order {
-                    childConstraints = TO THE BOTTOM;
-                    title = 'Заказ';
-                    ADD PROPERTY (name);
-                    ADD PROPERTY (nameStoreDepartmentStore);
-                    ADD PROPERTY (maxQuantityDeliveryHourDepartmentStore);
-                    ADD PROPERTY (resolveMaxQuantityDeliveryHourAssortmentLessDepartmentStore);
-                    ADD PROPERTY (resolveOrderItemDepartmentStore);
-                    ADD PROPERTY (quantityCashChangeOneOperationAccountDepartmentStore);
-                };
-            ADD d.controlDepartmentStoreGroup {
-                ADD PROPERTY (nameDiscountDepartmentStore);
-            }
-            ADD d.printDepartmentStoreGroup;
-        };
-
-        NEW prop.box BEFORE functions.box{
-            type = TABBED;
-            ADD e.box{
-                    title = 'Сотрудники';
-                };
-            ADD t.box;
-            ADD d2.box{
-                    title = 'Отделы сырья';
-                };
-      }
-   }
-}
-
-FORM departmentStores 'Отделы магазинов'
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
-    PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
-
-    OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY depName = name
-    FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, d)
-    ORDER BY depName
-
-    DIALOG departmentStore OBJECT d
-;
-
-DESIGN departmentStores FROM DEFAULT {
-    POSITION treeStore.box TO THE LEFT d.box;
-    treeStore.tree {
-        fillHorizontal = 0.3;
-    }
-    d.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-FORM store 'Магазин'
-    OBJECTS s=store FIXED PANEL
-    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore, nameRegionStore
-
-    OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY objectClassName, name, defaultTradingSquareDepartmentStore
-    PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, delete
-    FILTERS inStoreDepartment(s, d)
-
-    EDIT store OBJECT s
-;
-
-FORM tradingNetwork 'Торговая сеть'
-    OBJECTS n=tradingNetwork FIXED PANEL
-    PROPERTIES(n) name
-
-    OBJECTS s=storeType
-    PROPERTIES(s) name
-    PROPERTIES(s) ADDOBJ, delete
-    FILTERS inTradingNetworkStoreType(n, s)
-
-    EDIT tradingNetwork OBJECT n
-;
-
-FORM stores 'Магазины'
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType
-    PROPERTIES READONLY OBJVALUE(a), name(t), name(st)//, dumb1(st)
-
-    FILTERS stringEqualsAll(a)
-    FILTERS inTradingNetworkStoreType (t, st)
-
-    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL//FORCE PANEL
-
-    OBJECTS s=store
-    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore, nameRegionStore
-    PROPERTIES(s)          ADDFORM, EDITFORM, delete
-    FILTERS inTradingNetworkStoreTypeStore(t, st, s)
-
-    OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY objectClassName, name
-    FILTERS inStoreDepartment(s, d)
-;
-
-DESIGN stores FROM DEFAULT {
-    POSITION treeStore.box TO THE LEFT s.box;
-    POSITION treeStore.box TO THE LEFT d.box;
-
-        PROPERTY (delete(t)) {
-            caption = 'Удалить';
-            panelLocation = TOOLBAR;
-            askConfirm = TRUE;
-        }
-
-        PROPERTY (addT) {
-            caption = 'Добавить';
-        }
-
-        PROPERTY (editT) {
-            caption = 'Ред-ть';
-            maximumCharWidth = 5;
-        }
-        s.box {
-            fillHorizontal = 2.3;
-        }
-
-        d.box {
-            fillHorizontal = 2.3;
-        }
-}
-
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;
@@ -4831,13 +4533,13 @@ FORM cutting 'Карта проработки'
 
     PROPERTIES(d)      nameAttributeItemCuttingDetail, shortNameUnitOfMeasureItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail, ADDOBJ, delete
 
-    TREE treeStore a=STRING[3], t=tradingNetwork, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
         PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
-        FILTERS stringEqualsAll(a), inTradingNetworkStoreType (t, st), inStoreTypeStore(st, s)
+        FILTERS stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
         OBJECTS dep=departmentStore
         PROPERTIES(dep) READONLY depName = name
-        FILTERS inTradingNetworkStoreTypeStoreDepartment(t, st, s, dep)
+        FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
         ORDER BY depName
 
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -10053,8 +9755,8 @@ FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
             ds = departmentStore FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
     PROPERTIES(ds) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore, UNPDepartmentStore,
-    commonNameMRPDepartmentStore, namePositionMRPDepartmentStore, commonNameBookkeeperDepartmentStore,
-    namePositionBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
+    nameMRPDepartmentStore, namePositionMRPDepartmentStore, nameBookkeeperDepartmentStore,
+    namePositionBookkeeperDepartmentStore, namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
                sumAccountByItemADocumentLedgerDate(ds, dtTo), sumAccountByContainerADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
@@ -10099,8 +9801,8 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
             ds = departmentStore FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
     PROPERTIES(ds) SELECTOR name
-    PROPERTIES(ds) commonNameMRPDepartmentStore, namePositionMRPDepartmentStore, commonNameBookkeeperDepartmentStore,
-                   namePositionBookkeeperDepartmentStore, commonNamePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
+    PROPERTIES(ds) nameMRPDepartmentStore, namePositionMRPDepartmentStore, nameBookkeeperDepartmentStore,
+                   namePositionBookkeeperDepartmentStore, namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
     PROPERTIES READONLY sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
                    sumAccountADocumentLedgerDate(ds, dtTo)
     PROPERTIES(ds, dtFrom, dtTo) READONLY quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
@@ -10137,7 +9839,7 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
         NEW row1 {
             title = 'МОЛ';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (commonNameMRPDepartmentStore(ds)){
+            ADD PROPERTY (nameMRPDepartmentStore(ds)){
                 caption = 'Имя';
             }
             ADD PROPERTY (namePositionMRPDepartmentStore(ds)){
@@ -10147,7 +9849,7 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
         NEW row2 {
             title = 'Проверяющий';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (commonNamePersonCheckDepartmentStore(ds)){
+            ADD PROPERTY (namePersonCheckDepartmentStore(ds)){
                 caption = 'Имя';
             }
             ADD PROPERTY (namePositionPersonCheckDepartmentStore(ds)){
@@ -10157,7 +9859,7 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
         NEW row3{
             title = 'Бухгалтер';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (commonNameBookkeeperDepartmentStore(ds)){
+            ADD PROPERTY (nameBookkeeperDepartmentStore(ds)){
                 caption = 'Имя';
             }
             ADD PROPERTY (namePositionBookkeeperDepartmentStore(ds)){
@@ -10276,10 +9978,10 @@ FORM nameDepartmentInventory 'Подразделения для инвентар
     OBJECTS in=inventory FIXED PANEL
     PROPERTIES (in) READONLY seriesNumberObject, nameInventory, dateInventory
 
-    TREE treeStore t=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore t=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY name(t), name(st), name(s), name(ds)
 
-    FILTERS inTradingNetworkStoreType (t, st),
+    FILTERS inChainStoresStoreType (t, st),
             inStoreTypeStore (st, s),
             inStoreDepartment (s, ds)
 
@@ -11988,12 +11690,12 @@ DESIGN actOfStudies FROM DEFAULT {
 
 //----------------------------------- Форма для остатков -------------------------------------------------//
 
-inTradingNetworkStoreTypeStoreDepartmentDepartment (tradingNetwork, storeType, store, department, depStore) = UNION OVERRIDE
-    department == depStore AND store  AND tradingNetwork AND storeType,
-    storeDepartmentStore(department) == store AND NOT depStore AND tradingNetwork AND storeType,
-    storeTypeDepartmentStore(department) == storeType AND NOT depStore AND tradingNetwork AND NOT store,
-    tradingNetworkDepartmentStore(department) == tradingNetwork AND NOT store AND NOT storeType AND NOT depStore,
-    department IS departmentStore AND NOT store AND NOT storeType AND NOT tradingNetwork AND NOT depStore;
+inChainStoresStoreTypeStoreDepartmentDepartment (chainStores, storeType, store, department, depStore) = UNION OVERRIDE
+    department == depStore AND store  AND chainStores AND storeType,
+    storeDepartmentStore(department) == store AND NOT depStore AND chainStores AND storeType,
+    storeTypeDepartmentStore(department) == storeType AND NOT depStore AND chainStores AND NOT store,
+    chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType AND NOT depStore,
+    department IS departmentStore AND NOT store AND NOT storeType AND NOT chainStores AND NOT depStore;
 
 countDayMovedItem 'Кол-во дней (30)' = SESSION DATA INTEGER (departmentStore) TOOLBAR;
 countDayMovedItemOver 'кол-во дней' (departmentStore) =
@@ -12018,9 +11720,9 @@ FORM balanceItemDepartment 'Остатки на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -12029,7 +11731,7 @@ FORM balanceItemDepartment 'Остатки на дату'
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
     FILTERS           isParentItemGroupSku(g, i),
-                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
 
     PROPERTIES(i, dep, t) READONLY balanceASkuLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
@@ -12119,9 +11821,9 @@ DESIGN balanceItemDepartment FROM DEFAULT {
 
 FORM curBalanceItemDepartment 'Текущие остатки'
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -12130,7 +11832,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  barcodeBarcodeSku
     FILTERS           nameAttributeItemGroupItem (g, i),
-                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
 
 
@@ -12240,9 +11942,9 @@ FORM balanceStockBatchDate 'Остатки на складе по партиям
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -12251,7 +11953,7 @@ FORM balanceStockBatchDate 'Остатки на складе по партиям
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
     FILTERS           isParentItemGroupSku(g, i),
-                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
 
     PROPERTIES(i, dep, t) READONLY balanceASkuLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
@@ -12319,9 +12021,9 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY gname = name(g)
@@ -12330,7 +12032,7 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  barcodeBarcodeSku
     FILTERS           nameAttributeItemGroupItem (g, i),
-                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
 
     PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
@@ -12517,9 +12219,9 @@ FORM statisticalReport '12-Торг (продажи) справочно'
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
     PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUnitOfMeasureStatisticGroup(g)
@@ -12528,7 +12230,7 @@ FORM statisticalReport '12-Торг (продажи) справочно'
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeStatisticGroupItem(g, i), nameDep=name(dep)
     FILTERS           nameAttributeStatisticGroupItem (g, i),
-                      inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
 
     PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
@@ -12793,9 +12495,9 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
     OBJECTS t=DATE FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE treeStore a=STRING[3], tn=tradingNetwork, st=storeType, s=store, ds=departmentStore
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
     PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inTradingNetworkStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY name(g)
@@ -12808,7 +12510,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
     ORDER BY          nameDep
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
-    FILTERS           inTradingNetworkStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+    FILTERS           inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     FILTERS           isParentItemGroupSku(g, i)
     FILTERGROUP filters10
         FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentDate(sp, i, dep, t) == yesNo.yes DEFAULT
@@ -13088,11 +12790,12 @@ NAVIGATOR {
             ADD employeeDialog;
             ADD country;
             ADD position;
-            ADD tradingSquare;
+            ADD addTradingSquareDepartmentStore;
+            ADD dialogTradingSquareDepartmentStore;
             ADD departmentStore;
             ADD departmentStores;
             ADD store;
-            ADD tradingNetwork;
+            ADD chainStores;
             ADD registerCommittee;
             ADD revaluationCommittee;
             ADD inventoryCommittee;
@@ -13210,8 +12913,6 @@ NAVIGATOR {
             ADD addDelayContract;
             ADD dialogDelayContract;
             ADD genTimeTable;
-            ADD addDiscountDepartmentStore;
-            ADD dialogDiscountDepartmentStore;
             ADD addTimeTable;
             ADD dialogTimeTable;
             ADD orderSupplier;

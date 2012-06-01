@@ -588,8 +588,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
             ImportField shortNameOwnershipField = new ImportField(retailLM.getLPByName("shortNameOwnership"));
             ImportField accountField = new ImportField(retailLM.getLPByName("numberAccount"));
 
-            ImportField tradingNetworkIDField = new ImportField(BL.LM.extSID);
-            ImportField nameTradingNetworkField = new ImportField(BL.LM.name);
+            ImportField chainStoresIDField = new ImportField(BL.LM.extSID);
+            ImportField nameChainStoresField = new ImportField(BL.LM.name);
 
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
@@ -602,8 +602,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("account"),
                     retailLM.getLPByName("accountNumber").getMapping(accountField));
 
-            ImportKey<?> tradingNetworkKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("tradingNetwork"),
-                    BL.LM.extSIDToObject.getMapping(tradingNetworkIDField));
+            ImportKey<?> chainStoresKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("chainStores"),
+                    BL.LM.extSIDToObject.getMapping(chainStoresIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -625,15 +625,15 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
             props.add(new ImportProperty(companyIDField, retailLM.getLPByName("legalEntityAccount").getMapping(accountKey),
                     BL.LM.object(retailLM.getClassByName("company")).getMapping(companyKey)));
 
-            props.add(new ImportProperty(tradingNetworkIDField, BL.LM.extSID.getMapping(tradingNetworkKey)));
-            props.add(new ImportProperty(nameTradingNetworkField, BL.LM.name.getMapping(tradingNetworkKey)));
+            props.add(new ImportProperty(chainStoresIDField, BL.LM.extSID.getMapping(chainStoresKey)));
+            props.add(new ImportProperty(nameChainStoresField, BL.LM.name.getMapping(chainStoresKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(companyIDField, nameLegalEntityField, legalAddressField,
                     unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField, tradingNetworkIDField, nameTradingNetworkField), data);
+                    accountField, chainStoresIDField, nameChainStoresField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, tradingNetworkKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, chainStoresKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);
@@ -813,7 +813,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
             ImportField nameStoreField = new ImportField(BL.LM.name);
             ImportField addressStoreField = new ImportField(BL.LM.name);
             ImportField companyIDField = new ImportField(BL.LM.extSID);
-            ImportField tradingNetworkIDField = new ImportField(BL.LM.extSID);
+            ImportField chainStoresIDField = new ImportField(BL.LM.extSID);
             ImportField storeTypeField = new ImportField(BL.LM.name);
 
             ImportKey<?> storeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("store"),
@@ -822,11 +822,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
             ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("company"),
                     BL.LM.extSIDToObject.getMapping(companyIDField));
 
-            ImportKey<?> tradingNetworkKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("tradingNetwork"),
-                    BL.LM.extSIDToObject.getMapping(tradingNetworkIDField));
+            ImportKey<?> chainStoresKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("chainStores"),
+                    BL.LM.extSIDToObject.getMapping(chainStoresIDField));
 
             ImportKey<?> storeTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("storeType"),
-                    retailLM.getLPByName("nameToStoreType").getMapping(storeTypeField, tradingNetworkIDField));
+                    retailLM.getLPByName("storeTypeNameChainStores").getMapping(storeTypeField, chainStoresIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -839,13 +839,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
             props.add(new ImportProperty(storeTypeField, BL.LM.name.getMapping(storeTypeKey)));
             props.add(new ImportProperty(storeTypeField, retailLM.getLPByName("storeTypeStore").getMapping(storeKey),
                     BL.LM.object(retailLM.getClassByName("storeType")).getMapping(storeTypeKey)));
-            props.add(new ImportProperty(tradingNetworkIDField, retailLM.getLPByName("tradingNetworkStoreType").getMapping(storeTypeKey),
-                    BL.LM.object(retailLM.getClassByName("tradingNetwork")).getMapping(tradingNetworkKey)));
+            props.add(new ImportProperty(chainStoresIDField, retailLM.getLPByName("chainStoresStoreType").getMapping(storeTypeKey),
+                    BL.LM.object(retailLM.getClassByName("chainStores")).getMapping(chainStoresKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField, storeTypeField, tradingNetworkIDField), data);
+            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField, storeTypeField, chainStoresIDField), data);
 
             DataSession session = BL.createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey, tradingNetworkKey, storeTypeKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey, chainStoresKey, storeTypeKey), props);
             service.synchronize(true, false);
             if (session.hasChanges()) {
                 String result = session.apply(BL);

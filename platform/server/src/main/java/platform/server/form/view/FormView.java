@@ -119,17 +119,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
             treeGroups.add(treeGroupView);
         }
 
-        for (PropertyDrawEntity control : entity.propertyDraws) {
-            PropertyDrawView clientProperty = new PropertyDrawView(control);
-
-            mproperties.put(control, clientProperty);
-            properties.add(clientProperty);
-
-            //походу инициализируем порядки по умолчанию
-            Boolean ascending = entity.defaultOrders.get(control);
-            if (ascending != null) {
-                defaultOrders.put(clientProperty, ascending);
-            }
+        for (PropertyDrawEntity propertyDraw : entity.propertyDraws) {
+            createPropertyDrawView(propertyDraw);
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
@@ -138,6 +129,25 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
             regularFilters.add(filterGroupView);
             mfilters.put(filterGroup, filterGroupView);
         }
+    }
+
+    private PropertyDrawView createPropertyDrawView(PropertyDrawEntity propertyDraw) {
+        PropertyDrawView clientProperty = new PropertyDrawView(propertyDraw);
+
+        mproperties.put(propertyDraw, clientProperty);
+        properties.add(clientProperty);
+
+        //походу инициализируем порядки по умолчанию
+        Boolean ascending = entity.defaultOrders.get(propertyDraw);
+        if (ascending != null) {
+            defaultOrders.put(clientProperty, ascending);
+        }
+
+        return clientProperty;
+    }
+
+    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity propertyDraw) {
+        return createPropertyDrawView(propertyDraw);
     }
 
     public int getID() {

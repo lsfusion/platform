@@ -106,14 +106,8 @@ public class DefaultFormView extends FormView {
                 treeContainers.put(treeGroupView, treeSet.getContainer());
             }
 
-            for (PropertyDrawView clientProperty : properties) {
-                PropertyDrawEntity control = clientProperty.entity;
-
-                GroupObjectView groupObject = mgroupObjects.get(control.getToDraw(entity));
-
-                addComponent(groupObject, clientProperty, control.propertyObject.property.getParent());
-
-                control.proceedDefaultDesign(clientProperty, this);
+            for (PropertyDrawView propertyDraw : properties) {
+                addPropertyDrawView(propertyDraw);
             }
 
             for (RegularFilterGroupView filterGroupView : regularFilters) {
@@ -128,6 +122,22 @@ public class DefaultFormView extends FormView {
             formButtonContainer = formSet.getFormButtonContainer();
             mainContainer.add(formButtonContainer);
         }
+    }
+
+    @Override
+    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity propertyDraw) {
+        PropertyDrawView view = super.addPropertyDrawEntity(propertyDraw);
+        addPropertyDrawView(view);
+        return view;
+    }
+
+    private void addPropertyDrawView(PropertyDrawView propertyDraw) {
+        PropertyDrawEntity control = propertyDraw.entity;
+
+        GroupObjectView groupObject = mgroupObjects.get(control.getToDraw(entity));
+        addComponent(groupObject, propertyDraw, control.propertyObject.property.getParent());
+
+        control.proceedDefaultDesign(propertyDraw, this);
     }
 
     private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {
