@@ -234,8 +234,8 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
     FILTERS listRegisterListRegisterDetail(d) == l
 ;
 
-printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup CONFIRM;
-printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup CONFIRM;
+printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup;
+printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup;
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 

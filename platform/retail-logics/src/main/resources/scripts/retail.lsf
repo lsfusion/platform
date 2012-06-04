@@ -849,9 +849,7 @@ CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT inEmployeeDivisio
     CHECKED BY personCheckDepartmentStore MESSAGE 'Проверяющий не сотрудник отдела';
 
 EXTEND FORM departmentStore
-    PROPERTIES(d)   nameMRPDepartmentStore, namePositionMRPDepartmentStore,
-                    nameBookkeeperDepartmentStore, namePositionBookkeeperDepartmentStore,
-                    namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
+    PROPERTIES(d)   nameMRPDepartmentStore, nameBookkeeperDepartmentStore, namePersonCheckDepartmentStore //namePositionMRPDepartmentStore, namePositionBookkeeperDepartmentStore, namePositionPersonCheckDepartmentStore
 ;
 
 revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
@@ -4033,7 +4031,7 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              inPriceChangeDocumentEmployee(pc, e)
 ;
 
-toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc IMAGE 'print.png' IN printGroup;
 
 
 FORM priceChangeDocuments 'Акты переоценки'
@@ -6324,7 +6322,7 @@ FORM naturalLossPrint 'Ведомость естественной убыли' P
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 ;
 
-toPrintNaturalLoss 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM naturalLossPrint OBJECTS s IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintNaturalLoss 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM naturalLossPrint OBJECTS s IMAGE 'print.png' IN printGroup;
 
 FORM naturalLoss 'Ведомость естественной убыли'
     OBJECTS s=naturalLoss FIXED PANEL
@@ -7117,7 +7115,7 @@ FORM orderSupplierPrint 'Заказ поставщику' PRINT
 
 ;
 
-toPrintOrderSupplier 'Печать заказа поставщику' (orderSupplier) = ACTION FORM orderSupplierPrint OBJECTS o IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintOrderSupplier 'Печать заказа поставщику' (orderSupplier) = ACTION FORM orderSupplierPrint OBJECTS o IMAGE 'print.png' IN printGroup;
 
 emailPrintOrderSupplier 'Отослать заказ поставщику' (orderSupplier) =
     ACTION EMAIL FROM companyOrderSupplier(orderSupplier)
@@ -8062,7 +8060,7 @@ META metaCodeConsignmentTwo(prop, caption)
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
-    toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+    toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup;
 
 END
 
@@ -8098,7 +8096,7 @@ META metaCodeTransportConsignment(prop, caption)
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
-    toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup CONFIRM;
+    toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup;
 
 END
 
@@ -8224,7 +8222,7 @@ DESIGN consignment FROM DEFAULT {
     }
 }
 
-toEditConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png' CONFIRM;
+toEditConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png';
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
@@ -8285,7 +8283,7 @@ FORM writeOffPrint 'Списание' PRINT
     EDIT writeOff OBJECT w
 ;
 
-toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 
 @metaCodeInputMultipleItems(writeOff);
@@ -8402,7 +8400,7 @@ FORM specificationPrint 'Счет-фактура' PRINT
     FILTERS inSpecificationSpecificationDetail(sp, d)
 ;
 
-toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM specificationPrint OBJECTS sp IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM specificationPrint OBJECTS sp IMAGE 'print.png' IN printGroup;
 
 //------------------------------------------- Пересорт товара----------------------------------------------------//
 
@@ -8759,7 +8757,7 @@ FORM wastagePrint 'Списания отходов' PRINT
                              inWastageEmployee(w, a)
 ;
 
-toPrintWastage 'Списание отходов' (wastage) = ACTION FORM wastagePrint OBJECTS w IMAGE 'print.png' IN printGroup CONFIRM;
+toPrintWastage 'Списание отходов' (wastage) = ACTION FORM wastagePrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 FORM wastages 'Списания отходов'
 
@@ -9325,7 +9323,7 @@ DESIGN sumAccountDocumentLedgerPrint FROM DEFAULT {
     }
 }
 toPrintAccountDocumentLedger 'Тов. отчет' (departmentStore, dtInFrom, dtOutTo) =
-    ACTION FORM sumAccountDocumentLedgerPrint OBJECTS ds = (departmentStore AS departmentStore), dtFrom = (dtInFrom AS DATE), dtTo = (dtOutTo AS DATE)  IMAGE 'print.png' IN printGroup CONFIRM;
+    ACTION FORM sumAccountDocumentLedgerPrint OBJECTS ds = (departmentStore AS departmentStore), dtFrom = (dtInFrom AS DATE), dtTo = (dtOutTo AS DATE)  IMAGE 'print.png' IN printGroup;
 
 
 FORM sumAccountDocumentLedger 'Товарный отчет'
@@ -9500,7 +9498,7 @@ DESIGN listInventoryPrint FROM DEFAULT {
 }
 
 toPrintListInventoryTime 'Опись' (listInventory, time) =
-    ACTION FORM listInventoryPrint OBJECTS li=(listInventory AS listInventory), t=(time AS DATETIME) IMAGE 'print.png' IN printGroup CONFIRM;
+    ACTION FORM listInventoryPrint OBJECTS li=(listInventory AS listInventory), t=(time AS DATETIME) IMAGE 'print.png' IN printGroup;
 
 toPrintListInventory 'Опись' (listInventory) = toPrintListInventoryTime(listInventory, currentDateTime());
 
@@ -9651,7 +9649,7 @@ FORM  collationSheetPrint 'Результирующая ведомость' PRIN
 ;
 
 toPrintCollationSheet 'Резул. в-ть' (collationSheet) =
-    ACTION FORM collationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup CONFIRM;
+    ACTION FORM collationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup;
 
 FORM  detailCollationSheetPrint 'Сличительная ведомость' PRINT
 
@@ -9681,7 +9679,7 @@ FORM  detailCollationSheetPrint 'Сличительная ведомость' PR
 ;
 
 toPrintDetailCollationSheet 'Слич. в-ть' (collationSheet) =
-    ACTION FORM detailCollationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup CONFIRM;
+    ACTION FORM detailCollationSheetPrint OBJECTS cs IMAGE 'print.png' IN printGroup;
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
