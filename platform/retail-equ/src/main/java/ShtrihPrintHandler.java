@@ -45,12 +45,22 @@ public class ShtrihPrintHandler extends ScalesHandler {
                 shtrihActiveXComponent.setProperty("NameSecond", new Variant(secondName));
                 shtrihActiveXComponent.setProperty("ShelfLife", new Variant(shelfLife)); //срок хранения в днях
                 shtrihActiveXComponent.setProperty("GroupCode", new Variant(item.numberGroupItem));
-                shtrihActiveXComponent.setProperty("MessageNumber", new Variant(0));
                 shtrihActiveXComponent.setProperty("PictureNumber", new Variant(0));
                 shtrihActiveXComponent.setProperty("ROSTEST", new Variant(0));
                 shtrihActiveXComponent.setProperty("ExpiryDate", new Variant(item.expirationDate));
                 shtrihActiveXComponent.setProperty("GoodsType", new Variant(item.isWeightItem ? 0 : 1));
-                
+
+                for (int i = 0; i <= item.composition.length() / 50; i++) {
+                    shtrihActiveXComponent.setProperty("MessageNumber", new Variant(item.compositionNumber));
+                    shtrihActiveXComponent.setProperty("StringNumber", new Variant(i+1));
+                    shtrihActiveXComponent.setProperty("MessageString", new Variant(item.composition.substring(50 * i, Math.min(50 * (i+1), item.composition.length()))));
+
+                    result = Dispatch.call(shtrihDispatch, "SetMessageData");
+                    if (!result.toString().equals("0")) {
+                        throw new RuntimeException("ShtrihPrintHandler. Item # " + item.idBarcode + " Error # " + result.toString());
+                    }
+                }
+
                 result = Dispatch.call(shtrihDispatch, "SetPLUData");
                 if (!result.toString().equals("0")) {
                     throw new RuntimeException("ShtrihPrintHandler. Item # " + item.idBarcode + " Error # " + result.toString());

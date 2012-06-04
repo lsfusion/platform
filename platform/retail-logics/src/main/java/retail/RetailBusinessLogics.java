@@ -6,10 +6,7 @@ import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.StaticCustomClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -151,9 +148,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String composition = (String) entry.getValue().get("composition");
                 Boolean isWeight = entry.getValue().get("isWeight") != null;
                 Integer numberItemGroup = (Integer) entry.getValue().get("itemGroup");
-                String canonicalNameItemGroup = numberItemGroup==null ? "" : (String) retailLM.getLPByName("canonicalNameItemGroup").read(session, session.modifier, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
+                String canonicalNameItemGroup = numberItemGroup == null ? "" : (String) retailLM.getLPByName("canonicalNameItemGroup").read(session, session.modifier, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
 
-                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expirationDate, labelFormat, composition, isWeight, numberItemGroup==null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
+                Integer cellScalesObject = (Integer) retailLM.getLPByName("groupScalesCompositionToCellScales").read(session, session.modifier, groupObject, new DataObject(composition, TextClass.instance));
+                Integer compositionNumberCellScales = cellScalesObject==null ? null : (Integer) retailLM.getLPByName("numberCellScales").read(session, session.modifier, new DataObject(cellScalesObject, (ConcreteClass) retailLM.getClassByName("cellScales")));
+                
+                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expirationDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberItemGroup == null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
             }
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {

@@ -3211,6 +3211,12 @@ filterItemsGroupMachinery 'Фильтровать по группам товар
 
 inGroupMachineryItemGroup 'Вкл' = DATA BOOLEAN (groupMachinery, itemGroup);
 
+CLASS cellScales 'Ячейка весов';
+groupScalesCellScales 'Группа весов ИД' = DATA groupScales (cellScales);
+compositionCellScales 'Ячейка' = DATA TEXT (cellScales);
+numberCellScales 'Номер' = PARTITION SUM 1 IF c IS cellScales BY groupScalesCellScales (c) ORDER c;
+groupScalesCompositionToCellScales (groupScales, composition) = GROUP UNIQUE cellScales BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS cellScales;
+isGroupScalesCellScales (groupScales, cellScales) = groupScalesCellScales(cellScales) == groupScales;
 //---------------------------- типы документов ----------------------------------------//
 
 CLASS terminalDocumentType 'Тип документов';
@@ -7546,6 +7552,18 @@ daysExpiryMachineryPriceTransactionBarcode 'Срок годности в дня�
 hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
 labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
 compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
+FORM cellScales 'Ячейки весов'
+    OBJECTS grs=groupScales
+        PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
+                             transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
+                             pieceItemCodeGroupScales, weightItemCodeGroupScales
+
+    OBJECTS cs=cellScales
+    PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
+
+    FILTERS isGroupScalesCellScales(grs, cs)
+;
+
 isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
 expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
@@ -7677,6 +7695,15 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
             SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionHoursExpiryBarcodeGroupMachinery(barcode, groupMachinery());
             SET labelFormatMachineryPriceTransactionBarcode(t, barcode) <- transactionLabelFormatBarcodeGroupMachinery(barcode, groupMachinery());
             SET compositionMachineryPriceTransactionBarcode(t, barcode) <- transactionCompositionBarcodeGroupMachinery(barcode, groupMachinery());
+            FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
+                AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
+
+                ADDOBJ cellScales;
+                FOR c == addedObject() DO {
+                    SET groupScalesCellScales(c) <- groupMachinery() AS groupScales;
+                    SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
+                }
+            }
             SET isWeightMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcodeGroupMachinery(barcode, groupMachinery());
             SET itemGroupMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcodeGroupMachinery(barcode, groupMachinery());
             SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
@@ -7741,6 +7768,15 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryMachineryBarcode(barcode);
                 SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatMachineryBarcode(barcode);
                 SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionMachineryBarcode(barcode);
+                FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
+                    AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
+
+                    ADDOBJ cellScales;
+                    FOR c == addedObject() DO {
+                        SET groupScalesCellScales(c) <- groupMachinery AS groupScales;
+                        SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
+                    }
+                }
                 SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
                 SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
                 SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
@@ -12247,6 +12283,7 @@ NAVIGATOR {
                 ADD groupsScales;
                 ADD scalesModels;
                 ADD labelFormats;
+                ADD cellScales;
             }
             NEW equipmentChecks 'Прайс чекеры'{
                 ADD groupsCheck;
