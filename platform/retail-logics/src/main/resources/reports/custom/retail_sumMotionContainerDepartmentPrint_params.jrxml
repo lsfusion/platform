@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="params" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="419"/>
+	<property name="ireport.x" value="397"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -70,7 +70,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="10" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Остаток по таре на конец: "+$F{supplierSumContainerStockDateTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Остаток по таре на конец: "+($F{supplierSumContainerStockDateTo}!=null?$F{supplierSumContainerStockDateTo}:"")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -166,7 +166,7 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Остаток по таре на начало: "+$F{supplierSumContainerStockDateFrom}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Остаток по таре на начало: "+($F{supplierSumContainerStockDateFrom}!=null?$F{supplierSumContainerStockDateFrom}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="137" y="95" width="40" height="32"/>
@@ -176,21 +176,21 @@
 				<textFieldExpression><![CDATA["Цена"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="0" y="95" width="67" height="32"/>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="95" width="50" height="32"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Штрих-код"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="67" y="95" width="70" height="32"/>
+				<reportElement stretchType="RelativeToBandHeight" x="50" y="95" width="87" height="32"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Наименование тары"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="217" y="115" width="50" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="207" y="115" width="60" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
@@ -201,17 +201,17 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Остаток на "+$F{objFrom}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Остаток на "+platform.base.BaseUtils.formatRussian($F{objFrom})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="177" y="115" width="40" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="177" y="115" width="30" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["К-во"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="487" y="115" width="50" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="477" y="115" width="60" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
@@ -222,17 +222,17 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Остаток на "+$F{objTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Остаток на "+platform.base.BaseUtils.formatRussian($F{objTo})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="447" y="115" width="40" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="447" y="115" width="30" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["К-во"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="307" y="115" width="50" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="297" y="115" width="60" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
@@ -246,14 +246,14 @@
 				<textFieldExpression><![CDATA["Приход"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="267" y="115" width="40" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="267" y="115" width="30" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["К-во"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="397" y="115" width="50" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="387" y="115" width="60" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
@@ -267,7 +267,7 @@
 				<textFieldExpression><![CDATA["Расход"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="357" y="115" width="40" height="12"/>
+				<reportElement stretchType="RelativeToBandHeight" x="357" y="115" width="30" height="12"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="9"/>
 				</textElement>
@@ -296,14 +296,14 @@
 	<detail>
 		<band height="10">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="67" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="10"/>
 				<textElement textAlignment="Left">
-					<font size="8"/>
+					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeBarcodeSkuBatch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{barcodeBarcodeSkuBatch}!=null?$F{barcodeBarcodeSkuBatch}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="67" y="0" width="70" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="87" height="10"/>
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
@@ -314,63 +314,63 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supplierPriceBatch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierPriceBatch},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="177" y="0" width="40" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="177" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balanceBBatchStockDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{balanceBBatchStockDate},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="217" y="0" width="50" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="207" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supplierSumBatchStockDateFrom}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumBatchStockDateFrom},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="447" y="0" width="40" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="447" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balanceABatchStockDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{balanceABatchStockDate},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="487" y="0" width="50" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="477" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supplierSumBatchStockDateTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumBatchStockDateTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="267" y="0" width="40" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="267" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{costInBalanceBatchStockDateFromTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costInBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="307" y="0" width="50" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supplierSumInBalanceBatchStockDateFromTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumInBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="40" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="30" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{costOutBalanceBatchStockDateFromTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costOutBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="397" y="0" width="50" height="10"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="387" y="0" width="60" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{supplierSumOutBalanceBatchStockDateFromTo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumOutBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
