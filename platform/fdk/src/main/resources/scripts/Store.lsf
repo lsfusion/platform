@@ -83,6 +83,7 @@ inChainStoresStoreTypeStore (chainStores, storeType, store) =
 
 CLASS departmentStore 'Отдел магазина' : stock, externalObject, employeeDivision;
 TABLE departmentStore (departmentStore);
+TABLE departmentStoreDate (departmentStore, DATE);
 
 storeDepartmentStore = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
@@ -91,6 +92,10 @@ inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore
 
 storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(departmentStore)) PERSISTENT;
 chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT;
+
+companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(departmentStore)) PERSISTENT;
+nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
+UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
 
 @defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, publicGroup);
 
@@ -237,3 +242,13 @@ META defineDocumentDepartmentStore (object)
     @defineDocumentHeaderDepartmentStore(object);
     @defineDocumentDetailDepartmentStore(object);
 END
+
+META defineDocumentHeaderAggregationDepartmentStore (primObject, aggrObject)
+    departmentStore###aggrObject (object) = departmentStore###primObject(primObject###aggrObject(object));
+    nameDepartmentStore###aggrObject 'Отдел документа' (object) = name(departmentStore###aggrObject(object));
+END
+
+META defineDocumentDetailAggregationDepartmentStore (primObject, aggrObject)
+    departmentStore###aggrObject##Detail (detail) = departmentStore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+

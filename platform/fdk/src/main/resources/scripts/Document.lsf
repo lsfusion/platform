@@ -200,3 +200,34 @@ META defineDocumentBasePosted (object)
 
     @defineDocumentPosted(object);
 END
+
+// ------------------------- Основной - агрегированный документы ---------------------------------- //
+
+META defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, suffix)
+    number###aggrObject 'Номер документа' (object) = number###suffix(primObject###aggrObject(object));
+    series###aggrObject 'Серия документа' (object) = series###suffix(primObject###aggrObject(object));
+    seriesNumber###aggrObject 'Серия/номер документ' (object) = seriesNumber###suffix(primObject###aggrObject(object));
+END
+
+META defineDocumentHeaderAggregationNumber (primObject, aggrObject)
+    @defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, Object);
+END
+
+META defineDocumentHeaderAggregationDescription (primObject, aggrObject)
+    description###aggrObject 'Название документа' (object) = description###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentHeaderAggregation (primObject, aggrObject)
+    date###aggrObject 'Дата' (object) = date###primObject(primObject###aggrObject(object));
+    time###aggrObject 'Время' (object) = time###primObject(primObject###aggrObject(object));
+    dateTime###aggrObject 'Дата/время' (object) = dateTime###primObject(primObject###aggrObject(object));
+
+    isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentDetailAggregationHeader (primObject, aggrObject)
+    isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+
+    date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END

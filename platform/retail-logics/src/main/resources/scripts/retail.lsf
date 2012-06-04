@@ -483,40 +483,6 @@ END
 
 // ------------------------- Ссылка на "parent" объекты ---------------------------------- //
 
-META defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, suffix)
-    number###aggrObject 'Номер документа' (object) = number###suffix(primObject###aggrObject(object));
-    series###aggrObject 'Серия документа' (object) = series###suffix(primObject###aggrObject(object));
-    seriesNumber###aggrObject 'Серия/номер документ' (object) = seriesNumber###suffix(primObject###aggrObject(object));
-END
-
-META defineDocumentHeaderAggregationNumber (primObject, aggrObject)
-    @defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, Object);
-END
-
-META defineDocumentHeaderAggregationDescription (primObject, aggrObject)
-    description###aggrObject 'Название документа' (object) = description###primObject(primObject###aggrObject(object));
-END
-
-META defineDocumentHeaderAggregation (primObject, aggrObject)
-    date###aggrObject 'Дата' (object) = date###primObject(primObject###aggrObject(object));
-    time###aggrObject 'Время' (object) = time###primObject(primObject###aggrObject(object));
-    dateTime###aggrObject 'Дата/время' (object) = dateTime###primObject(primObject###aggrObject(object));
-
-    departmentStore###aggrObject (object) = departmentStore###primObject(primObject###aggrObject(object));
-    nameDepartmentStore###aggrObject 'Отдел документа' (object) = name(departmentStore###aggrObject(object));
-
-    isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
-END
-
-META defineDocumentDetailAggregationHeader (primObject, aggrObject)
-    isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-
-    date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-
-    departmentStore###aggrObject##Detail (detail) = departmentStore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-END
-
 META defineDocumentDetailAggregationItemPrefix (primObject, aggrObject, prefix)
     item###aggrObject##Detail (detail) = prefix###item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     nameItem###aggrObject##Detail 'Товар' (detail) = nameAttributeItem(item###aggrObject##Detail(detail));
@@ -554,9 +520,11 @@ META defineDocumentPriceChange (object)
     @defineDocumentAggregation(object, priceChange###object, needToPriceChange###object);
 
     @defineDocumentHeaderAggregation(object, priceChange###object);
+    @defineDocumentHeaderAggregationDepartmentStore(object, priceChange###object);
     @defineDocumentHeaderAggregationDescription(object, priceChange###object);
 
     @defineDocumentDetailAggregationHeader(object, priceChange###object);
+    @defineDocumentDetailAggregationDepartmentStore(object, priceChange###object);
 
     numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
     revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = revaluationCommittee###object(object##PriceChange###object(object));
@@ -948,16 +916,22 @@ nameMRPDepartmentStore 'Материально ответственное лиц
     commonName (MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 namePositionMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
     namePositionEmployee(MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, MRPDepartmentStore(departmentStore))
+    CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
 
 bookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
 nameBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 namePositionBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (должность)' =
     namePositionEmployee(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+CONSTRAINT bookkeeperDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
+    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
 
 personCheckDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
 namePersonCheckDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
 namePositionPersonCheckDepartmentStore 'Кто проверяет товарный отчет (должность)' =
     namePositionEmployee(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
+CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, personCheckDepartmentStore(departmentStore))
+    CHECKED BY personCheckDepartmentStore MESSAGE 'Проверяющий не сотрудник отдела';
 
 EXTEND FORM departmentStore
     PROPERTIES(d)   nameMRPDepartmentStore, namePositionMRPDepartmentStore,
@@ -1515,18 +1489,13 @@ nameScalesAttributeItem 'Наименование для весов' (item) = ca
 nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
 
 nameAttributeStatisticGroupItem 'Наименование' (statisticGroup, item) = nameAttributeItem(item) AND hasParentStatisticGroupSku(statisticGroup, item) PERSISTENT INDEXED;
-// ---------------------------------------------------------------------------------------- //
-
-TABLE departmentStoreDate (departmentStore, DATE);
-
-TABLE stringDate (STRING[14], DATE);
-
 // ----------------------------------- Штрих код ------------------------------------------ //
 
 GROUP barcodeGroup : baseGroup;
 
 CLASS barcode 'Штрих код';
 TABLE barcode (barcode);
+TABLE stringDate (STRING[14], DATE);
 
 barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 INDEXED;
 
@@ -1700,36 +1669,6 @@ toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDays;
 toShowGenNumber (genTimeTable) = genTimeTableType(genTimeTable) == genType.genNumber;
 toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDayMonth;
 
-// ----------------------------------- Физические лица -------------------------------------------------- //
-
-nameDepartmentByEmployee 'Отделы' (employee) =
-     GROUP CONCAT name(departmentStore) IF departmentStore IS departmentStore AND inEmployeeDivisionEmployee(departmentStore, employee), ', '
-     BY employee MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-CONSTRAINT bookkeeperDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
-    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
-CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, personCheckDepartmentStore(departmentStore))
-    CHECKED BY personCheckDepartmentStore MESSAGE 'Проверяющий не сотрудник отдела';
-CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, MRPDepartmentStore(departmentStore))
-    CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
-
-//----------------------------------- Для товара и подразделения ------------------------------------------//
-percentDiscountDepartmentItem 'Скидка на количество, % от розн.цены' = DATA NUMERIC[8,3] (departmentStore, item) IN discountGroup;
-
-additionPriceDepartmentStoreItem 'Торговая надбавка в рублях' = DATA NUMERIC[14,2] (departmentStore, item) IN baseGroup;
-boundCertificateDepartmentStoreItem 'Сертификат / удостоверение обязательны для товара?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-maxAllowedRetailPriceDepartmentStoreItem 'MAX допустимая розн.цена' = DATA INTEGER (departmentStore, item) IN retailGroup;
-netWeightManufacturerDepartmentStoreItem 'Вес нетто продукта для производства' = DATA NUMERIC[8,3] (departmentStore, item) IN manufactoryGroup;
-
-dateManufactureDepartmentStoreItem 'Дата изготовления' = DATA DATE (departmentStore, item) IN baseGroup;
-dateFitToDepartmentStoreItem 'Годен до' = DATA DATE (departmentStore, item) IN baseGroup;
-fromDateDeliveryDepartmentStoreItem 'Дату [Годен до] рассчитывать от даты поставки?' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-banSaleDepartmentStoreItem 'Запрет продаж товара в подразделении' = DATA BOOLEAN (departmentStore, item) IN equipmentGroup;
-banMovementDepartmentStoreItem 'Запрет на внутреннее перемещение товара' = DATA BOOLEAN (departmentStore, item) IN baseGroup;
-reserveDepartmentStoreItem 'Резерв по товару' = DATA NUMERIC[14,3] (departmentStore, item) IN baseGroup;
-
-topDepartmentStoreItem 'Топ' = DATA INTEGER (departmentStore, item) IN orderGroup;
-
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
 
@@ -1764,14 +1703,6 @@ EXTEND FORM dialogSupplierRangeItem
     PROPERTIES dataValueSupplierRangeItemDate(a, d)
 ;
 
-// todo : нужно сделать через extend дизайна,
-DESIGN addSupplierRangeItem FROM DEFAULT {
-    PROPERTY(nameAttributeItem(a)) { focusable = FALSE; }
-}
-DESIGN dialogSupplierRangeItem FROM DEFAULT {
-    PROPERTY(nameAttributeItem(a)) { focusable = FALSE; }
-}
-
 //---------------------------- НДС розничный для товара ----------------------------------------//
 
 GROUP retailVATGroup 'НДС розничный' : retailGroup;
@@ -1789,14 +1720,6 @@ EXTEND FORM addRetailRangeItem
 EXTEND FORM dialogRetailRangeItem
     PROPERTIES dataValueRetailRangeItemDate(a, d)
 ;
-
-// todo : нужно сделать через extend дизайна,
-DESIGN addRetailRangeItem FROM DEFAULT {
-    PROPERTY(nameAttributeItem(a)) { focusable = FALSE; }
-}
-DESIGN dialogRetailRangeItem FROM DEFAULT {
-    PROPERTY(nameAttributeItem(a)) { focusable = FALSE; }
-}
 
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
@@ -2615,12 +2538,6 @@ FORM wastageCommitteeDialog 'Комиссии для списания отход
 
     DIALOG wastageCommittee OBJECT wc
 ;
-
-// ----------------------------------- Компания отдела ------------------------------------- //
-
-companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(departmentStore)) PERSISTENT;
-nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
-UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
 
 // ------------------------- Свойства для накладных ---------------------------------- //
 
@@ -5701,9 +5618,11 @@ CLASS wastageDetail 'Строка документа': outAutoBalanceSkuLedger;
 @defineDocumentHeaderCount(wastage);
 
 @defineDocumentHeaderAggregation(shipment, wastage);
+@defineDocumentHeaderAggregationDepartmentStore(shipment, wastage);
 @defineDocumentHeaderAggregationNumber(shipment, wastage);
 
 @defineDocumentDetailAggregationHeader(shipment, wastage);
+@defineDocumentDetailAggregationDepartmentStore(shipment, wastage);
 @defineDocumentDetailAggregationItem(shipment, wastage);
 
 quantityItemWastageDetail 'Количество' (wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
@@ -6423,6 +6342,7 @@ TABLE saleDiscountDocument (saleDiscountDocument);
 
 @defineAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
 @defineDocumentHeaderAggregation(zReport, saleDiscountDocument);
+@defineDocumentHeaderAggregationDepartmentStore(zReport, saleDiscountDocument);
 
 numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 
@@ -6541,6 +6461,7 @@ needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetai
 @defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
 
 @defineDocumentDetailAggregationHeader(disparity, inputDisparity);
+@defineDocumentDetailAggregationDepartmentStore(disparity, inputDisparity);
 @defineDocumentDetailAggregationItemPrefix(disparity, inputDisparity, input);
 quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
 
@@ -6579,9 +6500,11 @@ needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeIn
 
 @defineDocumentAggregation(disparity, priceChangeInputDisparity, needToPriceChangeInputDisparity);
 @defineDocumentHeaderAggregation(disparity, priceChangeInputDisparity);
+@defineDocumentHeaderAggregationDepartmentStore(disparity, priceChangeInputDisparity);
 @defineDocumentHeaderAggregationDescription(disparity, priceChangeInputDisparity);
 
 @defineDocumentDetailAggregationHeader(disparity, priceChangeInputDisparity);
+@defineDocumentDetailAggregationDepartmentStore(disparity, priceChangeInputDisparity);
 @defineDocumentDetailAggregationItemPrefix(disparity, priceChangeInputDisparity, input);
 quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = inputBalanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
@@ -6978,9 +6901,6 @@ totalFullSumOrderSupplier 'Общая сумма заказа с НДС' (orderS
 
 nameinActionItemOrderSupplier 'Товар акции' (orderSupplier, item) =
     nameInActionItemDepartmentDate(item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier));
-banMovementDepartmentStoreOrderSupplier 'Запрет на внутреннее перемещение товара' (orderSupplier, item) =
-    banMovementDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
-topItem 'Топ' (orderSupplier, item) = topDepartmentStoreItem(departmentStoreOrderSupplier(orderSupplier), item);
 CONSTRAINT packQuantityItemOrderSupplier(orderSupplier, item) <= 0 MESSAGE 'Количество должно быть положительным';
 CONSTRAINT priceSupplierItemOrderSupplier(orderSupplier, item) <= 0 MESSAGE 'Цена должна быть положительной';
 
@@ -7409,12 +7329,12 @@ FORM orderSupplier 'Заказ поставщику'
     FILTERS                nameAttributeItemGroupItem(g, i)
     ORDER BY               nameAttributeItemGroupItem
 
-    PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
+    PROPERTIES(o, i)       packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
     PROPERTIES(i) quantityPackItem, minQuantityOrderItem
     PROPERTIES FORCE PANEL nameWareOrderSupplier(o, i)
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
-                                    nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
+                                    nameinActionItemOrderSupplier(o, i),
                                     lastOrderSupplier(o, i), warePriceOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
                                     dataWareRangeOrderSupplier(o, i)
 
@@ -7478,7 +7398,6 @@ DESIGN orderSupplier FROM DEFAULT {
                 ADD PROPERTY(retailPriceItemOrderSupplier);
                 ADD PROPERTY(numberSupplierRangeOrderSupplier);
                 ADD PROPERTY(nameinActionItemOrderSupplier);
-                ADD PROPERTY(banMovementDepartmentStoreOrderSupplier);
                 ADD PROPERTY(lastOrderSupplier);
             };
             NEW wareBox {
@@ -7514,12 +7433,12 @@ FORM orderSupplierPrint 'Заказ поставщику' PRINT
     PROPERTIES(i) READONLY nameAttributeItem , barcodeBarcodeSku
     ORDER BY               nameAttributeItem
 
-    PROPERTIES(o, i)       topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
+    PROPERTIES(o, i)       packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
     PROPERTIES(i) quantityPackItem, minQuantityOrderItem
     PROPERTIES FORCE PANEL nameWareOrderSupplier(o, i)
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
-                                    nameinActionItemOrderSupplier(o, i), banMovementDepartmentStoreOrderSupplier(o, i),
+                                    nameinActionItemOrderSupplier(o, i),
                                     lastOrderSupplier(o, i), warePriceOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
                                     dataWareRangeOrderSupplier(o, i)
 
@@ -7563,7 +7482,7 @@ FORM orderSuppliers 'Заказы поставщику'
     PROPERTIES(i) READONLY nameAttributeItem, barcodeBarcodeSku
     ORDER BY               nameAttributeItem
 
-    PROPERTIES(o, i) READONLY  topItem, packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
+    PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
 
     PROPERTIES(i) READONLY     quantityPackItem, minQuantityOrderItem
 
