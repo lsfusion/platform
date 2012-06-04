@@ -183,6 +183,8 @@ CLASS ABSTRACT listRegisterDetail 'Строка реестра' : inputListRegis
 supplierVATISumListRegisterDetailListRegister 'Сумма НДС поставщика (без посуды)' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
 invoiceSumListRegisterDetailListRegister 'Сумма поставщика с НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
 
+dateContractListRegister 'Договор от' (listRegister) = ABSTRACT DATE (listRegister);
+numberContractListRegister 'Договор' (listRegister) = ABSTRACT STRING[30] (listRegister);
 
 supplierVATISumListRegisterDetail 'Сумма НДС поставщика (без посуды)' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
 
@@ -195,7 +197,7 @@ invoiceSumListRegisterDetail 'Сумма поставщика с НДС' (listRe
 FORM listRegister 'Реестр цен (поставка)' PRINT
     OBJECTS l=listRegister FIXED PANEL
     PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
-                    shipperListRegister, consigneeListRegister,
+                    shipperListRegister, consigneeListRegister, dateContractListRegister, numberContractListRegister,
                     quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, supplierVATISumListRegisterDetailListRegister,
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister, invoiceSumListRegisterDetailListRegister, markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,

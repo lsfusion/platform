@@ -5145,6 +5145,9 @@ shipperListRegister (inputListRegister) += nameSupplierShipment(inputListRegiste
 supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumShipmentDetail(inputListRegisterDetail);
 supplierSumListRegisterDetailListRegister (inputListRegister) += supplierSumShipmentDetailShipment(inputListRegister);
 
+dateContractListRegister (listRegister) += dateContractShipment(listRegister);
+numberContractListRegister (listRegister) += numberContractShipment(listRegister);
+
 // ------ Запись значений по умолчанию ----- //
 
 supplierPriceShipmentDetail(shipmentDetail) <-
@@ -12334,6 +12337,7 @@ NAVIGATOR {
         NEW report 'Отчеты' {
             ADD statisticalReport;
             ADD torgSales;
+            ADD sumMotionContainerDepartmentPrint;
         }
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
@@ -12357,7 +12361,6 @@ NAVIGATOR {
         ADD listInventoryPrint;
         ADD collationSheetPrint;
         ADD detailCollationSheetPrint;
-        ADD sumMotionContainerDepartmentPrint;
     }
 
     ADD adminElement TO formsTree {

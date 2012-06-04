@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="l" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="99"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -81,8 +81,8 @@
 	<field name="retailVATSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="numberContractShipment" class="java.lang.String"/>
-	<field name="dateContractShipment" class="java.util.Date"/>
+	<field name="numberContractListRegister" class="java.lang.String"/>
+	<field name="dateContractListRegister" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{l})]]></groupExpression>
 	</group>
@@ -346,7 +346,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Договор: № "+$F{numberContractShipment}+" от "+platform.base.BaseUtils.formatRussian($F{dateContractShipment})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Договор: № "+$F{numberContractListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{dateContractListRegister})+" года"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
