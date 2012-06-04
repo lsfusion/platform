@@ -11856,6 +11856,57 @@ DESIGN costItemLedger FROM DEFAULT {
     }
 }
 
+//------------------------------------Отчет по таре-------------------------------------------//
+
+nameAttributeItemBatch 'Товар' (batch) = nameAttributeItem(skuBatch(batch));
+barcodeBarcodeSkuBatch 'Штрих-код' (batch) = barcodeBarcodeSku(skuBatch(batch));
+dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
+isContainerBatch 'Тара' (batch) = isContainerItem(skuBatch(batch));
+
+supplierSumInBalanceBatchStockDateFromTo 'Сумма прихода' (batch, stock, dateFrom, dateTo) =
+    supplierPriceBatch(batch) * costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+
+supplierSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
+    supplierPriceBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+
+supplierSumBatchStockDateFrom 'Сумма на начало' (batch, stock, dateFrom) = supplierPriceBatch(batch) * balanceBBatchStockDate(batch, stock, dateFrom);
+
+supplierSumBatchStockDateTo 'Сумма на конец' (batch, stock, dateTo) = supplierPriceBatch(batch) * balanceABatchStockDate(batch, stock, dateTo);
+
+supplierSumContainerStockDateFrom 'Остаток на начало по складу' (stock, dateFrom) = GROUP SUM supplierSumBatchStockDateFrom(batch, stock, dateFrom)
+    IF isContainerItem(skuBatch(batch)) BY stock, dateFrom;
+
+supplierSumContainerStockDateTo 'Остаток на конец по складу' (stock, dateTo) = GROUP SUM supplierSumBatchStockDateTo(batch, stock, dateTo)
+    IF isContainerItem(skuBatch(batch)) BY stock, dateTo;
+
+overMotionContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) = UNION OVERRIDE
+    balanceBBatchStockDate(batch, stock, dateFrom) AND dateTo AS DATE,
+    balanceABatchStockDate(batch, stock, dateTo) AND dateFrom AS DATE,
+    costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo),
+    costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+
+FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
+
+    OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS dep = departmentStore  FIXED PANEL
+    PROPERTIES(dep) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore
+
+    OBJECTS bt=batch
+
+    PROPERTIES READONLY supplierSumContainerStockDateFrom(dep, dFrom), supplierSumContainerStockDateTo(dep, dTo)
+    PROPERTIES(bt) READONLY barcodeBarcodeSkuBatch, nameAttributeItemBatch, supplierPriceBatch
+    PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, supplierSumBatchStockDateFrom
+    PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, supplierSumBatchStockDateTo
+    PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, supplierSumInBalanceBatchStockDateFromTo,
+               costOutBalanceBatchStockDateFromTo, supplierSumOutBalanceBatchStockDateFromTo
+
+    FILTERS isPostedBatch(bt),
+            isContainerBatch(bt),
+            overMotionContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
+;
+
 FORM balanceStockBatchDate 'Остатки на складе по партиям на дату'
 
     OBJECTS t=DATETIME FIXED PANEL
@@ -11889,9 +11940,9 @@ FORM balanceStockBatchDate 'Остатки на складе по партиям
 
     OBJECTS bt=batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch
-    PROPERTIES(bt, dep, t) balanceStockBatchDate
+    PROPERTIES(bt, dep, t) balanceBStockBatchDateTime
 
-    FILTERS balanceStockBatchDate(bt, dep, t),
+    FILTERS balanceBStockBatchDateTime(bt, dep, t),
             isSkuBatch(bt, i)
 
 ;
@@ -12657,6 +12708,10 @@ NAVIGATOR {
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
         ADD costItemLedger;
+        NEW costLedger 'Себестоимость' {
+            ADD costItemLedger;
+            ADD costItemBatchLedger;
+        }
         NEW balance 'Остатки' {
             ADD curBalanceItemDepartment;
             ADD balanceItemDepartment;
@@ -12692,6 +12747,7 @@ NAVIGATOR {
         ADD listInventoryPrint;
         ADD collationSheetPrint;
         ADD detailCollationSheetPrint;
+        ADD sumMotionContainerDepartmentPrint;
     }
 
     ADD adminElement TO formsTree {
