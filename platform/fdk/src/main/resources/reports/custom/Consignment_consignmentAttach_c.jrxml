@@ -64,7 +64,7 @@
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="wareSumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="nameItemConsignmentDetail" class="java.lang.String"/>
+	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
 	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="priceConsignmentDetail" class="java.lang.Double"/>
@@ -861,7 +861,7 @@
 					<font size="9"/>
 					<paragraph leftIndent="2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameItemConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="168" y="0" width="30" height="12"/>

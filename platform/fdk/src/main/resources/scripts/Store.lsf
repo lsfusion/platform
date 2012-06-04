@@ -97,12 +97,15 @@ companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(dep
 nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
 UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
 
+addressDepartmentStore 'Адрес' (departmentStore) = addressStore(storeDepartmentStore(departmentStore));
+
 @defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, publicGroup);
 
 tradingSquareStoreDate (store, date) = GROUP SUM tradingSquareDepartmentStoreDate(departmentStore, date) BY storeDepartmentStore(departmentStore), date;
 tradingSquareStore 'Торговая площадь' (store) = tradingSquareStoreDate(store, currentDate());
 
 stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
+addressStock (departmentStore) += addressDepartmentStore(departmentStore);
 employeeDivisionGroupEmployeeDivision (departmentStore) += storeDepartmentStore(departmentStore);
 
 inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department) =

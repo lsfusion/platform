@@ -17,10 +17,12 @@ IMPORT Stock;
 IMPORT Barcode;
 IMPORT Document;
 IMPORT Tax;
+IMPORT Ware;
 IMPORT LegalEntity;
 IMPORT Employee;
 IMPORT Store;
 IMPORT ListRegister;
+IMPORT Consignment;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -560,6 +562,15 @@ META defineDocumentPriceChangeRetailPricePrefix (object, prefix, caption)
     prefix###retailPricePriceChange###object##Detail 'Розничная цена'###caption (detail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 END
 
+// ----------------------------- количество упаковок и вес товаров ----------------------- //
+META defineDocumentDetailPackWeightItem (object)
+    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
+        UNION OVERRIDE 1 IF idetail IS object##Detail, quantityPackItem(item###object##Detail(idetail)));
+
+    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round3(
+        grossWeightItem(item###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
+END
+
 // ----------------------------------- Поставщик ------------------------------------------ //
 
 META defineDocumentHeaderSupplierContract(object)
@@ -947,52 +958,6 @@ FORM labelFormats 'Форматы этикеток весов'
     OBJECTS c=labelFormat
     PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
     PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
-
-// ----------------------------------- Посуда ----------------------------------------- //
-
-CLASS ware 'Посуда' : named, externalObject;
-TABLE ware(ware);
-TABLE wareDate(ware, DATE);
-
-@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
-
-@defineHistorizableCustom(rangeWare, 'НДС', range, numberRange, ware, name, baseGroup);
-
-CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-dataValueRangeWareDate 'НДС, %' (item, date) = valueRateRangeDate(dataRangeWareDate(item, date), date) IN baseGroup;
-valueCurrentRateRangeWare 'НДС, %' (item) = valueCurrentRateRange(rangeWare(item)) IN baseGroup;
-
-EXTEND FORM addRangeWare
-    PROPERTIES READONLY dataValueRangeWareDate(a, d)
-;
-EXTEND FORM dialogRangeWare
-    PROPERTIES dataValueRangeWareDate(a, d)
-;
-
-// todo : нужно сделать через extend дизайна,
-DESIGN addRangeWare FROM DEFAULT {
-    PROPERTY(name(a)) { focusable = FALSE; }
-}
-DESIGN dialogRangeWare FROM DEFAULT {
-    PROPERTY(name(a)) { focusable = FALSE; }
-}
-
-FORM ware 'Посуда'
-    OBJECTS w=ware FIXED PANEL
-    PROPERTIES(w) name, warePrice, dialogWarePrice
-    PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare, dialogRangeWare
-
-    EDIT ware OBJECT w
-;
-
-FORM wares 'Посуда'
-    OBJECTS w=ware
-    PROPERTIES(w) READONLY name, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
-    PROPERTIES(w)          ADDFORM, EDITFORM, delete
-
-    DIALOG ware OBJECT w
 ;
 
 // ----------------------------------- Товар ------------------------------------------ //
@@ -2303,264 +2268,6 @@ FORM wastageCommitteeDialog 'Комиссии для списания отход
     DIALOG wastageCommittee OBJECT wc
 ;
 
-// ------------------------- Свойства для накладных ---------------------------------- //
-
-GROUP carConsignmentGroup 'Автомобиль' : baseGroup;
-GROUP issuanceConsignmentGroup 'Отпуск' : baseGroup;
-GROUP loadingConsignmentGroup 'ПРР' : baseGroup;
-GROUP sumConsignmentGroup 'Суммы' : baseGroup;
-
-CLASS wayOfLoading 'Способ ПРР' : named;
-TABLE wayOfLoading (wayOfLoading);
-
-META defineConsignmentHeader (object)
-
-    car###object 'Автомобиль' (object) = DATA STRING[30] (object) IN carConsignmentGroup;
-    ownerCar###object 'Владелец автомобиля' (object) = DATA STRING[100] (object) IN carConsignmentGroup;
-    trailer###object 'Прицеп' (object) = DATA STRING[10] (object) IN carConsignmentGroup;
-    driverCar###object 'Водитель' (object) = DATA STRING[40] (object) IN carConsignmentGroup;
-    waybill###object 'Путевой лист' (object) = DATA STRING[20] (object) IN carConsignmentGroup;
-
-    transportPayer###object 'Заказчик перевозки (ИД)' (object) = DATA legalEntity (object) IN carConsignmentGroup;
-
-    dataLoadingPlace###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
-
-    dataUnloadingPlace###object 'Пункт разгрузки' (object) = DATA STRING[50] (object);
-
-    readdressing###object 'Переадресовка' (object) = DATA STRING[50] (object) IN carConsignmentGroup;
-
-    shipmentBase###object 'Основание отпуска' (object) = DATA STRING[30] (object) IN issuanceConsignmentGroup;
-
-    issuanceAllowed###object (object) = DATA employee(object);
-
-    issuanceExecuted###object (object) = DATA employee(object);
-
-    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = DATA STRING[40] (object) IN issuanceConsignmentGroup;
-
-    warrant###object 'По доверенности (номер, дата)' (object) = DATA STRING[30] (object) IN issuanceConsignmentGroup;
-    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = DATA STRING[100] (object) IN issuanceConsignmentGroup;
-
-    goodsAccepted###object 'Принял грузополучатель' (object) = DATA STRING[40] (object) IN issuanceConsignmentGroup;
-
-    loadingExecuter###object (object) = DATA employee(object);
-
-    wayOfLoading###object (object) = DATA wayOfLoading(object);
-
-    codeLoading###object 'Код ПРР' (object) = DATA STRING[3] (object) IN loadingConsignmentGroup;
-
-    arrivalTime###object 'Время прибытия' (object) = DATA DATETIME(object) IN carConsignmentGroup;
-    departureTime###object 'Время убытия' (object) = DATA DATETIME(object) IN carConsignmentGroup;
-    downtime###object 'Время простоя' (object) = DATA STRING[10] (object) IN carConsignmentGroup;
-
-    raceQuantity###object 'Количество ездок' (object) = DATA INTEGER (object) IN carConsignmentGroup;
-
-    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
-        UNION OVERRIDE 1 IF idetail IS object##Detail, quantityPackItem(item###object##Detail(idetail)));
-
-    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round3(
-        grossWeightItem(item###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
-END
-
-META implementConsignmentHeader (concrete)
-    dateConsignment (consignment) += date###concrete(consignment);
-    departmentStoreConsignment (consignment) += departmentStore###concrete(consignment);
-
-    carConsignment (consignment) += car###concrete (consignment);
-    ownerCarConsignment (consignment) += ownerCar###concrete (consignment);
-    trailerConsignment (consignment) += trailer###concrete (consignment);
-    driverCarConsignment (consignment) += driverCar###concrete (consignment);
-    waybillConsignment (consignment) += waybill###concrete (consignment);
-
-    transportPayerConsignment (consignment) += transportPayer###concrete (consignment);
-
-    dataLoadingPlaceConsignment (consignment) += dataLoadingPlace###concrete (consignment);
-
-    dataUnloadingPlaceConsignment (consignment) += dataUnloadingPlace###concrete (consignment);
-
-    readdressingConsignment (consignment) += readdressing###concrete (consignment);
-
-    shipmentBaseConsignment (consignment) += shipmentBase###concrete (consignment);
-
-    issuanceAllowedConsignment (consignment) += issuanceAllowed###concrete (consignment);
-
-    issuanceExecutedConsignment (consignment) += issuanceExecuted###concrete (consignment);
-
-    forwarderConsignment (consignment) += forwarder###concrete (consignment);
-
-    warrantConsignment (consignment) += warrant###concrete (consignment);
-    warrantHolderConsignment (consignment) += warrantHolder###concrete (consignment);
-
-    goodsAcceptedConsignment (consignment) += goodsAccepted###concrete (consignment);
-
-    loadingExecuterConsignment (consignment) += loadingExecuter###concrete (consignment);
-
-    wayOfLoadingConsignment (consignment) += wayOfLoading###concrete (consignment);
-    codeLoadingConsignment (consignment) += codeLoading###concrete (consignment);
-
-    arrivalTimeConsignment (consignment) += arrivalTime###concrete (consignment);
-    departureTimeConsignment (consignment) += departureTime###concrete (consignment);
-    downtimeConsignment (consignment) += downtime###concrete (consignment);
-
-    raceQuantityConsignment (consignment) += raceQuantity###concrete (consignment);
-END
-
-META implementConsignmentDetail (concrete)
-    consignmentConsignmentDetail (consignmentDetail) += concrete###concrete##Detail (consignmentDetail);
-    itemConsignmentDetail (consignmentDetail) += item###concrete##Detail (consignmentDetail);
-    quantityConsignmentDetail (consignmentDetail) += quantity###concrete##Detail (consignmentDetail);
-
-    packQuantityConsignmentDetail (consignmentDetail) += packQuantity###concrete##Detail (consignmentDetail);
-    grossWeightConsignmentDetail (consignmentDetail) += grossWeight###concrete##Detail (consignmentDetail);
-END
-
-dateConsignment 'Дата' (consignment) = ABSTRACT DATE (consignment);
-departmentStoreConsignment (consignment) = ABSTRACT departmentStore (consignment);
-
-carConsignment 'Автомобиль' (consignment) = ABSTRACT STRING[30] (consignment) IN carConsignmentGroup;
-ownerCarConsignment 'Владелец автомобиля' (consignment) = ABSTRACT STRING[100] (consignment) IN carConsignmentGroup;
-trailerConsignment 'Прицеп' (consignment) = ABSTRACT STRING[10] (consignment) IN carConsignmentGroup;
-driverCarConsignment 'Водитель' (consignment) = ABSTRACT STRING[40] (consignment) IN carConsignmentGroup;
-waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
-
-transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = ABSTRACT legalEntity (consignment);
-
-dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (consignment);
-loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE addressStore(storeDepartmentStore(departmentStoreConsignment(consignment))),
-                                                                 dataLoadingPlaceConsignment (consignment) IN carConsignmentGroup;
-
-dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (consignment)IN carConsignmentGroup;
-
-readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
-
-shipmentBaseConsignment 'Основание отпуска' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
-
-issuanceAllowedConsignment (consignment) = ABSTRACT employee(consignment);
-commonNameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = commonName(issuanceAllowedConsignment(consignment)) IN issuanceConsignmentGroup;
-
-issuanceExecutedConsignment (consignment) = ABSTRACT employee(consignment);
-commonNameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = commonName(issuanceExecutedConsignment(consignment)) IN issuanceConsignmentGroup;
-
-forwarderConsignment 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
-
-warrantConsignment 'По доверенности (номер, дата)' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
-warrantHolderConsignment 'По доверенности выданной (наименование орг-ии)' (consignment) = ABSTRACT STRING[100] (consignment) IN issuanceConsignmentGroup;
-
-goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
-
-loadingExecuterConsignment (consignment) = ABSTRACT employee(consignment);
-commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = commonName(loadingExecuterConsignment(consignment)) IN loadingConsignmentGroup;
-
-wayOfLoadingConsignment (consignment) = ABSTRACT wayOfLoading(consignment);
-nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment)) IN loadingConsignmentGroup;
-
-codeLoadingConsignment 'Код ПРР' (consignment) = ABSTRACT STRING[3] (consignment)IN loadingConsignmentGroup;
-
-arrivalTimeConsignment 'Время прибытия' (consignment) = ABSTRACT DATETIME(consignment) IN carConsignmentGroup;
-departureTimeConsignment 'Время убытия' (consignment) = ABSTRACT DATETIME(consignment) IN carConsignmentGroup;
-downtimeConsignment 'Время простоя' (consignment) = ABSTRACT STRING[10] (consignment) IN carConsignmentGroup;
-
-raceQuantityConsignment 'Количество ездок' (consignment) = ABSTRACT INTEGER (consignment) IN carConsignmentGroup;
-
-recipientConsignment 'Получатель (ИД)' = ABSTRACT legalEntity (consignment);
-UNPRecipientConsignment 'УНП получателя' (consignment) = UNPLegalEntity(recipientConsignment(consignment));
-addressRecipientConsignment 'Юридический адрес получателя' (consignment) = addressLegalEntityDate(recipientConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-
-unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressRecipientConsignment(consignment),
-                                                                           dataUnloadingPlaceConsignment (consignment) IN carConsignmentGroup;
-
-nameDepartmentStoreConsignment 'Отдел документа' (consignment) = name(departmentStoreConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-senderConsignment 'Отправитель ИД' (consignment) = companyDepartmentStore(departmentStoreConsignment(consignment));
-UNPSenderConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(senderConsignment(consignment));
-addressSenderConsignment 'Юридический адрес отправителя' (consignment) = addressLegalEntityDate(senderConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-fullNameSenderConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(senderConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-
-UNPTransportPayerConsignment 'УНП заказчика перевозки' (consignment) = UNPLegalEntity(transportPayerConsignment(consignment));
-addressTransportPayerConsignment 'Юридический адрес заказчика перевозки' (consignment) =
-    addressLegalEntityDate(transportPayerConsignment(consignment), dateConsignment(consignment));
-fullNameTransportPayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
-    fullNameLegalEntity(transportPayerConsignment(consignment)) ;
-
-nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
-    [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
-    (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN carConsignmentGroup;
-
-consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consignmentDetail);
-
-itemConsignmentDetail (consignmentDetail) = ABSTRACT item (consignmentDetail);
-nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = nameAttributeItem(itemConsignmentDetail(consignmentDetail));
-
-UOMConsignmentDetail (consignmentDetail) = UOMItem(itemConsignmentDetail(consignmentDetail));
-shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
-
-quantityConsignmentDetail 'Количество' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
-
-priceConsignmentDetail 'Цена' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-
-sumConsignmentDetail 'Стоимость' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
-
-vatConsignmentDetail 'НДС, %' (consignmentDetail) = ABSTRACT NUMERIC[10,5] (consignmentDetail);
-
-sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
-
-sumInvoiceConsignmentDetail 'Сумма с НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
-
-packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
-grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = ABSTRACT NUMERIC[14,5] (consignmentDetail);
-
-noteConsignmentDetail 'Примечание' (consignmentDetail) = ABSTRACT STRING[100] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
-
-countConsignmentDetailConsignment 'Количество строк' (consignment) = GROUP SUM 1 IF consignmentDetail IS consignmentDetail
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-quantityConsignmentDetailConsignment 'Количество (всего)' (consignment) = GROUP SUM quantityConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-packQuantityConsignmentDetailConsignment 'Общее количество грузовых мест' (consignment) = GROUP SUM packQuantityConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-grossWeightConsignmentDetailConsignment 'Общая масса груза, т.' (consignment) = GROUP SUM grossWeightConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;;
-
-sumKgGrossWeightConsignment 'Общая масса груза, кг.'(consignment) = grossWeightConsignmentDetailConsignment(consignment)*1000;
-
-
-//sumConsignmentDetailConsignment 'Стоимость (всего)' (consignment) = GROUP SUM sumConsignmentDetail(consignmentDetail)
-//                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-//sumVATConsignmentDetailConsignment 'Сумма НДС (всего)' (consignment) = GROUP SUM sumVATConsignmentDetail(consignmentDetail)
-//                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-//sumInvoiceConsignmentDetailConsignment 'Сумма с НДС (всего)' (consignment) = GROUP SUM sumInvoiceConsignmentDetail(consignmentDetail)
-//                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-// Посуда на возврате
-isWareConsignment 'Возврат поставщику' (consignment) = ABSTRACT BOOLEAN (consignment);
-wareSumConsignmentDetailConsignment 'Сумма посуды с НДС' (consignment) = ABSTRACT NUMERIC[14,2] (consignment);
-supplierSumConsignmentDetailConsignment 'Сумма поставщика без НДС' (consignment) = ABSTRACT NUMERIC[14,2] (consignment);
-
-wareConsignmentDetail (consignmentDetail) = ABSTRACT ware (consignmentDetail);
-nameWareConsignmentDetail 'Посуда' (consignmentDetail) = name(wareConsignmentDetail(consignmentDetail));
-warePriceConsignmentDetail 'Цена посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-wareSumConsignmentDetail 'Сумма посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-valueWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (consignmentDetail);
-wareVATSumConsignmentDetail 'Сумма НДС по посуде' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
-wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
-
-sumIaWConsignmentDetail 'Сумма с посудой без НДС' (consignmentDetail) = sumConsignmentDetail(consignmentDetail) (+) wareSupplierSumConsignmentDetail(consignmentDetail);
-sumConsignmentDetailConsignment 'Сумма с посудой без НДС (всего)' (consignment) = GROUP SUM sumIaWConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-sumVATIaWConsignmentDetail 'Сумма НДС' (consignmentDetail) = sumVATConsignmentDetail(consignmentDetail) (+) wareVATSumConsignmentDetail(consignmentDetail);
-sumVATConsignmentDetailConsignment 'Сумма НДС (всего)' (consignment) = GROUP SUM sumVATIaWConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-sumInvoiceIaWConsignmentDetail 'Сумма с НДС' (consignmentDetail) = sumInvoiceConsignmentDetail(consignmentDetail) (+) wareSumConsignmentDetail(consignmentDetail);
-sumInvoiceConsignmentDetailConsignment 'Сумма c НДС (всего)' (consignment) = GROUP SUM sumInvoiceIaWConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
-
-
 // ----------------------------------- Договор ------------------------------------------ //
 
 GROUP contractGroup 'Общая информация' : baseGroup;
@@ -3820,11 +3527,6 @@ CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (р�
 CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : incAccountSumDocumentLedger, historyObject;
 CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : outAccountSumDocumentLedger, historyObject;
 
-//---------------------------- Накладные ----------------------------------------//
-
-CLASS ABSTRACT consignment 'Накладная' : outAccountSumDocumentLedger; // todo : чит, чтобы правильно считался getClassWhere и не падал в локальный минимум
-CLASS ABSTRACT consignmentDetail 'Строка накладной' : outBalanceSkuLedger; // todo : тоже самое
-
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 META implementPriceChangeDocument (object)
@@ -5052,10 +4754,14 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 
 // для накладной (шапка и хвост)
 
-@defineConsignmentHeader(statement);
-@implementConsignmentHeader(statement);
-@implementConsignmentDetail(statement);
+@defineDocumentDetailPackWeightItem(statement);
+
+@defineConsignment(statement);
+@implementConsignment(statement, departmentStore);
+
+senderConsignment (consignment) += companyDepartmentStore(departmentStoreStatement(consignment));
 recipientConsignment (consignment) += customerStatement(consignment);
+
 priceConsignmentDetail (consignmentDetail) += retailPriceStatementDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += retailSumStatementDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += dataCalcRangeStatementDetail (consignmentDetail);
@@ -5409,10 +5115,14 @@ descriptionInnerFlowDetail 'Название документа' (innerFlowDetai
 @implementBalanceSkuLedgerItemDepartmentStore(innerFlow);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 
-@defineConsignmentHeader(innerFlow);
-@implementConsignmentHeader(innerFlow);
-@implementConsignmentDetail(innerFlow);
+@defineDocumentDetailPackWeightItem(innerFlow);
+
+@defineConsignment(innerFlow);
+@implementConsignment(innerFlow, departmentStore);
+
+senderConsignment (consignment) += companyDepartmentStore(departmentStoreInnerFlow(consignment));
 recipientConsignment (consignment) += companyDepartmentStore(recipientDepartmentInnerFlow(consignment));
+
 priceConsignmentDetail (consignmentDetail) += retailPriceInnerFlowDetail(consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += retailSumInnerFlowDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += valueRetailRangeInnerFlowDetail (consignmentDetail);
@@ -5709,10 +5419,14 @@ batchOutUserBalanceSkuLedger (ledger) += batchReturnSupplierDetail(ledger);
 
 // для возвратной накладной (шапка и хвост)
 
-@defineConsignmentHeader(returnSupplier);
-@implementConsignmentHeader(returnSupplier);
-@implementConsignmentDetail(returnSupplier);
+@defineDocumentDetailPackWeightItem(returnSupplier);
+
+@defineConsignment(returnSupplier);
+@implementConsignment(returnSupplier, departmentStore);
+
+senderConsignment (consignment) += companyDepartmentStore(departmentStoreReturnSupplier(consignment));
 recipientConsignment (consignment) += supplierReturnSupplier(consignment);
+
 isWareConsignment (consignment) += consignment IS returnSupplier;
 wareSumConsignmentDetailConsignment  (consignment) += wareSumReturnSupplierDetailReturnSupplier (consignment);
 supplierSumConsignmentDetailConsignment (consignment) += supplierSumReturnSupplierDetailReturnSupplier (consignment);
@@ -8070,196 +7784,6 @@ META metaCodeDocumentLabelTransaction (document)
     backgroundPrintLabelTransaction###document 'Цвет' (document) = RGB(212,255,212) IF showPrintLabelTransaction###document(document);
 END
 
-// ---------------------------- Формы для накладных --------------------------------- //
-
-//isReturnSupplierConsignment (consignment) = consignment IS returnSupplier;
-
-META metaCodeConsignmentTwo(prop, caption)
-
-    FORM prop caption PRINT
-        OBJECTS c=consignment FIXED PANEL
-
-        PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
-                       forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                       quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment,
-                       UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                       fullNameRecipientConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
-                       isWareConsignment
-
-        OBJECTS d=consignmentDetail
-
-        PROPERTIES(d) nameItemConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
-                      sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      noteConsignmentDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
-                      valueWareRangeConsignmentDetail, wareVATSumConsignmentDetail, wareSupplierPriceConsignmentDetail,
-                      wareSupplierSumConsignmentDetail
-
-        FILTERS consignmentConsignmentDetail(d) == c
-    ;
-    toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup;
-
-END
-
-@metaCodeConsignmentTwo(consignmentTwoVertical, 'ТН-2, вертикальная');
-@metaCodeConsignmentTwo(consignmentTwoHorizontal, 'ТН-2, горизонтальная');
-@metaCodeConsignmentTwo(consignmentTwoAttach, 'Приложение к ТН-2');
-
-META metaCodeTransportConsignment(prop, caption)
-    FORM prop caption PRINT
-        OBJECTS c=consignment FIXED PANEL
-
-        PROPERTIES (c) dateConsignment, UNPRecipientConsignment, UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                       fullNameRecipientConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                       nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
-                       readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
-                       forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                       commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
-                       arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                       quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment, sumKgGrossWeightConsignment,
-                       sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment, UNPSenderConsignment,
-                       addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
-                       countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
-                       seriesObject, numberObject, isWareConsignment
-
-        OBJECTS d=consignmentDetail
-
-        PROPERTIES(d) nameItemConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
-                      sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
-                      nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
-                      wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
-                      wareVATSumConsignmentDetail, wareSumConsignmentDetail
-
-        FILTERS consignmentConsignmentDetail(d) == c
-    ;
-    toPrint###prop caption (consignment) = ACTION FORM prop OBJECTS c IMAGE 'print.png' IN printGroup;
-
-END
-
-@metaCodeTransportConsignment(transportConsignmentVerticalA, 'ТТН-1, вертикальная (сторона А)');
-@metaCodeTransportConsignment(transportConsignmentHorizontalA, 'ТТН-1, горизонтальная (сторона А)');
-@metaCodeTransportConsignment(transportConsignmentVerticalB, 'ТТН-1, вертикальная (сторона Б)');
-@metaCodeTransportConsignment(transportConsignmentHorizontalB, 'ТТН-1, горизонтальная (сторона Б)');
-@metaCodeTransportConsignment(transportConsignmentAttach, 'Приложение к ТТН-1');
-
-
-FORM consignment 'Форма заполнения атрибутов накладной'
-    OBJECTS c=consignment FIXED PANEL
-
-    PROPERTIES (c) READONLY objectClassName, nameDepartmentStoreConsignment, seriesObject, numberObject
-    PROPERTIES (c) dateConsignment, UNPRecipientConsignment, UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                   fullNameRecipientConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
-                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
-                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
-                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
-                   sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
-                   countConsignmentDetailConsignment
-
-
-    OBJECTS d=consignmentDetail
-
-    PROPERTIES(d) nameItemConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
-                  sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                  packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
-                  nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
-                  wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
-                  wareVATSumConsignmentDetail, wareSumConsignmentDetail
-
-    FILTERS consignmentConsignmentDetail(d) == c
-;
-
-DESIGN consignment FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW specification.box BEFORE functions.box{
-
-            NEW consignment{
-                title = 'Атрибуты накладной';
-                childConstraints = TO THE RIGHT;
-
-                ADD c.carConsignmentGroup;
-
-                NEW wor1 {
-                    childConstraints = TO THE BOTTOM;
-                    ADD c.issuanceConsignmentGroup;
-                    ADD c.loadingConsignmentGroup;
-                    ADD c.sumConsignmentGroup {
-                        childConstraints = TO THE BOTTOM;
-                        NEW wor21 {
-                            childConstraints = TO THE RIGHT;
-                            ADD PROPERTY(countConsignmentDetailConsignment);
-                            ADD PROPERTY(quantityConsignmentDetailConsignment);
-                            ADD PROPERTY(packQuantityConsignmentDetailConsignment);
-                            ADD PROPERTY(grossWeightConsignmentDetailConsignment);
-                        }
-                        NEW wor22 {
-                            childConstraints = TO THE RIGHT;
-                            ADD PROPERTY(sumConsignmentDetailConsignment);
-                            ADD PROPERTY(sumVATConsignmentDetailConsignment);
-                            ADD PROPERTY(sumInvoiceConsignmentDetailConsignment);
-                        }
-                    }
-                }
-
-            }
-            ADD d.box {
-                title = 'Спецификация';
-            }
-
-        }
-
-        NEW header.box BEFORE specification.box {
-            title = 'Накладная';
-            childConstraints = TO THE RIGHT;
-
-            NEW headerCol1 {
-                childConstraints = TO THE BOTTOM;
-                NEW container5 {
-                    childConstraints = TO THE RIGHT;
-                    NEW container55 {
-                        title = 'Объект';
-                        ADD PROPERTY (objectClassName) {
-                            preferredCharWidth = 15;
-                        }
-                    }
-                    NEW headerCol11 {
-                        title = 'Шапка документа';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameDepartmentStoreConsignment);
-                        ADD PROPERTY(numberObject);
-                        ADD PROPERTY(seriesObject);
-                        ADD PROPERTY(dateConsignment);
-                    }
-                }
-
-                NEW headerCol22 {
-                    childConstraints = TO THE BOTTOM;
-                    NEW row11 {
-                        title = 'Грузоотправитель';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(fullNameSenderConsignment);
-                        ADD PROPERTY(UNPSenderConsignment);
-                        ADD PROPERTY(addressSenderConsignment);
-                    }
-                    NEW row22 {
-                        title = 'Грузополучатель';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(fullNameRecipientConsignment);
-                        ADD PROPERTY(UNPRecipientConsignment);
-                        ADD PROPERTY(addressRecipientConsignment);
-                    }
-                }
-            }
-        }
-    }
-}
-
-toEditConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png';
-
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 @metaCodeInputMultipleItems(shipment);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
@@ -8873,10 +8397,10 @@ FORM returnSuppliers 'Возвраты поставщику'
                            quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier, retailSumReturnSupplierDetailReturnSupplier
     PROPERTIES (r) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES(r) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                              toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
-                              toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal,
-                              toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach, toEditConsignment,
+    PROPERTIES(r) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                              printConsignmentVerticalB, printConsignmentHorizontalB,
+                              printConsignmentAttach, printConsignmentSimpleHorizontal,
+                              printConsignmentSimpleVertical, printConsignmentSimpleAttach, editConsignment,
                               toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
@@ -9035,24 +8559,24 @@ DESIGN returnSuppliers FROM DEFAULT {
 
                     NEW contOne {
                         title = 'Накладная';
-                        ADD PROPERTY(toEditConsignment);
+                        ADD PROPERTY(editConsignment);
                     }
                     NEW tn{
                         childConstraints = TO THE RIGHT;
                         title = 'ТН-2';
-                        ADD PROPERTY(toPrintConsignmentTwoVertical);
-                        ADD PROPERTY(toPrintConsignmentTwoHorizontal);
-                        ADD PROPERTY(toPrintConsignmentTwoAttach);
+                        ADD PROPERTY(printConsignmentSimpleVertical);
+                        ADD PROPERTY(printConsignmentSimpleHorizontal);
+                        ADD PROPERTY(printConsignmentSimpleAttach);
                     }
                 }
                 NEW ttn1{
                     childConstraints = TO THE RIGHT;
                     title = 'ТТН-1';
-                    ADD PROPERTY(toPrintTransportConsignmentVerticalA);
-                    ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
-                    ADD PROPERTY(toPrintTransportConsignmentVerticalB);
-                    ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
-                    ADD PROPERTY(toPrintTransportConsignmentAttach);
+                    ADD PROPERTY(printConsignmentVerticalA);
+                    ADD PROPERTY(printConsignmentHorizontalA);
+                    ADD PROPERTY(printConsignmentVerticalB);
+                    ADD PROPERTY(printConsignmentHorizontalB);
+                    ADD PROPERTY(printConsignmentAttach);
                 }
 
             }
@@ -10362,10 +9886,10 @@ FORM innerFlows 'Расходы в другие отделы'
                             quantityInnerFlowDetailInnerFlow, retailSumInnerFlowDetailInnerFlow
 
     PROPERTIES(f) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES (f) FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                               toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
-                               toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal, toPrintConsignmentTwoVertical,
-                               toPrintConsignmentTwoAttach, toEditConsignment
+    PROPERTIES (f) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                               printConsignmentVerticalB, printConsignmentHorizontalB,
+                               printConsignmentAttach, printConsignmentSimpleHorizontal, printConsignmentSimpleVertical,
+                               printConsignmentSimpleAttach, editConsignment
 
     PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
@@ -10414,24 +9938,24 @@ DESIGN innerFlows FROM DEFAULT {
 
                     NEW contOne {
                         title = 'Накладная';
-                        ADD PROPERTY(toEditConsignment);
+                        ADD PROPERTY(editConsignment);
                     }
                     NEW tn{
                         childConstraints = TO THE RIGHT;
                         title = 'ТН-2';
-                        ADD PROPERTY(toPrintConsignmentTwoVertical);
-                        ADD PROPERTY(toPrintConsignmentTwoHorizontal);
-                        ADD PROPERTY(toPrintConsignmentTwoAttach);
+                        ADD PROPERTY(printConsignmentSimpleVertical);
+                        ADD PROPERTY(printConsignmentSimpleHorizontal);
+                        ADD PROPERTY(printConsignmentSimpleAttach);
                     }
                 }
                 NEW ttn1{
                     childConstraints = TO THE RIGHT;
                     title = 'ТТН-1';
-                    ADD PROPERTY(toPrintTransportConsignmentVerticalA);
-                    ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
-                    ADD PROPERTY(toPrintTransportConsignmentVerticalB);
-                    ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
-                    ADD PROPERTY(toPrintTransportConsignmentAttach);
+                    ADD PROPERTY(printConsignmentVerticalA);
+                    ADD PROPERTY(printConsignmentHorizontalA);
+                    ADD PROPERTY(printConsignmentVerticalB);
+                    ADD PROPERTY(printConsignmentHorizontalB);
+                    ADD PROPERTY(printConsignmentAttach);
                 }
 
             }
@@ -10934,10 +10458,10 @@ FORM statements 'Отгрузки из розницы'
     PROPERTIES (st)  READONLY objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameDepartmentStoreStatement,
                      nameCustomerStatement, countStatementDetailStatement, quantityStatementDetailStatement,
                      calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement
-    PROPERTIES (st)  FORCE PANEL toPrintTransportConsignmentVerticalA, toPrintTransportConsignmentHorizontalA,
-                     toPrintTransportConsignmentVerticalB, toPrintTransportConsignmentHorizontalB,
-                     toPrintTransportConsignmentAttach, toPrintConsignmentTwoHorizontal, toEditConsignment,
-                     toPrintConsignmentTwoVertical, toPrintConsignmentTwoAttach, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
+    PROPERTIES (st)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                     printConsignmentVerticalB, printConsignmentHorizontalB,
+                     printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                     printConsignmentSimpleVertical, printConsignmentSimpleAttach, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
@@ -10986,24 +10510,24 @@ DESIGN statements FROM DEFAULT {
 
                     NEW contOne {
                         title = 'Накладная';
-                        ADD PROPERTY(toEditConsignment);
+                        ADD PROPERTY(editConsignment);
                     }
                     NEW tn{
                         childConstraints = TO THE RIGHT;
                         title = 'ТН-2';
-                        ADD PROPERTY(toPrintConsignmentTwoVertical);
-                        ADD PROPERTY(toPrintConsignmentTwoHorizontal);
-                        ADD PROPERTY(toPrintConsignmentTwoAttach);
+                        ADD PROPERTY(printConsignmentSimpleVertical);
+                        ADD PROPERTY(printConsignmentSimpleHorizontal);
+                        ADD PROPERTY(printConsignmentSimpleAttach);
                     }
                 }
                 NEW ttn1{
                     childConstraints = TO THE RIGHT;
                     title = 'ТТН-1';
-                    ADD PROPERTY(toPrintTransportConsignmentVerticalA);
-                    ADD PROPERTY(toPrintTransportConsignmentHorizontalA);
-                    ADD PROPERTY(toPrintTransportConsignmentVerticalB);
-                    ADD PROPERTY(toPrintTransportConsignmentHorizontalB);
-                    ADD PROPERTY(toPrintTransportConsignmentAttach);
+                    ADD PROPERTY(printConsignmentVerticalA);
+                    ADD PROPERTY(printConsignmentHorizontalA);
+                    ADD PROPERTY(printConsignmentVerticalB);
+                    ADD PROPERTY(printConsignmentHorizontalB);
+                    ADD PROPERTY(printConsignmentAttach);
                 }
 
             }
@@ -12379,14 +11903,14 @@ NAVIGATOR {
         ADD listRegister;
         ADD inputListRegister;
         ADD actOfRevaluation;
-        ADD transportConsignmentVerticalA;
-        ADD transportConsignmentHorizontalA;
-        ADD transportConsignmentVerticalB;
-        ADD transportConsignmentHorizontalB;
-        ADD transportConsignmentAttach;
-        ADD consignmentTwoHorizontal;
-        ADD consignmentTwoVertical;
-        ADD consignmentTwoAttach;
+        ADD consignmentVerticalA;
+        ADD consignmentHorizontalA;
+        ADD consignmentVerticalB;
+        ADD consignmentHorizontalB;
+        ADD consignmentAttach;
+        ADD consignmentSimpleHorizontal;
+        ADD consignmentSimpleVertical;
+        ADD consignmentSimpleAttach;
         ADD specificationPrint;
         ADD sumAccountDocumentLedgerPrint;
         ADD wastagePrint;
