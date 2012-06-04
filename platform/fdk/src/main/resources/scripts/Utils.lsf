@@ -4,6 +4,10 @@ IMPORT BaseLogicsModule;
 
 dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 
+// --------------------------------------------- Стандартные группы --------------------------------- //
+
+GROUP printGroup 'Печатные формы' : publicGroup;
+
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 stringEqualsAll(string) = string == 'Все';

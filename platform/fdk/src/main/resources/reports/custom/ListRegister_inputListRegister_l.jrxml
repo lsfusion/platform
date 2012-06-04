@@ -60,9 +60,9 @@
 	<field name="nameHeadManListRegister" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexListRegisterDetail" class="java.lang.Integer"/>
-	<field name="barcodeExSkuListRegisterDetail" class="java.lang.String"/>
-	<field name="nameAttributeItemListRegisterDetail" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureItemListRegisterDetail" class="java.lang.String"/>
+	<field name="barcodeSkuListRegisterDetail" class="java.lang.String"/>
+	<field name="nameSkuListRegisterDetail" class="java.lang.String"/>
+	<field name="shortNameUOMSkuListRegisterDetail" class="java.lang.String"/>
 	<field name="quantityListRegisterDetail" class="java.lang.Double"/>
 	<field name="importerPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="supplierSumListRegisterDetail" class="java.lang.Double"/>
@@ -70,7 +70,7 @@
 	<field name="wareSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="warePriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="wareVATSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="dataWareRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="valueWareRangeListRegisterDetail" class="java.lang.Double"/>
 	<field name="importerMarkupListRegisterDetail" class="java.lang.Double"/>
 	<field name="markupSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="valueRetailRangeListRegisterDetail" class="java.lang.Double"/>
@@ -480,7 +480,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameAttributeItemListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="722" y="0" width="73" height="22" backcolor="#FFFFFF"/>
@@ -558,7 +558,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataWareRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueWareRangeListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="392" y="11" width="66" height="11"/>
@@ -584,7 +584,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureItemListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSkuListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="30" height="22" backcolor="#FFFFFF"/>
@@ -662,7 +662,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeExSkuListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{barcodeSkuListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>

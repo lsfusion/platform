@@ -61,7 +61,7 @@
 	<field name="sumNDSSpecificationDetail" class="java.lang.Double"/>
 	<field name="totalSumNDSSpecificationDetail" class="java.lang.Double"/>
 	<field name="sumSpecificationDetail" class="java.lang.Double"/>
-	<field name="shortNameUnitOfMeasureSpecificationDetail" class="java.lang.String"/>
+	<field name="shortNameUOMSpecificationDetail" class="java.lang.String"/>
 	<field name="phoneCustomerSpecification" class="java.lang.String"/>
 	<field name="phoneCompanySpecification" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
@@ -600,7 +600,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureSpecificationDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSpecificationDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="24" height="12" backcolor="#FFFFFF"/>

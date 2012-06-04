@@ -228,8 +228,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         ImportField itemIDField = new ImportField(BL.LM.extSID);
         ImportField itemGroupIDField = new ImportField(BL.LM.extSID);
         ImportField itemCaptionField = new ImportField(BL.LM.name);
-        ImportField unitOfMeasureIDField = new ImportField(BL.LM.name);
-        ImportField nameUnitOfMeasureField = new ImportField(BL.LM.name);
+        ImportField UOMIDField = new ImportField(BL.LM.name);
+        ImportField nameUOMField = new ImportField(BL.LM.name);
         ImportField brandIDField = new ImportField(BL.LM.name);
         ImportField nameBrandField = new ImportField(BL.LM.name);
         ImportField countryIDField = new ImportField(retailLM.getLPByName("extSIDCountry"));
@@ -256,8 +256,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("itemGroup"),
                 BL.LM.extSIDToObject.getMapping(itemGroupIDField));
 
-        ImportKey<?> unitOfMeasureKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("unitOfMeasure"),
-                BL.LM.extSIDToObject.getMapping(unitOfMeasureIDField));
+        ImportKey<?> UOMKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("UOM"),
+                BL.LM.extSIDToObject.getMapping(UOMIDField));
 
         ImportKey<?> brandKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("brand"),
                 BL.LM.extSIDToObject.getMapping(brandIDField));
@@ -291,11 +291,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         props.add(new ImportProperty(itemIDField, BL.LM.extSID.getMapping(itemKey)));
         props.add(new ImportProperty(itemCaptionField, retailLM.getLPByName("captionItem").getMapping(itemKey)));
 
-        props.add(new ImportProperty(unitOfMeasureIDField, BL.LM.extSID.getMapping(unitOfMeasureKey)));
-        props.add(new ImportProperty(nameUnitOfMeasureField, BL.LM.name.getMapping(unitOfMeasureKey)));
-        props.add(new ImportProperty(nameUnitOfMeasureField, BL.Utils.getLPByName("shortName").getMapping(unitOfMeasureKey)));
-        props.add(new ImportProperty(unitOfMeasureIDField, retailLM.getLPByName("unitOfMeasureItem").getMapping(itemKey),
-                BL.LM.object(retailLM.getClassByName("unitOfMeasure")).getMapping(unitOfMeasureKey)));
+        props.add(new ImportProperty(UOMIDField, BL.LM.extSID.getMapping(UOMKey)));
+        props.add(new ImportProperty(nameUOMField, BL.LM.name.getMapping(UOMKey)));
+        props.add(new ImportProperty(nameUOMField, BL.Utils.getLPByName("shortName").getMapping(UOMKey)));
+        props.add(new ImportProperty(UOMIDField, retailLM.getLPByName("UOMItem").getMapping(itemKey),
+                BL.LM.object(retailLM.getClassByName("UOM")).getMapping(UOMKey)));
 
         props.add(new ImportProperty(nameBrandField, BL.LM.name.getMapping(brandKey)));
         props.add(new ImportProperty(brandIDField, BL.LM.extSID.getMapping(brandKey)));
@@ -336,14 +336,14 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         props.add(new ImportProperty(rateWasteIDField, retailLM.getLPByName("rateWasteItem").getMapping(itemKey),
                 BL.LM.object(retailLM.getClassByName("rateWaste")).getMapping(rateWasteKey)));
 
-        ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, unitOfMeasureIDField,
-                nameUnitOfMeasureField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
+        ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
+                nameUOMField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
                 importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
                 compositionField, dataSuppliersRangeItemField, valueRetailRangeItemField, quantityPackItemField, wareIDField,
                 priceWareField, ndsWareField, rateWasteIDField), data);
 
         DataSession session = BL.createSession();
-        IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, unitOfMeasureKey,
+        IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
                 brandKey, countryKey, barcodeKey, supplierRangeKey, retailRangeKey, wareKey, rangeKey, rateWasteKey), props);
         service.synchronize(true, false);
         if (session.hasChanges()) {
@@ -1117,7 +1117,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
                 String itemID = new String(itemsImportFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
                 String pol_naim = new String(itemsImportFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String k_grtov = new String(itemsImportFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
-                String unitOfMeasure = new String(itemsImportFile.getField("K_IZM").getBytes(), "Cp1251").trim();
+                String UOM = new String(itemsImportFile.getField("K_IZM").getBytes(), "Cp1251").trim();
                 String brand = new String(itemsImportFile.getField("BRAND").getBytes(), "Cp1251").trim();
                 String country = new String(itemsImportFile.getField("MANFR").getBytes(), "Cp1251").trim();
                 String dateString = new String(itemsImportFile.getField("P_TIME").getBytes(), "Cp1251").trim();
@@ -1141,7 +1141,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
                 String rateWasteID = "RW_" + new String(itemsImportFile.getField("K_VGRTOV").getBytes(), "Cp1251").trim();
 
                 if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
-                    data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + unitOfMeasure, unitOfMeasure, brand, "B_" + brand, "C_" + country, country, barcode,
+                    data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + UOM, UOM, brand, "B_" + brand, "C_" + country, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
                             "".equals(composition) ? null : composition, suppliersRange, retailRange, quantityPackItem, wareID,
                             wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,

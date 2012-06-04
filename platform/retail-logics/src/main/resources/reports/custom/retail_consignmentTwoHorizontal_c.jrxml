@@ -52,7 +52,7 @@
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
 	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="priceConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumConsignmentDetail" class="java.lang.Double"/>
@@ -71,7 +71,7 @@
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
-	<field name="dataWareRangeConsignmentDetail" class="java.lang.Double"/>
+	<field name="valueWareRangeConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="isWareConsignment" class="java.lang.Boolean"/>
 	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
@@ -899,7 +899,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="12"/>
@@ -1094,7 +1094,7 @@
 				<textElement textAlignment="Center">
 					<font size="9" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataWareRangeConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueWareRangeConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12">

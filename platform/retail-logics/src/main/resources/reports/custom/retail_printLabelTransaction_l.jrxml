@@ -40,7 +40,7 @@
 	<field name="quantityLabelTransactionBarcode" class="java.lang.Integer"/>
 	<field name="nameStoreLabelTransaction" class="java.lang.String"/>
 	<field name="nameCompanyLabelTransaction" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureLabelTransactionBarcode" class="java.lang.String"/>
+	<field name="shortNameUOMLabelTransactionBarcode" class="java.lang.String"/>
 	<field name="countryLabelTransactionBarcode" class="java.lang.String"/>
 	<field name="manufacturerLabelTransactionBarcode" class="java.lang.String"/>
 	<detail>
@@ -112,7 +112,7 @@
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="93" y="98" width="110" height="8">
-					<printWhenExpression><![CDATA[$F{shortNameUnitOfMeasureLabelTransactionBarcode}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{shortNameUOMLabelTransactionBarcode}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0"/>
@@ -123,7 +123,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="lsf.TimesNewRoman" size="4"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Ед.изм.: "+$F{shortNameUnitOfMeasureLabelTransactionBarcode}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Ед.изм.: "+$F{shortNameUOMLabelTransactionBarcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="93" y="118" width="110" height="12">

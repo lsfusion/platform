@@ -66,7 +66,7 @@
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
 	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="priceConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumConsignmentDetail" class="java.lang.Double"/>
@@ -78,7 +78,7 @@
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
 	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
-	<field name="dataWareRangeConsignmentDetail" class="java.lang.Double"/>
+	<field name="valueWareRangeConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareSupplierSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
@@ -626,7 +626,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" mode="Transparent" x="198" y="0" width="42" height="18"/>
@@ -695,7 +695,7 @@
 				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataWareRangeConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueWareRangeConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement positionType="Float" x="0" y="32" width="555" height="1" backcolor="#000000"/>

@@ -5,6 +5,8 @@ IMPORT BaseLogicsModule;
 IMPORT Utils;
 IMPORT Hierarchy;
 
+// ----------------------------------- Склады ------------------------------------------ //
+
 CLASS ABSTRACT stockGroup 'Группа складов' : named;
 @defineHierarchyAbstract(stockGroup);
 
@@ -13,11 +15,38 @@ TABLE stock(stock);
 
 stockGroupStock (stock) = ABSTRACT stockGroup (stock);
 
+// ----------------------------------- Единицы измерения ------------------------------------------ //
+
+CLASS UOM 'Единица измерения' : doubleNamed, externalObject;
+TABLE UOM (UOM);
+
+baseUOM = DATA UOM(UOM) IN idGroup;
+shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) IN baseGroup;
+factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN baseGroup;
+
+FORM UOM 'Единица измерения'
+OBJECTS u=UOM FIXED PANEL
+PROPERTIES(u) name, shortName, shortNameBaseUOM, factorUOM
+EDIT UOM OBJECT u;
+
+FORM unitsOfMeasure 'Единицы измерений'
+OBJECTS u=UOM
+PROPERTIES(u) READONLY name, shortName, shortNameBaseUOM, factorUOM
+PROPERTIES(u) ADDFORM, EDITFORM, delete;
+
+// ----------------------------------- Sku ------------------------------------------ //
+
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 
-nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
+nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
 
+UOMSku (sku) = ABSTRACT UOM (sku);
+shortNameUOMSku (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
+
+barcodeSku (sku) = ABSTRACT STRING[14] (sku) IN recognizeGroup;
+
+// ----------------------------------- Ledger ------------------------------------------ //
 
 CLASS ABSTRACT balanceSkuLedger 'Изменение остатка по товару';
 TABLE balanceSkuLedger (balanceSkuLedger);

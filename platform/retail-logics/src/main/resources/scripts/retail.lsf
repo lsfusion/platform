@@ -19,8 +19,8 @@ IMPORT Tax;
 IMPORT LegalEntity;
 IMPORT Employee;
 IMPORT Store;
+IMPORT ListRegister;
 
-GROUP printGroup 'Печатные формы' : baseGroup;
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
 
@@ -57,8 +57,8 @@ META defineDocumentDetailItemPrefix (object, prefix, caption)
     prefix###nameAttributeItem###object##Detail 'Товар'###caption (detail) =
         nameAttributeItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
-    prefix###shortNameUnitOfMeasureItem###object##Detail 'Ед. изм.'###caption (detail) =
-        shortNameUnitOfMeasureItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
+    prefix###shortNameUOMItem###object##Detail 'Ед. изм.'###caption (detail) =
+        shortNameUOMItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
     prefix###articleItem###object##Detail 'Артикул'###caption (detail) = articleItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
@@ -146,7 +146,7 @@ META defineDocumentDetailInvoicePrice (object)
 
     supplierRange###object##Detail(detail) = DATA range (object##Detail);
     numberSupplierRange###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierRange###object##Detail(detail)) IN priceDetailGroup;
-    dataSupplierRange###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
+    valueSupplierRange###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
         (supplierRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
     CONSTRAINT taxRange(supplierRange###object##Detail(detail)) != tax.taxVAT CHECKED BY supplierRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -155,7 +155,7 @@ END
 META defineDocumentDetailWareRangePrefix (object, prefix, caption)
     prefix###wareRange###object##Detail (detail) = rangeWareDate(prefix###ware###object##Detail(detail), date###object##Detail(detail));
     prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = numberRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
-    prefix###dataWareRange###object##Detail 'НДС посуды, %'###caption (detail) = valueRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+    prefix###valueWareRange###object##Detail 'НДС посуды, %'###caption (detail) = valueRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 END
 META defineDocumentDetailWareRange (object)
     @defineDocumentDetailWareRangePrefix(object,,);
@@ -230,7 +230,7 @@ END
 
 META defineDocumentDetailInvoiceSum (object)
     supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
-        supplierPrice###object##Detail(detail), dataSupplierRange###object##Detail(detail));
+        supplierPrice###object##Detail(detail), valueSupplierRange###object##Detail(detail));
 
     calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
         quantity###object##Detail(detail) * supplierVATIPrice###object##Detail(detail));
@@ -257,7 +257,7 @@ META defineDocumentDetailWareSumPrefix (object, prefix, caption)
     prefix###wareSum###object##Detail 'Сумма посуды с НДС'###caption (detail) = quantity###object##Detail(detail) * prefix###warePrice###object##Detail(detail);
 
     prefix###wareVATPrice###object##Detail 'Цена НДС посуды'###caption (object##Detail) = [round1(X*Y/(100+Y))](
-        prefix###warePrice###object##Detail (object##Detail), prefix###dataWareRange###object##Detail(object##Detail));
+        prefix###warePrice###object##Detail (object##Detail), prefix###valueWareRange###object##Detail(object##Detail));
 
     prefix###wareVATSum###object##Detail 'Сумма НДС по посуде'###caption (object##Detail) = round0(
         quantity###object##Detail(object##Detail) * prefix###wareVATPrice###object##Detail(object##Detail));
@@ -500,7 +500,7 @@ META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP
     prefixA###valueRetailRange###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###valueRetailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
     prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    prefixA###dataWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
+    prefixA###valueWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
           valueRateRangeDate(rangeWareDate(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
                                                                        date###aggrObject##Detail(detail));
 
@@ -585,64 +585,6 @@ META defineDocumentHeaderSupplierContract(object)
         CHECKED BY contract###object MESSAGE 'Выберите действующий договор';
 END
 
-// ----------------------------------- Комиссия ------------------------------------------ //
-
-META defineDocumentHeaderListRegister(object)
-    registerCommittee###object (object) = DATA registerCommittee(object) IN idGroup;
-
-    nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = commonName(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-    registerCommittee###object (object) <- registerCommitteeDepartmentStore(departmentStore###object(object))
-        WHEN ASSIGNED(object IS object);
-
-    nameFormedMan###object 'Цены сформировал' (object) = nameFormedManCommittee(registerCommittee###object(object)) IN committeeGroup;
-    nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManCommittee(registerCommittee###object(object)) IN committeeGroup;
-    nameLabeledMan###object 'Товар промаркировал' (object) = nameLabeledManCommittee(registerCommittee###object(object)) IN committeeGroup;
-    nameAccountantMan###object 'Бухгалтер' (object) = nameAccountantManCommittee(registerCommittee###object(object)) IN committeeGroup;
-    nameHeadMan###object 'Зав. магазином' (object) = nameHeadManCommittee(registerCommittee###object(object)) IN committeeGroup;
-
-END
-
-// ----------------------------------- Для реестра ------------------------------------------ //
-
-META implementHeaderInputListRegister (concrete)
-    numberListRegister (inputListRegister) += number###concrete (inputListRegister);
-    seriesListRegister (inputListRegister) += series###concrete (inputListRegister);
-    dateListRegister (inputListRegister) += date###concrete (inputListRegister);
-    departmentStoreListRegister (inputListRegister) += departmentStore###concrete (inputListRegister);
-
-    quantityListRegisterDetailListRegister (inputListRegister) += quantity###concrete##Detail###concrete (inputListRegister);
-    wareSumListRegisterDetailListRegister (inputListRegister) += wareSum###concrete##Detail###concrete (inputListRegister);
-    wareVATSumListRegisterDetailListRegister (inputListRegister) += wareVATSum###concrete##Detail###concrete (inputListRegister);
-    markupSumListRegisterDetailListRegister (inputListRegister) +=  markupSum###concrete##Detail###concrete (inputListRegister);
-    retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSum###concrete##Detail###concrete (inputListRegister);
-    retailSumListRegisterDetailListRegister (inputListRegister) += retailSum###concrete##Detail###concrete (inputListRegister);
-    registerCommitteeListRegister(inputListRegister) += registerCommittee###concrete (inputListRegister);
-END
-
-META implementInputListRegisterDetail (concrete)
-    listRegisterListRegisterDetail(inputListRegisterDetail) += concrete###concrete##Detail (inputListRegisterDetail);
-    indexListRegisterDetail (inputListRegisterDetail) += index###concrete##Detail (inputListRegisterDetail);
-    itemListRegisterDetail  (inputListRegisterDetail) += item###concrete##Detail (inputListRegisterDetail);
-    quantityListRegisterDetail (inputListRegisterDetail) += quantity###concrete##Detail (inputListRegisterDetail);
-    importerPriceListRegisterDetail (inputListRegisterDetail) += importerPrice###concrete##Detail (inputListRegisterDetail);
-    supplierMarkupListRegisterDetail (inputListRegisterDetail) += supplierMarkup###concrete##Detail (inputListRegisterDetail);
-    wareSumListRegisterDetail (inputListRegisterDetail) += wareSum###concrete##Detail (inputListRegisterDetail);
-    warePriceListRegisterDetail (inputListRegisterDetail) += warePrice###concrete##Detail (inputListRegisterDetail);
-    wareVATSumListRegisterDetail (inputListRegisterDetail) += wareVATSum###concrete##Detail (inputListRegisterDetail);
-    dataWareRangeListRegisterDetail (inputListRegisterDetail) += dataWareRange###concrete##Detail (inputListRegisterDetail);
-    importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkup###concrete##Detail (inputListRegisterDetail);
-    markupSumListRegisterDetail (inputListRegisterDetail) += markupSum###concrete##Detail (inputListRegisterDetail);
-    valueRetailRangeListRegisterDetail (inputListRegisterDetail) += valueRetailRange###concrete##Detail (inputListRegisterDetail);
-    retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSum###concrete##Detail (inputListRegisterDetail);
-    retailPriceListRegisterDetail (inputListRegisterDetail) += retailPrice###concrete##Detail (inputListRegisterDetail);
-    retailSumListRegisterDetail (inputListRegisterDetail) += retailSum###concrete##Detail (inputListRegisterDetail);
-END
-
-META implementInputListRegister (concrete)
-    @implementHeaderInputListRegister(concrete);
-    @implementInputListRegisterDetail(concrete);
-END
-
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 CLASS itemGroup 'Товарная группа' : named, externalObject;
 
@@ -658,31 +600,6 @@ maxTurnoverItemGroup 'Максимально допустимая товароо
 minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
 // формы за формами товара
-
-// ----------------------------------- Единицы измерения ------------------------------------------ //
-CLASS unitOfMeasure 'Единица измерения' : doubleNamed, externalObject;
-TABLE unitOfMeasure (unitOfMeasure);
-
-unitOfMeasureUnitOfMeasure 'Базовая ед.изм. ИД' = DATA unitOfMeasure(unitOfMeasure) IN idGroup;
-shortNameUnitOfMeasureUnitOfMeasure 'Базовая ед.изм.' (unitOfMeasure) = shortName(unitOfMeasureUnitOfMeasure(unitOfMeasure)) IN baseGroup;
-rightUnitOfMeasure 'Разместить от значения: справа' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
-useUnitOfMeasure 'Используется' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
-factorUnitOfMeasure 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (unitOfMeasure) IN baseGroup;
-weightUnitOfMeasure 'Для весовых товаров/услуг' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
-pieceUnitOfMeasure 'Для штучных товаров/услуг' = DATA BOOLEAN (unitOfMeasure) IN baseGroup;
-
-
-FORM unitOfMeasure 'Единица измерения'
-OBJECTS u=unitOfMeasure FIXED PANEL
-PROPERTIES(u) name, shortName, shortNameUnitOfMeasureUnitOfMeasure, factorUnitOfMeasure, rightUnitOfMeasure,
-              useUnitOfMeasure, weightUnitOfMeasure, pieceUnitOfMeasure
-EDIT unitOfMeasure OBJECT u;
-
-FORM unitsOfMeasure 'Единицы измерений'
-OBJECTS u=unitOfMeasure
-PROPERTIES(u) READONLY name, shortName, shortNameUnitOfMeasureUnitOfMeasure, factorUnitOfMeasure, rightUnitOfMeasure,
-              useUnitOfMeasure, weightUnitOfMeasure, pieceUnitOfMeasure
-PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
 
@@ -716,7 +633,7 @@ hasParentStatisticGroup 'Уровень' (child, parent) = TRUE AND hasParentSta
 hasParentAndLeafStatisticGroup (child, parent) = hasParentStatisticGroup(child, parent) AND isLeafStatisticGroup(child);
 
 unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA groupStatic (statisticGroup) IN idGroup;
-nameUnitOfMeasureStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
+nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 
 sidStatisticGroup 'Код группы по ОКРБ 007-2007' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 conversionFactorStatisticGroup 'Коэффициент перевода' (statisticGroup) = DATA NUMERIC[14,5] (statisticGroup);
@@ -733,7 +650,7 @@ canonicalNumberNameStatisticGroup 'Канонический код-назван�
 
 FORM statisticGroup 'Статистическая группа'
     OBJECTS g=statisticGroup FIXED PANEL
-    PROPERTIES(g)   name, nameParentStatisticGroup, sidStatisticGroup, nameUnitOfMeasureStatisticGroup,
+    PROPERTIES(g)   name, nameParentStatisticGroup, sidStatisticGroup, nameUOMStatisticGroup,
                     conversionFactorStatisticGroup
 
     EDIT statisticGroup OBJECT g
@@ -756,7 +673,7 @@ FORM statisticGroups 'Статистические группы'
     ORDER BY sidStatisticGroup
 
     OBJECTS cg=statisticGroup
-    PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, sidStatisticGroup, nameUnitOfMeasureStatisticGroup,
+    PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, sidStatisticGroup, nameUOMStatisticGroup,
                        conversionFactorStatisticGroup
 PROPERTIES(cg)  delete
 
@@ -946,14 +863,6 @@ CONSTRAINT revaluationCommitteeDepartmentStore(departmentStore) AND NOT inCommit
     CHECKED BY revaluationCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
 EXTEND FORM departmentStore PROPERTIES nameRevaluationCommitteeDepartmentStore(d);
-
-registerCommitteeDepartmentStore 'Комиссия для реестра (ИД)' = DATA registerCommittee (departmentStore);
-nameRegisterCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(registerCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-isRegisterCommitteeDepartmentStore 'По умолчанию' (registerCommittee, departmentStore) = registerCommitteeDepartmentStore(departmentStore) == registerCommittee;
-CONSTRAINT registerCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(registerCommitteeDepartmentStore(departmentStore), departmentStore)
-    CHECKED BY registerCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
-
-EXTEND FORM departmentStore PROPERTIES nameRegisterCommitteeDepartmentStore(d);
 
 wastageCommitteeDepartmentStore 'Комиссия для списания отходов (ИД)' = DATA wastageCommittee (departmentStore);
 nameWastageCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(wastageCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
@@ -1146,9 +1055,9 @@ typeItemItem = DATA typeItem(item) IN idGroup;
 nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(type, 'Показывать тип', displayGroup);
 
-unitOfMeasureItem = DATA unitOfMeasure (item) IN idGroup;
-shortNameUnitOfMeasureItem 'Единица измерения' (item) = shortName(unitOfMeasureItem(item)) IN headGroup;
-@metaCodeShowItemAttribute(unitOfMeasure, 'Показывать ед.измерения', displayGroup);
+UOMItem = DATA UOM (item) IN idGroup;
+shortNameUOMItem 'Единица измерения' (item) = shortName(UOMItem(item)) IN headGroup;
+@metaCodeShowItemAttribute(UOM, 'Показывать ед.измерения', displayGroup);
 
 sortItem = DATA sort(item) IN idGroup;
 nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
@@ -1394,7 +1303,7 @@ stringBooleanItemAttribute(item, attribute) = castToString255(valueBooleanItemAt
 
 CLASS STATIC objectItemAttribute 'Объектный атрибут' {
     itemGroup 'Группа',
-    unitOfMeasure 'Единица измерения',
+    UOM 'Единица измерения',
     brand 'Брэнд',
     typeItem 'Вид',
     formItem 'Форма',
@@ -1410,7 +1319,7 @@ CLASS STATIC objectItemAttribute 'Объектный атрибут' {
 } : itemAttribute;
 
 valueItemGroupItemAttribute(item, attribute) = itemGroupSku(item) AND item IS item AND attribute == objectItemAttribute.itemGroup;
-valueUOMItemAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemAttribute.unitOfMeasure;
+valueUOMItemAttribute(item, attribute) = UOMItem(item) AND attribute == objectItemAttribute.UOM;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
 valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.typeItem;
 valueFormItemAttribute(item, attribute) = formItemItem(item) AND attribute == objectItemAttribute.formItem;
@@ -1441,7 +1350,7 @@ valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueItemGroupItemAt
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 
 CLASS STATIC objectItemShortAttribute 'Объектный краткий атрибут' {
-    shortUnitOfMeasure 'Единица измерения (сокр.)',
+    shortUOM 'Единица измерения (сокр.)',
     shortPack 'Упаковка (сокр.)',
     shortSpecialty 'Особенность (сокр.)',
     shortSize 'Размер/калибр (сокр.)',
@@ -1449,7 +1358,7 @@ CLASS STATIC objectItemShortAttribute 'Объектный краткий атр�
 
 } : itemAttribute;
 
-valueUOMItemShortAttribute(item, attribute) = unitOfMeasureItem(item) AND attribute == objectItemShortAttribute.shortUnitOfMeasure;
+valueUOMItemShortAttribute(item, attribute) = UOMItem(item) AND attribute == objectItemShortAttribute.shortUOM;
 valuePackItemShortAttribute(item, attribute) = packItem(item) AND attribute == objectItemShortAttribute.shortPack;
 valueSpecialtyItemShortAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemShortAttribute.shortSpecialty;
 valueSizeItemShortAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemShortAttribute.shortSize;
@@ -1478,6 +1387,7 @@ nameAttributeItem 'Наименование' (item) = castToString255(
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute)](item))
                 IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
 nameSku(item) += nameAttributeItem(item);
+UOMSku(item) += UOMItem(item);
 
 nameCashAttributeItem 'Наименование для касс' (item) = castToString255(
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameCashItemAttribute(attribute)](item))
@@ -1536,10 +1446,10 @@ expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок год
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-unitOfMeasureSkuBarcode (barcode) = unitOfMeasureItem(skuBarcode(barcode)) IN idGroup;
-unitOfMeasureOriginBarcode = DATA unitOfMeasure (barcode) IN idGroup;
-unitOfMeasureBarcode = UNION OVERRIDE unitOfMeasureSkuBarcode (barcode), unitOfMeasureOriginBarcode(barcode) IN idGroup;
-shortNameUnitOfMeasureBarcode 'Единица измерения' (barcode) = shortName(unitOfMeasureBarcode(barcode)) IN barcodeGroup;
+UOMSkuBarcode (barcode) = UOMItem(skuBarcode(barcode)) IN idGroup;
+UOMOriginBarcode = DATA UOM (barcode) IN idGroup;
+UOMBarcode = UNION OVERRIDE UOMSkuBarcode (barcode), UOMOriginBarcode(barcode) IN idGroup;
+shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode)) IN barcodeGroup;
 
 amountUserBarcode 'Количество (сколько списать при продаже)' = DATA NUMERIC[14,3] (barcode) IN barcodeGroup;
 amountBarcode 'Количество (сколько списать при продаже)' = UNION OVERRIDE 1.0 IF barcode IS barcode, amountUserBarcode (barcode) IN barcodeGroup;
@@ -1558,6 +1468,7 @@ CONSTRAINT skuBarcode(barcodeSku(item)) != item CHECKED BY userBarcodeSku MESSAG
 
 barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup PERSISTENT;
 //barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
+Stock.barcodeSku(item) += barcodeBarcodeSku(item);
 
 inSkuBarcode(sku, barcode) = skuBarcode(barcode) == sku;
 
@@ -1933,7 +1844,7 @@ FORM item 'Товар'
                   nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem SHOWIF toShowArticle(i),
                   nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), nameFormItemItem SHOWIF toShowFormItem(i),
 
-                  shortNameUnitOfMeasureItem SHOWIF toShowUnitOfMeasure(i), nameCountryItem SHOWIF toShowCountry(i),
+                  shortNameUOMItem SHOWIF toShowUOM(i), nameCountryItem SHOWIF toShowCountry(i),
                   nameManufacturerItem SHOWIF toShowManufacturer(i), isContainerItem,
                   isWeightItem, isManufacturedItem,
                   compositionMenuItem SHOWIF isManufacturedItem(i),
@@ -1972,7 +1883,7 @@ FORM item 'Товар'
                   imageItem, loadImageItem
 
     OBJECTS b=barcode
-    PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUnitOfMeasureBarcode,
+    PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUOMBarcode,
                         amountBarcode, removeBarcode, commentRemoveBarcode, activeBarcode
     PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
@@ -2139,7 +2050,7 @@ FORM items 'Товары'
     ORDER BY name
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
+    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     PROPERTIES(i) ADDFORM, EDITFORM, delete
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
@@ -2170,7 +2081,7 @@ FORM barcodeForm 'Товары по Ш-К'
     ORDER BY name
 
     OBJECTS b=barcode
-    PROPERTIES(b) READONLY barcodeEx, nameSkuBarcode, shortNameUnitOfMeasureBarcode
+    PROPERTIES(b) READONLY barcodeEx, nameSkuBarcode, shortNameUOMBarcode
     PROPERTIES(b) ADDFORM, EDITFORM, delete
     FILTERS hasParentItemGroupBarcode(g, b)
     ORDER BY nameSkuBarcode
@@ -2194,7 +2105,7 @@ DESIGN barcodeForm FROM DEFAULT {
 FORM itemGroup 'Товарная группа'
     OBJECTS g=itemGroup FIXED PANEL
     PROPERTIES(g)  name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
-                   showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+                   showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUOMItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                    showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
                    showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup
@@ -2219,7 +2130,7 @@ FORM itemGroups 'Товарные группы'
 
     OBJECTS cg=itemGroup
     PROPERTIES(cg)   canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
-                     showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUnitOfMeasureItemGroup, showSortItemGroup, showPackItemGroup,
+                     showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUOMItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
                      showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, delete
@@ -2279,76 +2190,6 @@ PROPERTIES(i) READONLY nameAttributeItem
 FILTERS itemAssortment(a, i);
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
-
-CLASS registerCommittee 'Комиссия для реестра цен' : committee;
-
-@defineCommitteeEmployee(registerCommittee, formedMan, 'Цены сформировал');
-@defineCommitteeEmployee(registerCommittee, checkedMan, 'Реестр проверил');
-@defineCommitteeEmployee(registerCommittee, labeledMan, 'Товар промаркировал');
-@defineCommitteeEmployee(registerCommittee, accountantMan, 'Бухгалтер');
-@defineCommitteeEmployee(registerCommittee, headMan, 'Зав. магазином');
-
-FORM registerCommittee 'Комиссия для реестра цен'
-    OBJECTS c=registerCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameFormedManCommittee, nameCheckedManCommittee,
-                       nameLabeledManCommittee, nameAccountantManCommittee, nameHeadManCommittee
-
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
-
-    OBJECTS dep=departmentStore
-    PROPERTIES(dep)    READONLY depName = name
-    PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRegisterCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
-    ORDER BY depName
-
-    FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
-
-    EDIT registerCommittee OBJECT c
-;
-
-DESIGN registerCommittee FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-        childConstraints = TO THE BOTTOM;
-
-        NEW caseOne AFTER c.box {
-            childConstraints = TO THE RIGHT;
-            title = 'Отделы, для которых действуют комиссии';
-
-            ADD treeStore.tree {
-                fillHorizontal = 1;
-            }
-
-            ADD dep.box{
-                fillHorizontal = 2;
-            }
-        }
-
-        NEW oneCase AFTER caseOne{
-            title = 'Состав комиссии';
-            fillHorizontal = 3;
-            childConstraints = TO THE BOTTOM;
-            ADD PROPERTY (nameFormedManCommittee);
-            ADD PROPERTY (nameCheckedManCommittee);
-            ADD PROPERTY (nameLabeledManCommittee);
-            ADD PROPERTY (nameAccountantManCommittee);
-            ADD PROPERTY (nameHeadManCommittee);
-        }
-
-    }
-}
-
-FORM registerCommitteeDialog 'Комиссии для реестра цен'
-    OBJECTS r=registerCommittee
-    PROPERTIES(r)      READONLY name, nameEmployeeDivisionCommittee, nameFormedManCommittee, nameCheckedManCommittee, nameLabeledManCommittee,
-                       nameAccountantManCommittee, nameHeadManCommittee
-    PROPERTIES(r)      ADDFORM, EDITFORM
-
-    DIALOG registerCommittee OBJECT r
-;
 
 CLASS revaluationCommittee 'Комиссия переоценки' : committee;
 
@@ -2726,8 +2567,8 @@ consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consign
 itemConsignmentDetail (consignmentDetail) = ABSTRACT item (consignmentDetail);
 nameItemConsignmentDetail 'Наименование товара' (consignmentDetail) = nameAttributeItem(itemConsignmentDetail(consignmentDetail));
 
-unitOfMeasureConsignmentDetail (consignmentDetail) = unitOfMeasureItem(itemConsignmentDetail(consignmentDetail));
-shortNameUnitOfMeasureConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(unitOfMeasureConsignmentDetail(consignmentDetail));
+UOMConsignmentDetail (consignmentDetail) = UOMItem(itemConsignmentDetail(consignmentDetail));
+shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
 
 quantityConsignmentDetail 'Количество' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
 
@@ -2779,7 +2620,7 @@ wareConsignmentDetail (consignmentDetail) = ABSTRACT ware (consignmentDetail);
 nameWareConsignmentDetail 'Посуда' (consignmentDetail) = name(wareConsignmentDetail(consignmentDetail));
 warePriceConsignmentDetail 'Цена посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
 wareSumConsignmentDetail 'Сумма посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-dataWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (consignmentDetail);
+valueWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (consignmentDetail);
 wareVATSumConsignmentDetail 'Сумма НДС по посуде' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
 wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
 wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
@@ -4055,104 +3896,6 @@ CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный докумен
 CLASS ABSTRACT consignment 'Накладная' : outAccountSumDocumentLedger; // todo : чит, чтобы правильно считался getClassWhere и не падал в локальный минимум
 CLASS ABSTRACT consignmentDetail 'Строка накладной' : outBalanceSkuLedger; // todo : тоже самое
 
-//---------------------------- Реестр цен (внутр) ----------------------------------------//
-CLASS ABSTRACT inputListRegister 'Реестр (внутр.)' ;
-CLASS ABSTRACT inputListRegisterDetail 'Строка реестра (внутр.)' ;
-
-numberListRegister 'Номер' (inputListRegister) =  ABSTRACT STRING[18] (inputListRegister);
-
-seriesListRegister 'Серия' (inputListRegister) = ABSTRACT STRING[2] (inputListRegister);
-
-dateListRegister 'Дата' (inputListRegister) = ABSTRACT DATE (inputListRegister);
-
-departmentStoreListRegister (inputListRegister) = ABSTRACT departmentStore (inputListRegister) IN idGroup;
-nameDepartmentStoreListRegister 'Отдел документа' (inputListRegister) = name(departmentStoreListRegister(inputListRegister));
-
-consigneeListRegister 'Грузополучатель' (inputListRegister) =
-    [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
-    nameCompanyDepartmentStore(departmentStoreListRegister(inputListRegister)),
-    name(storeDepartmentStore(departmentStoreListRegister(inputListRegister))),
-    nameDepartmentStoreListRegister(inputListRegister)) IN documentPrmGroup;
-
-senderListRegister (inputListRegister) = ABSTRACT legalEntity (inputListRegister) IN idGroup;
-
-shipperListRegister 'Грузоотправитель' (inputListRegister) = ABSTRACT STRING[200] (inputListRegister);
-
-quantityListRegisterDetailListRegister 'Кол-во (всего)' (inputListRegister) = ABSTRACT NUMERIC[14,3] (inputListRegister);
-
-supplierSumListRegisterDetailListRegister 'Сумма поставщика без НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
-
-wareSumListRegisterDetailListRegister 'Сумма посуды с НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
-
-wareVATSumListRegisterDetailListRegister 'Сумма НДС по посуде' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
-
-markupSumListRegisterDetailListRegister 'Сумма надбавки' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
-
-retailVATSumListRegisterDetailListRegister 'Сумма НДС' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
-
-retailSumListRegisterDetailListRegister 'Розничная сумма' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
-
-registerCommitteeListRegister  (inputListRegister) = ABSTRACT registerCommittee (inputListRegister) IN idGroup;
-nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = name(registerCommitteeListRegister(inputListRegister));
-nameFormedManListRegister 'Цены сформировал' (inputListRegister) = nameFormedManCommittee(registerCommitteeListRegister(inputListRegister));
-nameCheckedManListRegister 'Реестр проверил' (inputListRegister) = nameCheckedManCommittee(registerCommitteeListRegister(inputListRegister));
-nameLabeledManListRegister 'Товар промаркировал' (inputListRegister) = nameLabeledManCommittee(registerCommitteeListRegister(inputListRegister));
-nameAccountantManListRegister 'Бухгалтер' (inputListRegister) = nameAccountantManCommittee(registerCommitteeListRegister(inputListRegister));
-nameHeadManListRegister 'Зав. магазином' (inputListRegister) = nameHeadManCommittee(registerCommitteeListRegister(inputListRegister));
-
-
-listRegisterListRegisterDetail (inputListRegisterDetail) = ABSTRACT inputListRegister(inputListRegisterDetail) IN idGroup;
-
-indexListRegisterDetail 'Номер строки' (inputListRegisterDetail) = ABSTRACT INTEGER (inputListRegisterDetail);
-itemListRegisterDetail  (inputListRegisterDetail) = ABSTRACT item (inputListRegisterDetail) IN idGroup;
-nameAttributeItemListRegisterDetail 'Товар' (inputListRegisterDetail) = nameAttributeItem(itemListRegisterDetail(inputListRegisterDetail));
-barcodeExSkuListRegisterDetail 'Штрих-код' (inputListRegisterDetail) = barcodeBarcodeSku(itemListRegisterDetail(inputListRegisterDetail));
-shortNameUnitOfMeasureItemListRegisterDetail 'Ед. изм.' (inputListRegisterDetail) = shortNameUnitOfMeasureItem(itemListRegisterDetail(inputListRegisterDetail));
-
-quantityListRegisterDetail 'Кол-во' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,3] (inputListRegisterDetail);
-
-importerPriceListRegisterDetail 'Цена изготовителя/импортера' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-supplierSumListRegisterDetail 'Сумма поставщика без НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-supplierMarkupListRegisterDetail 'Оптовая надбавка/торговая скидка, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
-
-wareSumListRegisterDetail 'Сумма посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-warePriceListRegisterDetail 'Цена посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-wareVATSumListRegisterDetail 'Сумма НДС по посуде' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-dataWareRangeListRegisterDetail 'НДС посуды, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
-
-importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
-
-markupSumListRegisterDetail 'Сумма надбавки' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-valueRetailRangeListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
-
-retailVATSumListRegisterDetail 'Сумма НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-retailPriceListRegisterDetail 'Розничная цена' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-retailSumListRegisterDetail 'Розничная сумма' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
-
-//-------------------------------------------- Реестр цен -------------------------------------------//
-
-CLASS ABSTRACT listRegister 'Реестр' : inputListRegister;
-CLASS ABSTRACT listRegisterDetail 'Строка реестра' : inputListRegisterDetail;
-
-supplierVATISumListRegisterDetailListRegister 'Сумма НДС поставщика (без посуды)' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-invoiceSumListRegisterDetailListRegister 'Сумма поставщика с НДС' (listRegister) = ABSTRACT NUMERIC[14,2] (listRegister);
-
-
-supplierVATISumListRegisterDetail 'Сумма НДС поставщика (без посуды)' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-dataSupplierRangeListRegisterDetail 'НДС поставщика, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
-
-invoiceSumListRegisterDetail 'Сумма поставщика с НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
-
-
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 META implementPriceChangeDocument (object)
@@ -4228,7 +3971,7 @@ datePriceChangeDocumentDetail 'Дата' (priceChangeDocumentDetail) = datePrice
 
 itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT item (priceChangeDocumentDetail) PERSISTENT INDEXED;
 nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
-shortNameUnitOfMeasureItemPriceChangeDocumentDetail 'Ед. изм.' (priceChangeDocumentDetail) = shortNameUnitOfMeasureItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
+shortNameUOMItemPriceChangeDocumentDetail 'Ед. изм.' (priceChangeDocumentDetail) = shortNameUOMItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,3] (priceChangeDocumentDetail) PERSISTENT;
 
@@ -4346,7 +4089,7 @@ FORM actOfRevaluation 'Акт переоценки' PRINT
                              diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
-    PROPERTIES(pcd) READONLY indexPriceChangeDocumentDetail, nameItemPriceChangeDocumentDetail, shortNameUnitOfMeasureItemPriceChangeDocumentDetail,
+    PROPERTIES(pcd) READONLY indexPriceChangeDocumentDetail, nameItemPriceChangeDocumentDetail, shortNameUOMItemPriceChangeDocumentDetail,
                              quantityPriceChangeDocumentDetail,
                              curSupplierISumPriceChangeDocumentDetail, curMarkupSumPriceChangeDocumentDetail,
                              curRetailVATISumPriceChangeDocumentDetail, curWareSumPriceChangeDocumentDetail,
@@ -4448,7 +4191,7 @@ FORM cutting 'Карта проработки'
     PROPERTIES(c)      totalPercGoodsCutting TODRAW d FORCE PANEL  BACKGROUND highlightCutting(c)
 
 
-    PROPERTIES(d)      nameAttributeItemCuttingDetail, shortNameUnitOfMeasureItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail, ADDOBJ, delete
+    PROPERTIES(d)      nameAttributeItemCuttingDetail, shortNameUOMItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail, ADDOBJ, delete
 
     TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
         PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
@@ -4464,7 +4207,7 @@ FORM cutting 'Карта проработки'
         ORDER BY gname
 
         OBJECTS i=item
-        PROPERTIES READONLY barcodeBarcodeSku(i), nameAttributeItemGroupItem(g, i), shortNameUnitOfMeasureItem(i), nameBrandItem(i)
+        PROPERTIES READONLY barcodeBarcodeSku(i), nameAttributeItemGroupItem(g, i), shortNameUOMItem(i), nameBrandItem(i)
         FILTERS nameAttributeItemGroupItem(g, i)
         ORDER BY nameAttributeItemGroupItem
 
@@ -4518,13 +4261,13 @@ FORM cuttings 'Карты проработки'
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 
     OBJECTS d=cuttingDetail
-    PROPERTIES(d)      READONLY nameAttributeItemCuttingDetail, shortNameUnitOfMeasureItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail
+    PROPERTIES(d)      READONLY nameAttributeItemCuttingDetail, shortNameUOMItemCuttingDetail, factorCuttingDetail, percGoodsCuttingDetail
 
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
 
     OBJECTS i=item
-    PROPERTIES(i)      READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem, nameBrandItem
+    PROPERTIES(i)      READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUOMItem, nameBrandItem
 
     PROPERTIES(dep, c) READONLY inDepartmentStoreCutting
 
@@ -5468,24 +5211,14 @@ descriptionPriceTransactionDocument (document) += descriptionShipment(document);
 
 //----------------------------------Для реестра цен----------------------------//
 
-numberShipment 'Номер накладной' (shipment) = numberObject(shipment) AND shipment IS shipment IN documentHeaderGroup PERSISTENT;
-seriesShipment 'Серия накладной' (shipment) = seriesObject(shipment) AND shipment IS shipment IN documentHeaderGroup PERSISTENT;
-seriesNumberShipment 'Серия/Номер' (shipment) = seriesNumberObject(shipment) AND shipment IS shipment PERSISTENT;
-
-@implementInputListRegister(shipment);
+@implementListRegister(shipment, item);
+@implementHeaderInputListRegisterNumber(shipment);
 
 senderListRegister (inputListRegister) += supplierShipment(inputListRegister);
 shipperListRegister (inputListRegister) += nameSupplierShipment(inputListRegister);
-supplierSumListRegisterDetailListRegister (inputListRegister) += supplierSumShipmentDetailShipment(inputListRegister);
-
-supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumShipmentDetailShipment(listRegister);
-invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumShipmentDetailShipment(listRegister);
 
 supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumShipmentDetail(inputListRegisterDetail);
-
-supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumShipmentDetail(listRegisterDetail);
-dataSupplierRangeListRegisterDetail (listRegisterDetail) += dataSupplierRangeShipmentDetail(listRegisterDetail);
-invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumShipmentDetail(listRegisterDetail);
+supplierSumListRegisterDetailListRegister (inputListRegister) += supplierSumShipmentDetailShipment(inputListRegister);
 
 // ------ Запись значений по умолчанию ----- //
 
@@ -5904,12 +5637,13 @@ descriptionPriceTransactionDocument (document) += descriptionInnerArrival(docume
 
 //----------------------------------Для реестра цен----------------------------//
 
-@implementInputListRegister(innerArrival);
+@implementInputListRegister(innerArrival, item);
+@implementHeaderInputListRegisterNumberCustom(innerArrival, innerArrival);
 
 senderListRegister (inputListRegister) += companyDepartmentStore(senderDepartmentInnerArrival(inputListRegister));
-shipperListRegister (inputListRegister) +=   [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
+shipperListRegister (inputListRegister) += [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
                                         nameCompanyDepartmentStore(senderDepartmentInnerArrival(inputListRegister)),
-                                        name(storeDepartmentStore(senderDepartmentInnerArrival(inputListRegister))),
+                                        nameStoreDepartmentStore(senderDepartmentInnerArrival(inputListRegister)),
                                         name(senderDepartmentInnerArrival(inputListRegister)));
 supplierSumListRegisterDetailListRegister (inputListRegister) += supplierISumInnerArrivalDetailInnerArrival(inputListRegister) (+) wareSumInnerArrivalDetailInnerArrival(inputListRegister);
 
@@ -6053,14 +5787,14 @@ supplierSumConsignmentDetailConsignment (consignment) += supplierSumReturnSuppli
 
 priceConsignmentDetail (consignmentDetail) += supplierPriceReturnSupplierDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += supplierISumReturnSupplierDetail (consignmentDetail);
-vatConsignmentDetail (consignmentDetail) += dataSupplierRangeReturnSupplierDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueSupplierRangeReturnSupplierDetail (consignmentDetail);
 sumVATConsignmentDetail (consignmentDetail) += supplierVATISumReturnSupplierDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += invoiceISumReturnSupplierDetail (consignmentDetail);
 
 wareConsignmentDetail (consignmentDetail) += wareReturnSupplierDetail(consignmentDetail);
 warePriceConsignmentDetail (consignmentDetail) += warePriceReturnSupplierDetail(consignmentDetail);
 wareSumConsignmentDetail  (consignmentDetail) += wareSumReturnSupplierDetail(consignmentDetail);
-dataWareRangeConsignmentDetail (consignmentDetail) += dataWareRangeReturnSupplierDetail(consignmentDetail);
+valueWareRangeConsignmentDetail (consignmentDetail) += valueWareRangeReturnSupplierDetail(consignmentDetail);
 wareVATSumConsignmentDetail (consignmentDetail) += wareVATSumReturnSupplierDetail(consignmentDetail);
 wareSupplierPriceConsignmentDetail (consignmentDetail) += wareSupplierPriceReturnSupplierDetail(consignmentDetail);
 wareSupplierSumConsignmentDetail (consignmentDetail) += wareSupplierSumReturnSupplierDetail(consignmentDetail);
@@ -6653,7 +6387,7 @@ FORM naturalLossPrint 'Ведомость естественной убыли' P
                            retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
     OBJECTS d=naturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, nameAttributeItemNaturalLossDetail, codeNaturalLossDetail,
-                           shortNameUnitOfMeasureItemNaturalLossDetail, quantityLossNaturalLossDetail,
+                           shortNameUOMItemNaturalLossDetail, quantityLossNaturalLossDetail,
                            supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail, supplierSumLossNaturalLossDetail,
                            retailSumLossNaturalLossDetail, nameSubNaturalLossItemGroupNaturalLossDetail,
                            nameSubNaturalDetailNaturalLossDetail, castNameSubNaturalLossItemGroup, percentNaturalLossDetail,
@@ -6674,7 +6408,7 @@ FORM naturalLoss 'Ведомость естественной убыли'
     PROPERTIES(d) indexNaturalLossDetail, nameAttributeItemNaturalLossDetail, codeNaturalLossDetail,
                   quantityLossNaturalLossDetail, supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail,
                   supplierSumLossNaturalLossDetail, retailSumLossNaturalLossDetail,
-                  nameSubNaturalLossItemGroupNaturalLossDetail, shortNameUnitOfMeasureItemNaturalLossDetail,
+                  nameSubNaturalLossItemGroupNaturalLossDetail, shortNameUOMItemNaturalLossDetail,
                   nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail,
                   quantityNaturalLossDetail, supplierSumNaturalLossDetail, retailSumNaturalLossDetail, ADDOBJ, delete
 
@@ -6727,7 +6461,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, nameAttributeItemNaturalLossDetail, codeNaturalLossDetail,
-                           shortNameUnitOfMeasureItemNaturalLossDetail, quantityLossNaturalLossDetail,
+                           shortNameUOMItemNaturalLossDetail, quantityLossNaturalLossDetail,
                            supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail, supplierSumLossNaturalLossDetail,
                            retailSumLossNaturalLossDetail, nameSubNaturalLossItemGroupNaturalLossDetail,
                            percentNaturalLossDetail, quantityNaturalLossDetail,
@@ -6839,7 +6573,7 @@ supplierRangeItemDateOrderSupplier (orderSupplier, item) <- supplierRangeItemDat
                                                              WHEN ASSIGNED(packQuantityItemOrderSupplier(orderSupplier, item));
 numberSupplierRangeOrderSupplier 'НДС поставщика, номер' (orderSupplier, item) =
     numberRange(supplierRangeItemDateOrderSupplier(orderSupplier, item));
-dataSupplierRangeOrderSupplier 'НДС поставщика, %' (orderSupplier, item) =
+valueSupplierRangeOrderSupplier 'НДС поставщика, %' (orderSupplier, item) =
     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
                    valueRateRangeDate(supplierRangeItemDateOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 CONSTRAINT taxRange(supplierRangeItemDateOrderSupplier(orderSupplier, item)) != tax.taxVAT CHECKED BY supplierRangeItemDateOrderSupplier MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -6858,7 +6592,7 @@ dataRangeWareOrderSupplier (orderSupplier, item) <- rangeWareDate(wareOrderSuppl
                                                     WHEN CHANGED(wareOrderSupplier(orderSupplier, item));
 numberDataRangeWareOrderSupplier 'Шкала НДС посуды' (orderSupplier, item) =
     numberRange(dataRangeWareOrderSupplier(orderSupplier, item));
-dataWareRangeOrderSupplier 'НДС посуды, %' (orderSupplier, item) =
+valueWareRangeOrderSupplier 'НДС посуды, %' (orderSupplier, item) =
     valueRateRangeDate(dataRangeWareOrderSupplier(orderSupplier, item), dateOrderSupplier(orderSupplier));
 
 sumWareOrderSupplier 'Сумма по посуде' (orderSupplier, item) =
@@ -6874,7 +6608,7 @@ totalSumOrderSupplier 'Общая сумма заказа' (orderSupplier) = GRO
 sumVatOrderSupplier 'Сумма НДС, за ед.' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, priceSupplierItemOrderSupplier(orderSupplier, item) *
-     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, dataSupplierRangeOrderSupplier(orderSupplier, item))/100);
+     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, valueSupplierRangeOrderSupplier(orderSupplier, item))/100);
 retailVATISumOrderSupplier 'Сумма НДС по товару' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
@@ -6883,7 +6617,7 @@ retailVATISumOrderSupplier 'Сумма НДС по товару' (orderSupplier,
 sumVatWareOrderSupplier 'Сумма НДС по посуде, за ед.' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, warePriceOrderSupplier(orderSupplier, item) *
-     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, dataWareRangeOrderSupplier(orderSupplier, item))/100);
+     UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item, valueWareRangeOrderSupplier(orderSupplier, item))/100);
 retailVATISumWareOrderSupplier 'Сума НДС по посуде' (orderSupplier, item) =
     round0(
     (UNION OVERRIDE 0 IF orderSupplier IS orderSupplier AND item IS item,
@@ -7336,11 +7070,11 @@ FORM orderSupplier 'Заказ поставщику'
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i),
                                     lastOrderSupplier(o, i), warePriceOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
-                                    dataWareRangeOrderSupplier(o, i)
+                                    valueWareRangeOrderSupplier(o, i)
 
     PROPERTIES             currentBalanceOrderSupplierItem(o, i), quantityToSellNextOrder(o, i), minReserveItem(i), recommendCountOrderSupplier(o, i)
     PROPERTIES(o, i)       priceSupplierItemOrderSupplier, numberSupplierRangeOrderSupplier,
-                           dataSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
+                           valueSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
                            fullSumItemOrderSupplier
 
     PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
@@ -7406,7 +7140,7 @@ DESIGN orderSupplier FROM DEFAULT {
                 ADD PROPERTY(nameWareOrderSupplier);
                 ADD PROPERTY(warePriceOrderSupplier);
                 ADD PROPERTY(numberDataRangeWareOrderSupplier);
-                ADD PROPERTY(dataWareRangeOrderSupplier);
+                ADD PROPERTY(valueWareRangeOrderSupplier);
             };
     }
 
@@ -7440,11 +7174,11 @@ FORM orderSupplierPrint 'Заказ поставщику' PRINT
     PROPERTIES FORCE PANEL READONLY articleItem(i), nameCountryItem(i), retailPriceItemOrderSupplier(o, i),
                                     nameinActionItemOrderSupplier(o, i),
                                     lastOrderSupplier(o, i), warePriceOrderSupplier(o, i), numberDataRangeWareOrderSupplier(o, i),
-                                    dataWareRangeOrderSupplier(o, i)
+                                    valueWareRangeOrderSupplier(o, i)
 
     PROPERTIES             currentBalanceOrderSupplierItem(o, i), quantityToSellNextOrder(o, i), minReserveItem(i), recommendCountOrderSupplier(o, i)
     PROPERTIES(o, i)       priceSupplierItemOrderSupplier, numberSupplierRangeOrderSupplier,
-                           dataSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
+                           valueSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
                            fullSumItemOrderSupplier
 
     FILTERS isSupplierItemDepartmentOrderSupplier(o, i),
@@ -7487,7 +7221,7 @@ FORM orderSuppliers 'Заказы поставщику'
     PROPERTIES(i) READONLY     quantityPackItem, minQuantityOrderItem
 
     PROPERTIES(o, i) READONLY  priceSupplierItemOrderSupplier, numberSupplierRangeOrderSupplier,
-                               dataSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
+                               valueSupplierRangeOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
                                fullSumItemOrderSupplier
 
     FILTERS sumQuantityItemOrderSupplier(o, i)
@@ -7629,7 +7363,7 @@ FORM itemDepartmentStoreInput 'Подбор товаров'
     ORDER BY gname
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
+    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
@@ -7705,7 +7439,7 @@ FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
     ORDER BY gname
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
+    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
@@ -7781,7 +7515,7 @@ FORM itemDepartmentStoreBalanceInput 'Подбор товаров'
     ORDER BY gname
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUnitOfMeasureItem(i) READONLY
+    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
@@ -8257,7 +7991,7 @@ inLabelTransactionBarcode 'Вкл' (labelTransaction, barcode) = DATA BOOLEAN (l
 quantityLabelTransactionBarcode 'Кол-во' (labelTransaction, barcode) = DATA INTEGER (labelTransaction, barcode);
 nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (labelTransaction, barcode);
 priceLabelTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (labelTransaction, barcode);
-shortNameUnitOfMeasureLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
+shortNameUOMLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
 countryLabelTransactionBarcode 'Страна'  = DATA STRING[255] (labelTransaction, barcode);
 manufacturerLabelTransactionBarcode 'Производитель'  = DATA STRING[255] (labelTransaction, barcode);
 
@@ -8270,7 +8004,7 @@ FORM printLabelTransaction 'Печать ценников' PRINT
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
     PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
-                     shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
+                     shortNameUOMLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -8283,7 +8017,7 @@ FORM customLabelTransaction 'Печать ценников'
     PROPERTIES(l, b)          inLabelTransactionBarcode
     PROPERTIES(b)    READONLY barcodeEx
     PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
-                              shortNameUnitOfMeasureLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
+                              shortNameUOMLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -8314,7 +8048,7 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
 
     SET nameLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode);
     SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- currentRetailPriceBarcodeDepartmentStore(barcode, departmentStore);
-    SET shortNameUnitOfMeasureLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- shortNameUnitOfMeasureItem(skuBarcode(barcode));
+    SET shortNameUOMLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- shortNameUOMItem(skuBarcode(barcode));
     SET countryLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- countryItem(skuBarcode(barcode));
     SET manufacturerLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- manufacturerItem(skuBarcode(barcode));
 }
@@ -8392,10 +8126,10 @@ META metaCodeConsignmentTwo(prop, caption)
 
         OBJECTS d=consignmentDetail
 
-        PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+        PROPERTIES(d) nameItemConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
                       noteConsignmentDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
-                      dataWareRangeConsignmentDetail, wareVATSumConsignmentDetail, wareSupplierPriceConsignmentDetail,
+                      valueWareRangeConsignmentDetail, wareVATSumConsignmentDetail, wareSupplierPriceConsignmentDetail,
                       wareSupplierSumConsignmentDetail
 
         FILTERS consignmentConsignmentDetail(d) == c
@@ -8427,10 +8161,10 @@ META metaCodeTransportConsignment(prop, caption)
 
         OBJECTS d=consignmentDetail
 
-        PROPERTIES(d) nameItemConsignmentDetail, shortNameUnitOfMeasureConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
+        PROPERTIES(d) nameItemConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
                       packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
-                      nameWareConsignmentDetail, warePriceConsignmentDetail, dataWareRangeConsignmentDetail,
+                      nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                       wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                       wareVATSumConsignmentDetail, wareSumConsignmentDetail
 
@@ -8465,10 +8199,10 @@ FORM consignment 'Форма заполнения атрибутов накла�
 
     OBJECTS d=consignmentDetail
 
-    PROPERTIES(d) nameItemConsignmentDetail READONLY, shortNameUnitOfMeasureConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
+    PROPERTIES(d) nameItemConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
                   packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
-                  nameWareConsignmentDetail, warePriceConsignmentDetail, dataWareRangeConsignmentDetail,
+                  nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                   wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                   wareVATSumConsignmentDetail, wareSumConsignmentDetail
 
@@ -8584,55 +8318,6 @@ quantityWareDetailsShipment 'Количество строк с посудой' 
 
 quantityWareDetailsShipment(shipment) => toShowWareShipment(shipment) RESOLVE FALSE;
 
-//-------------------------------------------------------------------------------------------------------
-
-FORM listRegister 'Реестр цен (поставка)' PRINT
-    OBJECTS l=listRegister FIXED PANEL
-    PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
-                    numberContractShipment, dateContractShipment,
-                    shipperListRegister, consigneeListRegister,
-                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, supplierVATISumListRegisterDetailListRegister,
-                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister, invoiceSumListRegisterDetailListRegister, markupSumListRegisterDetailListRegister,
-                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
-                    nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
-                    nameHeadManListRegister
-
-    OBJECTS d=listRegisterDetail
-    PROPERTIES (d)  indexListRegisterDetail, barcodeExSkuListRegisterDetail, nameAttributeItemListRegisterDetail, shortNameUnitOfMeasureItemListRegisterDetail, quantityListRegisterDetail,
-                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, dataSupplierRangeListRegisterDetail,
-                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, dataWareRangeListRegisterDetail,
-                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
-                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
-
-    FILTERS listRegisterListRegisterDetail(d) == l
-;
-
-toPrintListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup CONFIRM;
-
-FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
-    OBJECTS l=inputListRegister FIXED PANEL
-    PROPERTIES (l)  SELECTOR numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
-                    numberContractShipment, dateContractShipment,
-                    shipperListRegister, consigneeListRegister,
-                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
-                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
-                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
-                    nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
-                    nameHeadManListRegister
-
-    OBJECTS d=inputListRegisterDetail
-    PROPERTIES (d)  indexListRegisterDetail, barcodeExSkuListRegisterDetail, nameAttributeItemListRegisterDetail, shortNameUnitOfMeasureItemListRegisterDetail, quantityListRegisterDetail,
-                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
-                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, dataWareRangeListRegisterDetail,
-                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
-                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
-
-    FILTERS listRegisterListRegisterDetail(d) == l
-;
-
-toPrintInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup CONFIRM;
-
-
 // --------------------------- Формы списания ---------------------------------
 companyWriteOff (writeOff) = companyDepartmentStore(departmentStoreWriteOff(writeOff));
 nameCompanyWriteOff 'Компания' (writeOff) = name(companyWriteOff(writeOff));
@@ -8656,7 +8341,7 @@ FORM writeOffPrint 'Списание' PRINT
                    namePositionEmployeeWriteOff, wastageCommitteeWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, shortNameUnitOfMeasureItemWriteOffDetail,
+    PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, shortNameUOMItemWriteOffDetail,
                    quantityWriteOffDetail, accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
@@ -8782,7 +8467,7 @@ FORM specificationPrint 'Счет-фактура' PRINT
 
     OBJECTS d=specificationDetail
     PROPERTIES (d) READONLY indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
-                            shortNameUnitOfMeasureItemSpecificationDetail, quantitySpecificationDetail,
+                            shortNameUOMItemSpecificationDetail, quantitySpecificationDetail,
                             retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
                             calcVATSumSpecificationDetail, retailSumSpecificationDetail
 
@@ -8816,9 +8501,9 @@ FORM disparity 'Пересортица'
                     inputMultipleItemsDisparity TODRAW d
 
     PROPERTIES(d)   indexDisparityDetail,
-                    barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUnitOfMeasureItemDisparityDetail,
+                    barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
                     quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
-                    inputBarcodeExSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUnitOfMeasureItemDisparityDetail,
+                    inputBarcodeExSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
                     inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
     PROPERTIES(d) ADDOBJ, delete
 
@@ -8933,9 +8618,9 @@ FORM disparities 'Пересортицы'
 
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
-                    barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUnitOfMeasureItemDisparityDetail,
+                    barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
                     quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
-                    inputBarcodeExSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUnitOfMeasureItemDisparityDetail,
+                    inputBarcodeExSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
                     inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
@@ -8986,7 +8671,7 @@ FORM shipment 'Поставка'
     PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
-                    balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, dataSupplierRangeShipmentDetail,
+                    balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                     supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
                     warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail,
                     retailMarkupShipmentDetail, curRetailPriceShipmentDetail, retailPriceShipmentDetail,
@@ -8997,7 +8682,7 @@ FORM shipment 'Поставка'
                                controlExpiryItemShipmentDetail, isManufacturedItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
                                hintItemShipmentDetail, nameCountryItemShipmentDetail, nameBanRevaluationItemDepartmentShipmentDetail,
                                curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
-                               dataWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
+                               valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
 
     PROPERTIES inputMultipleItemsShipment(s) TODRAW d, addShipmentDetailBarcode(s) TODRAW d, cleanAllShipmentDetailsShipment(s) FORCE PANEL TODRAW d
@@ -9079,14 +8764,14 @@ FORM shipments 'Поставки'
                             createSnapshotShipmentLabelTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
-                            toPrintActOfRevaluationShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), toPrintListRegister FORCE PANEL,
+                            toPrintActOfRevaluationShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), printListRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
-                             balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, dataSupplierRangeShipmentDetail,
+                             balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                              supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
                              numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail, retailMarkupShipmentDetail,
                              curRetailPriceShipmentDetail, retailPriceShipmentDetail
@@ -9173,7 +8858,7 @@ toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSuppl
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=shipmentDetail    //
     PROPERTIES(b) READONLY seriesShipmentDetail, numberShipmentDetail, dateShipmentDetail,
-                           quantityShipmentDetail, supplierPriceShipmentDetail, dataSupplierRangeShipmentDetail,
+                           quantityShipmentDetail, supplierPriceShipmentDetail, valueSupplierRangeShipmentDetail,
                            retailPriceShipmentDetail
     DIALOG shipmentDetail OBJECT b;     // batchShipment
 ;
@@ -9200,7 +8885,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(d) indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
-                  dataSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
+                  valueSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
                   nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                   retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
@@ -9210,7 +8895,7 @@ FORM returnSupplier 'Возврат поставщику'
                                     controlExpiryItemReturnSupplierDetail(d), isManufacturedItemReturnSupplierDetail(d),
                                     isWeightItemReturnSupplierDetail(d), nameInActionItemDepartmentReturnSupplierDetail(d),
                                     hintItemReturnSupplierDetail(d), nameCountryItemReturnSupplierDetail(d),
-                                    nameBanRevaluationItemDepartmentReturnSupplierDetail(d), dataWareRangeReturnSupplierDetail(d),
+                                    nameBanRevaluationItemDepartmentReturnSupplierDetail(d), valueWareRangeReturnSupplierDetail(d),
                                     curNameWareReturnSupplierDetail(d), curWarePriceReturnSupplierDetail(d)
 
     FILTERS returnSupplierReturnSupplierDetail(d) == r
@@ -9239,7 +8924,7 @@ FORM returnSuppliers 'Возвраты поставщику'
     PROPERTIES(d) READONLY indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                            commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
-                           dataSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
+                           valueSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
                            nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                            retailPriceReturnSupplierDetail
     FILTERS returnSupplierReturnSupplierDetail(d) == r
@@ -9271,7 +8956,7 @@ DESIGN returnSupplier FROM DEFAULT {
                     title = 'Посуда';
                     ADD PROPERTY(curNameWareReturnSupplierDetail);
                     ADD PROPERTY(curWarePriceReturnSupplierDetail);
-                    ADD PROPERTY(dataWareRangeReturnSupplierDetail);
+                    ADD PROPERTY(valueWareRangeReturnSupplierDetail);
                 };
             };
         };
@@ -9920,7 +9605,7 @@ FORM collationSheetItem 'Товары для добавления в сличи�
     ORDER BY name
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUOMItem
 
     PROPERTIES(cs, i) inManyCollationSheetItem
 
@@ -10478,8 +10163,8 @@ FORM userPriceChange 'Переоценка товаров'
                    curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                    numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                    curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
-                   curNumberWareRangeUserPriceChangeDetail, curDataWareRangeUserPriceChangeDetail,
-                   numberWareRangeUserPriceChangeDetail, dataWareRangeUserPriceChangeDetail,
+                   curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
+                   numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
 //    PROPERTIES (u, d)  newMarkupRetailPriceUserPriceChangeDetail, newDiscountRetailPriceUserPriceChangeDetail
 
@@ -10528,7 +10213,7 @@ DESIGN userPriceChange FROM DEFAULT {
         PROPERTY(valueRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(warePriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(numberWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(dataWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(valueWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(retailPriceUserPriceChangeDetail) { background = #FFFFCC; }
     }
 }
@@ -10560,8 +10245,8 @@ FORM userPriceChanges 'Переоценки товаров'
                             curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                             numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                             curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
-                            curNumberWareRangeUserPriceChangeDetail, curDataWareRangeUserPriceChangeDetail,
-                            numberWareRangeUserPriceChangeDetail, dataWareRangeUserPriceChangeDetail,
+                            curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
+                            numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
                             curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail
 
 
@@ -10922,7 +10607,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
                             createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             toPrintActOfRevaluationInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
-                            toPrintInputListRegister FORCE PANEL,
+                            printInputListRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                             postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
 
@@ -11485,7 +11170,7 @@ FORM actOfStudy 'Акт проработки'
     PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
                     cleanAllStudyInputDetail FORCE PANEL
 
-    PROPERTIES(sod) nameAttributeItemStudyOutputDetail, shortNameUnitOfMeasureItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
+    PROPERTIES(sod) nameAttributeItemStudyOutputDetail, shortNameUOMItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
                     numberRetailRangeStudyOutputDetail, valueRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
                     retailPriceStudyOutputDetail, calculatedStudyOutputDetail, actualQuantityStudyOutputDetail, retailSumStudyOutputDetail
 
@@ -11576,7 +11261,7 @@ FORM actOfStudies 'Акты проработки'
                             postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
 
     OBJECTS i = item
-    PROPERTIES(i)      READONLY nameAttributeItem, shortNameUnitOfMeasureItem
+    PROPERTIES(i)      READONLY nameAttributeItem, shortNameUOMItem
     PROPERTIES(i, a)   READONLY quantityStudyInputDetailItemActOfStudy, retailSumStudyInputDetailItemActOfStudy, quantityStudyOutputDetailItemActOfStudy, retailSumStudyOutputDetailItemActOfStudy
 
     ORDER BY           retailSumStudyInputDetailItemActOfStudy, retailSumStudyOutputDetailItemActOfStudy
@@ -12194,7 +11879,7 @@ FORM statisticalReport '12-Торг (продажи) справочно'
     FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
 
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUnitOfMeasureStatisticGroup(g)
+    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUOMStatisticGroup(g)
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
@@ -12415,7 +12100,7 @@ FORM torgSales '12-Торг (продажи)'
     PROPERTIES(r) SELECTOR name
 
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
-    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUnitOfMeasureStatisticGroup(g)
+    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUOMStatisticGroup(g)
     ORDER BY sidStatisticGroup
 
     PROPERTIES(g, c, r, dFrom, dTo) valueByStatisticGroupCompanyRegionDateFromTo, valueResidentByStatisticGroupCompanyRegionDateFromTo
@@ -12756,7 +12441,7 @@ NAVIGATOR {
             ADD itemGroupDialog;
             ADD statisticGroup;
             ADD statisticGroupDialog;
-            ADD unitOfMeasure;
+            ADD UOM;
             ADD item;
             ADD ware;
             ADD barcode;

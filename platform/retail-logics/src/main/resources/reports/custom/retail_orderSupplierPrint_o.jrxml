@@ -67,14 +67,14 @@
 	<field name="lastOrderSupplier" class="java.lang.String"/>
 	<field name="warePriceOrderSupplier" class="java.lang.Double"/>
 	<field name="numberDataRangeWareOrderSupplier" class="java.lang.Integer"/>
-	<field name="dataWareRangeOrderSupplier" class="java.lang.Double"/>
+	<field name="valueWareRangeOrderSupplier" class="java.lang.Double"/>
 	<field name="currentBalanceOrderSupplierItem" class="java.lang.Double"/>
 	<field name="quantityToSellNextOrder" class="java.lang.Double"/>
 	<field name="minReserveItem" class="java.lang.Integer"/>
 	<field name="recommendCountOrderSupplier" class="java.lang.Double"/>
 	<field name="priceSupplierItemOrderSupplier" class="java.lang.Double"/>
 	<field name="numberSupplierRangeOrderSupplier" class="java.lang.Integer"/>
-	<field name="dataSupplierRangeOrderSupplier" class="java.lang.Double"/>
+	<field name="valueSupplierRangeOrderSupplier" class="java.lang.Double"/>
 	<field name="sumWareOrderSupplier" class="java.lang.Integer"/>
 	<field name="retailVATISumItemOrderSupplier" class="java.lang.Double"/>
 	<field name="fullSumItemOrderSupplier" class="java.lang.Double"/>
@@ -178,7 +178,7 @@
 			<textField pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="571" y="0" width="48" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
-				<textFieldExpression><![CDATA[$F{dataSupplierRangeOrderSupplier}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueSupplierRangeOrderSupplier}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="619" y="0" width="100" height="20"/>

@@ -18,7 +18,7 @@
 	<field name="pcd" class="java.lang.Integer"/>
 	<field name="indexPriceChangeDocumentDetail" class="java.lang.Integer"/>
 	<field name="nameItemPriceChangeDocumentDetail" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureItemPriceChangeDocumentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMItemPriceChangeDocumentDetail" class="java.lang.String"/>
 	<field name="quantityPriceChangeDocumentDetail" class="java.lang.Double"/>
 	<field name="curSupplierISumPriceChangeDocumentDetail" class="java.lang.Double"/>
 	<field name="curMarkupSumPriceChangeDocumentDetail" class="java.lang.Double"/>
@@ -255,7 +255,7 @@
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureItemPriceChangeDocumentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMItemPriceChangeDocumentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="159" y="0" width="26" height="18"/>

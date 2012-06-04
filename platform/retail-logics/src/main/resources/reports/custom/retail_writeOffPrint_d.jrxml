@@ -26,7 +26,7 @@
 	<field name="nameCountryItemWriteOffDetail" class="java.lang.String"/>
 	<field name="retailPriceWriteOffDetail" class="java.lang.Double"/>
 	<field name="balanceDepartmentStoreItemWriteOff" class="java.lang.Double"/>
-	<field name="shortNameUnitOfMeasureItemWriteOffDetail" class="java.lang.String"/>
+	<field name="shortNameUOMItemWriteOffDetail" class="java.lang.String"/>
 	<detail>
 		<band height="12">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
@@ -55,7 +55,7 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureItemWriteOffDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMItemWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="214" y="0" width="82" height="12" backcolor="#FFFFFF"/>

@@ -38,7 +38,7 @@
 	<field name="indexNaturalLossDetail" class="java.lang.Integer"/>
 	<field name="nameAttributeItemNaturalLossDetail" class="java.lang.String"/>
 	<field name="codeNaturalLossDetail" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureItemNaturalLossDetail" class="java.lang.String"/>
+	<field name="shortNameUOMItemNaturalLossDetail" class="java.lang.String"/>
 	<field name="quantityLossNaturalLossDetail" class="java.lang.Double"/>
 	<field name="supplierPriceNaturalLossDetail" class="java.lang.Double"/>
 	<field name="retailPriceNaturalLossDetail" class="java.lang.Double"/>
@@ -227,7 +227,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureItemNaturalLossDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMItemNaturalLossDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="365" y="20" width="40" height="20"/>

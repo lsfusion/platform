@@ -75,7 +75,7 @@
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameItemConsignmentDetail" class="java.lang.String"/>
-	<field name="shortNameUnitOfMeasureConsignmentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
 	<field name="quantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="priceConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumConsignmentDetail" class="java.lang.Double"/>
@@ -87,7 +87,7 @@
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
 	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
-	<field name="dataWareRangeConsignmentDetail" class="java.lang.Double"/>
+	<field name="valueWareRangeConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareSupplierSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
@@ -737,7 +737,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUnitOfMeasureConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMConsignmentDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">
@@ -776,7 +776,7 @@
 				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dataWareRangeConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueWareRangeConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="false">
 				<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="10" y="0" width="24" height="14"/>
