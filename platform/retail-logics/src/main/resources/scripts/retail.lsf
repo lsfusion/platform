@@ -14,6 +14,7 @@ IMPORT Hierarchy;
 IMPORT Historizable;
 IMPORT Numerator;
 IMPORT Stock;
+IMPORT Barcode;
 IMPORT Document;
 IMPORT Tax;
 IMPORT LegalEntity;
@@ -64,8 +65,8 @@ META defineDocumentDetailItemPrefix (object, prefix, caption)
 
     prefix###nameCountryItem###object##Detail 'Страна'###caption (detail) = nameCountryItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
-    prefix###barcodeExSku###object##Detail 'Штрих-код'###caption (detail) =
-        barcodeBarcodeSku(prefix###item###object##Detail (detail)) IN itemDetailGroup;
+    prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) =
+        idBarcodeSku(prefix###item###object##Detail (detail)) IN itemDetailGroup;
 
     prefix###inWare###object##Detail 'Товар в посуде'###caption (detail) = inWareItem(prefix###item###object##Detail(detail));
 END
@@ -97,13 +98,13 @@ META defineDocumentDetailItemActions (object)
         FORM barcodeInput MODAL;
 
         IF formResult() == formResult.ok THEN {
-            SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), date###object(object));
+            SET tmpSku() <- skuBarcodeIdDate(chosenString('barcode'), date###object(object));
             IF tmpSku() IS item THEN {
                 ADDOBJ object##Detail;
                 FOR o == addedObject() DO {
                     SET object###object##Detail(o) <- object AS object;
                     SET item###object##Detail(o) <- tmpSku();
-            //        SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
+            //        SET quantity###object##Detail(o) <- amountBarcode(barcodeIdDate(chosenString('barcode'), date###object(object)));
                 };
             } ELSE
                 MESSAGE 'Не найден штрих-код';
@@ -486,7 +487,7 @@ END
 META defineDocumentDetailAggregationItemPrefix (primObject, aggrObject, prefix)
     item###aggrObject##Detail (detail) = prefix###item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     nameItem###aggrObject##Detail 'Товар' (detail) = nameAttributeItem(item###aggrObject##Detail(detail));
-    barcodeExSku###aggrObject##Detail 'Штрих-код' (detail) = barcodeBarcodeSku(item###aggrObject##Detail(detail));
+    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(item###aggrObject##Detail(detail));
 END
 META defineDocumentDetailAggregationItem (primObject, aggrObject)
     @defineDocumentDetailAggregationItemPrefix(primObject, aggrObject, );
@@ -595,9 +596,6 @@ namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для ш
 
 weightNumeratorItemGroup = DATA numerator (itemGroup);
 nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
-
-maxTurnoverItemGroup 'Максимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
-minTurnoverItemGroup 'Минимально допустимая товарооборачиваемость' (itemGroup) = DATA INTEGER (itemGroup);
 
 // формы за формами товара
 
@@ -1399,36 +1397,10 @@ nameScalesAttributeItem 'Наименование для весов' (item) = ca
 nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
 
 nameAttributeStatisticGroupItem 'Наименование' (statisticGroup, item) = nameAttributeItem(item) AND hasParentStatisticGroupSku(statisticGroup, item) PERSISTENT INDEXED;
+
 // ----------------------------------- Штрих код ------------------------------------------ //
 
-GROUP barcodeGroup : baseGroup;
-
-CLASS barcode 'Штрих код';
-TABLE barcode (barcode);
-TABLE stringDate (STRING[14], DATE);
-
-barcodeEx 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 INDEXED;
-
-dateUserBarcode 'Дата действия' = DATA DATE (barcode) IN baseGroup;
-dateBarcode 'Дата действия' = UNION OVERRIDE 2001_01_01 IF barcode IS barcode, dateUserBarcode(barcode) IN baseGroup PERSISTENT;
-
-skuBarcode = DATA sku(barcode) IN baseGroup;
-nameSkuBarcode 'Товар штрих-кода' (barcode) = nameAttributeItem(skuBarcode(barcode)) IN recognizeGroup;
-
 hasParentItemGroupBarcode (itemGroup, barcode) = isParentItemGroupSku(itemGroup, skuBarcode(barcode));
-
-barcodeToDate 'Штрих-код на дату' (string, date) = GROUP UNIQUE barcode BY barcodeEx(barcode), dateBarcode(barcode) PERSISTENT;
-
-barcodeStringDate 'Дата действия' (string, date) = GROUP MAX LIST(dateSet, barcodeToDate(string, dateSet)) IF dateSet <= date AND date AS DATE BY string, date IN baseGroup;
-valueBarcodeToDate 'Штрих-код на дату' (string, date) = barcodeStringDate(string, date)[2];
-
-valueBarcodeToCurrentDate 'Штрих-код на тек. дату' (string) = valueBarcodeToDate(string, currentDate());
-
-skuBarcodeStringDate 'Товар (ИД)' (string, date) = skuBarcode(valueBarcodeToDate(string, date));
-nameSkuStringDate 'Товар' (string, date) = nameAttributeItem(skuBarcodeStringDate(string, date));
-
-activeBarcodeDate 'Активный' (barcode, date) = valueBarcodeToDate(barcodeEx(barcode), date) == barcode;
-activeBarcode 'Активный' (barcode) = valueBarcodeToCurrentDate(barcodeEx(barcode)) == barcode;
 
 titleOriginScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleOriginCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
@@ -1443,73 +1415,27 @@ compositionMachineryBarcode 'Состав товара' = compositionScalesItem(
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
 itemGroupMachineryBarcode 'Группа товара' = itemGroupSku(skuBarcode(barcode));
 expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expirationDateSkuDepartmentStore(skuBarcode(barcode), departmentStore);
-titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
-titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) IN barcodeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-UOMSkuBarcode (barcode) = UOMItem(skuBarcode(barcode)) IN idGroup;
-UOMOriginBarcode = DATA UOM (barcode) IN idGroup;
-UOMBarcode = UNION OVERRIDE UOMSkuBarcode (barcode), UOMOriginBarcode(barcode) IN idGroup;
-shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode)) IN barcodeGroup;
-
-amountUserBarcode 'Количество (сколько списать при продаже)' = DATA NUMERIC[14,3] (barcode) IN barcodeGroup;
-amountBarcode 'Количество (сколько списать при продаже)' = UNION OVERRIDE 1.0 IF barcode IS barcode, amountUserBarcode (barcode) IN barcodeGroup;
-removeBarcode 'Заблокирован (удален с оборудования)' = DATA BOOLEAN (barcode) IN barcodeGroup;
-commentRemoveBarcode 'Причина блокировки' = DATA STRING[100] (barcode) IN barcodeGroup;
-
-userBarcodeSku = DATA barcode(sku) IN idGroup;
-barcodeUserBarcodeSku 'Основной штрих-код' = barcodeEx(userBarcodeSku(sku)) IN baseGroup;
-
-defaultBarcodeSku(sku) = GROUP MIN barcode BY skuBarcode(barcode) IN idGroup;
-barcodeSku(sku) = UNION OVERRIDE defaultBarcodeSku(sku), userBarcodeSku(sku) IN baseGroup PERSISTENT;
-
-primarySkuBarcode 'Основной штрих-код' (sku, barcode) = barcodeSku(sku) == barcode;
-
-CONSTRAINT skuBarcode(barcodeSku(item)) != item CHECKED BY userBarcodeSku MESSAGE 'Товар основного штрих-кода должен совпадать с товаром';
-
-barcodeBarcodeSku 'Основной штрих-код' = barcodeEx(barcodeSku(sku)) IN baseGroup PERSISTENT;
-//barcodeToBarcode (barcode) = GROUP UNIQUE barcode BY barcodeEx(barcode);
-Stock.barcodeSku(item) += barcodeBarcodeSku(item);
-
-inSkuBarcode(sku, barcode) = skuBarcode(barcode) == sku;
-
-concatBarcodeBySkuDate 'Штрих-кода товара' (sku, date) = GROUP CONCAT barcodeEx(barcode) IF dateBarcode(barcode) <= date AND date AS DATE, ', ' BY skuBarcode(barcode), date IN baseGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
+titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 pieceNumeratorSku (sku) = pieceNumeratorItemGroup(itemGroupSku(sku));
 weightNumeratorSku (sku) = weightNumeratorItemGroup(itemGroupSku(sku));
-
-tmpNum = SESSION DATA numerator();
 
 generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku) {
     ADDOBJ barcode;
     FOR b == addedObject() DO {
         SET skuBarcode(b) <- sku AS sku;
+        LOCAL tmpNum = numerator();
         IF isWeightItem(sku) THEN
             SET tmpNum() <- weightNumeratorSku(sku)
         ELSE
             SET tmpNum() <- pieceNumeratorSku(sku);
-        SET barcodeEx(b) <- completeBarcode(curStringValueNumerator(tmpNum()));
+        SET idBarcode(b) <- completeBarcode(curStringValueNumerator(tmpNum()));
         EXEC incrementValueNumerator(tmpNum());
     };
 } TOOLBAR CONFIRM;
 
-
-FORM barcode 'Штрих-код'
-    OBJECTS       b=barcode
-    PROPERTIES(b) barcodeEx, dateBarcode
-;
-
-FORM barcodeInput 'Ввод штрих-кода'
-    OBJECTS             barcode=STRING[14] FIXED PANEL
-    PROPERTIES(barcode) objValue = OBJVALUE
-;
-
-DESIGN barcodeInput FROM DEFAULT {
-    PROPERTY (objValue) {
-        caption = 'Штрих-код';
-        font = 'Tahoma bold 64';
-        panelLabelAbove = TRUE;
-    }
-}
 
 // ----------------------------------- Компоненты ------------------------------------------ //
 CLASS component 'Компонент' : sku, named;
@@ -1835,7 +1761,7 @@ FORM item 'Товар'
 
     OBJECTS i=item FIXED PANEL
 
-    PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, barcodeBarcodeSku READONLY,
+    PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, idBarcodeSku READONLY,
 
                   // Основные данные
                   captionItem SHOWIF toShowCaption(i), nameBrandItem SHOWIF toShowBrand(i), nameTypeItemItem SHOWIF toShowType(i),
@@ -1883,12 +1809,11 @@ FORM item 'Товар'
                   imageItem, loadImageItem
 
     OBJECTS b=barcode
-    PROPERTIES(b)       barcodeEx, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUOMBarcode,
-                        amountBarcode, removeBarcode, commentRemoveBarcode, activeBarcode
+    PROPERTIES(b)       idBarcode, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUOMBarcode,
+                        amountBarcode, activeBarcode, primaryBarcode
     PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
-    PROPERTIES(i, b)    primarySkuBarcode
-    FILTERS inSkuBarcode(i, b)
+    FILTERS skuBarcode(b) == i
 
     // Управленческие параметры
     TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
@@ -1931,7 +1856,7 @@ DESIGN item FROM DEFAULT {
             NEW itemPanelColumn2 {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(canonicalNameItemGroupSku);
-                ADD PROPERTY(barcodeBarcodeSku);
+                ADD PROPERTY(idBarcodeSku);
             }
         }
         NEW item.box BEFORE b.box {
@@ -2050,7 +1975,7 @@ FORM items 'Товары'
     ORDER BY name
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
+    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     PROPERTIES(i) ADDFORM, EDITFORM, delete
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
@@ -2081,7 +2006,7 @@ FORM barcodeForm 'Товары по Ш-К'
     ORDER BY name
 
     OBJECTS b=barcode
-    PROPERTIES(b) READONLY barcodeEx, nameSkuBarcode, shortNameUOMBarcode
+    PROPERTIES(b) READONLY idBarcode, nameSkuBarcode, shortNameUOMBarcode
     PROPERTIES(b) ADDFORM, EDITFORM, delete
     FILTERS hasParentItemGroupBarcode(g, b)
     ORDER BY nameSkuBarcode
@@ -2104,7 +2029,7 @@ DESIGN barcodeForm FROM DEFAULT {
 
 FORM itemGroup 'Товарная группа'
     OBJECTS g=itemGroup FIXED PANEL
-    PROPERTIES(g)  name, nameParentItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
+    PROPERTIES(g)  name, nameParentItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
                    showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUOMItemGroup, showSortItemGroup, showPackItemGroup,
                    showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                    showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
@@ -2129,7 +2054,7 @@ FORM itemGroups 'Товарные группы'
     ORDER BY name
 
     OBJECTS cg=itemGroup
-    PROPERTIES(cg)   canonicalNameItemGroup, maxTurnoverItemGroup, minTurnoverItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
+    PROPERTIES(cg)   canonicalNameItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
                      showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUOMItemGroup, showSortItemGroup, showPackItemGroup,
                      showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
                      showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
@@ -4207,7 +4132,7 @@ FORM cutting 'Карта проработки'
         ORDER BY gname
 
         OBJECTS i=item
-        PROPERTIES READONLY barcodeBarcodeSku(i), nameAttributeItemGroupItem(g, i), shortNameUOMItem(i), nameBrandItem(i)
+        PROPERTIES READONLY idBarcodeSku(i), nameAttributeItemGroupItem(g, i), shortNameUOMItem(i), nameBrandItem(i)
         FILTERS nameAttributeItemGroupItem(g, i)
         ORDER BY nameAttributeItemGroupItem
 
@@ -4267,7 +4192,7 @@ FORM cuttings 'Карты проработки'
     PROPERTIES(dep)    READONLY nameStoreDepartmentStore, name
 
     OBJECTS i=item
-    PROPERTIES(i)      READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUOMItem, nameBrandItem
+    PROPERTIES(i)      READONLY idBarcodeSku, nameAttributeItem, shortNameUOMItem, nameBrandItem
 
     PROPERTIES(dep, c) READONLY inDepartmentStoreCutting
 
@@ -4646,7 +4571,7 @@ dateTimePageInventoryDetail(pageInventoryDetail) = dateTimeInventory(inventoryPa
 
 barcodePageInventoryDetail(pageInventoryDetail) = DATA barcode (pageInventoryDetail) IN idGroup;
 
-barcodeExPageInventoryDetail 'Штрих-код' (pageInventoryDetail) = barcodeEx(barcodePageInventoryDetail(pageInventoryDetail));
+idBarcodePageInventoryDetail 'Штрих-код' (pageInventoryDetail) = idBarcode(barcodePageInventoryDetail(pageInventoryDetail));
 itemPageInventoryDetail (pageInventoryDetail) =  skuBarcode(barcodePageInventoryDetail(pageInventoryDetail));
 nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAttributeItem(itemPageInventoryDetail(pageInventoryDetail)) IN recognizeGroup MINCHARWIDTH 20 PREFCHARWIDTH 50;
 
@@ -4890,7 +4815,7 @@ quantityInInventoryDetail = -quantityShortageCollationSheetItem(collationSheetIn
 itemInventoryDetail(inventoryDetail) = UNION EXCLUSIVE itemOutInventoryDetail(inventoryDetail),
                                                        itemInInventoryDetail(inventoryDetail) PERSISTENT;
 nameAttributeItemInventoryDetail 'Товар' (inventoryDetail) = nameAttributeItem(itemInventoryDetail(inventoryDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
-barcodeExInventoryDetail 'Штрих-код' (inventoryDetail) =  barcodeBarcodeSku(itemInventoryDetail(inventoryDetail));
+idBarcodeInventoryDetail 'Штрих-код' (inventoryDetail) =  idBarcodeSku(itemInventoryDetail(inventoryDetail));
 
 quantityInventoryDetail 'Кол-во недостачи' (inventoryDetail) = quantityShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
 accountSumInventoryDetail 'Сумма недостачи' (inventoryDetail) = accountSumShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
@@ -5895,7 +5820,7 @@ nameCustomerDiscountCardBill 'Держатель дисконтной карты
 
 zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
 
-barcodeExBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
+idBarcodeBillDetail 'Штрих-код' (billDetail) = DATA STRING[14] (billDetail);
 
 quantityBillSaleDetail 'Количество' (billDetail) = DATA NUMERIC[14,3] (billSaleDetail);
 retailPriceBillSaleDetail 'Цена' (billDetail) = DATA NUMERIC[14,2] (billSaleDetail);
@@ -5947,14 +5872,14 @@ addBillDetailBarcodeFill 'Добавить продажу по штрих-код
     FORM barcodeInput MODAL;
 
     IF formResult() == formResult.ok THEN {
-         SET tmpSku() <- skuBarcodeStringDate(chosenString('barcode'), dateBill(bill));
+         SET tmpSku() <- skuBarcodeIdDate(chosenString('barcode'), dateBill(bill));
          IF tmpSku() IS item THEN {
              ADDOBJ billSaleDetail;
              FOR o == addedObject() DO {
                  SET billBillSaleDetail(o) <- bill AS bill;
                  SET itemBillDetail(o) <- tmpSku();
-                 SET barcodeExBillDetail(o) <- chosenString('barcode');
-            //   SET quantity###object##Detail(o) <- amountBarcode(valueBarcodeToDate(chosenString('barcode'), date###object(object)));
+                 SET idBarcodeBillDetail(o) <- chosenString('barcode');
+            //   SET quantity###object##Detail(o) <- amountBarcode(barcodeIdDate(chosenString('barcode'), date###object(object)));
             };
         } ELSE
         MESSAGE 'Не найден штрих-код';
@@ -7059,7 +6984,7 @@ FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS i=item
 
-    PROPERTIES             nameAttributeItemGroupItem(g, i) READONLY, barcodeBarcodeSku(i) READONLY
+    PROPERTIES             nameAttributeItemGroupItem(g, i) READONLY, idBarcodeSku(i) READONLY
     FILTERS                nameAttributeItemGroupItem(g, i)
     ORDER BY               nameAttributeItemGroupItem
 
@@ -7164,7 +7089,7 @@ FORM orderSupplierPrint 'Заказ поставщику' PRINT
 
     OBJECTS i=item
 
-    PROPERTIES(i) READONLY nameAttributeItem , barcodeBarcodeSku
+    PROPERTIES(i) READONLY nameAttributeItem , idBarcodeSku
     ORDER BY               nameAttributeItem
 
     PROPERTIES(o, i)       packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
@@ -7213,7 +7138,7 @@ FORM orderSuppliers 'Заказы поставщику'
 
     OBJECTS i=item
 
-    PROPERTIES(i) READONLY nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES(i) READONLY nameAttributeItem, idBarcodeSku
     ORDER BY               nameAttributeItem
 
     PROPERTIES(o, i) READONLY  packQuantityItemOrderSupplier, sumQuantityItemOrderSupplier
@@ -7363,7 +7288,7 @@ FORM itemDepartmentStoreInput 'Подбор товаров'
     ORDER BY gname
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
+    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
@@ -7439,7 +7364,7 @@ FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
     ORDER BY gname
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
+    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
@@ -7515,7 +7440,7 @@ FORM itemDepartmentStoreBalanceInput 'Подбор товаров'
     ORDER BY gname
 
     OBJECTS i=item
-    PROPERTIES barcodeBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
+    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
     FILTERS nameAttributeItemGroupItem(g, i)
     ORDER BY nameAttributeItemGroupItem
 
@@ -7874,7 +7799,7 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
                   snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
 
     OBJECTS b = barcode, d = departmentStore
-    PROPERTIES(b) READONLY barcodeEx
+    PROPERTIES(b) READONLY idBarcode
     PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
      daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
      isWeightMachineryPriceTransactionBarcode, expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
@@ -7898,7 +7823,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     FILTERS departmentStoreMachineryPriceTransaction(t) == d
 
     OBJECTS b = barcode
-    PROPERTIES(b)    barcodeEx
+    PROPERTIES(b)    idBarcode
     PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
     expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
@@ -8002,7 +7927,7 @@ FORM printLabelTransaction 'Печать ценников' PRINT
 
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
-    PROPERTIES(b)    READONLY barcodeEx
+    PROPERTIES(b)    READONLY idBarcode
     PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
                      shortNameUOMLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
@@ -8015,7 +7940,7 @@ FORM customLabelTransaction 'Печать ценников'
 
     OBJECTS b = barcode
     PROPERTIES(l, b)          inLabelTransactionBarcode
-    PROPERTIES(b)    READONLY barcodeEx
+    PROPERTIES(b)    READONLY idBarcode
     PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
                               shortNameUOMLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
@@ -8032,7 +7957,7 @@ FORM labelTransactions 'Печать ценников'
 
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
-    PROPERTIES(b)    READONLY barcodeEx
+    PROPERTIES(b)    READONLY idBarcode
     PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
@@ -8341,7 +8266,7 @@ FORM writeOffPrint 'Списание' PRINT
                    namePositionEmployeeWriteOff, wastageCommitteeWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, shortNameUOMItemWriteOffDetail,
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, shortNameUOMItemWriteOffDetail,
                    quantityWriteOffDetail, accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
@@ -8369,7 +8294,7 @@ FORM writeOff 'Списание'
                    accountSumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
+    PROPERTIES (d) indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
@@ -8429,7 +8354,7 @@ FORM writeOffs 'Списания'
 
 
     OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, barcodeExSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
                    accountPriceWriteOffDetail, accountSumWriteOffDetail
 
     PROPERTIES(w) FORCE PANEL toPrintWriteOff
@@ -8466,7 +8391,7 @@ FORM specificationPrint 'Счет-фактура' PRINT
                     quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
-    PROPERTIES (d) READONLY indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
+    PROPERTIES (d) READONLY indexSpecificationDetail, idBarcodeSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                             shortNameUOMItemSpecificationDetail, quantitySpecificationDetail,
                             retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
                             calcVATSumSpecificationDetail, retailSumSpecificationDetail
@@ -8501,9 +8426,9 @@ FORM disparity 'Пересортица'
                     inputMultipleItemsDisparity TODRAW d
 
     PROPERTIES(d)   indexDisparityDetail,
-                    barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
+                    idBarcodeSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
                     quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
-                    inputBarcodeExSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
+                    inputIdBarcodeSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
                     inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
     PROPERTIES(d) ADDOBJ, delete
 
@@ -8618,9 +8543,9 @@ FORM disparities 'Пересортицы'
 
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
-                    barcodeExSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
+                    idBarcodeSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
                     quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
-                    inputBarcodeExSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
+                    inputIdBarcodeSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
                     inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
@@ -8668,7 +8593,7 @@ FORM shipment 'Поставка'
                    nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d)  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
                     importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
@@ -8769,7 +8694,7 @@ FORM shipments 'Поставки'
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
     OBJECTS d=shipmentDetail
-    PROPERTIES (d) READONLY  indexShipmentDetail, barcodeExSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
+    PROPERTIES (d) READONLY  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                              supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                              supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
@@ -8818,7 +8743,7 @@ FORM wastagePrint 'Списания отходов' PRINT
                    markupSumWastageDetailWastage, retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, wastageCommitteeWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) SELECTOR indexWastageDetail, barcodeExSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
+    PROPERTIES (d) SELECTOR indexWastageDetail, idBarcodeSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
                    supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
 
     OBJECTS e=employee
@@ -8841,7 +8766,7 @@ FORM wastages 'Списания отходов'
                    retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, nameWastageCommitteeWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY indexWastageDetail, barcodeExSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
+    PROPERTIES (d) READONLY indexWastageDetail, idBarcodeSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
                    supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
 
     PROPERTIES     FORCE PANEL toPrintWastage(w) TODRAW d
@@ -8882,7 +8807,7 @@ FORM returnSupplier 'Возврат поставщику'
                   sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment
 
     OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
+    PROPERTIES(d) indexReturnSupplierDetail, idBarcodeSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                   commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                   supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail READONLY, numberSupplierRangeReturnSupplierDetail,
                   valueSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
@@ -8921,7 +8846,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
 
     OBJECTS d=returnSupplierDetail
-    PROPERTIES(d) READONLY indexReturnSupplierDetail, barcodeExSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
+    PROPERTIES(d) READONLY indexReturnSupplierDetail, idBarcodeSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
                            commonInfoBatchReturnSupplierDetail, quantityReturnSupplierDetail, supplierPriceReturnSupplierDetail,
                            supplierMarkupReturnSupplierDetail, importerPriceReturnSupplierDetail, numberSupplierRangeReturnSupplierDetail,
                            valueSupplierRangeReturnSupplierDetail, supplierVATISumReturnSupplierDetail, invoiceISumReturnSupplierDetail,
@@ -9526,7 +9451,7 @@ FORM listInventoryPrint 'Опись' PRINT
 
     OBJECTS         i=item
     PROPERTIES (li,i) indexListInventoryItem
-    PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (i)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
     OBJECTS e=employee
@@ -9605,7 +9530,7 @@ FORM collationSheetItem 'Товары для добавления в сличи�
     ORDER BY name
 
     OBJECTS i=item
-    PROPERTIES(i) READONLY barcodeBarcodeSku, nameAttributeItem, shortNameUOMItem
+    PROPERTIES(i) READONLY idBarcodeSku, nameAttributeItem, shortNameUOMItem
 
     PROPERTIES(cs, i) inManyCollationSheetItem
 
@@ -9633,12 +9558,12 @@ FORM listInventory 'Опись'
     PROPERTIES(pl)  namePageInventory, notePageInventory FORCE PANEL, countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, accountSumPageInventoryDetailPageInventory, ADDOBJ, delete
 
     OBJECTS         dp=pageInventoryDetail
-    PROPERTIES (dp) indexPageInventoryDetail, barcodeExPageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail, accountPricePageInventoryDetail,
+    PROPERTIES (dp) indexPageInventoryDetail, idBarcodePageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail, accountPricePageInventoryDetail,
                     accountSumPageInventoryDetail, ADDOBJ, delete
 
     OBJECTS         i=item
     PROPERTIES (li,i) indexListInventoryItem
-    PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (i)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
     FILTERS listInventoryPageInventory(pl) == li,
@@ -9739,7 +9664,7 @@ FORM  detailCollationSheetPrint 'Сличительная ведомость' PR
                      accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
 
     OBJECTS          i=item
-    PROPERTIES (i)   SELECTOR nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES (i)   SELECTOR nameAttributeItem, idBarcodeSku
 
     PROPERTIES(cs, i) SELECTOR quantityPageInventoryDetailCollationSheetItem, quantityBalanceCollationSheetItem, quantityShortageCollationSheetItem
     PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,i) BACKGROUND differentPriceCollationSheetItem(cs, i),
@@ -9777,12 +9702,12 @@ FORM inventory 'Инвентаризация'
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, accountSumPageInventoryDetailPageInventory, dumb1
 
     OBJECTS          dp=pageInventoryDetail
-    PROPERTIES (dp)  READONLY indexPageInventoryDetail, barcodeExPageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail,
+    PROPERTIES (dp)  READONLY indexPageInventoryDetail, idBarcodePageInventoryDetail, nameAttributeItemPageInventoryDetail, quantityPageInventoryDetail,
                      accountPricePageInventoryDetail, accountSumPageInventoryDetail
 
     OBJECTS         it=item
     PROPERTIES (li,it) indexListInventoryItem
-    PROPERTIES (it)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (it)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,it) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
 
@@ -9805,7 +9730,7 @@ FORM inventory 'Инвентаризация'
     ORDER BY name
 
     OBJECTS          i=item
-    PROPERTIES (i)   READONLY nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES (i)   READONLY nameAttributeItem, idBarcodeSku
 
     PROPERTIES(cs, i) quantityPageInventoryDetailCollationSheetItem, quantityBalanceCollationSheetItem, quantityShortageCollationSheetItem
     PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,i) BACKGROUND differentPriceCollationSheetItem(cs, i),
@@ -9971,7 +9896,7 @@ FORM inventories 'Инвентаризации'
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
 
     OBJECTS il=inventoryDetail
-    PROPERTIES(il) READONLY nameDepartmentStoreInventoryDetail, barcodeExInventoryDetail, nameAttributeItemInventoryDetail, quantityInventoryDetail, accountSumInventoryDetail
+    PROPERTIES(il) READONLY nameDepartmentStoreInventoryDetail, idBarcodeInventoryDetail, nameAttributeItemInventoryDetail, quantityInventoryDetail, accountSumInventoryDetail
 
     OBJECTS li=listInventory
 
@@ -9980,7 +9905,7 @@ FORM inventories 'Инвентаризации'
 
     OBJECTS         i=item
     PROPERTIES (li,i) indexListInventoryItem
-    PROPERTIES (i)    barcodeBarcodeSku, nameAttributeItem
+    PROPERTIES (i)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
     PROPERTIES(li)  toPrintListInventory
@@ -9996,7 +9921,7 @@ FORM inventories 'Инвентаризации'
                      accountSumItemShortageCollationSheet, accountSumContainerShortageCollationSheet
 
     OBJECTS          it=item
-    PROPERTIES (it)   READONLY nAItem=nameAttributeItem, barcodeBarcodeSku
+    PROPERTIES (it)   READONLY nAItem=nameAttributeItem, idBarcodeSku
 
     PROPERTIES(cs, it) READONLY quantityPageInventoryDetailCollationSheetItem, quantityBalanceCollationSheetItem, quantityShortageCollationSheetItem
     PROPERTIES       accountPricePageInventoryDetailCollationSheetItem (cs,it) BACKGROUND differentPriceCollationSheetItem(cs, it),
@@ -10156,7 +10081,7 @@ FORM userPriceChange 'Переоценка товаров'
                    noteUserPriceChange, numberDisposalUserPriceChange, nameRevaluationCommitteeUserPriceChange
 
     OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) indexUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
+    PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                    curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
@@ -10238,7 +10163,7 @@ FORM userPriceChanges 'Переоценки товаров'
                             postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
     OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) READONLY indexUserPriceChangeDetail, barcodeExSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
+    PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                             curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
                             curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
@@ -10307,7 +10232,7 @@ FORM innerFlow 'Расход в другой отдел'
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
+    PROPERTIES (d) indexInnerFlowDetail, idBarcodeSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                    quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                    valueRetailRangeInnerFlowDetail, nameWareInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    warePriceInnerFlowDetail SHOWIF showWareInnerFlow(f),
@@ -10409,7 +10334,7 @@ FORM innerFlows 'Расходы в другие отделы'
                    postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
+    PROPERTIES (d) READONLY indexInnerFlowDetail, idBarcodeSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             valueRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
                             retailPriceInnerFlowDetail, retailSumInnerFlowDetail
@@ -10486,7 +10411,7 @@ FORM innerFlowPosted 'Расходы в другие отделы'
                             quantityInnerFlowDetailInnerFlow, retailSumInnerFlowDetailInnerFlow
 
     OBJECTS d=innerFlowDetail
-    PROPERTIES (d) READONLY indexInnerFlowDetail, barcodeExSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
+    PROPERTIES (d) READONLY indexInnerFlowDetail, idBarcodeSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
                             quantityInnerFlowDetail, importerPriceInnerFlowDetail, supplierPriceInnerFlowDetail, numberRetailRangeInnerFlowDetail,
                             valueRetailRangeInnerFlowDetail, nameWareInnerFlowDetail, warePriceInnerFlowDetail,
                             retailPriceInnerFlowDetail, retailSumInnerFlowDetail
@@ -10521,7 +10446,7 @@ FORM innerArrival 'Приход из другого отдела'
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a)
-                   indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
+                   indexInnerArrivalDetail, idBarcodeSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
                    quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
                    supplierPriceInnerArrivalDetail, numberRetailRangeInnerArrivalDetail,
                    valueRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail SHOWIF showWareInnerArrival(a),
@@ -10614,7 +10539,7 @@ FORM innerArrivals 'Приходы из других отделов'
     PROPERTIES(a) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS d=innerArrivalDetail
-    PROPERTIES (d) READONLY indexInnerArrivalDetail, barcodeExSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
+    PROPERTIES (d) READONLY indexInnerArrivalDetail, idBarcodeSkuInnerArrivalDetail, nameAttributeItemInnerArrivalDetail,
                             quantityInnerArrivalDetail, balanceBeforeInnerArrivalInnerArrivalDetail, importerPriceInnerArrivalDetail,
                             numberRetailRangeInnerArrivalDetail, valueRetailRangeInnerArrivalDetail, nameWareInnerArrivalDetail,
                             warePriceInnerArrivalDetail, retailPriceInnerArrivalDetail, retailSumInnerArrivalDetail
@@ -10670,7 +10595,7 @@ FORM specificationForm 'Отгрузки по данной с/ф'
                              noteStatement, quantityStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement
 
     OBJECTS d=statementDetail
-    PROPERTIES (d)  READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+    PROPERTIES (d)  READONLY indexStatementDetail, idBarcodeSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
                              retailPriceStatementDetail, calcSaleSumStatementDetail, numberCalcRangeStatementDetail,
                              dataCalcRangeStatementDetail, calcVATSumStatementDetail,
                              retailSumStatementDetail, noteStatementDetail
@@ -10740,7 +10665,7 @@ FORM specification 'Счет-фактура'
                     quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
-    PROPERTIES (d) indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
+    PROPERTIES (d) indexSpecificationDetail, idBarcodeSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
                    retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
                    calcVATSumSpecificationDetail, retailSumSpecificationDetail,
                    ADDOBJ, delete
@@ -10807,7 +10732,7 @@ FORM specifications 'Счет-фактуры'
     PROPERTIES (sp)          ADDFORM, EDITFORM, delete
 
     OBJECTS d=specificationDetail
-    PROPERTIES (d) READONLY  indexSpecificationDetail, barcodeExSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
+    PROPERTIES (d) READONLY  indexSpecificationDetail, idBarcodeSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
                              quantitySpecificationDetail, retailPriceSpecificationDetail,
                              calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
                              calcVATSumSpecificationDetail, retailSumSpecificationDetail
@@ -10878,7 +10803,7 @@ FORM statement 'Отгрузка из розницы'
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment
 
     OBJECTS d=statementDetail
-    PROPERTIES (d)  indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+    PROPERTIES (d)  indexStatementDetail, idBarcodeSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
                     retailPriceStatementDetail, calcSaleSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
                     calcVATSumStatementDetail, retailSumStatementDetail,
                     noteStatementDetail, ADDOBJ, delete
@@ -10982,7 +10907,7 @@ FORM statements 'Отгрузки из розницы'
                      postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
 
     OBJECTS d=statementDetail
-    PROPERTIES (d)   READONLY indexStatementDetail, barcodeExSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
+    PROPERTIES (d)   READONLY indexStatementDetail, idBarcodeSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
                               retailPriceStatementDetail, calcSaleSumStatementDetail, numberCalcRangeStatementDetail, dataCalcRangeStatementDetail,
                               calcVATSumStatementDetail, retailSumStatementDetail, noteStatementDetail
 
@@ -11070,7 +10995,7 @@ FORM bill 'Z-отчет'
                   inputMultipleItemsSupplierBill TODRAW d, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
-    PROPERTIES(d) objectClassName, barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+    PROPERTIES(d) objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                   retailSumBillDetail, discountSumBillDetail, ADDOBJ, delete
 
     FILTERS billBillDetail(d)==b
@@ -11112,7 +11037,7 @@ FORM bills 'Чеки'
     FILTERS zReportBill(b)==z
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY  objectClassName, barcodeExBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+    PROPERTIES(d) READONLY  objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                             supplierSumBalanceSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
@@ -11333,7 +11258,7 @@ FORM balanceItemDepartment 'Остатки на дату'
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
+    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  idBarcodeSku
     FILTERS           isParentItemGroupSku(g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
@@ -11434,7 +11359,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  barcodeBarcodeSku
+    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  idBarcodeSku
     FILTERS           nameAttributeItemGroupItem (g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
@@ -11544,7 +11469,7 @@ DESIGN costItemLedger FROM DEFAULT {
 //------------------------------------Отчет по таре-------------------------------------------//
 
 nameAttributeItemBatch 'Товар' (batch) = nameAttributeItem(skuBatch(batch));
-barcodeBarcodeSkuBatch 'Штрих-код' (batch) = barcodeBarcodeSku(skuBatch(batch));
+idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
 dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
 isContainerBatch 'Тара' (batch) = isContainerItem(skuBatch(batch));
 
@@ -11581,7 +11506,7 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
     OBJECTS bt=batch
 
     PROPERTIES READONLY supplierSumContainerStockDateFrom(dep, dFrom), supplierSumContainerStockDateTo(dep, dTo)
-    PROPERTIES(bt) READONLY barcodeBarcodeSkuBatch, nameAttributeItemBatch, supplierPriceBatch
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameAttributeItemBatch, supplierPriceBatch
     PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, supplierSumBatchStockDateFrom
     PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, supplierSumBatchStockDateTo
     PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, supplierSumInBalanceBatchStockDateFromTo,
@@ -11606,7 +11531,7 @@ FORM balanceStockBatchDate 'Остатки на складе по партиям
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  barcodeBarcodeSku
+    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  idBarcodeSku
     FILTERS           isParentItemGroupSku(g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
@@ -11685,7 +11610,7 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  barcodeBarcodeSku
+    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  idBarcodeSku
     FILTERS           nameAttributeItemGroupItem (g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
@@ -12161,7 +12086,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
     PROPERTIES(sp)    READONLY name
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), barcodeBarcodeSku(i)
+    PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), idBarcodeSku(i)
     ORDER BY          nameDep
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
@@ -12444,7 +12369,6 @@ NAVIGATOR {
             ADD UOM;
             ADD item;
             ADD ware;
-            ADD barcode;
             ADD barcodeInput;
             ADD employee;
             ADD employeeDialog;

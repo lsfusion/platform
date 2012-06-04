@@ -60,7 +60,7 @@
 	<field name="nameHeadManListRegister" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexListRegisterDetail" class="java.lang.Integer"/>
-	<field name="barcodeSkuListRegisterDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuListRegisterDetail" class="java.lang.String"/>
 	<field name="nameSkuListRegisterDetail" class="java.lang.String"/>
 	<field name="shortNameUOMSkuListRegisterDetail" class="java.lang.String"/>
 	<field name="quantityListRegisterDetail" class="java.lang.Double"/>
@@ -662,7 +662,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeSkuListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSkuListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>

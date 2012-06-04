@@ -52,7 +52,7 @@
 	<field name="sumSpecification" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexSpecificationDetail" class="java.lang.Integer"/>
-	<field name="barcodeExSkuSpecificationDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuSpecificationDetail" class="java.lang.String"/>
 	<field name="nameAttributeItemSpecificationDetail" class="java.lang.String"/>
 	<field name="quantitySpecificationDetail" class="java.lang.Double"/>
 	<field name="retailPriceSpecificationDetail" class="java.lang.Double"/>

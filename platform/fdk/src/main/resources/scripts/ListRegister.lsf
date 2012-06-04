@@ -3,6 +3,7 @@ MODULE ListRegister;
 IMPORT BaseLogicsModule;
 IMPORT LegalEntity;
 IMPORT Stock;
+IMPORT Barcode;
 IMPORT Employee;
 IMPORT Utils;
 IMPORT Store;
@@ -143,7 +144,7 @@ listRegisterListRegisterDetail (inputListRegisterDetail) = ABSTRACT inputListReg
 indexListRegisterDetail 'Номер строки' (inputListRegisterDetail) = ABSTRACT INTEGER (inputListRegisterDetail);
 skuListRegisterDetail  (inputListRegisterDetail) = ABSTRACT sku (inputListRegisterDetail) IN idGroup;
 nameSkuListRegisterDetail 'Товар' (inputListRegisterDetail) = nameSku(skuListRegisterDetail(inputListRegisterDetail));
-barcodeSkuListRegisterDetail 'Штрих-код' (inputListRegisterDetail) = barcodeSku(skuListRegisterDetail(inputListRegisterDetail));
+idBarcodeSkuListRegisterDetail 'Штрих-код' (inputListRegisterDetail) = idBarcodeSku(skuListRegisterDetail(inputListRegisterDetail));
 shortNameUOMSkuListRegisterDetail 'Ед. изм.' (inputListRegisterDetail) = shortNameUOMSku(skuListRegisterDetail(inputListRegisterDetail));
 
 quantityListRegisterDetail 'Кол-во' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,3] (inputListRegisterDetail);
@@ -202,7 +203,7 @@ FORM listRegister 'Реестр цен (поставка)' PRINT
                     nameHeadManListRegister
 
     OBJECTS d=listRegisterDetail
-    PROPERTIES (d)  indexListRegisterDetail, barcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+    PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, valueSupplierRangeListRegisterDetail,
                     wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
                     invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
@@ -222,7 +223,7 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
                     nameHeadManListRegister
 
     OBJECTS d=inputListRegisterDetail
-    PROPERTIES (d)  indexListRegisterDetail, barcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+    PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
                     wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
                     importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,

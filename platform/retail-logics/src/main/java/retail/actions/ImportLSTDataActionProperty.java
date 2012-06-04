@@ -234,7 +234,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         ImportField nameBrandField = new ImportField(BL.LM.name);
         ImportField countryIDField = new ImportField(retailLM.getLPByName("extSIDCountry"));
         ImportField nameCountryField = new ImportField(BL.LM.name);
-        ImportField barcodeField = new ImportField(retailLM.getLPByName("barcodeEx"));
+        ImportField barcodeField = new ImportField(retailLM.getLPByName("idBarcode"));
         ImportField dateField = new ImportField(BL.LM.date);
         ImportField importerPriceField = new ImportField(retailLM.getLPByName("importerPriceItemDate"));
         ImportField percentWholesaleMarkItemField = new ImportField(retailLM.getLPByName("percentWholesaleMarkItem"));
@@ -266,7 +266,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
                 retailLM.getLPByName("extSIDToCountry").getMapping(countryIDField));
 
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("barcode"),
-                retailLM.getLPByName("barcodeToDate").getMapping(barcodeField, dateField));
+                retailLM.getLPByName("barcodeIdDate").getMapping(barcodeField, dateField));
 
         ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) BL.Tax.getClassByName("range"),
                 BL.Tax.getLPByName("valueCurrentRangeValue").getMapping(dataSuppliersRangeItemField));
@@ -307,7 +307,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty<RetailB
         props.add(new ImportProperty(countryIDField, retailLM.getLPByName("countryItem").getMapping(itemKey),
                 BL.LM.object(BL.LM.country).getMapping(countryKey)));
 
-        props.add(new ImportProperty(barcodeField, retailLM.getLPByName("barcodeEx").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
+        props.add(new ImportProperty(barcodeField, retailLM.getLPByName("idBarcode").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
         props.add(new ImportProperty(dateField, retailLM.getLPByName("dateUserBarcode").getMapping(barcodeKey)));
 
         props.add(new ImportProperty(itemIDField, retailLM.getLPByName("skuBarcode").getMapping(barcodeKey),

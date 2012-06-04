@@ -34,7 +34,7 @@ public class EasyCSVHandler {
                         new OutputStreamWriter(
                                 new FileOutputStream(f), "windows-1251"));
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    String row = item.barcodeEx + ";" + item.name + ";" + item.price;
+                    String row = item.idBarcode + ";" + item.name + ";" + item.price;
                     writer.println(row);
                 }
                 writer.close();
@@ -74,7 +74,7 @@ public class EasyCSVHandler {
                         new OutputStreamWriter(
                                 new FileOutputStream(f), "windows-1251"));
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    String row = item.barcodeEx + ";" + item.name + ";" + item.price;
+                    String row = item.idBarcode + ";" + item.name + ";" + item.price;
                     writer.println(row);
                 }
                 writer.close();
@@ -106,7 +106,7 @@ public class EasyCSVHandler {
                         new OutputStreamWriter(
                                 new FileOutputStream(f), "windows-1251"));
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    String row = item.barcodeEx + ";" + item.name + ";" + item.price;
+                    String row = item.idBarcode + ";" + item.name + ";" + item.price;
                     writer.println(row);
                 }
                 writer.close();

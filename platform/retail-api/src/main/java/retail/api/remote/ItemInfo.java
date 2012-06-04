@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class ItemInfo implements Serializable {
-    public String barcodeEx;
+    public String idBarcode;
     public String name;
     public Double price;
     public Double daysExpiry;
@@ -16,9 +16,9 @@ public class ItemInfo implements Serializable {
     public Integer numberGroupItem;
     public String nameGroupItem;
 
-    public ItemInfo(String barcodeEx, String name, Double price, Double daysExpiry, Integer hoursExpiry, Date expirationDate,
+    public ItemInfo(String idBarcode, String name, Double price, Double daysExpiry, Integer hoursExpiry, Date expirationDate,
                     Integer labelFormat, String composition, boolean isWeightItem, Integer numberGroupItem, String nameGroupItem) {
-        this.barcodeEx = barcodeEx;
+        this.idBarcode = idBarcode;
         this.name = name;
         this.price = price;
         this.daysExpiry = daysExpiry;

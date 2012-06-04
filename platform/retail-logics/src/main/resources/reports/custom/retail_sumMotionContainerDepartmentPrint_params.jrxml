@@ -38,7 +38,7 @@
 	<field name="supplierSumContainerStockDateFrom" class="java.lang.Double"/>
 	<field name="supplierSumContainerStockDateTo" class="java.lang.Double"/>
 	<field name="bt" class="java.lang.Integer"/>
-	<field name="barcodeBarcodeSkuBatch" class="java.lang.String"/>
+	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
 	<field name="nameAttributeItemBatch" class="java.lang.String"/>
 	<field name="supplierPriceBatch" class="java.lang.Double"/>
 	<field name="balanceBBatchStockDate" class="java.lang.Double"/>
@@ -300,7 +300,7 @@
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{barcodeBarcodeSkuBatch}!=null?$F{barcodeBarcodeSkuBatch}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{idBarcodeSkuBatch}!=null?$F{idBarcodeSkuBatch}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="87" height="10"/>

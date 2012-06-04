@@ -83,7 +83,7 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
                         SERTNO, SERTDATE, PQTY2, PQTY3, PQTY4, PQTY5, PQTY6, PMINPRICE, PSTATUS, PMATVIEN});
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    PLUCODE.put(item.barcodeEx);
+                    PLUCODE.put(item.idBarcode);
                     NAME.put(item.name);
                     PRICE1.put(item.price);
                     file.write();

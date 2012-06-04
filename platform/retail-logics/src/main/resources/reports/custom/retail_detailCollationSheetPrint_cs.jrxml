@@ -48,7 +48,7 @@
 	<field name="accountSumContainerShortageCollationSheet" class="java.lang.Double"/>
 	<field name="i" class="java.lang.Integer"/>
 	<field name="nameAttributeItem" class="java.lang.String"/>
-	<field name="barcodeBarcodeSku" class="java.lang.String"/>
+	<field name="idBarcodeSku" class="java.lang.String"/>
 	<field name="quantityPageInventoryDetailCollationSheetItem" class="java.lang.Double"/>
 	<field name="quantityBalanceCollationSheetItem" class="java.lang.Double"/>
 	<field name="quantityShortageCollationSheetItem" class="java.lang.Double"/>
@@ -306,7 +306,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeBarcodeSku}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="215" y="0" width="46" height="10"/>

@@ -52,7 +52,7 @@
 	<field name="completePercentageOrderSupplier" class="java.lang.Double"/>
 	<field name="i" class="java.lang.Integer"/>
 	<field name="nameAttributeItem" class="java.lang.String"/>
-	<field name="barcodeBarcodeSku" class="java.lang.String"/>
+	<field name="idBarcodeSku" class="java.lang.String"/>
 	<field name="topItem" class="java.lang.Integer"/>
 	<field name="packQuantityItemOrderSupplier" class="java.lang.Double"/>
 	<field name="sumQuantityItemOrderSupplier" class="java.lang.Double"/>
@@ -163,7 +163,7 @@
 			<textField pattern="###0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="221" y="0" width="100" height="20"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression><![CDATA[$F{barcodeBarcodeSku}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSku}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="396" y="0" width="75" height="20"/>

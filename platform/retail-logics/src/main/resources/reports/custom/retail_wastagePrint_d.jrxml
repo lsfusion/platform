@@ -17,7 +17,7 @@
 	</style>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexWastageDetail" class="java.lang.Integer"/>
-	<field name="barcodeExSkuWastageDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuWastageDetail" class="java.lang.String"/>
 	<field name="nameItemWastageDetail" class="java.lang.String"/>
 	<field name="quantityItemWastageDetail" class="java.lang.Double"/>
 	<field name="quantityWastageDetail" class="java.lang.Double"/>
@@ -44,7 +44,7 @@
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeExSkuWastageDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSkuWastageDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="146" height="12"/>

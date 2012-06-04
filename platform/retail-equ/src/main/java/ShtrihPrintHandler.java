@@ -28,7 +28,7 @@ public class ShtrihPrintHandler extends ScalesHandler {
         Variant result = Dispatch.call(shtrihDispatch, "Connect");
         if (result.toString().equals("0")) {
             for (ItemInfo item : transactionInfo.itemsList) {
-                Integer barcode = Integer.parseInt(item.barcodeEx.substring(0, 5));
+                Integer barcode = Integer.parseInt(item.idBarcode.substring(0, 5));
                 int deltaDaysExpiry = item.expirationDate == null ? 0 : (int) ((item.expirationDate.getTime() - System.currentTimeMillis()) / 1000 / 3600 / 24);
                 Integer shelfLife = item.daysExpiry == null ? (deltaDaysExpiry >= 0 ? deltaDaysExpiry : 0) : item.daysExpiry.intValue();
 
@@ -53,7 +53,7 @@ public class ShtrihPrintHandler extends ScalesHandler {
                 
                 result = Dispatch.call(shtrihDispatch, "SetPLUData");
                 if (!result.toString().equals("0")) {
-                    throw new RuntimeException("ShtrihPrintHandler. Item # " + item.barcodeEx + " Error # " + result.toString());
+                    throw new RuntimeException("ShtrihPrintHandler. Item # " + item.idBarcode + " Error # " + result.toString());
                 }
             }
             result = Dispatch.call(shtrihDispatch, "Disconnect");

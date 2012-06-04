@@ -1,10 +1,14 @@
-import platform.base.IOUtils;
-import retail.api.remote.*;
-import sun.util.calendar.BaseCalendar;
+import retail.api.remote.ItemInfo;
+import retail.api.remote.ScalesHandler;
+import retail.api.remote.ScalesInfo;
+import retail.api.remote.TransactionScalesInfo;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DigiHandler extends ScalesHandler {
 
@@ -74,7 +78,7 @@ public class DigiHandler extends ScalesHandler {
             String row = "";
             for (ItemInfo item : transactionInfo.itemsList) {
 
-                String recordNumber = addZeros(item.barcodeEx, 8, false);
+                String recordNumber = addZeros(item.idBarcode, 8, false);
                 String statusCode = item.isWeightItem ? "7C000DA003" : "7D000DA003";
                 String price = addZeros(String.valueOf(item.price.intValue()), 8, false);
 
@@ -86,7 +90,7 @@ public class DigiHandler extends ScalesHandler {
                 String barcodeFormat = "05";
                 String pieceItemCode = entry.getValue().pieceItemCodeGroupScales != null ? entry.getValue().pieceItemCodeGroupScales : "21";
                 String weightItemCode = entry.getValue().weightItemCodeGroupScales != null ? entry.getValue().weightItemCodeGroupScales : "20";
-                String barcode = (item.isWeightItem ? weightItemCode : pieceItemCode) + item.barcodeEx.substring(0, 5) + "000000" + (item.isWeightItem ? "1" : "2");
+                String barcode = (item.isWeightItem ? weightItemCode : pieceItemCode) + item.idBarcode.substring(0, 5) + "000000" + (item.isWeightItem ? "1" : "2");
 
                 String len = addZeros(Integer.toHexString((recordNumber + statusCode + price + labelFormat + barcodeFormat +
                         barcode + daysExpiry + hoursExpiry +

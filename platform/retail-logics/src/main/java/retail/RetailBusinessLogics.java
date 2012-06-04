@@ -42,6 +42,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public ScriptingLogicsModule Historizable;
     public ScriptingLogicsModule Numerator;
     public ScriptingLogicsModule Stock;
+    public ScriptingLogicsModule Barcode;
     public ScriptingLogicsModule Document;
     public ScriptingLogicsModule Tax;
     public ScriptingLogicsModule LegalEntity;
@@ -67,6 +68,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Historizable = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Historizable.lsf"), LM, this));
         Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
         Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
+        Barcode = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Barcode.lsf"), LM, this));
         Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
         Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
         LegalEntity = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/LegalEntity.lsf"), LM, this));
@@ -123,7 +125,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             itemKeys.put("barcode", barcodeExpr);
 
             Query<Object, Object> itemQuery = new Query<Object, Object>(itemKeys);
-            itemQuery.properties.put("barcodeEx", retailLM.getLPByName("barcodeEx").getExpr(barcodeExpr));
+            itemQuery.properties.put("idBarcode", retailLM.getLPByName("idBarcode").getExpr(barcodeExpr));
             itemQuery.properties.put("name", retailLM.getLPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("price", retailLM.getLPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("daysExpiry", retailLM.getLPByName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
@@ -139,7 +141,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             OrderedMap<Map<Object, Object>, Map<Object, Object>> itemResult = itemQuery.execute(session.sql);
 
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : itemResult.entrySet()) {
-                String barcode = (String) entry.getValue().get("barcodeEx");
+                String barcode = (String) entry.getValue().get("idBarcode");
                 String name = (String) entry.getValue().get("name");
                 Double price = (Double) entry.getValue().get("price");
                 Double daysExpiry = (Double) entry.getValue().get("daysExpiry");
@@ -485,7 +487,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         ImportField timeField = new ImportField(retailLM.getLPByName("timeBill"));
 
         ImportField numberBillDetailField = new ImportField(retailLM.getLPByName("numberBillDetail"));
-        ImportField barcodeExBillDetailField = new ImportField(retailLM.getLPByName("barcodeExBillDetail"));
+        ImportField idBarcodeBillDetailField = new ImportField(retailLM.getLPByName("idBarcodeBillDetail"));
 
         ImportField quantityBillSaleDetailField = new ImportField(retailLM.getLPByName("quantityBillSaleDetail"));
         ImportField retailPriceBillSaleDetailField = new ImportField(retailLM.getLPByName("retailPriceBillSaleDetail"));
@@ -508,7 +510,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLPByName("numberToZReportPosted").getMapping(zReportNumberField));
         ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
         ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
-        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLPByName("skuBarcodeStringDate").getMapping(barcodeExBillDetailField, dateField));
+        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLPByName("skuBarcodeIdDate").getMapping(idBarcodeBillDetailField, dateField));
 
         saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("numberZReport").getMapping(zReportKey)));
         saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
@@ -523,7 +525,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
         saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLPByName("idBarcodeBillDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(retailPriceBillSaleDetailField, retailLM.getLPByName("retailPriceBillSaleDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(retailSumBillSaleDetailField, retailLM.getLPByName("retailSumBillSaleDetail").getMapping(billSaleDetailKey)));
@@ -531,7 +533,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billSaleDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
+        saleProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
 
@@ -548,7 +550,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
         returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLPByName("numberBillDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("barcodeExBillDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLPByName("idBarcodeBillDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(retailPriceBillReturnDetailField, retailLM.getLPByName("retailPriceBillReturnDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(retailSumBillReturnDetailField, retailLM.getLPByName("retailSumBillReturnDetail").getMapping(billReturnDetailKey)));
@@ -556,7 +558,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("billBillDetail").getMapping(billReturnDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
+        returnProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
         List<List<Object>> dataSale = new ArrayList<List<Object>>();
@@ -578,11 +580,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             }
 
         List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField,
+                numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillSaleDetailField,
                 retailPriceBillSaleDetailField, retailSumBillSaleDetailField, discountSumBillSaleDetailField);
 
         List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillReturnDetailField,
+                numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillReturnDetailField,
                 retailPriceBillReturnDetailField, retailSumBillReturnDetailField, discountSumBillReturnDetailField);
 
 

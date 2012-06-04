@@ -17,7 +17,7 @@
 	</style>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexWriteOffDetail" class="java.lang.Integer"/>
-	<field name="barcodeExSkuWriteOffDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuWriteOffDetail" class="java.lang.String"/>
 	<field name="nameAttributeItemWriteOffDetail" class="java.lang.String"/>
 	<field name="quantityWriteOffDetail" class="java.lang.Double"/>
 	<field name="accountPriceWriteOffDetail" class="java.lang.Double"/>
@@ -62,7 +62,7 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeExSkuWriteOffDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSkuWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="12" backcolor="#FFFFFF"/>

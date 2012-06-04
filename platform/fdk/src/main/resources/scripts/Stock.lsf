@@ -44,8 +44,6 @@ nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT
 UOMSku (sku) = ABSTRACT UOM (sku);
 shortNameUOMSku (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
 
-barcodeSku (sku) = ABSTRACT STRING[14] (sku) IN recognizeGroup;
-
 // ----------------------------------- Ledger ------------------------------------------ //
 
 CLASS ABSTRACT balanceSkuLedger 'Изменение остатка по товару';
@@ -315,7 +313,7 @@ FORM costItemLedger 'Себестоимость (операции)'
 
 FORM costItemBatchLedger 'Себестоимость (партии)'
     OBJECTS i = sku FIXED PANEL
-    PROPERTIES(i) SELECTOR nameSku//, barcodeBarcodeSku
+    PROPERTIES(i) SELECTOR nameSku//, idBarcodeSku
 
     OBJECTS bt = batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch

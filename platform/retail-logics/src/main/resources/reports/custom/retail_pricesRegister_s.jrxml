@@ -58,7 +58,7 @@
 	<field name="objectClassName" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexShipmentDetail" class="java.lang.Integer"/>
-	<field name="barcodeExSkuShipmentDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuShipmentDetail" class="java.lang.String"/>
 	<field name="nameAttributeItemShipmentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMItemShipmentDetail" class="java.lang.String"/>
 	<field name="quantityShipmentDetail" class="java.lang.Double"/>
@@ -439,7 +439,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeExSkuShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSkuShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="230" y="0" width="30" height="22" backcolor="#FFFFFF"/>

@@ -1,14 +1,12 @@
-import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
-import org.xBaseJ.fields.*;
-import org.xBaseJ.xBaseJException;
 import retail.api.remote.*;
 
 import java.io.*;
-import java.sql.Time;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
 
@@ -60,7 +58,7 @@ public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
 
             for (ItemInfo item : transactionInfo.itemsList) {
                 if (item.composition != null && !item.composition.equals("")) {
-                    String record = "+|" + item.barcodeEx + "|" + item.composition + "|||";
+                    String record = "+|" + item.idBarcode + "|" + item.composition + "|||";
                     writer.println(record);
                 }
             }
@@ -72,7 +70,7 @@ public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
                             new FileOutputStream(path), "windows-1251"));
 
             for (ItemInfo item : transactionInfo.itemsList) {
-                String record = "+|" + item.barcodeEx + "|" + item.barcodeEx + "|" + item.name + "|" +
+                String record = "+|" + item.idBarcode + "|" + item.idBarcode + "|" + item.name + "|" +
                         (item.isWeightItem ? "кг.|" : "ШТ|") + (item.isWeightItem ? "1|" : "0|") + "1|"/*section*/ +
                         item.price.intValue() + "|" + "0|"/*fixprice*/ + (item.isWeightItem ? "0.001|" : "1|") +
                         item.numberGroupItem + "|0|0|0|0";
@@ -86,9 +84,9 @@ public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
                             new FileOutputStream(path), "windows-1251"));
 
             for (ItemInfo item : transactionInfo.itemsList) {
-                String record = "+|" + item.barcodeEx + "|" + item.barcodeEx + "|" + "22|" + item.name + "||" +
+                String record = "+|" + item.idBarcode + "|" + item.idBarcode + "|" + "22|" + item.name + "||" +
                         "1|0|1|"/*effectiveLife & GoodLinkToScales*/ +
-                        (item.composition != null ? item.barcodeEx : "0")/*ingredientNumber*/ + "|" +
+                        (item.composition != null ? item.idBarcode : "0")/*ingredientNumber*/ + "|" +
                         item.price.intValue();
                 writer.println(record);
             }

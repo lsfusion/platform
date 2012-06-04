@@ -34,7 +34,7 @@
 	<field name="inLabelTransactionLabelTypeBarcode" class="java.lang.Boolean"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="sidLabelType" class="java.lang.String"/>
-	<field name="barcodeEx" class="java.lang.String"/>
+	<field name="idBarcode" class="java.lang.String"/>
 	<field name="nameLabelTransactionBarcode" class="java.lang.String"/>
 	<field name="priceLabelTransactionBarcode" class="java.lang.Double"/>
 	<field name="quantityLabelTransactionBarcode" class="java.lang.Integer"/>
@@ -157,10 +157,10 @@
 			</textField>
 			<componentElement>
 				<reportElement mode="Opaque" x="0" y="98" width="93" height="31" forecolor="#000000">
-					<printWhenExpression><![CDATA[$F{barcodeEx}.length() >=11]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{idBarcode}.length() >=11]]></printWhenExpression>
 				</reportElement>
 				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" checksumMode="auto">
-					<jr:codeExpression><![CDATA[$F{barcodeEx}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$F{idBarcode}]]></jr:codeExpression>
 				</jr:EAN13>
 			</componentElement>
 			<line>

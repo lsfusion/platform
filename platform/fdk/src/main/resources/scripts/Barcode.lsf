@@ -1,0 +1,60 @@
+MODULE Barcode;
+
+IMPORT BaseLogicsModule;
+IMPORT Stock;
+IMPORT Utils;
+
+CLASS barcode 'Штрих код';
+TABLE barcode (barcode);
+TABLE stringDate (STRING[14], DATE);
+
+idBarcode 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 INDEXED;
+
+dataDateBarcode 'Дата действия' = DATA DATE (barcode);
+dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS barcode) OR dataDateBarcode(barcode) IN baseGroup PERSISTENT;
+
+dataBarcodeIdDate (id, date) = GROUP UNIQUE barcode BY idBarcode(barcode), dateBarcode(barcode) PERSISTENT;
+orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX LIST(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN baseGroup;
+barcodeIdDate (id, date) = orderBarcodeIdDate(id, date)[2];
+
+barcodeId (id) = barcodeIdDate(id, currentDate());
+activeBarcode 'Активный' (barcode) = barcodeId(idBarcode(barcode)) == barcode;
+
+dataAmountBarcode 'Множитель' = DATA NUMERIC[14,3] (barcode);
+amountBarcode 'Множитель' = (1.0 IF barcode IS barcode) OR dataAmountBarcode (barcode) PERSISTENT;
+
+// Sku
+skuBarcode = DATA sku(barcode) IN baseGroup;
+nameSkuBarcode 'Наименование' (barcode) = nameSku(skuBarcode(barcode)) IN recognizeGroup;
+
+skuBarcodeIdDate (id, date) = skuBarcode(barcodeIdDate(id, date));
+
+dataBarcodeSku = DATA barcode (sku) IN idGroup;
+CONSTRAINT skuBarcode(dataBarcodeSku(item)) != item CHECKED BY dataBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
+
+barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OR dataBarcodeSku(sku) PERSISTENT;
+
+primaryBarcode 'Основной' (barcode) = barcodeSku(skuBarcode(barcode)) == barcode;
+
+idBarcodeSku 'Штрих-код' = idBarcode(barcodeSku(sku)) IN baseGroup PERSISTENT;
+
+// UOM
+
+dataUOMBarcode = DATA UOM (barcode);
+UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode);
+shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode));
+
+// ----------------------------------- Форма по вводу штрих-кода ---------------------------- //
+
+FORM barcodeInput 'Ввод штрих-кода'
+    OBJECTS             barcode=STRING[14] FIXED PANEL
+    PROPERTIES(barcode) objValue = OBJVALUE
+;
+
+DESIGN barcodeInput FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Штрих-код';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}

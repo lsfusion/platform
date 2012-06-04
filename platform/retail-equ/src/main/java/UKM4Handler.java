@@ -1,14 +1,18 @@
 import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
-import org.xBaseJ.fields.*;
+import org.xBaseJ.fields.CharField;
+import org.xBaseJ.fields.DateField;
+import org.xBaseJ.fields.Field;
+import org.xBaseJ.fields.NumField;
 import org.xBaseJ.xBaseJException;
 import retail.api.remote.*;
 
-import java.io.*;
-import java.sql.Time;
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
 
@@ -79,8 +83,8 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                 fileBar.addField(new Field[]{BARCODE, CARDARTICU, CARDSIZE, QUANTITY});
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    BARCODE.put(item.barcodeEx);
-                    CARDARTICU.put(item.barcodeEx); //или что туда надо писать?
+                    BARCODE.put(item.idBarcode);
+                    CARDARTICU.put(item.idBarcode); //или что туда надо писать?
                     CARDSIZE.put("NOSIZE");
                     QUANTITY.put(1); //без разницы, что писать в количество?
                     fileBar.write();
@@ -107,7 +111,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                 });
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    ARTICUL.put(item.barcodeEx);
+                    ARTICUL.put(item.idBarcode);
                     NAME.put(item.name);
                     MESURIMENT.put(item.isWeightItem ? "кг" : "1");
                     MESPRESISI.put(item.isWeightItem ? 0.001 : 1.000);
@@ -130,7 +134,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                 filePlulim.addField(new Field[]{CARDARTICU, PERCENT});
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    CARDARTICU.put(item.barcodeEx);
+                    CARDARTICU.put(item.idBarcode);
                     PERCENT.put(0); //откуда брать макс. процент скидки?
                     filePlulim.write();
                     filePlulim.file.setLength(filePlulim.file.length() - 1);

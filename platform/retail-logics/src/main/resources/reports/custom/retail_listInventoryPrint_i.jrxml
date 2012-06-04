@@ -17,7 +17,7 @@
 	</style>
 	<field name="i" class="java.lang.Integer"/>
 	<field name="indexListInventoryItem" class="java.lang.Integer"/>
-	<field name="barcodeBarcodeSku" class="java.lang.String"/>
+	<field name="idBarcodeSku" class="java.lang.String"/>
 	<field name="nameAttributeItem" class="java.lang.String"/>
 	<field name="quantityPageInventoryDetailListInventoryItem" class="java.lang.Double"/>
 	<field name="accountPricePageInventoryDetailListInventoryItem" class="java.lang.Double"/>
@@ -36,7 +36,7 @@
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeBarcodeSku}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="114" y="0" width="213" height="12"/>
