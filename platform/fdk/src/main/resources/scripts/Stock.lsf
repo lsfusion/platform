@@ -1,9 +1,6 @@
 MODULE Stock;
 
-IMPORT BaseLogicsModule;
-
-IMPORT Utils;
-IMPORT Hierarchy;
+REQUIRE BaseLogicsModule, Utils, Hierarchy;
 
 // ----------------------------------- Склады ------------------------------------------ //
 

@@ -7,23 +7,22 @@ MODULE retail;
 // Надбавка - NUMERIC[8,3]
 // Норма списания отходов - NUMERIC[10,3]
 
-IMPORT BaseLogicsModule;
-
-IMPORT Utils;
-IMPORT Hierarchy;
-IMPORT Historizable;
-IMPORT Numerator;
-IMPORT Stock;
-IMPORT Barcode;
-IMPORT Document;
-IMPORT Tax;
-IMPORT Ware;
-IMPORT LegalEntity;
-IMPORT Employee;
-IMPORT Store;
-IMPORT ListRegister;
-IMPORT Consignment;
-IMPORT AccountDocument;
+REQUIRE BaseLogicsModule,
+        Utils,
+        Hierarchy,
+        Historizable,
+        Numerator,
+        Stock,
+        Barcode,
+        Document,
+        Tax,
+        Ware,
+        LegalEntity,
+        Employee,
+        Store,
+        ListRegister,
+        Consignment,
+        AccountDocument;
 IMPORT StorePrice;
 
 GROUP emailGroup 'E-mail' : baseGroup;

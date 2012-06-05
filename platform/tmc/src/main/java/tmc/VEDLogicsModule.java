@@ -385,6 +385,10 @@ public class VEDLogicsModule extends LogicsModule {
 
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
     public void initClasses() {
         initBaseClassAliases();
 

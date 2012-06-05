@@ -69,6 +69,10 @@ public class PaasLogicsModule extends LogicsModule {
     }
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
     public void initClasses() {
         initBaseClassAliases();
 

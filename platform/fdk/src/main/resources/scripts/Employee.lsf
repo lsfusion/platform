@@ -1,8 +1,6 @@
 MODULE Employee;
 
-IMPORT BaseLogicsModule;
-IMPORT Hierarchy;
-IMPORT Utils;
+REQUIRE BaseLogicsModule, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;

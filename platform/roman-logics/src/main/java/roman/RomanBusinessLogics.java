@@ -45,6 +45,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
         Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
         RomanLM = addLogicsModule(new RomanLogicsModule(LM, this));
+        RomanLM.setRequiredModules(Arrays.asList("BaseLogicsModule", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
         RomanRB = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this));
     }
 

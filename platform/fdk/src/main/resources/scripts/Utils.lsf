@@ -1,6 +1,6 @@
 MODULE Utils;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 dateDiffersCurrent(date) = date IS DATE AND date != currentDate();
 

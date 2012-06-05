@@ -1,12 +1,6 @@
 MODULE Store;
 
-IMPORT BaseLogicsModule;
-IMPORT Utils;
-IMPORT Historizable;
-IMPORT Stock;
-IMPORT Employee;
-IMPORT Tax;
-IMPORT LegalEntity;
+REQUIRE BaseLogicsModule, Utils, Historizable, Stock, Employee, Tax, LegalEntity;
 
 // -------------------------------------- Торговая сеть ------------------------------- //
 

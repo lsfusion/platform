@@ -1,8 +1,6 @@
 MODULE LegalEntity;
 
-IMPORT BaseLogicsModule;
-IMPORT Historizable;
-IMPORT Tax;
+REQUIRE BaseLogicsModule, Historizable, Tax;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 

@@ -280,7 +280,7 @@ public class LsfLogicsParserNavigatorTest {
                                          testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();
 
-        LM = (ScriptingLogicsModule) bl.findModule("testNavigator");
+        LM = (ScriptingLogicsModule) bl.getModule("testNavigator");
         assertNotNull(LM);
 
         entity = (ScriptingFormEntity) getElement("storeArticle");

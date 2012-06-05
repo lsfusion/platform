@@ -1,12 +1,6 @@
 MODULE ListRegister;
 
-IMPORT BaseLogicsModule;
-IMPORT LegalEntity;
-IMPORT Stock;
-IMPORT Barcode;
-IMPORT Employee;
-IMPORT Utils;
-IMPORT Store;
+REQUIRE BaseLogicsModule, LegalEntity, Stock, Barcode, Employee, Utils, Store;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 

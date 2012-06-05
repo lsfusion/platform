@@ -1,6 +1,6 @@
 MODULE Document;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
 TABLE postedObject (postedObject);

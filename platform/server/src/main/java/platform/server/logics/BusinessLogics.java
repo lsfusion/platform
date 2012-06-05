@@ -73,20 +73,14 @@ import static platform.server.logics.ServerResourceBundle.getString;
 // @GenericImmutable нельзя так как Spring валится
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteLogicsInterface, InitializingBean {
-    protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
+    private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
+    private Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
+
     final public BaseLogicsModule<T> LM;
     public String dbName;
-    public List<LogicsModule> getLogicModules() {
-        return logicModules;
-    }
 
-    public LogicsModule findModule(String sid) {
-        for (LogicsModule module : logicModules) {
-            if (module.getSID().equals(sid)) {
-                return module;
-            }
-        }
-        return null;
+    public LogicsModule getModule(String name) {
+        return nameToModule.get(name);
     }
 
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
@@ -709,26 +703,100 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addLogicsModule(LM);
     }
 
+    private void sortModules(String cur, LinkedList<String> way, Set<String> used, List<String> outModules, Map<String, List<String>> graph) {
+        way.add(cur);
+        used.add(cur);
+        for (String next : graph.get(cur)) {
+            if (!used.contains(next)) {
+                sortModules(next, way, used, outModules, graph);
+            } else if (way.contains(next)) {
+                String errMsg = next;
+                while (way.peekLast().equals(next)) {
+                    errMsg = errMsg + " <- " + way.pollLast();
+                }
+                throw new RuntimeException("[error]:\tthere is a circular dependency: " + errMsg);
+            }
+        }
+        way.removeLast();
+        outModules.add(cur);
+    }
+
+    private List<LogicsModule> orderModules() {
+        for (LogicsModule module : logicModules) {
+            if (nameToModule.containsKey(module.getName())) {
+                throw new RuntimeException(String.format("[error]:\tmodule '%s' has already been added", module.getName()));
+            }
+            nameToModule.put(module.getName(), module);
+        }
+
+        Map<String, List<String>> graph = new HashMap<String, List<String>>();
+        for (LogicsModule module : logicModules) {
+            graph.put(module.getName(), new ArrayList<String>());
+        }
+
+        for (LogicsModule module : logicModules) {
+            for (String reqModule : module.getRequiredModules()) {
+                if (graph.get(reqModule) == null) {
+                    throw new RuntimeException(String.format("[error]:\t%s:\trequired module '%s' was not found", module.getName(), reqModule));
+                }
+                graph.get(reqModule).add(module.getName());
+            }
+        }
+
+        List<LogicsModule> orderedModules = new ArrayList<LogicsModule>();
+        Set<String> usedModules = new HashSet<String>();
+        LinkedList<String> currentWay = new LinkedList<String>();
+        for (LogicsModule module : logicModules) {
+            if (module.getRequiredModules().isEmpty()) {
+                List<String> outModules = new ArrayList<String>();
+                sortModules(module.getName(), currentWay, usedModules, outModules, graph);
+                Collections.reverse(outModules);
+                List<LogicsModule> newModules = new ArrayList<LogicsModule>();
+                for (String moduleName : outModules) {
+                    newModules.add(nameToModule.get(moduleName));
+                }
+                newModules.addAll(orderedModules);
+                orderedModules = newModules;
+            }
+        }
+
+        // Проверка на возможные оставшиеся циклы
+        for (LogicsModule module : logicModules) {
+            if (!usedModules.contains(module.getName())) {
+                List<String> outModules = new ArrayList<String>();
+                sortModules(module.getName(), currentWay, usedModules, outModules, graph);
+            }
+        }
+
+        return orderedModules;
+    }
+
     protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
         String errors = "";
         try {
             for (LogicsModule module : logicModules) {
+                module.initModule();
+            }
+
+            List<LogicsModule> orderedModules = orderModules();
+
+            for (LogicsModule module : orderedModules) {
                 module.initGroups();
             }
-            for (LogicsModule module : logicModules) {
+            for (LogicsModule module : orderedModules) {
                 module.initClasses();
             }
 
             LM.baseClass.initObjectClass();
             LM.storeCustomClass(LM.baseClass.objectClass);
 
-            for (LogicsModule module : logicModules) {
+            for (LogicsModule module : orderedModules) {
                 module.initTables();
             }
 
             initExternalScreens();
 
-            for (LogicsModule module : logicModules) {
+            for (LogicsModule module : orderedModules) {
                 module.initProperties();
             }
 
@@ -743,7 +811,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     //            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
             }
 
-            for (LogicsModule module : logicModules) {
+            for (LogicsModule module : orderedModules) {
                 module.initIndexes();
             }
             assert checkProps();

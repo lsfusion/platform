@@ -46,6 +46,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     public void createModules() throws IOException {
         super.createModules();
         SkolkovoLM = addLogicsModule(new SkolkovoLogicsModule(LM, this));
+        SkolkovoLM.setRequiredModules(Arrays.asList("BaseLogicsModule"));
     }
 
 

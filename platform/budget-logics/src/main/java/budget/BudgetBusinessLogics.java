@@ -9,6 +9,7 @@ import platform.server.logics.BusinessLogics;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
     private BudgetLogicsModule budgetLM;
@@ -20,6 +21,7 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
     public void createModules() throws IOException {
         super.createModules();
         budgetLM = new BudgetLogicsModule(LM);
+        budgetLM.setRequiredModules(Arrays.asList("BaseLogicsModule"));
         addLogicsModule(budgetLM);
     }
 

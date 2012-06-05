@@ -512,6 +512,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
     public void initClasses() {
         baseClass = addBaseClass("object", getString("logics.object"));
 

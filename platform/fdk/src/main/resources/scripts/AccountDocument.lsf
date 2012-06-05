@@ -1,9 +1,6 @@
 MODULE AccountDocument;
 
-IMPORT BaseLogicsModule;
-IMPORT Store;
-IMPORT Employee;
-IMPORT Utils;
+REQUIRE BaseLogicsModule, Store, Employee, Utils;
 
 CLASS ABSTRACT accountDocumentLedger 'Учетный документ';
 TABLE accountDocumentLedger (accountDocumentLedger);

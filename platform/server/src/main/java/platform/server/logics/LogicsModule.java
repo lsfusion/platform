@@ -51,6 +51,8 @@ import static platform.server.logics.property.derived.DerivedProperty.createStat
  */
 
 public abstract class LogicsModule {
+    public abstract void initModule();
+
     public abstract void initClasses();
 
     public abstract void initTables();
@@ -105,18 +107,30 @@ public abstract class LogicsModule {
 
     protected LogicsModule() {}
 
-    public LogicsModule(String sID) {
-        this.sID = sID;
+    public LogicsModule(String name) {
+        this(name, name);
     }
 
-    private String sID;
-
-    protected String getSID() {
-        return sID;
+    public LogicsModule(String name, String namespace) {
+        this(name, namespace, new ArrayList<String>());
     }
 
-    protected void setSID(String sID) {
-        this.sID = sID;
+    public LogicsModule(String name, String namespace, List<String> requiredModules) {
+        this.name = name;
+        this.namespace = namespace;
+        this.requiredModules = requiredModules;
+    }
+
+    private String name;
+    private String namespace;
+    private List<String> requiredModules;
+
+    public String getName() {
+        return name;
+    }
+
+    protected void setName(String name) {
+        this.name = name;
     }
 
     public LP<?> getLPBySID(String sID) {
@@ -2536,6 +2550,22 @@ public abstract class LogicsModule {
     
     public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session) {
         return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session), object);
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public List<String> getRequiredModules() {
+        return requiredModules;
+    }
+
+    public void setRequiredModules(List<String> requiredModules) {
+        this.requiredModules = requiredModules;
     }
 
     protected class MetaCodeFragment {

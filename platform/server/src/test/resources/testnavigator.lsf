@@ -1,6 +1,6 @@
 MODULE testNavigator;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 /////////// GROUP STATEMENT ////////////
 

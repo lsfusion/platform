@@ -1283,6 +1283,10 @@ public class RomanLogicsModule extends LogicsModule {
     public InvoiceExportFormEntity invoiceExportForm;
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
 
     public void initClasses() {
         initBaseClassAliases();

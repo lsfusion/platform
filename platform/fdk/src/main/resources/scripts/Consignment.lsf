@@ -1,12 +1,12 @@
 MODULE Consignment;
 
-IMPORT BaseLogicsModule;
-IMPORT LegalEntity;
-IMPORT Stock;
-IMPORT Employee;
-IMPORT Utils;
-IMPORT Ware;
-IMPORT Numerator; // вот эту зависимость нужно будет убрать
+REQUIRE BaseLogicsModule,
+        LegalEntity,
+        Stock,
+        Employee,
+        Utils,
+        Ware,
+        Numerator; // вот эту зависимость нужно будет убрать
 
 CLASS wayOfLoading 'Способ ПРР' : named;
 TABLE wayOfLoading (wayOfLoading);

@@ -1,7 +1,6 @@
 MODULE VEDScript;
 
-IMPORT BaseLogicsModule;
-IMPORT VEDLogicsModule;
+REQUIRE BaseLogicsModule, VEDLogicsModule;
 
 nameOrderUser 'Исп-ль заказа' (order) = commonName(orderUser(order));
 

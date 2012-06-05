@@ -1,8 +1,6 @@
 MODULE Ware;
 
-IMPORT BaseLogicsModule;
-IMPORT Historizable;
-IMPORT Tax;
+REQUIRE BaseLogicsModule, Historizable, Tax;
 
 CLASS ware 'Посуда' : named, externalObject;
 TABLE ware(ware);

@@ -1,8 +1,6 @@
 MODULE Barcode;
 
-IMPORT BaseLogicsModule;
-IMPORT Stock;
-IMPORT Utils;
+REQUIRE BaseLogicsModule, Stock, Utils;
 
 CLASS barcode 'Штрих код';
 TABLE barcode (barcode);

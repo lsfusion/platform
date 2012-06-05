@@ -1,6 +1,6 @@
 MODULE Numerator;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 CLASS numerator 'Нумератор' : named;
 TABLE numerator (numerator);

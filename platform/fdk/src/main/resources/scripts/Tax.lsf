@@ -1,8 +1,6 @@
 MODULE Tax;
 
-IMPORT BaseLogicsModule;
-IMPORT Utils;
-IMPORT Hierarchy;
+REQUIRE BaseLogicsModule, Utils, Hierarchy;
 
 // ---------------------------------- Налог --------------------------------------- //
 

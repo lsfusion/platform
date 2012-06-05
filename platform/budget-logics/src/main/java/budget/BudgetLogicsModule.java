@@ -44,6 +44,10 @@ public class BudgetLogicsModule extends LogicsModule {
     ConcreteCustomClass transfer, incomeProfit;
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
     public void initClasses() {
         initBaseClassAliases();
 

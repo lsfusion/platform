@@ -1,14 +1,16 @@
 MODULE RB;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule,
 
-IMPORT Utils;
-IMPORT Stock;
-IMPORT Numerator;
-IMPORT Document;
-IMPORT Historizable;
+        Utils,
+        Stock,
+        Numerator,
+        Document,
+        Historizable,
 
-IMPORT RomanLogicsModule;
+        RomanLogicsModule;
+
+IMPORT BaseLogicsModule, Utils, Stock;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
 

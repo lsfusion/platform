@@ -1,6 +1,6 @@
 MODULE Historizable;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
     data###property##Date caption = DATA type (object, DATE) IN group;
