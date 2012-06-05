@@ -56,6 +56,13 @@ META implementBatch(concrete)
     //supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
 END
 
+//--------------------------------- Наименование товара --------------------------------------------------------------------//
+descriptionSku 'Наименование товара' (sku) =
+        [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+        sidArticleSku(sku), nameCategoryArticleSku(sku), nameArticleSku(sku));
+
+nameSku(sku) += descriptionSku (sku);
+
 //--------------------------------- Сертификаты --------------------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
 CLASS temporalCertificate 'Временный сертификат' : certificate;
@@ -1086,22 +1093,15 @@ nameArticleSkuCustomsFlowDetail 'Наименование' (customsFlowDetail) =
 storeCustomsFlow 'Магазин (ИД)' (customsFlow) = DATA store (customsFlow);
 nameStoreCustomsFlow 'Магазин' (customsFlow) = name (storeCustomsFlow (customsFlow));
 
+descriptionCustomsFlow 'Название документа' (customsFlow) =
+    [FORMULA STRING[200] '\'Расход с СВХ \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(customsFlow), dateCustomsFlow(customsFlow), nameCustomStoreCustomsFlow(customsFlow));
+
 @implementBalanceSkuLedgerSkuStock (customsFlow, customStore);
 
+descriptionBalanceSkuLedger (ledger) += descriptionCustomsFlow (ledger);
 isPostedBalanceSkuLedger (ledger) += isPostedCustomsFlowDetail (ledger);
 quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCustomsFlowDetail (outUserBalanceSkuLedger);
-
-totalFlowBDeclarationDetailDateTime 'Расход по партии из декларации' (declarationDetail, dateTime) =
-    GROUP SUM quantityCustomsFlowDetail (customsFlowDetail)
-    IF declarationDetailCustomsFlowDetail (customsFlowDetail) == declarationDetail
-        AND dateTimeCustomsFlowDetail (customsFlowDetail) < (dateTime AS DATETIME)
-    BY declarationDetailCustomsFlowDetail (customsFlowDetail), dateTimeCustomsFlowDetail (customsFlowDetail);
-
-totalFlowBDeclarationDetailCustomsFlow 'Расход по партии из декларации' (declarationDetail, customsFlow) =
-   totalFlowBDeclarationDetailDateTime (declarationDetail, dateTimeCustomsFlow (customsFlow));
-
-balanceBDeclarationDetailCustomsFlow 'Остаток по партии из декларации' (declarationDetail, customsFlow) =
-   quantityDeclarationDetail (declarationDetail) - totalFlowBDeclarationDetailCustomsFlow (declarationDetail, customsFlow);
 
 inCustomsFlowDeclaration 'Отгрузка по декларации' (customsFlow, declaration) = DATA BOOLEAN (customsFlow, declaration)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -1116,10 +1116,10 @@ CONSTRAINT customsFlowDetail IS customsFlowDetail
     MESSAGE 'Строка отгрузки не соответствует выбранным декларациям';
 
 CONSTRAINT customsFlowDetail IS customsFlowDetail
-    AND NOT balanceBDeclarationDetailCustomsFlow (declarationDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)),
-            customsFlowCustomsFlowDetail(customsFlowDetail))>0
+    AND NOT balanceBStockBatchDateTime (declarationDetailCustomsFlowDetail(customsFlowDetail), customStoreCustomsFlowDetail(customsFlowDetail),
+            dateTimeCustomsFlowDetail(customsFlowDetail))>0
     CHECKED BY declarationDetailCustomsFlowDetail
-    MESSAGE 'Строка отгрузки не соответствует выбранным декларациям';
+    MESSAGE 'Нет остатка по партии';
 
 declarationsCustomsFlow 'Декларации' (customsFlow) = GROUP CONCAT castToString255(sidDeclaration(declaration))
     IF inCustomsFlowDeclaration (customsFlow, declaration), ', ' BY customsFlow MINCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -1223,7 +1223,8 @@ showFormDeclarationsCustomsFlow 'Декларации' (customsFlow) = ACTION FO
 FORM customsFlow 'Расход с СВХ'
     OBJECTS c = customsFlow FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow, nameStoreCustomsFlow,
-                   declarationsCustomsFlow, showFormDeclarationsCustomsFlow, toFillCustomsFlowDetailsCustomsFlow
+                   declarationsCustomsFlow, showFormDeclarationsCustomsFlow, toFillCustomsFlowDetailsCustomsFlow,
+                   cleanAllCustomsFlowDetailsCustomsFlow, descriptionCustomsFlow
 
     OBJECTS d = customsFlowDetail
     PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
@@ -1243,13 +1244,13 @@ DESIGN customsFlow FROM DEFAULT {
 
 FORM customsFlows 'Расходы с СВХ'
     OBJECTS c = customsFlow
-    PROPERTIES (c) numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow, nameStoreCustomsFlow
+    PROPERTIES (c) READONLY numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow, nameStoreCustomsFlow
 
     PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCustomsFlow(c), delete FORCE PANEL SHOWIF isDraftCustomsFlow(c),
                    postCustomsFlow SHOWIF isDraftCustomsFlow(c), unpostCustomsFlow SHOWIF isPostedCustomsFlow(c)
 
     OBJECTS d = customsFlowDetail
-    PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
+    PROPERTIES(d) READONLY indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
                   sidColorSkuCustomsFlowDetail, nameColorSkuCustomsFlowDetail, sidSizeSkuCustomsFlowDetail, quantityCustomsFlowDetail
 
     FILTERS inCustomsFlowCustomsFlowDetail(c, d)
