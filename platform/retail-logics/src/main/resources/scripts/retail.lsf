@@ -813,26 +813,6 @@ FORM rateWaste 'Норма отходов'
 OBJECTS r=rateWaste FIXED PANEL
 PROPERTIES(r) name, percentRateWaste;
 
-// --------------------------- Имплементация остатков -------------------------- //
-
-TABLE batchDepartmentStore(batch, departmentStore);
-
-META implementBalanceSkuLedgerItemDepartmentStore(concrete)
-    dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
-    isPostedBalanceSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
-    descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
-    skuBalanceSkuLedger (ledger) += item###concrete##Detail(ledger);
-    stockBalanceSkuLedger (ledger) += departmentStore###concrete##Detail(ledger);
-END
-
-META implementBatch(concrete)
-    dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
-    isPostedBatch (batch) += isPosted###concrete##Detail(batch);
-    descriptionBatch (batch) += description###concrete##Detail(batch);
-    skuBatch (batch) += item###concrete##Detail(batch);
-    supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
-END
-
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
@@ -3331,19 +3311,19 @@ FORM papers 'Документы качества'
 
 //---------------------------- Ценовые регистры ----------------------------------------//
 
-META defineItemDepartmentStoreLedger(type, prefix, caption)
-    @defineHistorizableLedgerDouble(type, item, departmentStore, prefix, caption);
+META defineItemDepartmentStoreLedger(property, caption, type)
+    @defineHistorizableLedgerDouble(property, caption, type, item, departmentStore);
 
-    nameItem###prefix##Ledger 'Товар' (ledger) = nameAttributeItem(item###prefix##Ledger(ledger));
-    nameDepartmentStore###prefix##Ledger 'Отдел магазина' (ledger) = name(departmentStore###prefix##Ledger(ledger));
+    nameItem###property##Ledger 'Товар' (ledger) = nameAttributeItem(item###property##Ledger(ledger));
+    nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = name(departmentStore###property##Ledger(ledger));
 END
 
-META implementItemDepartmentStoreLedgerCustom(prefix, concrete, concretePrefix)
-    @implementHistorizableLedgerDouble(item, departmentStore, prefix, concrete, concretePrefix);
+META implementItemDepartmentStoreLedgerCustom(property, concrete, concretePrefix)
+    @implementHistorizableLedgerDouble(property, item, departmentStore, concrete, concretePrefix);
 END
 
-META implementItemDepartmentStoreLedger(prefix, concrete)
-    @implementItemDepartmentStoreLedgerCustom(prefix, concrete, prefix);
+META implementItemDepartmentStoreLedger(property, concrete)
+    @implementItemDepartmentStoreLedgerCustom(property, concrete, property);
 END
 
 META implementBaseIItemDepartmentStoreLedger(concrete)
@@ -3363,7 +3343,7 @@ END
 CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
 TABLE warePriceLedger (warePriceLedger);
 
-@defineItemDepartmentStoreLedger(NUMERIC[14,2], warePrice, 'Цена посуды');
+@defineItemDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
 wareWarePriceLedger(ledger) = ABSTRACT ware (warePriceLedger) PERSISTENT;
 nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
 currentWareLedger 'Посуда' (item, departmentStore) = wareWarePriceLedger(currentLedgerWarePrice(item, departmentStore));
@@ -3371,15 +3351,15 @@ wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledg
 
 CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
 TABLE importerPriceLedger (importerPriceLedger);
-@defineItemDepartmentStoreLedger(NUMERIC[14,2], importerPrice, 'Цена изготовителя');
+@defineItemDepartmentStoreLedger(importerPrice, 'Цена изготовителя', NUMERIC[14,2]);
 
 CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщика';
 TABLE supplierPriceLedger (supplierPriceLedger);
-@defineItemDepartmentStoreLedger(NUMERIC[14,2], supplierPrice, 'Цена поставщика');
+@defineItemDepartmentStoreLedger(supplierPrice, 'Цена поставщика', NUMERIC[14,2]);
 
 CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
 TABLE retailRangeLedger (retailRangeLedger);
-@defineItemDepartmentStoreLedger(range, retailRange, 'НДС');
+@defineItemDepartmentStoreLedger(retailRange, 'НДС', range);
 valueRetailRangeRetailRangeLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
 valueRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
             valueRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
@@ -3390,11 +3370,11 @@ currentValueRetailRangeLedger 'НДС, %' (item, departmentStore) =
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
-@defineItemDepartmentStoreLedger(NUMERIC[14,2], retailPrice, 'Розничная цена');
+@defineItemDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
 
 CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
 TABLE accountPriceLedger (accountPriceLedger);
-@defineItemDepartmentStoreLedger(NUMERIC[14,2], accountPrice, 'Учетная цена');
+@defineItemDepartmentStoreLedger(accountPrice, 'Учетная цена', NUMERIC[14,2]);
 
 META derivePriceLedgerOnItemChangePrefix (ledger, concrete, prefixP, prefixI)
     prefixP###ledger###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
@@ -4128,8 +4108,8 @@ descriptionParish 'Название документа' (parish) =
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(uniqueParish(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
-@implementBalanceSkuLedgerItemDepartmentStore(studyOutput);
-@implementBatch(studyOutput);
+@implementBalanceSkuLedger(studyOutput, item, departmentStore);
+@implementBatch(studyOutput, item);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 
 @implementBaseIItemDepartmentStoreLedger(studyOutput);
@@ -4158,7 +4138,7 @@ descriptionConsumption 'Название документа' (consumption) =
 
 descriptionStudyInputDetail 'Название документа' (studyInputDetail) = descriptionConsumption(uniqueConsumption(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
 
-@implementBalanceSkuLedgerItemDepartmentStore(studyInput);
+@implementBalanceSkuLedger(studyInput, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityStudyInputDetail(ledger);
 
 showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
@@ -4536,7 +4516,7 @@ descriptionInInventoryDetail 'Название документа' (inventoryDet
 
 descriptionInventoryDetail 'Название документа' (inventoryDetail) = descriptionOutInventoryDetail(inventoryDetail) OR descriptionInInventoryDetail(inventoryDetail);
 
-@implementBalanceSkuLedgerItemDepartmentStore(inventory);
+@implementBalanceSkuLedger(inventory, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityOutInventoryDetail(ledger);
 quantityInAutoBalanceSkuLedger (ledger) += quantityInInventoryDetail(ledger);
 
@@ -4707,7 +4687,7 @@ descriptionStatement 'Название документа' (statement) =
 
 descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
-@implementBalanceSkuLedgerItemDepartmentStore(statement);
+@implementBalanceSkuLedger(statement, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityStatementDetail(ledger);
 
 @implementSalesLedger(statement);
@@ -4835,8 +4815,8 @@ descriptionShipment 'Название документа' (shipment) =
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
-@implementBalanceSkuLedgerItemDepartmentStore(shipment);
-@implementBatch(shipment);
+@implementBalanceSkuLedger(shipment, item, departmentStore);
+@implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 
 @implementBaseItemDepartmentStoreLedger(shipment);
@@ -5023,7 +5003,7 @@ descriptionWastage 'Название документа' (wastage) =
 
 descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
 
-@implementBalanceSkuLedgerItemDepartmentStore(wastage);
+@implementBalanceSkuLedger(wastage, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityWastageDetail(ledger);
 
 //----------------------------------- Комиссия -------------------------------------------------//
@@ -5080,7 +5060,7 @@ descriptionWriteOff 'Название документа' (writeOff) =
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
-@implementBalanceSkuLedgerItemDepartmentStore(writeOff);
+@implementBalanceSkuLedger(writeOff, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
@@ -5112,7 +5092,7 @@ descriptionInnerFlow 'Название документа' (innerFlow) =
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
-@implementBalanceSkuLedgerItemDepartmentStore(innerFlow);
+@implementBalanceSkuLedger(innerFlow, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 
 @defineDocumentDetailPackWeightItem(innerFlow);
@@ -5269,7 +5249,7 @@ quantityInnerArrivalDetailBatch (innerArrivalDetail, batch) = quantityInnerArriv
 
 limitInTransferBalanceSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
 
-@implementBalanceSkuLedgerItemDepartmentStore(innerArrival);
+@implementBalanceSkuLedger(innerArrival, item, departmentStore);
 quantityInTransferBalanceSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
 
 @implementBaseItemDepartmentStoreLedger(innerArrival);
@@ -5413,7 +5393,7 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
-@implementBalanceSkuLedgerItemDepartmentStore(returnSupplier);
+@implementBalanceSkuLedger(returnSupplier, item, departmentStore);
 quantityOutUserBalanceSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
 batchOutUserBalanceSkuLedger (ledger) += batchReturnSupplierDetail(ledger);
 
@@ -5619,7 +5599,7 @@ descriptionBillReturnDetail (billDetail) = [FORMULA STRING[200] '\'Возвра�
 
 descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR descriptionBillSaleDetail(billDetail);
 
-@implementBalanceSkuLedgerItemDepartmentStore(bill);
+@implementBalanceSkuLedger(bill, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityBillSaleDetail(ledger);
 quantityInAutoBalanceSkuLedger (ledger) += quantityBillReturnDetail(ledger);
 
@@ -5802,7 +5782,7 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
 
-@implementBalanceSkuLedgerItemDepartmentStore(disparity);
+@implementBalanceSkuLedger(disparity, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityDisparityDetail(ledger);
 
                                   // Приход
@@ -5851,8 +5831,8 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
 
-@implementBalanceSkuLedgerItemDepartmentStore(inputDisparity);
-@implementBatch(inputDisparity);
+@implementBalanceSkuLedger(inputDisparity, item, departmentStore);
+@implementBatch(inputDisparity, item);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 
 @implementBaseIItemDepartmentStoreLedger(inputDisparity);

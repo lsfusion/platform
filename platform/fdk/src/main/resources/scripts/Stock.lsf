@@ -56,6 +56,7 @@ CLASS ABSTRACT outBalanceSkuLedger 'Расход' : balanceSkuLedger;
 CLASS ABSTRACT batch 'Партия' : inBalanceSkuLedger;
 TABLE batch(batch);
 TABLE balanceSkuLedgerBatch (balanceSkuLedger, batch);
+TABLE batchStock(batch, stock);
 
 CLASS ABSTRACT outUserBalanceSkuLedger 'Внешний расход с указанной партией' : outBalanceSkuLedger;
 CLASS ABSTRACT outAutoBalanceSkuLedger 'Внешний расход с автоматической себестоимостью' : outBalanceSkuLedger;
@@ -289,6 +290,26 @@ resetBalanceSkuLedgerBatchCost 'Перерассчитать себестоим�
 clearBalanceSkuLedgerBatchCost 'Сбросить всю себестоимость' = ACTION() NEWSESSION AUTOAPPLY {
     SET costBalanceSkuLedgerBatch(ledger, batch) <- NULL;
 } CONFIRM;
+
+// ---------------------------------------------- Макросы ------------------------------------------------- //
+
+META implementBalanceSkuLedger(concrete, skuProp, stockProp)
+    dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
+    isPostedBalanceSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
+    descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
+    skuBalanceSkuLedger (ledger) += skuProp###concrete##Detail(ledger);
+    stockBalanceSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
+END
+
+META implementBatch(concrete, skuProp)
+    dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
+    isPostedBatch (batch) += isPosted###concrete##Detail(batch);
+    descriptionBatch (batch) += description###concrete##Detail(batch);
+    skuBatch (batch) += skuProp###concrete##Detail(batch);
+    supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
+END
+
+// ----------------------------------------------- Формы --------------------------------------------------- //
 
 FORM costItemLedger 'Себестоимость (операции)'
     OBJECTS bil = balanceSkuLedger
