@@ -572,6 +572,32 @@ META defineDocumentDetailPackWeightItem (object)
         grossWeightItem(item###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
 END
 
+
+//-----------------------------Заполнение из документа ТСД--------------------------------//
+
+META defineDocumentDetailItemOfTerminal (object)
+    fillOfTerminalDocument###object 'Заполнить из документа ТСД' (object) = ACTION (object) {
+        FORM terminalDocumentsDialog MODAL;
+        IF formResult() == formResult.ok THEN {
+            LOCAL terminalDocument = terminalDocument ();
+            SET terminalDocument() <- chosenObject('td');
+
+            FOR terminalDocumentTerminalDocumentDetail(tdd) == terminalDocument DO {
+                ADDOBJ object##Detail;
+                FOR o == addedObject() DO {
+                    SET object###object##Detail(o) <- object AS object;
+                    SET item###object##Detail(o) <- skuBarcode(barcodeIdDate(barcodeTerminalDocumentDetail(tdd), date###object(object)));
+                    SET quantity###object##Detail(o) <- quantityTerminalDocumentDetail(tdd);
+
+                }
+            }
+
+        }
+    } TOOLBAR CONFIRM;
+END
+
+
+
 // ----------------------------------- Поставщик ------------------------------------------ //
 
 META defineDocumentHeaderSupplierContract(object)
@@ -7882,6 +7908,7 @@ toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECT
 
 
 @metaCodeInputMultipleItems(writeOff);
+@defineDocumentDetailItemOfTerminal(writeOff);
 
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
@@ -7896,7 +7923,8 @@ FORM writeOff 'Списание'
     PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
                                     balanceDepartmentStoreItemWriteOff(d)
 
-    PROPERTIES inputMultipleItemsWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d, cleanAllWriteOffDetailsWriteOff(w) FORCE PANEL TODRAW d
+    PROPERTIES  inputMultipleItemsWriteOff(w) TODRAW d, fillOfTerminalDocumentWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d,
+                cleanAllWriteOffDetailsWriteOff(w) FORCE PANEL TODRAW d
     FILTERS inWriteOffWriteOffDetail(w, d)
 
     EDIT writeOff OBJECT w
@@ -8177,6 +8205,7 @@ DESIGN disparities FROM DEFAULT {
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
+@defineDocumentDetailItemOfTerminal(shipment);
 toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
@@ -8206,7 +8235,9 @@ FORM shipment 'Поставка'
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
 
-    PROPERTIES inputMultipleItemsShipment(s) TODRAW d, addShipmentDetailBarcode(s) TODRAW d, cleanAllShipmentDetailsShipment(s) FORCE PANEL TODRAW d
+    PROPERTIES     inputMultipleItemsShipment(s) TODRAW d, fillOfTerminalDocumentShipment(s) TODRAW d,
+                   addShipmentDetailBarcode(s) TODRAW d, cleanAllShipmentDetailsShipment(s) FORCE PANEL TODRAW d
+
 
     FILTERS inShipmentShipmentDetail(s, d)
 
@@ -8373,6 +8404,7 @@ FORM wastages 'Списания отходов'
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
 @metaCodeInputMultipleItemsSupplier(returnSupplier);
+@defineDocumentDetailItemOfTerminal(returnSupplier);
 
 toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSupplier) = toPrintActOfRevaluation(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
 
@@ -8410,7 +8442,8 @@ FORM returnSupplier 'Возврат поставщику'
                   nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                   retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d, cleanAllReturnSupplierDetailsReturnSupplier(r) FORCE PANEL TODRAW d
+    PROPERTIES    inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, fillOfTerminalDocumentReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d,
+                  cleanAllReturnSupplierDetailsReturnSupplier(r) FORCE PANEL TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailRangeReturnSupplierDetail(d),
                                     controlExpiryItemReturnSupplierDetail(d), isManufacturedItemReturnSupplierDetail(d),
@@ -8829,7 +8862,7 @@ FORM listInventory 'Опись'
     PROPERTIES (i)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
-    PROPERTIES      FORCE PANEL fillOfTerminalDocumentListInventory(li) TODRAW dp
+    PROPERTIES      fillOfTerminalDocumentListInventory(li) TODRAW dp
 
     FILTERS listInventoryPageInventory(pl) == li,
             pageInventoryPageInventoryDetail(dp) == pl,
@@ -9263,6 +9296,8 @@ DESIGN inventories FROM DEFAULT {
 @metaCodeInputMultipleItemsBalance (userPriceChange);
 @metaCodeDocumentMachineryPriceTransaction(userPriceChange);
 @metaCodeDocumentLabelTransaction(userPriceChange);
+@defineDocumentDetailItemOfTerminal(userPriceChange);
+
 
 percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
 percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (userPriceChange);
@@ -9361,6 +9396,7 @@ FORM userPriceChange 'Переоценка товаров'
 
     PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
                dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
+               fillOfTerminalDocumentUserPriceChange(u) TODRAW d,
                inputMultipleItemsBalanceUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d,
                cleanAllUserPriceChangeDetailsUserPriceChange(u) FORCE PANEL TODRAW d
 
@@ -9481,6 +9517,7 @@ DESIGN userPriceChanges FROM DEFAULT {
 @metaCodeInputMultipleItems (innerArrival);
 @metaCodeDocumentMachineryPriceTransaction(innerArrival);
 @metaCodeDocumentLabelTransaction(innerArrival);
+@defineDocumentDetailItemOfTerminal(innerFlow);
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
@@ -9504,7 +9541,8 @@ FORM innerFlow 'Расход в другой отдел'
                    warePriceInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
-    PROPERTIES inputMultipleItemsInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d, cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
+    PROPERTIES     inputMultipleItemsInnerFlow(f) TODRAW d, fillOfTerminalDocumentInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d,
+                   cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     EDIT innerFlow OBJECT f
@@ -9922,6 +9960,7 @@ DESIGN specificationForm FROM DEFAULT{
 dialogSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
 
 @metaCodeInputMultipleItems (specification);
+@defineDocumentDetailItemOfTerminal(specification);
 
 FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
@@ -9939,7 +9978,8 @@ FORM specification 'Счет-фактура'
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
                    BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND notNullAvailableQuantityItemBySpecificationDetail(d)
 
-    PROPERTIES inputMultipleItemsSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d, cleanAllSpecificationDetailsSpecification(sp) FORCE PANEL TODRAW d
+    PROPERTIES     inputMultipleItemsSpecification(sp) TODRAW d, fillOfTerminalDocumentSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d,
+                   cleanAllSpecificationDetailsSpecification(sp) FORCE PANEL TODRAW d
     FILTERS inSpecificationSpecificationDetail(sp, d)
 
     EDIT specification OBJECT sp
@@ -10049,6 +10089,7 @@ FORM specificationsStatement 'Счета'
 dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
 @metaCodeInputMultipleItems (statement);
+@defineDocumentDetailItemOfTerminal(statement);
 
 toPrintActOfRevaluationStatement 'Акт переоценки' (statement) = toPrintActOfRevaluation(uniquePriceChangeStatement(statement)) IN printGroup;
 
@@ -10080,7 +10121,8 @@ FORM statement 'Отгрузка из розницы'
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
 
-    PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d, cleanAllStatementDetailsStatement(st) FORCE PANEL TODRAW d
+    PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, fillOfTerminalDocumentStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d,
+                    cleanAllStatementDetailsStatement(st) FORCE PANEL TODRAW d
 
     FILTERS         inStatementStatementDetail(st, d)
 
