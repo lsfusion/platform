@@ -4462,10 +4462,10 @@ CLASS outInventoryDetail 'Недостача инвентаризации' : inv
 CLASS inInventoryDetail 'Излишки инвентаризации' : inventoryDetail, inAutoBalanceSkuLedger;
 
 needToOutLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) > 0
-    AND isPostedCollationSheet(collationSheet);
+    AND includeCollationSheetItem(collationSheet, item) AND isPostedCollationSheet(collationSheet);
 
 needToInLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) < 0
-    AND isPostedCollationSheet(collationSheet);
+    AND includeCollationSheetItem(collationSheet, item) AND isPostedCollationSheet(collationSheet);
 
 @defineAggregationDouble(collationSheet, item, outInventoryDetail, needToOutLedgerCollationSheetItem);
 @defineAggregationDouble(collationSheet, item, inInventoryDetail, needToInLedgerCollationSheetItem);
@@ -4489,6 +4489,7 @@ idBarcodeInventoryDetail 'Штрих-код' (inventoryDetail) =  idBarcodeSku(i
 
 quantityInventoryDetail 'Кол-во недостачи' (inventoryDetail) = quantityShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
 accountSumInventoryDetail 'Сумма недостачи' (inventoryDetail) = accountSumShortageCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
+includeItemInventoryDetail(inventoryDetail) = includeCollationSheetItem(collationSheetInventoryDetail(inventoryDetail), itemInventoryDetail(inventoryDetail)) PERSISTENT;
 
 descriptionOutInventoryDetail 'Название документа' (inventoryDetail) =
     [FORMULA STRING[200] '\'Недостача по инвентаризации \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
@@ -7629,10 +7630,35 @@ FORM terminalDocuments 'Документы ТСД'
     PROPERTIES(td)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(tdd) numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
+    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail, ADDOBJ
+
+    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
+;
+
+DESIGN terminalDocuments FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+    }
+}
+
+FORM terminalDocumentsDialog 'Документы ТСД'
+    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
+    PROPERTIES(td)  READONLY idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
+                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
+
+    PROPERTIES(tdd) READONLY numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
     isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail
 
     FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
 ;
+
+DESIGN terminalDocumentsDialog FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+    }
+}
 
 //----------------------------------- Печать ценников -------------------------------------------------------
 
@@ -8700,6 +8726,44 @@ toPrintListInventoryTime 'Опись' (listInventory, time) =
 
 toPrintListInventory 'Опись' (listInventory) = toPrintListInventoryTime(listInventory, currentDateTime());
 
+
+fillOfTerminalDocumentListInventory 'Заполнить из документа ТСД' (listInventory) = ACTION (listInventory) {
+    FORM terminalDocumentsDialog MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL terminalDocument = terminalDocument ();
+        SET terminalDocument() <- chosenObject('td');
+
+        LOCAL page = pageInventory ();
+        LOCAL detailCount = INTEGER();
+        SET detailCount() <- 0;
+
+        FOR terminalDocumentTerminalDocumentDetail(tdd) == terminalDocument DO {
+            IF detailCount() == 0 THEN {
+                ADDOBJ pageInventory;
+                FOR pi == addedObject() DO {
+                    SET listInventoryPageInventory(pi) <- listInventory AS listInventory;
+                    SET page() <- pi IS pageInventory;
+                }
+            }
+
+            ADDOBJ pageInventoryDetail;
+            FOR pid == addedObject() DO {
+                SET pageInventoryPageInventoryDetail(pid) <- page();
+                SET barcodePageInventoryDetail(pid) <- barcodeIdDate(barcodeTerminalDocumentDetail(tdd), dateListInventory(listInventory));
+                SET quantityPageInventoryDetail(pid) <- quantityTerminalDocumentDetail(tdd);
+
+                SET detailCount() <- detailCount() + 1;
+            }
+
+                IF detailCount() >= 20 THEN {
+                    SET detailCount() <- 0;
+                }
+        }
+
+    }
+} TOOLBAR CONFIRM;
+
+
 //------------------------------------Формы для инвентаризации------------------------------------------//
 
 FORM nameDepartmentInventory 'Подразделения для инвентаризации'
@@ -8764,6 +8828,8 @@ FORM listInventory 'Опись'
     PROPERTIES (li,i) indexListInventoryItem
     PROPERTIES (i)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
+
+    PROPERTIES      FORCE PANEL fillOfTerminalDocumentListInventory(li) TODRAW dp
 
     FILTERS listInventoryPageInventory(pl) == li,
             pageInventoryPageInventoryDetail(dp) == pl,
@@ -9133,7 +9199,8 @@ FORM inventories 'Инвентаризации'
                     inventoryListInventory(li)==in,
                     quantityPageInventoryDetailListInventoryItem(li,i)>0,
                     inventoryCollationSheet(cs) == in,
-                    includeCollationSheetItem(cs, it)
+                    includeCollationSheetItem(cs, it),
+                    includeItemInventoryDetail(il)
 
     ORDER BY        nameDepartmentStoreInventoryDetail, nameAttributeItemInventoryDetail, nameDepartmentStoreListInventory,
                     nameDepartmentStoreCollationSheet, indexListInventoryItem, nAItem
@@ -11664,6 +11731,7 @@ NAVIGATOR {
             ADD dialogMarkupItemDepartment;
             ADD addBanSupplierItemDepartment;
             ADD dialogBanSupplierItemDepartment;
+            ADD terminalDocumentsDialog;
             ADD preliminaryOrder;
             ADD cashRegister;
             ADD scales;
