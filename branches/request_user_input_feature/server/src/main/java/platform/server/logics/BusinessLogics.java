@@ -54,9 +54,7 @@ import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -1705,6 +1703,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     || (property instanceof ActionProperty && ((ActionProperty)property).event!=null))
                 result.add(property);
         return result;
+    }
+
+    @IdentityLazy
+    public Modifier getNoEventModifier() {
+        SimpleMap<CalcProperty, PropertyChange> changes = new SimpleMap<CalcProperty, PropertyChange>();
+        for(Property property : getPropertyList())
+            if(property instanceof DataProperty && ((DataProperty)property).event!=null) {
+                CalcProperty<?> where = (((DataProperty) property).event).getWhere();
+                changes.add(where, where.getNoChange());
+            }
+        
+        return new ImmutableModifier(new PropertyChanges(changes));
     }
 
     private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, Set<CalcProperty>> mapDepends) {

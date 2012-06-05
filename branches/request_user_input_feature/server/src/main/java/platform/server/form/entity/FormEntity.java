@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
+import platform.base.AddSet;
 import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
@@ -9,17 +10,18 @@ import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
-import platform.interop.action.ClientAction;
 import platform.interop.navigator.FormShowType;
 import platform.server.Context;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ComponentView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BaseLogicsModule;
@@ -891,7 +893,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                     + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
         }
 
-        addActionsOnEvent(addPropertyObject(lm.getSimpleAddObjectAction((CustomClass) entity.baseClass)), events);
+        addActionsOnEvent(addPropertyObject(lm.getSimpleAddObjectAction((ConcreteCustomClass) entity.baseClass, true)), events);
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, ActionPropertyObjectEntity... actions) {
@@ -933,6 +935,62 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
         return deserialize(BL, new DataInputStream(new ByteArrayInputStream(formState)));
+    }
+
+    public ComponentView getDrawTabContainer(PropertyDrawEntity<?> property, boolean grid) {
+        FormView formView = getRichDesign();
+        ComponentView drawComponent;
+        if(grid) {
+            drawComponent = formView.get(property.getToDraw(this)).grid;
+        } else
+            drawComponent = formView.get(property);
+        return drawComponent.getTabContainer();
+    }
+    public static class ComponentSet extends AddSet<ComponentView, ComponentSet> {
+
+        public ComponentSet() {
+        }
+
+        public ComponentSet(ComponentView where) {
+            super(where);
+        }
+
+        public ComponentSet(ComponentView[] wheres) {
+            super(wheres);
+        }
+
+        protected ComponentSet createThis(ComponentView[] wheres) {
+            return new ComponentSet(wheres);
+        }
+
+        protected ComponentView[] newArray(int size) {
+            return new ComponentView[size];
+        }
+
+        protected boolean containsAll(ComponentView who, ComponentView what) {
+            return who.isAncestorOf(what);
+        }
+
+        public ComponentSet addItem(ComponentView container) {
+            return add(new ComponentSet(container));
+        }
+    }
+    @IdentityLazy
+    public ComponentSet getDrawTabContainers(GroupObjectEntity group) {
+        ComponentSet result = new ComponentSet();
+        for(PropertyDrawEntity property : propertyDraws)
+            if(!Collections.disjoint(property.propertyObject.mapping.values(), group.objects)) { // для свойств "зависящих" от группы
+                ComponentView drawContainer = getDrawTabContainer(property, true);
+                if(drawContainer==null) // cheat \ оптимизация
+                    return null;
+                result = result.addItem(drawContainer);
+
+                drawContainer = getDrawTabContainer(property, false);
+                if(drawContainer==null) // cheat \ оптимизация
+                    return null;
+                result = result.addItem(drawContainer);
+            }
+        return result;
     }
 
     public static FormEntity<?> deserialize(BusinessLogics BL, DataInputStream inStream) {

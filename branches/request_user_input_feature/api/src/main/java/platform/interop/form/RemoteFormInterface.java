@@ -27,6 +27,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     // формы
     void gainedFocus() throws RemoteException;
 
+    void setTabVisible(int tabpane, int tab) throws RemoteException;
+
     ServerResponse closedPressed() throws RemoteException;
 
     ServerResponse okPressed() throws RemoteException;

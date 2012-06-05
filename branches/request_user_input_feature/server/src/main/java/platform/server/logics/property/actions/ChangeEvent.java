@@ -20,6 +20,10 @@ public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcPrope
 
     private final CalcPropertyInterfaceImplement<C> writeFrom;
 
+    public CalcProperty<?> getWhere() {
+        return where.property;
+    }
+
     public ChangeEvent(CalcProperty<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {
         super(writeTo, where);
 

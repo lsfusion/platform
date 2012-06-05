@@ -524,6 +524,11 @@ public class ClientFormController {
         }
     }
 
+    public void setTabVisible(ClientContainer container, ClientComponent component) throws IOException {
+        remoteForm.setTabVisible(container.getID(), component.getID());
+        applyRemoteChanges();
+    }
+
     public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<List<Object>> table) throws IOException {
         List<Integer> propertyIdList = new ArrayList<Integer>();
         for (ClientPropertyDraw propertyDraw : propertyList) {

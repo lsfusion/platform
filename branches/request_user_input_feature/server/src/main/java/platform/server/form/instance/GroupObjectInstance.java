@@ -489,12 +489,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         change(session, value);
     }
 
+    private boolean pendingHidden;
+    
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<CalcProperty> changedProps) throws SQLException {
-        if ((updated & UPDATED_CLASSVIEW) != 0) {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean hidden, boolean refresh, FormChanges result, Collection<CalcProperty> changedProps) throws SQLException {
+        if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }
+
+        if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
+            keyTable = createKeyTable();
 
         if (curClassView == HIDE) return null;
 
@@ -574,6 +579,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     updateKeys = true;
                     break;
                 }
+
+        if(hidden) {
+            pendingHidden |= updateKeys;
+            return null;
+        } else {
+            updateKeys |= pendingHidden;
+            pendingHidden = false;
+        }
 
         Map<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
         SeekObjects orderSeeks = null;
@@ -679,8 +692,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
 
                 // параллельно будем обновлять ключи чтобы JoinSelect'ить
-                if (keyTable == null)
-                    keyTable = createKeyTable();
                 keyTable.writeKeys(sql, keys.keyList());
                 result.gridObjects.put(this, keys.keyList());
 

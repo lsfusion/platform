@@ -32,10 +32,10 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Cust
 
         DataSession session = context.getSession();
         
-        String result = "";
+        String result = property.toString() + '\n';
         for(FormRow formRow : context.createFormInstance(new PropertyFormEntity(property, session.recognizeGroup),
                                                 new HashMap<ObjectEntity, DataObject>(), session, false, false, false, false).getFormData(30).rows) {
-            String rowResult = property.toString() + '\n';
+            String rowResult = "";
             for(Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {
                                                         public Set<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
                                                             return new HashSet<ObjectInstance>(property.propertyObject.mapping.values());

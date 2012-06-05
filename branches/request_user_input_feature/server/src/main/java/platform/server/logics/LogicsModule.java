@@ -2168,8 +2168,8 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    public LAP getSimpleAddObjectAction(CustomClass cls) {
-        return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, baseLM.getAddedObjectProperty()));
+    public LAP getSimpleAddObjectAction(CustomClass cls, boolean noDialog) {
+        return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, noDialog, baseLM.getAddedObjectProperty()));
     }
 
     @IdentityLazy

@@ -19,6 +19,8 @@ public class GroupStatWhere<K> extends GroupWhere {
     public GroupStatWhere(KeyEqual keyEqual, StatKeys<K> stats, Where where) {
         super(keyEqual, where);
         this.stats = stats;
+
+        assert where.getKeyEquals().getSingleKey().isEmpty();
     }
 
     public static <K, V> Collection<GroupStatWhere<V>> mapBack(Collection<GroupStatWhere<K>> col, Map<V,K> map) {

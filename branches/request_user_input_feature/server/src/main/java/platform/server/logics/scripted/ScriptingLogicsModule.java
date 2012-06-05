@@ -912,7 +912,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (!(cls instanceof CustomClass)) {
             errLog.emitAddObjClassError(parser);
         }
-        return getSimpleAddObjectAction((CustomClass) cls);
+        return getSimpleAddObjectAction((CustomClass) cls, false);
     }
 
     public LPWithParams addScriptedConfirmProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {

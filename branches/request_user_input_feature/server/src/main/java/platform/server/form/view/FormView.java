@@ -83,6 +83,10 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public FormView() {
     }
+    
+    public ComponentView findById(int id) {
+        return mainContainer.findById(id);
+    }
 
     public FormEntity<?> entity;
 

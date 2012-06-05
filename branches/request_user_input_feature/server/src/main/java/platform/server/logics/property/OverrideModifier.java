@@ -4,32 +4,37 @@ import platform.server.session.*;
 
 public class OverrideModifier extends MutableModifier {
 
-    private MutableModifier[] modifiers;
+    private Modifier[] modifiers;
 
-    protected void lateInit(MutableModifier... modifiers) {
+    protected void lateInit(Modifier... modifiers) {
         this.modifiers = modifiers;
 
-        for(MutableModifier modifier : modifiers)
-            modifier.registerView(this);
+        for(Modifier modifier : modifiers) {
+            if(modifier instanceof MutableModifier)
+                ((MutableModifier)modifier).registerView(this);
+            else
+                propertyChanges = propertyChanges.add(modifier.getPropertyChanges());
+        }
     }
     public OverrideModifier() {
     }
 
-    public OverrideModifier(MutableModifier... modifiers) {
+    public OverrideModifier(Modifier... modifiers) {
         lateInit(modifiers);
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property) {
         ModifyChange<P> result = null;
-        for (MutableModifier modifier : modifiers)
+        for (Modifier modifier : modifiers)
             result = ModifyChange.addNull(result, modifier.getPropertyChanges().getModify(property));
         return result;
     }
 
     public PropertyChanges calculatePropertyChanges() {
         PropertyChanges result = PropertyChanges.EMPTY;
-        for (MutableModifier modifier : modifiers)
-            result = result.add(modifier.calculatePropertyChanges());
+        for (Modifier modifier : modifiers)
+            result = result.add(modifier instanceof MutableModifier?
+                    ((MutableModifier)modifier).calculatePropertyChanges():modifier.getPropertyChanges());
         return result;
     }
 }

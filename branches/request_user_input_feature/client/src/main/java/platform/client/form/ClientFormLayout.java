@@ -44,7 +44,7 @@ public class ClientFormLayout extends JPanel {
         this.form = iform;
 
         // создаем все контейнеры на форме
-        createContainerViews(topContainer);
+        createContainerViews(topContainer, form);
 
         setLayout(new BorderLayout());
         add(mainContainer, BorderLayout.CENTER);
@@ -75,11 +75,11 @@ public class ClientFormLayout extends JPanel {
     }
 
     // метод рекурсивно создает для каждого ClientContainer свой ClientFormContainer или ClientFormTabbedPane
-    private void createContainerViews(ClientContainer container) {
+    private void createContainerViews(ClientContainer container, ClientFormController form) {
 
         JComponent formContainer;
         if (container.isTabbedPane()) {
-            formContainer = new ClientFormTabbedPane(container, layoutManager);
+            formContainer = new ClientFormTabbedPane(container, form, layoutManager);
         } else if (container.isSplitPane()) {
             formContainer = new ClientFormSplitPane(container, layoutManager, this);
         } else {
@@ -108,7 +108,7 @@ public class ClientFormLayout extends JPanel {
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
-                createContainerViews((ClientContainer) child);
+                createContainerViews((ClientContainer) child, form);
             }
         }
     }

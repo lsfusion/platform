@@ -529,13 +529,12 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
             return;
 
         NoUpdate noUpdate = new NoUpdate(); IncrementProps increment = new IncrementProps(property, change);
-        Modifier modifier = new OverrideModifier(noUpdate, increment);
+        Modifier modifier = new OverrideModifier(noUpdate, increment, BL.getNoEventModifier());
 
         // true нужно предыдущее значение сохранить
         for(CalcProperty<D> depend : BL.getAppliedDependFrom(property)) { // !!! важно в лексикографическом порядке должно быть
             assert depend.isStored() || depend instanceof OldProperty;
             if(depend.isStored()) { // читаем новое значение, запускаем рекурсию
-               assert !(depend instanceof OldProperty);
                 SinglePropertyTableUsage<D> dependChange = depend.readChangeTable(sql, modifier, baseClass, env);
                 applySingleStored((CalcProperty)depend, (SinglePropertyTableUsage)dependChange, BL, incrementApply);
                 noUpdate.add(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать

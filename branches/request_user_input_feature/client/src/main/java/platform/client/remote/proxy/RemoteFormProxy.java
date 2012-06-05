@@ -103,6 +103,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
+    public void setTabVisible(int tabpane, int tab) throws RemoteException {
+        logRemoteMethodStartVoidCall("setTabVisible");
+        target.setTabVisible(tabpane, tab);
+        logRemoteMethodEndVoidCall("setTabVisible");
+    }
+
+    @PendingRemoteMethod
     public void changeGroupObject(int groupID, byte[] value) throws RemoteException {
         logRemoteMethodStartCall("changeGroupObject");
         target.changeGroupObject(groupID, value);

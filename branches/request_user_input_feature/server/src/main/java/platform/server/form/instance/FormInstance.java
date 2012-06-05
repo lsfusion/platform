@@ -10,9 +10,11 @@ import platform.interop.action.*;
 import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ServerResponse;
+import platform.interop.form.layout.ContainerType;
 import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
+import platform.server.Settings;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
@@ -36,6 +38,8 @@ import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.filter.RegularFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
+import platform.server.form.view.ComponentView;
+import platform.server.form.view.ContainerView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -1063,7 +1067,49 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
-    protected Map<PropertyDrawInstance, Boolean> isDrawed = new HashMap<PropertyDrawInstance, Boolean>();
+    protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<PropertyDrawInstance, Boolean>();
+
+    // проверки видимости (для оптимизации pageframe'ов)
+    protected Set<PropertyReaderInstance> pendingHidden = new HashSet<PropertyReaderInstance>();
+
+    private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
+        if(Settings.instance.isDisableTabbedOptimization())
+            return false;
+            
+        ComponentView container = entity.getDrawTabContainer(property.entity, grid);
+        return container != null && isHidden(container); // первая проверка - cheat / оптимизация
+    }
+    private boolean isHidden(GroupObjectInstance group) {
+        if(Settings.instance.isDisableTabbedOptimization())
+            return false;
+
+        FormEntity.ComponentSet containers = entity.getDrawTabContainers(group.entity);
+        if(containers==null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
+            return false;
+        for(ComponentView component : containers)
+            if(!isHidden(component))
+                return false;
+        return true;
+    }    
+    private boolean isHidden(ComponentView component) {
+        ContainerView parent = component.getContainer();
+        assert parent.type == ContainerType.TABBED_PANE;
+
+        ComponentView visible = visibleTabs.get(parent);
+        if(visible==null && parent.children.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+            visible = parent.children.iterator().next();
+        if(!component.equals(visible))
+            return true;
+
+        ComponentView tabContainer = parent.getTabContainer();
+        return tabContainer != null && isHidden(tabContainer);
+    }
+
+    protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<ContainerView, ComponentView>();
+    public void setTabVisible(ContainerView view, ComponentView page) {
+        assert view.type == ContainerType.TABBED_PANE;
+        visibleTabs.put(view, page);
+    }
 
     boolean refresh = true;
 
@@ -1164,12 +1210,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : groups) {
-            if (refresh) {
-                //обновляем classViews при refresh
-                result.classViews.put(group, group.curClassView);
-            }
-
-            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, this, BL.LM.baseClass, refresh, result, changedProps);
+            Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, this, BL.LM.baseClass, isHidden(group), refresh, result, changedProps);
             if(selectObjects!=null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 
@@ -1201,6 +1242,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return result;
     }
 
+    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, Set<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties, Collection<CalcProperty> changedProps) {
+        if (drawProperty!=null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
+            if(hidden)
+                pendingHidden.add(propertyReader);
+            else {
+                readProperties.put(propertyReader, columnGroupGrids);
+                pendingHidden.remove(propertyReader);
+            }
+        }
+    }
+
     private Map<PropertyReaderInstance, Set<GroupObjectInstance>> getChangedDrawProps(FormChanges result, Collection<CalcProperty> changedProps) {
         final Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReaderInstance, Set<GroupObjectInstance>>();
 
@@ -1224,28 +1276,39 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             else if (drawProperty.propertyObject.isInInterface(drawGridObjects = columnGroupGrids, false)) // в панели
                 inInterface = false;
 
-            Boolean previous = isDrawed.put(drawProperty, inInterface);
-            if(inInterface!=null) {
+            Boolean previous = isInInterface.put(drawProperty, inInterface);
+            if(inInterface!=null) { // hidden проверка внутри чтобы вкладки если что уходили
+                boolean hidden = isHidden(drawProperty, inInterface);
+
                 boolean read = refresh || !inInterface.equals(previous) // если изменилось представление
                         || groupUpdated(drawProperty.columnGroupObjects, UPDATED_CLASSVIEW); // изменились группы в колонки (так как отбираются только GRID)
-                if(read || propertyUpdated(drawProperty.getDrawInstance(), drawGridObjects, changedProps)) {
-                    readProperties.put(drawProperty, drawGridObjects);
-                    if(!inInterface) // говорим клиенту что свойство в панели
-                        result.panelProperties.add(drawProperty);
+                
+                // расширенный fillChangedReader, но есть часть специфики, поэтому дублируется
+                if(read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), drawGridObjects, changedProps)) {
+                    if(hidden) { // если спрятан
+                        if(read) { // все равно надо отослать клиенту, так как влияет на наличие вкладки, но с "hidden" значениями
+                            readProperties.put(drawProperty.hiddenReader, drawGridObjects);
+                            if(!inInterface) // говорим клиенту, что свойство в панели
+                                result.panelProperties.add(drawProperty);
+                        }
+                        pendingHidden.add(drawProperty); // помечаем что когда станет видимым надо будет обновить
+                    } else {
+                        readProperties.put(drawProperty, drawGridObjects);
+                        if(!inInterface) // говорим клиенту что свойство в панели
+                            result.panelProperties.add(drawProperty);
+                        pendingHidden.remove(drawProperty);
+                    }
                 }
 
-                if (drawProperty.propertyCaption != null && (read || propertyUpdated(drawProperty.propertyCaption, columnGroupGrids, changedProps))) {
-                    readProperties.put(drawProperty.captionReader, columnGroupGrids);
-                }
-                if (drawProperty.propertyFooter != null && (read || propertyUpdated(drawProperty.propertyFooter, columnGroupGrids, changedProps))) {
-                    readProperties.put(drawProperty.footerReader, columnGroupGrids);
-                }
-                if (drawProperty.propertyBackground != null && (read || propertyUpdated(drawProperty.propertyBackground, drawGridObjects, changedProps))) {
-                    readProperties.put(drawProperty.backgroundReader, drawGridObjects);
-                }
-                if (drawProperty.propertyForeground != null && (read || propertyUpdated(drawProperty.propertyForeground, drawGridObjects, changedProps))) {
-                    readProperties.put(drawProperty.foregroundReader, drawGridObjects);
-                }
+                // читаем всегда так как влияет на видимость, а соответственно на наличие вкладки (с hidden'ом избыточный функционал, но меньший, поэтому все же используем fillChangedReader)
+                fillChangedReader(drawProperty.propertyCaption, drawProperty.captionReader, columnGroupGrids, false, read, readProperties, changedProps);
+
+                fillChangedReader(drawProperty.propertyFooter, drawProperty.footerReader, columnGroupGrids, hidden, read, readProperties, changedProps);
+
+                fillChangedReader(drawProperty.propertyBackground, drawProperty.backgroundReader, drawGridObjects, hidden, read, readProperties, changedProps);
+
+                fillChangedReader(drawProperty.propertyForeground, drawProperty.foregroundReader, drawGridObjects, hidden, read, readProperties, changedProps);
+
             } else if (previous!=null) // говорим клиенту что свойство надо удалить
                 result.dropProperties.add(drawProperty);
         }

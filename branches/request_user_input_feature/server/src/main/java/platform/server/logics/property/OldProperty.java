@@ -1,15 +1,14 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.PropertyChanges;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class OldProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
     public final CalcProperty<T> property;
@@ -27,6 +26,11 @@ public class OldProperty<T extends PropertyInterface> extends SimpleIncrementPro
     @Override
     public Set<OldProperty> getOldDepends() {
         return Collections.<OldProperty>singleton(this);
+    }
+
+    @Override
+    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        return BaseUtils.add(super.calculateLinks(), new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION)); // чтобы лексикографику для applied была
     }
 
     protected Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {

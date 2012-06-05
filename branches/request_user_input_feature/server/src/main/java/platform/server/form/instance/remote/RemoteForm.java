@@ -27,6 +27,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.listener.RemoteFormListener;
+import platform.server.form.view.ContainerView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
@@ -706,6 +707,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 form.formOk();
             }
         });
+    }
+
+    public void setTabVisible(int tabpane, int tab) throws RemoteException {
+        form.setTabVisible((ContainerView) richDesign.findById(tabpane), richDesign.findById(tab));
     }
 
     @Override

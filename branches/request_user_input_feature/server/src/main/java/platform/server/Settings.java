@@ -479,4 +479,15 @@ public class Settings {
     public boolean isUseEventValuePrevHeuristic() {
         return useEventValuePrevHeuristic;
     }
+
+    // отключает оптимизацию с вкладками
+    private boolean disableTabbedOptimization = false;
+
+    public boolean isDisableTabbedOptimization() {
+        return disableTabbedOptimization;
+    }
+
+    public void setDisableTabbedOptimization(boolean disableTabbedOptimization) {
+        this.disableTabbedOptimization = disableTabbedOptimization;
+    }
 }

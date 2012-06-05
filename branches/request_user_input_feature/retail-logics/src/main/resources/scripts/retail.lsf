@@ -395,7 +395,7 @@ META metaCodeIsPriceChangeWrong(prop)
           AND banMarkdownItem(itemPriceChange###prop##Detail(priceChange###prop##Detail));
 
 // todo : при изменении поставки начинает сильно тормозить
-//    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
+    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
 
 END
 

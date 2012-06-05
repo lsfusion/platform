@@ -31,6 +31,7 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.ImmutableModifier;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
@@ -211,11 +212,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return KeyExpr.getMapKeys(interfaces);
     }
 
-    public static Modifier defaultModifier = new Modifier() {
-        public PropertyChanges getPropertyChanges() {
-            return PropertyChanges.EMPTY;
-        }
-    };
+    public static Modifier defaultModifier = new ImmutableModifier(PropertyChanges.EMPTY);
 
     @IdentityLazy
     public Type getInterfaceType(T propertyInterface) { // true потому как может быть old не полный (в частности NewSessionAction)

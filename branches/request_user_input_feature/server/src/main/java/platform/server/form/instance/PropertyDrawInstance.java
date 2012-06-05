@@ -8,6 +8,7 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 // представление св-ва
@@ -43,6 +44,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public FooterReaderInstance footerReader = new FooterReaderInstance();
     public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
     public ForegroundReaderInstance foregroundReader = new ForegroundReaderInstance();
+
+    public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 PropertyObjectInstance<P, ?> propertyObject,
@@ -86,6 +89,22 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public PropertyDrawEntity getEntity() {
         return entity;
+    }
+
+    // заглушка чтобы на сервере ничего не читать
+    public class HiddenReaderInstance implements PropertyReaderInstance {
+
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+            return new CalcPropertyObjectInstance<PropertyInterface>(NullValueProperty.instance, new HashMap<PropertyInterface, ObjectInstance>());
+        }
+
+        public byte getTypeID() {
+            return PropertyDrawInstance.this.getTypeID();
+        }
+
+        public int getID() {
+            return PropertyDrawInstance.this.getID();
+        }
     }
 
     public class CaptionReaderInstance implements PropertyReaderInstance {

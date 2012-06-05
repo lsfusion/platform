@@ -21,6 +21,13 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
     public final Map<WhereJoin, Where> upWheres;
 
     public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, Map<WhereJoin, Where> upWheres, Where where) {
+        this(keyEqual, joins, where, upWheres);
+
+        assert where.getKeyEquals().getSingleKey().isEmpty();
+    }
+
+    // конструктор паковки для assertion'а
+    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, Where where, Map<WhereJoin, Where> upWheres) {
         super(keyEqual, where);
         this.joins = joins;
         this.upWheres = upWheres;
@@ -59,7 +66,7 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
         return getComplexity(false) > Settings.instance.getLimitWhereJoinPack();
     }
     public GroupJoinsWhere pack() { // upWheres особого смысла паковать нет, все равно
-        return new GroupJoinsWhere(keyEqual, joins, upWheres, where.pack());
+        return new GroupJoinsWhere(keyEqual, joins, where.pack(), upWheres);
     }
 
     @Override

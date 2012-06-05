@@ -19,21 +19,31 @@ import java.sql.SQLException;
 public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty {
     // обозначает класс объекта, который нужно добавить
     private CustomClass valueClass;
+    private boolean noDialog;
 
     private LCP storeNewObjectProperty;
 
-    public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, LCP storeNewObjectProperty) {
+    public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, boolean noDialog, LCP storeNewObjectProperty) {
         super(sID, ServerResourceBundle.getString("logics.add"), new ValueClass[0]);
+        
+        assert !noDialog || valueClass instanceof ConcreteCustomClass;
+        this.noDialog = noDialog;
         this.valueClass = valueClass;
 
         this.storeNewObjectProperty = storeNewObjectProperty;
     }
 
     protected Read getReadClass(ExecutionContext context) {
+        if(noDialog)
+            return null;
+
         return new Read(valueClass, true);
     }
 
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, ObjectClass readClass) throws SQLException {
+        if(noDialog)
+            readClass = valueClass;
+        
         DataObject object = context.addObject((ConcreteCustomClass) readClass);
 
         if (storeNewObjectProperty != null && object != null) {
