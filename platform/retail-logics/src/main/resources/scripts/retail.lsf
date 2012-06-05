@@ -262,10 +262,11 @@ META defineDocumentDetailItemOfTerminal (object)
     fillOfTerminalDocument###object 'Заполнить из документа ТСД' (object) = ACTION (object) {
         FORM terminalDocumentsDialog MODAL;
         IF formResult() == formResult.ok THEN {
-            LOCAL terminalDocument = terminalDocument ();
-            SET terminalDocument() <- chosenObject('td');
+            LOCAL document = terminalDocument ();
+            SET document() <- chosenObject('td');
+            SET usedTerminalDocument(terminalDocument) IF terminalDocument == document()  <- TRUE;
 
-            FOR terminalDocumentTerminalDocumentDetail(tdd) == terminalDocument DO {
+            FOR terminalDocumentTerminalDocumentDetail(tdd) == document()  DO {
                 ADDOBJ object##Detail;
                 FOR o == addedObject() DO {
                     SET object###object##Detail(o) <- object AS object;
@@ -276,7 +277,7 @@ META defineDocumentDetailItemOfTerminal (object)
             }
 
         }
-    } TOOLBAR CONFIRM;
+    } TOOLBAR;
 END
 
 
@@ -2632,7 +2633,8 @@ idTerminalHandbookType2TerminalDocument 'Код в справочнике 2' = D
 terminalDocumentTypeTerminalDocument = DATA terminalDocumentType(terminalDocument);
 nameTerminalDocumentTypeTerminalDocument 'Тип документа' (terminalDocument) = nameTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
 idTerminalDocumentTypeTerminalDocument (terminalDocument) = idTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
-
+usedTerminalDocument 'Использован' (terminalDocument) = DATA BOOLEAN (terminalDocument) IN baseGroup;
+noUsedTerminalDocument 'Неиспользован' (terminalDocument) = terminalDocument IS terminalDocument AND NOT usedTerminalDocument(terminalDocument);
 
 idToTerminalDocument (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument) WHERE terminalDocument IS terminalDocument;
 
@@ -7242,13 +7244,17 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
 FORM terminalDocuments 'Документы ТСД'
     OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
     PROPERTIES(td)  idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
-                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
+                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument, usedTerminalDocument READONLY
     PROPERTIES(td)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(tdd) numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
     isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail, ADDOBJ
 
     FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
+
+    FILTERGROUP filterUse
+        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
+
 ;
 
 DESIGN terminalDocuments FROM DEFAULT {
@@ -7267,6 +7273,8 @@ FORM terminalDocumentsDialog 'Документы ТСД'
     isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail
 
     FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
+    FILTERGROUP filterUse
+        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
 ;
 
 DESIGN terminalDocumentsDialog FROM DEFAULT {
@@ -8353,14 +8361,15 @@ toPrintListInventory 'Опись' (listInventory) = toPrintListInventoryTime(lis
 fillOfTerminalDocumentListInventory 'Заполнить из документа ТСД' (listInventory) = ACTION (listInventory) {
     FORM terminalDocumentsDialog MODAL;
     IF formResult() == formResult.ok THEN {
-        LOCAL terminalDocument = terminalDocument ();
-        SET terminalDocument() <- chosenObject('td');
+        LOCAL document = terminalDocument ();
+        SET document() <- chosenObject('td');
+        SET usedTerminalDocument(terminalDocument) IF terminalDocument == document()  <- TRUE;
 
         LOCAL page = pageInventory ();
         LOCAL detailCount = INTEGER();
         SET detailCount() <- 0;
 
-        FOR terminalDocumentTerminalDocumentDetail(tdd) == terminalDocument DO {
+        FOR terminalDocumentTerminalDocumentDetail(tdd) == document() DO {
             IF detailCount() == 0 THEN {
                 ADDOBJ pageInventory;
                 FOR pi == addedObject() DO {
@@ -8376,15 +8385,15 @@ fillOfTerminalDocumentListInventory 'Заполнить из документа 
                 SET quantityPageInventoryDetail(pid) <- quantityTerminalDocumentDetail(tdd);
 
                 SET detailCount() <- detailCount() + 1;
-            }
 
                 IF detailCount() >= 20 THEN {
                     SET detailCount() <- 0;
                 }
+            }
         }
 
     }
-} TOOLBAR CONFIRM;
+} TOOLBAR;
 
 
 //------------------------------------Формы для инвентаризации------------------------------------------//
