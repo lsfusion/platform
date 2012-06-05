@@ -24,6 +24,7 @@ IMPORT Store;
 IMPORT ListRegister;
 IMPORT Consignment;
 IMPORT AccountDocument;
+IMPORT StorePrice;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -131,199 +132,6 @@ META defineDocumentBasePostedDepartmentStoreItem (object)
     @defineDocumentPosted(object);
 END
 
-// ----------------------------------- Объявление цен для detail -------------------------- //
-
-GROUP priceDetailGroup 'Цены' : publicGroup;
-
-META defineDocumentDetailInPricePrefix (object, prefix, caption)
-    prefix###importerPrice###object##Detail 'Цена изготовителя/импортера'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-    prefix###supplierPrice###object##Detail 'Цена поставщика без НДС'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-END
-META defineDocumentDetailInPrice (object)
-    @defineDocumentDetailInPricePrefix(object,,);
-END
-
-META defineDocumentDetailInvoicePrice (object)
-    supplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) = DATA NUMERIC[6,2] (object##Detail) IN priceDetailGroup;
-    overSupplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) =
-            UNION OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
-
-    supplierRange###object##Detail(detail) = DATA range (object##Detail);
-    numberSupplierRange###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierRange###object##Detail(detail)) IN priceDetailGroup;
-    valueSupplierRange###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
-        (supplierRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
-
-    CONSTRAINT taxRange(supplierRange###object##Detail(detail)) != tax.taxVAT CHECKED BY supplierRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-END
-
-META defineDocumentDetailWareRangePrefix (object, prefix, caption)
-    prefix###wareRange###object##Detail (detail) = rangeWareDate(prefix###ware###object##Detail(detail), date###object##Detail(detail));
-    prefix###numberWareRange###object##Detail 'НДС посуды, номер'###caption (detail) = numberRange(prefix###wareRange###object##Detail(detail)) IN priceDetailGroup;
-    prefix###valueWareRange###object##Detail 'НДС посуды, %'###caption (detail) = valueRateRangeDate(prefix###wareRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
-END
-META defineDocumentDetailWareRange (object)
-    @defineDocumentDetailWareRangePrefix(object,,);
-END
-
-META defineDocumentDetailWarePrefix (object, prefix, caption)
-    prefix###ware###object##Detail = DATA ware(object##Detail);
-    prefix###nameWare###object##Detail 'Посуда'###caption (detail) = name(prefix###ware###object##Detail(detail)) IN priceDetailGroup;
-
-    prefix###warePrice###object##Detail 'Цена посуды с НДС'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-
-    @defineDocumentDetailWareRangePrefix(object, prefix, caption);
-END
-META defineDocumentDetailWare (object)
-    @defineDocumentDetailWarePrefix(object,,);
-END
-
-META defineDocumentDetailRetailPricePrefix (object, prefix, caption)
-    prefix###retailPrice###object##Detail 'Розничная цена'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-END
-META defineDocumentDetailRetailPrice (object)
-    @defineDocumentDetailRetailPricePrefix(object,,);
-END
-
-META defineDocumentDetailOutPricePrefix (object, prefix, caption)
-    prefix###retailRange###object##Detail = DATA range (object##Detail);
-    prefix###numberRetailRange###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailRange###object##Detail(detail)) IN priceDetailGroup;
-    prefix###valueRetailRange###object##Detail 'НДС розничный, %'###caption (detail) =
-       valueRateRangeDate(prefix###retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
-
-    CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-    @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
-END
-META defineDocumentDetailOutPrice (object)
-    @defineDocumentDetailOutPricePrefix(object,);
-END
-
-META defineDocumentDetailBasePricePrefix (object, prefix, caption)
-    @defineDocumentDetailWarePrefix(object, prefix, caption);
-    @defineDocumentDetailInPricePrefix(object, prefix, caption);
-    @defineDocumentDetailOutPricePrefix(object, prefix, caption);
-END
-META defineDocumentDetailBasePrice (object)
-    @defineDocumentDetailBasePricePrefix(object,,);
-END
-
-META defineDocumentDetailCalcRange (object)
-    calcRange###object##Detail = DATA range (object##Detail);
-    calcRange###object##Detail (detail) <- rangeVATTaxTaxUnit(tax.taxVAT,
-                                storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
-
-    numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = numberRange(calcRange###object##Detail(detail));
-    dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
-       valueRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
-
-    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxVAT CHECKED BY calcRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-END
-
-META defineDocumentDetailAccountPrice (object)
-    accountPrice###object##Detail 'Учетная цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
-END
-
-// ----------------------------------- Объявление сумм для detail -------------------------- //
-
-META defineDocumentDetailInSumPrefix (object, prefix, caption)
-    prefix###supplierISum###object##Detail 'Сумма поставщика без НДС'###caption (detail) = round0(quantity###object##Detail(detail) * prefix###supplierPrice###object##Detail(detail));
-END
-META defineDocumentDetailInSum (object)
-    @defineDocumentDetailInSumPrefix(object,,);
-END
-
-META defineDocumentDetailInvoiceSum (object)
-    supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
-        supplierPrice###object##Detail(detail), valueSupplierRange###object##Detail(detail));
-
-    calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
-        quantity###object##Detail(detail) * supplierVATIPrice###object##Detail(detail));
-
-    supplierVATISum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    supplierVATISum###object##Detail(detail) <- calcSupplierVATISum###object##Detail(detail)
-                                                       WHEN CHANGED(calcSupplierVATISum###object##Detail(detail));
-
-    calcInvoiceISum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
-        supplierISum###object##Detail(detail) (+) supplierVATISum###object##Detail(detail);
-
-    invoiceISum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
-    invoiceISum###object##Detail(detail) <- calcInvoiceISum###object##Detail(detail)
-                                          WHEN CHANGED(calcInvoiceISum###object##Detail(detail));
-
-    invoiceSum###object##Detail 'Сумма поставщика с НДС' (detail) =
-        invoiceISum###object##Detail(detail) (+) wareSum###object##Detail(detail);
-
-    supplierSum###object##Detail 'Сумма поставщика без НДС' (detail) =
-        invoiceISum###object##Detail (detail) (-) supplierVATISum###object##Detail (detail) (+) wareSupplierSum###object##Detail(detail);
-END
-
-META defineDocumentDetailWareSumPrefix (object, prefix, caption)
-    prefix###wareSum###object##Detail 'Сумма посуды с НДС'###caption (detail) = quantity###object##Detail(detail) * prefix###warePrice###object##Detail(detail);
-
-    prefix###wareVATPrice###object##Detail 'Цена НДС посуды'###caption (object##Detail) = [round1(X*Y/(100+Y))](
-        prefix###warePrice###object##Detail (object##Detail), prefix###valueWareRange###object##Detail(object##Detail));
-
-    prefix###wareVATSum###object##Detail 'Сумма НДС по посуде'###caption (object##Detail) = round0(
-        quantity###object##Detail(object##Detail) * prefix###wareVATPrice###object##Detail(object##Detail));
-
-    prefix###wareSupplierPrice###object##Detail 'Цена посуды без НДС'###caption (object##Detail) =
-        prefix###warePrice###object##Detail (object##Detail) (-) prefix###wareVATPrice###object##Detail(object##Detail);
-
-    prefix###wareSupplierSum###object##Detail 'Сумма посуды без НДС'###caption (object##Detail) =
-        prefix###wareSum###object##Detail(object##Detail) (-) prefix###wareVATSum###object##Detail(object##Detail);
-END
-META defineDocumentDetailWareSum (object)
-    @defineDocumentDetailWareSumPrefix(object,,);
-END
-
-META defineDocumentDetailRetailSumPrefix (object, prefix, caption)
-    prefix###retailSum###object##Detail 'Розничная сумма'###caption (detail) = round0(quantity###object##Detail(detail) * prefix###retailPrice###object##Detail(detail));
-END
-META defineDocumentDetailRetailSum (object)
-    @defineDocumentDetailRetailSumPrefix(object,,);
-END
-
-META defineDocumentDetailOutSumPrefix (object, prefix, caption)
-    @defineDocumentDetailRetailSumPrefix(object, prefix, caption);
-
-    prefix###retailISum###object##Detail 'Розничная сумма (без посуды)'###caption (detail) = prefix###retailSum###object##Detail(detail) (-) prefix###wareSum###object##Detail(detail);
-
-    prefix###retailVATISum###object##Detail 'Сумма НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
-                prefix###retailISum###object##Detail(detail), prefix###valueRetailRange###object##Detail(detail));
-
-    prefix###retailVATSum###object##Detail 'Сумма НДС'###caption (detail) = prefix###retailVATISum###object##Detail(detail) (+) prefix###wareVATSum###object##Detail(detail);
-
-    prefix###markupSum###object##Detail 'Сумма надбавки'###caption (detail) =
-        prefix###retailISum###object##Detail(detail) (-) prefix###retailVATISum###object##Detail(detail) (-) prefix###supplierISum###object##Detail(detail);
-END
-META defineDocumentDetailOutSum (object)
-    @defineDocumentDetailOutSumPrefix(object,,);
-END
-
-META defineDocumentDetailBaseSumPrefix (object, prefix, caption)
-    @defineDocumentDetailWareSumPrefix(object, prefix, caption);
-    @defineDocumentDetailInSumPrefix(object, prefix, caption);
-    @defineDocumentDetailOutSumPrefix(object, prefix, caption);
-END
-META defineDocumentDetailBaseSum (object)
-    @defineDocumentDetailBaseSumPrefix(object,,);
-END
-
-META defineDocumentDetailCalcVATSum (object)
-    calcVATSum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(retailSum###object##Detail(detail) * dataCalcRange###object##Detail(detail) / 100);
-
-    calcSaleSum###object##Detail 'Сумма без НДС (расч.)' (detail) = retailSum###object##Detail(detail) (-) calcVATSum###object##Detail(detail);
-END
-
-META defineDocumentDetailAccountSumCustom (object, detail)
-    accountSum###detail 'Учетная сумма' (detail) = quantity###detail(detail) * accountPrice###detail(detail);
-END
-META defineDocumentDetailAccountSum (object)
-    @defineDocumentDetailAccountSumCustom(object, object##Detail);
-END
-
-// ----------------------------------- Объявление сумм для header -------------------------- //
-
 META defineDocumentHeaderItemQuantityCustom (object, detail)
     quantity###detail##Item###object 'Кол-во товара в документе' (item, object) = GROUP SUM quantity###detail(idetail)
                                                                                       BY  item###detail(idetail),
@@ -334,57 +142,11 @@ META defineDocumentHeaderItemQuantity (object)
     @defineDocumentHeaderItemQuantityCustom(object, object###detail);
 END
 
-META defineDocumentHeaderInSumCustomPrefix (object, detail, prefix, caption)
-    prefix###supplierISum###detail###object 'Сумма поставщика без НДС (без посуды)'###caption (object) =
-        GROUP SUM prefix###supplierISum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-END
-META defineDocumentHeaderInSumCustom (object, detail)
-    @defineDocumentHeaderInSumCustomPrefix(object, detail, , )
-END
-META defineDocumentHeaderInSumPrefix (object, prefix, caption)
-    @defineDocumentHeaderInSumCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderInSum (object)
-    @defineDocumentHeaderInSumCustomPrefix(object, object##Detail, , );
-END
-
-META defineDocumentHeaderInvoiceSum (object)
-    supplierVATISum###object##Detail###object 'Сумма НДС поставщика (без посуды)' (object) =
-        GROUP SUM supplierVATISum###object##Detail(detail) BY object###object##Detail(detail);
-
-    invoiceISum###object##Detail###object 'Сумма поставщика с НДС (без посуды)' (object) =
-        GROUP SUM invoiceISum###object##Detail(object##Detail) BY object###object##Detail(object##Detail);
-
-    invoiceVATSum###object##Detail###object 'Сумма НДС поставщика' (object) =
-        supplierVATISum###object##Detail###object(object) (+) wareVATSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
-
-    invoiceSum###object##Detail###object 'Сумма поставщика с НДС' (object) =
-        invoiceISum###object##Detail###object(object) (+) wareSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
-
-    supplierSum###object##Detail###object 'Сумма поставщика без НДС' (object) =
-        invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object);
-END
-
-META defineDocumentHeaderWareSumCustomPrefix (object, detail, prefix, caption)
-    prefix###wareSum###detail###object 'Сумма посуды с НДС'###caption (object) =
-        GROUP SUM prefix###wareSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-
-    prefix###wareVATSum###detail###object 'Сумма НДС по посуде'###caption (object) =
-        GROUP SUM prefix###wareVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-END
-META defineDocumentHeaderWareSumCustom (object, detail)
-    @defineDocumentHeaderWareSumCustomPrefix(object, detail, , );
-END
-META defineDocumentHeaderWareSumPrefix (object, prefix, caption)
-    @defineDocumentHeaderWareSumCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderWareSum (object)
-    @defineDocumentHeaderWareSumCustomPrefix(object, object##Detail, , );
-END
-
-META defineDocumentHeaderRetailSumCustomPrefix (object, detail, prefix, caption)
-    prefix###retailSum###detail###object 'Розничная сумма'###caption (object) =
-        GROUP SUM prefix###retailSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+META defineDocumentHeaderItemRetailSumCustomPrefix (object, detail, prefix, caption)
+    prefix###retailSum###detail##Item###object 'Розничная сумма (окр.) товара в документе' (item, object) =
+            GROUP SUM retailSum###detail(idetail)
+                  BY  item###detail(idetail),
+                      object###detail(idetail);
 
     prefix###retailSumItem###detail###object 'Розничная сумма (окр.), товар'###caption (idetail) =
         GROUP SUM prefix###retailSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
@@ -393,75 +155,17 @@ META defineDocumentHeaderRetailSumCustomPrefix (object, detail, prefix, caption)
         GROUP SUM prefix###retailSum###detail(idetail) IF isContainerItem(item###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
 END
-META defineDocumentHeaderRetailSumCustom (object, detail)
-    @defineDocumentHeaderRetailSumCustomPrefix(object, detail, , );
+META defineDocumentHeaderItemRetailSumCustom (object, detail)
+    @defineDocumentHeaderItemRetailSumCustomPrefix(object, detail, , );
 END
-META defineDocumentHeaderRetailSumPrefix (object, prefix, caption)
-    @defineDocumentHeaderRetailSumCustomPrefix(object, object##Detail, prefix, caption);
+META defineDocumentHeaderItemRetailSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, prefix, caption);
 END
-META defineDocumentHeaderRetailSum (object)
-    @defineDocumentHeaderRetailSumCustomPrefix(object, object##Detail, , );
-END
-
-META defineDocumentHeaderOutSumCustomPrefix (object, detail, prefix, caption)
-    @defineDocumentHeaderRetailSumCustomPrefix(object, detail, prefix, caption);
-
-    prefix###retailVATISum###detail###object 'Сумма НДС (без посуды)'###caption (object) =
-        GROUP SUM prefix###retailVATISum###detail(idetail) BY object###detail(idetail);
-
-    prefix###retailVATSum###detail###object 'Сумма НДС'###caption (detail) = prefix###retailVATISum###detail###object(detail) (+) prefix###wareVATSum###detail###object(detail);
-
-    prefix###markupSum###detail###object 'Сумма надбавки'###caption (object) =
-        GROUP SUM prefix###markupSum###detail(idetail) BY object###detail(idetail);
-END
-META defineDocumentHeaderOutSumCustom (object, detail)
-    @defineDocumentHeaderOutSumCustomPrefix(object, detail, , );
-END
-META defineDocumentHeaderOutSumPrefix (object)
-    @defineDocumentHeaderOutSumCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderOutSum (object)
-    @defineDocumentHeaderOutSumCustomPrefix(object, object##Detail, , );
+META defineDocumentHeaderItemRetailSum (object)
+    @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, , );
 END
 
-META defineDocumentHeaderBaseSumCustomPrefix (object, detail, prefix, caption)
-    @defineDocumentHeaderWareSumCustomPrefix(object, detail, prefix, caption);
-    @defineDocumentHeaderInSumCustomPrefix(object, detail, prefix, caption);
-    @defineDocumentHeaderOutSumCustomPrefix(object, detail, prefix, caption);
-END
-META defineDocumentHeaderBaseSumCustom (object, detail)
-    @defineDocumentHeaderBaseSumCustomPrefix(object, detail, , );
-END
-META defineDocumentHeaderBaseSumPrefix (object, prefix, caption)
-    @defineDocumentHeaderBaseSumCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderBaseSum (object)
-    @defineDocumentHeaderBaseSumCustomPrefix(object, object##Detail, , );
-END
-
-META defineDocumentHeaderItemSumCustom (object, detail)
-    retailSum###detail##Item###object 'Розничная сумма товара в документе' (item, object) = GROUP SUM retailSum###detail(idetail)
-                                                                                                  BY  item###detail(idetail),
-                                                                                                      object###detail(idetail);
-END
-
-META defineDocumentHeaderItemSum (object)
-    @defineDocumentHeaderItemSumCustom(object, object);
-END
-
-META defineDocumentHeaderCalcVATSumCustom (object, detail)
-    calcVATSum###detail###object 'Сумма НДС (расч., окр.)' (iobject) = GROUP SUM calcVATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-
-    calcSaleSum###detail###object 'Сумма без НДС (расч., окр.)' (iobject) = retailSum###detail###object(iobject) (-) calcVATSum###detail###object(iobject) IN documentSumGroup;
-END
-
-META defineDocumentHeaderCalcVATSum (object)
-    @defineDocumentHeaderCalcVATSumCustom(object, object##Detail);
-END
-
-META defineDocumentHeaderAccountSumCustom (object, detail)
-    accountSum###detail###object 'Учетная сумма' (object) = GROUP SUM accountSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-
+META defineDocumentHeaderItemAccountSumCustom (object, detail)
     accountSumItem###detail###object 'Учетная сумма, товар' (idetail) =
         GROUP SUM accountSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
@@ -470,22 +174,9 @@ META defineDocumentHeaderAccountSumCustom (object, detail)
             BY object###detail(idetail) IN documentSumGroup;
 END
 
-META defineDocumentHeaderAccountSum (object)
-    @defineDocumentHeaderAccountSumCustom(object, object##Detail);
+META defineDocumentHeaderItemAccountSum (object)
+    @defineDocumentHeaderItemAccountSumCustom(object, object##Detail);
 END
-
-META defineDocumentHeaderRevaluation (object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
-
-    revaluationCommittee###object = DATA revaluationCommittee (object) IN idGroup;
-    nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
-    revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
-        WHEN object IS object;
-
-    showRevaluation###object 'Есть переоценка' (object) = DATA BOOLEAN (object) IN documentPrmGroup;
-END
-
-// ------------------------- Ссылка на "parent" объекты ---------------------------------- //
 
 META defineDocumentDetailAggregationItemPrefix (primObject, aggrObject, prefix)
     item###aggrObject##Detail (detail) = prefix###item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
@@ -496,24 +187,17 @@ META defineDocumentDetailAggregationItem (primObject, aggrObject)
     @defineDocumentDetailAggregationItemPrefix(primObject, aggrObject, );
 END
 
-META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP, prefixA, caption)
-    prefixA###importerPrice###aggrObject##Detail 'Цена изготовителя'###caption (detail) = prefixP###importerPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    prefixA###supplierPrice###aggrObject##Detail 'Цена поставщика'###caption (detail) = prefixP###supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+// ------------------------- Автоматическое изменение цен ---------------------------------- //
 
-    prefixA###retailRange###aggrObject##Detail (detail) = prefixP###retailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    prefixA###valueRetailRange###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###valueRetailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+META defineDocumentHeaderRevaluation (object)
+    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
 
-    prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    prefixA###valueWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
-          valueRateRangeDate(rangeWareDate(prefixA###ware###aggrObject##Detail(detail), date###aggrObject##Detail(detail)),
-                                                                       date###aggrObject##Detail(detail));
+    revaluationCommittee###object = DATA revaluationCommittee (object) IN idGroup;
+    nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
+    revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
+        WHEN object IS object;
 
-    prefixA###warePrice###aggrObject##Detail 'Цена посуды'###caption (detail) = prefixP###warePrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-
-    prefixA###retailPrice###aggrObject##Detail 'Розничная цена'###caption (detail) = prefixP###retailPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-END
-META defineDocumentDetailAggregationPrice (primObject, aggrObject)
-    @defineDocumentDetailAggregationPricePrefix(primObject, aggrObject, , , );
+    showRevaluation###object 'Есть переоценка' (object) = DATA BOOLEAN (object) IN documentPrmGroup;
 END
 
 // ------------------------- Автоматическое изменение цен ---------------------------------- //
@@ -3310,117 +2994,6 @@ FORM papers 'Документы качества'
     ORDER BY objectClassName
 ;
 
-//---------------------------- Ценовые регистры ----------------------------------------//
-
-META defineItemDepartmentStoreLedger(property, caption, type)
-    @defineHistorizableLedgerDouble(property, caption, type, item, departmentStore);
-
-    nameItem###property##Ledger 'Товар' (ledger) = nameAttributeItem(item###property##Ledger(ledger));
-    nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = name(departmentStore###property##Ledger(ledger));
-END
-
-META implementItemDepartmentStoreLedgerCustom(property, concrete, concretePrefix)
-    @implementHistorizableLedgerDouble(property, item, departmentStore, concrete, concretePrefix);
-END
-
-META implementItemDepartmentStoreLedger(property, concrete)
-    @implementItemDepartmentStoreLedgerCustom(property, concrete, property);
-END
-
-META implementBaseIItemDepartmentStoreLedger(concrete)
-    @implementItemDepartmentStoreLedger(importerPrice, concrete);
-    @implementItemDepartmentStoreLedger(supplierPrice, concrete);
-    @implementItemDepartmentStoreLedger(retailRange, concrete);
-    @implementItemDepartmentStoreLedger(retailPrice, concrete);
-    @implementItemDepartmentStoreLedgerCustom(accountPrice, concrete, retailPrice);
-END
-
-META implementBaseItemDepartmentStoreLedger(concrete)
-    @implementItemDepartmentStoreLedger(warePrice, concrete);
-    wareWarePriceLedger(ledger) += ware###concrete##Detail(ledger);
-    @implementBaseIItemDepartmentStoreLedger(concrete);
-END
-
-CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
-TABLE warePriceLedger (warePriceLedger);
-
-@defineItemDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
-wareWarePriceLedger(ledger) = ABSTRACT ware (warePriceLedger) PERSISTENT;
-nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
-currentWareLedger 'Посуда' (item, departmentStore) = wareWarePriceLedger(currentLedgerWarePrice(item, departmentStore));
-wareBLedgerDateTime (item, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceDateTime(item, departmentStore, dateTime));
-
-CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
-TABLE importerPriceLedger (importerPriceLedger);
-@defineItemDepartmentStoreLedger(importerPrice, 'Цена изготовителя', NUMERIC[14,2]);
-
-CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщика';
-TABLE supplierPriceLedger (supplierPriceLedger);
-@defineItemDepartmentStoreLedger(supplierPrice, 'Цена поставщика', NUMERIC[14,2]);
-
-CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
-TABLE retailRangeLedger (retailRangeLedger);
-@defineItemDepartmentStoreLedger(retailRange, 'НДС', range);
-valueRetailRangeRetailRangeLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
-valueRetailRangeBLedgerDateTime 'НДС, % (до)' (item, departmentStore, dateTime) =
-            valueRateRangeDate(retailRangeBLedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
-valueRetailRangeALedgerDateTime 'НДС, % (после)' (item, departmentStore, dateTime) =
-            valueRateRangeDate(retailRangeALedgerDateTime(item, departmentStore, dateTime), dateInTime(dateTime));
-currentValueRetailRangeLedger 'НДС, %' (item, departmentStore) =
-            valueCurrentRateRange(currentRetailRangeLedger(item, departmentStore));
-
-CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
-TABLE retailPriceLedger (retailPriceLedger);
-@defineItemDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
-
-CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
-TABLE accountPriceLedger (accountPriceLedger);
-@defineItemDepartmentStoreLedger(accountPrice, 'Учетная цена', NUMERIC[14,2]);
-
-META derivePriceLedgerOnItemChangePrefix (ledger, concrete, prefixP, prefixI)
-    prefixP###ledger###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
-                    prefixI###item###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(prefixI###item###concrete##Detail(detail));
-END
-
-META derivePriceLedgerOnItemChange (ledger, concrete)
-    @derivePriceLedgerOnItemChangePrefix(ledger, concrete, , );
-END
-
-META deriveBasePriceLedgerOnItemChangePrefix (concrete, prefixP, prefixI)
-    @derivePriceLedgerOnItemChangePrefix(ware, concrete, prefixP, prefixI);
-    @derivePriceLedgerOnItemChangePrefix(warePrice, concrete, prefixP, prefixI);
-    @derivePriceLedgerOnItemChangePrefix(importerPrice, concrete, prefixP, prefixI);
-    @derivePriceLedgerOnItemChangePrefix(supplierPrice, concrete, prefixP, prefixI);
-    @derivePriceLedgerOnItemChangePrefix(retailRange, concrete, prefixP, prefixI);
-    @derivePriceLedgerOnItemChangePrefix(retailPrice, concrete, prefixP, prefixI);
-END
-
-META deriveBasePriceLedgerOnItemChange (concrete)
-    @deriveBasePriceLedgerOnItemChangePrefix(concrete, , );
-END
-
-META derivePrevPriceLedgerOnItemChangePrefix (ledger, concrete, prefixP, prefixI)
-    prefixP###ledger###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(item, departmentStore, dateTime))](
-                    prefixI###item###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(prefixI###item###concrete##Detail(detail));
-END
-
-META derivePrevBasePriceLedgerOnItemChangePrefix (concrete, prefixP, prefixI)
-    @derivePrevPriceLedgerOnItemChangePrefix(ware, concrete, prefixP, prefixI);
-    @derivePrevPriceLedgerOnItemChangePrefix(warePrice, concrete, prefixP, prefixI);
-    @derivePrevPriceLedgerOnItemChangePrefix(importerPrice, concrete, prefixP, prefixI);
-    @derivePrevPriceLedgerOnItemChangePrefix(supplierPrice, concrete, prefixP, prefixI);
-    @derivePrevPriceLedgerOnItemChangePrefix(retailRange, concrete, prefixP, prefixI);
-    @derivePrevPriceLedgerOnItemChangePrefix(retailPrice, concrete, prefixP, prefixI);
-END
-
-META derivePrevBasePriceLedgerOnItemChange (concrete)
-    @derivePrevBasePriceLedgerOnItemChangePrefix (concrete, , );
-END
-
-currentRetailPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
-
 //---------------------------- Регистр продажи ----------------------------------------//
 
 CLASS ABSTRACT salesLedger 'Продажа товара' : balanceSkuLedger;
@@ -3958,7 +3531,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 @defineDocumentDetailQuantity(studyInput);
 
 @defineDocumentDetailBasePrice(studyInput);
-@deriveBasePriceLedgerOnItemChange(studyInput);
+@deriveBasePriceLedgerOnSkuChange(studyInput, item);
 
 @defineDocumentDetailBaseSum(studyInput);
 
@@ -3969,7 +3542,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 
 @defineDocumentHeaderBaseSumCustom(actOfStudy, studyInputDetail);
 
-@defineDocumentHeaderItemSumCustom(actOfStudy, studyInputDetail);
+@defineDocumentHeaderItemRetailSumCustom(actOfStudy, studyInputDetail);
 
 // custom информация по акту
 contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
@@ -4022,7 +3595,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 @defineDocumentDetailBaseSum(studyOutput);
 
 @defineDocumentDetailBasePricePrefix(studyOutput, cur, ' (тек.)');
-@deriveBasePriceLedgerOnItemChangePrefix(studyOutput, cur, );
+@deriveBasePriceLedgerOnSkuChangePrefix(studyOutput, cur, item);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
 
@@ -4031,7 +3604,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 
 @defineDocumentHeaderBaseSumCustom(actOfStudy, studyOutputDetail);
 
-@defineDocumentHeaderItemSumCustom(actOfStudy, studyOutputDetail);
+@defineDocumentHeaderItemRetailSumCustom(actOfStudy, studyOutputDetail);
 
 // используется для закачки в мета-коде
 quantityActOfStudyDetailItemActOfStudy 'Кол-во для закачки в оборудование' (item, actOfStudy) = GROUP SUM quantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
@@ -4107,7 +3680,7 @@ descriptionStudyOutputDetail 'Название документа' (studyOutputD
 @implementBatch(studyOutput, item);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 
-@implementBaseIItemDepartmentStoreLedger(studyOutput);
+@implementBaseISkuDepartmentStoreLedger(studyOutput, item);
 
 @implementAccountDocumentLedger(parish);
 sumIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
@@ -4271,7 +3844,7 @@ nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAt
 @defineDocumentDetailQuantity(pageInventory);
 
 @defineDocumentDetailAccountPrice(pageInventory);
-@derivePriceLedgerOnItemChange(accountPrice, pageInventory);
+@derivePriceLedgerOnSkuChange(accountPrice, pageInventory, item);
 
 @defineDocumentDetailAccountSum(pageInventory);
 
@@ -4549,7 +4122,7 @@ CLASS specificationDetail 'Строка счет-фактуры';
 @defineDocumentDetailQuantity(specification);
 
 @defineDocumentDetailRetailPrice(specification);
-@derivePriceLedgerOnItemChange(retailPrice, specification);
+@derivePriceLedgerOnSkuChange(retailPrice, specification, item);
 
 @defineDocumentDetailRetailSum(specification);
 
@@ -4647,7 +4220,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentDetailQuantity(statement);
 
 @defineDocumentDetailBasePrice(statement);
-@deriveBasePriceLedgerOnItemChange(statement);
+@deriveBasePriceLedgerOnSkuChange(statement, item);
 
 @defineDocumentDetailRetailSum(statement);
 
@@ -4655,7 +4228,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentDetailCalcVATSum(statement);
 
 @defineDocumentDetailRetailPricePrefix(statement, cur, ' (тек.)');
-@derivePriceLedgerOnItemChangePrefix(retailPrice, statement, cur, );
+@derivePriceLedgerOnSkuChangePrefix(retailPrice, statement, cur, item);
 
 @defineDocumentDetailNote(statement);
 
@@ -4663,6 +4236,8 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentHeaderItemQuantity(statement);
 
 @defineDocumentHeaderRetailSum(statement);
+@defineDocumentHeaderItemRetailSum(statement);
+
 @defineDocumentHeaderCalcVATSum(statement);
 
 //    шапка документа поставки
@@ -4790,12 +4365,14 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentDetailInvoiceSum(shipment);
 
 @defineDocumentDetailBasePricePrefix(shipment, cur, ' (тек.)');
-@deriveBasePriceLedgerOnItemChangePrefix(shipment, cur, );
+@deriveBasePriceLedgerOnSkuChangePrefix(shipment, cur, item);
 
 @defineDocumentHeaderQuantity(shipment);
 @defineDocumentHeaderItemQuantity(shipment);
 
 @defineDocumentHeaderBaseSum(shipment);
+@defineDocumentHeaderItemRetailSum(shipment);
+
 @defineDocumentHeaderInvoiceSum(shipment);
 
 @defineDocumentHeaderListRegister(shipment);
@@ -4835,7 +4412,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 @implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 
-@implementBaseItemDepartmentStoreLedger(shipment);
+@implementBaseSkuDepartmentStoreLedger(shipment, item);
 
 @implementAccountDocumentLedger(shipment);
 sumIncAccountDocumentLedger (ledger) += retailSumShipmentDetailShipment(ledger);
@@ -5012,6 +4589,7 @@ quantityWastageDetail 'Количество для списания '(wastageDet
 @defineDocumentHeaderQuantity(wastage);
 
 @defineDocumentHeaderBaseSum(wastage);
+@defineDocumentHeaderItemRetailSum(wastage);
 
 supplierWastage (wastage) = supplierShipment(shipmentWastage(wastage));
 nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
@@ -5063,16 +4641,18 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 @defineDocumentDetailQuantity(writeOff);
 
 @defineDocumentDetailBasePrice(writeOff);
-@deriveBasePriceLedgerOnItemChange(writeOff);
+@deriveBasePriceLedgerOnSkuChange(writeOff, item);
 
 @defineDocumentDetailBaseSum(writeOff);
 
 @defineDocumentDetailAccountPrice(writeOff);
-@derivePriceLedgerOnItemChange(accountPrice, writeOff);
+@derivePriceLedgerOnSkuChange(accountPrice, writeOff, item);
 
 @defineDocumentDetailAccountSum(writeOff);
 @defineDocumentHeaderQuantity(writeOff);
+
 @defineDocumentHeaderAccountSum(writeOff);
+@defineDocumentHeaderItemAccountSum(writeOff);
 
 reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
@@ -5105,7 +4685,7 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @defineDocumentDetailQuantity(innerFlow);
 
 @defineDocumentDetailBasePrice(innerFlow);
-@deriveBasePriceLedgerOnItemChange(innerFlow);
+@deriveBasePriceLedgerOnSkuChange(innerFlow, item);
 
 @defineDocumentDetailBaseSum(innerFlow);
 
@@ -5113,6 +4693,7 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @defineDocumentHeaderItemQuantity(innerFlow);
 
 @defineDocumentHeaderBaseSum(innerFlow);
+@defineDocumentHeaderItemRetailSum(innerFlow);
 
 recipientDepartmentInnerFlow (innerFlow) = DATA departmentStore(innerFlow);
 nameRecipientDepartmentInnerFlow 'Отдел-получатель' (innerFlow) = name(recipientDepartmentInnerFlow(innerFlow)) IN documentPrmGroup;
@@ -5191,12 +4772,13 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineDocumentDetailBaseSum(innerArrival);
 
 @defineDocumentDetailBasePricePrefix(innerArrival, cur, ' (тек.)');
-@deriveBasePriceLedgerOnItemChangePrefix(innerArrival, cur, );
+@deriveBasePriceLedgerOnSkuChangePrefix(innerArrival, cur, item);
 
 @defineDocumentHeaderQuantity(innerArrival);
 @defineDocumentHeaderItemQuantity(innerArrival);
 
 @defineDocumentHeaderBaseSum(innerArrival);
+@defineDocumentHeaderItemRetailSum(innerArrival);
 
 innerFlowInnerArrival (innerArrival) = DATA innerFlowPosted (innerArrival);
 innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
@@ -5288,7 +4870,7 @@ limitInTransferBalanceSkuLedgerBatch (innerArrivalDetail, batch) += quantityInne
 @implementBalanceSkuLedger(innerArrival, item, departmentStore);
 quantityInTransferBalanceSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
 
-@implementBaseItemDepartmentStoreLedger(innerArrival);
+@implementBaseSkuDepartmentStoreLedger(innerArrival, item);
 
 @implementAccountDocumentLedger(innerArrival);
 sumIncAccountDocumentLedger (ledger) += retailSumInnerArrivalDetailInnerArrival(ledger);
@@ -5361,11 +4943,13 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentDetailInvoiceSum(returnSupplier);
 
 @defineDocumentDetailBasePricePrefix(returnSupplier, cur, ' (тек.)');
-@deriveBasePriceLedgerOnItemChangePrefix(returnSupplier, cur, );
+@deriveBasePriceLedgerOnSkuChangePrefix(returnSupplier, cur, item);
 
 @defineDocumentHeaderQuantity(returnSupplier);
 
 @defineDocumentHeaderBaseSum(returnSupplier);
+@defineDocumentHeaderItemRetailSum(returnSupplier);
+
 @defineDocumentHeaderInvoiceSum(returnSupplier);
 
 // количество/цены по строкам
@@ -5608,7 +5192,7 @@ discountSumBillDetailBill 'Сумма скидки' (bill) = discountSumSaleBill
 retailRangeBillSaleDetail = DATA range (billSaleDetail);
 retailRangeBillReturnDetail = DATA range (billReturnDetail);
 retailRangeBillDetail (billDetail) = retailRangeBillReturnDetail(billDetail) OR retailRangeBillSaleDetail(billDetail);
-@derivePriceLedgerOnItemChange(retailRange, bill);
+@derivePriceLedgerOnSkuChange(retailRange, bill, item);
 
 // используется только для приема реализации из внешних касс
 numberBillDetail 'Номер позиции чека' = DATA INTEGER (billDetail);
@@ -5783,7 +5367,7 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 @defineDocumentDetailBasePrice(userPriceChange);
 
 @defineDocumentDetailBasePricePrefix(userPriceChange, cur, ' (тек.)');
-@deriveBasePriceLedgerOnItemChangePrefix(userPriceChange, cur, );
+@deriveBasePriceLedgerOnSkuChangePrefix(userPriceChange, cur, item);
 
 @defineDocumentHeaderItemQuantity(userPriceChange);
 
@@ -5795,7 +5379,7 @@ descriptionUserPriceChange 'Название документа' (userPriceChang
 
 descriptionUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
 
-@implementBaseItemDepartmentStoreLedger(userPriceChange);
+@implementBaseSkuDepartmentStoreLedger(userPriceChange, item);
 
 @implementPriceChangeDocument(userPriceChange);
 @implementPriceChangeDocumentDetailAllPrice(userPriceChange);
@@ -5827,7 +5411,7 @@ CLASS disparityDetail 'Строка пересортицы': outAutoBalanceSkuLe
 @defineDocumentDetailQuantity(disparity);
 
 @defineDocumentDetailBasePrice(disparity);
-@derivePrevBasePriceLedgerOnItemChange(disparity);
+@derivePrevBasePriceLedgerOnSkuChange(disparity, item);
 
 @defineDocumentDetailBaseSum(disparity);
 
@@ -5848,7 +5432,7 @@ quantityOutAutoBalanceSkuLedger (ledger) += quantityDisparityDetail(ledger);
 @defineDocumentDetailQuantityPrefix(disparity, input, ' (приход)');
 
 @defineDocumentDetailBasePricePrefix(disparity, input, ' (приход)');
-@derivePrevBasePriceLedgerOnItemChangePrefix(disparity, input, input);
+@derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, input, inputItem);
 
 //@defineDocumentDetailRetailSumPrefix(disparity, input, ' (приход)');
 inputRetailSumDisparityDetail 'Розничная сумма (приход)'(disparityDetail) = round0(inputQuantityDisparityDetail(disparityDetail) * inputRetailPriceDisparityDetail(disparityDetail));
@@ -5859,7 +5443,7 @@ inputRetailSumDisparityDetail 'Розничная сумма (приход)'(dis
                                   // Текущее значение расхода //
 
 @defineDocumentDetailBasePricePrefix(disparity, inputCur, ' (тек.)');
-@derivePrevBasePriceLedgerOnItemChangePrefix(disparity, inputCur, input);
+@derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, inputCur, inputItem);
 
 balanceBeforeDisparityDetail 'Остаток до пересорта (расход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN baseGroup;
 balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuLedgerDateTime (
@@ -5891,7 +5475,7 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
 @implementBatch(inputDisparity, item);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 
-@implementBaseIItemDepartmentStoreLedger(inputDisparity);
+@implementBaseISkuDepartmentStoreLedger(inputDisparity, item);
 
 descriptionDisparity 'Название документа' (disparity) =
     [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
@@ -10585,12 +10169,12 @@ FORM balanceItemDepartment 'Остатки на дату'
 
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
-    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
+    FILTERS isPostedAccountPriceLedger(apl) AND skuAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
     ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
-    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
+    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
     ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS bil=balanceSkuLedger
@@ -10600,22 +10184,22 @@ FORM balanceItemDepartment 'Остатки на дату'
 
     OBJECTS ipl=importerPriceLedger
     PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
-    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
+    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
     PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
-    FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
+    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailRangeLedger
     PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
-    FILTERS isPostedRetailRangeLedger(rvl) AND itemRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
+    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
     ORDER BY dateTimeRetailRangeLedger DESC
 
     OBJECTS wpl= warePriceLedger
     PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
-    FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
+    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
     ORDER BY dateTimeWarePriceLedger DESC
 ;
 
@@ -10686,12 +10270,12 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
     OBJECTS apl=accountPriceLedger
     PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
-    FILTERS isPostedAccountPriceLedger(apl) AND itemAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
+    FILTERS isPostedAccountPriceLedger(apl) AND skuAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
     ORDER BY dateTimeAccountPriceLedger DESC
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
-    FILTERS isPostedRetailPriceLedger(rpl) AND itemRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
+    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
     ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS bil=balanceSkuLedger
@@ -10701,22 +10285,22 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
     OBJECTS ipl=importerPriceLedger
     PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
-    FILTERS isPostedImporterPriceLedger(ipl) AND itemImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
+    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
     PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
-    FILTERS isPostedSupplierPriceLedger(spl) AND itemSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
+    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailRangeLedger
     PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
-    FILTERS isPostedRetailRangeLedger(rvl) AND itemRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
+    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
     ORDER BY dateTimeRetailRangeLedger DESC
 
     OBJECTS wpl=warePriceLedger
     PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
-    FILTERS isPostedWarePriceLedger(wpl) AND itemWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
+    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
     ORDER BY dateTimeWarePriceLedger DESC
 
     OBJECTS bt=batch

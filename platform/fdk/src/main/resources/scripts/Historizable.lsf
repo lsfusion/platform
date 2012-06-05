@@ -300,11 +300,11 @@ META defineHistorizableLedgerDouble(property, caption, type, key0, key1)
     current###property##Ledger caption (key0, key1) = property###property##Ledger(currentLedger###property(key0, key1));
 END
 
-META implementHistorizableLedgerDouble(property, key0, key1, concrete, concretePrefix)
+META implementHistorizableLedgerDouble(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)
     dateTime###property##Ledger (ledger) += dateTime###concrete##Detail(ledger);
     isPosted###property##Ledger (ledger) += isPosted###concrete##Detail(ledger);
-    key0###property##Ledger (ledger) += key0###concrete##Detail(ledger);
-    key1###property##Ledger (ledger) += key1###concrete##Detail(ledger);
+    key0###property##Ledger (ledger) += key0Prop###concrete##Detail(ledger);
+    key1###property##Ledger (ledger) += key1Prop###concrete##Detail(ledger);
     description###property##Ledger (ledger) += description###concrete##Detail(ledger);
-    property###property##Ledger (ledger) += concretePrefix###concrete##Detail(ledger);
+    property###property##Ledger (ledger) += propertyProp###concrete##Detail(ledger);
 END

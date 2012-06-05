@@ -49,6 +49,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public ScriptingLogicsModule ListRegister;
     public ScriptingLogicsModule Consignment;
     public ScriptingLogicsModule AccountDocument;
+    public ScriptingLogicsModule StorePrice;
 
     ScriptingLogicsModule retailLM;
 
@@ -78,6 +79,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         ListRegister = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/ListRegister.lsf"), LM, this));
         Consignment = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Consignment.lsf"), LM, this));
         AccountDocument = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/AccountDocument.lsf"), LM, this));
+        StorePrice = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/StorePrice.lsf"), LM, this));
         retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
     }
 
