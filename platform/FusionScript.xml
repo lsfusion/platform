@@ -60,6 +60,7 @@
       <keyword name="DATE" />
       <keyword name="DATETIME" />
       <keyword name="DEFAULT" />
+      <keyword name="DELETE" />
       <keyword name="DESC" />
       <keyword name="DESIGN" />
       <keyword name="DIALOG" />
@@ -140,6 +141,7 @@
       <keyword name="MODAL" />
       <keyword name="MODULE" />
       <keyword name="NAME" />
+      <keyword name="NAMESPACE" />
       <keyword name="NAVIGATOR" />
       <keyword name="NEW" />
       <keyword name="NEWSESSION" />
@@ -175,6 +177,7 @@
       <keyword name="REGEXP" />
       <keyword name="REMOVE" />
       <keyword name="REPORTFILE" />
+      <keyword name="REQUIRE" />
       <keyword name="RESOLVE" />
       <keyword name="RETURN" />
       <keyword name="RGB" />
