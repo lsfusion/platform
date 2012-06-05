@@ -1,12 +1,6 @@
 MODULE StorePrice;
 
-IMPORT BaseLogicsModule;
-IMPORT Historizable;
-IMPORT Tax;
-IMPORT Stock;
-IMPORT Barcode;
-IMPORT Store;
-IMPORT Ware;
+REQUIRE BaseLogicsModule, Historizable, Tax, Stock, Barcode, Store, Ware;
 
 GROUP priceDetailGroup 'Цены' : publicGroup;
 

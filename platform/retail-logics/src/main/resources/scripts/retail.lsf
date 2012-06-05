@@ -22,8 +22,8 @@ REQUIRE BaseLogicsModule,
         Store,
         ListRegister,
         Consignment,
-        AccountDocument;
-IMPORT StorePrice;
+        AccountDocument,
+        StorePrice;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
