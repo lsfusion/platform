@@ -36,22 +36,22 @@
 	<field name="ds" class="java.lang.Integer"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="sumAccountBDocumentLedgerDate" class="java.lang.Double"/>
-	<field name="sumAccountByItemBDocumentLedgerDate" class="java.lang.Double"/>
-	<field name="sumAccountByContainerBDocumentLedgerDate" class="java.lang.Double"/>
-	<field name="sumAccountByItemADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="sumAccountByContainerADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumItemAccountBDocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumContainerAccountBDocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumItemAccountADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumContainerAccountADocumentLedgerDate" class="java.lang.Double"/>
 	<field name="sumAccountADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="quantityIncAccountSumDocumentLedger" class="java.lang.Integer"/>
-	<field name="quantityOutAccountSumDocumentLedger" class="java.lang.Integer"/>
+	<field name="countIncAccountDocumentDepartmentStoreDateInterval" class="java.lang.Integer"/>
+	<field name="countOutAccountDocumentDepartmentStoreDateInterval" class="java.lang.Integer"/>
 	<field name="nameStoreDepartmentStore" class="java.lang.String"/>
 	<field name="nameCompanyDepartmentStore" class="java.lang.String"/>
 	<field name="UNPDepartmentStore" class="java.lang.String"/>
-	<field name="totalSumIncAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="totalSumIncAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
-	<field name="subtotalIncAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="subtotalIncAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
-	<field name="totalSumOutAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="totalSumOutAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
+	<field name="sumItemIncAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
+	<field name="sumContainerIncAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
+	<field name="subtotalItemIncAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
+	<field name="subtotalContainerIncAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
+	<field name="sumItemOutAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
+	<field name="sumContainerOutAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
 	<field name="nameMRPDepartmentStore" class="java.lang.String"/>
 	<field name="namePositionMRPDepartmentStore" class="java.lang.String"/>
 	<field name="namePersonCheckDepartmentStore" class="java.lang.String"/>
@@ -130,14 +130,14 @@
 					<textElement textAlignment="Right">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumAccountByItemBDocumentLedgerDate},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemAccountBDocumentLedgerDate},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="0" width="80" height="12" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumAccountByContainerBDocumentLedgerDate},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerAccountBDocumentLedgerDate},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12" backcolor="#FFFFFF"/>

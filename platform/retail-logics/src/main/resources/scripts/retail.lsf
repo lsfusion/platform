@@ -23,6 +23,7 @@ IMPORT Employee;
 IMPORT Store;
 IMPORT ListRegister;
 IMPORT Consignment;
+IMPORT AccountDocument;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -816,32 +817,6 @@ PROPERTIES(r) name, percentRateWaste;
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
-
-MRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
-nameMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) =
-    commonName (MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-namePositionMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
-    namePositionEmployee(MRPDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, MRPDepartmentStore(departmentStore))
-    CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
-
-bookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
-nameBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-namePositionBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (должность)' =
-    namePositionEmployee(bookkeeperDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-CONSTRAINT bookkeeperDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
-    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
-
-personCheckDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
-namePersonCheckDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-namePositionPersonCheckDepartmentStore 'Кто проверяет товарный отчет (должность)' =
-    namePositionEmployee(personCheckDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, personCheckDepartmentStore(departmentStore))
-    CHECKED BY personCheckDepartmentStore MESSAGE 'Проверяющий не сотрудник отдела';
-
-EXTEND FORM departmentStore
-    PROPERTIES(d)   nameMRPDepartmentStore, nameBookkeeperDepartmentStore, namePersonCheckDepartmentStore //namePositionMRPDepartmentStore, namePositionBookkeeperDepartmentStore, namePositionPersonCheckDepartmentStore
-;
 
 revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
 nameRevaluationCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
@@ -3496,17 +3471,6 @@ META implementSalesLedger(concrete)
     retailSumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
 END
 
-//---------------------------- Суммовые регистры ----------------------------------------//
-
-CLASS ABSTRACT accountSumDocumentLedger 'Учетный документ';
-TABLE accountSumDocumentLedger (accountSumDocumentLedger);
-
-CLASS ABSTRACT incAccountSumDocumentLedger 'Учетный документ (приход)' : accountSumDocumentLedger;
-CLASS ABSTRACT outAccountSumDocumentLedger 'Учетный документ (расход)' : accountSumDocumentLedger;
-
-CLASS ABSTRACT incAccountSumHistoryDocumentLedger 'Учетный документ (приход, с историей)' : incAccountSumDocumentLedger, historyObject;
-CLASS ABSTRACT outAccountSumHistoryDocumentLedger 'Учетный документ (расход, с историей)' : outAccountSumDocumentLedger, historyObject;
-
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 META implementPriceChangeDocument (object)
@@ -3555,7 +3519,7 @@ META implementPriceChangeDocumentDetailRetailPrice (object)
     @implementPriceChangeDocumentDetailRetailPricePrefix(object, );
 END
 
-CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountSumDocumentLedger;
+CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountDocumentLedger;
 TABLE priceChangeDocument (priceChangeDocument);
 
 CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
@@ -3674,6 +3638,11 @@ diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument 'Сумма пер
 diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
     GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail))
         BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+@implementAccountDocumentLedger(priceChangeDocument);
+sumIncAccountDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
 
                          // --------- Комиссия переоценки --------------- //
 
@@ -4083,7 +4052,7 @@ cleanAllStudyInputDetail 'Очистить позиции' = ACTION (studyInputD
 
 //  приходный документ //
 
-CLASS parish 'Приходный документ (разруб)' : incAccountSumDocumentLedger;
+CLASS parish 'Приходный документ (разруб)' : incAccountDocumentLedger;
 TABLE parish (parish);
 
 isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy;
@@ -4114,9 +4083,14 @@ quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 
 @implementBaseIItemDepartmentStoreLedger(studyOutput);
 
+@implementAccountDocumentLedger(parish);
+sumIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
+sumItemIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS parish;
+
 //  расходный документ //
 
-CLASS consumption 'Расходный документ (разруб)' : outAccountSumDocumentLedger;
+CLASS consumption 'Расходный документ (разруб)' : outAccountDocumentLedger;
 TABLE consumption (consumption);
 
 @defineAggregation(actOfStudy, consumption, isActOfStudy);
@@ -4141,15 +4115,20 @@ descriptionStudyInputDetail 'Название документа' (studyInputDet
 @implementBalanceSkuLedger(studyInput, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityStudyInputDetail(ledger);
 
+@implementAccountDocumentLedger(consumption);
+sumOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
+sumItemOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS consumption;
+
+isDraftPriceTransactionDocument (document) += isDraftActOfStudy(document);
+descriptionPriceTransactionDocument (document) += descriptionActOfStudy(document);
+
 showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
     FORM seriesNumberCuttingStudyInputDetail OBJECTS dep=departmentStoreStudyInputDetail(detail), i=itemStudyInputDetail(detail) MODAL;
     IF formResult() == formResult.ok THEN {
         SET cuttingStudyInputDetail(detail) <- chosenObject('c');
     }
 } SHORTCUT seriesNumberCuttingStudyInputDetail DEFAULT;
-
-isDraftPriceTransactionDocument (document) += isDraftActOfStudy(document);
-descriptionPriceTransactionDocument (document) += descriptionActOfStudy(document);
 
 //---------------------------- Проведение инвентаризации ----------------------------------------//
 
@@ -4275,7 +4254,7 @@ nameAttributeItemPageInventoryDetail 'Товар' (pageInventoryDetail) = nameAt
 
 // Сличительная ведомость
 
-CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountSumDocumentLedger;
+CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountDocumentLedger;
 TABLE collationSheet (collationSheet);
 
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
@@ -4419,6 +4398,11 @@ accountSumItemShortageCollationSheet 'Сумма недостачи, товар'
     [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF NOT isContainerItem(item) BY collationSheet](collationSheet));
 accountSumContainerShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
     [GROUP SUM accountSumShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
+
+@implementAccountDocumentLedger(collationSheet);
+sumOutAccountDocumentLedger (ledger) += accountSumShortageCollationSheet(ledger);
+sumItemOutAccountDocumentLedger (ledger) += accountSumItemShortageCollationSheet(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += accountSumContainerShortageCollationSheet(ledger);
 
 differentPriceCollationSheetItem(collationSheet, item) = accountPricePageInventoryDetailCollationSheetItem(collationSheet, item) != accountPriceBalanceCollationSheetItem(collationSheet, item);
 
@@ -4625,7 +4609,7 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
-CLASS statement 'Выписка из розницы' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
+CLASS statement 'Выписка из розницы' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
 CLASS statementDetail 'Строка выписки из розницы' : outAutoBalanceSkuLedger, salesLedger, consignmentDetail;
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
@@ -4690,6 +4674,11 @@ descriptionStatementDetail 'Название документа' (statementDetai
 @implementBalanceSkuLedger(statement, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityStatementDetail(ledger);
 
+@implementAccountDocumentLedger(statement);
+sumOutAccountDocumentLedger (ledger) += retailSumStatementDetailStatement(ledger);
+sumItemOutAccountDocumentLedger (ledger) += retailSumItemStatementDetailStatement(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerStatementDetailStatement(ledger);
+
 @implementSalesLedger(statement);
 
 balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBSkuLedgerDateTime(
@@ -4753,7 +4742,7 @@ noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDet
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-CLASS shipment 'Поставка' : incAccountSumDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister;
+CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister;
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailRangeLedger, accountPriceLedger, retailPriceLedger, warePriceLedger, listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
@@ -4820,6 +4809,11 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 
 @implementBaseItemDepartmentStoreLedger(shipment);
+
+@implementAccountDocumentLedger(shipment);
+sumIncAccountDocumentLedger (ledger) += retailSumShipmentDetailShipment(ledger);
+sumItemIncAccountDocumentLedger (ledger) += retailSumItemShipmentDetailShipment(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerShipmentDetailShipment(ledger);
 
 isDraftPriceTransactionDocument (document) += isDraftShipment(document);
 descriptionPriceTransactionDocument (document) += descriptionShipment(document);
@@ -4958,7 +4952,7 @@ percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShip
 needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
-CLASS wastage 'Списание отходов' : outAccountSumDocumentLedger, historyObject;
+CLASS wastage 'Списание отходов' : outAccountDocumentLedger, historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': outAutoBalanceSkuLedger;
 
@@ -5006,6 +5000,11 @@ descriptionWastageDetail 'Название документа' (wastageDetail) =
 @implementBalanceSkuLedger(wastage, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityWastageDetail(ledger);
 
+@implementAccountDocumentLedger(wastage);
+sumOutAccountDocumentLedger (ledger) += retailSumWastageDetailWastage(ledger);
+sumItemOutAccountDocumentLedger (ledger) += retailSumItemWastageDetailWastage(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerWastageDetailWastage(ledger);
+
 //----------------------------------- Комиссия -------------------------------------------------//
 
 wastageCommitteeShipment (shipment) = DATA wastageCommittee (shipment) IN idGroup;
@@ -5028,7 +5027,7 @@ FORM reasonOff 'Причина списания'
     PROPERTIES(r) name
 ;
 
-CLASS writeOff 'Списание' : outAccountSumDocumentLedger, historyObject, numeratedObject;
+CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedObject;
 CLASS writeOffDetail 'Строка списания' : outAutoBalanceSkuLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
@@ -5063,9 +5062,14 @@ descriptionWriteOffDetail 'Название документа' (writeOffDetail)
 @implementBalanceSkuLedger(writeOff, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 
+@implementAccountDocumentLedger(writeOff);
+sumOutAccountDocumentLedger (ledger) += accountSumWriteOffDetailWriteOff(ledger);
+sumItemOutAccountDocumentLedger (ledger) += accountSumItemWriteOffDetailWriteOff(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += accountSumContainerWriteOffDetailWriteOff(ledger);
+
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 
-CLASS innerFlow 'Расход в отдел' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
+CLASS innerFlow 'Расход в отдел' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
 CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalanceSkuLedger, consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
@@ -5094,6 +5098,11 @@ descriptionInnerFlowDetail 'Название документа' (innerFlowDetai
 
 @implementBalanceSkuLedger(innerFlow, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
+
+@implementAccountDocumentLedger(innerFlow);
+sumOutAccountDocumentLedger (ledger) += retailSumInnerFlowDetailInnerFlow(ledger);
+sumItemOutAccountDocumentLedger (ledger) += retailSumItemInnerFlowDetailInnerFlow(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDetailInnerFlow(ledger);
 
 @defineDocumentDetailPackWeightItem(innerFlow);
 
@@ -5140,7 +5149,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 
 
-CLASS innerArrival 'Приход в отдел' : incAccountSumDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
+CLASS innerArrival 'Приход в отдел' : incAccountDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : inTransferBalanceSkuLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
@@ -5254,6 +5263,11 @@ quantityInTransferBalanceSkuLedger(innerArrivalDetail) += quantityInnerArrivalDe
 
 @implementBaseItemDepartmentStoreLedger(innerArrival);
 
+@implementAccountDocumentLedger(innerArrival);
+sumIncAccountDocumentLedger (ledger) += retailSumInnerArrivalDetailInnerArrival(ledger);
+sumItemIncAccountDocumentLedger (ledger) += retailSumItemInnerArrivalDetailInnerArrival(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerInnerArrivalDetailInnerArrival(ledger);
+
 isDraftPriceTransactionDocument (document) += isDraftInnerArrival(document);
 descriptionPriceTransactionDocument (document) += descriptionInnerArrival(document);
 
@@ -5300,7 +5314,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-CLASS returnSupplier 'Возврат поставщику' : outAccountSumDocumentLedger, historyObject, numberedObject, consignment;
+CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
 CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserBalanceSkuLedger, consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
@@ -5397,6 +5411,11 @@ descriptionReturnSupplierDetail 'Название документа' (returnSup
 quantityOutUserBalanceSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
 batchOutUserBalanceSkuLedger (ledger) += batchReturnSupplierDetail(ledger);
 
+@implementAccountDocumentLedger(returnSupplier);
+sumOutAccountDocumentLedger (ledger) += retailSumReturnSupplierDetailReturnSupplier(ledger);
+sumItemOutAccountDocumentLedger (ledger) += retailSumItemReturnSupplierDetailReturnSupplier(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerReturnSupplierDetailReturnSupplier(ledger);
+
 // для возвратной накладной (шапка и хвост)
 
 @defineDocumentDetailPackWeightItem(returnSupplier);
@@ -5449,7 +5468,7 @@ nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSup
 
 // ----------------------------- Z - отчеты ---------------------------- //
 
-CLASS zReport 'Z-отчет (открытый)' : outAccountSumDocumentLedger, historyObject;
+CLASS zReport 'Z-отчет (открытый)' : outAccountDocumentLedger, historyObject;
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
 TABLE zReport (zReport);
@@ -5649,6 +5668,11 @@ namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansP
 retailSumBillDetailZReport 'Сумма Z-отчета' (zReport) = GROUP SUM retailSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
 discountSumBillDetailZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
 
+@implementAccountDocumentLedger(zReport);
+sumOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
+sumItemOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
+
 //---------------------------- Кассовые отчеты ----------------------------------------//
 CLASS cashReport 'Кассовый отчет' : transaction;
 TABLE cashReport (cashReport);
@@ -5697,7 +5721,7 @@ FORM cashReports 'Кассовые отчеты'
 ;
 
 // документ скидок для товарного отчета
-CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountSumDocumentLedger;
+CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountDocumentLedger;
 TABLE saleDiscountDocument (saleDiscountDocument);
 
 @defineAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
@@ -5711,6 +5735,11 @@ discountSaleDiscountDocument (saleDiscountDocument) = discountSumBillDetailZRepo
 descriptionSaleDiscountDocument (saleDiscountDocument) =
     [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterSaleDiscountDocument(saleDiscountDocument), nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
+
+@implementAccountDocumentLedger(saleDiscountDocument);
+sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
+sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
 
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
@@ -5761,7 +5790,7 @@ CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'У
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Пересортица' : historyObject, numeratedObject, priceTransactionDocument;    // incAccountSumDocumentLedger
+CLASS disparity 'Пересортица' : historyObject, numeratedObject, priceTransactionDocument;
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы': outAutoBalanceSkuLedger;
 
@@ -8601,377 +8630,6 @@ CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
             supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
                 <
             minTradeAllowanceItemDate (itemInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail)) MESSAGE 'Наценка меньше минимально допустимой';
-
-
-
-//------------------------------------ Изменение учетных сумм ------------------------------------------//
-
-GROUP ledgerByItemGroup 'Суммы по товару' : baseGroup;
-GROUP ledgerByContainerGroup 'Суммы по таре' : baseGroup;
-GROUP ledgerGroup 'Суммы общие' : baseGroup;
-
-dateTimeAccountSumDocumentLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeShipment(ledger),
-                                                                         dateTimeReturnSupplier(ledger),
-                                                                         dateTimeInnerArrival(ledger),
-                                                                         dateTimePriceChangeDocument(ledger),
-                                                                         dateTimeWriteOff(ledger),
-                                                                         dateTimeStatement(ledger),
-                                                                         dateTimeInnerFlow(ledger),
-                                                                         dateTimeWastage(ledger),
-                                                                         dateTimeInventory(inventoryCollationSheet(ledger)),
-                                                                         dateTimeZReport(ledger),
-                                                                         dateTimeSaleDiscountDocument(ledger),
-                                                                         dateTimeParish(ledger),
-                                                                         dateTimeConsumption(ledger) PERSISTENT INDEXED;
-
-descriptionDocumentLedger 'Название документа' (ledger) = UNION EXCLUSIVE descriptionShipment(ledger),
-                                                                          descriptionReturnSupplier(ledger),
-                                                                          descriptionInnerArrival(ledger),
-                                                                          descriptionPriceChangeDocument(ledger),
-                                                                          descriptionWriteOff(ledger),
-                                                                          descriptionStatement(ledger),
-                                                                          descriptionInnerFlow(ledger),
-                                                                          descriptionWastage(ledger),
-                                                                          descriptionCollationSheet(ledger),
-                                                                          descriptionZReport(ledger),
-                                                                          descriptionSaleDiscountDocument(ledger),
-                                                                          descriptionParish(ledger),
-                                                                          descriptionConsumption(ledger) PERSISTENT;
-
-
-dateAccountSumDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountSumDocumentLedger(ledger)) PERSISTENT;
-
-isPostedAccountSumDocumentLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedShipment(ledger),
-                                                                     isPostedReturnSupplier(ledger),
-                                                                     isPostedInnerArrival(ledger),
-                                                                     isPostedPriceChangeDocument(ledger),
-                                                                     isPostedWriteOff(ledger),
-                                                                     isPostedStatement(ledger),
-                                                                     isPostedInnerFlow(ledger),
-                                                                     isPostedWastage(ledger),
-                                                                     isPostedInventory(inventoryCollationSheet(ledger)),
-                                                                     isPostedZReport(ledger),
-                                                                     isPostedSaleDiscountDocument(ledger),
-                                                                     isPostedParish(ledger),
-                                                                     isPostedConsumption(ledger) PERSISTENT TABLE accountSumDocumentLedger;
-
-departmentStoreAccountSumDocumentLedger (ledger) = UNION EXCLUSIVE departmentStoreShipment(ledger),
-                                                                   departmentStoreReturnSupplier(ledger),
-                                                                   departmentStoreInnerArrival(ledger),
-                                                                   departmentStorePriceChangeDocument(ledger),
-                                                                   departmentStoreWriteOff(ledger),
-                                                                   departmentStoreStatement(ledger),
-                                                                   departmentStoreInnerFlow(ledger),
-                                                                   departmentStoreWastage(ledger),
-                                                                   departmentStoreCollationSheet(ledger),
-                                                                   departmentStoreZReport(ledger),
-                                                                   departmentStoreSaleDiscountDocument(ledger),
-                                                                   departmentStoreParish(ledger),
-                                                                   departmentStoreConsumption(ledger) PERSISTENT;
-
-nameDepartmentStoreAccountSumDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountSumDocumentLedger(ledger));
-
-sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = UNION EXCLUSIVE retailSumShipmentDetailShipment(ledger),
-                                                                       retailSumInnerArrivalDetailInnerArrival(ledger),
-                                                                       diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger),
-                                                                       retailSumParish(ledger) PERSISTENT IN ledgerGroup;
-
-sumIncAccountByItemDocumentLedger 'Сумма прихода, товар' (ledger) = UNION EXCLUSIVE retailSumItemShipmentDetailShipment(ledger),
-                                                                                    retailSumItemInnerArrivalDetailInnerArrival(ledger),
-                                                                                    diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger),
-                                                                                    retailSumParish(ledger) PERSISTENT IN ledgerByItemGroup;
-
-sumIncAccountByContainerDocumentLedger 'Сумма прихода, тара' (ledger) = UNION EXCLUSIVE retailSumContainerShipmentDetailShipment(ledger),
-                                                                                        retailSumContainerInnerArrivalDetailInnerArrival(ledger),
-                                                                                        diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger),
-                                                                                        0.0 IF ledger IS parish PERSISTENT IN ledgerByContainerGroup; //  subtotalByContainerParish(ledger)
-
-sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = UNION EXCLUSIVE accountSumWriteOffDetailWriteOff(ledger),
-                                                                       retailSumReturnSupplierDetailReturnSupplier(ledger),
-                                                                       retailSumInnerFlowDetailInnerFlow(ledger),
-                                                                       retailSumStatementDetailStatement(ledger),
-                                                                       retailSumWastageDetailWastage(ledger),
-                                                                       accountSumShortageCollationSheet(ledger),
-                                                                       retailSumBillDetailZReport(ledger),
-                                                                       discountSaleDiscountDocument(ledger),
-                                                                       retailSumConsumption(ledger) PERSISTENT IN ledgerGroup;
-
-
-sumOutAccountByItemDocumentLedger 'Сумма расхода, товар' (ledger) = UNION EXCLUSIVE accountSumItemWriteOffDetailWriteOff(ledger),
-                                                                       retailSumItemReturnSupplierDetailReturnSupplier(ledger),
-                                                                       retailSumItemInnerFlowDetailInnerFlow(ledger),
-                                                                       retailSumItemStatementDetailStatement(ledger),
-                                                                       retailSumItemWastageDetailWastage(ledger),
-                                                                       accountSumItemShortageCollationSheet(ledger),
-                                                                       retailSumBillDetailZReport(ledger),
-                                                                       discountSaleDiscountDocument(ledger),
-                                                                       retailSumConsumption(ledger) PERSISTENT IN ledgerByItemGroup;
-
-
-
-sumOutAccountByContainerDocumentLedger 'Сумма расхода, тара' (ledger) = UNION EXCLUSIVE accountSumContainerWriteOffDetailWriteOff(ledger),
-                                                                       retailSumContainerReturnSupplierDetailReturnSupplier(ledger),
-                                                                       retailSumContainerInnerFlowDetailInnerFlow(ledger),
-                                                                       retailSumContainerStatementDetailStatement(ledger),
-                                                                       retailSumContainerWastageDetailWastage(ledger),
-                                                                       accountSumContainerShortageCollationSheet(ledger),
-                                                                       0.0 IF ledger IS zReport,
-                                                                       0.0 IF ledger IS saleDiscountDocument,
-                                                                       0.0 IF ledger IS consumption PERSISTENT IN ledgerByContainerGroup;
-//
-quantityIncAccountSumDocumentLedger 'Количество приходных док-ов' (departmentStore, dtFrom, dtTo)=
-    GROUP SUM 1 IF incAccountSumDocumentLedger AS incAccountSumDocumentLedger AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
-        AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountSumDocumentLedger(incAccountSumDocumentLedger), dtFrom, dtTo IN ledgerGroup;
-
-quantityOutAccountSumDocumentLedger 'Количество расходных док-ов' (departmentStore, dtFrom, dtTo)=
-    GROUP SUM 1 IF outAccountSumDocumentLedger AS outAccountSumDocumentLedger AND isPostedAccountSumDocumentLedger(outAccountSumDocumentLedger)
-        AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountSumDocumentLedger(outAccountSumDocumentLedger), dtFrom, dtTo IN ledgerGroup;
-
-
-totalSumIncAccountSumByItemDocumentLedger 'Общая сумма прихода, товар' (departmentStore, dtFrom, dtTo)=
-    GROUP SUM sumIncAccountByItemDocumentLedger(incAccountSumDocumentLedger)  AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
-        AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountSumDocumentLedger(incAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByItemGroup;
-totalSumIncAccountSumByContainerDocumentLedger 'Общая сумма прихода, тара' (departmentStore, dtFrom, dtTo)=
-    GROUP SUM sumIncAccountByContainerDocumentLedger(incAccountSumDocumentLedger) AND isPostedAccountSumDocumentLedger(incAccountSumDocumentLedger)
-        AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(incAccountSumDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountSumDocumentLedger(incAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByContainerGroup;
-
-
-totalSumOutAccountSumByItemDocumentLedger 'Общая сумма расхода, товар' (departmentStore, dtFrom, dtTo)=
-    GROUP SUM sumOutAccountByItemDocumentLedger(outAccountSumDocumentLedger) AND isPostedAccountSumDocumentLedger(outAccountSumDocumentLedger)
-        AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountSumDocumentLedger(outAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByItemGroup;
-totalSumOutAccountSumByContainerDocumentLedger 'Общая сумма расхода, тара' (departmentStore, dtFrom, dtTo)=
-    GROUP SUM sumOutAccountByContainerDocumentLedger(outAccountSumDocumentLedger) AND isPostedAccountSumDocumentLedger(outAccountSumDocumentLedger)
-        AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) >= (dtFrom AS DATE) AND dateAccountSumDocumentLedger(outAccountSumDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountSumDocumentLedger(outAccountSumDocumentLedger), dtFrom, dtTo IN ledgerByContainerGroup;
-
-sumAccountDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncAccountDocumentLedger(ledger), -sumOutAccountDocumentLedger(ledger) PERSISTENT;
-
-sumAccountByItemDocumentLedger 'Сумма, товар' (ledger) = UNION EXCLUSIVE sumIncAccountByItemDocumentLedger(ledger), -sumOutAccountByItemDocumentLedger(ledger) PERSISTENT;
-sumAccountByContainerDocumentLedger 'Сумма, тара' (ledger) = UNION EXCLUSIVE sumIncAccountByContainerDocumentLedger(ledger), -sumOutAccountByContainerDocumentLedger(ledger) PERSISTENT;
-
-currentSumAccountDocumentLedger 'Текущий остаток по документам' (departmentStore) = GROUP SUM sumAccountDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                                           BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
-
-currentSumAccountByItemDocumentLedger 'Текущий остаток по документам, товар' (departmentStore) = GROUP SUM sumAccountByItemDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                                           BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
-currentSumAccountByContainerDocumentLedger 'Текущий остаток по документам, тара' (departmentStore) = GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                                           BY departmentStoreAccountSumDocumentLedger(ledger) PERSISTENT;
-//без учета текущей даты/времени
-sumAccountBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
-
-sumAccountBDocumentLedgerDate 'Остаток на начало' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
-                                                                            -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerGroup;
-
-sumAccountByItemBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
-
-sumAccountByItemBDocumentLedgerDate 'Остаток на начало, товар' (departmentStore, date) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND date IS DATE,
-                                                                            -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByItemGroup;
-
-sumAccountByContainerBDocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
-
-sumAccountByContainerBDocumentLedgerDate 'Остаток на начало, тара' (departmentStore, date) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND date IS DATE,
-                                                                            -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByContainerGroup;
-
-subtotalIncAccountSumByItemDocumentLedger 'Итого с остатком, товар' (departmentStore, dtFrom, dtTo) = UNION SUM
-    sumAccountByItemBDocumentLedgerDate(departmentStore, dtFrom) AND dtTo AS DATE,
-    totalSumIncAccountSumByItemDocumentLedger(departmentStore, dtFrom, dtTo) IN ledgerByItemGroup;
-subtotalIncAccountSumByContainerDocumentLedger 'Итого с остатком, тара' (departmentStore, dtFrom, dtTo) = UNION SUM
-    sumAccountByContainerBDocumentLedgerDate(departmentStore, dtFrom) AND dtTo AS DATE,
-    totalSumIncAccountSumByContainerDocumentLedger(departmentStore, dtFrom, dtTo) IN ledgerByContainerGroup;
-
-
-//с учетом текущей даты/времени
-sumAccountADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
-
-sumAccountADocumentLedgerDate 'Остаток на конец' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
-                                                                           -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerGroup;
-
-sumAccountByItemADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
-
-sumAccountByItemADocumentLedgerDate 'Остаток на конец, товар' (departmentStore, date) = UNION SUM currentSumAccountByItemDocumentLedger(departmentStore) AND date IS DATE,
-                                                                           -[GROUP SUM sumAccountByItemDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByItemGroup;
-
-sumAccountByContainerADocumentLedgerDateTime (departmentStore, dateTime) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND dateTime IS DATETIME,
-                                                                         -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateTimeAccountSumDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountSumDocumentLedger(ledger), dateTime](departmentStore, dateTime);
-
-sumAccountByContainerADocumentLedgerDate 'Остаток на конец, тара' (departmentStore, date) = UNION SUM currentSumAccountByContainerDocumentLedger(departmentStore) AND date IS DATE,
-                                                                           -[GROUP SUM sumAccountByContainerDocumentLedger (ledger) AND dateAccountSumDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountSumDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountSumDocumentLedger(ledger), date](departmentStore, date) IN ledgerByContainerGroup;
-
-// ------------------------- Печатная форма----------------------------- //
-FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
-    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
-            ds = departmentStore FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore, UNPDepartmentStore,
-    nameMRPDepartmentStore, namePositionMRPDepartmentStore, nameBookkeeperDepartmentStore,
-    namePositionBookkeeperDepartmentStore, namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
-
-    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
-               sumAccountByItemADocumentLedgerDate(ds, dtTo), sumAccountByContainerADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
-    PROPERTIES(ds, dtFrom, dtTo) quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
-               totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
-               subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
-               totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger
-
-    OBJECTS il = incAccountSumDocumentLedger
-    PROPERTIES(il) SELECTOR iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
-                   sumIncAccountByItemDocumentLedger, sumIncAccountByContainerDocumentLedger, sumIncAccountDocumentLedger
-    FILTERS isPostedAccountSumDocumentLedger(il),
-            departmentStoreAccountSumDocumentLedger(il) == ds,
-            dateAccountSumDocumentLedger(il) >= dtFrom,
-            dateAccountSumDocumentLedger(il) <= dtTo
-    ORDER BY iDateTime
-
-    OBJECTS ol = outAccountSumDocumentLedger
-    PROPERTIES(ol) SELECTOR oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
-                   sumOutAccountByItemDocumentLedger, sumOutAccountByContainerDocumentLedger, sumOutAccountDocumentLedger
-    FILTERS isPostedAccountSumDocumentLedger(ol),
-            departmentStoreAccountSumDocumentLedger(ol) == ds,
-            dateAccountSumDocumentLedger(ol) >= dtFrom,
-            dateAccountSumDocumentLedger(ol) <= dtTo
-    ORDER BY oDateTime
-;
-
-DESIGN sumAccountDocumentLedgerPrint FROM DEFAULT {
-    PROPERTY(objFrom) {
-        caption = 'Дата (с)';
-    }
-    PROPERTY(objTo) {
-        caption = 'Дата (по)';
-    }
-}
-toPrintAccountDocumentLedger 'Тов. отчет' (departmentStore, dtInFrom, dtOutTo) =
-    ACTION FORM sumAccountDocumentLedgerPrint OBJECTS ds = (departmentStore AS departmentStore), dtFrom = (dtInFrom AS DATE), dtTo = (dtOutTo AS DATE)  IMAGE 'print.png' IN printGroup;
-
-
-FORM sumAccountDocumentLedger 'Товарный отчет'
-    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
-            ds = departmentStore FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name
-    PROPERTIES(ds) nameMRPDepartmentStore, namePositionMRPDepartmentStore, nameBookkeeperDepartmentStore,
-                   namePositionBookkeeperDepartmentStore, namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
-    PROPERTIES READONLY sumAccountBDocumentLedgerDate(ds, dtFrom), sumAccountByItemBDocumentLedgerDate(ds, dtFrom), sumAccountByContainerBDocumentLedgerDate(ds, dtFrom),
-                   sumAccountADocumentLedgerDate(ds, dtTo)
-    PROPERTIES(ds, dtFrom, dtTo) READONLY quantityIncAccountSumDocumentLedger, quantityOutAccountSumDocumentLedger,
-                   totalSumIncAccountSumByItemDocumentLedger, totalSumIncAccountSumByContainerDocumentLedger,
-//               subtotalIncAccountSumByItemDocumentLedger, subtotalIncAccountSumByContainerDocumentLedger,
-                   totalSumOutAccountSumByItemDocumentLedger, totalSumOutAccountSumByContainerDocumentLedger
-    PROPERTIES READONLY sumAccountByItemADocumentLedgerDate(ds, dtTo), sumAccountByContainerADocumentLedgerDate(ds, dtTo)
-
-    PROPERTIES(ds, dtFrom, dtTo) FORCE PANEL toPrintAccountDocumentLedger
-
-    OBJECTS il = incAccountSumDocumentLedger
-    PROPERTIES(il) READONLY iDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
-                   sumIncAccountByItemDocumentLedger, sumIncAccountByContainerDocumentLedger, sumIncAccountDocumentLedger
-    FILTERS isPostedAccountSumDocumentLedger(il),
-            departmentStoreAccountSumDocumentLedger(il) == ds,
-            dateAccountSumDocumentLedger(il) >= dtFrom,
-            dateAccountSumDocumentLedger(il) <= dtTo
-    ORDER BY iDateTime
-
-    OBJECTS ol = outAccountSumDocumentLedger
-    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountSumDocumentLedger, objectClassName, descriptionDocumentLedger,
-                   sumOutAccountByItemDocumentLedger, sumOutAccountByContainerDocumentLedger, sumOutAccountDocumentLedger
-    FILTERS isPostedAccountSumDocumentLedger(ol),
-            departmentStoreAccountSumDocumentLedger(ol) == ds,
-            dateAccountSumDocumentLedger(ol) >= dtFrom,
-            dateAccountSumDocumentLedger(ol) <= dtTo
-    ORDER BY oDateTime
-;
-
-DESIGN sumAccountDocumentLedger FROM DEFAULT {
-    NEW row BEFORE il.box {
-        childConstraints = TO THE RIGHT;
-        title = 'Комиссия';
-        NEW row1 {
-            title = 'МОЛ';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameMRPDepartmentStore(ds)){
-                caption = 'Имя';
-            }
-            ADD PROPERTY (namePositionMRPDepartmentStore(ds)){
-                caption = 'Должность';
-            }
-        }
-        NEW row2 {
-            title = 'Проверяющий';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (namePersonCheckDepartmentStore(ds)){
-                caption = 'Имя';
-            }
-            ADD PROPERTY (namePositionPersonCheckDepartmentStore(ds)){
-                caption = 'Должность';
-            }
-        }
-        NEW row3{
-            title = 'Бухгалтер';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameBookkeeperDepartmentStore(ds)){
-                caption = 'Имя';
-            }
-            ADD PROPERTY (namePositionBookkeeperDepartmentStore(ds)){
-                caption = 'Должность';
-            }
-        }
-    }
-
-    NEW HeaderCase BEFORE row{
-        title = 'Суммы';
-        childConstraints = TO THE RIGHT;
-        ADD ds.ledgerByItemGroup;
-        ADD ds.ledgerByContainerGroup;
-        ADD ds.ledgerGroup;
-    }
-
-    NEW OneCase BEFORE HeaderCase{
-        childConstraints = TO THE RIGHT;
-        NEW dateCase {
-            title = 'Даты';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(objFrom) {
-                caption = 'Дата (с)';
-            }
-            ADD PROPERTY(objTo) {
-                caption = 'Дата (по)';
-            }
-        }
-        NEW departmentCase {
-            title = 'Отдел';
-            ADD PROPERTY (name(ds)) {
-                caption = 'Название';
-            };
-        }
-    }
-
-    NEW printCase {
-        title = 'Печатные формы';
-        ADD PROPERTY (toPrintAccountDocumentLedger(ds, dtFrom, dtTo));
-    }
-    ADD functions.box;
-}
 
 //------------------------------------Печатная форма описи------------------------------------------//
 

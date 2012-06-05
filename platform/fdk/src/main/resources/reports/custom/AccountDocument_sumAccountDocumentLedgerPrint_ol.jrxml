@@ -17,16 +17,16 @@
 	</style>
 	<field name="ol" class="java.lang.Integer"/>
 	<field name="objectClassName1" class="java.lang.String"/>
-	<field name="descriptionDocumentLedger1" class="java.lang.String"/>
-	<field name="sumOutAccountByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="sumOutAccountByContainerDocumentLedger" class="java.lang.Double"/>
+	<field name="descriptionAccountDocumentLedger1" class="java.lang.String"/>
+	<field name="sumItemOutAccountDocumentLedger" class="java.lang.Double"/>
+	<field name="sumContainerOutAccountDocumentLedger" class="java.lang.Double"/>
 	<field name="sumOutAccountDocumentLedger" class="java.lang.Double"/>
-	<field name="quantityOutAccountSumDocumentLedger" class="java.lang.Integer"/>
-	<field name="totalSumOutAccountSumByItemDocumentLedger" class="java.lang.Double"/>
-	<field name="totalSumOutAccountSumByContainerDocumentLedger" class="java.lang.Double"/>
+	<field name="countOutAccountDocumentDepartmentStoreDateInterval" class="java.lang.Integer"/>
+	<field name="sumItemOutAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
+	<field name="sumContainerOutAccountDocumentDepartmentStoreDateInterval" class="java.lang.Double"/>
 	<field name="objTo" class="java.util.Date"/>
-	<field name="sumAccountByItemADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="sumAccountByContainerADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumItemAccountADocumentLedgerDate" class="java.lang.Double"/>
+	<field name="sumContainerAccountADocumentLedgerDate" class="java.lang.Double"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -36,7 +36,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="299" height="12"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{descriptionDocumentLedger1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{descriptionAccountDocumentLedger1}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="12"/>
@@ -46,7 +46,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="0" width="80" height="12"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumOutAccountByContainerDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerOutAccountDocumentLedger},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12"/>
@@ -56,7 +56,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumOutAccountByItemDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemOutAccountDocumentLedger},0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -73,7 +73,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumAccountByItemADocumentLedgerDate},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemAccountADocumentLedgerDate},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="12" width="53" height="12"/>
@@ -99,7 +99,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{totalSumOutAccountSumByContainerDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerOutAccountDocumentDepartmentStoreDateInterval},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>
@@ -112,7 +112,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{totalSumOutAccountSumByItemDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemOutAccountDocumentDepartmentStoreDateInterval},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12"/>
@@ -138,7 +138,7 @@
 				<textElement textAlignment="Left">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Итого в расходе документов: "+$F{quantityOutAccountSumDocumentLedger}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Итого в расходе документов: "+$F{countOutAccountDocumentDepartmentStoreDateInterval}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="12" width="80" height="12"/>
@@ -151,7 +151,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumAccountByContainerADocumentLedgerDate},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerAccountADocumentLedgerDate},0)]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement stretchType="RelativeToBandHeight" x="93" y="12" width="231" height="12" backcolor="#FFFFFF"/>
