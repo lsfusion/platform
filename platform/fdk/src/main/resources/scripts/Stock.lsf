@@ -206,6 +206,7 @@ isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 skuBatch 'SKU (ИД)' (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
 supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
+dateExpireBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
 

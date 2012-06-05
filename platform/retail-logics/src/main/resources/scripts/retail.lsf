@@ -3606,6 +3606,8 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 
 @defineDocumentHeaderItemRetailSumCustom(actOfStudy, studyOutputDetail);
 
+dateExpireStudyOutputDetail 'Годен до' (studyOutputDetail) = DATA DATE(studyOutputDetail) IN baseGroup;
+
 // используется для закачки в мета-коде
 quantityActOfStudyDetailItemActOfStudy 'Кол-во для закачки в оборудование' (item, actOfStudy) = GROUP SUM quantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
 
@@ -3679,6 +3681,7 @@ descriptionStudyOutputDetail 'Название документа' (studyOutputD
 @implementBalanceSkuLedger(studyOutput, item, departmentStore);
 @implementBatch(studyOutput, item);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
+dateExpireBatch (ledger) += dateExpireStudyOutputDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(studyOutput, item);
 
@@ -4390,9 +4393,9 @@ carryingChargesShipment 'Транспортные расходы' (shipment) = D
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
-dateFitToShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
+dateExpireShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
-CONSTRAINT controlExpiryItemShipmentDetail(shipmentDetail) AND NOT dateFitToShipmentDetail(shipmentDetail) MESSAGE 'Для товара не задан срок годности';
+CONSTRAINT controlExpiryItemShipmentDetail(shipmentDetail) AND NOT dateExpireShipmentDetail(shipmentDetail) MESSAGE 'Для товара не задан срок годности';
 //    CHECKED BY controlExpiryItemShipmentDetail MESSAGE 'Не задан для товара срок годности';
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN itemDetailGroup;
@@ -4411,6 +4414,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 @implementBalanceSkuLedger(shipment, item, departmentStore);
 @implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
+dateExpireBatch (ledger) += dateExpireShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
@@ -5467,6 +5471,8 @@ quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetai
 
 @defineDocumentDetailAggregationPricePrefix(disparity, inputDisparity, input, , );
 
+dateExpireInputDisparityDetail 'Годен до' (inputDisparityDetail) = DATA DATE(inputDisparityDetail) IN baseGroup;
+
 descriptionInputDisparityDetail 'Название документа' (inputDisparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
@@ -5474,6 +5480,7 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
 @implementBalanceSkuLedger(inputDisparity, item, departmentStore);
 @implementBatch(inputDisparity, item);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
+dateExpireBatch (ledger) += dateExpireInputDisparityDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(inputDisparity, item);
 
@@ -7804,7 +7811,7 @@ FORM shipment 'Поставка'
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
-                    importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateFitToShipmentDetail,
+                    importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateExpireShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                     supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
                     warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail,
@@ -7906,7 +7913,7 @@ FORM shipments 'Поставки'
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                             supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateFitToShipmentDetail,
+                             supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateExpireShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                              supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
                              numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail, retailMarkupShipmentDetail,
@@ -10409,7 +10416,18 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
             overMotionContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
 
-FORM balanceStockBatchDate 'Остатки на складе по партиям на дату'
+countToExpireDayBatch 'Кол-во дней (30)' = SESSION DATA INTEGER (DATETIME) TOOLBAR;
+countToExpireDayBatchOver 'кол-во дней' (date) =
+    UNION OVERRIDE 30 AND date AS DATETIME, countToExpireDayBatch(date AS DATETIME);
+balanceBBatchDateTime 'Остаток на начало дня' (batch, date) = balanceBStockBatchDateTime(batch, stockBalanceSkuLedger(batch), date);
+inChainStoresStoreTypeStoreDepartmentDepartmentBatch (tn, st, s, batch, ds) =
+    inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, stockBalanceSkuLedger(batch), ds);
+isDateExpireBatch (batch, date) = dateExpireBatch(batch) < (date AS DATETIME);
+isDateTimeBatch (batch, date) = dateTimeBatch(batch) < (date AS DATETIME);
+isCountToExpireDayBatch (batch, date) =
+    dateExpireBatch(batch) < sumDate(dateInTime(date AS DATETIME), countToExpireDayBatchOver(date AS DATETIME));
+
+FORM balanceStockBatchDate 'Остатки по партиям на дату'
 
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
@@ -10422,30 +10440,25 @@ FORM balanceStockBatchDate 'Остатки на складе по партиям
     PROPERTIES READONLY gname = name(g)
     ORDER BY gname
 
-    OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  idBarcodeSku
+    OBJECTS           ib = (i=item, bt=batch)
+    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt) //  barcodeBarcodeSku
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, dateExpireBatch
+    PROPERTIES        balanceBBatchDateTime(bt, t)
+    ORDER BY          dateTimeBatch
+
+    PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
+
     FILTERS           isParentItemGroupSku(g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
+                      inChainStoresStoreTypeStoreDepartmentDepartmentBatch(tn, st, s, bt, ds),
+                      isSkuBatch(bt, i),
+                      isDateTimeBatch(bt, t)
 
+    FILTERGROUP filters2
+        FILTER 'Партии с остатком' 'F11' balanceBBatchDateTime(bt, t) > 0 DEFAULT
 
-    PROPERTIES(i, dep, t) READONLY balanceASkuLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
-                                   accountPriceBLedgerDateTime, retailPriceALedgerDateTime,
-                                   warePriceALedgerDateTime
-
-    PROPERTIES(i, dep) READONLY dateLastMovedSkuStock
-
-    PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
-
-    FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' balanceASkuLedgerDateTime(i, dep, t) DEFAULT
-        FILTER 'Товары с движением не позднее' 'F9' dateLastMovedUnionBalanceItem(i, dep, t)
-
-    OBJECTS bt=batch
-    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch
-    PROPERTIES(bt, dep, t) balanceBStockBatchDateTime
-
-    FILTERS balanceBStockBatchDateTime(bt, dep, t),
-            isSkuBatch(bt, i)
+    FILTERGROUP filters3
+        FILTER 'Партии с истекшим сроком годности' 'F10' isDateExpireBatch(bt, t)
+        FILTER 'Период просрочки' 'F9' isCountToExpireDayBatch(bt, t)
 
 ;
 
@@ -10464,9 +10477,69 @@ DESIGN balanceStockBatchDate FROM DEFAULT {
         NEW secondCase {
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
-                ADD dsi.box {fillVertical = 2;}
-                ADD bt.box{fillVertical = 2;}
+                ADD ib.box {title = 'Партии';};
+        }
+        POSITION firstCase TO THE LEFT secondCase;
 
+        ADD functions.box;
+    }
+}
+
+currentBalanceBatch 'Текущий остаток' (batch) = currentBalanceBatchLedger(batch, stockBalanceSkuLedger(batch));
+isCurDateExpireBatch (batch) = dateExpireBatch(batch) < currentDateTime();
+isCurDateTimeBatch (batch) = dateTimeBatch(batch) < currentDateTime();
+isCurCountToExpireDayBatch (batch, date) =
+    dateExpireBatch(batch) < sumDate(currentDate(), countToExpireDayBatchOver(date AS DATETIME));
+
+FORM curBalanceStockBatchDate 'Текущие остатки по партиям'
+
+    OBJECTS t=DATETIME FIXED PANEL
+
+    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
+    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
+
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY gname = name(g)
+    ORDER BY gname
+
+    OBJECTS           ib = (i=item, bt=batch)
+    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt) //  barcodeBarcodeSku
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, dateExpireBatch
+    PROPERTIES        currentBalanceBatch(bt)
+    ORDER BY          dateTimeBatch
+
+    PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
+
+    FILTERS           isParentItemGroupSku(g, i),
+                      inChainStoresStoreTypeStoreDepartmentDepartmentBatch(tn, st, s, bt, ds),
+                      isSkuBatch(bt, i),
+                      isCurDateTimeBatch(bt)
+
+    FILTERGROUP filters2
+        FILTER 'Партии с остатком' 'F11' currentBalanceBatch(bt) > 0 DEFAULT
+
+    FILTERGROUP filters3
+        FILTER 'Партии с истекшим сроком годности' 'F10' isCurDateExpireBatch(bt)
+        FILTER 'Период просрочки' 'F9' isCurCountToExpireDayBatch(bt, t)
+
+;
+
+DESIGN curBalanceStockBatchDate FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW firstCase {
+                fillHorizontal = 1;
+                childConstraints = TO THE BOTTOM;
+                ADD treeStore.box {title = 'Магазины';};
+                ADD treeGroups.box {title = 'Товарные группы';};
+        }
+
+        NEW secondCase {
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD ib.box {title = 'Партии';};
         }
         POSITION firstCase TO THE LEFT secondCase;
 
@@ -11216,9 +11289,14 @@ NAVIGATOR {
             ADD costItemBatchLedger;
         }
         NEW balance 'Остатки' {
-            ADD curBalanceItemDepartment;
-            ADD balanceItemDepartment;
-            ADD balanceStockBatchDate;
+            NEW balanceItem 'Остатки по товару' {
+                ADD curBalanceItemDepartment;
+                ADD balanceItemDepartment;
+            }
+            NEW balanceBatch 'Остатки по партиям' {
+                ADD curBalanceStockBatchDate;
+                ADD balanceStockBatchDate;
+            }
         }
         NEW sales 'Продажи' {
             ADD salesLedger;
