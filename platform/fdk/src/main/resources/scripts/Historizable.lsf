@@ -8,7 +8,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
     date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
     property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
-    over###property##Date caption = UNION OVERRIDE property##Date(object, date), data###property##Date(object, date);
+    over###property##Date caption = UNION OVERRIDE property##Date(object, date), data###property##Date(object, date) IN group;
 
     property caption (object) = property##Date(object, currentDate()) IN group;
 

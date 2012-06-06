@@ -11,7 +11,7 @@ CLASS ABSTRACT stock 'Склад' : named;
 TABLE stock(stock);
 
 stockGroupStock (stock) = ABSTRACT stockGroup (stock);
-addressStock (stock) = ABSTRACT STRING[100] (stock);
+addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 

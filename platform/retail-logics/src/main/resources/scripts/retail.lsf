@@ -23,7 +23,8 @@ REQUIRE BaseLogicsModule,
         ListRegister,
         Consignment,
         AccountDocument,
-        StorePrice;
+        StorePrice,
+        Supplier;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -282,28 +283,14 @@ END
 
 // ----------------------------------- Поставщик ------------------------------------------ //
 
-META defineDocumentHeaderSupplierContract(object)
-    supplier###object 'Поставщик (ИД)' (object) = DATA supplier (object) IN idGroup;
-    nameSupplier###object 'Поставщик' (object) = name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 40;
-    UNPSupplier###object 'УНП поставщика' (object) = UNPLegalEntity(supplier###object(object)) IN documentPrmGroup;
-    supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
+META defineDocumentHeaderSupplierContractDepartmentStore(object)
+    @defineDocumentHeaderSupplierContract(object);
 
-    contract###object 'Договор' (object) = DATA contract (object) IN idGroup;
-
-    contract###object (object) <- overrideContractCompanySupplier(companyDepartmentStore(departmentStore###object(object)), supplier###object(object))
-                                   IF (countContracts(supplier###object(object), departmentStore###object(object)) == 1)
-                                   WHEN CHANGED(supplier###object(object));
-
-    numberContract###object 'Договор' (object) = numberContract(contract###object(object)) IN documentPrmGroup;
-
-    dateContract###object 'Договор от' (object) = dateFromContract(contract###object(object)) IN documentPrmGroup;
-
-    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContract(contract###object(object))
-        CHECKED BY contract###object MESSAGE 'Выберите договор данного поставщика';
+    contract###object (object) <- contractCompanySupplier(companyDepartmentStore(departmentStore###object(object)), supplier###object(object))
+                                  IF countContractCompanySupplier(companyDepartmentStore(departmentStore###object(object)), supplier###object(object)) == 1
+                                  WHEN CHANGED(supplier###object(object));
     CONSTRAINT contract###object(object) AND NOT companyDepartmentStore(departmentStore###object(object)) == companyContract(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';
-    CONSTRAINT contract###object(object) AND NOT isOperatingContract(contract###object(object), date###object(object))
-        CHECKED BY contract###object MESSAGE 'Выберите действующий договор';
 END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
@@ -1990,300 +1977,6 @@ FORM wastageCommitteeDialog 'Комиссии для списания отход
 
 // ----------------------------------- Договор ------------------------------------------ //
 
-GROUP contractGroup 'Общая информация' : baseGroup;
-
-CLASS ABSTRACT contract 'Договор';
-TABLE contract (contract);
-TABLE contractDate (contract, DATE);
-CLASS contractProvider 'Договор с поставщиком' : contract;
-
-CLASS STATIC contractType 'Тип договора'
-{
-    sale 'Договор купли-продажи',
-    commission 'Договор комиссии'
-};
-
-CLASS STATIC contractForm 'Порядок оплаты'
-{
-    prepayment 'С отсрочкой платежа',
-    implement 'По факту реализации',
-   // instruction 'Платежное поручение',
-    requirement 'Платежное требование'
-};
-
-numberContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
-typeContract(contract) = DATA contractType (contract) IN contractGroup;
-nameTypeContract 'Тип договора' (contract) = name(UNION OVERRIDE contractType.sale IF contract IS contract,
-                                                                 typeContract(contract)) IN contractGroup;
-dateFromContract 'Дата начала договора' = DATA DATE (contract) IN contractGroup;
-dateToContract 'Дата окончания договора' = DATA DATE (contract) IN contractGroup;
-isOperatingContract 'Действуюший договор?' (contract, date) =
-    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
-currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN contractGroup; // может и не надо   или справочником
-warnContract 'За сколько дней предупредить об окончании' = DATA INTEGER (contract) IN contractGroup;
-banContract 'За сколько дней запретить закупку товара' = DATA INTEGER (contract) IN contractGroup;
-//delayContract 'Отсрочка платежа, дней' = DATA INTEGER (contract) IN contractGroup;
-//requestContract 'Форма оплаты: Платежное требование' = DATA BOOLEAN (contract) IN contractGroup;
-noteContract 'Примечание' = DATA STRING[500] (contract) IN contractGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-@defineHistorizableCustom(formContract, 'Порядок оплаты по договору', contractForm, name, contract, name, contractGroup);
-CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'ошибка: Не выбран порядок оплаты по договору';
-@defineHistorizable(delayContract, 'Отсрочка платежа(кален. дней),при "-" предоплата', INTEGER, contract, numberContract, contractGroup);
-
-
-// ----------------------------------- Поставщик ------------------------------------------ //
-
-GROUP supplierGroup 'Информация о поставщике' : publicGroup;
-
-CLASS supplier 'Поставщик' : legalEntity;
-TABLE supplier (supplier);
-
-CLASS customer 'Покупатель' : legalEntity;
-TABLE customer (customer);
-
-companyContract 'Организация (ИД)' = DATA company (contract) IN idGroup AUTOSET;
-supplierContract 'Поставщик (ИД)' = DATA supplier (contract) IN idGroup AUTOSET;
-userContractSupplier 'Контракт (ИД)' = DATA contract (supplier) IN idGroup;
-//companySupplier 'Организация (ИД)' = DATA company (supplier) IN idGroup;
-
-countContracts 'Кол-во контрактов для отдел-поставщик' (supplier, departmentStore) =
-    GROUP SUM 1 IF (companyContract(contract) == companyDepartmentStore(departmentStore)
-                    AND supplierContract(contract) == supplier)
-    BY supplier, departmentStore;
-
-payerSupplier 'Плательщик НДС' = DATA BOOLEAN (supplier) IN supplierGroup;
-scheduleSupplier 'Разрешить доп.заказ товаров вне графика' = DATA BOOLEAN (supplier) IN supplierGroup;
-surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier) IN supplierGroup;
-allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (supplier) IN supplierGroup;
-afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (supplier) IN supplierGroup;
-forHoursSupplier 'За сколько часов до поставки закрыть заказ' = DATA INTEGER (supplier) IN supplierGroup;
-limitSupplier 'Кредитный лимит' = DATA INTEGER (supplier) IN docGroup;
-prioritySupplier 'Приоритет оплаты (1 - в первую очередь)' = DATA INTEGER (supplier) IN docGroup;
-signsSupplier 'Число знаков после запятой для строки накладной' = DATA INTEGER (supplier) IN supplierGroup;
-marksSupplier 'Число знаков после зап.в сумме к оплате по накладной' = DATA INTEGER (supplier) IN supplierGroup;
-periodicitySupply 'Переодичность поставок, дней' = DATA INTEGER (supplier) IN supplierGroup;
-
-returnLossSupplier '% потерь при возврате' (supplier) = DATA NUMERIC[8,3] (supplier) IN supplierGroup;
-
-emailOrderSupplierDepartmentStore 'e-mail для передачи заказа' = DATA STRING[100] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-contactSupplierDepartmentStore 'Контактная информация' = DATA STRING[500] (supplier, departmentStore)IN supplierGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
-controlSupplierDepartmentStore(supplier, departmentStore) = DATA yesNo (supplier, departmentStore)IN idGroup;
-
-nameControlSupplierDepartmentStore 'Контролировать ассортимент поставщика, ДА/НЕТ' (supplier, departmentStore) = name(UNION OVERRIDE
-    yesNo.no IF supplier IS supplier AND departmentStore IS departmentStore,
-    controlSupplierDepartmentStore(supplier, departmentStore)) IN supplierGroup;
-
-@defineHistorizableDoubleYesNo(sureSupplierDepartmentStore, 'Обязателен заказ поставщику, ДА/НЕТ', supplier, name, departmentStore, name, orderGroup);
-
-overrideSupplierDepartmentStoreDate(supplier, departmentStore, date) = UNION OVERRIDE
-    (TRUE IF UNION OVERRIDE emailOrderSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE, contactSupplierDepartmentStore(supplier, departmentStore) AND date IS DATE),
-    controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes AND date IS DATE,
-    sureSupplierDepartmentStoreDate(supplier, departmentStore, date) == yesNo.yes;
-
-isYesControlSupplierDepartmentStore(supplier, departmentStore) = controlSupplierDepartmentStore(supplier, departmentStore) == yesNo.yes;
-isYesSureSupplierDepartmentStoreDate(supplier, departmentStore, date) = sureSupplierDepartmentStoreDate(supplier, departmentStore, date) == yesNo.yes;
-
-//numberContractSupplier 'Договор по умолчанию' (supplier) = numberContract(userContractSupplier(supplier));
-defaultContractSupplier(supplier) = GROUP MAX contract AS contract BY supplierContract(contract);
-//dataDefaultContractSupplier(supplier) = numberContract(defaultContractSupplier(supplier));
-
-overrideContractSupplier 'Основной договор' (supplier) = UNION OVERRIDE defaultContractSupplier(supplier), userContractSupplier(supplier);
-numberOverrideContractSupplier 'Основной договор' (supplier) = numberContract(overrideContractSupplier(supplier)) IN lawGroup;
-CONSTRAINT supplier != supplierContract(userContractSupplier(supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
-equalsSupplierContract 'Основной договор' (supplier, contract) = userContractSupplier(supplier) == contract;
-
-inSupplierContract(supplier, contract) = supplierContract(contract) == supplier;
-inSupplierAccount(supplier, account) = legalEntityAccount(account) == supplier;
-inSupplierLicense(supplier, license) = legalEntityLicense(license) == supplier;
-
-inCompanyContract(company, contract) = companyContract(contract) == company;
-inCompanyAccount(company, account) = legalEntityAccount(account) == company;
-inCustomerAccount(customer, account) = legalEntityAccount(account) == customer;
-
-isInSupplierContractCompany(supplier, contract, company)  = inSupplierContract(supplier, contract) AND inCompanyContract(company, contract);
-isInCompanySupplier (company, supplier) = GROUP SUM 1 IF isInSupplierContractCompany(supplier, contract, company) BY company, supplier;
-
-nameSupplierContract 'Поставщик' (contract) = name(supplierContract(contract)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-nameCompanyContract 'Компания' (contract) = name(companyContract(contract)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-
-userContractCompanySupplier 'Контракт (ИД)' = DATA contract (company, supplier) IN idGroup;
-//numberContractCompanySupplier 'Договор по умолчанию' (company, supplier) = numberContract(userContractCompany(company));
-actingContract(contract) = contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate();
-actingContractCompanySupplier(company, supplier) = GROUP MAX actingContract(contract) BY companyContract(contract), supplierContract(contract);
-
-overrideContractCompanySupplier 'Основной договор' (company, supplier) = UNION OVERRIDE actingContractCompanySupplier(company, supplier), userContractCompanySupplier(company, supplier);
-numberOverrideContractCompanySupplier 'Основной договор' (company, supplier) = numberContract(overrideContractCompanySupplier(company, supplier)) IN lawGroup;
-CONSTRAINT supplier != supplierContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
-CONSTRAINT company != companyContract(userContractCompanySupplier(company, supplier)) CHECKED MESSAGE 'ошибка: Договор по умолчанию для компании должен соответствовать договорам компании';
-equalsCompanySupplierContract 'Основной договор' (company, supplier, contract) = userContractCompanySupplier(company, supplier) == contract;
-
-FORM contract 'Договор'
-    OBJECTS c=contract FIXED PANEL
-    PROPERTIES(c) numberContract, nameCompanyContract, nameSupplierContract, nameTypeContract, nameFormContract, dialogFormContract,
-                   delayContract, dialogDelayContract, dateFromContract, dateToContract, currencyContract, warnContract, banContract,
-                   noteContract
-
-    EDIT contract OBJECT c
-    EDIT contractProvider OBJECT c
-;
-
-DESIGN contract FROM DEFAULT {
-    main{
-        c.box {
-            childConstraints = TO THE BOTTOM;
-
-            NEW oneCase {
-                childConstraints = TO THE RIGHT;
-                title = 'Контрагенты';
-                ADD PROPERTY(numberContract);
-                ADD PROPERTY(nameCompanyContract);
-                ADD PROPERTY(nameSupplierContract);
-            }
-
-            NEW twoCase{
-                title = 'Даты';
-                childConstraints = TO THE RIGHT;
-                ADD PROPERTY(dateFromContract);
-                ADD PROPERTY(dateToContract);
-                ADD PROPERTY(currencyContract);
-            }
-            ADD c.contractGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-    }
-}
-
-FORM contracts 'Договоры'
-    OBJECTS c=contract
-    PROPERTIES(c) READONLY numberContract, nameCompanyContract, nameSupplierContract,
-                   nameTypeContract, dateFromContract, dateToContract
-
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-    ORDER BY nameCompanyContract, nameSupplierContract
-
-    DIALOG contract OBJECT c
-;
-
-FORM supplier 'Поставщик'
-    TREE treeStore y=STRING[3], t=chainStores, st=storeType, so=store
-    PROPERTIES READONLY OBJVALUE(y), name(t), name(st), name(so)
-
-    OBJECTS s=supplier FIXED PANEL, dt=DATE FIXED PANEL
-    PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
-                  postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
-                  accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
-                  UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier,
-                  surePercentSupplier, allowablePercentSupplier,
-                  afterDaysSupplier, periodicitySupply, forHoursSupplier, limitSupplier, prioritySupplier, signsSupplier,
-                  returnLossSupplier, marksSupplier //numberCurrentLicenseLegalEntity, numberOverrideContractSupplier, numberAccountLegalEntity
-
-    OBJECTS a=account
-    PROPERTIES(a) numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-
-    OBJECTS co=company
-    PROPERTIES(co) name
-
-    OBJECTS c=contractProvider
-    PROPERTIES(c)  READONLY numberContract, nameCompanyContract, nameFormContract, nameTypeContract, dateFromContract,
-                   dateToContract, currencyContract, noteContract, delayContract
-    PROPERTIES(c)  ADDFORM, EDITFORM, delete
-
-    OBJECTS l=license
-    PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete   //        tabaccoLicense
-
-    OBJECTS d=departmentStore
-    PROPERTIES(d) nameStoreDepartmentStore, name
-
-    PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
-
-    PROPERTIES(s, d) emailOrderSupplierDepartmentStore, contactSupplierDepartmentStore, nameControlSupplierDepartmentStore
-    PROPERTIES       overNameSureSupplierDepartmentStoreDate(s, d, dt) BACKGROUND dataSureSupplierDepartmentStoreDate(s, d, dt), overDialogSureSupplierDepartmentStoreDate(s, d)
-
-    PROPERTIES(s,a) equalsLegalEntityAccount
-
-    PROPERTIES(co, s)    numberOverrideContractCompanySupplier
-    PROPERTIES(co, s, c) equalsCompanySupplierContract
-
-    FILTERS stringEqualsAll(y),
-        inChainStoresStoreType (t, st),
-        inStoreTypeStore (st, so),
-        inChainStoresStoreTypeStoreDepartment(t, st, so, d),
-        inSupplierContract(s, c),
-        inSupplierAccount(s, a),
-        inCompanyContract(co, c),
-        inSupplierLicense(s, l)
-    FILTERGROUP filters1
-        FILTER 'Показывать юр. лица с которыми есть договор' 'F5' isInCompanySupplier(co, s) DEFAULT
-
-    FILTERGROUP filters9
-        FILTER 'Показывать только с заполненными полями' 'F10' overrideSupplierDepartmentStoreDate(s, d, dt)
-        FILTER 'Показывать только с заполненным полем: e-mail' 'F9' emailOrderSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: контактная инф-ия' 'F8' contactSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: контролировать пост-ка' 'F7' isYesControlSupplierDepartmentStore(s, d)
-        FILTER 'Показывать только с заполненным полем: обязателен заказ поставщику' 'F6' isYesSureSupplierDepartmentStoreDate(s, d, dt)
-
-    EDIT supplier OBJECT s
-;
-
-DESIGN supplier FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-        s.box {
-            childConstraints = TO THE RIGHT;
-
-            NEW oneCase {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(name(s));
-                ADD PROPERTY(fullNameLegalEntity(s));
-                ADD PROPERTY(addressLegalEntity(s));
-                ADD PROPERTY(phoneLegalEntity(s));
-                ADD PROPERTY(UNPLegalEntity(s));
-                ADD s.contactGroup;
-                ADD s.lawGroup {
-                    ADD PROPERTY(shortNameOwnershipLegalEntity(s));
-                };
-            };
-
-            NEW twoCase{
-                childConstraints = TO THE BOTTOM;
-                ADD s.docGroup;
-                ADD s.supplierGroup;
-            }
-        }
-
-        NEW prop.box BEFORE functions.box{
-            type = TABBED;
-            ADD a.box;
-            NEW firstCase {
-                title = 'Компания-договор';
-                childConstraints = TO THE RIGHT;
-                ADD co.box;
-                ADD c.box;
-            }
-
-            ADD l.box;
-
-            ADD d.box {
-
-                ADD dt.box BEFORE d.grid.box;
-                ADD treeStore.box BEFORE d.grid.box;
-                POSITION treeStore.box TO THE LEFT d.grid.box;
-                d.grid.box {
-                fillHorizontal = 3;
-                };
-            }
-
-        }
-    }
-}
-
-FORM suppliers 'Поставщики'
-    OBJECTS s=supplier
-    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
-    PROPERTIES(s) ADDFORM, EDITFORM, delete
-;
-
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
     PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
@@ -2293,24 +1986,21 @@ FORM company 'Компания'
 
     OBJECTS a=account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    FILTERS legalEntityAccount(a) == co
 
     OBJECTS s=supplier
-    PROPERTIES(s) name
+    PROPERTIES(s)       name
+    PROPERTIES(co, s)   numberContractCompanySupplier
 
-    OBJECTS c=contractProvider
+    OBJECTS c=contract
     PROPERTIES(c)  READONLY numberContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract,
-                   dateToContract, currencyContract, noteContract, delayContract
+                   dateToContract, nameCurrencyContract, noteContract, delayContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
+    FILTERS companyContract(c) == co,
+            supplierContract(c) == s
 
-    PROPERTIES(co, a) equalsLegalEntityAccount
-    PROPERTIES(co, s)    numberOverrideContractCompanySupplier
-    PROPERTIES(co, s, c) equalsCompanySupplierContract
-    FILTERS inCompanyContract(co, c),
-            inCompanyAccount(co, a),
-            inSupplierContract(s, c)
-
-    FILTERGROUP filters1
-        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F10' isInCompanySupplier(co, s) DEFAULT
+    FILTERGROUP filters
+        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F10' countContractCompanySupplier(co, s) DEFAULT
 
     EDIT company OBJECT co
 ;
@@ -2334,9 +2024,6 @@ DESIGN company FROM DEFAULT {
             NEW twoCase{
                 childConstraints = TO THE BOTTOM;
                 ADD co.docGroup;
-                ADD co.lawGroup {
-                    ADD PROPERTY(shortNameOwnershipLegalEntity(co));
-                };
             }
        }
 
@@ -2361,18 +2048,21 @@ FORM customer 'Покупатель'
     PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
                        postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
                        accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
-                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity, payerSupplier
+                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
     OBJECTS a=account
     PROPERTIES(a)      numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
                        MFOBankAccount, noteAccount, ADDOBJ, delete
 
     PROPERTIES(cu, a) equalsLegalEntityAccount
 
-    FILTERS inCustomerAccount(cu, a)
+    FILTERS legalEntityAccount(a) == cu
 
     EDIT customer OBJECT cu
 
 ;
+
+CLASS customer 'Покупатель' : legalEntity;
+TABLE customer (customer);
 
 FORM customers 'Покупатели'
     OBJECTS cu=customer
@@ -4595,7 +4285,7 @@ shipperListRegister (inputListRegister) += nameSupplierShipment(inputListRegiste
 supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumShipmentDetail(inputListRegisterDetail);
 supplierSumListRegisterDetailListRegister (inputListRegister) += supplierSumShipmentDetailShipment(inputListRegister);
 
-dateContractListRegister (listRegister) += dateContractShipment(listRegister);
+dataFromContractListRegister (listRegister) += dateFromContractShipment(listRegister);
 numberContractListRegister (listRegister) += numberContractShipment(listRegister);
 
 // ------ Запись значений по умолчанию ----- //
@@ -5945,7 +5635,7 @@ dateSupplyPreliminaryOrder 'Дата поставки' = DATA DATE (preliminaryO
 departmentStorePreliminaryOrder 'Отдел заказа (ИД)' = DATA departmentStore (preliminaryOrder) AUTOSET;
 nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN orderSupplierGroup AUTOSET;
 supplierPreliminaryOrder 'Поставщик заказа (ИД)' = DATA supplier (preliminaryOrder);
-nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder)) IN supplierGroup;
+nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder));
 genTimeTablePreliminaryOrder 'График поставок'  = DATA genTimeTable (preliminaryOrder);
 
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
@@ -6193,7 +5883,7 @@ isSupplierShipmentOrder 'Заявка поставщика поставки' (sh
 
 isDepartmentStoreShipmentOrder 'Заявка отдела поставки' (shipment, orderSupplier) = departmentStoreShipment(shipment)== departmentStoreOrderSupplier(orderSupplier);
 
-CONSTRAINT sureSupplierDepartmentStoreDate(supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment)) == yesNo.yes
+CONSTRAINT sureSupplierStockDate(supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment)) == yesNo.yes
     AND NOT sumOrdersShipment (shipment)  MESSAGE 'Отсутствует обязательный заказ для данного поставщика';
 
 //контроль ассортимента поставки по заказам с учетом ограничений по поставщику
@@ -6217,14 +5907,16 @@ percentOrderedShipmentDetailsShipment 'Процент позиций поста�
     quantityOrderedShipmentDetailsShipment(shipment),
     UNION OVERRIDE 1 IF shipment IS shipment, countShipmentDetailShipment(shipment)) IN shipmentOrderGroup;
 
-surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' (shipment) = UNION OVERRIDE 0 AND shipment IS shipment, [DATA INTEGER (shipment)](shipment);
+controlSupplierStockShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo (shipment);
+controlSupplierStockShipment(shipment) <- controlSupplierStockDate (supplierShipment(shipment), departmentStoreShipment(shipment), dateShipment(shipment))
+                WHEN CHANGED(supplierShipment(shipment));
+
+surePercentSupplierShipment 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (shipment);
 surePercentSupplierShipment (shipment) <- surePercentSupplier(supplierShipment (shipment)) WHEN CHANGED(supplierShipment(shipment));
-controlSupplierDepartmentStoreShipment 'Контролировать ассортимент поставщика' (shipment) = DATA yesNo(shipment);
-controlSupplierDepartmentStoreShipment(shipment) <- controlSupplierDepartmentStore (supplierShipment(shipment), departmentStoreShipment(shipment)) WHEN CHANGED(supplierShipment(shipment)); //неполный случай, нужно доделывать
 
 enoughOrderedShipmentDetailsShipment(shipment) = percentOrderedShipmentDetailsShipment(shipment) >= surePercentSupplierShipment (shipment);
 
-CONSTRAINT controlSupplierDepartmentStoreShipment(shipment) == yesNo.yes AND NOT enoughOrderedShipmentDetailsShipment (shipment)
+CONSTRAINT controlSupplierStockShipment(shipment) == yesNo.yes AND NOT enoughOrderedShipmentDetailsShipment (shipment)
             MESSAGE 'Процент заказанных позиций меньше допустимого для поставщика';
 
 isAvailableOrderShipment 'Заявка допустимая для заказа' (shipment, orderSupplier) = dateShipment (shipment) <= sumDate(dateOrderSupplier (orderSupplier), UNION OVERRIDE 0 IF shipment IS shipment, afterDaysSupplier (supplierShipment(shipment)));
@@ -11669,8 +11361,10 @@ NAVIGATOR {
             ADD dialogAccountantLegalEntity;
             ADD addPhoneLegalEntity;
             ADD dialogPhoneLegalEntity;
-            ADD addSureSupplierDepartmentStore;
-            ADD dialogSureSupplierDepartmentStore;
+            ADD addControlSupplierStock;
+            ADD dialogControlSupplierStock;
+            ADD addSureSupplierStock;
+            ADD dialogSureSupplierStock;
             ADD addAddressBank;
             ADD dialogAddressBank;
             ADD addFormContract;

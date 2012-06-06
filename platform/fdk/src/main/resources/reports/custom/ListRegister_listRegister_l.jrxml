@@ -82,7 +82,7 @@
 	<field name="retailPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="numberContractListRegister" class="java.lang.String"/>
-	<field name="dateContractListRegister" class="java.util.Date"/>
+	<field name="dataFromContractListRegister" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{l})]]></groupExpression>
 	</group>
@@ -346,7 +346,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Договор: № "+$F{numberContractListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{dateContractListRegister})+" года"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Договор: № "+$F{numberContractListRegister}+" от "+platform.base.BaseUtils.formatRussian($F{dataFromContractListRegister})+" года"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
