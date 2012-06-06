@@ -170,7 +170,7 @@ EXTEND FORM departmentStore
 
 // -------------------------------------- Формы --------------------------------------------- //
 
-FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
+FORM sumAccountDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = departmentStore FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
@@ -186,7 +186,7 @@ FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
                sumItemOutAccountDocumentDepartmentStoreDateInterval, sumContainerOutAccountDocumentDepartmentStoreDateInterval
 
     OBJECTS il = incAccountDocumentLedger
-    PROPERTIES(il) SELECTOR iDateTime = dateTimeAccountDocumentLedger, objectClassName, descriptionAccountDocumentLedger,
+    PROPERTIES(il) SELECTOR iDateTime = dateTimeAccountDocumentLedger, iObjName = objectClassName, iDescription = descriptionAccountDocumentLedger,
                    sumItemIncAccountDocumentLedger, sumContainerIncAccountDocumentLedger, sumIncAccountDocumentLedger
     FILTERS isPostedAccountDocumentLedger(il),
             departmentStoreAccountDocumentLedger(il) == ds,
@@ -195,7 +195,7 @@ FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
     ORDER BY iDateTime
 
     OBJECTS ol = outAccountDocumentLedger
-    PROPERTIES(ol) SELECTOR oDateTime = dateTimeAccountDocumentLedger, objectClassName, descriptionAccountDocumentLedger,
+    PROPERTIES(ol) SELECTOR oDateTime = dateTimeAccountDocumentLedger, oObjName = objectClassName, oDescription = descriptionAccountDocumentLedger,
                    sumItemOutAccountDocumentLedger, sumContainerOutAccountDocumentLedger, sumOutAccountDocumentLedger
     FILTERS isPostedAccountDocumentLedger(ol),
             departmentStoreAccountDocumentLedger(ol) == ds,
@@ -204,53 +204,6 @@ FORM sumAccountDocumentLedgerPrint 'Товарный отчет' PRINT
     ORDER BY oDateTime
 ;
 
-DESIGN sumAccountDocumentLedgerPrint FROM DEFAULT {
-    PROPERTY(objFrom) {
-        caption = 'Дата (с)';
-    }
-    PROPERTY(objTo) {
-        caption = 'Дата (по)';
-    }
-}
-toPrintAccountDocumentLedger 'Тов. отчет' (departmentStore, dtInFrom, dtOutTo) =
-    ACTION FORM sumAccountDocumentLedgerPrint OBJECTS ds = (departmentStore AS departmentStore), dtFrom = (dtInFrom AS DATE), dtTo = (dtOutTo AS DATE)  IMAGE 'print.png' IN printGroup;
-
-
-FORM sumAccountDocumentLedger 'Товарный отчет'
-    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
-            ds = departmentStore FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name
-    PROPERTIES(ds) nameMRPDepartmentStore, namePositionMRPDepartmentStore, nameBookkeeperDepartmentStore,
-                   namePositionBookkeeperDepartmentStore, namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
-    PROPERTIES READONLY sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
-                   sumAccountADocumentLedgerDate(ds, dtTo)
-    PROPERTIES(ds, dtFrom, dtTo) READONLY countIncAccountDocumentDepartmentStoreDateInterval, countOutAccountDocumentDepartmentStoreDateInterval,
-                   sumItemIncAccountDocumentDepartmentStoreDateInterval, sumContainerIncAccountDocumentDepartmentStoreDateInterval,
-//               subtotalItemIncAccountDocumentDepartmentStoreDateInterval, subtotalContainerIncAccountDocumentDepartmentStoreDateInterval,
-                   sumItemOutAccountDocumentDepartmentStoreDateInterval, sumContainerOutAccountDocumentDepartmentStoreDateInterval
-    PROPERTIES READONLY sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo)
-
-    PROPERTIES(ds, dtFrom, dtTo) FORCE PANEL toPrintAccountDocumentLedger
-
-    OBJECTS il = incAccountDocumentLedger
-    PROPERTIES(il) READONLY iDateTime = dateTimeAccountDocumentLedger, objectClassName, descriptionAccountDocumentLedger,
-                   sumItemIncAccountDocumentLedger, sumContainerIncAccountDocumentLedger, sumIncAccountDocumentLedger
-    FILTERS isPostedAccountDocumentLedger(il),
-            departmentStoreAccountDocumentLedger(il) == ds,
-            dateAccountDocumentLedger(il) >= dtFrom,
-            dateAccountDocumentLedger(il) <= dtTo
-    ORDER BY iDateTime
-
-    OBJECTS ol = outAccountDocumentLedger
-    PROPERTIES(ol) READONLY oDateTime = dateTimeAccountDocumentLedger, objectClassName, descriptionAccountDocumentLedger,
-                   sumItemOutAccountDocumentLedger, sumContainerOutAccountDocumentLedger, sumOutAccountDocumentLedger
-    FILTERS isPostedAccountDocumentLedger(ol),
-            departmentStoreAccountDocumentLedger(ol) == ds,
-            dateAccountDocumentLedger(ol) >= dtFrom,
-            dateAccountDocumentLedger(ol) <= dtTo
-    ORDER BY oDateTime
-;
 
 DESIGN sumAccountDocumentLedger FROM DEFAULT {
     NEW row BEFORE il.box {
@@ -297,28 +250,33 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
     }
 
     NEW OneCase BEFORE HeaderCase{
-        childConstraints = TO THE RIGHT;
-        NEW dateCase {
-            title = 'Даты';
+         childConstraints = TO THE BOTTOM;
+         NEW container11 {
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY(objFrom) {
-                caption = 'Дата (с)';
+            NEW dateCase {
+                title = 'Даты';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objFrom) {
+                    caption = 'Дата (с)';
+                }
+                ADD PROPERTY(objTo) {
+                    caption = 'Дата (по)';
+                }
             }
-            ADD PROPERTY(objTo) {
-                caption = 'Дата (по)';
+            NEW departmentCase {
+                title = 'Отдел';
+                ADD PROPERTY (name(ds)) {
+                    caption = 'Название';
+                };
             }
-        }
-        NEW departmentCase {
-            title = 'Отдел';
-            ADD PROPERTY (name(ds)) {
-                caption = 'Название';
-            };
-        }
-    }
-
-    NEW printCase {
-        title = 'Печатные формы';
-        ADD PROPERTY (toPrintAccountDocumentLedger(ds, dtFrom, dtTo));
+         }
+         NEW container12 {
+            title = 'Организация';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (nameCompanyDepartmentStore(ds));
+            ADD PROPERTY (nameStoreDepartmentStore(ds));
+            ADD PROPERTY (UNPDepartmentStore(ds));
+         }
     }
     ADD functions.box;
 }

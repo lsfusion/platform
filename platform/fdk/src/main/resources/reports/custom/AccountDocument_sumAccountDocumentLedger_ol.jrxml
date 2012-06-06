@@ -16,8 +16,8 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="ol" class="java.lang.Integer"/>
-	<field name="objectClassName1" class="java.lang.String"/>
-	<field name="descriptionAccountDocumentLedger1" class="java.lang.String"/>
+	<field name="oObjName" class="java.lang.String"/>
+	<field name="oDescription" class="java.lang.String"/>
 	<field name="sumItemOutAccountDocumentLedger" class="java.lang.Double"/>
 	<field name="sumContainerOutAccountDocumentLedger" class="java.lang.Double"/>
 	<field name="sumOutAccountDocumentLedger" class="java.lang.Double"/>
@@ -36,7 +36,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="299" height="12"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{descriptionAccountDocumentLedger1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{oDescription}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="12"/>

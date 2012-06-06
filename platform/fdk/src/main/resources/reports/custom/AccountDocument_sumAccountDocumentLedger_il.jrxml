@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="il" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="78"/>
+	<property name="ireport.x" value="34"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -16,8 +16,8 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="il" class="java.lang.Integer"/>
-	<field name="objectClassName" class="java.lang.String"/>
-	<field name="descriptionAccountDocumentLedger" class="java.lang.String"/>
+	<field name="iObjName" class="java.lang.String"/>
+	<field name="iDescription" class="java.lang.String"/>
 	<field name="sumItemIncAccountDocumentLedger" class="java.lang.Double"/>
 	<field name="sumContainerIncAccountDocumentLedger" class="java.lang.Double"/>
 	<field name="sumIncAccountDocumentLedger" class="java.lang.Double"/>
@@ -43,7 +43,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="299" height="12"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{descriptionAccountDocumentLedger}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{iDescription}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>

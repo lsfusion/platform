@@ -1624,6 +1624,7 @@ DESIGN item FROM DEFAULT {
     }
 }
 
+toEditItem 'Ред-ть товар' (item) = ACTION FORM item OBJECTS i MODAL TOOLBAR;
 inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
 
 FORM items 'Товары'
@@ -10337,6 +10338,7 @@ FORM balanceItemDepartment 'Остатки на дату'
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  idBarcodeSku
+    PROPERTIES        toEditItem(i)
     FILTERS           isParentItemGroupSku(g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
 
@@ -10447,6 +10449,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  idBarcodeSku
+    PROPERTIES        toEditItem(i)
     FILTERS           nameAttributeItemGroupItem (g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
@@ -10629,9 +10632,10 @@ FORM balanceStockBatchDate 'Остатки по партиям на дату'
     ORDER BY gname
 
     OBJECTS           ib = (i=item, bt=batch)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt) //  barcodeBarcodeSku
+    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt)     //  barcodeBarcodeSku
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, dateExpireBatch
     PROPERTIES        balanceBBatchDateTime(bt, t)
+    PROPERTIES        toEditItem(i)
     ORDER BY          dateTimeBatch
 
     PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
@@ -10704,6 +10708,7 @@ FORM curBalanceStockBatchDate 'Текущие остатки по партиям
     PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt) //  barcodeBarcodeSku
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, dateExpireBatch
     PROPERTIES        currentBalanceBatch(bt)
+    PROPERTIES        toEditItem(i)
     ORDER BY          dateTimeBatch
 
     PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
@@ -11238,8 +11243,6 @@ DESIGN torgSales FROM DEFAULT {
 
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
-toEtitItem 'Ред-ть товар' (item) = ACTION FORM item OBJECTS i MODAL TOOLBAR;
-
 FORM isSupplierItemDepartmentStore 'Ассортимент поставщиков'
 
     OBJECTS t=DATE FIXED PANEL
@@ -11257,7 +11260,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), idBarcodeSku(i)
-    PROPERTIES        toEtitItem(i)
+    PROPERTIES        toEditItem(i)
     ORDER BY          nameDep
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
@@ -11527,7 +11530,6 @@ NAVIGATOR {
         ADD consignmentSimpleVertical;
         ADD consignmentSimpleAttach;
         ADD specificationPrint;
-        ADD sumAccountDocumentLedgerPrint;
         ADD wastagePrint;
         ADD naturalLossPrint;
         ADD writeOffPrint;
