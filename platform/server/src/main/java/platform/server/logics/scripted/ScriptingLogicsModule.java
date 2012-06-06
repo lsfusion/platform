@@ -84,6 +84,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
 
+    public BusinessLogics<?> getBL() {
+        return BL;
+    }
+
     public enum State {INIT, GROUP, CLASS, PROP, TABLE, INDEX}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
@@ -242,7 +246,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractGroup group = groupResolver.resolve(name);
         checkGroup(group, name);
         return group;
@@ -647,7 +651,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LP addScriptedCustomActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCustomActionProp(" + javaClassName + ");");
         try {
-            return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(BL.getClass()).newInstance(BL));
+            return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this));
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {
