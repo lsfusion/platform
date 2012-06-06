@@ -195,8 +195,6 @@ META defineDocumentHeaderRevaluation (object)
     nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
     revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
         WHEN object IS object;
-
-    showRevaluation###object 'Есть переоценка' (object) = DATA BOOLEAN (object) IN documentPrmGroup;
 END
 
 // ------------------------- Автоматическое изменение цен ---------------------------------- //
@@ -5716,6 +5714,10 @@ quantityPriceChangeDisparityDetail 'Количество' (priceChangeDisparityD
 
 @metaCodeIsPriceChangeWrong(disparity);
 
+needRevaluationDisparityDetail (disparityDetail) = UNION OVERRIDE needToPriceChangeInputDisparityDetail (disparityDetail), needToPriceChangeDisparityDetail (disparityDetail);
+
+showRevaluationDisparity 'Отображать комиссию при пересорте' (disparity) = GROUP SUM 1 IF needRevaluationDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
 CLASS naturalLoss 'Ведомость естественной убыли' : historyObject, externalObject, numberedObject;
@@ -7815,7 +7817,7 @@ FORM disparity 'Пересортица'
                     dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
                     inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
-                    showRevaluationDisparity, numberDisposalDisparity SHOWIF showRevaluationDisparity(dis),
+                    numberDisposalDisparity SHOWIF showRevaluationDisparity(dis),
                     nameRevaluationCommitteeDisparity SHOWIF showRevaluationDisparity(dis),
                     inputMultipleItemsDisparity TODRAW d
 
@@ -7858,7 +7860,6 @@ DESIGN disparity FROM DEFAULT {
                     ADD PROPERTY(timeDisparity);
                 }
                 ADD dis.documentPrmGroup{
-                    POSITION PROPERTY(showRevaluationDisparity) TO THE RIGHT PROPERTY(numberDisposalDisparity);
                 }
             }
                 ADD dis.documentSumGroup {
