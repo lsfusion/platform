@@ -407,12 +407,18 @@ PROPERTIES(cg)  delete
 
 DESIGN statisticGroups FROM DEFAULT {
 
-    POSITION treeGroups.box TO THE LEFT cg.box;
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
 
-    treeGroups.tree {
-        fillHorizontal = 0.5;
+        ADD treeGroups.box;
+
+        ADD cg.box{
+            fillHorizontal = 4;
+        }
     }
 
+    ADD functions.box;
 }
 
 FORM statisticGroupDialog 'Статистические группы'
@@ -1290,13 +1296,25 @@ FORM naturalLossItem 'Справочник норм естественной у�
 
 DESIGN naturalLossItem FROM DEFAULT {
 
-    POSITION treeNaturalLossItem.box TO THE LEFT sg.box;
-    POSITION treeNaturalLossItem.box TO THE LEFT d.box;
-    POSITION d.box TO THE BOTTOM sg.box;
+    NEW topContainer {
 
-    treeNaturalLossItem.tree {
-        fillHorizontal = 0.5;
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+
+        ADD treeNaturalLossItem.box;
+
+        NEW firstCase {
+
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 4;
+
+            ADD sg.box;
+            ADD d.box;
+        }
     }
+
+    ADD functions.box;
 
     PROPERTY (delete(n)) {
         caption = 'Удалить';
@@ -1309,7 +1327,6 @@ DESIGN naturalLossItem FROM DEFAULT {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
-
 }
 
 FORM naturalLossItems 'Справочник норм естественной убыли'
@@ -1331,13 +1348,25 @@ FORM naturalLossItems 'Справочник норм естественной у
 
 DESIGN naturalLossItems FROM DEFAULT {
 
-    POSITION treeNaturalLossItem.box TO THE LEFT sg.box;
-    POSITION treeNaturalLossItem.box TO THE LEFT d.box;
-    POSITION d.box TO THE BOTTOM sg.box;
+    NEW topContainer {
 
-    treeNaturalLossItem.tree {
-        fillHorizontal = 0.5;
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+
+        ADD treeNaturalLossItem.box;
+
+        NEW firstCase {
+
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 4;
+
+            ADD sg.box;
+            ADD d.box;
+        }
     }
+
+    ADD functions.box;
 }
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
@@ -1615,15 +1644,21 @@ FORM items 'Товары'
 ;
 
 DESIGN items FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
 
-    treeGroup.tree {
-        fillHorizontal = 0.4;
+    NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD treeGroup.tree {
+                fillHorizontal = 0.4;
+            }
+
+            ADD i.grid {
+                defaultComponent = TRUE;
+            }
     }
 
-    i.grid {
-        defaultComponent = TRUE;
-    }
+    ADD functions.box;
 }
 
 
@@ -1698,15 +1733,22 @@ FORM itemGroups 'Товарные группы'
 
 DESIGN itemGroups FROM DEFAULT {
 
-    POSITION treeGroups.box TO THE LEFT cg.box;
+    NEW topContainer {
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
 
-    treeGroups.tree {
-        fillHorizontal = 0.5;
+        ADD treeGroups.box ;
+
+        ADD cg.box{
+            fillHorizontal = 4;
+        }
     }
 
     PROPERTY(extSID) {
         maximumCharWidth = 7;
     }
+
+    ADD functions.box;
 }
 
 FORM itemGroupDialog 'Товарные группы'
@@ -1736,11 +1778,25 @@ FILTERGROUP assortment
 EDIT assortment OBJECT a;
 
 FORM assortments 'Ассортименты'
-OBJECTS a=assortment, i=item
-PROPERTIES(a) READONLY name, infoAssortment
-PROPERTIES(a) ADDFORM, EDITFORM, delete
-PROPERTIES(i) READONLY nameAttributeItem
-FILTERS itemAssortment(a, i);
+    OBJECTS a=assortment, i=item
+    PROPERTIES(a) READONLY name, infoAssortment
+    PROPERTIES(a) ADDFORM, EDITFORM, delete
+    PROPERTIES(i) READONLY nameAttributeItem
+    FILTERS itemAssortment(a, i)
+;
+
+DESIGN assortments FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+        ADD a.box;
+        ADD i.box;
+    }
+
+    ADD functions.box;
+}
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
@@ -2733,6 +2789,19 @@ FORM groupsScales 'Группы весов'
     FILTERS isGroupScalesScales(grs, s)
 ;
 
+DESIGN groupsScales FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grs.box;
+        ADD s.box;
+    }
+    ADD functions.box;
+}
+
 FORM groupCashRegister 'Группа касс'
 
     OBJECTS grc=groupCashRegister FIXED PANEL
@@ -2763,6 +2832,19 @@ FORM groupsCashRegister 'Группы касс'
     FILTERS isGroupCashRegisterCashRegister(grc, c)
 ;
 
+DESIGN groupsCashRegister FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grc.box;
+        ADD c.box;
+    }
+    ADD functions.box;
+}
+
 FORM groupCheck 'Группа прайс чекеров'
     OBJECTS grch=groupCheck FIXED PANEL
     PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
@@ -2786,6 +2868,19 @@ FORM groupsCheck 'Группы прайс чекеров'
     PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, nameModelCheckModel, portMachinery, useMachinery
     FILTERS isGroupCheckCheck(grch, ch)
 ;
+
+DESIGN groupsCheck FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grch.box;
+        ADD ch.box;
+    }
+    ADD functions.box;
+}
 
 FORM groupTerminal 'Группа ТСД'
 
@@ -2819,6 +2914,19 @@ FORM groupsTerminal 'Группы ТСД'
     FILTERS isGroupTerminalTerminal(grt, t)
 ;
 
+DESIGN groupsTerminal FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grt.box;
+        ADD t.box;
+    }
+    ADD functions.box;
+}
+
 FORM groupTerminalDocumentType 'Группа типов документов'
 
     OBJECTS gtdt=groupTerminalDocumentType FIXED PANEL
@@ -2848,6 +2956,19 @@ FORM groupsTerminalDocumentType 'Группы типов документов'
     FILTERS groupTerminalDocumentTypeTerminalDocumentType (tdt) == gtdt
 ;
 
+DESIGN groupsTerminalDocumentType FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD gtdt.box;
+        ADD tdt.box;
+    }
+    ADD functions.box;
+}
+
 FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
     OBJECTS h=terminalHandbookType
     PROPERTIES(h)  name, idTerminalHandbookType
@@ -2875,19 +2996,29 @@ DESIGN equipmentServer FROM DEFAULT {
 
     main {
 
-        NEW specContainer BEFORE functions.box {
-            type = TABBED;
+        NEW topContainer {
 
-            NEW errorContainer {
-            title = 'Ошибки';
-            ADD e.box;
-            PROPERTY(erTraceEquipmentServerError(e)) {
-               fillHorizontal = 1;
-               panelLabelAbove = TRUE;
-               }
+            type = SPLITV;
+            childConstraints =  TO THE BOTTOM;
+
+            ADD es.box;
+
+            NEW specContainer {
+                type = TABBED;
+
+                NEW errorContainer {
+                title = 'Ошибки';
+                ADD e.box;
+                PROPERTY(erTraceEquipmentServerError(e)) {
+                fillHorizontal = 1;
+                panelLabelAbove = TRUE;
+                }
+                }
+                ADD l.box;
             }
-            ADD l.box;
         }
+
+        ADD functions.box;
     }
 }
 
@@ -2937,6 +3068,19 @@ FORM recipes 'Рецепты блюд'
 
     FILTERS   inRecipeRecipeDetail(r, rd)
 ;
+
+DESIGN recipes FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD r.box;
+        ADD rd.box;
+    }
+    ADD functions.box;
+}
 //---------------------------- Документы качества ----------------------------------------//
 
 CLASS ABSTRACT paper 'Документы качества' : named;
@@ -3466,17 +3610,31 @@ FORM cuttings 'Карты проработки'
 DESIGN cuttings FROM DEFAULT {
     main{
 
-       NEW cut2.box BEFORE functions.box{
-            ADD dep.box { title = 'Подразделение'; }
+        NEW topContainer {
 
-            ADD i.box { title = 'Товар, для которого действует карта'; }
-            POSITION dep.box TO THE LEFT i.box;
-       }
-       NEW cut1.box BEFORE cut2.box{
-            ADD d.box;
+            type = SPLITV;
+            childConstraints = TO THE RIGHT;
 
-       }
-   }
+            NEW firstCase{
+
+                type = SPLITV;
+
+                ADD c.box;
+                ADD d.box;
+            }
+
+            NEW secondCase {
+
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+
+                ADD dep.box { title = 'Подразделение'; }
+                ADD i.box { title = 'Товар, для которого действует карта'; }
+            }
+        }
+
+        ADD functions.box;
+    }
 }
 
 FORM seriesNumberCuttingStudyInputDetail 'Возможные карты проработки'
@@ -6905,6 +7063,19 @@ FORM cellScales 'Ячейки весов'
 
     FILTERS isGroupScalesCellScales(grs, cs)
 ;
+
+DESIGN cellScales FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grs.box;
+        ADD cs.box;
+    }
+    ADD functions.box;
+}
 
 isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);

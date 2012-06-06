@@ -173,3 +173,22 @@ FORM taxes 'Налоги'
     FILTERS  taxRange(ra) == t,
              inRangeTaxUnit(ra, u)
 ;
+
+DESIGN taxes FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD t.box;
+        NEW firstCase {
+
+            type = SPLITV;
+
+            ADD ra.box;
+            ADD u.box;
+        }
+    }
+    ADD functions.box;
+}

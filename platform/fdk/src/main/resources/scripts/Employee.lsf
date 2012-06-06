@@ -91,6 +91,20 @@ FORM employees 'Сотрудники'
     FILTERS inEmployeeDivisionEmployee(d, e)
 ;
 
+DESIGN employees FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD e.box;
+        ADD d.box;
+    }
+
+    ADD functions.box;
+}
+
 FORM employeeDialog 'Сотрудники'
     OBJECTS e=employee
     PROPERTIES(e) userFirstName, userLastName, namePositionEmployee
