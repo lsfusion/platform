@@ -206,7 +206,7 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
 
 
 DESIGN sumAccountDocumentLedger FROM DEFAULT {
-    NEW row BEFORE il.box {
+    NEW row{
         childConstraints = TO THE RIGHT;
         title = 'Комиссия';
         NEW row1 {
@@ -278,6 +278,16 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
             ADD PROPERTY (UNPDepartmentStore(ds));
          }
     }
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD il.box;
+        ADD ol.box;
+    }
+
     ADD functions.box;
 }
 

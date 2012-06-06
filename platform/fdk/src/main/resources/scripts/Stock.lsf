@@ -311,7 +311,7 @@ END
 
 // ----------------------------------------------- Формы --------------------------------------------------- //
 
-FORM costItemLedger 'Себестоимость (операции)'
+FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bil = balanceSkuLedger
     PROPERTIES(bil) READONLY dateTimeBalanceSkuLedger, descriptionBalanceSkuLedger, nameSkuBalanceSkuLedger, nameStockBalanceSkuLedger,
                              quantityBalanceSkuLedger, costedBalanceSkuLedger
@@ -333,7 +333,29 @@ FORM costItemLedger 'Себестоимость (операции)'
     PROPERTIES() setBalanceSkuLedgerBatchCost, resetBalanceSkuLedgerBatchCost, clearBalanceSkuLedgerBatchCost
 ;
 
-FORM costItemBatchLedger 'Себестоимость (партии)'
+
+DESIGN costSkuLedger FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD bil.box;
+        ADD bt.box;
+    }
+
+    NEW buttonCont{
+        childConstraints = TO THE RIGHT;
+        ADD PROPERTY(setBalanceSkuLedgerBatchCost);
+        ADD PROPERTY(resetBalanceSkuLedgerBatchCost);
+        ADD PROPERTY(clearBalanceSkuLedgerBatchCost);
+    }
+
+    ADD functions.box;
+}
+
+FORM costSkuBatchLedger 'Себестоимость (партии)'
     OBJECTS i = sku FIXED PANEL
     PROPERTIES(i) SELECTOR nameSku//, idBarcodeSku
 
@@ -361,3 +383,17 @@ FORM costItemBatchLedger 'Себестоимость (партии)'
 
 //    PROPERTIES() setBalanceSkuLedgerBatchCost, resetBalanceSkuLedgerBatchCost, clearBalanceSkuLedgerBatchCost
 ;
+
+DESIGN costSkuBatchLedger FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD bt.box;
+        ADD bil.box;
+    }
+
+    ADD functions.box;
+}

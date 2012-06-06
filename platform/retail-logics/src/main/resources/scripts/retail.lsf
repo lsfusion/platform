@@ -3071,11 +3071,20 @@ FORM priceChangeDocuments 'Акты переоценки'
 
 DESIGN priceChangeDocuments FROM DEFAULT{
     main{
-        ADD pc.box;
-        ADD pcd.box;
+
+        NEW topContainer{
+
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD pc.box;
+            ADD pcd.box;
+        }
+
         ADD pc.printGroup;
-        ADD functions.box;
     }
+
+    ADD functions.box;
 }
 
 //---------------------------- Загрузка в ВУ  ----------------------------------------//
@@ -10389,15 +10398,6 @@ DESIGN curBalanceItemDepartment FROM DEFAULT {
     }
 }
 
-DESIGN costItemLedger FROM DEFAULT {
-    NEW buttonCont BEFORE functions.box {
-        childConstraints = TO THE RIGHT;
-        ADD PROPERTY(setBalanceSkuLedgerBatchCost);
-        ADD PROPERTY(resetBalanceSkuLedgerBatchCost);
-        ADD PROPERTY(clearBalanceSkuLedgerBatchCost);
-    }
-}
-
 //------------------------------------Отчет по таре-------------------------------------------//
 
 nameAttributeItemBatch 'Товар' (batch) = nameAttributeItem(skuBatch(batch));
@@ -10626,23 +10626,34 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
 DESIGN salesItemDepartmentStore FROM DEFAULT {
 
     main{
-        NEW firstCase {
+
+    NEW topContainer{
+
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+
+            NEW firstCase {
+
+                type = SPLITV;
                 childConstraints = TO THE BOTTOM;
+
                 ADD treeStore.box {title = 'Магазины';};
                 ADD treeGroups.box {title = 'Товарные группы';};
-        }
+            }
 
-        NEW secondCase {
+            NEW secondCase {
+
+                type = SPLITV;
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
+
                 ADD dates.box;
                 ADD dsi.box {fillVertical = 2;}
-
-        }
-        POSITION firstCase TO THE LEFT secondCase;
-
-        ADD functions.box;
+            }
     }
+    }
+
+    ADD functions.box;
 }
 
 //---------------------------------------------- Формы стат. отчетов -------------------------------------//
@@ -10827,22 +10838,34 @@ FORM statisticalReport '12-Торг (продажи) справочно'
 DESIGN statisticalReport FROM DEFAULT {
 
     main{
-        NEW firstCase {
+
+        NEW topContainer{
+
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            NEW firstCase {
+
+                type = SPLITV;
                 childConstraints = TO THE BOTTOM;
+
                 ADD treeStore.box {title = 'Магазины';};
                 ADD treeGroups.box {title = 'Статистические группы';};
-        }
+            }
 
-        NEW secondCase {
+            NEW secondCase {
+
+                type = SPLITV;
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
+
                 ADD dates.box;
                 ADD dsi.box {fillVertical = 2;
                     title = 'Показатели по продажам в номинальных еденицах';
                 }
-
+            }
         }
-        POSITION firstCase TO THE LEFT secondCase;
+
         NEW row {
             title = 'Суммы';
             childConstraints = TO THE BOTTOM;
@@ -10859,9 +10882,11 @@ DESIGN statisticalReport FROM DEFAULT {
             ADD PROPERTY(retailSumSaleDepartmentDateFromTo(ds, dFrom, dTo));
             }
         }
-        ADD functions.box;
     }
+
+    ADD functions.box;
 }
+
                 ///////////////--------по регионам и компании----------/////////////////
 regionDepartmentStore(departmentStore) = regionStore(storeDepartmentStore(departmentStore));
 
@@ -11335,10 +11360,9 @@ NAVIGATOR {
     NEW accountInfo 'Сводная информация' TO formsToolbar{
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
-        ADD costItemLedger;
         NEW costLedger 'Себестоимость' {
-            ADD costItemLedger;
-            ADD costItemBatchLedger;
+            ADD costSkuLedger;
+            ADD costSkuBatchLedger;
         }
         NEW balance 'Остатки' {
             NEW balanceItem 'Остатки по товару' {
