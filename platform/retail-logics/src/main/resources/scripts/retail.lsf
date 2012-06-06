@@ -11067,6 +11067,8 @@ DESIGN torgSales FROM DEFAULT {
 
 //---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
 
+toEtitItem 'Ред-ть товар' (item) = ACTION FORM item OBJECTS i MODAL TOOLBAR;
+
 FORM isSupplierItemDepartmentStore 'Ассортимент поставщиков'
 
     OBJECTS t=DATE FIXED PANEL
@@ -11084,6 +11086,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), idBarcodeSku(i)
+    PROPERTIES        toEtitItem(i)
     ORDER BY          nameDep
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
