@@ -26,7 +26,7 @@
 	<field name="nameDepartmentStoreSpecification" class="java.lang.String"/>
 	<field name="dateSpecification" class="java.util.Date"/>
 	<field name="dateToSpecification" class="java.util.Date"/>
-	<field name="fullNameCustomerSpecification" class="java.lang.String"/>
+	<field name="nameCustomerSpecification" class="java.lang.String"/>
 	<field name="UNPCustomerSpecification" class="java.lang.String"/>
 	<field name="addressCustomerSpecification" class="java.lang.String"/>
 	<field name="numberAccountCustomerSpecification" class="java.lang.String"/>
@@ -46,21 +46,20 @@
 	<field name="CBUBankAccountCompanySpecification" class="java.lang.String"/>
 	<field name="nameObjectiveAcquiringSpecification" class="java.lang.String"/>
 	<field name="noteSpecification" class="java.lang.String"/>
-	<field name="quantitySpecification" class="java.lang.Double"/>
-	<field name="sumWithoutNDSSpecification" class="java.lang.Double"/>
-	<field name="sumNDSSpecification" class="java.lang.Double"/>
-	<field name="sumSpecification" class="java.lang.Double"/>
+	<field name="quantitySpecificationDetailSpecification" class="java.lang.Double"/>
+	<field name="calcVATSumSpecificationDetailSpecification" class="java.lang.Double"/>
+	<field name="calcSaleSumSpecificationDetailSpecification" class="java.lang.Double"/>
+	<field name="retailSumSpecificationDetailSpecification" class="java.lang.Double"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="indexSpecificationDetail" class="java.lang.Integer"/>
 	<field name="idBarcodeSkuSpecificationDetail" class="java.lang.String"/>
 	<field name="nameAttributeItemSpecificationDetail" class="java.lang.String"/>
 	<field name="quantitySpecificationDetail" class="java.lang.Double"/>
 	<field name="retailPriceSpecificationDetail" class="java.lang.Double"/>
-	<field name="sumWithoutNDSSpecificationDetail" class="java.lang.Double"/>
-	<field name="dataCalcRateRangeSpecificationDetail" class="java.lang.Double"/>
-	<field name="sumNDSSpecificationDetail" class="java.lang.Double"/>
-	<field name="totalSumNDSSpecificationDetail" class="java.lang.Double"/>
-	<field name="sumSpecificationDetail" class="java.lang.Double"/>
+	<field name="calcSaleSumSpecificationDetail" class="java.lang.Double"/>
+	<field name="dataCalcRangeSpecificationDetail" class="java.lang.Double"/>
+	<field name="calcVATSumSpecificationDetail" class="java.lang.Double"/>
+	<field name="retailSumSpecificationDetail" class="java.lang.Double"/>
 	<field name="shortNameUOMSpecificationDetail" class="java.lang.String"/>
 	<field name="phoneCustomerSpecification" class="java.lang.String"/>
 	<field name="phoneCompanySpecification" class="java.lang.String"/>
@@ -143,7 +142,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumNDSSpecification}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{calcVATSumSpecificationDetailSpecification}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="10" y="22" width="115" height="12"/>
@@ -189,7 +188,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantitySpecification}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantitySpecificationDetailSpecification}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="412" y="0" width="41" height="12"/>
@@ -202,7 +201,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{sumNDSSpecification}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{calcVATSumSpecificationDetailSpecification}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="507" y="0" width="58" height="12"/>
@@ -228,7 +227,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{sumSpecification}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{retailSumSpecificationDetailSpecification}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="370" y="0" width="42" height="12"/>
@@ -254,7 +253,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{sumSpecification}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{calcSaleSumSpecificationDetailSpecification}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="50" height="12"/>
@@ -288,7 +287,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumSpecification}) + " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{retailSumSpecificationDetailSpecification}) + " белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="10" y="0" width="115" height="12"/>
@@ -482,7 +481,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ПЛАТЕЛЬЩИК И ЕГО АДРЕС: "+($F{fullNameCustomerSpecification}!=null?$F{fullNameCustomerSpecification}:"")+" "+($F{addressCustomerSpecification}!=null?$F{addressCustomerSpecification}:"")+
+				<textFieldExpression><![CDATA["ПЛАТЕЛЬЩИК И ЕГО АДРЕС: "+($F{nameCustomerSpecification}!=null?$F{nameCustomerSpecification}:"")+" "+($F{addressCustomerSpecification}!=null?$F{addressCustomerSpecification}:"")+
 ", р/сч "+($F{numberAccountCustomerSpecification}!=null?$F{numberAccountCustomerSpecification}:"")+($F{CBUBankAccountCustomerSpecification}!=null?(" в ЦБУ "+$F{CBUBankAccountCustomerSpecification}):"")+
 " "+($F{departmentBankAccountCustomerSpecification}!=null?$F{departmentBankAccountCustomerSpecification}:"")+" "+($F{nameBankAccountCustomerSpecification}!=null?$F{nameBankAccountCustomerSpecification}:"")+
 ($F{addressBankAccountCustomerSpecification}!=null?(", адрес банка "+$F{addressBankAccountCustomerSpecification}):"")+", код "+($F{MFOBankAccountCustomerSpecification}!=null?$F{MFOBankAccountCustomerSpecification}:"")+
@@ -514,7 +513,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ ($F{dateToSpecification}!=null?(platform.base.BaseUtils.formatRussian($F{dateToSpecification})+" ГОДА."):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ ($F{dateToSpecification}!=null?(platform.base.BaseUtils.formatRussian($F{dateToSpecification})+" года."):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="127" width="555" height="12"/>
@@ -640,7 +639,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sumSpecificationDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{calcSaleSumSpecificationDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="370" y="0" width="42" height="12"/>
@@ -679,7 +678,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalSumNDSSpecificationDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{calcVATSumSpecificationDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="453" y="0" width="54" height="12"/>
@@ -692,7 +691,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sumSpecificationDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{retailSumSpecificationDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
