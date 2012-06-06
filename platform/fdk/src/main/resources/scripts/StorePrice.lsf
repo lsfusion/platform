@@ -442,3 +442,10 @@ END
 META derivePrevBasePriceLedgerOnSkuChange (concrete, prefixS)
     @derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, , prefixS);
 END
+
+META implementSalesLedgerStore(concrete)
+    @implementSalesLedger(concrete, item, departmentStore);
+    quantitySalesLedger (ledger) += quantity###concrete##Detail(ledger);
+    VATSalesLedger (ledger) += retailRange###concrete##Detail(ledger);
+    sumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
+END

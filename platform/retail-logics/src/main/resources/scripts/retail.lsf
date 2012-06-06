@@ -24,7 +24,8 @@ REQUIRE BaseLogicsModule,
         Consignment,
         AccountDocument,
         StorePrice,
-        Supplier;
+        Supplier,
+        Sales;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -2828,82 +2829,6 @@ FORM papers 'Документы качества'
     ORDER BY objectClassName
 ;
 
-//---------------------------- Регистр продажи ----------------------------------------//
-
-CLASS ABSTRACT salesLedger 'Продажа товара' : balanceSkuLedger;
-TABLE salesLedger(salesLedger);
-
-dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;
-dateSalesLedger 'Дата' (ledger) = dateInTime(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
-
-isPostedSalesLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (salesLedger) PERSISTENT;
-
-itemSalesLedger (ledger) = ABSTRACT item (salesLedger) PERSISTENT INDEXED;
-nameItemSalesLedger 'Товар' (ledger) = nameAttributeItem(itemSalesLedger(ledger));
-
-departmentStoreSalesLedger (ledger) = ABSTRACT departmentStore (salesLedger) PERSISTENT INDEXED;
-nameDepartmentStoreSalesLedger 'Отдел магазина' (ledger) = name(departmentStoreSalesLedger(ledger));
-
-descriptionSalesLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (salesLedger);
-
-quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger) PERSISTENT;
-
-retailSumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
-
-retailRangeSalesLedger (ledger) = ABSTRACT range (salesLedger) PERSISTENT;
-valueRetailRangeSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeSalesLedger(ledger), dateSalesLedger(ledger));
-
-retailVATSumSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
-        retailSumSalesLedger(ledger), valueRetailRangeSalesLedger(ledger));
-
-markupSumSalesLedger 'Надбавка' (ledger) = retailSumSalesLedger(ledger) - retailVATSumSalesLedger(ledger) - supplierSumBalanceSkuLedger(ledger);
-
-quantitySoldItemDepartmentStoreDateFromTo 'Продано' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
-        quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
-
-retailSumSoldItemDepartmentStoreDateFromTo 'Сумма проданного товара, руб.' (item, departmentStore, dateFrom, dateTo) = GROUP SUM
-        retailSumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo;
-
-itemDepartmentStoreAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
-
-averageSoldItemDepartmentStore 'Продаж в день' = DATA NUMERIC[14,3] (item, departmentStore) IN orderGroup;
-
-calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
-    LOCAL balance = NUMERIC[14,3] (item, departmentStore);
-    LOCAL days = INTEGER (item, departmentStore);
-    LOCAL dateCur = DATE();
-
-    SET dateCur() <- (dateFrom AS DATE);
-    SET balance(item, departmentStore) <- balanceBSkuLedgerDate(item, departmentStore, dateFrom);
-
-    WHILE dateCur() <= (dateTo AS DATE) DO {
-        SET days(item, departmentStore) <- days(item, departmentStore) (+)
-                   (1 IF ((balance(item, departmentStore) > 0) OR (quantitySkuStockDate(item, departmentStore, dateCur()) > 0)));
-        SET balance(item, departmentStore) <- balance(item, departmentStore) (+)
-                   signedQuantitySkuStockDate(item, departmentStore, dateCur());
-        SET dateCur() <- sumDate(dateCur(), 1);
-    }
-
-    SET averageSoldItemDepartmentStore(item, departmentStore) <- quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) / days(item, departmentStore);
-}
-calcCurrentQuantitySoldInterval 'Пересчитать однодневные продажи' = ACTION () NEWSESSION AUTOAPPLY {
-    EXEC calcQuantitySoldInterval(subtractDate(currentDate(), itemDepartmentStoreAverageInterval()), subtractDate(currentDate(), 1));
-}
-
-META implementSalesLedger(concrete)
-    dateTimeSalesLedger (ledger) += dateTime###concrete##Detail(ledger);
-    isPostedSalesLedger (ledger) += isPosted###concrete##Detail(ledger);
-    itemSalesLedger (ledger) += item###concrete##Detail(ledger);
-    departmentStoreSalesLedger (ledger) += departmentStore###concrete##Detail(ledger);
-    descriptionSalesLedger (ledger) += description###concrete##Detail(ledger);
-
-    quantitySalesLedger (ledger) += quantity###concrete##Detail(ledger);
-    retailRangeSalesLedger (ledger) += retailRange###concrete##Detail(ledger);
-    retailSumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
-END
-
 //---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
 
 META implementPriceChangeDocument (object)
@@ -4132,7 +4057,7 @@ sumOutAccountDocumentLedger (ledger) += retailSumStatementDetailStatement(ledger
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemStatementDetailStatement(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerStatementDetailStatement(ledger);
 
-@implementSalesLedger(statement);
+@implementSalesLedgerStore(statement);
 
 balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBSkuLedgerDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemDetailGroup;
@@ -5085,7 +5010,7 @@ descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR 
 quantityOutAutoBalanceSkuLedger (ledger) += quantityBillSaleDetail(ledger);
 quantityInAutoBalanceSkuLedger (ledger) += quantityBillReturnDetail(ledger);
 
-@implementSalesLedger(billSale);
+@implementSalesLedgerStore(billSale);
 
 // ----------------- Оплаты по чеку ------------------------------
 
@@ -5473,8 +5398,8 @@ invoiceSumNaturalLossDetailNaturalLoss 'Сумма поставщика' (natura
 quantitySoldItemDepartmentNaturalLoss 'Продано' (item, departmentStore, dateFrom, dateTo, subNaturalLossItemGroupDetail) =
     GROUP SUM quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
               AND inIntervalNaturalLoss(dateSalesLedger(ledger), subNaturalLossItemGroupDetail)
-              AND groupNaturalLossItem(itemSalesLedger(ledger)) == subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)
-              BY itemSalesLedger(ledger), departmentStoreSalesLedger(ledger), dateFrom, dateTo, subNaturalLossItemGroupDetail;
+              AND groupNaturalLossItem(skuSalesLedger(ledger)) == subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)
+              BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo, subNaturalLossItemGroupDetail;
 
 toFillNaturalLossDetail 'Заполнить ведомость естественной убыли' = ACTION (naturalLoss) {
     FOR quantitySoldItemDepartmentNaturalLoss(item,
@@ -5823,7 +5748,7 @@ CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplie
 currentBalanceOrderSupplierItem 'Текущий остаток' (orderSupplier, item) = currentBalanceSkuLedger(item, departmentStoreOrderSupplier(orderSupplier));
 
 quantityToSellNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
-    averageSoldItemDepartmentStore(item, departmentStoreOrderSupplier(orderSupplier)) * daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier));
+    averageSoldSkuStock(item, departmentStoreOrderSupplier(orderSupplier)) * daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier));
 
 balanceExtraDepartmentStoreItem 'Величина остатков товара за вычетом минимального резерва' (orderSupplier, item) =
     currentBalanceOrderSupplierItem(orderSupplier, item) (-) (minReserveItem(item) IF orderSupplier IS orderSupplier);
@@ -10150,7 +10075,7 @@ FORM curBalanceItemDepartment 'Текущие остатки'
 
     PROPERTIES(i, dep) READONLY currentBalanceSkuLedger, currentImporterPriceLedger, currentSupplierPriceLedger,
                                 currentAccountPriceLedger, currentValueRetailRangeLedger, currentRetailPriceLedger,
-                                currentWarePriceLedger, dateLastMovedSkuStock, averageSoldItemDepartmentStore
+                                currentWarePriceLedger, dateLastMovedSkuStock, averageSoldSkuStock
     PROPERTIES(i, dep)          expirationDateSkuDepartmentStore
 
     PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
@@ -10448,19 +10373,7 @@ DESIGN curBalanceStockBatchDate FROM DEFAULT {
     }
 }
 
-//---------------------------------------------- Формы продаж -------------------------------------//
-
-FORM salesLedger 'Продажи по позициям'
-
-    OBJECTS (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
-
-    OBJECTS s = salesLedger
-    PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameDepartmentStoreSalesLedger, nameItemSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, supplierSumBalanceSkuLedger, markupSumSalesLedger, retailVATSumSalesLedger, retailSumSalesLedger
-    FILTERS isPostedSalesLedger(s)
-    FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
-;
+// ------------------------------------------------- Форма продаж по товарам ------------------------ //
 
 FORM salesItemDepartmentStore 'Продажи по товарам'
 
@@ -10482,7 +10395,7 @@ FORM salesItemDepartmentStore 'Продажи по товарам'
     ORDER BY          nameIt
 
     PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
-                      quantitySoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
+                      quantitySoldSkuStockDateFromTo(i, dep, dFrom, dTo),
                       balanceASkuLedgerDate(i, dep, dTo)
 ;
 
@@ -10513,12 +10426,12 @@ DESIGN salesItemDepartmentStore FROM DEFAULT {
 //  12 ТОРГ ПРОДАЖИ
 
 netWeightSoldItemDepartmentStoreDateFromTo 'Вес проданного товара, кг' (item, departmentStore, dateFrom, dateTo) =
-    quantitySoldItemDepartmentStoreDateFromTo(item, departmentStore, dateFrom, dateTo) *
+    quantitySoldSkuStockDateFromTo(item, departmentStore, dateFrom, dateTo) *
     (UNION OVERRIDE 1 IF item IS item, netWeightItem(item) AND NOT isWeightItem(item));
 volumeSoldItemDepartmentStoreDateFromTo 'Объем проданного товара, л' (item, departmentStore, dateFrom, dateTo) =
-    quantitySoldItemDepartmentStoreDateFromTo(item, departmentStore, dateFrom, dateTo) * volumeItem(item);
-// retailSumSoldItemDepartmentStoreDateFromTo 'Продано, сумма' (item, departmentStore, dateFrom, dateTo)   - рубли
-//quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo)                      - шт.
+    quantitySoldSkuStockDateFromTo(item, departmentStore, dateFrom, dateTo) * volumeItem(item);
+// sumSoldSkuStockDateFromTo 'Продано, сумма' (item, departmentStore, dateFrom, dateTo)   - рубли
+//quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo)                      - шт.
 
 retailSumCardDepartmentDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==paymentMeans.card
     AND dateBill(billPayment(payment)) >= (dateFrom AS DATE) AND dateBill(billPayment(payment)) <= (dateTo AS DATE) AND isPostedBill(billPayment(payment))
@@ -10531,7 +10444,7 @@ retailSumSaleDepartmentDateFromTo 'Продано по кассе' (departmentSt
                             //с коэффициентом пересчета за период//
 //всего
 quantitySoldByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, departmentStore, dateFrom, dateTo)=
-    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 netWeightSoldByStatisticGroupDateFromTo 'Продано, кг' (statisticGroup, departmentStore, dateFrom, dateTo)=
@@ -10543,13 +10456,13 @@ volumeSoldByStatisticGroupDateFromTo 'Продано, л' (statisticGroup, depar
     BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 retailSumSoldByStatisticGroupDateFromTo 'Продано, руб.' (statisticGroup, departmentStore, dateFrom, dateTo)=
-    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
 //бел. пр-ва
 quantitySoldResidentByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, departmentStore, dateFrom, dateTo)=
-    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 netWeightSoldResidentByStatisticGroupDateFromTo 'Продано, кг' (statisticGroup, departmentStore, dateFrom, dateTo)=
@@ -10561,7 +10474,7 @@ volumeSoldResidentByStatisticGroupDateFromTo 'Продано, л' (statisticGrou
     BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 retailSumSoldResidentByStatisticGroupDateFromTo 'Продано, руб.' (statisticGroup, departmentStore, dateFrom, dateTo)=
-    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, departmentStore, dateFrom, dateTo](statisticGroup, departmentStore, dateFrom, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
@@ -10680,7 +10593,7 @@ FORM statisticalReport '12-Торг (продажи) справочно'
     ORDER BY          nameIt
 
     PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
-                      quantitySoldItemDepartmentStoreDateFromTo(i, dep, dFrom, dTo),
+                      quantitySoldSkuStockDateFromTo(i, dep, dFrom, dTo),
                       balanceASkuLedgerDate(i, dep, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateFromTo(g, ds, dFrom, dTo), valueResidentByStatisticGroupDateFromTo(g, ds, dFrom, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ds, dTo), valueResidentByStatisticGroupDateTo(g, ds, dTo)
@@ -10731,7 +10644,7 @@ regionDepartmentStore(departmentStore) = regionStore(storeDepartmentStore(depart
                            //c коэффициентом пересчета за период//
 // всего
 quantitySoldByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, company, region, dateFrom, dateTo)=
-    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
         (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
@@ -10746,13 +10659,13 @@ volumeSoldByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup,
         (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
 retailSumSoldByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
-    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
         (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
 // белорусского производствава
 quantitySoldResidentByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, company, region, dateFrom, dateTo)=
-    [GROUP SUM quantitySoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
         (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
@@ -10767,7 +10680,7 @@ volumeSoldResidentByStatisticGroupRegionDateFromTo 'Продано, л' (statist
         (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
 retailSumSoldResidentByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
-    [GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
         (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
@@ -10866,7 +10779,7 @@ valueResidentByStatisticGroupCompanyRegionDateTo 'Остаток на конец
     END;
 
 totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
-    GROUP SUM retailSumSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
 retailSumCardCompanyRegionDateFromTo 'Продано с использованием банк. карточек' (company, region, dateFrom, dateTo) =
@@ -11016,7 +10929,7 @@ fillVATDefaultValues 'Заполнить значения НДС по умолч
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, itemDepartmentStoreAverageInterval, calcCurrentQuantitySoldInterval,
+    PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
                  fillVATDefaultValues;
 ;
 

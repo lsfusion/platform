@@ -105,6 +105,8 @@ signedQuantityBalanceSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantity
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
+TABLE stockSku(stock, sku);
+
 currentBalanceSkuLedger 'Текущий остаток' (sku, stock) = GROUP SUM signedQuantityBalanceSkuLedger (ledger) AND isPostedBalanceSkuLedger(ledger)
                                                           BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger) PERSISTENT;
 countBalanceSkuLedger 'Кол-во движений' (sku, stock) = GROUP SUM 1 AND signedQuantityBalanceSkuLedger (ledger) AND isPostedBalanceSkuLedger(ledger)
