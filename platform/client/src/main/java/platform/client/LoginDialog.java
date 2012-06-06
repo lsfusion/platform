@@ -157,7 +157,7 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        if (defaultLoginInfo.getServerHost() != null) {
+        if (this.defaultLoginInfo.getServerHost() != null) {
             StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
             if (defaultLoginInfo.getServerPort() != null) {
                 server.append(":");
