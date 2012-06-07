@@ -2024,14 +2024,32 @@ scope {
 	ScriptingFormView formView = null;
 	boolean applyDefault = false;
 }
-	:	'DESIGN' cid=compoundID (caption=stringLiteral)? ('FROM' 'DEFAULT' { applyDefault = true; })?
-		{
-			if (inPropParseState()) {
-				$designStatement::design = formView = self.createScriptedFormView($cid.sid, $caption.val, applyDefault);
-			}
-		}
+	:	(	decl=designDeclaration 			{ $designStatement::design = formView = $decl.view; }
+		|	edecl=extendDesignDeclaration 	{ $designStatement::design = formView = $edecl.view; }	
+		)
 		componentStatementBody[formView, formView == null ? null : formView.mainContainer]
 	;
+
+designDeclaration returns [ScriptingFormView view]
+@init {
+	boolean applyDefault = false;
+}
+@after {
+	if (inPropParseState()) {
+		$view = self.createScriptedFormView($cid.sid, $caption.val, applyDefault);
+	}
+}
+	:	'DESIGN' cid=compoundID (caption=stringLiteral)? ('FROM' 'DEFAULT' { applyDefault = true; })?
+	;
+
+extendDesignDeclaration returns [ScriptingFormView view]
+@after {
+	if (inPropParseState()) {
+		$view = self.getDesignForExtending($cid.sid);
+	}
+}
+	:	'EXTEND' 'DESIGN' cid=compoundID 
+	;	
 
 componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 	:	'{'

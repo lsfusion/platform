@@ -322,6 +322,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return formView;
     }
 
+    public ScriptingFormView getDesignForExtending(String formName) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("getDesignForExtending(" + formName + ");");
+        FormEntity form = findFormByCompoundName(formName);
+        return (ScriptingFormView) form.getRichDesign();
+    }
+
     public void addScriptedForm(ScriptingFormEntity form) {
         scriptLogger.info("addScriptedForm(" + form + ");");
         addFormEntity(form.getForm());
