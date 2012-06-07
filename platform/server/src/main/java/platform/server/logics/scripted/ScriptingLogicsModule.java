@@ -2067,52 +2067,40 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public abstract class CompoundNameResolver<T> {
-        private T findInNamespace(LogicsModule module, String namespaceName, String name, Set<LogicsModule> visitedModules) throws ScriptingErrorLog.SemanticErrorException {
+        private T findInNamespace(String namespaceName, String name) {
             T result = null;
-            visitedModules.add(module);
-            if (module.getNamespace().equals(namespaceName)) {
+            for (LogicsModule module : namespaceToModules.get(namespaceName)) {
                 if ((result = resolveInModule(module, name)) != null) {
                     return result;
-                }
-            }
-            for (String moduleName : module.getRequiredModules()) {
-                LogicsModule nextModule = findModule(moduleName);
-                if (!visitedModules.contains(nextModule)) {
-                    if ((result = findInNamespace(nextModule, namespaceName, name, visitedModules)) != null) {
-                        return result;
-                    }
                 }
             }
             return result;
         }
 
-        private int priority(LogicsModule module, List<String> namespaces) {
-            int res = namespaces.indexOf(module.getNamespace());
-            return res >= 0 ? res : namespaces.size();
-        }
+        private List<LogicsModule> findInRequiredModules(String name, List<String> namespaces) {
+            List<LogicsModule> outModules = new ArrayList<LogicsModule>();
 
-        private void findInRequiredModules(LogicsModule module, String name, List<String> namespaces, List<LogicsModule> outModules, Set<LogicsModule> visitedModules) throws ScriptingErrorLog.SemanticErrorException {
-            visitedModules.add(module);
-            if (resolveInModule(module, name) != null) {
-                int priority = priority(module, namespaces);
-                if (outModules.isEmpty()) {
-                    outModules.add(module);
-                } else {
-                    int curPriority = priority(outModules.get(0), namespaces);
-                    if (priority <= curPriority) {
-                        if (priority < curPriority) {
-                            outModules.clear();
-                        }
+            for (String namespaceName : namespaces) {
+                for (LogicsModule module : namespaceToModules.get(namespaceName)) {
+                    if (resolveInModule(module, name) != null) {
                         outModules.add(module);
+                        return outModules;
                     }
                 }
             }
-            for (String moduleName : module.getRequiredModules()) {
-                LogicsModule nextModule = findModule(moduleName);
-                if (!visitedModules.contains(nextModule)) {
-                    findInRequiredModules(nextModule, name, namespaces, outModules, visitedModules);
+
+            Set<String> checkedNamespaces = new HashSet<String>(namespaces);
+            for (Map.Entry<String, List<LogicsModule>> e : namespaceToModules.entrySet()) {
+                if (!checkedNamespaces.contains(e.getKey())) {
+                    for (LogicsModule module : e.getValue()) {
+                        if (resolveInModule(module, name) != null) {
+                            outModules.add(module);
+                            break;
+                        }
+                    }
                 }
             }
+            return outModules;
         }
 
         public final T resolve(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -2121,19 +2109,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (dotPosition > 0) {
                 String namespaceName = name.substring(0, dotPosition);
                 checkNamespace(namespaceName);
-                result = findInNamespace(ScriptingLogicsModule.this, namespaceName, name.substring(dotPosition + 1), new HashSet<LogicsModule>());
+                result = findInNamespace(namespaceName, name.substring(dotPosition + 1));
             } else {
                 result = resolveInModule(ScriptingLogicsModule.this, name);
                 if (result == null) {
                     List<String> namespaces = new ArrayList<String>();
                     namespaces.add(getNamespace());
                     namespaces.addAll(importedNamespaces);
-                    List<LogicsModule> containingModules = new ArrayList<LogicsModule>();
-                    findInRequiredModules(ScriptingLogicsModule.this, name, namespaces, containingModules, new HashSet<LogicsModule>());
+                    List<LogicsModule> containingModules = findInRequiredModules(name, namespaces);
                     if (containingModules.size() > 1) {
                         errLog.emitAmbiguousNameError(parser, containingModules, name);
-                    }
-                    if (containingModules.size() == 1) {
+                    } else if (containingModules.size() == 1) {
                         result = resolveInModule(containingModules.get(0), name);
                     }
                 }
