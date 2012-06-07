@@ -846,6 +846,18 @@ FORM countries 'Страны'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
+FORM currency 'Валюта'
+    OBJECTS c=currency FIXED PANEL
+    PROPERTIES(c)      name, shortNameCurrency, symbolCurrency
+
+    EDIT currency OBJECT c
+;
+FORM currencies 'Валюты'
+    OBJECTS c=currency
+    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
@@ -11253,6 +11265,7 @@ NAVIGATOR {
             ADD statisticGroups;
             ADD unitsOfMeasure;
             ADD countries;
+            ADD currencies;
             ADD assortments;
             ADD naturalLossItem;
             ADD papers;
@@ -11419,6 +11432,7 @@ NAVIGATOR {
             ADD employee;
             ADD employeeDialog;
             ADD country;
+            ADD currency;
             ADD position;
             ADD addTradingSquareDepartmentStore;
             ADD dialogTradingSquareDepartmentStore;

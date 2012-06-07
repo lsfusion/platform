@@ -93,6 +93,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
 
+    public ConcreteCustomClass currency;
+
+
     public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
 
     public AbstractCustomClass emailObject;
@@ -271,6 +274,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP computerNameLaunch;
     public LP launchTime;
     public LP launchRevision;
+
+    public LP symbolCurrency;
+    public LP shortNameCurrency;
 
     public LP policyDescription;
     protected LP<?> nameToPolicy;
@@ -578,6 +584,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formResult = addStaticClass("formResult", "Результат вызова формы",
                 new String[]{"null", "ok", "close"},
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
+
+        currency = addConcreteClass("currency", getString("logics.currency"), baseClass.named);
+
     }
 
     @Override
@@ -668,6 +677,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
         dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
         dataName.property.aggProp = true;
+
+        symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
+        shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
 
         // математические св-ва
         equals2 = addCFProp("equals2", Compare.EQUALS);

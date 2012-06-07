@@ -9,17 +9,17 @@ REQUIRE BaseLogicsModule,
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
 
-dataSurePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier);
-surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = (0 IF supplier IS supplier) OR dataSurePercentSupplier(supplier);
-
-allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (supplier);
-afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (supplier);
-
-periodicitySupply 'Переодичность поставок, дней (при поставках не по графику)' = DATA INTEGER (supplier);
-
-returnLossSupplier '% потерь при возврате' (supplier) = DATA NUMERIC[8,3] (supplier);
-
 GROUP orderGroup 'Заказ' : publicGroup;
+
+dataSurePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier) IN orderGroup;
+surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = (0 IF supplier IS supplier) OR dataSurePercentSupplier(supplier) IN orderGroup;
+
+allowablePercentSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (supplier) IN orderGroup;
+afterDaysSupplier 'Максимальное число дней до поставки после заказа' = DATA INTEGER (supplier) IN orderGroup;
+
+periodicitySupply 'Переодичность поставок, дней (при поставках не по графику)' = DATA INTEGER (supplier) IN orderGroup;
+
+returnLossSupplier '% потерь при возврате' (supplier) = DATA NUMERIC[8,3] (supplier) IN orderGroup;
 emailOrderSupplierStock 'e-mail для передачи заказа' = DATA STRING[100] (supplier, stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierStock 'Контактная информация' = DATA STRING[500] (supplier, stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -68,9 +68,10 @@ CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'Не в
 
 @defineHistorizable(delayContract, 'Отсрочка платежа (календ. дней)', INTEGER, contract, numberContract, paymentGroup);
 
-//currencyContract = DATA currency (contract);
-// todo : переделать на справочник
-nameCurrencyContract 'Валюта взаиморасчетов' (contract) = DATA STRING[100] (contract) IN paymentGroup; //name(currencyContract(contract)) IN paymentGroup;
+currencyContract = DATA currency (contract);
+nameCurrencyContract 'Валюта взаиморасчетов' (contract) = name(currencyContract(contract)) IN paymentGroup;
+shortNameCurrencyContract 'Валюта взаиморасчетов' (contract) = shortNameCurrency(currencyContract(contract)) IN paymentGroup;
+symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContract(contract)) IN paymentGroup;
 
 noteContract 'Примечание' = DATA TEXT (contract) MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -103,24 +104,33 @@ FORM contract 'Договор'
 
 DESIGN contract FROM DEFAULT {
     main{
+//        preferredSize = (1024, 768);
         c.panel {
             childConstraints = TO THE BOTTOM;
-
-            NEW attributes {
+            NEW HeaderContainer {
                 childConstraints = TO THE RIGHT;
-                title = 'Реквизиты';
-                ADD PROPERTY(nameCompanyContract);
-                ADD PROPERTY(nameSupplierContract);
-                ADD PROPERTY(numberContract);
-                ADD PROPERTY(dateFromContract);
-                ADD PROPERTY(dateToContract);
+                NEW contractor {
+                    title = 'Контрагенты';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameCompanyContract);
+                    ADD PROPERTY(nameSupplierContract);
+                }
+                NEW attributes {
+                    childConstraints = TO THE RIGHT;
+                    title = 'Реквизиты';
+                    ADD PROPERTY(numberContract);
+                    ADD PROPERTY(dateFromContract);
+                    ADD PROPERTY(dateToContract);
+                }
             }
-
             ADD c.paymentGroup {
                 childConstraints = TO THE RIGHT;
             }
 
-            ADD PROPERTY(noteContract);
+            ADD PROPERTY(noteContract) {
+                panelLabelAbove = TRUE;
+                fillHorizontal = 1;
+            }
         }
     }
 }
@@ -200,20 +210,28 @@ DESIGN supplier FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
         s.box {
-            childConstraints = TO THE RIGHT;
+            childConstraints = TO THE BOTTOM;
 
-            NEW oneCase {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(name(s));
-                ADD PROPERTY(fullNameLegalEntity(s));
-                ADD PROPERTY(phoneLegalEntity(s));
-                ADD PROPERTY(UNPLegalEntity(s));
-                ADD s.contactGroup;
-            };
-
-            NEW twoCase{
-                childConstraints = TO THE BOTTOM;
-                ADD s.docGroup;
+            NEW row1 {
+                childConstraints = TO THE RIGHT;
+                ADD s.lawGroup{
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD s.orderGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            NEW row2{
+                childConstraints = TO THE RIGHT;
+                ADD s.contactGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD s.managementGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD s.docGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
             }
         }
 
@@ -221,7 +239,7 @@ DESIGN supplier FROM DEFAULT {
             type = TABBED;
             ADD a.box;
             NEW firstCase {
-                title = 'Договора';
+                title = 'Договоры';
                 childConstraints = TO THE RIGHT;
                 ADD co.box;
                 ADD c.box;
