@@ -1693,44 +1693,6 @@ FORM itemGroupDialog 'Товарные группы'
     DIALOG itemGroup OBJECT g
 ;
 
-// ----------------------------------- Ассортимент -------------------------------------------------------- //
-
-CLASS assortment 'Ассортимент' : named;
-TABLE assortment (assortment);
-itemAssortment 'Товар включен в ассортимент' = DATA BOOLEAN (assortment, item);
-infoAssortment 'Описание' = DATA STRING[100] (assortment) IN baseGroup;
-
-FORM assortment 'Ассортимент'
-OBJECTS a=assortment FIXED PANEL, i=item
-PROPERTIES(a) name, infoAssortment
-PROPERTIES(a, i) itemAssortment
-PROPERTIES(i) nameAttributeItem
-PROPERTIES(i) ADDSESSIONFORM, EDITSESSIONFORM, delete
-FILTERGROUP assortment
-    FILTER 'Только товары ассортимента' 'F10' itemAssortment(a, i) DEFAULT
-EDIT assortment OBJECT a;
-
-FORM assortments 'Ассортименты'
-    OBJECTS a=assortment, i=item
-    PROPERTIES(a) READONLY name, infoAssortment
-    PROPERTIES(a) ADDFORM, EDITFORM, delete
-    PROPERTIES(i) READONLY nameAttributeItem
-    FILTERS itemAssortment(a, i)
-;
-
-DESIGN assortments FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-        ADD a.box;
-        ADD i.box;
-    }
-
-    ADD functions.box;
-}
-
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
@@ -10864,7 +10826,6 @@ NAVIGATOR {
             ADD unitsOfMeasure;
             ADD countries;
             ADD currencies;
-            ADD assortments;
             ADD naturalLossItem;
             ADD papers;
         }
@@ -11052,7 +11013,6 @@ NAVIGATOR {
             ADD scalesModel;
             ADD checkModel;
             ADD terminalModel;
-            ADD assortment;
             ADD typeItem;
             ADD rowTorg1;
             ADD color;
