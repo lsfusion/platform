@@ -26,7 +26,8 @@ REQUIRE BaseLogicsModule,
         StorePrice,
         Supplier,
         Sales,
-        PriceChange;
+        PriceChange,
+        Default;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -632,8 +633,6 @@ articleItem 'Артикул поставщика/производителя' = D
 coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
 nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
 @metaCodeShowItemAttribute(coolingDegree, 'Показывать степень охлаждения', displayGroup);
-
-residentCountry 'Отечественное производство' (country) = DATA BOOLEAN (country) IN baseGroup;
 
 countryItem = DATA country (item) IN idGroup;
 nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
@@ -10749,22 +10748,11 @@ numeratorOrder(order) = numeratorObject(order) AND order IS order;
 // todo : включение этого derived'а отключает верхний derived
 //numeratorOrder(order) <- defaultNumeratorOrders() WHEN ASSIGNED(order IS order);
 
-//---------------------------------------------- Автоматическое заполнение -----------------------------------------------------//
-
-fillVATDefaultValues 'Заполнить значения НДС по умолчанию' = ACTION () {
-    EXEC addTaxNumberValue(1, 0);
-    EXEC addTaxNumberValue(2, 9.09);
-    EXEC addTaxNumberValue(3, 16.67);
-    EXEC addTaxNumberValue(4, 10);
-    EXEC addTaxNumberValue(5, 20);
-    EXEC addTaxNumberValue(6, 24);
-};
-
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
     PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
-                 fillVATDefaultValues;
+                 fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//

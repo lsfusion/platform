@@ -432,6 +432,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP defaultOverrideForegroundColor;
 
     public LP sidCountry;
+    public LP residentCountry;
     protected LP generateDatesCountry;
     public LP sidToCountry;
     public LP nameToCountry;
@@ -793,6 +794,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
         sidToCountry = addAGProp("sidToCountry", getString("logics.country"), sidCountry);
+        residentCountry = addDProp(baseGroup, "residentCountry", getString("logics.country.resident.country"), LogicalClass.instance, country);
 
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
 

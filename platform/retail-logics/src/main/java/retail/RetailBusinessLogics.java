@@ -53,6 +53,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule Sales;
     public ScriptingLogicsModule PriceChange;
+    public ScriptingLogicsModule Default;
+
 
     ScriptingLogicsModule retailLM;
 
@@ -86,6 +88,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Supplier = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Supplier.lsf"), LM, this));
         Sales = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Sales.lsf"), LM, this));
         PriceChange = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/PriceChange.lsf"), LM, this));
+        Default = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Default.lsf"), LM, this));
         retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
     }
 
