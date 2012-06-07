@@ -121,7 +121,7 @@ public class ScriptingFormEntity {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
         group.setSID(groupName);
-        form.addGroup(group);
+        form.addGroupObject(group);
     }
 
     private void addObjectEntity(String name, ObjectEntity object, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {

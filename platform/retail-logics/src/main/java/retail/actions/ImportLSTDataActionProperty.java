@@ -286,7 +286,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-        props.add(new ImportProperty(itemGroupIDField, getLP("itemGroupSku").getMapping(itemKey),
+        props.add(new ImportProperty(itemGroupIDField, getLP("itemGroupItem").getMapping(itemKey),
                 LM.object(getClass("itemGroup")).getMapping(itemGroupKey)));
 
         props.add(new ImportProperty(itemIDField, getLP("extSID").getMapping(itemKey)));

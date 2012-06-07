@@ -6054,7 +6054,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             GroupObjectEntity gobjProjectCluster = new GroupObjectEntity(genID());
             gobjProjectCluster.add(objProject);
             gobjProjectCluster.add(objCluster);
-            addGroup(gobjProjectCluster);
+            addGroupObject(gobjProjectCluster);
             gobjProjectCluster.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
@@ -6082,7 +6082,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             GroupObjectEntity gobjExpertForesight = new GroupObjectEntity(genID());
             gobjExpertForesight.add(objExpert);
             gobjExpertForesight.add(objForesight);
-            addGroup(gobjExpertForesight);
+            addGroupObject(gobjExpertForesight);
             gobjExpertForesight.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
@@ -6350,7 +6350,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             GroupObjectEntity gobjVoteExpert = new GroupObjectEntity(genID());
             gobjVoteExpert.add(objVote);
             gobjVoteExpert.add(objExpert);
-            addGroup(gobjVoteExpert);
+            addGroupObject(gobjVoteExpert);
             gobjVoteExpert.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
@@ -6471,7 +6471,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objDocumentType = new ObjectEntity(genID(), documentType, "Тип документа");
             gobjLanguageDocumentType.add(objLanguage);
             gobjLanguageDocumentType.add(objDocumentType);
-            addGroup(gobjLanguageDocumentType);
+            addGroupObject(gobjLanguageDocumentType);
 
             addPropertyDraw(objLanguage, baseLM.name);
             addPropertyDraw(objDocumentType, baseLM.name);
@@ -6495,7 +6495,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objVote = new ObjectEntity(3, "vote", vote, "Заседание");
             gobjExpertVote.add(objExpert);
             gobjExpertVote.add(objVote);
-            addGroup(gobjExpertVote);
+            addGroupObject(gobjExpertVote);
             gobjExpertVote.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(baseLM.webHost, gobjExpertVote);
@@ -6620,7 +6620,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objConference = new ObjectEntity(3, "conference", expertConference, "Конференция");
             gobjConferenceExpert.add(objExpert);
             gobjConferenceExpert.add(objConference);
-            addGroup(gobjConferenceExpert);
+            addGroupObject(gobjConferenceExpert);
             gobjConferenceExpert.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objConference, textConference);

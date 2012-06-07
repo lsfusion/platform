@@ -449,3 +449,101 @@ META implementSalesLedgerStore(concrete)
     VATSalesLedger (ledger) += retailRange###concrete##Detail(ledger);
     sumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
 END
+
+// ----------------------------------------- Расширяем формы остатков ценами ----------------------------------- //
+
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(s, st)   currentImporterPriceLedger, currentSupplierPriceLedger,
+                        currentAccountPriceLedger, currentValueRetailRangeLedger, currentRetailPriceLedger,
+                        currentWarePriceLedger
+
+    OBJECTS apl=accountPriceLedger
+    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
+    FILTERS isPostedAccountPriceLedger(apl) AND skuAccountPriceLedger(apl)==s AND departmentStoreAccountPriceLedger(apl)==st
+    ORDER BY dateTimeAccountPriceLedger DESC
+
+    OBJECTS rpl=retailPriceLedger
+    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
+    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
+    ORDER BY dateTimeRetailPriceLedger DESC
+
+
+    OBJECTS ipl=importerPriceLedger
+    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
+    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
+    ORDER BY dateTimeImporterPriceLedger DESC
+
+    OBJECTS spl=supplierPriceLedger
+    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
+    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
+    ORDER BY dateTimeSupplierPriceLedger DESC
+
+    OBJECTS rvl=retailRangeLedger
+    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
+    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==s AND departmentStoreRetailRangeLedger(rvl)==st
+    ORDER BY dateTimeRetailRangeLedger DESC
+
+    OBJECTS wpl=warePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
+    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
+    ORDER BY dateTimeWarePriceLedger DESC
+;
+
+EXTEND DESIGN currentBalanceSkuStock {
+    ledger.box {
+        ADD apl.box;
+        ADD rpl.box;
+        ADD ipl.box;
+        ADD spl.box;
+        ADD rvl.box;
+        ADD wpl.box;
+    }
+}
+
+EXTEND FORM balanceSkuStock
+    PROPERTIES (s, st, t) READONLY importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
+                                   accountPriceBLedgerDateTime, valueRetailRangeALedgerDateTime,
+                                   retailPriceALedgerDateTime, warePriceALedgerDateTime
+
+    OBJECTS apl=accountPriceLedger
+    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
+    FILTERS isPostedAccountPriceLedger(apl) AND skuAccountPriceLedger(apl)==s AND departmentStoreAccountPriceLedger(apl)==st
+    ORDER BY dateTimeAccountPriceLedger DESC
+
+    OBJECTS rpl=retailPriceLedger
+    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
+    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
+    ORDER BY dateTimeRetailPriceLedger DESC
+
+    OBJECTS ipl=importerPriceLedger
+    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
+    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
+    ORDER BY dateTimeImporterPriceLedger DESC
+
+    OBJECTS spl=supplierPriceLedger
+    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
+    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
+    ORDER BY dateTimeSupplierPriceLedger DESC
+
+    OBJECTS rvl=retailRangeLedger
+    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
+    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==s AND departmentStoreRetailRangeLedger(rvl)==st
+    ORDER BY dateTimeRetailRangeLedger DESC
+
+    OBJECTS wpl= warePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
+    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
+    ORDER BY dateTimeWarePriceLedger DESC
+;
+
+EXTEND DESIGN balanceSkuStock {
+    ledger.box {
+        ADD apl.box;
+        ADD rpl.box;
+        ADD ipl.box;
+        ADD spl.box;
+        ADD rvl.box;
+        ADD wpl.box;
+    }
+}
+

@@ -243,7 +243,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         GroupObjectEntity groupObject = new GroupObjectEntity(ID, sID);
         ObjectEntity object = new ObjectEntity(ID, sID, baseClass, caption);
         groupObject.add(object);
-        addGroup(groupObject);
+        addGroupObject(groupObject);
 
         addPropertyDraw(groups, false, object);
 
@@ -275,7 +275,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return treeGroup;
     }
 
-    public void addGroup(GroupObjectEntity group) {
+    public void addGroupObject(GroupObjectEntity group) {
         // регистрируем ID'шники, чтобы случайно не пересеклись заданные вручную и сгенерированные ID'шники
         idGenerator.idRegister(group.getID());
         for (ObjectEntity obj : group.objects) {
@@ -289,6 +289,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                     assert obj.getID() != objOld.getID() && !obj.getSID().equals(objOld.getSID());
         }
         groups.add(group);
+
+        if (richDesign != null)
+            richDesign.addGroupObjectEntity(group);
     }
 
     protected void addPropertyDraw(ObjectEntity object, Object... groups) {

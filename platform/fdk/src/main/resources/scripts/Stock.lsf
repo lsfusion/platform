@@ -13,6 +13,8 @@ TABLE stock(stock);
 stockGroupStock (stock) = ABSTRACT stockGroup (stock);
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
+isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
+
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
 CLASS UOM 'Единица измерения' : doubleNamed, externalObject;
@@ -34,13 +36,19 @@ PROPERTIES(u) ADDFORM, EDITFORM, delete;
 
 // ----------------------------------- Sku ------------------------------------------ //
 
+CLASS ABSTRACT skuGroup 'Группа SKU' : named;
+@defineHierarchyAbstract(skuGroup);
+
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 
+skuGroupSku (sku) = ABSTRACT skuGroup (sku);
 nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
 
 UOMSku (sku) = ABSTRACT UOM (sku);
 shortNameUOMSku (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
+
+isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
 // ----------------------------------- Ledger ------------------------------------------ //
 
@@ -146,10 +154,6 @@ balanceASkuLedgerDateTime 'Остаток на конец дня' (sku, stock, d
                                                                          (-)[GROUP SUM signedQuantityBalanceSkuLedger (ledger) AND dateTimeBalanceSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedBalanceSkuLedger(ledger)
                                                                          BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
-dateLastMovedSkuStock 'Дата последнего движения товара' (sku, stock) =
-    GROUP MAX dateTimeBalanceSkuLedger(ledger)
-    BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger) PERSISTENT;
-
 costBalanceSkuLedgerBatch 'Расписано из партии' (ledger, batch) = DATA NUMERIC[14,3] (balanceSkuLedger, batch);
 
 signedCostBalanceSkuLedgerBatch (ledger, batch) = IF ledger IS outBalanceSkuLedger
@@ -158,6 +162,24 @@ signedCostBalanceSkuLedgerBatch (ledger, batch) = IF ledger IS outBalanceSkuLedg
 
 currentBalanceBatchLedger 'Текущий остаток' (batch, stock) = GROUP SUM signedCostBalanceSkuLedgerBatch (ledger, batch) AND isPostedBalanceSkuLedger(ledger)
                                                           BY batch, stockBalanceSkuLedger(ledger) PERSISTENT;
+
+// -------------------------------------- Последнее движение ---------------------------------- //
+
+dateLastMovedSkuStock 'Дата последнего движения товара' (sku, stock) =
+    GROUP MAX dateTimeBalanceSkuLedger(ledger)
+    BY skuBalanceSkuLedger(ledger), stockBalanceSkuLedger(ledger) PERSISTENT;
+
+movedSkuStockDateTimePeriod (item, departmentStore, dateTime, period) =
+    dateLastMovedSkuStock(item, departmentStore) >= subtractDate(dateInTime(dateTime), period AS INTEGER);
+
+balanceSkuStockDateTimePeriod (item, departmentStore, dateTime, period) =
+    movedSkuStockDateTimePeriod (item, departmentStore, dateTime, period) OR (period IS INTEGER) IF balanceASkuLedgerDateTime(item, departmentStore, dateTime);
+
+movedSkuStockDatePeriod (item, departmentStore, date, period) =
+    dateLastMovedSkuStock(item, departmentStore) >= subtractDate(date, period AS INTEGER);
+
+balanceSkuStockDatePeriod (item, departmentStore, date, period) =
+    movedSkuStockDatePeriod (item, departmentStore, date, period) OR (period IS INTEGER) IF balanceASkuLedgerDate(item, departmentStore, date);
 
 //----------------------------------------- По партиям ---------------------------------------------//
 // без учета текущей даты/времени
@@ -205,7 +227,7 @@ isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 skuBatch 'SKU (ИД)' (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
 supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
-dateExpireBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
+expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
 
@@ -407,4 +429,147 @@ DESIGN costSkuBatchLedger FROM DEFAULT {
     }
 
     ADD functions.box;
+}
+
+// ------------------------------------------------ Остатки по товарам ---------------------------------------- //
+
+FORM currentBalanceSkuStock 'Текущие остатки'
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS           sts=(st=stock, s=sku)
+    PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
+    FILTERS           isParentSkuGroupSku(sk, s),
+                      isParentStockGroupStock(sg, st)
+    ORDER BY          nameSku
+
+
+    PROPERTIES(s, st) READONLY currentBalanceSkuLedger, dateLastMovedSkuStock
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceSkuLedger(s, st) DEFAULT
+        FILTER 'Товары с движением не позднее 1 дня' 'F9' balanceSkuStockDatePeriod(s, st, currentDate(), 1)
+        FILTER 'Товары с движением не позднее 7 дней' 'F8' balanceSkuStockDatePeriod(s, st, currentDate(), 7)
+        FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDatePeriod(s, st, currentDate(), 30)
+
+    OBJECTS bil=balanceSkuLedger
+    PROPERTIES(bil) descriptionBalanceSkuLedger, dateTimeBalanceSkuLedger, signedQuantityBalanceSkuLedger READONLY
+    FILTERS isPostedBalanceSkuLedger(bil) AND skuBalanceSkuLedger(bil)==s AND stockBalanceSkuLedger(bil)==st
+    ORDER BY dateTimeBalanceSkuLedger DESC
+
+    OBJECTS bt=batch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch
+    PROPERTIES(bt, st) READONLY  currentBalanceBatchLedger
+    FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
+    ORDER BY dateTimeBatch DESC
+;
+
+DESIGN currentBalanceSkuStock FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+
+            NEW firstBottom {
+                type = SPLITV;
+                ADD stockTree.box {title = 'Магазины';};
+                ADD skuTree.box {title = 'Товарные группы';};
+            }
+
+            NEW secondCase {
+                type = SPLITV;
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD sts.box { fillVertical = 2; }
+
+                NEW ledger.box {
+                    fillVertical = 1;
+                    title = 'Изменение цен';
+                    type = TABBED;
+                    ADD bil.box;
+                    ADD bt.box;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
+FORM balanceSkuStock 'Остатки на дату'
+
+    OBJECTS t=DATETIME FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS           sts=(st=stock, s=sku)
+    PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
+    FILTERS           isParentSkuGroupSku(sk, s),
+                      isParentStockGroupStock(sg, st)
+
+    PROPERTIES(s, st, t) READONLY balanceASkuLedgerDateTime
+    PROPERTIES(s, st) READONLY dateLastMovedSkuStock
+
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' balanceASkuLedgerDateTime(s, st, t) DEFAULT
+        FILTER 'Товары с движением не позднее 1 дня' 'F9' balanceSkuStockDateTimePeriod(s, st, t, 1)
+        FILTER 'Товары с движением не позднее 7 дней' 'F8' balanceSkuStockDateTimePeriod(s, st, t, 7)
+        FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDateTimePeriod(s, st, t, 30)
+
+    OBJECTS bil=balanceSkuLedger
+    PROPERTIES(bil) descriptionBalanceSkuLedger, dateTimeBalanceSkuLedger, signedQuantityBalanceSkuLedger READONLY
+    FILTERS isPostedBalanceSkuLedger(bil) AND skuBalanceSkuLedger(bil)==s AND stockBalanceSkuLedger(bil)==st
+    ORDER BY dateTimeBalanceSkuLedger DESC
+;
+
+DESIGN balanceSkuStock FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            NEW firstCase {
+                type = SPLITV;
+                fillHorizontal = 1;
+                childConstraints = TO THE BOTTOM;
+                ADD t.box;
+                NEW firstCaseTwo {
+                    type = SPLITV;
+                    ADD stockTree.box {title = 'Магазины';};
+                    ADD skuTree.box {title = 'Товарные группы';};
+                }
+            }
+
+            NEW secondCase {
+                type = SPLITV;
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD sts.box {fillVertical = 2;}
+
+                NEW ledger.box {
+                    fillVertical = 1;
+                    title = 'Регистры';
+                    type = TABBED;
+                    ADD bil.box;
+                }
+
+            }
+        }
+
+        ADD functions.box;
+    }
 }

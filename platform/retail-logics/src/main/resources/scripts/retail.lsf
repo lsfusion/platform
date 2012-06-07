@@ -36,7 +36,7 @@ GROUP committeeGroup 'Комиссия' : publicGroup;
 META metaCodeShowItemAttribute (attribute, caption, group)
 
     show###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
-    toShow###attribute caption (item) = show###attribute##ItemGroup(itemGroupSku(item));
+    toShow###attribute caption (item) = show###attribute##ItemGroup(itemGroupItem(item));
     show###attribute##ItemGroup(itemGroup) <- TRUE WHEN ASSIGNED(itemGroup IS itemGroup);
 
 END
@@ -226,9 +226,11 @@ META defineDocumentHeaderSupplierContractDepartmentStore(object)
 END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
-CLASS itemGroup 'Товарная группа' : named, externalObject;
+CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup;
 
 @defineHierarchy(itemGroup);
+
+parentSkuGroup (itemGroup) += parentItemGroup(itemGroup);
 
 pieceNumeratorItemGroup = DATA numerator (itemGroup);
 namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
@@ -576,13 +578,15 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
 tmpSku() = SESSION DATA sku ();
 
 //baseGroup
-itemGroupSku = DATA itemGroup(sku) IN idGroup AUTOSET;
-nameItemGroupSku 'Группа товара' (sku) = name(itemGroupSku(sku));
-canonicalNameItemGroupSku 'Группа товара' (sku) = canonicalNameItemGroup(itemGroupSku(sku)) IN baseGroup;
+itemGroupItem = DATA itemGroup(item) IN idGroup AUTOSET;
+skuGroupSku(item) += itemGroupItem(item);
 
-TABLE itemGroupSku (itemGroup, sku);
+nameItemGroupItem 'Группа товара' (item) = name(itemGroupItem(item));
+canonicalNameItemGroupItem 'Группа товара' (item) = canonicalNameItemGroup(itemGroupItem(item)) IN baseGroup;
 
-isParentItemGroupSku (itemGroup, sku) = isParentItemGroupItemGroup(itemGroupSku(sku), itemGroup) PERSISTENT;
+TABLE itemGroupItem (itemGroup, item);
+
+isParentItemGroupItem (itemGroup, item) = isParentItemGroupItemGroup(itemGroupItem(item), itemGroup) PERSISTENT;
 
 //descriptionGroup
 captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
@@ -869,7 +873,7 @@ CLASS STATIC objectItemAttribute 'Объектный атрибут' {
 
 } : itemAttribute;
 
-valueItemGroupItemAttribute(item, attribute) = itemGroupSku(item) AND item IS item AND attribute == objectItemAttribute.itemGroup;
+valueItemGroupItemAttribute(item, attribute) = itemGroupItem(item) AND item IS item AND attribute == objectItemAttribute.itemGroup;
 valueUOMItemAttribute(item, attribute) = UOMItem(item) AND attribute == objectItemAttribute.UOM;
 valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
 valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.typeItem;
@@ -947,13 +951,13 @@ nameScalesAttributeItem 'Наименование для весов' (item) = ca
                 [GROUP CONCAT valueItemAttribute(item, attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute)](item))
                 PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
 
-nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupSku(itemGroup, item) PERSISTENT INDEXED;
+nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupItem(itemGroup, item) PERSISTENT INDEXED;
 
 nameAttributeStatisticGroupItem 'Наименование' (statisticGroup, item) = nameAttributeItem(item) AND hasParentStatisticGroupSku(statisticGroup, item) PERSISTENT INDEXED;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
 
-hasParentItemGroupBarcode (itemGroup, barcode) = isParentItemGroupSku(itemGroup, skuBarcode(barcode));
+hasParentItemGroupBarcode (itemGroup, barcode) = isParentItemGroupItem(itemGroup, skuBarcode(barcode));
 
 titleOriginScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleOriginCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
@@ -966,24 +970,24 @@ hoursExpiryMachineryBarcode 'Срок годности в часах' = hoursExp
 labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
-itemGroupMachineryBarcode 'Группа товара' = itemGroupSku(skuBarcode(barcode));
+itemGroupMachineryBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
 expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expirationDateSkuDepartmentStore(skuBarcode(barcode), departmentStore);
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-pieceNumeratorSku (sku) = pieceNumeratorItemGroup(itemGroupSku(sku));
-weightNumeratorSku (sku) = weightNumeratorItemGroup(itemGroupSku(sku));
+pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
+weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 
-generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku) {
+generateBarcodeItem 'Сгенерировать штрих-код' = ACTION (item) {
     ADDOBJ barcode;
     FOR b == addedObject() DO {
-        SET skuBarcode(b) <- sku AS sku;
+        SET skuBarcode(b) <- item AS item;
         LOCAL tmpNum = numerator();
-        IF isWeightItem(sku) THEN
-            SET tmpNum() <- weightNumeratorSku(sku)
+        IF isWeightItem(item) THEN
+            SET tmpNum() <- weightNumeratorItem(item)
         ELSE
-            SET tmpNum() <- pieceNumeratorSku(sku);
+            SET tmpNum() <- pieceNumeratorItem(item);
         SET idBarcode(b) <- completeBarcode(curStringValueNumerator(tmpNum()));
         EXEC incrementValueNumerator(tmpNum());
     };
@@ -1349,7 +1353,7 @@ FORM item 'Товар'
 
     OBJECTS i=item FIXED PANEL
 
-    PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupSku, idBarcodeSku READONLY,
+    PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupItem, idBarcodeSku READONLY,
 
                   // Основные данные
                   captionItem SHOWIF toShowCaption(i), nameBrandItem SHOWIF toShowBrand(i), nameTypeItemItem SHOWIF toShowType(i),
@@ -1399,7 +1403,7 @@ FORM item 'Товар'
     OBJECTS b=barcode
     PROPERTIES(b)       idBarcode, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUOMBarcode,
                         amountBarcode, activeBarcode, primaryBarcode
-    PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
+    PROPERTIES(i)       generateBarcodeItem TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
     FILTERS skuBarcode(b) == i
 
@@ -1443,7 +1447,7 @@ DESIGN item FROM DEFAULT {
             }
             NEW itemPanelColumn2 {
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(canonicalNameItemGroupSku);
+                ADD PROPERTY(canonicalNameItemGroupItem);
                 ADD PROPERTY(idBarcodeSku);
             }
         }
@@ -1555,8 +1559,7 @@ DESIGN item FROM DEFAULT {
     }
 }
 
-toEditItem 'Ред-ть товар' (item) = ACTION FORM item OBJECTS i MODAL TOOLBAR;
-inItemGroupSku(itemGroup, sku) = itemGroupSku(sku) == itemGroup;
+editItem 'Ред-ть товар' (item) = ACTION FORM item OBJECTS i MODAL TOOLBAR;
 
 FORM items 'Товары'
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -2974,7 +2977,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 
 @defineDocumentHeaderItemRetailSumCustom(actOfStudy, studyOutputDetail);
 
-dateExpireStudyOutputDetail 'Годен до' (studyOutputDetail) = DATA DATE(studyOutputDetail) IN baseGroup;
+expiryDateStudyOutputDetail 'Годен до' (studyOutputDetail) = DATA DATE(studyOutputDetail) IN baseGroup;
 
 // используется для закачки в мета-коде
 quantityActOfStudyDetailItemActOfStudy 'Кол-во для закачки в оборудование' (item, actOfStudy) = GROUP SUM quantityStudyOutputDetail(studyOutputDetail) BY itemStudyOutputDetail(studyOutputDetail), actOfStudyStudyOutputDetail(studyOutputDetail);
@@ -3049,7 +3052,7 @@ descriptionStudyOutputDetail 'Название документа' (studyOutputD
 @implementBalanceSkuLedger(studyOutput, item, departmentStore);
 @implementBatch(studyOutput, item);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
-dateExpireBatch (ledger) += dateExpireStudyOutputDetail(ledger);
+expiryDateBatch (ledger) += expiryDateStudyOutputDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(studyOutput, item);
 
@@ -3759,9 +3762,9 @@ carryingChargesShipment 'Транспортные расходы' (shipment) = D
 //количество-цены по строкам
 GROUP pricingShipmentDetailInfo 'Дополнительные ценовые параметры': baseGroup;
 
-dateExpireShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
+expiryDateShipmentDetail 'Годен до' (shipmentDetail) = DATA DATE(shipmentDetail) IN baseGroup;
 
-CONSTRAINT controlExpiryItemShipmentDetail(shipmentDetail) AND NOT dateExpireShipmentDetail(shipmentDetail) MESSAGE 'Для товара не задан срок годности';
+CONSTRAINT controlExpiryItemShipmentDetail(shipmentDetail) AND NOT expiryDateShipmentDetail(shipmentDetail) MESSAGE 'Для товара не задан срок годности';
 //    CHECKED BY controlExpiryItemShipmentDetail MESSAGE 'Не задан для товара срок годности';
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN itemDetailGroup;
@@ -3780,7 +3783,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 @implementBalanceSkuLedger(shipment, item, departmentStore);
 @implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
-dateExpireBatch (ledger) += dateExpireShipmentDetail(ledger);
+expiryDateBatch (ledger) += expiryDateShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
@@ -4843,7 +4846,7 @@ quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetai
 
 @defineDocumentDetailAggregationPricePrefix(disparity, inputDisparity, input, , );
 
-dateExpireInputDisparityDetail 'Годен до' (inputDisparityDetail) = DATA DATE(inputDisparityDetail) IN baseGroup;
+expiryDateInputDisparityDetail 'Годен до' (inputDisparityDetail) = DATA DATE(inputDisparityDetail) IN baseGroup;
 
 descriptionInputDisparityDetail 'Название документа' (inputDisparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
@@ -4852,7 +4855,7 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
 @implementBalanceSkuLedger(inputDisparity, item, departmentStore);
 @implementBatch(inputDisparity, item);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
-dateExpireBatch (ledger) += dateExpireInputDisparityDetail(ledger);
+expiryDateBatch (ledger) += expiryDateInputDisparityDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(inputDisparity, item);
 
@@ -6243,7 +6246,7 @@ END
 
 inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
                                                     AND item IS item
-                                                         AND NOT (filterItemsGroupMachinery(groupMachinery) AND NOT inGroupMachineryItemGroup(groupMachinery, itemGroupSku(item)))
+                                                         AND NOT (filterItemsGroupMachinery(groupMachinery) AND NOT inGroupMachineryItemGroup(groupMachinery, itemGroupItem(item)))
                                                          AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
 
 CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
@@ -7295,7 +7298,7 @@ FORM shipment 'Поставка'
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
                     supplierPriceShipmentDetail BACKGROUND isAllowPriceItemShipment(d), supplierMarkupShipmentDetail SHOWIF toShowPriceImporterShipment(s),
-                    importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), dateExpireShipmentDetail,
+                    importerPriceShipmentDetail READONLY SHOWIF toShowPriceImporterShipment(s), expiryDateShipmentDetail,
                     balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                     supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail SHOWIF toShowWareShipment(s),
                     warePriceShipmentDetail SHOWIF toShowWareShipment(s), numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail,
@@ -7397,7 +7400,7 @@ FORM shipments 'Поставки'
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
-                             supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, dateExpireShipmentDetail,
+                             supplierPriceShipmentDetail, supplierMarkupShipmentDetail, importerPriceShipmentDetail, expiryDateShipmentDetail,
                              balanceBeforeShipmentShipmentDetail, numberSupplierRangeShipmentDetail, valueSupplierRangeShipmentDetail,
                              supplierVATISumShipmentDetail, invoiceISumShipmentDetail, nameWareShipmentDetail, warePriceShipmentDetail,
                              numberRetailRangeShipmentDetail, valueRetailRangeShipmentDetail, retailMarkupShipmentDetail,
@@ -7936,7 +7939,7 @@ FORM collationSheetItem 'Товары для добавления в сличи�
 
     PROPERTIES(cs, i) inManyCollationSheetItem
 
-    FILTERS isParentItemGroupSku(g, i)
+    FILTERS isParentItemGroupItem(g, i)
     ORDER BY nameAttributeItem
 ;
 
@@ -8149,7 +8152,7 @@ FORM inventory 'Инвентаризация'
             includeDepartmentStoreInventory(ds, in),
             inventoryCollationSheet(cs) == in,
             includeCollationSheetItem(cs, i),
-            isParentItemGroupSku(g, i),
+            isParentItemGroupItem(g, i),
             quantityPageInventoryDetailListInventoryItem(li,it)>0
 
     ORDER BY nameAttributeItem
@@ -9727,248 +9730,6 @@ inChainStoresStoreTypeStoreDepartmentDepartment (chainStores, storeType, store, 
     chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType AND NOT depStore,
     department IS departmentStore AND NOT store AND NOT storeType AND NOT chainStores AND NOT depStore;
 
-countDayMovedItem 'Кол-во дней (30)' = SESSION DATA INTEGER (departmentStore) TOOLBAR;
-countDayMovedItemOver 'кол-во дней' (departmentStore) =
-    UNION OVERRIDE 30 AND departmentStore AS departmentStore, countDayMovedItem(departmentStore);
-
-//для оптимизации быстродействия не добавлял дату в GROUP MAX
-
-dateLastMovedItemOver(item, departmentStore, date) =
-    (dateLastMovedSkuStock(item, departmentStore) AND (date AS DATETIME)) >= sumDate(dateInTime(date), -countDayMovedItemOver(departmentStore));
-
-dateLastMovedUnionBalanceItem(item, departmentStore, date) =
-    TRUE IF balanceASkuLedgerDateTime(item, departmentStore, date) OR TRUE IF dateLastMovedItemOver(item, departmentStore, date);
-
-curDateLastMovedItemOver(item, departmentStore) =
-    dateLastMovedSkuStock(item, departmentStore) >= sumDate(currentDate(), -countDayMovedItemOver(departmentStore));
-
-curDateLastMovedUnionBalanceItem(item, departmentStore) =
-    TRUE IF currentBalanceSkuLedger(item, departmentStore) OR TRUE IF curDateLastMovedItemOver(item, departmentStore);
-
-FORM balanceItemDepartment 'Остатки на дату'
-
-    OBJECTS t=DATETIME FIXED PANEL
-    PROPERTIES(t) OBJVALUE
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)  //  idBarcodeSku
-    PROPERTIES        toEditItem(i)
-    FILTERS           isParentItemGroupSku(g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-
-
-    PROPERTIES(i, dep, t) READONLY balanceASkuLedgerDateTime, importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
-                                   accountPriceBLedgerDateTime, valueRetailRangeALedgerDateTime, retailPriceALedgerDateTime,
-                                   warePriceALedgerDateTime
-
-    PROPERTIES(i, dep) READONLY dateLastMovedSkuStock
-
-    PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
-
-    FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' balanceASkuLedgerDateTime(i, dep, t) DEFAULT
-        FILTER 'Товары с движением не позднее' 'F9' dateLastMovedUnionBalanceItem(i, dep, t)
-
-    OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
-    FILTERS isPostedAccountPriceLedger(apl) AND skuAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
-    ORDER BY dateTimeAccountPriceLedger DESC
-
-    OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
-    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
-    ORDER BY dateTimeRetailPriceLedger DESC
-
-    OBJECTS bil=balanceSkuLedger
-    PROPERTIES(bil) descriptionBalanceSkuLedger, dateTimeBalanceSkuLedger, signedQuantityBalanceSkuLedger READONLY
-    FILTERS isPostedBalanceSkuLedger(bil) AND skuBalanceSkuLedger(bil)==i AND stockBalanceSkuLedger(bil)==dep
-    ORDER BY dateTimeBalanceSkuLedger DESC
-
-    OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
-    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
-    ORDER BY dateTimeImporterPriceLedger DESC
-
-    OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
-    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
-    ORDER BY dateTimeSupplierPriceLedger DESC
-
-    OBJECTS rvl=retailRangeLedger
-    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
-    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
-    ORDER BY dateTimeRetailRangeLedger DESC
-
-    OBJECTS wpl= warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
-    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
-    ORDER BY dateTimeWarePriceLedger DESC
-;
-
-DESIGN balanceItemDepartment FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-
-        NEW topContainer {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            NEW firstCase {
-                type = SPLITV;
-                fillHorizontal = 1;
-                childConstraints = TO THE BOTTOM;
-                ADD t.box;
-                NEW firstCaseTwo {
-                    type = SPLITV;
-                    ADD treeStore.box {title = 'Магазины';};
-                    ADD treeGroups.box {title = 'Товарные группы';};
-                }
-            }
-
-            NEW secondCase {
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-                ADD dsi.box {fillVertical = 2;}
-
-                NEW ledger.box {
-                    fillVertical = 1;
-                    title = 'Изменение цен';
-                    type = TABBED;
-                    ADD bil.box;
-                    ADD apl.box;
-                    ADD rpl.box;
-                    ADD ipl.box;
-                    ADD spl.box;
-                    ADD rvl.box;
-                    ADD wpl.box;
-                }
-
-            }
-        }
-
-        ADD functions.box;
-    }
-}
-
-FORM curBalanceItemDepartment 'Текущие остатки'
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  idBarcodeSku
-    PROPERTIES        toEditItem(i)
-    FILTERS           nameAttributeItemGroupItem (g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    ORDER BY          nameIt
-
-
-    PROPERTIES(i, dep) READONLY currentBalanceSkuLedger, currentImporterPriceLedger, currentSupplierPriceLedger,
-                                currentAccountPriceLedger, currentValueRetailRangeLedger, currentRetailPriceLedger,
-                                currentWarePriceLedger, dateLastMovedSkuStock, averageSoldSkuStock
-    PROPERTIES(i, dep)          expirationDateSkuDepartmentStore
-
-    PROPERTIES countDayMovedItem(dep) TODRAW dsi FORCE PANEL
-
-    FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' currentBalanceSkuLedger(i, dep) DEFAULT
-        FILTER 'Товары с движением не позднее' 'F9' curDateLastMovedUnionBalanceItem(i, dep)
-
-    OBJECTS apl=accountPriceLedger
-    PROPERTIES (apl) descriptionAccountPriceLedger, dateTimeAccountPriceLedger, accountPriceAccountPriceLedger
-    FILTERS isPostedAccountPriceLedger(apl) AND skuAccountPriceLedger(apl)==i AND departmentStoreAccountPriceLedger(apl)==dep
-    ORDER BY dateTimeAccountPriceLedger DESC
-
-    OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
-    FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==i AND departmentStoreRetailPriceLedger(rpl)==dep
-    ORDER BY dateTimeRetailPriceLedger DESC
-
-    OBJECTS bil=balanceSkuLedger
-    PROPERTIES(bil) descriptionBalanceSkuLedger, dateTimeBalanceSkuLedger, signedQuantityBalanceSkuLedger READONLY
-    FILTERS isPostedBalanceSkuLedger(bil) AND skuBalanceSkuLedger(bil)==i AND stockBalanceSkuLedger(bil)==dep
-    ORDER BY dateTimeBalanceSkuLedger DESC
-
-    OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
-    FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==i AND departmentStoreImporterPriceLedger(ipl)==dep
-    ORDER BY dateTimeImporterPriceLedger DESC
-
-    OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
-    FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==i AND departmentStoreSupplierPriceLedger(spl)==dep
-    ORDER BY dateTimeSupplierPriceLedger DESC
-
-    OBJECTS rvl=retailRangeLedger
-    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
-    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==i AND departmentStoreRetailRangeLedger(rvl)==dep
-    ORDER BY dateTimeRetailRangeLedger DESC
-
-    OBJECTS wpl=warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
-    FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==i AND departmentStoreWarePriceLedger(wpl)==dep
-    ORDER BY dateTimeWarePriceLedger DESC
-
-    OBJECTS bt=batch
-    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch
-    PROPERTIES(bt, dep) READONLY currentBalanceBatchLedger
-    FILTERS isPostedBatch(bt) AND skuBatch(bt)==i
-    ORDER BY dateTimeBatch DESC
-;
-
-DESIGN curBalanceItemDepartment FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-
-        NEW topContainer {
-            type = SPLITH;
-
-            NEW firstBottom {
-                type = SPLITV;
-                ADD treeStore.box {title = 'Магазины';};
-                ADD treeGroups.box {title = 'Товарные группы';};
-            }
-
-            NEW secondCase {
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-                ADD dsi.box { fillVertical = 2; }
-
-                NEW ledger.box {
-                    fillVertical = 1;
-                    title = 'Изменение цен';
-                    type = TABBED;
-                    ADD bil.box;
-                    ADD bt.box;
-                    ADD apl.box;
-                    ADD rpl.box;
-                    ADD ipl.box;
-                    ADD spl.box;
-                    ADD rvl.box;
-                    ADD wpl.box;
-                }
-            }
-        }
-
-        ADD functions.box;
-    }
-}
-
 //------------------------------------Отчет по таре-------------------------------------------//
 
 nameAttributeItemBatch 'Товар' (batch) = nameAttributeItem(skuBatch(batch));
@@ -10026,10 +9787,10 @@ countToExpireDayBatchOver 'кол-во дней' (date) =
 balanceBBatchDateTime 'Остаток на начало дня' (batch, date) = balanceBStockBatchDateTime(batch, stockBalanceSkuLedger(batch), date);
 inChainStoresStoreTypeStoreDepartmentDepartmentBatch (tn, st, s, batch, ds) =
     inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, stockBalanceSkuLedger(batch), ds);
-isDateExpireBatch (batch, date) = dateExpireBatch(batch) < (date AS DATETIME);
+isExpiryDateBatch (batch, date) = expiryDateBatch(batch) < (date AS DATETIME);
 isDateTimeBatch (batch, date) = dateTimeBatch(batch) < (date AS DATETIME);
 isCountToExpireDayBatch (batch, date) =
-    dateExpireBatch(batch) < sumDate(dateInTime(date AS DATETIME), countToExpireDayBatchOver(date AS DATETIME));
+    expiryDateBatch(batch) < sumDate(dateInTime(date AS DATETIME), countToExpireDayBatchOver(date AS DATETIME));
 
 FORM balanceStockBatchDate 'Остатки по партиям на дату'
 
@@ -10046,14 +9807,14 @@ FORM balanceStockBatchDate 'Остатки по партиям на дату'
 
     OBJECTS           ib = (i=item, bt=batch)
     PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt)     //  barcodeBarcodeSku
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, dateExpireBatch
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, expiryDateBatch
     PROPERTIES        balanceBBatchDateTime(bt, t)
-    PROPERTIES        toEditItem(i)
+    PROPERTIES        editItem(i)
     ORDER BY          dateTimeBatch
 
     PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
 
-    FILTERS           isParentItemGroupSku(g, i),
+    FILTERS           isParentItemGroupItem(g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartmentBatch(tn, st, s, bt, ds),
                       isSkuBatch(bt, i),
                       isDateTimeBatch(bt, t)
@@ -10062,7 +9823,7 @@ FORM balanceStockBatchDate 'Остатки по партиям на дату'
         FILTER 'Партии с остатком' 'F11' balanceBBatchDateTime(bt, t) > 0 DEFAULT
 
     FILTERGROUP filters3
-        FILTER 'Партии с истекшим сроком годности' 'F10' isDateExpireBatch(bt, t)
+        FILTER 'Партии с истекшим сроком годности' 'F10' isExpiryDateBatch(bt, t)
         FILTER 'Период просрочки' 'F9' isCountToExpireDayBatch(bt, t)
 
 ;
@@ -10100,10 +9861,10 @@ DESIGN balanceStockBatchDate FROM DEFAULT {
 }
 
 currentBalanceBatch 'Текущий остаток' (batch) = currentBalanceBatchLedger(batch, stockBalanceSkuLedger(batch));
-isCurDateExpireBatch (batch) = dateExpireBatch(batch) < currentDateTime();
+isCurExpiryDateBatch (batch) = expiryDateBatch(batch) < currentDateTime();
 isCurDateTimeBatch (batch) = dateTimeBatch(batch) < currentDateTime();
 isCurCountToExpireDayBatch (batch, date) =
-    dateExpireBatch(batch) < sumDate(currentDate(), countToExpireDayBatchOver(date AS DATETIME));
+    expiryDateBatch(batch) < sumDate(currentDate(), countToExpireDayBatchOver(date AS DATETIME));
 
 FORM curBalanceStockBatchDate 'Текущие остатки по партиям'
 
@@ -10119,14 +9880,14 @@ FORM curBalanceStockBatchDate 'Текущие остатки по партиям
 
     OBJECTS           ib = (i=item, bt=batch)
     PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt) //  barcodeBarcodeSku
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, dateExpireBatch
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, expiryDateBatch
     PROPERTIES        currentBalanceBatch(bt)
-    PROPERTIES        toEditItem(i)
+    PROPERTIES        editItem(i)
     ORDER BY          dateTimeBatch
 
     PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
 
-    FILTERS           isParentItemGroupSku(g, i),
+    FILTERS           isParentItemGroupItem(g, i),
                       inChainStoresStoreTypeStoreDepartmentDepartmentBatch(tn, st, s, bt, ds),
                       isSkuBatch(bt, i),
                       isCurDateTimeBatch(bt)
@@ -10135,7 +9896,7 @@ FORM curBalanceStockBatchDate 'Текущие остатки по партиям
         FILTER 'Партии с остатком' 'F11' currentBalanceBatch(bt) > 0 DEFAULT
 
     FILTERGROUP filters3
-        FILTER 'Партии с истекшим сроком годности' 'F10' isCurDateExpireBatch(bt)
+        FILTER 'Партии с истекшим сроком годности' 'F10' isCurExpiryDateBatch(bt)
         FILTER 'Период просрочки' 'F9' isCurCountToExpireDayBatch(bt, t)
 
 ;
@@ -10686,12 +10447,12 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), idBarcodeSku(i)
-    PROPERTIES        toEditItem(i)
+    PROPERTIES        editItem(i)
     ORDER BY          nameDep
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
     FILTERS           inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    FILTERS           isParentItemGroupSku(g, i)
+    FILTERS           isParentItemGroupItem(g, i)
     FILTERGROUP filters10
         FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentDate(sp, i, dep, t) == yesNo.yes DEFAULT
 ;
@@ -10926,8 +10687,8 @@ NAVIGATOR {
         }
         NEW balance 'Остатки' {
             NEW balanceItem 'Остатки по товару' {
-                ADD curBalanceItemDepartment;
-                ADD balanceItemDepartment;
+                ADD currentBalanceSkuStock;
+                ADD balanceSkuStock;
             }
             NEW balanceBatch 'Остатки по партиям' {
                 ADD curBalanceStockBatchDate;

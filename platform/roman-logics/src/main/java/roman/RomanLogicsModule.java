@@ -5205,7 +5205,7 @@ public class RomanLogicsModule extends LogicsModule {
             objColorSupplier = new ObjectEntity(genID(), colorSupplier, "Цвет");
             gobjArticleColor.add(objArticle);
             gobjArticleColor.add(objColorSupplier);
-            addGroup(gobjArticleColor);
+            addGroupObject(gobjArticleColor);
 
             addPropertyDraw(objArticle, sidArticle);
             addPropertyDraw(objColorSupplier, sidColorSupplier, baseLM.name);
@@ -5319,7 +5319,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSku = new ObjectEntity(genID(), sku, "SKU");
             gobjShipmentSku.add(objShipment);
             gobjShipmentSku.add(objSku);
-            addGroup(gobjShipmentSku);
+            addGroupObject(gobjShipmentSku);
 
             addPropertyDraw(objShipment, baseLM.date, sidDocument);
             addPropertyDraw(objSku, sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
@@ -5993,7 +5993,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSizeSupplier = new ObjectEntity(genID(), sizeSupplier, "Размер");
             gobjGenderSizeSupplier.add(objGender);
             gobjGenderSizeSupplier.add(objSizeSupplier);
-            addGroup(gobjGenderSizeSupplier);
+            addGroupObject(gobjGenderSizeSupplier);
 
             addPropertyDraw(objGender, sidGender);
             addPropertyDraw(objSizeSupplier, sidSizeSupplier, nameSupplierSizeSupplier);
@@ -6051,7 +6051,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjCategoryGenderSizeSupplier.add(objCategory);
             gobjCategoryGenderSizeSupplier.add(objGender);
             gobjCategoryGenderSizeSupplier.add(objSizeSupplier);
-            addGroup(gobjCategoryGenderSizeSupplier);
+            addGroupObject(gobjCategoryGenderSizeSupplier);
 
             addPropertyDraw(objCategory, baseLM.name);
             addPropertyDraw(objGender, sidGender);
@@ -6352,7 +6352,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjCategoryGenderCompositionTypeFabric.add(objGender);
             gobjCategoryGenderCompositionTypeFabric.add(objComposition);
             gobjCategoryGenderCompositionTypeFabric.add(objTypeFabric);
-            addGroup(gobjCategoryGenderCompositionTypeFabric);
+            addGroupObject(gobjCategoryGenderCompositionTypeFabric);
 
             addPropertyDraw(objGender, sidGender);
             addPropertyDraw(objComposition, baseLM.objectValue);
@@ -6546,7 +6546,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
             gobjFreightImporter.add(objTypeInvoice);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight);
 
@@ -6579,7 +6579,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory.add(objComposition);
             gobjArticleCompositionCountryCategory.add(objCountry);
             gobjArticleCompositionCountryCategory.add(objCategory);
-            addGroup(gobjArticleCompositionCountryCategory);
+            addGroupObject(gobjArticleCompositionCountryCategory);
 
             addPropertyDraw(objArticle, sidArticle);
             addPropertyDraw(objArticle, nameBrandSupplierArticle);
@@ -6654,7 +6654,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporterTypeInvoice.add(objFreight);
             gobjFreightImporterTypeInvoice.add(objImporter);
             gobjFreightImporterTypeInvoice.add(objTypeInvoice);
-            addGroup(gobjFreightImporterTypeInvoice);
+            addGroupObject(gobjFreightImporterTypeInvoice);
 
             addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName);
             addPropertyDraw(objImporter, baseLM.name);
@@ -6670,7 +6670,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             gobjFreightBoxSku.add(objFreightBox);
             gobjFreightBoxSku.add(objSku);
-            addGroup(gobjFreightBoxSku);
+            addGroupObject(gobjFreightBoxSku);
 
             addPropertyDraw(objFreightBox, baseLM.barcode);
             addPropertyDraw(objSku, sidArticleSku, originalNameArticleSku, sidColorSupplierItem, sidSizeSupplierItem, nameCommonSizeSku);
@@ -6732,7 +6732,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
             gobjFreightImporter.add(objTypeInvoice);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight, symbolCurrencyFreight);
 
@@ -6768,7 +6768,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory.add(objComposition);
             gobjArticleCompositionCountryCategory.add(objCountry);
             gobjArticleCompositionCountryCategory.add(objCategory);
-            addGroup(gobjArticleCompositionCountryCategory);
+            addGroupObject(gobjArticleCompositionCountryCategory);
 
             addPropertyDraw(objArticle, sidArticle);
             addPropertyDraw(objArticle, nameBrandSupplierArticle);
@@ -6844,7 +6844,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
             gobjFreightImporter.add(objTypeInvoice);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight, symbolCurrencyFreight);
 
@@ -6866,7 +6866,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory.add(objComposition);
             gobjArticleCompositionCountryCategory.add(objCountry);
             gobjArticleCompositionCountryCategory.add(objCategory);
-            addGroup(gobjArticleCompositionCountryCategory);
+            addGroupObject(gobjArticleCompositionCountryCategory);
 
             addPropertyDraw(objArticle, sidArticle);
             addPropertyDraw(objArticle, nameBrandSupplierArticle);
@@ -6919,7 +6919,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight);
 
@@ -6952,7 +6952,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory.add(objComposition);
             gobjArticleCompositionCountryCategory.add(objCountry);
             gobjArticleCompositionCountryCategory.add(objCategory);
-            addGroup(gobjArticleCompositionCountryCategory);
+            addGroupObject(gobjArticleCompositionCountryCategory);
 
             addPropertyDraw(objArticle, sidArticle);
             addPropertyDraw(objArticle, nameBrandSupplierArticle);
@@ -7023,7 +7023,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date);
             addPropertyDraw(objImporter, baseLM.name);
@@ -7077,7 +7077,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
             gobjFreightImporter.add(objTypeInvoice);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight, symbolCurrencyFreight);
 
@@ -7155,7 +7155,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             gobjFreightImporter.add(objFreight);
             gobjFreightImporter.add(objImporter);
-            addGroup(gobjFreightImporter);
+            addGroupObject(gobjFreightImporter);
 
             addPropertyDraw(objFreight, baseLM.date, nameExporterFreight, addressExporterFreight, nameCurrencyFreight);
             addPropertyDraw(objImporter, baseLM.name, addressSubject, contractImporter);
@@ -7201,7 +7201,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporterSupplier.add(objFreight);
             gobjFreightImporterSupplier.add(objImporter);
             gobjFreightImporterSupplier.add(objSupplier);
-            addGroup(gobjFreightImporterSupplier);
+            addGroupObject(gobjFreightImporterSupplier);
 
             addPropertyDraw(objFreight, baseLM.date, nameCurrencyFreight);
             addPropertyDraw(objImporter, baseLM.name, addressSubject, contractImporter);
@@ -7439,7 +7439,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityImporterFreightArticleNetWeight, objImporter, objFreight, objArticle, objWeight);
             gobjArticleNetWeight.add(objArticle);
             gobjArticleNetWeight.add(objWeight);
-            addGroup(gobjArticleNetWeight);
+            addGroupObject(gobjArticleNetWeight);
             addPropertyDraw(objArticle, sidArticle, nameCategoryArticle, nameBrandSupplierArticle);
             addPropertyDraw(objWeight, baseLM.objectValue); */
 
@@ -7652,7 +7652,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporterTypeInvoice.add(objFreight);
             gobjFreightImporterTypeInvoice.add(objImporter);
             gobjFreightImporterTypeInvoice.add(objTypeInvoice);
-            addGroup(gobjFreightImporterTypeInvoice);
+            addGroupObject(gobjFreightImporterTypeInvoice);
 
             addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice);
 
@@ -7753,7 +7753,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporterTypeInvoice.add(objFreight);
             gobjFreightImporterTypeInvoice.add(objImporter);
             gobjFreightImporterTypeInvoice.add(objTypeInvoice);
-            addGroup(gobjFreightImporterTypeInvoice);
+            addGroupObject(gobjFreightImporterTypeInvoice);
 
             addPropertyDraw(objFreight, baseLM.date, dateArrivalFreight, nameExporterFreight);
             importerName = addPropertyDraw(baseLM.name, objImporter);
@@ -7865,7 +7865,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjDates.add(objDateFrom);
             gobjDates.add(objDateTo);
 
-            addGroup(gobjDates);
+            addGroupObject(gobjDates);
             gobjDates.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(objDateFrom, baseLM.objectValue);
