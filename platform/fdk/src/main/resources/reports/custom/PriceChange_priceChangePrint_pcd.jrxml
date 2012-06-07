@@ -17,8 +17,8 @@
 	</style>
 	<field name="pcd" class="java.lang.Integer"/>
 	<field name="indexPriceChangeDocumentDetail" class="java.lang.Integer"/>
-	<field name="nameItemPriceChangeDocumentDetail" class="java.lang.String"/>
-	<field name="shortNameUOMItemPriceChangeDocumentDetail" class="java.lang.String"/>
+	<field name="nameSkuPriceChangeDocumentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMSkuPriceChangeDocumentDetail" class="java.lang.String"/>
 	<field name="quantityPriceChangeDocumentDetail" class="java.lang.Double"/>
 	<field name="curSupplierISumPriceChangeDocumentDetail" class="java.lang.Double"/>
 	<field name="curMarkupSumPriceChangeDocumentDetail" class="java.lang.Double"/>
@@ -248,14 +248,14 @@
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameItemPriceChangeDocumentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuPriceChangeDocumentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="140" y="0" width="19" height="18"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUOMItemPriceChangeDocumentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSkuPriceChangeDocumentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="159" y="0" width="26" height="18"/>

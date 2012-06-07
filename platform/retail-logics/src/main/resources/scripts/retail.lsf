@@ -25,23 +25,11 @@ REQUIRE BaseLogicsModule,
         AccountDocument,
         StorePrice,
         Supplier,
-        Sales;
+        Sales,
+        PriceChange;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
-
-//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
-
-META metaCodeIsPriceChangeWrong(prop)
-
-    isPriceChangeWrong###prop (priceChange###prop##Detail) =
-        retailPricePriceChange###prop##Detail(priceChange###prop##Detail) < curRetailPricePriceChange###prop##Detail(priceChange###prop##Detail)
-          AND banMarkdownItem(itemPriceChange###prop##Detail(priceChange###prop##Detail));
-
-// todo : при изменении поставки начинает сильно тормозить
-//    CONSTRAINT isPriceChangeWrong###prop (priceChange###prop##Detail) MESSAGE 'Уценка товара запрещена';
-
-END
 
 // ----------------------------------- Отображение атрибутов товаров по свойству товарной группы ------------------------------------------ //
 META metaCodeShowItemAttribute (attribute, caption, group)
@@ -93,7 +81,7 @@ META defineDocumentDetailItemExtra (object)
 
     hintItem###object##Detail 'Подсказка по товару' (detail) = hintItem(item###object##Detail(detail)) IN itemDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-    nameBanRevaluationItemDepartment###object##Detail 'Запрет на переоценку' (detail) = name(banRevaluationItemDepartmentDate(item###object##Detail(detail),
+    nameBanPriceChangeItemDepartment###object##Detail 'Запрет на переоценку' (detail) = name(banPriceChangeItemDepartmentDate(item###object##Detail(detail),
         departmentStore###object##Detail(detail), date###object##Detail(detail))) IN itemDetailGroup FIXEDCHARWIDTH 3;
 
 END
@@ -186,64 +174,6 @@ META defineDocumentDetailAggregationItemPrefix (primObject, aggrObject, prefix)
 END
 META defineDocumentDetailAggregationItem (primObject, aggrObject)
     @defineDocumentDetailAggregationItemPrefix(primObject, aggrObject, );
-END
-
-// ------------------------- Автоматическое изменение цен ---------------------------------- //
-
-META defineDocumentHeaderRevaluation (object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
-
-    revaluationCommittee###object = DATA revaluationCommittee (object) IN idGroup;
-    nameRevaluationCommittee###object 'Комиссия переоценки' (object) = name(revaluationCommittee###object(object)) IN documentPrmGroup;
-    revaluationCommittee###object(object) <- revaluationCommitteeDepartmentStore(departmentStore###object(object))
-        WHEN object IS object;
-END
-
-// ------------------------- Автоматическое изменение цен ---------------------------------- //
-
-META defineDocumentPriceChange (object)
-    needToPriceChange###object (object) = GROUP SUM 1 IF needToPriceChange###object##Detail(detail) BY object###object##Detail(detail);
-
-    @defineDocumentAggregation(object, priceChange###object, needToPriceChange###object);
-
-    @defineDocumentHeaderAggregation(object, priceChange###object);
-    @defineDocumentHeaderAggregationDepartmentStore(object, priceChange###object);
-    @defineDocumentHeaderAggregationDescription(object, priceChange###object);
-
-    @defineDocumentDetailAggregationHeader(object, priceChange###object);
-    @defineDocumentDetailAggregationDepartmentStore(object, priceChange###object);
-
-    numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
-    revaluationCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = revaluationCommittee###object(object##PriceChange###object(object));
-END
-
-META defineDocumentPriceChangeNumberCustom (object, suffix)
-    @defineDocumentHeaderAggregationNumberCustom(object, priceChange###object, suffix);
-END
-META defineDocumentPriceChangeNumber (object)
-    @defineDocumentPriceChangeNumberCustom(object, Object);
-END
-
-META defineDocumentPriceChangeItemPrefix (object, prefix)
-    @defineDocumentDetailAggregationItemPrefix(object, priceChange###object, prefix);
-END
-META defineDocumentPriceChangeItem (object)
-    @defineDocumentPriceChangeItemPrefix(object, );
-END
-
-META defineDocumentPriceChangeQuantity (object)
-    quantityPriceChange###object##Detail 'Количество' (detail) = quantity###object##Detail(object##DetailPriceChange###object##Detail(detail));
-END
-
-META defineDocumentPriceChangePricePrefix (object, prefixA, prefixP, caption)
-    @defineDocumentDetailAggregationPricePrefix(object, priceChange###object, prefixP, prefixA, caption);
-END
-META defineDocumentPriceChangePrice (object)
-    @defineDocumentPriceChangePricePrefix (object, , , );
-END
-
-META defineDocumentPriceChangeRetailPricePrefix (object, prefix, caption)
-    prefix###retailPricePriceChange###object##Detail 'Розничная цена'###caption (detail) = curRetailPrice###object##Detail(object##DetailPriceChange###object##Detail(detail));
 END
 
 // ----------------------------- количество упаковок и вес товаров ----------------------- //
@@ -519,14 +449,6 @@ PROPERTIES(r) name, percentRateWaste;
 // ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
 
 GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
-
-revaluationCommitteeDepartmentStore 'Комиссия переоценки (ИД)' = DATA revaluationCommittee (departmentStore);
-nameRevaluationCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(revaluationCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-isRevaluationCommitteeDepartmentStore 'По умолчанию' (revaluationCommittee, departmentStore) = revaluationCommitteeDepartmentStore(departmentStore) == revaluationCommittee;
-CONSTRAINT revaluationCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(revaluationCommitteeDepartmentStore(departmentStore), departmentStore)
-    CHECKED BY revaluationCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
-
-EXTEND FORM departmentStore PROPERTIES nameRevaluationCommitteeDepartmentStore(d);
 
 wastageCommitteeDepartmentStore 'Комиссия для списания отходов (ИД)' = DATA wastageCommittee (departmentStore);
 nameWastageCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(wastageCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
@@ -1190,6 +1112,18 @@ EXTEND FORM dialogRetailRangeItem
     PROPERTIES dataValueRetailRangeItemDate(a, d)
 ;
 
+// --------- Суммы для товарного отчета по переоценке --------------- //
+
+diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, товар' (priceChangeDocument) =
+    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) AND NOT isContainerItem(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
+        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
+    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerItem(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
+        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
+sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
+
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
 CLASS naturalLossItemGroup 'Группа естественной убыли': named, externalObject;
@@ -1376,7 +1310,7 @@ TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 @defineHistorizableDouble(maxReserveItemDepartment, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
 @defineHistorizableDouble(minReserveItemDepartment, 'Минимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
 
-@defineHistorizableDoubleYesNo(banRevaluationItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
+@defineHistorizableDoubleYesNo(banPriceChangeItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
 
 @defineHistorizableDoubleYesNo(inActionItemDepartment, 'Товар акции', item, nameAttributeItem, departmentStore, name, discountGroup);
 
@@ -1488,7 +1422,7 @@ FORM item 'Товар'
     PROPERTIES      overRetailPriceItemDepartmentDate(i, d, dt) BACKGROUND dataRetailPriceItemDepartmentDate(i, d, dt), overDialogRetailPriceItemDepartmentDate(i, d),
                     overMaxReserveItemDepartmentDate(i, d, dt) BACKGROUND dataMaxReserveItemDepartmentDate(i, d, dt), overDialogMaxReserveItemDepartmentDate(i, d),
                     overMinReserveItemDepartmentDate(i, d, dt) BACKGROUND dataMinReserveItemDepartmentDate(i, d, dt), overDialogMinReserveItemDepartmentDate(i, d),
-                    overNameBanRevaluationItemDepartmentDate(i, d, dt) BACKGROUND dataNameBanRevaluationItemDepartmentDate(i, d, dt), overDialogBanRevaluationItemDepartmentDate(i, d),
+                    overNameBanPriceChangeItemDepartmentDate(i, d, dt) BACKGROUND dataNameBanPriceChangeItemDepartmentDate(i, d, dt), overDialogBanPriceChangeItemDepartmentDate(i, d),
                     overNameInActionItemDepartmentDate(i, d, dt) BACKGROUND dataNameInActionItemDepartmentDate(i, d, dt), overDialogInActionItemDepartmentDate(i, d),
                     overMarginProductionItemDepartmentDate(i, d, dt) BACKGROUND dataMarginProductionItemDepartmentDate(i, d, dt), overDialogMarginProductionItemDepartmentDate(i, d),
                     overDiscountItemDepartmentDate(i, d, dt) BACKGROUND dataDiscountItemDepartmentDate(i, d, dt), overDialogDiscountItemDepartmentDate(i, d),
@@ -1798,69 +1732,6 @@ DESIGN assortments FROM DEFAULT {
 }
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
-
-CLASS revaluationCommittee 'Комиссия переоценки' : committee;
-
-FORM revaluationCommittee 'Комиссия переоценки'
-    OBJECTS c=revaluationCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameChairmanCommittee
-
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
-
-    OBJECTS dep=departmentStore
-    PROPERTIES(dep)    READONLY depName = name
-    PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRevaluationCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
-    ORDER BY depName
-
-
-    OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
-
-    PROPERTIES(c, e)   inCommitteeEmployee
-    FILTERS            countDivisionEmployeeCommittee (e, c)
-    FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
-
-    FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
-
-    EDIT revaluationCommittee OBJECT c
-;
-
-DESIGN revaluationCommittee FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW OneCase BEFORE e.box {
-            ADD PROPERTY (nameChairmanCommittee);
-        }
-
-        NEW caseOne BEFORE OneCase {
-            childConstraints = TO THE RIGHT;
-            title = 'Отделы, для которых действуют комиссии';
-
-            ADD treeStore.tree {
-                fillHorizontal = 1;
-            }
-
-            ADD dep.box {
-                fillHorizontal = 2;
-            }
-        };
-    }
-}
-
-FORM revaluationCommitteeDialog 'Комиссии переоценки'
-    OBJECTS rc=revaluationCommittee
-    PROPERTIES(rc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
-    PROPERTIES(rc)      ADDFORM, EDITFORM
-
-    DIALOG revaluationCommittee OBJECT rc
-;
 
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 
@@ -2841,264 +2712,6 @@ FORM papers 'Документы качества'
     ORDER BY objectClassName
 ;
 
-//---------------------------- Переоценка (абстрактные классы) ----------------------------------------//
-
-META implementPriceChangeDocument (object)
-    dateTimePriceChangeDocument (priceChangeDocument) += dateTime###object(priceChangeDocument);
-    isPostedPriceChangeDocument (priceChangeDocument) += isPosted###object(priceChangeDocument);
-    numberPriceChangeDocument (priceChangeDocument) += number###object(priceChangeDocument);
-    seriesPriceChangeDocument (priceChangeDocument) += series###object(priceChangeDocument);
-    departmentStorePriceChangeDocument (priceChangeDocument) += departmentStore###object(priceChangeDocument);
-    descriptionPriceChangeDocument (priceChangeDocument) += description###object(priceChangeDocument);
-    numberDisposalPriceChangeDocument (priceChangeDocument) += numberDisposal###object(priceChangeDocument);
-    revaluationCommitteePriceChangeDocument (priceChangeDocument) += revaluationCommittee###object(priceChangeDocument);
-
-    priceChangeDocumentPriceChangeDocumentDetail (priceChangeDocumentDetail) += object###object##Detail (priceChangeDocumentDetail);
-    itemPriceChangeDocumentDetail (priceChangeDocumentDetail) += item###object##Detail (priceChangeDocumentDetail);
-    quantityPriceChangeDocumentDetail (priceChangeDocumentDetail) += quantity###object##Detail (priceChangeDocumentDetail);
-END
-
-META implementPriceChangeDocumentDetailPricePrefix (object, prefixA, prefixR)
-    curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###ware###object##Detail (priceChangeDocumentDetail);
-    warePriceChangeDocumentDetail (priceChangeDocumentDetail) += ware###object##Detail (priceChangeDocumentDetail);
-
-    curWarePricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###warePrice###object##Detail (priceChangeDocumentDetail);
-    warePricePriceChangeDocumentDetail (priceChangeDocumentDetail) += warePrice###object##Detail (priceChangeDocumentDetail);
-
-    curImporterPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###importerPrice###object##Detail (priceChangeDocumentDetail);
-    importerPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += importerPrice###object##Detail (priceChangeDocumentDetail);
-
-    curSupplierPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###supplierPrice###object##Detail (priceChangeDocumentDetail);
-    supplierPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += supplierPrice###object##Detail (priceChangeDocumentDetail);
-
-    curValueRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###valueRetailRange###object##Detail (priceChangeDocumentDetail);
-    valueRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += valueRetailRange###object##Detail (priceChangeDocumentDetail);
-
-    curRetailPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixR###retailPrice###object##Detail (priceChangeDocumentDetail);
-    retailPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += retailPrice###object##Detail (priceChangeDocumentDetail);
-END
-
-META implementPriceChangeDocumentDetailAllPrice (object)
-    @implementPriceChangeDocumentDetailPricePrefix(object, cur, cur);
-END
-
-META implementPriceChangeDocumentDetailRetailPricePrefix (object, prefix)
-    @implementPriceChangeDocumentDetailPricePrefix(object, prefix, prefix###cur);
-END
-META implementPriceChangeDocumentDetailRetailPrice (object)
-    @implementPriceChangeDocumentDetailRetailPricePrefix(object, );
-END
-
-CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountDocumentLedger;
-TABLE priceChangeDocument (priceChangeDocument);
-
-CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
-TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
-
-dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (priceChangeDocument) PERSISTENT INDEXED;
-datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
-
-isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = ABSTRACT BOOLEAN (priceChangeDocument) PERSISTENT;
-
-numberPriceChangeDocument 'Номер документа' (priceChangeDocument) = ABSTRACT STRING[18] (priceChangeDocument) PERSISTENT;
-seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = ABSTRACT STRING[2] (priceChangeDocument) PERSISTENT;
-
-departmentStorePriceChangeDocument (priceChangeDocument) = ABSTRACT departmentStore (priceChangeDocument) PERSISTENT;
-nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
-
-descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = ABSTRACT STRING[200] (priceChangeDocument) PERSISTENT;
-
-numberDisposalPriceChangeDocument '№ распоряжения на переоценку' (priceChangeDocument) = ABSTRACT STRING[30] (priceChangeDocument) PERSISTENT;
-revaluationCommitteePriceChangeDocument (priceChangeDocument) = ABSTRACT revaluationCommittee (priceChangeDocument) PERSISTENT;
-
-priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail) = ABSTRACT priceChangeDocument (priceChangeDocumentDetail) PERSISTENT INDEXED;
-datePriceChangeDocumentDetail 'Дата' (priceChangeDocumentDetail) = datePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail)) PERSISTENT;
-
-itemPriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT item (priceChangeDocumentDetail) PERSISTENT INDEXED;
-nameItemPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameAttributeItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
-shortNameUOMItemPriceChangeDocumentDetail 'Ед. изм.' (priceChangeDocumentDetail) = shortNameUOMItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail));
-
-quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,3] (priceChangeDocumentDetail) PERSISTENT;
-
-curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT ware (priceChangeDocumentDetail) PERSISTENT;
-warePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT ware (priceChangeDocumentDetail) PERSISTENT;
-
-@defineDocumentDetailWareRange(priceChangeDocument);
-@defineDocumentDetailWareRangePrefix(priceChangeDocument, cur, ' (тек.)');
-
-curWarePricePriceChangeDocumentDetail 'Цена посуды (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-warePricePriceChangeDocumentDetail 'Цена посуды' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-
-curImporterPricePriceChangeDocumentDetail 'Цена изготовителя (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-importerPricePriceChangeDocumentDetail 'Цена изготовителя' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-
-curSupplierPricePriceChangeDocumentDetail 'Цена поставщика (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-supplierPricePriceChangeDocumentDetail 'Цена поставщика' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-
-curValueRetailRangePriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
-valueRetailRangePriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
-
-curRetailPricePriceChangeDocumentDetail 'Розничная цена (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-
-@defineDocumentDetailIndex(priceChangeDocument);
-
-@defineDocumentDetailBaseSum(priceChangeDocument);
-@defineDocumentDetailBaseSumPrefix(priceChangeDocument, cur, ' (тек.)');
-
-@defineDocumentHeaderQuantity(priceChangeDocument);
-
-@defineDocumentHeaderBaseSum(priceChangeDocument);
-@defineDocumentHeaderBaseSumPrefix(priceChangeDocument, cur, ' (тек.)');
-
-retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
-    markupSumPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
-
-curRetailMarkupPriceChangeDocumentDetail 'Текущая наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
-    curMarkupSumPriceChangeDocumentDetail(priceChangeDocumentDetail), curSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
-
-commonMarkupPriceChangeDocumentDetail 'Общий процент надбавки от цены изготовителя' (priceChangeDocumentDetail) = [(X/Y-1)*100](
-    supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail), importerPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
-
-                         // ---------Дельта  показателей переоценки (detail)--------------- //
-
-diffWareSumPriceChangeDocumentDetail 'Изменение суммы посуды' (priceChangeDocumentDetail) =
-    wareSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) curWareSumPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-diffWareVATSumPriceChangeDocumentDetail 'Изменение суммы НДС посуды' (priceChangeDocumentDetail) =
-    wareVATSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) curWareVATSumPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-diffSupplierISumPriceChangeDocumentDetail 'Изменение суммы поставщика' (priceChangeDocumentDetail) =
-    supplierISumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) curSupplierISumPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-diffMarkupSumPriceChangeDocumentDetail 'Изменение суммы надбавки' (priceChangeDocumentDetail) =
-    markupSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) curMarkupSumPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-diffRetailVATISumPriceChangeDocumentDetail 'Изменение суммы розничного НДС' (priceChangeDocumentDetail) =
-    retailVATISumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) curRetailVATISumPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-diffRetailSumPriceChangeDocumentDetail 'Изменение розничной суммы' (priceChangeDocumentDetail) =
-    retailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) (-) curRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-                         // ---------Дельта  показателей переоценки (header)--------------- //
-
-diffWareSumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы посуды' (priceChangeDocument) =
-    wareSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curWareSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
-
-diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы НДС посуды' (priceChangeDocument) =
-    wareVATSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curWareVATSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
-
-diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы поставщика' (priceChangeDocument) =
-    supplierISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curSupplierISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
-
-diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы надбавки' (priceChangeDocument) =
-    markupSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curMarkupSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
-
-diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument 'Изменение суммы розничного НДС' (priceChangeDocument) =
-    retailVATISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curRetailVATISumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
-
-diffRetailSumPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки' (priceChangeDocument) =
-    retailSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) (-) curRetailSumPriceChangeDocumentDetailPriceChangeDocument(priceChangeDocument) IN documentSumGroup;
-
-                         // ---------Дельта для товарного отчета --------------- //
-
-diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, товар' (priceChangeDocument) =
-    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) AND NOT isContainerItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail))
-        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
-diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
-    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerItem(itemPriceChangeDocumentDetail(priceChangeDocumentDetail))
-        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-@implementAccountDocumentLedger(priceChangeDocument);
-sumIncAccountDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
-sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
-
-                         // --------- Комиссия переоценки --------------- //
-
-isRevaluationCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND revaluationCommitteePriceChangeDocument(priceChangeDocument);
-
-nameRevaluationCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(revaluationCommitteePriceChangeDocument(priceChangeDocument));
-commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = namePositionEmployeeCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
-inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(revaluationCommitteePriceChangeDocument(priceChangeDocument), employee);
-commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = nameChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
-namePositionChairmanPriceChangeDocument 'Должность' (priceChangeDocument) = namePositionChairmanCommittee(revaluationCommitteePriceChangeDocument(priceChangeDocument));
-
-                            //----------печатная форма--------//
-FORM actOfRevaluation 'Акт переоценки' PRINT
-    OBJECTS pc=priceChangeDocument  FIXED PANEL
-    PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
-                             nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, nameRevaluationCommitteePriceChangeDocument,
-                             commonNameChairmanPriceChangeDocument, namePositionChairmanPriceChangeDocument, commonNameEmployeeCommitteePriceChangeDocument,
-                             quantityPriceChangeDocumentDetailPriceChangeDocument, numberDisposalPriceChangeDocument, isRevaluationCommitteePriceChangeDocument,
-                             curSupplierISumPriceChangeDocumentDetailPriceChangeDocument, curMarkupSumPriceChangeDocumentDetailPriceChangeDocument, curRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                             curWareSumPriceChangeDocumentDetailPriceChangeDocument, curWareVATSumPriceChangeDocumentDetailPriceChangeDocument, curRetailSumPriceChangeDocumentDetailPriceChangeDocument,
-                             supplierISumPriceChangeDocumentDetailPriceChangeDocument, markupSumPriceChangeDocumentDetailPriceChangeDocument, retailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                             wareSumPriceChangeDocumentDetailPriceChangeDocument, wareVATSumPriceChangeDocumentDetailPriceChangeDocument, retailSumPriceChangeDocumentDetailPriceChangeDocument,
-                             diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                             diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
-
-    OBJECTS pcd=priceChangeDocumentDetail
-    PROPERTIES(pcd) READONLY indexPriceChangeDocumentDetail, nameItemPriceChangeDocumentDetail, shortNameUOMItemPriceChangeDocumentDetail,
-                             quantityPriceChangeDocumentDetail,
-                             curSupplierISumPriceChangeDocumentDetail, curMarkupSumPriceChangeDocumentDetail,
-                             curRetailVATISumPriceChangeDocumentDetail, curWareSumPriceChangeDocumentDetail,
-                             curWareVATSumPriceChangeDocumentDetail, curRetailPricePriceChangeDocumentDetail, curRetailSumPriceChangeDocumentDetail,
-                             supplierISumPriceChangeDocumentDetail, markupSumPriceChangeDocumentDetail,
-                             retailVATISumPriceChangeDocumentDetail, wareSumPriceChangeDocumentDetail,
-                             wareVATSumPriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail, retailSumPriceChangeDocumentDetail,
-                             diffSupplierISumPriceChangeDocumentDetail, diffMarkupSumPriceChangeDocumentDetail,
-                             diffRetailVATISumPriceChangeDocumentDetail, diffWareSumPriceChangeDocumentDetail,
-                             diffWareVATSumPriceChangeDocumentDetail, diffRetailSumPriceChangeDocumentDetail
-
-    OBJECTS e=employee
-    PROPERTIES(e) READONLY   commonName, namePositionEmployee
-
-    FILTERS                  priceChangeDocumentPriceChangeDocumentDetail(pcd) == pc,
-                             inPriceChangeDocumentEmployee(pc, e)
-;
-
-toPrintActOfRevaluation 'Акт переоценки' (priceChangeDocument) = ACTION FORM actOfRevaluation OBJECTS pc IMAGE 'print.png' IN printGroup;
-
-
-FORM priceChangeDocuments 'Акты переоценки'
-    OBJECTS pc=priceChangeDocument
-    PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
-                            numberPriceChangeDocument, seriesPriceChangeDocument,
-                            diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                            diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, nameRevaluationCommitteePriceChangeDocument
-
-    OBJECTS pcd=priceChangeDocumentDetail
-    PROPERTIES(pcd) READONLY nameItemPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
-                             curImporterPricePriceChangeDocumentDetail, importerPricePriceChangeDocumentDetail,
-                             curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
-                             curValueRetailRangePriceChangeDocumentDetail, valueRetailRangePriceChangeDocumentDetail,
-                             curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
-                             curWarePricePriceChangeDocumentDetail, warePricePriceChangeDocumentDetail
-
-    PROPERTIES(pc) FORCE PANEL toPrintActOfRevaluation
-
-    FILTERS priceChangeDocumentPriceChangeDocumentDetail(pcd) == pc
-;
-
-DESIGN priceChangeDocuments FROM DEFAULT{
-    main{
-
-        NEW topContainer{
-
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD pc.box;
-            ADD pcd.box;
-        }
-
-        ADD pc.printGroup;
-    }
-
-    ADD functions.box;
-}
-
 //---------------------------- Загрузка в ВУ  ----------------------------------------//
 CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
 TABLE priceTransactionDocument (priceTransactionDocument);
@@ -4012,7 +3625,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 
 @defineDocumentBasePostedDepartmentStoreItem(statement);
 
-@defineDocumentHeaderRevaluation(statement);
+@defineDocumentHeaderPriceChange(statement);
 
 @defineDocumentDetailQuantity(statement);
 
@@ -4110,15 +3723,13 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 
 @defineDocumentPriceChange(statement);
 @defineDocumentPriceChangeNumber(statement);
-@defineDocumentPriceChangeItem(statement);
+@defineDocumentPriceChangeSku(statement, item);
 @defineDocumentPriceChangeQuantity(statement);
 @defineDocumentPriceChangePrice(statement);
 @defineDocumentPriceChangeRetailPricePrefix(statement, cur, ' (тек.)');
 
-@implementPriceChangeDocument(priceChangeStatement);
+@implementPriceChangeDocument(priceChangeStatement, sku);
 @implementPriceChangeDocumentDetailRetailPrice(priceChangeStatement);
-
-@metaCodeIsPriceChangeWrong(statement);
 
 // для накладной (шапка и хвост)
 
@@ -4148,7 +3759,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentBasePostedDepartmentStoreItem(shipment);
 
 @defineDocumentHeaderSupplierContract(shipment);
-@defineDocumentHeaderRevaluation(shipment);
+@defineDocumentHeaderPriceChange(shipment);
 
 @defineDocumentDetailItemExtra(shipment);
 @defineDocumentDetailNumbered(shipment);
@@ -4332,7 +3943,7 @@ needToPriceChangeShipmentDetail (shipmentDetail) = curRetailPriceShipmentDetail(
 
 @defineDocumentPriceChange(shipment);
 @defineDocumentPriceChangeNumber(shipment);
-@defineDocumentPriceChangeItem(shipment);
+@defineDocumentPriceChangeSku(shipment, item);
 quantityPriceChangeShipmentDetail (priceChangeShipmentDetail) = balanceBeforeShipmentShipmentDetail(shipmentDetailPriceChangeShipmentDetail(priceChangeShipmentDetail));
 @defineDocumentPriceChangePrice(shipment);
 @defineDocumentPriceChangePricePrefix(shipment, cur, cur, ' (тек.)');
@@ -4340,10 +3951,8 @@ quantityPriceChangeShipmentDetail (priceChangeShipmentDetail) = balanceBeforeShi
 supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = name(supplierPriceChangeShipment(priceChangeShipment));
 
-@implementPriceChangeDocument(priceChangeShipment);
+@implementPriceChangeDocument(priceChangeShipment, sku);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeShipment);
-
-@metaCodeIsPriceChangeWrong(shipment);
 
 //----------------------------------- Списание отходов по нормам -------------------------------------------------//
 percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
@@ -4562,7 +4171,7 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 
 @defineDocumentBasePostedDepartmentStoreItem(innerArrival);
 
-@defineDocumentHeaderRevaluation(innerArrival);
+@defineDocumentHeaderPriceChange(innerArrival);
 @defineDocumentHeaderListRegister(innerArrival);
 
 @defineDocumentDetailQuantity(innerArrival);
@@ -4703,7 +4312,7 @@ needToPriceChangeInnerArrivalDetail (innerArrivalDetail) = curRetailPriceInnerAr
 
 @defineDocumentPriceChange(innerArrival);
 @defineDocumentPriceChangeNumberCustom(innerArrival, innerArrival);
-@defineDocumentPriceChangeItem(innerArrival);
+@defineDocumentPriceChangeSku(innerArrival, item);
 
 quantityPriceChangeInnerArrivalDetail 'Остаток' (priceChangeInnerArrivalDetail) =
     balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetailPriceChangeInnerArrivalDetail(priceChangeInnerArrivalDetail));
@@ -4714,10 +4323,8 @@ quantityPriceChangeInnerArrivalDetail 'Остаток' (priceChangeInnerArrivalD
 senderDepartmentPriceChangeInnerArrival (priceChangeInnerArrival) = senderDepartmentInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' (priceChangeInnerArrival) = name(senderDepartmentPriceChangeInnerArrival(priceChangeInnerArrival));
 
-@implementPriceChangeDocument(priceChangeInnerArrival);
+@implementPriceChangeDocument(priceChangeInnerArrival, sku);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeInnerArrival);
-
-@metaCodeIsPriceChangeWrong(innerArrival);
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
@@ -4728,7 +4335,7 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentBasePostedDepartmentStoreItem(returnSupplier);
 
 @defineDocumentHeaderSupplierContract(returnSupplier);
-@defineDocumentHeaderRevaluation(returnSupplier);
+@defineDocumentHeaderPriceChange(returnSupplier);
 
 @defineDocumentDetailItemExtra(returnSupplier);
 
@@ -4862,7 +4469,7 @@ needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = retailPriceReturn
 
 @defineDocumentPriceChange(returnSupplier);
 @defineDocumentPriceChangeNumber(returnSupplier);
-@defineDocumentPriceChangeItem(returnSupplier);
+@defineDocumentPriceChangeSku(returnSupplier, item);
 @defineDocumentPriceChangeQuantity(returnSupplier);
 @defineDocumentPriceChangePrice(returnSupplier);
 @defineDocumentPriceChangePricePrefix(returnSupplier, cur, cur, ' (тек.)');
@@ -4870,10 +4477,8 @@ needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = retailPriceReturn
 supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSupplier) = name(supplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 
-@implementPriceChangeDocument(priceChangeReturnSupplier);
+@implementPriceChangeDocument(priceChangeReturnSupplier, sku);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeReturnSupplier);
-
-@metaCodeIsPriceChangeWrong(returnSupplier);
 
 // ----------------------------- Z - отчеты ---------------------------- //
 
@@ -5185,7 +4790,7 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 
 @defineDocumentHeaderItemQuantity(userPriceChange);
 
-@defineDocumentHeaderRevaluation(userPriceChange);
+@defineDocumentHeaderPriceChange(userPriceChange);
 
 descriptionUserPriceChange 'Название документа' (userPriceChange) =
     [FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](
@@ -5195,7 +4800,7 @@ descriptionUserPriceChangeDetail 'Название документа' (userPric
 
 @implementBaseSkuDepartmentStoreLedger(userPriceChange, item);
 
-@implementPriceChangeDocument(userPriceChange);
+@implementPriceChangeDocument(userPriceChange, item);
 @implementPriceChangeDocumentDetailAllPrice(userPriceChange);
 
 isDraftPriceTransactionDocument (document) += isDraftUserPriceChange(document);
@@ -5206,10 +4811,6 @@ descriptionPriceTransactionDocument (document) += descriptionUserPriceChange(doc
 isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
     retailPriceUserPriceChangeDetail(userPriceChangeDetail) < curRetailPriceUserPriceChangeDetail(userPriceChangeDetail)
     IF banMarkdownItem(itemUserPriceChangeDetail(userPriceChangeDetail)) == TRUE;
-//    IF banRevaluationItemDepartmentDate(
-//        itemUserPriceChangeDetail(userPriceChangeDetail),
-//        departmentStoreUserPriceChangeDetail(userPriceChangeDetail),
-//        dateUserPriceChangeDetail(userPriceChangeDetail)) == yesNo.yes;
 
 CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Уценка товара запрещена';
 
@@ -5220,7 +4821,7 @@ CLASS disparityPosted 'Закрытая пересортица' : disparity, pos
 CLASS disparityDetail 'Строка пересортицы': outAutoBalanceSkuLedger;
 
 @defineDocumentBasePostedDepartmentStoreItem(disparity);
-@defineDocumentHeaderRevaluation(disparity);
+@defineDocumentHeaderPriceChange(disparity);
 
 @defineDocumentDetailQuantity(disparity);
 
@@ -5322,7 +4923,7 @@ needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeIn
 
 @defineDocumentDetailAggregationHeader(disparity, priceChangeInputDisparity);
 @defineDocumentDetailAggregationDepartmentStore(disparity, priceChangeInputDisparity);
-@defineDocumentDetailAggregationItemPrefix(disparity, priceChangeInputDisparity, input);
+@defineDocumentDetailAggregationSkuPrefix(disparity, priceChangeInputDisparity, item, input);
 quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = inputBalanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
 @defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, input, , );
@@ -5330,7 +4931,7 @@ quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInput
 //curRetailPricePriceChangeInputDisparityDetail 'Розничная цена (тек.)' (priceChangeInputDisparityDetail) = inputCurRetailPriceDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
 numberDisposalPriceChangeInputDisparity '№ распоряжения на переоценку' (priceChangeInputDisparity) = numberDisposalDisparity(disparityPriceChangeInputDisparity(priceChangeInputDisparity));
-revaluationCommitteePriceChangeInputDisparity 'Комиссия переоценки ИД' (priceChangeInputDisparity) = revaluationCommitteeDisparity(disparityPriceChangeInputDisparity(priceChangeInputDisparity));
+priceChangeCommitteePriceChangeInputDisparity 'Комиссия переоценки ИД' (priceChangeInputDisparity) = priceChangeCommitteeDisparity(disparityPriceChangeInputDisparity(priceChangeInputDisparity));
 
 numberPriceChangeInputDisparity 'Номер документа' (priceChangeInputDisparity) = numberObject(disparityPriceChangeInputDisparity(priceChangeInputDisparity));
 seriesPriceChangeInputDisparity 'Серия документа' (priceChangeInputDisparity) = seriesObject(disparityPriceChangeInputDisparity(priceChangeInputDisparity));
@@ -5338,11 +4939,10 @@ seriesNumberPriceChangeInputDisparity 'Серия/номер документ' (
 
 isPriceChangeWrongPriceChangeInputDisparityDetail (priceChangeInputDisparityDetail) =
     retailPricePriceChangeInputDisparityDetail(priceChangeInputDisparityDetail) < curRetailPricePriceChangeInputDisparityDetail(priceChangeInputDisparityDetail)
-      AND banMarkdownItem(itemPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
-
+      AND banMarkdownItem(skuPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 CONSTRAINT isPriceChangeWrongPriceChangeInputDisparityDetail (priceChangeInputDisparityDetail) MESSAGE 'Уценка товара запрещена';
 
-@implementPriceChangeDocument(priceChangeInputDisparity);
+@implementPriceChangeDocument(priceChangeInputDisparity, sku);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeInputDisparity);
 
 // ---------------------------------- Переоценка при пересорте ------------------------------------------
@@ -5355,20 +4955,18 @@ needToPriceChangeDisparityDetail (disparityDetail) = retailPriceDisparityDetail(
 
 @defineDocumentPriceChange(disparity);
 @defineDocumentPriceChangeNumber(disparity);
-@defineDocumentPriceChangeItemPrefix(disparity, input);
+@defineDocumentPriceChangeSkuPrefix(disparity, item, input);
 quantityPriceChangeDisparityDetail 'Количество' (priceChangeDisparityDetail) = inputQuantityDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
 
 @defineDocumentPriceChangePricePrefix(disparity, , input, );
 @defineDocumentPriceChangePricePrefix(disparity, cur , , ' (тек.)');
 
-@implementPriceChangeDocument(priceChangeDisparity);
+@implementPriceChangeDocument(priceChangeDisparity, sku);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeDisparity);
 
-@metaCodeIsPriceChangeWrong(disparity);
+needPriceChangeDisparityDetail (disparityDetail) = UNION OVERRIDE needToPriceChangeInputDisparityDetail (disparityDetail), needToPriceChangeDisparityDetail (disparityDetail);
 
-needRevaluationDisparityDetail (disparityDetail) = UNION OVERRIDE needToPriceChangeInputDisparityDetail (disparityDetail), needToPriceChangeDisparityDetail (disparityDetail);
-
-showRevaluationDisparity 'Отображать комиссию при пересорте' (disparity) = GROUP SUM 1 IF needRevaluationDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
+showPriceChangeDisparity 'Отображать комиссию при пересорте' (disparity) = GROUP SUM 1 IF needPriceChangeDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
 
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
@@ -7543,8 +7141,8 @@ quantityDisparityDetailItemDisparity 'Кол-во для закачки в об�
 @metaCodeDocumentMachineryPriceTransaction(disparity);
 @metaCodeDocumentLabelTransaction(disparity);
 
-toPrintActOfRevaluationDisparity 'Акт переоценки (приход)' (disparity) = toPrintActOfRevaluation(uniquePriceChangeDisparity(disparity)) IN printGroup;
-toPrintActOfRevaluationInputDisparity 'Акт переоценки (остатки)' (disparity) = toPrintActOfRevaluation(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
+printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(uniquePriceChangeDisparity(disparity)) IN printGroup;
+printPriceChangeInputDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
 
 @metaCodeInputMultipleItems(disparity);
 
@@ -7556,8 +7154,8 @@ FORM disparity 'Пересортица'
                     dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
                     inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
-                    numberDisposalDisparity SHOWIF showRevaluationDisparity(dis),
-                    nameRevaluationCommitteeDisparity SHOWIF showRevaluationDisparity(dis),
+                    numberDisposalDisparity SHOWIF showPriceChangeDisparity(dis),
+                    namePriceChangeCommitteeDisparity SHOWIF showPriceChangeDisparity(dis),
                     inputMultipleItemsDisparity TODRAW d
 
     PROPERTIES(d)   indexDisparityDetail,
@@ -7670,8 +7268,8 @@ FORM disparities 'Пересортицы'
                      createSnapshotDisparityLabelTransaction FORCE PANEL SHOWIF isPostedDisparity(dis),
                      createDisparityMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionDisparity(dis),
                      createSnapshotDisparityMachineryPriceTransaction FORCE PANEL SHOWIF isPostedDisparity(dis),
-                     toPrintActOfRevaluationDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
-                     toPrintActOfRevaluationInputDisparity FORCE PANEL SHOWIF needToPriceChangeInputDisparity(dis),
+                     printPriceChangeDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
+                     printPriceChangeInputDisparity FORCE PANEL SHOWIF needToPriceChangeInputDisparity(dis),
                      ADDFORM, EDITFORM SHOWIF isDraftDisparity(dis), delete FORCE PANEL SHOWIF isDraftDisparity(dis),
                      postDisparity SHOWIF isDraftDisparity(dis), unpostDisparity SHOWIF isPostedDisparity(dis)
 
@@ -7722,7 +7320,7 @@ DESIGN disparities FROM DEFAULT {
 //------------------------------------------- Приход товара----------------------------------------------------//
 
 @defineDocumentDetailItemOfTerminal(shipment);
-toPrintActOfRevaluationShipment 'Акт переоценки' (shipment) = toPrintActOfRevaluation(uniquePriceChangeShipment(shipment)) IN printGroup;
+printPriceChangeShipment 'Акт переоценки' (shipment) = printPriceChange(uniquePriceChangeShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
@@ -7731,7 +7329,7 @@ FORM shipment 'Поставка'
                    percentOrderedShipmentDetailsShipment, dialogOrdersShipment,
                    carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
-                   nameRevaluationCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
+                   namePriceChangeCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -7746,7 +7344,7 @@ FORM shipment 'Поставка'
                     ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryItemShipmentDetail, isManufacturedItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
-                               hintItemShipmentDetail, nameCountryItemShipmentDetail, nameBanRevaluationItemDepartmentShipmentDetail,
+                               hintItemShipmentDetail, nameCountryItemShipmentDetail, nameBanPriceChangeItemDepartmentShipmentDetail,
                                curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
@@ -7832,7 +7430,7 @@ FORM shipments 'Поставки'
                             createSnapshotShipmentLabelTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
-                            toPrintActOfRevaluationShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), printListRegister FORCE PANEL,
+                            printPriceChangeShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), printListRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
                             postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
 
@@ -7944,7 +7542,7 @@ DESIGN wastages FROM DEFAULT {
 @metaCodeInputMultipleItemsSupplier(returnSupplier);
 @defineDocumentDetailItemOfTerminal(returnSupplier);
 
-toPrintActOfRevaluationReturnSupplier 'Акт переоценки' (returnSupplier) = toPrintActOfRevaluation(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
+printPriceChangeReturnSupplier 'Акт переоценки' (returnSupplier) = printPriceChange(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=shipmentDetail    //
@@ -7961,7 +7559,7 @@ FORM returnSupplier 'Возврат поставщику'
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, UNPSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier,
                   retailSumReturnSupplierDetailReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
-                  nameRevaluationCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
+                  namePriceChangeCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -7987,7 +7585,7 @@ FORM returnSupplier 'Возврат поставщику'
                                     controlExpiryItemReturnSupplierDetail(d), isManufacturedItemReturnSupplierDetail(d),
                                     isWeightItemReturnSupplierDetail(d), nameInActionItemDepartmentReturnSupplierDetail(d),
                                     hintItemReturnSupplierDetail(d), nameCountryItemReturnSupplierDetail(d),
-                                    nameBanRevaluationItemDepartmentReturnSupplierDetail(d), valueWareRangeReturnSupplierDetail(d),
+                                    nameBanPriceChangeItemDepartmentReturnSupplierDetail(d), valueWareRangeReturnSupplierDetail(d),
                                     curNameWareReturnSupplierDetail(d), curWarePriceReturnSupplierDetail(d)
 
     FILTERS returnSupplierReturnSupplierDetail(d) == r
@@ -8007,7 +7605,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                               printConsignmentVerticalB, printConsignmentHorizontalB,
                               printConsignmentAttach, printConsignmentSimpleHorizontal,
                               printConsignmentSimpleVertical, printConsignmentSimpleAttach, editConsignment,
-                              toPrintActOfRevaluationReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
+                              printPriceChangeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
                   ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
@@ -8215,7 +7813,7 @@ CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
             maxTradeAllowanceItemDate (itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
 
 CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) >
-            maxTradeAllowanceItemDate (itemPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
+            maxTradeAllowanceItemDate (skuPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
 
 CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
             supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
@@ -8229,7 +7827,7 @@ CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
             minTradeAllowanceItemDate (itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
 
 CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) <
-            minTradeAllowanceItemDate (itemPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
+            minTradeAllowanceItemDate (skuPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
 
 CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
             supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
@@ -8935,7 +8533,7 @@ FORM userPriceChange 'Переоценка товаров'
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument,
-                   noteUserPriceChange, numberDisposalUserPriceChange, nameRevaluationCommitteeUserPriceChange
+                   noteUserPriceChange, numberDisposalUserPriceChange, namePriceChangeCommitteeUserPriceChange
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -9016,7 +8614,7 @@ FORM userPriceChanges 'Переоценки товаров'
                             createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
                             createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
                             createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
-                            toPrintActOfRevaluation FORCE PANEL,
+                            printPriceChange FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
                             postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
 
@@ -9316,7 +8914,7 @@ DESIGN innerFlowPosted FROM DEFAULT {
     ADD functions.box;
 }
 
-toPrintActOfRevaluationInnerArrival 'Акт переоценки' (innerArrival) = toPrintActOfRevaluation(uniquePriceChangeInnerArrival(innerArrival)) IN printGroup;
+printPriceChangeInnerArrival 'Акт переоценки' (innerArrival) = printPriceChange(uniquePriceChangeInnerArrival(innerArrival)) IN printGroup;
 
 
 FORM innerArrival 'Приход из другого отдела'
@@ -9327,7 +8925,7 @@ FORM innerArrival 'Приход из другого отдела'
                    toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), showWareInnerArrival,
                    noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), quantityInnerArrivalDetailInnerArrival SHOWIF innerFlowInnerArrival(a),
                    retailSumInnerArrivalDetailInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF needToPriceChangeInnerArrival(a),
-                   nameRevaluationCommitteeInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
+                   namePriceChangeCommitteeInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a)
@@ -9416,7 +9014,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             createSnapshotInnerArrivalLabelTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             createInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionInnerArrival(a),
                             createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
-                            toPrintActOfRevaluationInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
+                            printPriceChangeInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
                             printInputListRegister FORCE PANEL,
                             ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
                             postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
@@ -9687,14 +9285,14 @@ dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specifica
 @metaCodeInputMultipleItems (statement);
 @defineDocumentDetailItemOfTerminal(statement);
 
-toPrintActOfRevaluationStatement 'Акт переоценки' (statement) = toPrintActOfRevaluation(uniquePriceChangeStatement(statement)) IN printGroup;
+printPriceChangeStatement 'Акт переоценки' (statement) = printPriceChange(uniquePriceChangeStatement(statement)) IN printGroup;
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement, UNPCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, dialogSpecificationsStatement,
                     noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
-                    numberDisposalStatement SHOWIF needToPriceChangeStatement(st), nameRevaluationCommitteeStatement SHOWIF needToPriceChangeStatement(st)
+                    numberDisposalStatement SHOWIF needToPriceChangeStatement(st), namePriceChangeCommitteeStatement SHOWIF needToPriceChangeStatement(st)
 
     PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
                    nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
@@ -9804,7 +9402,7 @@ FORM statements 'Отгрузки из розницы'
     PROPERTIES (st)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
                      printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
-                     printConsignmentSimpleVertical, printConsignmentSimpleAttach, toPrintActOfRevaluationStatement SHOWIF needToPriceChangeStatement(st),
+                     printConsignmentSimpleVertical, printConsignmentSimpleAttach, printPriceChangeStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
@@ -11279,7 +10877,7 @@ NAVIGATOR {
             ADD employees;
             NEW committeeRelations 'Комиссии' {
                 ADD registerCommitteeDialog;
-                ADD revaluationCommitteeDialog;
+                ADD priceChangeCommitteeDialog;
                 ADD inventoryCommitteeDialog;
                 ADD wastageCommitteeDialog;
             }
@@ -11400,7 +10998,7 @@ NAVIGATOR {
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD listRegister;
         ADD inputListRegister;
-        ADD actOfRevaluation;
+        ADD priceChangePrint;
         ADD consignmentVerticalA;
         ADD consignmentHorizontalA;
         ADD consignmentVerticalB;
@@ -11441,7 +11039,7 @@ NAVIGATOR {
             ADD store;
             ADD chainStores;
             ADD registerCommittee;
-            ADD revaluationCommittee;
+            ADD priceChangeCommittee;
             ADD inventoryCommittee;
             ADD wastageCommittee;
             ADD bank;
@@ -11498,8 +11096,8 @@ NAVIGATOR {
             ADD dialogMaxReserveItemDepartment;
             ADD addMinReserveItemDepartment;
             ADD dialogMinReserveItemDepartment;
-            ADD addBanRevaluationItemDepartment;
-            ADD dialogBanRevaluationItemDepartment;
+            ADD addBanPriceChangeItemDepartment;
+            ADD dialogBanPriceChangeItemDepartment;
             ADD addInActionItemDepartment;
             ADD dialogInActionItemDepartment;
             ADD addMarginProductionItemDepartment;

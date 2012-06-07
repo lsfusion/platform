@@ -37,7 +37,7 @@
 	<field name="isPostedPriceChangeDocument" class="java.lang.Boolean"/>
 	<field name="nameDepartmentStorePriceChangeDocument" class="java.lang.String"/>
 	<field name="datePriceChangeDocument" class="java.util.Date"/>
-	<field name="nameRevaluationCommitteePriceChangeDocument" class="java.lang.String"/>
+	<field name="namePriceChangeCommitteePriceChangeDocument" class="java.lang.String"/>
 	<field name="commonNameChairmanPriceChangeDocument" class="java.lang.String"/>
 	<field name="namePositionChairmanPriceChangeDocument" class="java.lang.String"/>
 	<field name="commonNameEmployeeCommitteePriceChangeDocument" class="java.lang.String"/>
@@ -61,7 +61,7 @@
 	<field name="diffWareSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
 	<field name="diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
 	<field name="diffRetailSumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
-	<field name="isRevaluationCommitteePriceChangeDocument" class="java.lang.Boolean"/>
+	<field name="isPriceChangeCommitteePriceChangeDocument" class="java.lang.Boolean"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{pc})]]></groupExpression>
 		<groupHeader>
@@ -422,7 +422,7 @@
 				</subreport>
 			</band>
 			<band height="69">
-				<printWhenExpression><![CDATA[$F{isRevaluationCommitteePriceChangeDocument}==null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{isPriceChangeCommitteePriceChangeDocument}==null]]></printWhenExpression>
 				<line>
 					<reportElement x="309" y="59" width="186" height="1"/>
 				</line>

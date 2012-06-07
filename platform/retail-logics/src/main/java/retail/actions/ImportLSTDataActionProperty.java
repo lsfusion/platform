@@ -309,7 +309,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 LM.object(getClass("country")).getMapping(countryKey)));
 
         props.add(new ImportProperty(barcodeField, getLP("idBarcode").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
-        props.add(new ImportProperty(dateField, getLP("dateUserBarcode").getMapping(barcodeKey)));
+        props.add(new ImportProperty(dateField, getLP("dataDateBarcode").getMapping(barcodeKey)));
 
         props.add(new ImportProperty(itemIDField, getLP("skuBarcode").getMapping(barcodeKey),
                 LM.object(getClass("item")).getMapping(itemKey)));

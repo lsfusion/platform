@@ -309,6 +309,17 @@ META implementBatch(concrete, skuProp)
     supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
 END
 
+// ---------------------------------------------- Макросы для документов ------------------------------------------------- //
+
+META defineDocumentDetailAggregationSkuPrefix (primObject, aggrObject, skuProp, prefix)
+    sku###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(sku###aggrObject##Detail(detail));
+    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(sku###aggrObject##Detail(detail));
+END
+META defineDocumentDetailAggregationSku (primObject, aggrObject, skuProp)
+    @defineDocumentDetailAggregationSkuPrefix(primObject, aggrObject, skuProp, );
+END
+
 // ----------------------------------------------- Формы --------------------------------------------------- //
 
 FORM costSkuLedger 'Себестоимость (операции)'
