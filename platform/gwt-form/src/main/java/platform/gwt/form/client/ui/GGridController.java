@@ -40,10 +40,10 @@ public class GGridController {
     }
 
     public void hide() {
-        gridView.setVisible(false);
+        formLayout.remove(key);
     }
 
     public void show() {
-        gridView.setVisible(true);
+        formLayout.add(key, gridView, 0);
     }
 }

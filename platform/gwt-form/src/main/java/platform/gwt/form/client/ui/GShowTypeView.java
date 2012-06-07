@@ -66,9 +66,6 @@ public abstract class GShowTypeView extends HStack {
                 hide();
                 break;
         }
-        gridButton.setVisible(!banClassView.contains(GClassViewType.GRID));
-        panelButton.setVisible(!banClassView.contains(GClassViewType.PANEL));
-        hideButton.setVisible(!banClassView.contains(GClassViewType.HIDE));
 
         boolean needUpdate = !classView.equals(newClassView);
         classView = newClassView;
@@ -79,12 +76,8 @@ public abstract class GShowTypeView extends HStack {
         this.banClassView = banClassView;
     }
 
-    private boolean needToBeVisible() {
-        int visibles = 0;
-        if (gridButton.isVisible()) visibles++;
-        if (panelButton.isVisible()) visibles++;
-        if (hideButton.isVisible()) visibles++;
-        return visibles > 1;
+    public boolean needToBeVisible() {
+        return banClassView.size() < 2;
     }
 
     public void addToToolbar(GToolbarPanel toolbar) {

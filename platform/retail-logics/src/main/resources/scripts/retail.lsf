@@ -10861,7 +10861,7 @@ DESIGN statisticalReport FROM DEFAULT {
 
                 ADD dates.box;
                 ADD dsi.box {fillVertical = 2;
-                    title = 'Показатели по продажам в номинальных еденицах';
+                    title = 'Показатели по продажам в номинальных единицах';
                 }
             }
         }

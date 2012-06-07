@@ -14,6 +14,7 @@ public class GForm implements Serializable {
     public String caption;
 
     public GContainer mainContainer;
+    public ArrayList<GTreeGroup> treeGroups = new ArrayList<GTreeGroup>();
     public ArrayList<GGroupObject> groupObjects = new ArrayList<GGroupObject>();
     public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<GPropertyDraw>();
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<GRegularFilterGroup>();

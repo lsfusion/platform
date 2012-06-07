@@ -86,14 +86,14 @@ public class GPanelController {
     }
     
     public void hide() {
-        for (GTypeRenderer propRenderer : typeRenderers) {
-            propRenderer.getComponent().setVisible(false);
+        for (GPropertyDraw property : properties) {
+            formLayout.remove(property);
         }
     }
     
     public void show() {
-        for (GTypeRenderer propRenderer : typeRenderers) {
-            propRenderer.getComponent().setVisible(true);
+        for (GPropertyDraw property : properties) {
+            formLayout.add(property, typeRenderers.get(properties.indexOf(property)).getComponent());
         }
     }
 

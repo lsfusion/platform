@@ -208,9 +208,17 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
                 gwtGroupObject.objects.add(clientObject.getGwtObject());
             }
             gwtGroupObject.grid = grid.getGwtComponent();
+            gwtGroupObject.showType = showType.getGwtComponent();
             gwtGroupObject.banClassView = new ArrayList<String>();
             for (ClassViewType banView : banClassView) {
                 gwtGroupObject.banClassView.add(banView.name());
+            }
+
+            gwtGroupObject.isRecursive = isRecursive;
+            if (parent != null)
+                gwtGroupObject.parent = parent.getGwtComponent();
+            for (ClientGroupObject upGroup : upTreeGroups) {
+                gwtGroupObject.upTreeGroups.add(upGroup.getGwtGroupObject());
             }
         }
         return gwtGroupObject;

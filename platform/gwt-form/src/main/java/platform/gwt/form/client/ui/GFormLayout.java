@@ -3,13 +3,12 @@ package platform.gwt.form.client.ui;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.layout.*;
 import platform.gwt.base.shared.GContainerType;
-import platform.gwt.view.GComponent;
-import platform.gwt.view.GContainer;
+import platform.gwt.view.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class GFormLayout extends VLayout {
+public abstract class GFormLayout extends VLayout {
     private Layout mainContainer;
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> contViews = new HashMap<GContainer, GAbstractFormContainer>();
@@ -78,30 +77,75 @@ public class GFormLayout extends VLayout {
         return true;
     }
 
+    public void resizeAll() {
+        adjustContainerSize(mainKey);
+    }
+
+    private void adjustContainerSize(GContainer container) {
+        for (GComponent child : container.children) {
+            if (child instanceof GContainer) {
+                adjustContainerSize((GContainer) child);
+            }
+        }
+
+        Layout view = contViews.get(container).getComponent();
+        if (!contViews.get(container).isInSplitPane())
+            if (hasCollapsibleMembers(container)) {
+                view.setHeight100();
+                view.setWidth100();
+            } else if (!contViews.get(container).isTabbed()) {
+                view.setAutoHeight();
+                view.setAutoWidth();
+            }
+    }
+
+    // похоже, не только ListGrid, но и TabSet ведёт себя пассивно при нахождении в Layout'е с маленикими размерами,
+    // т.е. сам уменьшается в размерах вместо того, чтобы расширить свой parent Layout
+    private boolean hasCollapsibleMembers(GContainer container) {
+        for (GComponent child : container.children) {
+            if (child instanceof GGrid || child instanceof GTreeGroup) {
+                boolean result = contViews.get(container).drawsChild(child);
+                if (result)
+                    return true;
+            } else if (child instanceof GContainer) {
+                if (GContainerType.isTabbedPane(((GContainer) child).type))
+                    return true;
+                boolean has = hasCollapsibleMembers((GContainer) child);
+                if (has)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public void hideEmpty() {
         hide(mainKey);
     }
 
     private void hide(GContainer container) {
         Layout view = contViews.get(container).getComponent();
-        if (!hasVisibleChildren(container)) {
-            view.setVisible(false);
-        } else {
-            view.setVisible(true);
-            for (GComponent child : container.children) {
-                if (child instanceof GContainer) {
-                    hide((GContainer) child);
-                }
+
+        for (GComponent child : container.children) {
+            if (child instanceof GContainer) {
+                hide((GContainer) child);
             }
         }
+
+        if (!contViews.get(container).isInTabbedPane()) //предоставляем TabbedPane'у самому управлять видимостью своих компонентов
+            if (!hasVisibleChildren(container)) {
+                view.setVisible(false);
+            } else {
+                view.setVisible(true);
+            }
     }
 
     private boolean hasVisibleChildren(GContainer container) {
-        if (contViews.get(container).needToBeHidden()) {
-            return false;
-        }
         for (GComponent child : container.children) {
-            if (child instanceof GContainer) {
+            // поскольку при отрисовке groupObject'а в панели ShowTypeView рисуем в тулбаре, а не в соответствующем ему
+            // по иерархии контейнере, то поиск его в этом контейнере не даст положительного результата
+            if (child instanceof GShowType && isShowTypeInItsPlace(((GShowType) child).groupObject)) {
+                return true;
+            } else if (child instanceof GContainer) {
                 if (hasVisibleChildren((GContainer) child))
                     return true;
             } else if (contViews.get(container).drawsChild(child))
@@ -109,4 +153,6 @@ public class GFormLayout extends VLayout {
         }
         return false;
     }
+
+    public abstract boolean isShowTypeInItsPlace(GGroupObject groupObject);
 }

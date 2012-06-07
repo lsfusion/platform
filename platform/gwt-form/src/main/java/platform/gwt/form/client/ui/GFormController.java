@@ -78,15 +78,19 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     }
 
     private Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
+    private Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
 
     private void initialize(GForm form) {
         this.form = form;
 
         dispatcher.setForm(form);
 
-        setWidth100();
-
-        mainPane = new GFormLayout(form.mainContainer);
+        mainPane = new GFormLayout(form.mainContainer) {
+            public boolean isShowTypeInItsPlace(GGroupObject groupObject) {
+                GGroupObjectController goc = GFormController.this.controllers.get(groupObject);
+                return goc != null && !goc.isInGrid() && goc.getShowTypeView().needToBeVisible();
+            }
+        };
         mainPane.setMinHeight(Window.getClientHeight());
         mainPane.setHeight(Window.getClientHeight());
         mainPane.setMaxHeight(Window.getClientHeight());
@@ -212,10 +216,16 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     }
 
     private void initializeControllers() {
-        for (GGroupObject group : form.groupObjects) {
-            GGroupObjectController controller = new GGroupObjectController(this, form, group, mainPane);
+        for (GTreeGroup treeGroup : form.treeGroups) {
+            GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form, mainPane);
+            treeControllers.put(treeGroup, treeController);
+        }
 
-            controllers.put(group, controller);
+        for (GGroupObject group : form.groupObjects) {
+            if (group.parent == null) {
+                GGroupObjectController controller = new GGroupObjectController(this, form, group, mainPane);
+                controllers.put(group, controller);
+            }
         }
         
         for (GPropertyDraw property : form.propertyDraws) {
@@ -233,6 +243,9 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
         for (GGroupObjectController controller : controllers.values()) {
             controller.processFormChanges(fc);
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.processFormChanges(fc);
         }
         hideEmpty();
     }
@@ -253,7 +266,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     }
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
-        dispatcher.executeChangeGroupObject(new ChangeGroupObject(group.ID, key.getValues(group)), new FormChangesBlockingCallback());
+        dispatcher.executeChangeGroupObject(new ChangeGroupObject(group.ID, key.getValueDTO()), new FormChangesBlockingCallback());
     }
 
     public void changePropertyDraw(GPropertyDraw property, Object value) {
@@ -264,12 +277,20 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
     public void changePropertyDraw(GGroupObject group, GGroupObjectValue key, final GPropertyDraw property, final Object value) {
         if (isEditingEnabled()) {
-            executeConsecutiveActions(new ChangeGroupObject(group.ID, key.getValues(group)), new ChangeProperty(property.ID, value));
+            executeConsecutiveActions(new ChangeGroupObject(group.ID, key.getValueDTO()), new ChangeProperty(property.ID, value));
         }
     }
     
     public void changeClassView(GGroupObject groupObject, GClassViewType classView) {
         dispatcher.execute(new ChangeClassView(groupObject.ID, classView.name()), new FormChangesBlockingCallback());
+    }
+
+    public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
+        dispatcher.execute(new ExpandGroupObject(group.ID, value.getValueDTO()), new FormChangesBlockingCallback());
+    }
+
+    public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
+        dispatcher.execute(new CollapseGroupObject(group.ID, value.getValueDTO()), new FormChangesBlockingCallback());
     }
 
     private void executeConsecutiveActions(Action<FormChangesResult>... actions) {

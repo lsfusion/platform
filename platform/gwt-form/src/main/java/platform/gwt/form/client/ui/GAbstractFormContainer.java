@@ -1,11 +1,7 @@
 package platform.gwt.form.client.ui;
 
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.layout.*;
-import com.smartgwt.client.widgets.tab.Tab;
-import com.smartgwt.client.widgets.tab.TabSet;
 import platform.gwt.base.shared.GContainerType;
 import platform.gwt.view.GComponent;
 import platform.gwt.view.GContainer;
@@ -40,13 +36,22 @@ public abstract class GAbstractFormContainer {
         }
     }
 
-    public abstract void add(GComponent memberKey, Canvas member, int position);
+    public void add(GComponent memberKey, Canvas member, int position) {
+        children.put(memberKey, member);
+        if (position != -1)
+            containerComponent.addMember(member, position);
+        else
+            containerComponent.addMember(member);
+    }
 
     public void add(GComponent memberKey, Canvas member) {
         add(memberKey, member, -1);
     }
 
     public void remove(GComponent memberKey) {
+        if (children.containsKey(memberKey)) {
+            containerComponent.removeMember(children.get(memberKey));
+        }
         children.remove(memberKey);
     }
 
@@ -54,10 +59,15 @@ public abstract class GAbstractFormContainer {
         return key;
     }
 
-    public boolean needToBeHidden() {
-        return containerComponent.getMembers().length == 0 /*children.isEmpty()*/ || (key.container != null &&
-                !containerComponent.isVisible() && (GContainerType.isTabbedPane(key.container.type) || GContainerType.isSplitPane(key.container.type)));
+    public boolean isInTabbedPane() {
+        return key.container != null && GContainerType.isTabbedPane(key.container.type);
     }
 
-    public abstract boolean drawsChild(GComponent child);
+    public boolean isInSplitPane() {
+        return key.container != null && GContainerType.isSplitPane(key.container.type);
+    }
+
+    public boolean drawsChild(GComponent child) {
+        return children.get(child) != null && containerComponent.hasMember(children.get(child));
+    }
 }

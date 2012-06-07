@@ -145,6 +145,16 @@ public class ClientFormChanges {
                 gwtFormChanges.gridObjects.put(entry.getKey().ID, keys);
             }
 
+            for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : parentObjects.entrySet()) {
+                ArrayList<GGroupObjectValueDTO> keys = new ArrayList<GGroupObjectValueDTO>();
+
+                for (ClientGroupObjectValue keyValue : entry.getValue()) {
+                    keys.add(keyValue.getGwtGroupObjectValueDTO());
+                }
+
+                gwtFormChanges.parentObjects.put(entry.getKey().ID, keys);
+            }
+
             for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : properties.entrySet()) {
                 if (!(entry.getKey() instanceof ClientPropertyDraw)) {
                     continue;

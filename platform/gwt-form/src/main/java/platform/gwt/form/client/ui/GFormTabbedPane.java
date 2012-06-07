@@ -33,6 +33,7 @@ public class GFormTabbedPane extends GAbstractFormContainer {
         addBorder();
     }
 
+    @Override
     public void add(GComponent memberKey, Canvas member, int position) {
         children.put(memberKey, member);
         Tab tab = new Tab();
@@ -49,14 +50,16 @@ public class GFormTabbedPane extends GAbstractFormContainer {
             tabPane.addTab(tab);
     }
 
+    @Override
     public void remove(GComponent memberKey) {
         if (children.containsKey(memberKey)) {
             tabPane.removeTab("tabid" + String.valueOf(memberKey.ID));
         }
-        super.remove(memberKey);
+        children.remove(memberKey);
     }
 
+    @Override
     public boolean drawsChild(GComponent child) {
-        return children.get(child) != null && tabPane.contains(children.get(child)) && children.get(child).isVisible();
+        return children.get(child) != null && tabPane.contains(children.get(child));
     }
 }
