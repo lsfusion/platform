@@ -1287,6 +1287,10 @@ public class RomanLogicsModule extends LogicsModule {
     public InvoiceExportFormEntity invoiceExportForm;
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
 
     public void initClasses() {
         initBaseClassAliases();
@@ -1299,7 +1303,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         store = addConcreteClass("store", "Магазин", destination, baseClass.named);
 
-        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject);
+        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("sku")); //
 
         article = addAbstractClass("article", "Артикул", baseClass);
         articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);
@@ -1333,7 +1337,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipDimension = addConcreteClass("shipDimension", "Разрез поставки", baseClass);
 
-        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject);
+        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("stock"));
 
         freightUnit = addAbstractClass("freightUnit", "Машиноместо", baseClass);
 
@@ -1413,7 +1417,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
 
-        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named);
+        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"));
+
 
         creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
@@ -1563,6 +1568,7 @@ public class RomanLogicsModule extends LogicsModule {
         logFreight = addLProp(nameClassFreight);
 
         symbolCurrency = addDProp(baseGroup, "symbolCurrency", "Символ", StringClass.get(5), currency);
+
 
         // rate
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
@@ -2709,17 +2715,17 @@ public class RomanLogicsModule extends LogicsModule {
         invoicedSimpleInvoiceSimpleShipmentStockArticleComposite = addJProp("invoicedSimpleInvoiceSimpleShipmentStockArticleComposite", "Кол-во оприх.", and(false, false, false), quantitySimpleInvoiceArticle, 1, 4, inInvoiceShipment, 1, 2, is(simpleShipment), 2, is(stock), 3);
         invoicedSimpleInvoiceSimpleShipmentStockItem = addJProp("invoicedSimpleInvoiceSimpleShipmentStockItem", "Кол-во оприх.", invoicedSimpleInvoiceSimpleShipmentStockArticleComposite, 1, 2, 3, articleCompositeItem, 4);
 
-        quantitySkuSimpleInvoiceSimpleShipmentStockSku = addPGProp(baseGroup, "quantityDataSimpleInvoiceSimpleShipmentStockSku", true, 0, true, "Кол-во оприход.",
+        quantitySkuSimpleInvoiceSimpleShipmentStockSku = addPGProp(baseGroup, "quantitySkuSimpleInvoiceSimpleShipmentStockSku", true, 0, true, "Кол-во оприход.",
                 invoicedSimpleInvoiceSimpleShipmentStockSku,
                 quantitySimpleShipmentStockSku, 2, 3, 4);
 
         quantitySimpleShipmentStockItem = addJProp("quantitySimpleShipmentStockItem", baseLM.and1, quantitySimpleShipmentStockSku, 1, 2, 3, is(item), 3);
 
-        quantityArticleSimpleInvoiceSimpleShipmentStockItem = addPGProp(baseGroup, "quantitySimpleInvoiceSimpleShipmentStockItem", true, 0, true, "Кол-во оприход.",
+        quantitySimpleInvoiceSimpleShipmentStockItem = addPGProp(baseGroup, "quantitySimpleInvoiceSimpleShipmentStockItem", true, 0, true, "Кол-во оприход.",
                 invoicedSimpleInvoiceSimpleShipmentStockItem,
                 quantitySimpleShipmentStockItem, 2, 3, 4);
 
-        quantitySimpleInvoiceSimpleShipmentStockSku = addSUProp(baseGroup, "quantitySkuSimpleInvoiceSimpleShipmentStockSku", "Кол-во оприход.", Union.SUM, quantityArticleSimpleInvoiceSimpleShipmentStockItem, quantitySkuSimpleInvoiceSimpleShipmentStockSku);
+        quantitySimpleInvoiceSimpleShipmentStockSku = addSUProp(baseGroup, "quantitySimpleInvoiceSimpleShipmentStockSku", "Кол-во оприход.", Union.SUM, quantitySimpleInvoiceSimpleShipmentStockItem, quantitySkuSimpleInvoiceSimpleShipmentStockSku);
 
         quantityInvoiceShipmentStockSku = addCUProp(baseGroup, "quantityInvoiceShipmentStockSku", "Кол-во оприход.",
                 quantityBoxInvoiceBoxShipmentStockSku, quantitySimpleInvoiceSimpleShipmentStockSku);

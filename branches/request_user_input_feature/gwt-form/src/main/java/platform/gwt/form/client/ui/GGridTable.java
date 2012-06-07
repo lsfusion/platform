@@ -1,9 +1,6 @@
 package platform.gwt.form.client.ui;
 
-import com.smartgwt.client.types.Autofit;
-import com.smartgwt.client.types.ListGridEditEvent;
-import com.smartgwt.client.types.RecordComponentPoolingMode;
-import com.smartgwt.client.types.SelectionStyle;
+import com.smartgwt.client.types.*;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
@@ -43,8 +40,6 @@ public class GGridTable extends ListGrid {
         this.groupController = igroupController;
         this.groupObject = groupController.groupObject;
 
-        setHeight("*");
-        setWidth("100%");
         setSelectionType(SelectionStyle.SINGLE);
         setShowAllRecords(true);
         setModalEditing(true);
@@ -53,10 +48,7 @@ public class GGridTable extends ListGrid {
         setCanSort(false);
         setShowHeaderContextMenu(false);
         setShowHeaderMenuButton(false);
-        setAutoFitData(Autofit.VERTICAL);
-        setAutoFitMaxRecords(10);
         setEmptyCellValue("--");
-        setHoverWidth(350);
 
         setCanEdit(iformController.isEditingEnabled());
         setEditEvent(ListGridEditEvent.DOUBLECLICK);

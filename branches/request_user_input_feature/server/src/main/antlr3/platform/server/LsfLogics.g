@@ -80,8 +80,8 @@ grammar LsfLogics;
 		return this.parseState == parseState;
 	}
 
-	public boolean isFirstParseStep() {
-		return inGroupParseState(); 
+	public boolean inInitParseState() {
+		return inParseState(ScriptingLogicsModule.State.INIT); 
 	}
 
 	public boolean inGroupParseState() {
@@ -154,7 +154,9 @@ grammar LsfLogics;
 }
 
 script	
-	:	moduleHeader importDirective* statements EOF
+	:	moduleHeader 
+		statements 
+		EOF
 	;
 
 statements
@@ -162,21 +164,22 @@ statements
 	;
 
 moduleHeader
+@init {
+	List<String> requiredModules = new ArrayList<String>();
+	List<String> importedNamespaces = new ArrayList<String>();
+	String namespaceName = null;
+}
 @after {
-	if (isFirstParseStep()) {
-		self.setModuleName($name.text);
+	if (inInitParseState()) {
+		self.initScriptingModule($name.text, namespaceName, requiredModules, importedNamespaces);
+	} else if (inGroupParseState()) {
+		self.checkModulesAndNamespaces(requiredModules, importedNamespaces);
 	}
 }
 	:	'MODULE' name=ID ';'
-	;
-
-importDirective
-@after {
-	if (isFirstParseStep()) {
-		self.addImportedModule($moduleName.text);
-	}
-}
-	:	'IMPORT' moduleName=ID ';'
+		('REQUIRE' list=nonEmptyIdList ';' { requiredModules = $list.ids; })? 
+		('IMPORT' list=nonEmptyIdList ';' { importedNamespaces = $list.ids; })? 
+		('NAMESPACE' nname=ID ';' { namespaceName = $nname.text; })?
 	;
 
 
@@ -2222,7 +2225,7 @@ metaCodeDeclarationStatement
 	List<String> tokens;
 }
 @after {
-	if (isFirstParseStep()) {
+	if (inGroupParseState()) {
 		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens);
 	}
 }

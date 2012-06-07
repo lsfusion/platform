@@ -1,6 +1,6 @@
 MODULE Features;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 /////////// GROUP STATEMENT ////////////
 

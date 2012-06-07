@@ -14,6 +14,7 @@ import java.util.List;
 
 public class GGroupObjectController {
     public GGroupObject groupObject;
+    private GFormLayout formLayout;
 
     public GGridController grid;
     public GPanelController panel;
@@ -24,6 +25,7 @@ public class GGroupObjectController {
 
     public GGroupObjectController(GFormController iformController, GForm iform, GGroupObject igroupObject, GFormLayout formLayout) {
         groupObject = igroupObject;
+        this.formLayout = formLayout;
 
         gridToolbar = new GToolbarPanel();
 
@@ -117,12 +119,17 @@ public class GGroupObjectController {
         }
     }
 
+    public GShowTypeView getShowTypeView() {
+        return showTypeView;
+    }
+
     public void setClassView(GClassViewType classView) {
         if (classView != null && !classView.equals(showType)) {
             showType = classView;
 
             if (showTypeView != null && showTypeView.changeClassView(classView)) {
                 updateToolbar();
+                formLayout.resizeAll();
             }
         }
     }
@@ -163,15 +170,13 @@ public class GGroupObjectController {
         }
         panel.update();
 
-//        updateToolbar();
-
         gridToolbar.setVisible(!gridToolbar.isEmpty());
         panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
     public void updateToolbar() {
         if (groupObject != null) {
-            if (showType == GClassViewType.GRID) {
+            if (isInGrid()) {
                 panelToolbar.removeComponent(showTypeView);
                 showTypeView.addToToolbar(gridToolbar);
                 grid.show();
@@ -185,5 +190,9 @@ public class GGroupObjectController {
                 grid.hide();
             }
         }
+    }
+
+    public boolean isInGrid() {
+        return showType == GClassViewType.GRID;
     }
 }

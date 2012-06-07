@@ -15,6 +15,7 @@ import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.GPropertyEditType;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreenConstraints;
@@ -515,7 +516,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             gwtPropertyDraw.baseType = baseType.getGwtType();
             gwtPropertyDraw.changeType = changeType.getGwtType();
             gwtPropertyDraw.iconPath = design.iconPath;
-            gwtPropertyDraw.editType = editType;
+            try {
+                gwtPropertyDraw.editType = GPropertyEditType.deserialize(editType.serialize());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             gwtPropertyDraw.focusable = focusable;
             gwtPropertyDraw.checkEquals = checkEquals;
         }

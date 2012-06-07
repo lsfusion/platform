@@ -74,11 +74,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<AbstractWindow> windowResolver = new WindowNameResolver();
     private final CompoundNameResolver<MetaCodeFragment> metaCodeFragmentResolver = new MetaCodeFragmentNameResolver();
     private final CompoundNameResolver<ImplementTable> tableResolver = new TableNameResolver();
+    private final CompoundNameResolver<ValueClass> classResolver = new ClassNameResolver();
 
     private String code = null;
     private String filename = null;
     private final BusinessLogics<?> BL;
-    private final Set<String> importedModules = new HashSet<String>();
+    private List<String> importedNamespaces;
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
     private Stack<LsfLogicsParser> parsers = new Stack<LsfLogicsParser>();
@@ -86,7 +87,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private Map<String, LP<?, ?>> currentLocalProperties = new HashMap<String, LP<?, ?>>();
 
-    public enum State {GROUP, CLASS, PROP, TABLE, INDEX}
+    private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
+
+    public BusinessLogics<?> getBL() {
+        return BL;
+    }
+
+    public enum State {INIT, GROUP, CLASS, PROP, TABLE, INDEX}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
@@ -117,8 +124,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         this.code = IOUtils.readStreamToString(stream, "utf-8");
     }
 
-    public void setModuleName(String moduleName) {
-        setSID(moduleName);
+    private void setModuleName(String moduleName) {
+        setName(moduleName);
         errLog.setModuleName(moduleName);
     }
 
@@ -138,14 +145,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return parser;
     }
 
-    public void addImportedModule(String moduleName) {
-        scriptLogger.info("import " + moduleName + ";");
-        importedModules.add(moduleName);
-    }
-
-    protected LogicsModule findModule(String sid) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.findModule(sid);
-        checkModule(module, sid);
+    protected LogicsModule findModule(String name) throws ScriptingErrorLog.SemanticErrorException {
+        LogicsModule module = BL.getModule(name);
+        checkModule(module, name);
         return module;
     }
 
@@ -217,21 +219,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ValueClass findClassByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
             ValueClass valueClass = getPredefinedClass(name);
             if (valueClass == null) {
-                int dotPosition = name.indexOf('.');
-                if (dotPosition > 0) {
-                    LogicsModule module = findModule(name.substring(0, dotPosition));
-                    valueClass = module.getClassByName(name.substring(dotPosition + 1));
-                } else {
-                    valueClass = getClassByName(name);
-                    if (valueClass == null) {
-                        for (String importModuleName : importedModules) {
-                            LogicsModule module = findModule(importModuleName);
-                            if ((valueClass = module.getClassByName(name)) != null) {
-                                break;
-                            }
-                        }
-                    }
-                }
+                valueClass = classResolver.resolve(name);
             }
             checkClass(valueClass, name);
             return valueClass;
@@ -271,7 +259,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractGroup group = groupResolver.resolve(name);
         checkGroup(group, name);
         return group;
@@ -315,34 +303,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImplementTable table = tableResolver.resolve(name);
         checkTable(table, name);
         return table;
-    }
-
-    public List<String> getNamedParamsList(String propertyName) throws ScriptingErrorLog.SemanticErrorException {
-        List<String> paramList;
-        int dotPosition = propertyName.indexOf('.');
-        if (dotPosition > 0) {
-            LogicsModule module = findModule(propertyName.substring(0, dotPosition));
-            paramList = module.getNamedParams(module.transformNameToSID(propertyName.substring(dotPosition + 1)));
-        } else {
-            paramList = getNamedParams(transformNameToSID(propertyName));
-            if (paramList == null) {
-                for (String importModuleName : importedModules) {
-                    LogicsModule module = findModule(importModuleName);
-                    if ((paramList = module.getNamedParams(module.transformNameToSID(propertyName))) != null) {
-                        break;
-                    }
-                }
-            }
-        }
-        return paramList;
-    }
-
-    private List<String> getNamedParamsList(Object obj) throws ScriptingErrorLog.SemanticErrorException {
-        if (obj instanceof LP) {
-            return getNamedParams(((LP)obj).property.getSID());
-        } else {
-            return getNamedParamsList((String) obj);
-        }
     }
 
     public void addScriptedGroup(String groupName, String captionStr, String parentName) throws ScriptingErrorLog.SemanticErrorException {
@@ -521,7 +481,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setFixedCharWidth(LP property, Integer fixedCharWidth) {
-        if (fixedCharWidth != null)
+        if (fixedCharWidth != null && fixedCharWidth > 0)
             property.setFixedCharWidth(fixedCharWidth);
     }
 
@@ -584,7 +544,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private <T extends LP> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
-        setPropertySID(lp, transformNameToSID(name), false);
+        setPropertySID(lp, name, false);
         lp.property.freezeSID();
         addModuleLP(lp);
     }
@@ -715,7 +675,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LP addScriptedCustomActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCustomActionProp(" + javaClassName + ");");
         try {
-            return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(BL.getClass()).newInstance(BL));
+            return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this));
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {
@@ -1105,9 +1065,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.CONCAT) {
             resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.UNIQUE) {
-            resultProp = addAGProp(null, false, getSID(), false, "", false, groupPropParamCount, resultParams.toArray());
+            resultProp = addAGProp(null, false, genSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
-            resultProp = addCGProp(null, false, getSID(), false, "", null, groupPropParamCount, resultParams.toArray());
+            resultProp = addCGProp(null, false, genSID(), false, "", null, groupPropParamCount, resultParams.toArray());
         }
         return resultProp;
     }
@@ -1683,6 +1643,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void checkNamespace(String namespaceName) throws ScriptingErrorLog.SemanticErrorException {
+        if (!namespaceToModules.containsKey(namespaceName)) {
+            errLog.emitNamespaceNotFoundError(parser, namespaceName);
+        }
+    }
+
     private void checkWindow(AbstractWindow window, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (window == null) {
             errLog.emitWindowNotFoundError(parser, name);
@@ -2009,6 +1975,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void checkModulesAndNamespaces(List<String> requiredModules, List<String> importedNamespaces) throws ScriptingErrorLog.SemanticErrorException {
+        initNamespacesToModules(this, new HashSet<LogicsModule>()); // todo [dale]: переделать
+
+        if (importedNamespaces.contains(getNamespace())) {
+            errLog.emitImportingOwnNamespaceError(parser, getNamespace());
+        }
+
+        for (String namespaceName : importedNamespaces) {
+            checkNamespace(namespaceName);
+        }
+
+        for (String moduleName : requiredModules) {
+            checkModule(BL.getModule(moduleName), moduleName);
+        }
+
+        Set<String> importSet = new HashSet<String>();
+        for (String namespaceName : importedNamespaces) {
+            if (importSet.contains(namespaceName)) {
+                errLog.emitNonUniqueImportListError(parser, namespaceName);
+            }
+            importSet.add(namespaceName);
+        }
+    }
+
     public boolean semicolonNeeded() {
         return !("}".equals(parsers.peek().input.LT(-1).getText()));
     }
@@ -2030,7 +2020,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             currentState = state;
             parsers.push(parser);
-            parser.script();
+            if (state == State.INIT) {
+                parser.moduleHeader();
+            } else {
+                parser.script();
+            }
             parsers.pop();
             currentState = null;
 
@@ -2042,35 +2036,65 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    private void initNamespacesToModules(LogicsModule module, Set<LogicsModule> visitedModules) {
+        visitedModules.add(module);
+        String namespaceName = module.getNamespace();
+        if (!namespaceToModules.containsKey(namespaceName)) {
+            namespaceToModules.put(namespaceName, BaseUtils.toList(module));
+        } else {
+            namespaceToModules.get(namespaceName).add(module);
+        }
+        for (String requiredModuleName : module.getRequiredModules()) {
+            LogicsModule requiredModule = BL.getModule(requiredModuleName);
+            assert requiredModule != null;
+            if (!visitedModules.contains(requiredModule)) {
+                initNamespacesToModules(requiredModule, visitedModules);
+            }
+        }
+    }
+
+
+    @Override
+    public void initModule() {
+        parseStep(State.INIT);
+    }
+
     @Override
     public void initClasses() {
         initBaseClassAliases();
-        parseStep(ScriptingLogicsModule.State.CLASS);
+        parseStep(State.CLASS);
     }
 
     @Override
     public void initTables() {
-        parseStep(ScriptingLogicsModule.State.TABLE);
+        parseStep(State.TABLE);
     }
 
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        parseStep(ScriptingLogicsModule.State.GROUP);
+        parseStep(State.GROUP);
     }
 
     @Override
     public void initProperties()  {
         warningList.clear();
-        parseStep(ScriptingLogicsModule.State.PROP);
+        parseStep(State.PROP);
     }
 
     @Override
     public void initIndexes() {
-        parseStep(ScriptingLogicsModule.State.INDEX);
+        parseStep(State.INDEX);
         if (parsers.size() < 2) {
             showWarnings();
         }
+    }
+
+    public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> importedNamespaces) {
+        setModuleName(name);
+        setNamespace(namespace == null ? name : namespace);
+        setRequiredModules(requiredModules);
+        this.importedNamespaces = importedNamespaces;
     }
 
     private void showWarnings() {
@@ -2086,24 +2110,78 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public String getNamePrefix() {
-        return getSID();
+        return getName();
     }
 
     public abstract class CompoundNameResolver<T> {
+        private T findInNamespace(LogicsModule module, String namespaceName, String name, Set<LogicsModule> visitedModules) throws ScriptingErrorLog.SemanticErrorException {
+            T result = null;
+            visitedModules.add(module);
+            if (module.getNamespace().equals(namespaceName)) {
+                if ((result = resolveInModule(module, name)) != null) {
+                    return result;
+                }
+            }
+            for (String moduleName : module.getRequiredModules()) {
+                LogicsModule nextModule = findModule(moduleName);
+                if (!visitedModules.contains(nextModule)) {
+                    if ((result = findInNamespace(nextModule, namespaceName, name, visitedModules)) != null) {
+                        return result;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private int priority(LogicsModule module, List<String> namespaces) {
+            int res = namespaces.indexOf(module.getNamespace());
+            return res >= 0 ? res : namespaces.size();
+        }
+
+        private void findInRequiredModules(LogicsModule module, String name, List<String> namespaces, List<LogicsModule> outModules, Set<LogicsModule> visitedModules) throws ScriptingErrorLog.SemanticErrorException {
+            visitedModules.add(module);
+            if (resolveInModule(module, name) != null) {
+                int priority = priority(module, namespaces);
+                if (outModules.isEmpty()) {
+                    outModules.add(module);
+                } else {
+                    int curPriority = priority(outModules.get(0), namespaces);
+                    if (priority <= curPriority) {
+                        if (priority < curPriority) {
+                            outModules.clear();
+                        }
+                        outModules.add(module);
+                    }
+                }
+            }
+            for (String moduleName : module.getRequiredModules()) {
+                LogicsModule nextModule = findModule(moduleName);
+                if (!visitedModules.contains(nextModule)) {
+                    findInRequiredModules(nextModule, name, namespaces, outModules, visitedModules);
+                }
+            }
+        }
+
         public final T resolve(String name) throws ScriptingErrorLog.SemanticErrorException {
-            T result;
+            T result = null;
             int dotPosition = name.indexOf('.');
             if (dotPosition > 0) {
-                LogicsModule module = findModule(name.substring(0, dotPosition));
-                result = resolveInModule(module, name.substring(dotPosition + 1));
+                String namespaceName = name.substring(0, dotPosition);
+                checkNamespace(namespaceName);
+                result = findInNamespace(ScriptingLogicsModule.this, namespaceName, name.substring(dotPosition + 1), new HashSet<LogicsModule>());
             } else {
                 result = resolveInModule(ScriptingLogicsModule.this, name);
                 if (result == null) {
-                    for (String importModuleName : importedModules) {
-                        LogicsModule module = findModule(importModuleName);
-                        if ((result = resolveInModule(module, name)) != null) {
-                            break;
-                        }
+                    List<String> namespaces = new ArrayList<String>();
+                    namespaces.add(getNamespace());
+                    namespaces.addAll(importedNamespaces);
+                    List<LogicsModule> containingModules = new ArrayList<LogicsModule>();
+                    findInRequiredModules(ScriptingLogicsModule.this, name, namespaces, containingModules, new HashSet<LogicsModule>());
+                    if (containingModules.size() > 1) {
+                        errLog.emitAmbiguousNameError(parser, containingModules, name);
+                    }
+                    if (containingModules.size() == 1) {
+                        result = resolveInModule(containingModules.get(0), name);
                     }
                 }
             }
@@ -2152,6 +2230,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         @Override
         public ImplementTable resolveInModule(LogicsModule module, String simpleName) {
             return module.getTableByName(simpleName);
+        }
+    }
+
+    private class ClassNameResolver extends CompoundNameResolver<ValueClass> {
+        @Override
+        public ValueClass resolveInModule(LogicsModule module, String simpleName) {
+            return module.getClassByName(simpleName);
         }
     }
 }

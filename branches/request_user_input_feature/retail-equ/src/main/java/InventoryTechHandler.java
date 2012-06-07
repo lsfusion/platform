@@ -58,15 +58,15 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 fileBarcodeIndex = fileBarcode.createIndex(directory + "/" + transactionInfo.dateTimeCode + "B.NDX", "BARCODE", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    if (fileBarcode.findExact(item.barcodeEx.trim())) {
-                        fileBarcode.getField("ARTICUL").put(item.barcodeEx);
-                        fileBarcode.getField("BARCODE").put(item.barcodeEx);
+                    if (fileBarcode.findExact(item.idBarcode.trim())) {
+                        fileBarcode.getField("ARTICUL").put(item.idBarcode);
+                        fileBarcode.getField("BARCODE").put(item.idBarcode);
                         fileBarcode.update();
                     } else {
                         if (fileBarcode.getRecordCount() != 0)
                             fileBarcode.gotoRecord(fileBarcode.getRecordCount());
-                        fileBarcode.getField("ARTICUL").put(item.barcodeEx);
-                        fileBarcode.getField("BARCODE").put(item.barcodeEx);
+                        fileBarcode.getField("ARTICUL").put(item.idBarcode);
+                        fileBarcode.getField("BARCODE").put(item.idBarcode);
                         fileBarcode.write();
                         fileBarcode.file.setLength(fileBarcode.file.length() - 1);
                     }
@@ -89,13 +89,13 @@ public class InventoryTechHandler extends TerminalHandler<InventoryTechSalesBatc
                 fileGoodsIndex = fileGoods.createIndex(directory + "/" + transactionInfo.dateTimeCode + "G.NDX", "ARTICUL", true, true);
 
                 for (ItemInfo item : transactionInfo.itemsList) {
-                    if (fileGoods.findExact(item.barcodeEx.trim())) {
-                        fileGoods.getField("ARTICUL").put(item.barcodeEx);
+                    if (fileGoods.findExact(item.idBarcode.trim())) {
+                        fileGoods.getField("ARTICUL").put(item.idBarcode);
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.update();
                     } else {
-                        fileGoods.getField("ARTICUL").put(item.barcodeEx);
+                        fileGoods.getField("ARTICUL").put(item.idBarcode);
                         fileGoods.getField("NAME").put(item.name);
                         fileGoods.getField("PRICE").put(item.price.toString());
                         fileGoods.write();

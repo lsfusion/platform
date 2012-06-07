@@ -167,10 +167,15 @@ public class ScriptingFormView extends DefaultFormView {
 
     private static String getPropertyGroupContainerSID(ScriptingLogicsModule lm, GroupObjectEntity group, AbstractGroup propertyGroup) {
         String propertyGroupSID = propertyGroup.getSID();
-        if (lm.getGroupBySID(propertyGroupSID) != null) {
-            //используем простое имя для групп данного модуля
-            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
+        if (propertyGroupSID.contains("_")) {
+            String[] sids = propertyGroupSID.split("_", 2);
+            propertyGroupSID = sids[1];
         }
+        // todo : здесь конечно совсем хак - нужно более четку схему сделать
+//        if (lm.getGroupBySID(propertyGroupSID) != null) {
+//            используем простое имя для групп данного модуля
+//            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
+//        }
         return group.getSID() + "." + propertyGroupSID;
     }
 

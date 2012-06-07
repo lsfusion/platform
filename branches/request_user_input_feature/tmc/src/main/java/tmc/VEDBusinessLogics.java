@@ -35,6 +35,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void createModules() throws IOException {
         super.createModules();
         VEDLM = new VEDLogicsModule(LM, this, logger);
+        VEDLM.setRequiredModules(Arrays.asList("BaseLogicsModule"));
         addLogicsModule(VEDLM);
         ScriptingLogicsModule VEDScript = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/VEDScript.lsf"), LM, this);
         addLogicsModule(VEDScript);

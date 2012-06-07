@@ -14,8 +14,8 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
+import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import roman.RomanBusinessLogics;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -23,15 +23,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ExportDeclarationActionProperty extends ScriptingActionProperty {
-    private RomanBusinessLogics BL;
-    private ScriptingLogicsModule romanRB;
     private final ClassPropertyInterface declarationInterface;
     String row;
 
-    public ExportDeclarationActionProperty(RomanBusinessLogics BL) {
-        super(BL, new ValueClass[]{BL.RomanRB.getClassByName("declaration")});
-        this.BL = BL;
-        this.romanRB = BL.RomanRB;
+    public ExportDeclarationActionProperty(ScriptingLogicsModule LM) {
+        super(LM, new ValueClass[]{LM.getClassByName("declaration")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         declarationInterface = i.next();
@@ -119,14 +115,14 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 writerTSDocs44.println("");
             }
 
-            LCP isGroupDeclaration = BL.LM.is(romanRB.getClassByName("groupDeclaration"));
+            LCP isGroupDeclaration = LM.is(getClass("groupDeclaration"));
             Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<Object, Object> query = new Query<Object, Object>(keys);
             for (String propertySID : exportProperties)
-                query.properties.put(propertySID, romanRB.getLCPByName(propertySID).getExpr(context.getModifier(), key));
+                query.properties.put(propertySID, getLCP(propertySID).getExpr(context.getModifier(), key));
             query.and(isGroupDeclaration.getExpr(key).getWhere());
-            query.and(romanRB.getLCPByName("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
+            query.and(getLCP("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
 
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
@@ -148,10 +144,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 innerInvoiceKeys.put("innerInvoice", innerInvoiceExpr);
 
                 Query<Object, Object> innerInvoiceQuery = new Query<Object, Object>(innerInvoiceKeys);
-                innerInvoiceQuery.properties.put("sidInnerInvoice", romanRB.getLCPByName("sidInnerInvoice").getExpr(innerInvoiceExpr));
-                innerInvoiceQuery.properties.put("dateInnerInvoice", romanRB.getLCPByName("dateInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("sidInnerInvoice", getLCP("sidInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("dateInnerInvoice", getLCP("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
-                innerInvoiceQuery.and(romanRB.getLCPByName("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)romanRB.getClassByName("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+                innerInvoiceQuery.and(getLCP("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 
@@ -284,6 +280,8 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw new RuntimeException(e);
         }
     }
 

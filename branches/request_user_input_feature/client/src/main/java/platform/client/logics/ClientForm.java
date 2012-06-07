@@ -251,6 +251,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
             gwtForm.caption = caption;
             gwtForm.mainContainer = mainContainer.getGwtComponent();
 
+            for (ClientTreeGroup treeGroup : treeGroups) {
+                gwtForm.treeGroups.add(treeGroup.getGwtComponent());
+            }
+
             for (ClientGroupObject group : groupObjects) {
                 gwtForm.groupObjects.add(group.getGwtGroupObject());
             }

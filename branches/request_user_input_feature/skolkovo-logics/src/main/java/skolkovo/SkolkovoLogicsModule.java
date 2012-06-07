@@ -247,6 +247,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public StaticCustomClass projectMission;
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
     public void initClasses() {
         initBaseClassAliases();
 

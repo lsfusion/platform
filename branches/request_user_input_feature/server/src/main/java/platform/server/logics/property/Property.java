@@ -44,7 +44,7 @@ import java.util.*;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
     private String sID;
-
+    private String name;
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
 
     public String caption;
@@ -235,6 +235,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void freezeSID() {     // todo [dale]: Отрефакторить установку SID
         canChangeSID = false;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean cached = false;

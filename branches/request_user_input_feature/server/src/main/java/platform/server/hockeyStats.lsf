@@ -1,6 +1,6 @@
 MODULE HockeyStats;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 CLASS Game 'Game';
 CLASS Team 'Team' : named;

@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.ManualLazy;
@@ -52,8 +53,10 @@ public abstract class NotNullExpr extends VariableClassExpr {
         @Override
         public Where packFollowFalse(Where falseWhere) {
             Expr packExpr = NotNullExpr.this.packFollowFalse(falseWhere);
-            if(packExpr instanceof BaseExpr) // чтобы бесконечных циклов не было
-                return ((BaseExpr)packExpr).getNotNullWhere();
+//            if(packExpr instanceof BaseExpr) // чтобы бесконечных циклов не было
+//                return ((BaseExpr)packExpr).getNotNullWhere();
+            if(BaseUtils.hashEquals(packExpr, NotNullExpr.this)) // чтобы бесконечных циклов не было
+                return this;
             else
                 return packExpr.getWhere();
         }

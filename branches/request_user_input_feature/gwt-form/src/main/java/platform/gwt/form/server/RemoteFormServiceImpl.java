@@ -9,6 +9,8 @@ public class RemoteFormServiceImpl extends LogicsDispatchServlet<RemoteLogicsInt
     @Override
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         registry.addHandler(new ChangeClassViewHandler(this));
+        registry.addHandler(new ExpandGroupObjectHandler(this));
+        registry.addHandler(new CollapseGroupObjectHandler(this));
         registry.addHandler(new GetFormHandler(this));
         registry.addHandler(new ChangeGroupObjectHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));

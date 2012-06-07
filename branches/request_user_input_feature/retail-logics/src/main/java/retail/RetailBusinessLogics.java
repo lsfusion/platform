@@ -6,10 +6,7 @@ import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.StaticCustomClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -38,6 +35,25 @@ import java.util.*;
 
 
 public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements RetailRemoteInterface {
+    public ScriptingLogicsModule Utils;
+    public ScriptingLogicsModule Hierarchy;
+    public ScriptingLogicsModule Historizable;
+    public ScriptingLogicsModule Numerator;
+    public ScriptingLogicsModule Stock;
+    public ScriptingLogicsModule Barcode;
+    public ScriptingLogicsModule Document;
+    public ScriptingLogicsModule Tax;
+    public ScriptingLogicsModule Ware;
+    public ScriptingLogicsModule LegalEntity;
+    public ScriptingLogicsModule Employee;
+    public ScriptingLogicsModule Store;
+    public ScriptingLogicsModule ListRegister;
+    public ScriptingLogicsModule Consignment;
+    public ScriptingLogicsModule AccountDocument;
+    public ScriptingLogicsModule StorePrice;
+    public ScriptingLogicsModule Supplier;
+    public ScriptingLogicsModule Sales;
+
     ScriptingLogicsModule retailLM;
 
     public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -51,18 +67,30 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        retailLM = new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this);
-        addLogicsModule(retailLM);
+        Utils = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this));
+        Hierarchy = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Hierarchy.lsf"), LM, this));
+        Historizable = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Historizable.lsf"), LM, this));
+        Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
+        Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
+        Barcode = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Barcode.lsf"), LM, this));
+        Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
+        Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
+        Ware = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Ware.lsf"), LM, this));
+        LegalEntity = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/LegalEntity.lsf"), LM, this));
+        Employee = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Employee.lsf"), LM, this));
+        Store = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Store.lsf"), LM, this));
+        ListRegister = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/ListRegister.lsf"), LM, this));
+        Consignment = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Consignment.lsf"), LM, this));
+        AccountDocument = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/AccountDocument.lsf"), LM, this));
+        StorePrice = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/StorePrice.lsf"), LM, this));
+        Supplier = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Supplier.lsf"), LM, this));
+        Sales = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Sales.lsf"), LM, this));
+        retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
     }
 
     @Override
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
-    }
-
-    @Override
-    public BusinessLogics getBL() {
-        return this;
     }
 
     @Override
@@ -89,7 +117,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             DataObject groupMachineryMPT = (DataObject) entry.getValue().get("groupMachineryMPT");
             DataObject transactionObject = entry.getKey().values().iterator().next();
             Boolean snapshotMPT = entry.getValue().get("snapshotMPT") instanceof DataObject;
-            transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), snapshotMPT});
+            transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), dateTimeMPT, snapshotMPT});
         }
 
         List<ItemInfo> itemTransactionList;
@@ -98,7 +126,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             DataObject groupObject = (DataObject) transaction[0];
             DataObject transactionObject = (DataObject) transaction[1];
             String dateTimeCode = (String) transaction[2];
-            Boolean snapshotTransaction = (Boolean) transaction[3];
+            Date date = new Date(((Timestamp) ((DataObject) transaction[3]).getValue()).getTime());
+            Boolean snapshotTransaction = (Boolean) transaction[4];
 
             itemTransactionList = new ArrayList<ItemInfo>();
             KeyExpr barcodeExpr = new KeyExpr("barcode");
@@ -106,19 +135,38 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             itemKeys.put("barcode", barcodeExpr);
 
             Query<Object, Object> itemQuery = new Query<Object, Object>(itemKeys);
-            itemQuery.properties.put("barcodeEx", retailLM.getLCPByName("barcodeEx").getExpr(barcodeExpr));
-            itemQuery.properties.put("nameMachineryPriceTransactionBarcode", retailLM.getLCPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("priceMachineryPriceTransactionBarcode", retailLM.getLCPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("idBarcode", retailLM.getLCPByName("idBarcode").getExpr(barcodeExpr));
+            itemQuery.properties.put("name", retailLM.getLCPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("price", retailLM.getLCPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("daysExpiry", retailLM.getLCPByName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("hoursExpiry", retailLM.getLCPByName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("expirationDate", retailLM.getLCPByName("expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("labelFormat", retailLM.getLCPByName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("composition", retailLM.getLCPByName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("isWeight", retailLM.getLCPByName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("itemGroup", retailLM.getLCPByName("itemGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
 
             itemQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> itemResult = itemQuery.execute(session.sql);
 
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : itemResult.entrySet()) {
-                String barcode = (String) entry.getValue().get("barcodeEx");
-                String name = (String) entry.getValue().get("nameMachineryPriceTransactionBarcode");
-                Double price = (Double) entry.getValue().get("priceMachineryPriceTransactionBarcode");
-                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price));
+                String barcode = (String) entry.getValue().get("idBarcode");
+                String name = (String) entry.getValue().get("name");
+                Double price = (Double) entry.getValue().get("price");
+                Double daysExpiry = (Double) entry.getValue().get("daysExpiry");
+                Integer hoursExpiry = (Integer) entry.getValue().get("hoursExpiry");
+                Date expirationDate = (Date) entry.getValue().get("expirationDate");
+                Integer labelFormat = (Integer) entry.getValue().get("labelFormat");
+                String composition = (String) entry.getValue().get("composition");
+                Boolean isWeight = entry.getValue().get("isWeight") != null;
+                Integer numberItemGroup = (Integer) entry.getValue().get("itemGroup");
+                String canonicalNameItemGroup = numberItemGroup == null ? "" : (String) retailLM.getLCPByName("canonicalNameItemGroup").read(session, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
+
+                Integer cellScalesObject = (Integer) retailLM.getLCPByName("groupScalesCompositionToCellScales").read(session, groupObject, new DataObject(composition, TextClass.instance));
+                Integer compositionNumberCellScales = cellScalesObject==null ? null : (Integer) retailLM.getLCPByName("numberCellScales").read(session, new DataObject(cellScalesObject, (ConcreteClass) retailLM.getClassByName("cellScales")));
+                
+                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expirationDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberItemGroup == null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
             }
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {
@@ -151,15 +199,17 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     String numberCashRegister = (String) values.getValue().get("numberCashRegister");
                     String nameModel = (String) values.getValue().get("nameCashRegisterModelCashRegister");
                     String handlerModel = (String) values.getValue().get("handlerCashRegisterModelCashRegister");
-                    cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister));
+                    cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, null));
                 }
 
                 transactionList.add(new TransactionCashRegisterInfo((Integer) transactionObject.getValue(),
-                        dateTimeCode, itemTransactionList, cashRegisterInfoList));
+                        dateTimeCode, date, itemTransactionList, cashRegisterInfoList));
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("scalesPriceTransaction"))) {
                 List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
                 String directory = (String) retailLM.getLCPByName("directoryGroupScales").read(session, groupObject);
+                String pieceItemCodeGroupScales = (String) retailLM.getLCPByName("pieceItemCodeGroupScales").read(session, groupObject);
+                String weightItemCodeGroupScales = (String) retailLM.getLCPByName("weightItemCodeGroupScales").read(session, groupObject);
 
                 LCP<PropertyInterface> isScales = LM.is(retailLM.getClassByName("scales"));
 
@@ -173,8 +223,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 scalesQuery.properties.put("handlerScalesModelScales", retailLM.getLCPByName("handlerScalesModelScales").getExpr(scalesKey));
                 scalesQuery.and(isScales.property.getExpr(scalesKeys).getWhere());
                 scalesQuery.and(retailLM.getLCPByName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
-                if (snapshotTransaction)
-                    scalesQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
+                //if (snapshotTransaction)
+                //    scalesQuery.and(retailLM.getLCPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
 
                 OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
 
@@ -183,11 +233,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     Integer nppMachinery = (Integer) values.get("nppMachinery");
                     String nameModel = (String) values.get("nameScalesModelScales");
                     String handlerModel = (String) values.get("handlerScalesModelScales");
-                    scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory));
+                    scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory,
+                            pieceItemCodeGroupScales, weightItemCodeGroupScales));
                 }
 
                 transactionList.add(new TransactionScalesInfo((Integer) transactionObject.getValue(),
-                        dateTimeCode, itemTransactionList, scalesInfoList));
+                        dateTimeCode, itemTransactionList, scalesInfoList, snapshotTransaction));
 
             } else if (transactionObject.objectClass.equals(retailLM.getClassByName("checkPriceTransaction"))) {
                 List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
@@ -449,7 +500,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         ImportField timeField = new ImportField(retailLM.getLCPByName("timeBill"));
 
         ImportField numberBillDetailField = new ImportField(retailLM.getLCPByName("numberBillDetail"));
-        ImportField barcodeExBillDetailField = new ImportField(retailLM.getLCPByName("barcodeExBillDetail"));
+        ImportField idBarcodeBillDetailField = new ImportField(retailLM.getLCPByName("idBarcodeBillDetail"));
 
         ImportField quantityBillSaleDetailField = new ImportField(retailLM.getLCPByName("quantityBillSaleDetail"));
         ImportField retailPriceBillSaleDetailField = new ImportField(retailLM.getLCPByName("retailPriceBillSaleDetail"));
@@ -472,7 +523,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLCPByName("numberToZReportPosted").getMapping(zReportNumberField));
         ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLCPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
         ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLCPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
-        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLCPByName("skuBarcodeStringDate").getMapping(barcodeExBillDetailField, dateField));
+        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLCPByName("skuBarcodeIdDate").getMapping(idBarcodeBillDetailField, dateField));
 
         saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("numberZReport").getMapping(zReportKey)));
         saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLCPByName("cashRegisterZReport").getMapping(zReportKey),
@@ -487,7 +538,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
         saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLCPByName("numberBillDetail").getMapping(billSaleDetailKey)));
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("barcodeExBillDetail").getMapping(billSaleDetailKey)));
+        saleProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLCPByName("idBarcodeBillDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLCPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(retailPriceBillSaleDetailField, retailLM.getLCPByName("retailPriceBillSaleDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(retailSumBillSaleDetailField, retailLM.getLCPByName("retailSumBillSaleDetail").getMapping(billSaleDetailKey)));
@@ -495,7 +546,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         saleProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("billBillDetail").getMapping(billSaleDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        saleProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
+        saleProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLCPByName("itemBillSaleDetail").getMapping(billSaleDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
 
@@ -512,7 +563,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
         returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLCPByName("numberBillDetail").getMapping(billReturnDetailKey)));
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("barcodeExBillDetail").getMapping(billReturnDetailKey)));
+        returnProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLCPByName("idBarcodeBillDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLCPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(retailPriceBillReturnDetailField, retailLM.getLCPByName("retailPriceBillReturnDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(retailSumBillReturnDetailField, retailLM.getLCPByName("retailSumBillReturnDetail").getMapping(billReturnDetailKey)));
@@ -520,7 +571,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         returnProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("billBillDetail").getMapping(billReturnDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        returnProperties.add(new ImportProperty(barcodeExBillDetailField, retailLM.getLCPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
+        returnProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLCPByName("itemBillReturnDetail").getMapping(billReturnDetailKey),
                 LM.baseLM.object(retailLM.getClassByName("item")).getMapping(itemKey)));
 
         List<List<Object>> dataSale = new ArrayList<List<Object>>();
@@ -528,24 +579,25 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         List<List<Object>> dataPayment = new ArrayList<List<Object>>();
 
-        for (SalesInfo sale : salesInfoList) {
-            if (sale.quantityBillDetail < 0)
-                dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
-                        sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                        sale.discountSumBillDetail));
-            else
-                dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
-                        sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                        sale.discountSumBillDetail));
-            dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
-        }
+        if (salesInfoList != null)
+            for (SalesInfo sale : salesInfoList) {
+                if (sale.quantityBillDetail < 0)
+                    dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
+                            sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
+                            sale.discountSumBillDetail));
+                else
+                    dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
+                            sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
+                            sale.discountSumBillDetail));
+                dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
+            }
 
         List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillSaleDetailField,
+                numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillSaleDetailField,
                 retailPriceBillSaleDetailField, retailSumBillSaleDetailField, discountSumBillSaleDetailField);
 
         List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
-                numberBillField, numberBillDetailField, barcodeExBillDetailField, quantityBillReturnDetailField,
+                numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillReturnDetailField,
                 retailPriceBillReturnDetailField, retailSumBillReturnDetailField, discountSumBillReturnDetailField);
 
 
@@ -567,7 +619,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, sidTypePaymentField,
                 sumPaymentField, numberPaymentField);
 
-        if (salesInfoList.size() != 0) {
+        if (salesInfoList != null && salesInfoList.size() != 0) {
             String message = "Загружено записей: " + (dataSale.size() + dataReturn.size());
             List<String> cashRegisterNumbers = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
@@ -701,6 +753,38 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         retailLM.getLCPByName("succeededMachineryPriceTransaction").change(true, session,
                 session.getDataObject(transactionID, retailLM.getClassByName("machineryPriceTransaction").getType()));
         session.apply(this);
+    }
+
+    @Override
+    public List<byte[][]> readLabelFormats(List<String> scalesModelsList) throws SQLException {
+        DataSession session = createSession();
+
+        List<byte[][]> fileLabelFormats = new ArrayList<byte[][]>();
+
+        for (String scalesModel : scalesModelsList) {
+
+            DataObject scalesModelObject = new DataObject(retailLM.getLCPByName("nameToScalesModel").read(session, new DataObject(scalesModel)), (ConcreteClass) retailLM.getClassByName("scalesModel"));
+
+            LCP<PropertyInterface> isLabelFormat = LM.is(retailLM.getClassByName("labelFormat"));
+
+            Map<PropertyInterface, KeyExpr> labelFormatKeys = isLabelFormat.getMapKeys();
+            KeyExpr labelFormatKey = BaseUtils.singleValue(labelFormatKeys);
+            Query<PropertyInterface, Object> labelFormatQuery = new Query<PropertyInterface, Object>(labelFormatKeys);
+
+            labelFormatQuery.properties.put("fileLabelFormat", retailLM.getLCPByName("fileLabelFormat").getExpr(labelFormatKey));
+            labelFormatQuery.properties.put("fileMessageLabelFormat", retailLM.getLCPByName("fileMessageLabelFormat").getExpr(labelFormatKey));
+            labelFormatQuery.and(isLabelFormat.property.getExpr(labelFormatKeys).getWhere());
+            labelFormatQuery.and(retailLM.getLCPByName("scalesModelLabelFormat").getExpr(labelFormatKey).compare((scalesModelObject).getExpr(), Compare.EQUALS));
+
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> labelFormatResult = labelFormatQuery.execute(session.sql);
+
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : labelFormatResult.entrySet()) {
+                byte[] fileLabelFormat = (byte[]) entry.getValue().get("fileLabelFormat");
+                byte[] fileMessageLabelFormat = (byte[]) entry.getValue().get("fileMessageLabelFormat");
+                fileLabelFormats.add(new byte[][]{fileLabelFormat, fileMessageLabelFormat});
+            }
+        }
+        return fileLabelFormats;
     }
 
     @Override

@@ -323,7 +323,7 @@ public class LsfLogicsParserPresentationTest {
                                         testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();
 
-        LM = (ScriptingLogicsModule) bl.findModule("testPresentation");
+        LM = (ScriptingLogicsModule) bl.getModule("testPresentation");
         assertNotNull(LM);
 
         entity = (ScriptingFormEntity) LM.findNavigatorElementByName("storeArticle");

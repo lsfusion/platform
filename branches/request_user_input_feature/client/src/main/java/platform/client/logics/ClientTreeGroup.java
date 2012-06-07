@@ -4,6 +4,7 @@ import platform.base.context.ApplicationContext;
 import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.view.GTreeGroup;
 import platform.interop.form.layout.AbstractTreeGroup;
 
 import java.io.DataInputStream;
@@ -77,5 +78,17 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
             size += groupObject.isRecursive ? 35 * 4 : 35;
         }
         return size;
+    }
+
+    private GTreeGroup gwtTreeGroup;
+    public GTreeGroup getGwtComponent() {
+        if (gwtTreeGroup == null) {
+            gwtTreeGroup = new GTreeGroup();
+            initGwtComponent(gwtTreeGroup);
+            for (ClientGroupObject group : groups) {
+                gwtTreeGroup.groups.add(group.getGwtGroupObject());
+            }
+        }
+        return gwtTreeGroup;
     }
 }

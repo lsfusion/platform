@@ -1,7 +1,6 @@
 MODULE Roman;
 
-IMPORT RomanLogicsModule;
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule, RomanLogicsModule;
 
 CLASS supplierAndDocument 'Поставщик и документ' : supplier, document;
 CLASS namedDocument : named, supplierAndDocument;

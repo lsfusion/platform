@@ -27,7 +27,6 @@
       <keyword name="APPLY" />
       <keyword name="AS" />
       <keyword name="ASC" />
-      <keyword name="ASCHANGE" />
       <keyword name="ASSIGNED" />
       <keyword name="ATTACH" />
       <keyword name="AUTOAPPLY" />
@@ -62,6 +61,7 @@
       <keyword name="DATE" />
       <keyword name="DATETIME" />
       <keyword name="DEFAULT" />
+      <keyword name="DELETE" />
       <keyword name="DESC" />
       <keyword name="DESIGN" />
       <keyword name="DIALOG" />
@@ -143,6 +143,7 @@
       <keyword name="MODAL" />
       <keyword name="MODULE" />
       <keyword name="NAME" />
+      <keyword name="NAMESPACE" />
       <keyword name="NAVIGATOR" />
       <keyword name="NEW" />
       <keyword name="NEWSESSION" />
@@ -154,7 +155,6 @@
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
-      <keyword name="ONCHANGE" />
       <keyword name="OPENFILE" />
       <keyword name="OR" />
       <keyword name="ORDER" />
@@ -180,6 +180,7 @@
       <keyword name="REMOVE" />
       <keyword name="REPORTFILE" />
       <keyword name="REQUEST" />
+      <keyword name="REQUIRE" />
       <keyword name="RESOLVE" />
       <keyword name="RETURN" />
       <keyword name="RGB" />
@@ -246,4 +247,3 @@
     <mapping ext="lsf" />
   </extensionMap>
 </filetype>
-

@@ -14,9 +14,15 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcPropertyMapImplement;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.derived.DerivedProperty;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -224,7 +230,7 @@ public class ScriptingFormEntity {
             }
             applyPropertyOptions(property, commonOptions.overrideWith(options.get(i)));
 
-            setPropertDrawAlias(alias, property);
+            setPropertyDrawAlias(alias, property);
         }
     }
 
@@ -277,19 +283,17 @@ public class ScriptingFormEntity {
         }
     }
 
-    private CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity groundProperty, boolean back) {
-        LP backgroundLP = LM.getLPBySID(groundProperty.property.getSID());
-        Object[] params = new Object[backgroundLP.listInterfaces.size() + 2];
-        params[0] = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
-        params[1] = backgroundLP;
-        for (int i = 0; i < backgroundLP.listInterfaces.size(); i++) {
-            params[i + 2] = i + 1;
-        }
-        Collection<ObjectEntity> objects = groundProperty.getObjectInstances();
-        return form.addPropertyObject(LM.addJProp(LM.baseLM.and1, params), objects.toArray(new ObjectEntity[objects.size()]));
+    private CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<?> groundProperty, boolean back) {
+        LCP<?> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
+        CalcPropertyMapImplement<?, ?> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
+                                                                     new CalcPropertyMapImplement(defaultColorProp.property, new HashMap()),
+                                                                     new CalcPropertyMapImplement(groundProperty.property, BaseUtils.buildMap(groundProperty.property.interfaces, groundProperty.property.interfaces)));
+        return new CalcPropertyObjectEntity(
+                mapImpl.property,
+                BaseUtils.join(mapImpl.mapping, (Map<PropertyInterface,PropertyObjectInterfaceEntity>) groundProperty.mapping), null);
     }
 
-    private void setPropertDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
         assert property != null;
 
         if (alias == null) {

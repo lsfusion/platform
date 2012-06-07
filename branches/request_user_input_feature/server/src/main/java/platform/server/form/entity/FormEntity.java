@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
 import platform.base.AddSet;
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
@@ -14,7 +15,6 @@ import platform.interop.navigator.FormShowType;
 import platform.server.Context;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
@@ -481,7 +481,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
 
         if (propertyImplement.property.getSID() != null) {
-            String propertySID = propertyImplement.property.getSID(); //BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
+            String propertySID = BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
 
             setPropertyDrawGeneratedSID(newPropertyDraw, propertySID);
         }
@@ -498,7 +498,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
         propertyDraws.add(ind + 1, newPropertyDraw);
 
-        assert richDesign == null;
+//        assert richDesign == null;
+        if (richDesign != null)
+            richDesign.addPropertyDrawEntity(newPropertyDraw);
 
         return newPropertyDraw;
     }

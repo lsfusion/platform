@@ -1,15 +1,16 @@
 MODULE RB;
 
-IMPORT BaseLogicsModule;
-IMPORT RomanLogicsModule;
+REQUIRE BaseLogicsModule,
 
-IMPORT Utils;
-IMPORT Stock;
-IMPORT Numerator;
-IMPORT Document;
+        Utils,
+        Stock,
+        Numerator,
+        Document,
+        Historizable,
 
-round0 (number) = round(number, 0);
-roundMinus1 (number) = round(number, -1);
+        RomanLogicsModule;
+
+IMPORT BaseLogicsModule, Utils, Stock;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
 
@@ -36,6 +37,33 @@ META metaCodePriceBaseDiscount(document, caption)
     RRPB###document##Article 'Предыдущая рекомендуемая'(document, article) = RRP###document##ArticleDateTime(article, dateTimePriceChangeDocument(document));
 
 END
+
+// --------------------------- Имплементация остатков -------------------------- //
+
+//TABLE batchDepartmentStore(batch, departmentStore);
+
+META implementBalanceSkuLedgerSkuStock(concrete, stock)
+    dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
+   // isPostedBalanceSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
+   // descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
+    skuBalanceSkuLedger (ledger) += sku###concrete##Detail(ledger);
+    stockBalanceSkuLedger (ledger) += stock###concrete##Detail(ledger);
+END
+
+META implementBatch(concrete)
+    dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
+    //isPostedBatch (batch) += isPosted###concrete##Detail(batch);
+    //descriptionBatch (batch) += description###concrete##Detail(batch);
+    skuBatch (batch) += sku###concrete##Detail(batch);
+    //supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
+END
+
+//--------------------------------- Наименование товара --------------------------------------------------------------------//
+descriptionSku 'Наименование товара' (sku) =
+        [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+        sidArticleSku(sku), nameCategoryArticleSku(sku), nameArticleSku(sku));
+
+nameSku(sku) += descriptionSku (sku);
 
 //--------------------------------- Сертификаты --------------------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
@@ -118,7 +146,7 @@ CLASS declaration 'Таможенная декларация' : transaction;
 CLASS preparedDeclaration 'Подготовленная декларация' : declaration;
 CLASS registeredDeclaration 'Зарегистрованная декларация' : preparedDeclaration;
 
-CLASS declarationDetail 'Позиция декларации';
+CLASS declarationDetail 'Позиция декларации' : batch;
 
 TABLE declarationSku (declaration, sku);
 TABLE declarationDetail (declarationDetail);
@@ -127,12 +155,27 @@ TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 
 CLASS correction 'КТС' : transaction;
 
+barcodeLedger 'Штрих-код' (ledger) = barcode(skuBalanceSkuLedger(ledger));
+sidSizeLedger 'Размер' (ledger) = sidSizeSupplierItem(skuBalanceSkuLedger(ledger));
+sidColorLedger 'Цвет (код)' (ledger) = sidColorSupplierItem(skuBalanceSkuLedger(ledger));
+nameColorLedger 'Цвет' (ledger) = nameColorSupplierItem(skuBalanceSkuLedger(ledger));
+
+articleLedger 'Артикул (ИД)' (ledger) = articleSku(skuBalanceSkuLedger(ledger)) IN idGroup;
+sidArticleLedger 'Артикул' (ledger) = sidArticle(articleLedger(ledger));
+brandLedger 'Бренд (ИД)' (ledger) = brandSupplierArticle(articleLedger(ledger)) IN idGroup;
+nameBrandLedger 'Бренд' (ledger) = name(brandLedger(ledger));
+categoryLedger 'Номенклатурная группа (ИД)' (ledger) = categoryArticle(articleLedger(ledger)) IN idGroup;
+nameCategoryLedger 'Номенклатурная группа' (ledger) = name(categoryLedger(ledger));
+
 customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGroup;
 nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN baseGroup;
 
 sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup MINCHARWIDTH 10;
 beginDeclaration 'Начало обработки' = DATA TIME (declaration) IN baseGroup;
 endDeclaration 'Конец обработки' = DATA TIME (declaration) IN baseGroup;
+
+dateTimeDeclaration 'Дата/время' (declaration) = toDateTime(date(declaration), endDeclaration(declaration));
+
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
@@ -165,7 +208,10 @@ quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) 
 
 @defineAggregationDouble(declaration, sku, declarationDetail, quantityDeclarationSku);
 
-dateDeclarationDetail 'Дата декларации' (declarationDetail) = date(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
+dateTimeDeclarationDetail 'Дата/время декларации' (declarationDetail) = dateTimeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
+
+customStoreDeclarationDetail 'СВХ (ИД)' (declarationDetail) = customStoreDeclaration(declarationDeclarationDetail(declarationDetail)) IN idGroup;
+nameCustomStoreDeclarationDetail 'СВХ' (declarationDetail) = name(customStoreDeclarationDetail(declarationDetail)) IN baseGroup;
 
 numberDeclarationDetail 'Номер строки' (declarationDetail) =
         PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
@@ -187,14 +233,15 @@ importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationD
                                                                                 declarationDeclarationDetail(declarationDetail),
                                                                                 skuDeclarationDetail(declarationDetail))) IN idGroup;
 
+
 articleDeclarationDetail 'Артикул товара (ИД)' (declarationDetail) = articleSku(skuDeclarationDetail(declarationDetail)) IN idGroup;
 sidArticleDeclarationDetail 'Артикул товара' (declarationDetail) = sidArticle(articleDeclarationDetail(declarationDetail));
 
-categoryArticleDeclarationDetail 'Ном. группа (ИД)' (declarationDetail) = categoryArticle(articleDeclarationDetail(declarationDetail));
-nameCategoryArticleDeclarationDetail 'Ном. группа' (declarationDetail) = name(categoryArticleDeclarationDetail(declarationDetail));
+//categoryArticleDeclarationDetail 'Ном. группа (ИД)' (declarationDetail) = categoryArticle(articleDeclarationDetail(declarationDetail));
+//nameCategoryArticleDeclarationDetail 'Ном. группа' (declarationDetail) = name(categoryArticleDeclarationDetail(declarationDetail));
 
-brandArticleDeclarationDetail 'Бренд (ИД)' (declarationDetail) = brandSupplierArticle(articleDeclarationDetail(declarationDetail));
-nameBrandArticleDeclarationDetail 'Бренд' (declarationDetail) = name(brandArticleDeclarationDetail(declarationDetail));
+//brandArticleDeclarationDetail 'Бренд (ИД)' (declarationDetail) = brandSupplierArticle(articleDeclarationDetail(declarationDetail));
+//nameBrandArticleDeclarationDetail 'Бренд' (declarationDetail) = name(brandArticleDeclarationDetail(declarationDetail));
 
 netWeightDeclarationDetail 'Вес нетто товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                         skuDeclarationDetail(declarationDetail));
@@ -271,6 +318,20 @@ priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDeta
 
 priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(priceDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
+
+
+
+@implementBatch(declaration);
+//dateTimeBatch(ledger) += dateTimeDeclarationDetail(ledger);
+isPostedBatch (ledger) += TRUE IF ledger IS declarationDetail;
+//skuBatch(ledger) += skuDeclarationDetail(ledger);
+//quantityBatch (ledger) += quantityDeclarationDetail(ledger);
+supplierPriceBatch (ledger) += priceDeclarationDetail(ledger);
+
+@implementBalanceSkuLedgerSkuStock (declaration, customStore);
+
+isPostedBalanceSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
+quantityInAutoBalanceSkuLedger (ledger) += quantityDeclarationDetail(ledger);
 
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX
@@ -405,7 +466,7 @@ TABLE declarationArticleCustomCategoryCompositionCountry(declaration, article, c
 
 quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                            BY declarationDeclarationDetail(declarationDetail),
-                                              articleDeclarationDetail(declarationDetail),
+                                              articleLedger(declarationDetail),
                                               customCategory10DeclarationDetail(declarationDetail),
                                               mainCompositionDeclarationDetail(declarationDetail),
                                               countryDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
@@ -481,6 +542,18 @@ inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) =
                                                                                   BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
 
 
+quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku) BY freightInnerInvoice(innerInvoice),
+                                                                                                                             declarationInnerInvoice(innerInvoice),
+                                                                                                                             sku PERSISTENT;
+
+inFreightBoxDeclarationDetail 'Связка' (freightBox, declarationDetail) = quantityImporterStockSku(importerDeclarationDetail(declarationDetail),
+                                                                                                  freightBox AS freightBox,
+                                                                                                  skuDeclarationDetail(declarationDetail)) AND
+                                                                              quantityFreightDeclarationSku(freightFreightBox(freightBox),
+                                                                                                            declarationDeclarationDetail(declarationDetail),
+                                                                                                            skuDeclarationDetail(declarationDetail));
+
+
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                                               BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
@@ -530,8 +603,8 @@ FORM declaration 'Декларация'
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail, sidArticleDeclarationDetail,
-                    nameCategoryArticleDeclarationDetail, mainCompositionDeclarationDetail,
+    PROPERTIES (dd) numberDeclarationDetail, barcodeLedger, nameBrandLedger, sidArticleLedger,
+                    nameCategoryLedger, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                     quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
@@ -560,12 +633,21 @@ FORM declaration 'Декларация'
 
     FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
 
+    OBJECTS f=freightBox
+    PROPERTIES (f) barcode, nameDestinationFreightBox
+    PROPERTIES (f, dd) inFreightBoxDeclarationDetail
+
+    FILTERS inFreightBoxDeclarationDetail(f, dd)
+
     EDIT declaration OBJECT d
 ;
 
 
 DESIGN declaration FROM DEFAULT{
     main {
+         d.panel {
+            childConstraints = TO THE RIGHTBOTTOM;
+         }
 //        NEW document.box BEFORE dd.box {
 //            type = TABBED;
 //            ADD ii.box;
@@ -609,8 +691,9 @@ FORM declarations 'Декларации'
     PROPERTIES(d) ADDFORM, EDITFORM, delete, showFormDeclarationInvoices
 
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeSkuDeclarationDetail, nameBrandArticleDeclarationDetail,
-                            sidArticleDeclarationDetail, nameCategoryArticleDeclarationDetail, sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
+    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeLedger, nameBrandLedger,
+                            sidArticleLedger, nameCategoryLedger, sidGenderGroupDeclaration,
+                            nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
                             nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                             quantityDeclarationDetail, priceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
@@ -679,7 +762,6 @@ uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRet
                                                         WHERE coefficientRetail IS coefficientRetail;
 
 sidPriceChangeDocument 'Номер' = DATA STRING[10] (priceChangeDocument) IN baseGroup;
-//timePriceChangeDocument 'Время документа' = DATA TIME(priceChangeDocument) IN baseGroup;
 
 timePriceChangeDocument 'Время документа' = DATA TIME (priceChangeDocument);
 timePriceChangeDocument (priceChangeDocument) <- currentTime() WHEN ASSIGNED(priceChangeDocument AS priceChangeDocument);
@@ -770,14 +852,12 @@ sumNDSPriceChangeDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](pric
                                                                       percentNDSPriceChangeDocumentArticle(basePriceChangeDocument, article));
 
 // для уценки
-//basePriceDiscountPriceChangeDocumentArticle 'Цена без уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
-
 priceInRateBBasePriceChangeDocumentArticle 'Цена поставщика (руб.)' (discountPriceChangeDocument, article) = ratePriceChangeDocumentArticle (discountPriceChangeDocument, article) *
                                                                                                              priceInBBasePriceChangeDocumentArticle(discountPriceChangeDocument, article) MINCHARWIDTH 15;
 
 percentDiscountPriceChangeDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceChangeDocument, article) IN baseGroup;
 
-priceDiscountPriceChangeDocumentArticle 'Цена без процентов' (discountPriceChangeDocument, article) = [roundMinus1(X*(100-Y)/100)]
+priceDiscountPriceChangeDocumentArticle 'Цена без процентов' (discountPriceChangeDocument, article) = [roundM1(X*(100-Y)/100)]
                                                                                                         (priceBBasePriceChangeDocumentArticle(discountPriceChangeDocument, article),
                                                                                                          percentDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article)) IN baseGroup;
 
@@ -785,9 +865,6 @@ priceDiscountPriceChangeDocumentArticle 'Цена без процентов' (di
 priceDataDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article) <- priceDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article)
                                         WHEN CHANGED (priceDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article));
 
-//rateExchangeFreightSku 'Курс обмена' (freight, sku) = nearestRateExchange(typeExchangeRetail(),
-//                                                                          currencyFreight(freight),
-//                                                                          freight) AND sku IS sku;
 
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
 inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
@@ -965,11 +1042,11 @@ FORM discountPriceChangeDocuments 'Распродажи'
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (d, a) READONLY ratePriceChangeDocumentArticle, priceInRateBBasePriceChangeDocumentArticle, priceBBasePriceChangeDocumentArticle, priceBDiscountPriceChangeDocumentArticle, priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
+    PROPERTIES (d, a) READONLY ratePriceChangeDocumentArticle, priceInRateBBasePriceChangeDocumentArticle, priceBBasePriceChangeDocumentArticle,
+                               priceBDiscountPriceChangeDocumentArticle, priceDataDiscountPriceChangeDocumentArticle//, priceRetailPriceChangeDocumentArticle
 
     FILTERS inArticlePriceChangeDocument(d, a)
 ;
-
 
 
 toCreatePriceChangeDocument 'Расценка фрахта' =  ACTION (freight) NEWSESSION {
@@ -1020,6 +1097,275 @@ CLASS customsFlowPosted 'Закрытый расход с СВХ' : customsFlow,
 
 @defineDocumentStock(customsFlow, customStore, 'СВХ');
 
+@defineDocumentDetailQuantity(customsFlow);
+
+declarationDetailCustomsFlowDetail 'Партия (ИД)' = DATA declarationDetail (customsFlowDetail);
+batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCustomsFlowDetail (outUserBalanceSkuLedger);
+
+skuCustomsFlowDetail 'Товар (ИД)' (customsFlowDetail) = skuDeclarationDetail (declarationDetailCustomsFlowDetail(customsFlowDetail));
+//sidColorSkuCustomsFlowDetail 'Код цвета' (customsFlowDetail) = sidColorSupplierItem(skuCustomsFlowDetail(customsFlowDetail));
+//nameColorSkuCustomsFlowDetail 'Цвет' (customsFlowDetail) = nameColorSupplierItem(skuCustomsFlowDetail(customsFlowDetail));
+//sidSizeSkuCustomsFlowDetail 'Размер' (customsFlowDetail) = sidSizeSupplierItem(skuCustomsFlowDetail(customsFlowDetail));
+
+sidArticleCustomsFlowDetail 'Артикул товара' (customsFlowDetail) = sidArticleLedger (declarationDetailCustomsFlowDetail(customsFlowDetail));
+nameArticleSkuCustomsFlowDetail 'Наименование' (customsFlowDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)));
+
+warehouseCustomsFlow 'Оптовый склад (ИД)' (customsFlow) = DATA warehouse (customsFlow);
+nameWarehouseCustomsFlow 'Оптовый склад' (customsFlow) = name (warehouseCustomsFlow (customsFlow));
+
+descriptionCustomsFlow 'Название документа' (customsFlow) =
+    [FORMULA STRING[200] '\'Расход с СВХ \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(customsFlow), dateCustomsFlow(customsFlow), nameCustomStoreCustomsFlow(customsFlow));
+
+descriptionCustomsFlowDetail 'Название документа' (customsFlowDetail) = descriptionCustomsFlow(customsFlowCustomsFlowDetail(customsFlowDetail));
+
+@implementBalanceSkuLedgerSkuStock (customsFlow, customStore);
+
+descriptionBalanceSkuLedger (ledger) += descriptionCustomsFlowDetail (ledger);
+isPostedBalanceSkuLedger (ledger) += isPostedCustomsFlowDetail (ledger);
+quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCustomsFlowDetail (outUserBalanceSkuLedger);
+
+currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
+    currentBalanceBatchLedger(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
+
+currentBalanceBDeclaration 'Текущий остаток по декларации' (declaration) = GROUP SUM currentBalanceDeclarationDetail (declarationDetail)
+    IF declarationDeclarationDetail(declarationDetail) == declaration BY declaration;
+
+isAvailableDeclarationCustomsFlow 'Декларация доступна для расхода' (declaration, customsFlow) =
+    currentBalanceBDeclaration (declaration)>0 AND
+    dateTimeCustomsFlow(customsFlow)>=dateTimeDeclaration(declaration) AND
+    customStoreCustomsFlow(customsFlow)==customStoreDeclaration(declaration);
+
+inCustomsFlowDeclaration 'Отгрузка по декларации' (customsFlow, declaration) = DATA BOOLEAN (customsFlow, declaration)
+    IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+
+isCustomsDeclarationCustomsFlow 'Отгрузка с СВХ декларации' (declaration, customsFlow) =
+    customStoreDeclaration (declaration) == customStoreCustomsFlow (customsFlow);
+
+//declarationsCustomsFlow 'Декларации' (customsFlow) = GROUP CONCAT castToString255(sidDeclaration(declaration))
+//    IF inCustomsFlowDeclaration (customsFlow, declaration), ', ' BY customsFlow MINCHARWIDTH 10 PREFCHARWIDTH 10;
+// подбор строк для расхода
+quantityInputDeclarationDetail 'Кол-во' = SESSION DATA NUMERIC[14,3] (declarationDetail);
+isInputDeclarationDetail 'Вкл' = SESSION DATA BOOLEAN (declarationDetail);
+
+toFillQuantityInputDeclarationDetail 'Проставить количество' (declarationDetail) = ACTION (declarationDetail) {
+    SET quantityInputDeclarationDetail (declarationDetail) <- currentBalanceDeclarationDetail (declarationDetail);
+}
+
+FORM declarationDetailCustomsFlowInput 'Подбор строк декларации'
+    OBJECTS c=customsFlow FIXED PANEL
+    PROPERTIES (c) numberObject, seriesObject
+
+    OBJECTS d=declaration
+    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, currentBalanceBDeclaration
+
+    OBJECTS dd=declarationDetail
+    PROPERTIES (dd) READONLY barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
+    PROPERTIES (dd) quantityInputDeclarationDetail, toFillQuantityInputDeclarationDetail
+
+    FILTERS isAvailableDeclarationCustomsFlow (d, c)
+
+    FILTERGROUP filters1
+        FILTER 'Сроки текущей декларации' 'F10' inDeclarationDeclarationDetail(d, dd) DEFAULT
+    FILTERGROUP filters2
+        FILTER 'Выбранные' 'F9' quantityInputDeclarationDetail(dd)
+;
+
+inputDeclarationDetailCustomsFlow 'Подбор строк декларации' = ACTION (customsFlow) {
+    FORM declarationDetailCustomsFlowInput MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR quantityInputDeclarationDetail(declarationDetail) DO {
+                ADDOBJ customsFlowDetail;
+                FOR cd == addedObject() DO {
+                SET customsFlowCustomsFlowDetail(cd) <- customsFlow AS customsFlow;
+                SET declarationDetailCustomsFlowDetail(cd) <- declarationDetail AS declarationDetail;
+                SET quantityCustomsFlowDetail(cd) <- quantityInputDeclarationDetail(declarationDetail);
+                }
+               }
+            }
+        SET quantityInputDeclarationDetail(declarationDetail) <- NULL;
+} TOOLBAR;
+
+FORM customsFlow 'Расход с СВХ'
+    OBJECTS c = customsFlow FIXED PANEL
+    PROPERTIES (c) numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow, nameWarehouseCustomsFlow,
+                   cleanAllCustomsFlowDetailsCustomsFlow, inputDeclarationDetailCustomsFlow
+
+    OBJECTS d = customsFlowDetail
+    PROPERTIES(d) indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
+                  sidColorLedger, nameColorLedger, sidSizeLedger, quantityCustomsFlowDetail
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inCustomsFlowCustomsFlowDetail(c, d)
+
+    EDIT customsFlow OBJECT c
+;
+
+DESIGN customsFlow FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
+FORM customsFlows 'Расходы с СВХ'
+    OBJECTS c = customsFlow
+    PROPERTIES (c) READONLY numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow, nameWarehouseCustomsFlow
+
+    PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCustomsFlow(c), delete FORCE PANEL SHOWIF isDraftCustomsFlow(c),
+                   postCustomsFlow SHOWIF isDraftCustomsFlow(c), unpostCustomsFlow SHOWIF isPostedCustomsFlow(c)
+
+    OBJECTS d = customsFlowDetail
+    PROPERTIES(d) READONLY indexCustomsFlowDetail, declarationDetailCustomsFlowDetail, sidArticleCustomsFlowDetail, nameArticleSkuCustomsFlowDetail,
+                           sidColorLedger, nameColorLedger, sidSizeLedger, quantityCustomsFlowDetail
+
+    FILTERS inCustomsFlowCustomsFlowDetail(c, d)
+;
+
+DESIGN customsFlows FROM DEFAULT {
+    PROPERTY (delete(c)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+// Приход на склад
+CLASS warehouse 'Склад' : stock;
+
+CLASS inWarehouseFlow 'Приход на склад' : historyObject, numberedObject;
+CLASS inWarehouseFlowPosted 'Закрытый приход с СВХ' : inWarehouseFlow, postedObject;
+CLASS inWarehouseRFFlow 'Приход на склад (РФ)' : historyObject, numberedObject;
+
+CLASS inWarehouseFlowDetail 'Строка прихода на склад' : inTransferBalanceSkuLedger;
+CLASS inWarehouseRFFlowDetail 'Строка прихода на склад (РФ)' : inTransferBalanceSkuLedger;
+
+
+@defineDocumentBasePosted(inWarehouseFlow);
+
+@defineDocumentStock(inWarehouseFlow, warehouse, 'Оптовый склад');
+
+@defineDocumentDetailQuantity(inWarehouseFlow);
+
+freightInWarehouseRFFlow 'Фрахт прихода (ИД)' = DATA freight(inWarehouseRFFlow) IN idGroup;
+
+customFlowInWarehouseFlow 'Расход прихода (ИД)' = DATA customsFlow(inWarehouseFlow) IN idGroup;
+numberCustomFlowInWarehouseFlow 'Расход прихода (номер)' (inWarehouseFlow) = numberObject(customFlowInWarehouseFlow(inWarehouseFlow)) IN baseGroup;
+seriesCustomFlowInWarehouseFlow 'Расход прихода (серия)' (inWarehouseFlow) = seriesObject(customFlowInWarehouseFlow(inWarehouseFlow)) IN baseGroup;
+
+inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlow) = customFlowInWarehouseFlow(inWarehouseFlow) == customsFlow;
+
+skuInWarehouseFlowDetail 'Товар (ИД)' (inWarehouseFlowDetail) = DATA sku(inWarehouseFlowDetail) IN idGroup;
+descriptionInWarehouseFlowDetail 'Описание' (inWarehouseFlowDetail) = DATA STRING[100](inWarehouseFlowDetail);
+
+quantityCustomsFlowBatch (customsFlow, batch) = GROUP SUM costBalanceSkuLedgerBatch(customsFlowDetail, batch)
+                                                       BY customsFlowCustomsFlowDetail(customsFlowDetail), batch;
+
+quantityInWarehouseFlowBatch (inWarehouseFlow, batch) = quantityCustomsFlowBatch(customFlowInWarehouseFlow(inWarehouseFlow), batch);
+quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, batch) = quantityInWarehouseFlowBatch(inWarehouseFlowInWarehouseFlowDetail(inWarehouseFlowDetail), batch);
+
+limitInTransferBalanceSkuLedgerBatch (inWarehouseFlowDetail, batch) += quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, batch);
+
+inInWarehouseFlowInDetailDeclarationDetail (inWarehouseFlowDetail, declarationDetail) = TRUE IF quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, declarationDetail);
+
+quantityDCustomFlowSku (customFlow, sku) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
+                                                 BY customsFlowCustomsFlowDetail(customsFlowDetail), skuCustomsFlowDetail(customsFlowDetail);
+
+quantityDInWarehouseFlowSku (inWarehouseFlow, sku) = quantityDCustomFlowSku(customFlowInWarehouseFlow(inWarehouseFlow), sku);
+
+articleInWarehouseFlowDetail 'Артикул (ИД)' (inWarehouseFlowDetail) = articleSku(skuInWarehouseFlowDetail(inWarehouseFlowDetail));
+sidArticleInWarehouseFlowDetail 'Артикул' (inWarehouseFlowDetail) = sidArticle(articleInWarehouseFlowDetail(inWarehouseFlowDetail));
+
+quantityDataInWarehouseFlowDetail 'Кол-во фактическое' (inWarehouseFlowDetail) = DATA NUMERIC[14,2](inWarehouseFlowDetail) IN baseGroup;
+
+@implementBalanceSkuLedger (inWarehouseFlow, sku, warehouse);
+
+currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
+    BY declarationDeclarationDetail (declarationDetail);
+
+toFillInWarehouseDetailsInWarehouseFlow 'Заполнить приход по расходу' =  ACTION (inWarehouseFlow) {
+    FOR quantityDCustomFlowSku (customFlowInWarehouseFlow(inWarehouseFlow), sku) DO {
+        ADDOBJ inWarehouseFlowDetail;
+        FOR w == addedObject() DO {
+            SET skuInWarehouseFlowDetail(w) <- sku AS sku;
+            SET inWarehouseFlowInWarehouseFlowDetail(w) <- inWarehouseFlow AS inWarehouseFlow;
+            SET quantityInWarehouseFlowDetail(w) <- quantityDCustomFlowSku(customFlowInWarehouseFlow(inWarehouseFlowInWarehouseFlowDetail(w)), sku);
+        };
+    };
+} CONFIRM;
+
+FORM costSkuLedger 'Себестоимость'
+    OBJECTS bil = balanceSkuLedger
+    PROPERTIES(bil) READONLY dateTimeBalanceSkuLedger, descriptionBalanceSkuLedger, skuBalanceSkuLedger, nameSkuBalanceSkuLedger, nameStockBalanceSkuLedger,
+                             quantityBalanceSkuLedger, costedBalanceSkuLedger
+    PROPERTIES(bil)          resetCostBalanceSkuLedgerBatch
+    ORDER BY dateTimeBalanceSkuLedger
+
+    FILTERGROUP needToCostBalanceSkuLedger
+        FILTER 'Нерасписанные строки' 'F9' needToCostBalanceSkuLedger(bil)
+
+    OBJECTS bt = batch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
+    PROPERTIES(bil, bt)     costBalanceSkuLedgerBatch FORCE GRID
+//    FILTERS skuBatch(bt) == skuBalanceSkuLedger(bil)
+    ORDER BY dateTimeBatch DESC
+
+    FILTERGROUP inBalanceSkuLedgerBatch
+        FILTER 'Только расписанные партии' 'F10' costBalanceSkuLedgerBatch (bil, bt) DEFAULT
+
+    PROPERTIES() setBalanceSkuLedgerBatchCost, resetBalanceSkuLedgerBatchCost, clearBalanceSkuLedgerBatchCost
+;
+
+FORM inWarehouseFlow 'Приход на оптовый склад'
+    OBJECTS w = inWarehouseFlow FIXED PANEL
+    PROPERTIES (w) numberObject, seriesObject, dateInWarehouseFlow, timeInWarehouseFlow, nameWarehouseInWarehouseFlow,
+                   numberCustomFlowInWarehouseFlow, seriesCustomFlowInWarehouseFlow, toFillInWarehouseDetailsInWarehouseFlow
+
+    OBJECTS d = inWarehouseFlowDetail
+    PROPERTIES(d) indexInWarehouseFlowDetail, barcodeLedger, nameBrandLedger, sidArticleInWarehouseFlowDetail,
+                  sidColorLedger, nameColorLedger, sidSizeLedger, quantityInWarehouseFlowDetail, quantityDataInWarehouseFlowDetail
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
+
+    OBJECTS dd = declarationDetail
+    PROPERTIES (d, dd) quantityInWarehouseFlowDetailBatch
+
+    FILTERS inInWarehouseFlowInDetailDeclarationDetail (d, dd)
+
+    EDIT inWarehouseFlow OBJECT w
+;
+
+FORM inWarehouseFlows 'Приходы на оптовый склад'
+    OBJECTS w = inWarehouseFlow
+    PROPERTIES (w) READONLY numberObject, seriesObject, dateInWarehouseFlow, timeInWarehouseFlow, nameWarehouseInWarehouseFlow
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftInWarehouseFlow(w), delete FORCE PANEL SHOWIF isDraftInWarehouseFlow(w),
+                   postInWarehouseFlow SHOWIF isDraftInWarehouseFlow(w), unpostInWarehouseFlow SHOWIF isPostedInWarehouseFlow(w)
+
+    OBJECTS d = inWarehouseFlowDetail
+    PROPERTIES(d) READONLY isPostedBalanceSkuLedger, indexInWarehouseFlowDetail, barcodeLedger,
+                           nameBrandLedger, sidArticleInWarehouseFlowDetail, sidColorLedger, nameColorLedger, sidSizeLedger,
+                           quantityInWarehouseFlowDetail, quantityDataInWarehouseFlowDetail
+
+    FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
+;
+
+DESIGN inWarehouseFlows FROM DEFAULT {
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+
+FORM balanceItemDepartment 'Остатки'
+    OBJECTS s=customStore
+    PROPERTIES (s) name
+
+    OBJECTS i=sku
+    PROPERTIES(i) name, barcode, nameTypeFabricArticleSku
+
+    PROPERTIES(i, s) currentBalanceSkuLedger
+;
 
 
 NAVIGATOR {
@@ -1029,6 +1375,10 @@ NAVIGATOR {
         ADD certificates;
         ADD declarations;
         ADD innerInvoices;
+        ADD customsFlows;
+        ADD inWarehouseFlows;
+        ADD balanceItemDepartment;
+        ADD costSkuLedger;
     }
 
     prices {
@@ -1036,10 +1386,6 @@ NAVIGATOR {
         ADD discountPriceChangeDocuments;
         ADD freights;
         ADD coefficientRetails;
-    }
-
-    shipment {
-        ADD freights;
     }
 
     adminElement {
@@ -1054,5 +1400,7 @@ NAVIGATOR {
         ADD numerators;
         ADD numerator;
         ADD costItemLedger;
+        ADD customsFlow;
+        ADD inWarehouseFlow;
     }
 }

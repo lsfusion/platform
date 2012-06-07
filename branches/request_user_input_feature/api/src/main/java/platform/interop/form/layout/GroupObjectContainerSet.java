@@ -60,7 +60,6 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setDescription(getString("form.layout.panel"));
         set.panelContainer.setSID(PANEL_CONTAINER + group.getID());
-        set.panelContainer.setGwtVertical(false);
         set.groupContainer.add((T) set.panelContainer);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов

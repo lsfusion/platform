@@ -10,7 +10,7 @@
     <properties>
         <spring.version>3.0.5.RELEASE</spring.version>
         <gwt.version>2.3.0</gwt.version>
-        <smartgwt.version>2.5</smartgwt.version>
+        <smartgwt.version>3.0p</smartgwt.version>
         <aspectj.version>1.6.10</aspectj.version>
 
         <commons.lang.version>2.5</commons.lang.version>
@@ -322,6 +322,11 @@
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>fdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -1,6 +1,6 @@
 MODULE testPresentation;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 /////////// GROUP STATEMENT ////////////
 

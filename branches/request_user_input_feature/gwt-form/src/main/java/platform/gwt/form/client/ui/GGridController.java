@@ -8,17 +8,15 @@ public class GGridController {
     private GGrid key;
     private VLayout gridView;
     private GGridTable table;
-    private GGroupObjectController groupObjectController;
     private GFormLayout formLayout;
 
     public GGridController(GGrid key, GFormController iformController, GForm iform, GGroupObjectController igroupObject, GFormLayout iformLayout) {
         this.key = key;
-        groupObjectController = igroupObject;
         formLayout = iformLayout;
         gridView = new VLayout();
         table = new GGridTable(iformController, iform, igroupObject);
         gridView.addMember(table);
-        gridView.addMember(groupObjectController.getGridToolbar());
+        gridView.addMember(igroupObject.getGridToolbar());
     }
     
     public VLayout getGridView() {
@@ -42,10 +40,10 @@ public class GGridController {
     }
 
     public void hide() {
-        gridView.setVisible(false);
+        formLayout.remove(key);
     }
 
     public void show() {
-        gridView.setVisible(true);
+        formLayout.add(key, gridView, 0);
     }
 }

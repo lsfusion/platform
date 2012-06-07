@@ -406,7 +406,7 @@ public class LsfLogicsParserDesignTest {
                                         testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();
 
-        LM = (ScriptingLogicsModule) bl.findModule("testDesign");
+        LM = (ScriptingLogicsModule) bl.getModule("testDesign");
         assertNotNull(LM);
 
         entity = (FormEntity) LM.findNavigatorElementByName("storeArticle");

@@ -12,6 +12,10 @@ public class GGroupObject implements Serializable {
     public int ID;
     public List<String> banClassView;
 
+    public boolean isRecursive;
+    public GTreeGroup parent;
+    public List<GGroupObject> upTreeGroups = new ArrayList<GGroupObject>();
+
     public String getCaption() {
         if (objects.isEmpty()) {
             //todo: локализовать попозже через GWT-шный Messages interface
@@ -28,4 +32,27 @@ public class GGroupObject implements Serializable {
         return result;
     }
 
+    public boolean mayHaveChildren() {
+        return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);
+    }
+
+    public GGroupObject getUpTreeGroup() {
+        if (upTreeGroups.size() > 0)
+            return upTreeGroups.get(upTreeGroups.size() - 1);
+        else
+            return null;
+    }
+
+    public List<GGroupObject> getUpTreeGroups() {
+        ArrayList<GGroupObject> result = new ArrayList<GGroupObject>(upTreeGroups);
+        result.add(this);
+        return result;
+    }
+
+    public boolean isLastGroupInTree() {
+        boolean last = false;
+        if (parent.groups.size() > 0)
+            last = parent.groups.get(parent.groups.size() - 1) == this;
+        return parent != null && last;
+    }
 }

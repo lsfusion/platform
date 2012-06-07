@@ -1,6 +1,6 @@
 MODULE testDesign;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 /////////// GROUP STATEMENT ////////////
 

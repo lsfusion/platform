@@ -155,8 +155,23 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
     }
 
     protected CustomClass add(CustomClass addWhere, CustomClass[] wheres, int numWheres, CustomClass[] proceeded, int numProceeded) {
+        boolean empty = true;
+        for (int i = 0; i < numWheres; i++)
+            if (wheres[i] != null) {
+                empty = false;
+                break;
+            }
+        if (empty) {
+            for (int i = 0; i < numProceeded; i++)
+                if (proceeded[i] != null) {
+                    empty = false;
+                    break;
+                }
+            if (empty) // если в wheres и proceeded ничего не осталось, то более абстрактные классы не берем
+                return null;
+        }
         for(CustomClass parent : addWhere.parents)
-            if(parent.upInSet(wheres,numWheres, proceeded, numProceeded, addWhere)) // если покрывает все where возвращаем parent
+            if(parent.upInSet(wheres, numWheres, proceeded, numProceeded, addWhere)) // если покрывает все where возвращаем parent
                 return parent;
         return null;
     }

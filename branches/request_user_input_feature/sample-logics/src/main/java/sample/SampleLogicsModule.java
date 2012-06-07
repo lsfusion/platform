@@ -50,6 +50,10 @@ public class SampleLogicsModule extends LogicsModule {
     protected ConcreteCustomClass articleGroup, descriptedArticleGroup;
 
     @Override
+    public void initModule() {
+    }
+
+    @Override
     public void initClasses() {
         initBaseClassAliases();
 

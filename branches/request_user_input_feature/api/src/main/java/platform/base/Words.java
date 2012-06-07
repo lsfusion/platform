@@ -1,6 +1,5 @@
 package platform.base;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 public class Words {
@@ -37,6 +36,9 @@ public class Words {
             {"десятитысячная ", "десятитысячных "}
     };
 
+    public static String toString(Integer number) {
+        return toString(number.longValue(), null);
+    }
     public static String toString(Long sumObject, Boolean isFractalPart, Integer numOfDigits) {
 
         long sum = sumObject == null ? 0 : sumObject;

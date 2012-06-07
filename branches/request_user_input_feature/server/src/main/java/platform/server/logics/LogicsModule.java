@@ -53,6 +53,8 @@ import static platform.server.logics.property.derived.DerivedProperty.createStat
  */
 
 public abstract class LogicsModule {
+    public abstract void initModule();
+
     public abstract void initClasses();
 
     public abstract void initTables();
@@ -107,18 +109,30 @@ public abstract class LogicsModule {
 
     protected LogicsModule() {}
 
-    public LogicsModule(String sID) {
-        this.sID = sID;
+    public LogicsModule(String name) {
+        this(name, name);
     }
 
-    private String sID;
-
-    protected String getSID() {
-        return sID;
+    public LogicsModule(String name, String namespace) {
+        this(name, namespace, new ArrayList<String>());
     }
 
-    protected void setSID(String sID) {
-        this.sID = sID;
+    public LogicsModule(String name, String namespace, List<String> requiredModules) {
+        this.name = name;
+        this.namespace = namespace;
+        this.requiredModules = requiredModules;
+    }
+
+    private String name;
+    private String namespace;
+    private List<String> requiredModules;
+
+    public String getName() {
+        return name;
+    }
+
+    protected void setName(String name) {
+        this.name = name;
     }
 
     public LP<?, ?> getLPBySID(String sID) {
@@ -2292,7 +2306,7 @@ public abstract class LogicsModule {
     }
 
     private <T extends LP<?, ?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
-        setPropertySID(lp, transformNameToSID(lp.property.getSID()), true);
+        setPropertySID(lp, lp.property.getSID(), true);
         if (group != null && group != baseLM.privateGroup || persistent) {
             lp.property.freezeSID();
         }
@@ -2306,14 +2320,16 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    protected <T extends LP<?, ?>> void setPropertySID(T lp, String sID, boolean generated) {
+    protected <T extends LP<?, ?>> void setPropertySID(T lp, String name, boolean generated) {
         String oldSID = lp.property.getSID();
+        lp.property.setName(name);
+        String newSID = transformNameToSID(name);
         if (baseLM.idSet.contains(oldSID)) {
             baseLM.idSet.remove(oldSID);
             if (generated)
-                baseLM.idSet.add(sID);
+                baseLM.idSet.add(newSID);
         }
-        lp.property.setSID(sID);
+        lp.property.setSID(newSID);
     }
 
     public void addIndex(LCP<?>... lps) {
@@ -2575,6 +2591,22 @@ public abstract class LogicsModule {
     
     public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session) {
         return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session), object);
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public List<String> getRequiredModules() {
+        return requiredModules;
+    }
+
+    public void setRequiredModules(List<String> requiredModules) {
+        this.requiredModules = requiredModules;
     }
 
     protected class MetaCodeFragment {

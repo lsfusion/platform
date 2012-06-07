@@ -1,6 +1,6 @@
 MODULE Sample;
 
-IMPORT BaseLogicsModule;
+REQUIRE BaseLogicsModule;
 
 GROUP base : baseGroup;
 

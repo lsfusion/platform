@@ -105,15 +105,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         for (PropertyDrawEntity property : entity.propertyDraws) {
-            PropertyDrawView propertyView = new PropertyDrawView(property);
-
-            properties.add(propertyView);
-
-            //походу инициализируем порядки по умолчанию
-            Boolean ascending = entity.defaultOrders.get(property);
-            if (ascending != null) {
-                defaultOrders.put(propertyView, ascending);
-            }
+            createPropertyDrawView(property);
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
@@ -121,6 +113,28 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         fillComponentMaps();
+    }
+
+    private PropertyDrawView createPropertyDrawView(PropertyDrawEntity property) {
+        PropertyDrawView propertyView = new PropertyDrawView(property);
+
+        properties.add(propertyView);
+
+        //походу инициализируем порядки по умолчанию
+        Boolean ascending = entity.defaultOrders.get(property);
+        if (ascending != null) {
+            defaultOrders.put(propertyView, ascending);
+        }
+
+        return propertyView;
+    }
+
+    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity property) {
+
+        PropertyDrawView propertyView = createPropertyDrawView(property);
+        mproperties.put(property, propertyView);
+
+        return propertyView;
     }
 
     public void fillComponentMaps() {

@@ -23,7 +23,7 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
             ClassUtils.initRMICompressedSocketFactory();
         } catch (IOException e) {
             logger.error("Ошибка при инициализации RMISocketFactory: ", e);
-            throw new RuntimeException("Произошла ошибка при инициализации RMI.");
+            throw new RuntimeException("Произошла ошибка при инициализации RMI.", e);
         }
     }
 
@@ -33,13 +33,13 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
             String serverPort = nvl(context.getInitParameter("serverPort"), DEFAULT_PORT);
 
             Registry registry = LocateRegistry.getRegistry(serverHost, Integer.parseInt(serverPort));
-            RemoteLoaderInterface loader = (RemoteLoaderInterface) registry.lookup("BusinessLogicsLoader");
+            RemoteLoaderInterface loader = (RemoteLoaderInterface) registry.lookup("default/BusinessLogicsLoader");
 
             return loader.getRemoteLogics();
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Ошибка при получении объекта логики: ", e);
-            throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.");
+            throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
         }
     }
 

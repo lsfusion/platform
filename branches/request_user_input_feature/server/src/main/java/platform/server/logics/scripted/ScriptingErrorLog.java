@@ -4,9 +4,11 @@ import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
 import platform.server.LsfLogicsParser;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 
 import java.io.StringWriter;
+import java.util.List;
 
 import static java.lang.String.format;
 
@@ -376,6 +378,29 @@ public class ScriptingErrorLog {
 
     public void emitNotDataTypeError(LsfLogicsParser parser, String typeName) throws SemanticErrorException {
         emitSimpleError(parser, "");
+    }
+
+    public void emitImportingOwnNamespaceError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+        emitSimpleError(parser, format("namespace '%s' need not to be imported", namespaceName));
+    }
+
+    public void emitNamespaceNotFoundError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+        emitSimpleError(parser, format("namespace '%s' was not found in required modules", namespaceName));
+    }
+
+    public void emitNonUniqueImportListError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+        emitSimpleError(parser, format("import list contains namespace '%s' more than once", namespaceName));
+    }
+
+    public void emitAmbiguousNameError(LsfLogicsParser parser, List<LogicsModule> modules, String name) throws SemanticErrorException {
+        String msg = String.format("ambiguous name '%s', list of modules:", name);
+        for (int i = 0; i < modules.size(); i++) {
+            if (i > 0) {
+                msg = msg + ", ";
+            }
+            msg = msg + " " + modules.get(i).getName() + " (namespace " + modules.get(i).getNamespace() + ")";
+        }
+        emitSimpleError(parser, msg);
     }
 
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
