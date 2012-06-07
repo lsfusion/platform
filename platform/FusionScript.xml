@@ -112,7 +112,6 @@
       <keyword name="IF" />
       <keyword name="IMAGE" />
       <keyword name="IMAGEFILE" />
-      <keyword name="IMPORT" />
       <keyword name="IMPOSSIBLE" />
       <keyword name="IN" />
       <keyword name="INCREMENT" />
@@ -168,6 +167,7 @@
       <keyword name="PREFCHARWIDTH" />
       <keyword name="PREV" />
       <keyword name="PRINT" />
+      <keyword name="PRIORITY" />
       <keyword name="PROPERTIES" />
       <keyword name="PROPERTY" />
       <keyword name="PROPORTION" />

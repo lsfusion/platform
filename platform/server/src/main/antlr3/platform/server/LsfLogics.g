@@ -166,19 +166,19 @@ statements
 moduleHeader
 @init {
 	List<String> requiredModules = new ArrayList<String>();
-	List<String> importedNamespaces = new ArrayList<String>();
+	List<String> namespacePriority = new ArrayList<String>();
 	String namespaceName = null;
 }
 @after {
 	if (inInitParseState()) {
-		self.initScriptingModule($name.text, namespaceName, requiredModules, importedNamespaces);
+		self.initScriptingModule($name.text, namespaceName, requiredModules, namespacePriority);
 	} else if (inGroupParseState()) {
-		self.checkModulesAndNamespaces(requiredModules, importedNamespaces);
+		self.checkModulesAndNamespaces(requiredModules, namespacePriority);
 	}
 }
 	:	'MODULE' name=ID ';'
 		('REQUIRE' list=nonEmptyIdList ';' { requiredModules = $list.ids; })? 
-		('IMPORT' list=nonEmptyIdList ';' { importedNamespaces = $list.ids; })? 
+		('PRIORITY' list=nonEmptyIdList ';' { namespacePriority = $list.ids; })? 
 		('NAMESPACE' nname=ID ';' { namespaceName = $nname.text; })?
 	;
 

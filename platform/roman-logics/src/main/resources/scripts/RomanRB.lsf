@@ -10,7 +10,7 @@ REQUIRE BaseLogicsModule,
 
         RomanLogicsModule;
 
-IMPORT BaseLogicsModule, Utils, Stock;
+PRIORITY Utils, Stock, RomanLogicsModule;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
 
@@ -1399,7 +1399,7 @@ NAVIGATOR {
         ADD dialogDate;
         ADD numerators;
         ADD numerator;
-        ADD costItemLedger;
+        ADD costSkuLedger;
         ADD customsFlow;
         ADD inWarehouseFlow;
     }

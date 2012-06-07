@@ -74,7 +74,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private String code = null;
     private String filename = null;
     private final BusinessLogics<?> BL;
-    private List<String> importedNamespaces;
+    private List<String> namespacePriority;
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
     private Stack<LsfLogicsParser> parsers = new Stack<LsfLogicsParser>();
@@ -1928,14 +1928,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkModulesAndNamespaces(List<String> requiredModules, List<String> importedNamespaces) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {
         initNamespacesToModules(this, new HashSet<LogicsModule>()); // todo [dale]: переделать
 
-        if (importedNamespaces.contains(getNamespace())) {
-            errLog.emitImportingOwnNamespaceError(parser, getNamespace());
+        if (namespacePriority.contains(getNamespace())) {
+            errLog.emitOwnNamespacePriorityError(parser, getNamespace());
         }
 
-        for (String namespaceName : importedNamespaces) {
+        for (String namespaceName : namespacePriority) {
             checkNamespace(namespaceName);
         }
 
@@ -1943,12 +1943,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkModule(BL.getModule(moduleName), moduleName);
         }
 
-        Set<String> importSet = new HashSet<String>();
-        for (String namespaceName : importedNamespaces) {
-            if (importSet.contains(namespaceName)) {
-                errLog.emitNonUniqueImportListError(parser, namespaceName);
+        Set<String> prioritySet = new HashSet<String>();
+        for (String namespaceName : namespacePriority) {
+            if (prioritySet.contains(namespaceName)) {
+                errLog.emitNonUniquePriorityListError(parser, namespaceName);
             }
-            importSet.add(namespaceName);
+            prioritySet.add(namespaceName);
         }
     }
 
@@ -2043,11 +2043,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> importedNamespaces) {
+    public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> namespacePriority) {
         setModuleName(name);
         setNamespace(namespace == null ? name : namespace);
         setRequiredModules(requiredModules);
-        this.importedNamespaces = importedNamespaces;
+        this.namespacePriority = namespacePriority;
     }
 
     private void showWarnings() {
@@ -2115,7 +2115,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 if (result == null) {
                     List<String> namespaces = new ArrayList<String>();
                     namespaces.add(getNamespace());
-                    namespaces.addAll(importedNamespaces);
+                    namespaces.addAll(namespacePriority);
                     List<LogicsModule> containingModules = findInRequiredModules(name, namespaces);
                     if (containingModules.size() > 1) {
                         errLog.emitAmbiguousNameError(parser, containingModules, name);
