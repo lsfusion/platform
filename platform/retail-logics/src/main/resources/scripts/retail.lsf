@@ -7884,7 +7884,7 @@ fillOfTerminalDocumentListInventory 'Заполнить из документа 
                 ADDOBJ pageInventory;
                 FOR pi == addedObject() DO {
                     SET listInventoryPageInventory(pi) <- listInventory AS listInventory;
-                    SET page() <- pi IS pageInventory;
+                    SET page() <- pi AS pageInventory;
                 }
             }
 
@@ -9732,20 +9732,7 @@ inChainStoresStoreTypeStoreDepartmentDepartment (chainStores, storeType, store, 
 
 //------------------------------------Отчет по таре-------------------------------------------//
 
-nameAttributeItemBatch 'Товар' (batch) = nameAttributeItem(skuBatch(batch));
-idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
-dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
 isContainerBatch 'Тара' (batch) = isContainerItem(skuBatch(batch));
-
-supplierSumInBalanceBatchStockDateFromTo 'Сумма прихода' (batch, stock, dateFrom, dateTo) =
-    supplierPriceBatch(batch) * costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
-
-supplierSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
-    supplierPriceBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
-
-supplierSumBatchStockDateFrom 'Сумма на начало' (batch, stock, dateFrom) = supplierPriceBatch(batch) * balanceBBatchStockDate(batch, stock, dateFrom);
-
-supplierSumBatchStockDateTo 'Сумма на конец' (batch, stock, dateTo) = supplierPriceBatch(batch) * balanceABatchStockDate(batch, stock, dateTo);
 
 supplierSumContainerStockDateFrom 'Остаток на начало по складу' (stock, dateFrom) = GROUP SUM supplierSumBatchStockDateFrom(batch, stock, dateFrom)
     IF isContainerItem(skuBatch(batch)) BY stock, dateFrom;
@@ -9770,7 +9757,7 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
     OBJECTS bt=batch
 
     PROPERTIES READONLY supplierSumContainerStockDateFrom(dep, dFrom), supplierSumContainerStockDateTo(dep, dTo)
-    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameAttributeItemBatch, supplierPriceBatch
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameSkuBatch, supplierPriceBatch
     PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, supplierSumBatchStockDateFrom
     PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, supplierSumBatchStockDateTo
     PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, supplierSumInBalanceBatchStockDateFromTo,
@@ -9780,154 +9767,6 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
             isContainerBatch(bt),
             overMotionContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
-
-countToExpireDayBatch 'Кол-во дней (30)' = SESSION DATA INTEGER (DATETIME) TOOLBAR;
-countToExpireDayBatchOver 'кол-во дней' (date) =
-    UNION OVERRIDE 30 AND date AS DATETIME, countToExpireDayBatch(date AS DATETIME);
-balanceBBatchDateTime 'Остаток на начало дня' (batch, date) = balanceBStockBatchDateTime(batch, stockBalanceSkuLedger(batch), date);
-inChainStoresStoreTypeStoreDepartmentDepartmentBatch (tn, st, s, batch, ds) =
-    inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, stockBalanceSkuLedger(batch), ds);
-isExpiryDateBatch (batch, date) = expiryDateBatch(batch) < (date AS DATETIME);
-isDateTimeBatch (batch, date) = dateTimeBatch(batch) < (date AS DATETIME);
-isCountToExpireDayBatch (batch, date) =
-    expiryDateBatch(batch) < sumDate(dateInTime(date AS DATETIME), countToExpireDayBatchOver(date AS DATETIME));
-
-FORM balanceStockBatchDate 'Остатки по партиям на дату'
-
-    OBJECTS t=DATETIME FIXED PANEL
-    PROPERTIES(t) OBJVALUE
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS           ib = (i=item, bt=batch)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt)     //  barcodeBarcodeSku
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, expiryDateBatch
-    PROPERTIES        balanceBBatchDateTime(bt, t)
-    PROPERTIES        editItem(i)
-    ORDER BY          dateTimeBatch
-
-    PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
-
-    FILTERS           isParentItemGroupItem(g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartmentBatch(tn, st, s, bt, ds),
-                      isSkuBatch(bt, i),
-                      isDateTimeBatch(bt, t)
-
-    FILTERGROUP filters2
-        FILTER 'Партии с остатком' 'F11' balanceBBatchDateTime(bt, t) > 0 DEFAULT
-
-    FILTERGROUP filters3
-        FILTER 'Партии с истекшим сроком годности' 'F10' isExpiryDateBatch(bt, t)
-        FILTER 'Период просрочки' 'F9' isCountToExpireDayBatch(bt, t)
-
-;
-
-DESIGN balanceStockBatchDate FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-
-        NEW topContainer {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            NEW firstCase {
-                type = SPLITV;
-                fillHorizontal = 1;
-                childConstraints = TO THE BOTTOM;
-                ADD t.box;
-                NEW firstCaseTwo {
-                    type = SPLITV;
-                    ADD treeStore.box {title = 'Магазины';};
-                    ADD treeGroups.box {title = 'Товарные группы';};
-                }
-            }
-
-            NEW secondCase {
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-                ADD ib.box {title = 'Партии';};
-            }
-        }
-
-        ADD functions.box;
-    }
-}
-
-currentBalanceBatch 'Текущий остаток' (batch) = currentBalanceBatchLedger(batch, stockBalanceSkuLedger(batch));
-isCurExpiryDateBatch (batch) = expiryDateBatch(batch) < currentDateTime();
-isCurDateTimeBatch (batch) = dateTimeBatch(batch) < currentDateTime();
-isCurCountToExpireDayBatch (batch, date) =
-    expiryDateBatch(batch) < sumDate(currentDate(), countToExpireDayBatchOver(date AS DATETIME));
-
-FORM curBalanceStockBatchDate 'Текущие остатки по партиям'
-
-    OBJECTS t=DATETIME FIXED PANEL
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS           ib = (i=item, bt=batch)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameStockBalanceSkuLedger(bt) //  barcodeBarcodeSku
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, expiryDateBatch
-    PROPERTIES        currentBalanceBatch(bt)
-    PROPERTIES        editItem(i)
-    ORDER BY          dateTimeBatch
-
-    PROPERTIES countToExpireDayBatch(t) TODRAW ib FORCE PANEL
-
-    FILTERS           isParentItemGroupItem(g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartmentBatch(tn, st, s, bt, ds),
-                      isSkuBatch(bt, i),
-                      isCurDateTimeBatch(bt)
-
-    FILTERGROUP filters2
-        FILTER 'Партии с остатком' 'F11' currentBalanceBatch(bt) > 0 DEFAULT
-
-    FILTERGROUP filters3
-        FILTER 'Партии с истекшим сроком годности' 'F10' isCurExpiryDateBatch(bt)
-        FILTER 'Период просрочки' 'F9' isCurCountToExpireDayBatch(bt, t)
-
-;
-
-DESIGN curBalanceStockBatchDate FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-
-        NEW topContainer {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            NEW firstCase {
-                type = SPLITV;
-                fillHorizontal = 1;
-                childConstraints = TO THE BOTTOM;
-                ADD treeStore.box {title = 'Магазины';};
-                ADD treeGroups.box {title = 'Товарные группы';};
-            }
-
-            NEW secondCase {
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-                ADD ib.box {title = 'Партии';};
-            }
-        }
-
-        ADD functions.box;
-    }
-}
 
 // ------------------------------------------------- Форма продаж по товарам ------------------------ //
 
@@ -10691,8 +10530,8 @@ NAVIGATOR {
                 ADD balanceSkuStock;
             }
             NEW balanceBatch 'Остатки по партиям' {
-                ADD curBalanceStockBatchDate;
-                ADD balanceStockBatchDate;
+                ADD currentBalanceBatchStock;
+                ADD balanceBatchStock;
             }
         }
         NEW sales 'Продажи' {
