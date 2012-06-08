@@ -68,8 +68,8 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
-        addGroup(paramsGroup);
-        addGroup(logGroup);
+        addGroupObject(paramsGroup);
+        addGroupObject(logGroup);
 
         if (!lazyInit)
             initProperties();

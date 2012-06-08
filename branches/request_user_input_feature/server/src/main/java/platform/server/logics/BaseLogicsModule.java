@@ -93,6 +93,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
 
+    public ConcreteCustomClass currency;
+
+
     public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
 
     public AbstractCustomClass emailObject;
@@ -277,6 +280,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP connectionDisconnectTime;
     public LAP disconnectConnection;
 
+    public LCP symbolCurrency;
+    public LCP shortNameCurrency;
+
     public LCP launchComputer;
     public LCP computerNameLaunch;
     public LCP launchTime;
@@ -436,6 +442,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP defaultOverrideForegroundColor;
 
     public LCP sidCountry;
+    public LCP residentCountry;
     protected LCP generateDatesCountry;
     public LCP sidToCountry;
     public LCP nameToCountry;
@@ -588,6 +595,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formResult = addStaticClass("formResult", "Результат вызова формы",
                 new String[]{"null", "ok", "close"},
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
+
+        currency = addConcreteClass("currency", getString("logics.currency"), baseClass.named);
+
     }
 
     @Override
@@ -685,6 +695,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
         dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
         ((CalcProperty)dataName.property).aggProp = true;
+
+        symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
+        shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
 
         // математические св-ва
         equals2 = addCFProp("equals2", Compare.EQUALS);
@@ -798,6 +811,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
         sidToCountry = addAGProp("sidToCountry", getString("logics.country"), sidCountry);
+        residentCountry = addDProp(baseGroup, "residentCountry", getString("logics.country.resident.country"), LogicalClass.instance, country);
 
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
 
@@ -1437,6 +1451,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
 
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
+
+        addFormEntity(new CurrenciesFormEntity(catalogElement, "currencies"));
     }
 
     public void initClassForms() {
@@ -2359,6 +2375,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             design.getGroupObject(objDays.groupTo).grid.constraints.fillVertical = 3;
             return design;
         }
+    }
+
+
+    private class CurrenciesFormEntity extends FormEntity {
+        ObjectEntity objCurrency;
+
+        public CurrenciesFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.currency.currencies"));
+
+            ObjectEntity objCurrency = addSingleGroupObject(currency, getString("logics.currency"));
+            addPropertyDraw(objCurrency, baseLM.name, shortNameCurrency, symbolCurrency);
+            setEditType(PropertyEditType.READONLY);
+
+            addFormActions(this, objCurrency);
+        }
+
     }
 
     private class DictionariesFormEntity extends FormEntity {

@@ -307,7 +307,7 @@ public class SampleLogicsModule extends LogicsModule {
 
             group.add(objDoc);
             group.add(objArt);
-            addGroup(group);
+            addGroupObject(group);
 
             addPropertyDraw(objDoc, baseGroup);
             addPropertyDraw(objArt, baseGroup);

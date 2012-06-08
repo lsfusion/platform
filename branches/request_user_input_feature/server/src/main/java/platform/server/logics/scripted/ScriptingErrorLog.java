@@ -380,16 +380,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "");
     }
 
-    public void emitImportingOwnNamespaceError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
-        emitSimpleError(parser, format("namespace '%s' need not to be imported", namespaceName));
+    public void emitOwnNamespacePriorityError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+        emitSimpleError(parser, format("namespace '%s' has maximum priority level and should be deleted from the PRIORITY list", namespaceName));
     }
 
     public void emitNamespaceNotFoundError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
         emitSimpleError(parser, format("namespace '%s' was not found in required modules", namespaceName));
     }
 
-    public void emitNonUniqueImportListError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
-        emitSimpleError(parser, format("import list contains namespace '%s' more than once", namespaceName));
+    public void emitNonUniquePriorityListError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+        emitSimpleError(parser, format("priority list contains namespace '%s' more than once", namespaceName));
     }
 
     public void emitAmbiguousNameError(LsfLogicsParser parser, List<LogicsModule> modules, String name) throws SemanticErrorException {

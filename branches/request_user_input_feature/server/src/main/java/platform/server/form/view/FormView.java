@@ -97,7 +97,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         mainContainer = new ContainerView(idGenerator.idShift());
 
         for (GroupObjectEntity group : entity.groups) {
-            groupObjects.add(new GroupObjectView(idGenerator, group));
+            createGroupObjectView(group);
         }
 
         for (TreeGroupEntity treeGroup : entity.treeGroups) {
@@ -115,6 +115,14 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         fillComponentMaps();
     }
 
+    private GroupObjectView createGroupObjectView(GroupObjectEntity groupObject) {
+        GroupObjectView clientGroup = new GroupObjectView(idGenerator, groupObject);
+
+        groupObjects.add(clientGroup);
+
+        return clientGroup;
+    }
+
     private PropertyDrawView createPropertyDrawView(PropertyDrawEntity property) {
         PropertyDrawView propertyView = new PropertyDrawView(property);
 
@@ -127,6 +135,17 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         return propertyView;
+    }
+
+    public GroupObjectView addGroupObjectEntity(GroupObjectEntity groupObject) {
+        GroupObjectView groupObjectView = createGroupObjectView(groupObject);
+        mgroupObjects.put(groupObject, groupObjectView);
+
+        for (ObjectView object : groupObjectView) {
+            mobjects.put(object.entity, object);
+        }
+
+        return groupObjectView;
     }
 
     public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity property) {

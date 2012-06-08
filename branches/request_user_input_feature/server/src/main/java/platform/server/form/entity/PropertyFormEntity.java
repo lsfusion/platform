@@ -22,7 +22,7 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
             groupObject.add(objectEntity);
             mapObjects.put(propInterface.getKey(), objectEntity);
         }
-        addGroup(groupObject);
+        addGroupObject(groupObject);
 
         // добавляем все свойства
         addPropertyDraw(recognizeGroup, true, true, groupObject.objects.toArray(new ObjectEntity[groupObject.objects.size()]));

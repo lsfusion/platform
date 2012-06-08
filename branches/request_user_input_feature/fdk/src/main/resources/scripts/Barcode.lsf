@@ -35,6 +35,7 @@ barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OR dataBarcode
 primaryBarcode 'Основной' (barcode) = barcodeSku(skuBarcode(barcode)) == barcode;
 
 idBarcodeSku 'Штрих-код' = idBarcode(barcodeSku(sku)) IN baseGroup PERSISTENT;
+idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
 
 // UOM
 

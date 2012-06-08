@@ -1774,7 +1774,7 @@ public class VEDLogicsModule extends LogicsModule {
             gobjFindClient.add(barcodeClient);
             gobjFindClient.add(nameClient);
 
-            addGroup(gobjFindClient);
+            addGroupObject(gobjFindClient);
 
             gobjFindClient.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjFindClient.initClassView = ClassViewType.PANEL;
@@ -2424,7 +2424,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objDateTo = new ObjectEntity(genID(), DateClass.instance, "Выгрузить до");
             gobjDates.add(objDateFrom);
             gobjDates.add(objDateTo);
-            addGroup(gobjDates);
+            addGroupObject(gobjDates);
 
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
@@ -2744,7 +2744,7 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDates.add(dateFrom);
             gobjDates.add(dateTo);
 
-            addGroup(gobjDates);
+            addGroupObject(gobjDates);
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
 
@@ -2758,7 +2758,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             gobjDocArt.add(objDoc);
             gobjDocArt.add(objArt);
-            addGroup(gobjDocArt);
+            addGroupObject(gobjDocArt);
 
             addPropertyDraw(objArt, baseLM.barcode, baseLM.name, nameBrendArticle);
             addPropertyDraw(objDoc, objArt, priceAllOrderSaleArticle, articleQuantity);
@@ -3305,7 +3305,7 @@ public class VEDLogicsModule extends LogicsModule {
                 objArt = new ObjectEntity(genID(), article, "Товар");
                 gobjFormatArt.add(objFormat);
                 gobjFormatArt.add(objArt);
-                addGroup(gobjFormatArt);
+                addGroupObject(gobjFormatArt);
             }
 
             addObjectActions(this, objArt);
@@ -3842,7 +3842,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity dateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
             gobjDates.add(dateFrom);
             gobjDates.add(dateTo);
-            addGroup(gobjDates);
+            addGroupObject(gobjDates);
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
             addPropertyDraw(dateFrom, baseLM.objectValue);
@@ -3942,7 +3942,7 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDates.add(dateFrom);
             gobjDates.add(dateTo);
 
-            addGroup(gobjDates);
+            addGroupObject(gobjDates);
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
 
@@ -3998,7 +3998,7 @@ public class VEDLogicsModule extends LogicsModule {
                    gobjDates.add(dateFrom);
                    gobjDates.add(dateTo);
 
-                   addGroup(gobjDates);
+                   addGroupObject(gobjDates);
                    gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
                    gobjDates.initClassView = ClassViewType.PANEL;
                    addPropertyDraw(dateFrom, baseLM.objectValue);
@@ -4048,7 +4048,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objDateTo = new ObjectEntity(genID(), DateClass.instance, "до");
             gobjDates.add(objDateFrom);
             gobjDates.add(objDateTo);
-            addGroup(gobjDates);
+            addGroupObject(gobjDates);
             addPropertyDraw(objDateFrom, baseLM.objectValue);
             addPropertyDraw(objDateTo, baseLM.objectValue);
 

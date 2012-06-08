@@ -80,28 +80,33 @@ public class ScriptingFormView extends DefaultFormView {
                 }
             }
 
-            for (Map.Entry<GroupObjectView, ContainerView> entry : groupContainers.entrySet()) {
-                entry.getValue().setSID(getGroupObjectContainerSID(entry.getKey().entity));
-            }
-
-            for (Map.Entry<GroupObjectView, ContainerView> entry : panelContainers.entrySet()) {
-                entry.getValue().setSID(getPanelContainerSID(entry.getKey().entity));
-            }
-
-            for (Map.Entry<GroupObjectView, ContainerView> entry : gridContainers.entrySet()) {
-                entry.getValue().setSID(getGridContainerSID(entry.getKey().entity));
-            }
-
-            for (Map.Entry<GroupObjectView, ContainerView> entry : controlsContainers.entrySet()) {
-                entry.getValue().setSID(getControlsContainerSID(entry.getKey().entity));
-            }
-
-            for (Map.Entry<GroupObjectView, ContainerView> entry : filterContainers.entrySet()) {
-                entry.getValue().setSID(getFilterContainerSID(entry.getKey().entity));
+            for (GroupObjectView groupObject : groupObjects) {
+                setGroupObjectContainerSID(groupObject);
             }
 
             fillSIDMapping(mainContainer);
         }
+    }
+
+    private void setGroupObjectContainerSID(GroupObjectView groupObject) {
+        setContainerSID(groupContainers.get(groupObject),getGroupObjectContainerSID(groupObject.entity));
+        setContainerSID(panelContainers.get(groupObject),getPanelContainerSID(groupObject.entity));
+        setContainerSID(gridContainers.get(groupObject),getGridContainerSID(groupObject.entity));
+        setContainerSID(controlsContainers.get(groupObject),getControlsContainerSID(groupObject.entity));
+        setContainerSID(filterContainers.get(groupObject),getFilterContainerSID(groupObject.entity));
+    }
+
+    // todo : тут вообще всю логику надо перефигачить под инкрементную модель (чтобы по ходу могли добавляться свойства и groupObject)
+    private void setContainerSID(ContainerView container, String sID) {
+        container.setSID(sID);
+        addComponentToMapping(container);
+    }
+
+    @Override
+    public GroupObjectView addGroupObjectEntity(GroupObjectEntity groupObject) {
+        GroupObjectView view = super.addGroupObjectEntity(groupObject);
+        setGroupObjectContainerSID(view);
+        return view;
     }
 
     private void setupFormButton(PropertyDrawView function, String type) {

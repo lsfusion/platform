@@ -12,7 +12,7 @@ TABLE chainStores (chainStores);
 CLASS storeType 'Формат магазина' : stockGroup, employeeDivisionGroup;
 TABLE storeType (storeType);
 
-chainStoresStoreType = DATA chainStores (storeType);
+chainStoresStoreType = DATA chainStores (storeType) NOT NULL DELETE;
 nameChainStoresStoreType 'Торговая сеть' (storeType) = name(chainStoresStoreType(storeType)) IN baseGroup;
 
 inChainStoresStoreType(chainStores, storeType) = chainStoresStoreType(storeType) == chainStores;

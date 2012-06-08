@@ -192,7 +192,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public StaticCustomClass projectSchedule;
     ConcreteCustomClass legalCheck;
     ConcreteCustomClass originalDocsCheck;
-    ConcreteCustomClass currency;
 
     AbstractCustomClass application;
     ConcreteCustomClass applicationPreliminary;
@@ -312,8 +311,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         voteR1 = addConcreteClass("voteR1", "Заседание (регл. 1)", vote);
         voteR2 = addConcreteClass("voteR2", "Заседание (регл. 2)", vote);
-
-        currency = addConcreteClass("currency", "Валюта", baseClass.named);
 
         language = addStaticClass("language", "Язык",
                 new String[]{"russian", "english"},
@@ -4032,7 +4029,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         caseCountry = addDProp(baseGroup, "caseCountry", "Страна в Предложном падеже", StringClass.get(40), baseLM.country);
         caseCountryExpert = addJProp("caseCountryExpert", "Страна эксперта П.П.", caseCountry, countryExpert, 1);
 
-        currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", currency, expert);
+        currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", baseLM.currency, expert);
         nameCurrencyExpert = addJProp("nameCurrencyExpert", "Валюта договора", baseLM.name, currencyExpert, 1);
         nameCurrencyExpert.setMinimumWidth(10);
         nameCurrencyExpert.setPreferredWidth(20);
@@ -4046,14 +4043,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         residencyCountryExpert = addJProp("residencyCountryExpert", "Резидент", residency, countryExpert, 1);
         moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0)), addJProp(baseLM.multiply, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3);
 
-        baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, currency);
+        baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, baseLM.currency);
         baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert, 1);
 
         englCountry = addDProp(baseGroup, "englCountry", "Страна на английском", StringClass.get(40), baseLM.country);
         englCountryExpert = addJProp("englCountryExpert", "Страна эксперта англ", englCountry, countryExpert, 1);
-        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на английском", StringClass.get(40), currency);
+        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на английском", StringClass.get(40), baseLM.currency);
         englCurrencyExpert = addJProp("englCurrencyExpert", "Валюта эксперта англ", englCurrency, currencyExpert, 1);
-        pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), currency);
+        pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), baseLM.currency);
         pluralCurrencyExpert = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
 
         emailLetterExpertMonthYearEA = addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
@@ -6092,7 +6089,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             GroupObjectEntity gobjProjectCluster = new GroupObjectEntity(genID());
             gobjProjectCluster.add(objProject);
             gobjProjectCluster.add(objCluster);
-            addGroup(gobjProjectCluster);
+            addGroupObject(gobjProjectCluster);
             gobjProjectCluster.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
@@ -6120,7 +6117,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             GroupObjectEntity gobjExpertForesight = new GroupObjectEntity(genID());
             gobjExpertForesight.add(objExpert);
             gobjExpertForesight.add(objForesight);
-            addGroup(gobjExpertForesight);
+            addGroupObject(gobjExpertForesight);
             gobjExpertForesight.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
@@ -6388,7 +6385,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             GroupObjectEntity gobjVoteExpert = new GroupObjectEntity(genID());
             gobjVoteExpert.add(objVote);
             gobjVoteExpert.add(objExpert);
-            addGroup(gobjVoteExpert);
+            addGroupObject(gobjVoteExpert);
             gobjVoteExpert.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
@@ -6510,7 +6507,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objDocumentType = new ObjectEntity(genID(), documentType, "Тип документа");
             gobjLanguageDocumentType.add(objLanguage);
             gobjLanguageDocumentType.add(objDocumentType);
-            addGroup(gobjLanguageDocumentType);
+            addGroupObject(gobjLanguageDocumentType);
 
             addPropertyDraw(objLanguage, baseLM.name);
             addPropertyDraw(objDocumentType, baseLM.name);
@@ -6534,7 +6531,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objVote = new ObjectEntity(3, "vote", vote, "Заседание");
             gobjExpertVote.add(objExpert);
             gobjExpertVote.add(objVote);
-            addGroup(gobjExpertVote);
+            addGroupObject(gobjExpertVote);
             gobjExpertVote.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(baseLM.webHost, gobjExpertVote);
@@ -6659,7 +6656,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objConference = new ObjectEntity(3, "conference", expertConference, "Конференция");
             gobjConferenceExpert.add(objExpert);
             gobjConferenceExpert.add(objConference);
-            addGroup(gobjConferenceExpert);
+            addGroupObject(gobjConferenceExpert);
             gobjConferenceExpert.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objConference, textConference);

@@ -166,19 +166,19 @@ statements
 moduleHeader
 @init {
 	List<String> requiredModules = new ArrayList<String>();
-	List<String> importedNamespaces = new ArrayList<String>();
+	List<String> namespacePriority = new ArrayList<String>();
 	String namespaceName = null;
 }
 @after {
 	if (inInitParseState()) {
-		self.initScriptingModule($name.text, namespaceName, requiredModules, importedNamespaces);
+		self.initScriptingModule($name.text, namespaceName, requiredModules, namespacePriority);
 	} else if (inGroupParseState()) {
-		self.checkModulesAndNamespaces(requiredModules, importedNamespaces);
+		self.initModulesAndNamespaces(requiredModules, namespacePriority);
 	}
 }
 	:	'MODULE' name=ID ';'
 		('REQUIRE' list=nonEmptyIdList ';' { requiredModules = $list.ids; })? 
-		('IMPORT' list=nonEmptyIdList ';' { importedNamespaces = $list.ids; })? 
+		('PRIORITY' list=nonEmptyIdList ';' { namespacePriority = $list.ids; })? 
 		('NAMESPACE' nname=ID ';' { namespaceName = $nname.text; })?
 	;
 
@@ -1204,10 +1204,11 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 	String table = null;
 	boolean isPersistent = false;
 	Boolean isLoggable = null;
+	Boolean notNullResolve = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve);
 		self.makeLoggable(property, isLoggable);
 	}
 }
@@ -1228,7 +1229,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
-		|	notNullSetting [property]
+		|	s=notNullSetting { notNullResolve = $s.toResolve; }
 		)*
 	;
 
@@ -1377,15 +1378,7 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting [LP property]
-@init {
-	boolean toResolve = false;
-}
-@after {
-	if (inPropParseState()) {
-		self.setScriptedNotNull(property, toResolve);
-	}
-}
+notNullSetting returns [boolean toResolve = false] 
 	:	'NOT' 'NULL' ('DELETE' { toResolve = true; })?
 	;
 
@@ -2057,14 +2050,32 @@ scope {
 	ScriptingFormView formView = null;
 	boolean applyDefault = false;
 }
-	:	'DESIGN' cid=compoundID (caption=stringLiteral)? ('FROM' 'DEFAULT' { applyDefault = true; })?
-		{
-			if (inPropParseState()) {
-				$designStatement::design = formView = self.createScriptedFormView($cid.sid, $caption.val, applyDefault);
-			}
-		}
+	:	(	decl=designDeclaration 			{ $designStatement::design = formView = $decl.view; }
+		|	edecl=extendDesignDeclaration 	{ $designStatement::design = formView = $edecl.view; }	
+		)
 		componentStatementBody[formView, formView == null ? null : formView.mainContainer]
 	;
+
+designDeclaration returns [ScriptingFormView view]
+@init {
+	boolean applyDefault = false;
+}
+@after {
+	if (inPropParseState()) {
+		$view = self.createScriptedFormView($cid.sid, $caption.val, applyDefault);
+	}
+}
+	:	'DESIGN' cid=compoundID (caption=stringLiteral)? ('FROM' 'DEFAULT' { applyDefault = true; })?
+	;
+
+extendDesignDeclaration returns [ScriptingFormView view]
+@after {
+	if (inPropParseState()) {
+		$view = self.getDesignForExtending($cid.sid);
+	}
+}
+	:	'EXTEND' 'DESIGN' cid=compoundID 
+	;	
 
 componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 	:	'{'

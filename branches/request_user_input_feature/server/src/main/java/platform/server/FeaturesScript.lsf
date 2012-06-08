@@ -1,3 +1,10 @@
+//////////////// MODULE HEADER //////////////////
+// Syntax:
+// MODULE moduleName;
+// [REQUIRE moduleName1, ..., moduleNameN;]
+// [PRIORITY namespace1, ..., namespaceK;]
+// [NAMESPACE namespaceName;]
+
 MODULE Features;
 
 REQUIRE BaseLogicsModule;

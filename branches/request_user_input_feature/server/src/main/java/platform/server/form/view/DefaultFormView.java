@@ -51,6 +51,12 @@ public class DefaultFormView extends FormView {
 
     protected ContainerView formButtonContainer;
 
+    private ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
+        public ContainerView createContainer() {
+            return new ContainerView(idGenerator.idShift());
+        }
+    };
+
     public DefaultFormView() {
 
     }
@@ -65,41 +71,10 @@ public class DefaultFormView extends FormView {
         caption = entity.caption;
 
         if (applyDefaultDesign) {
-            ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
-                public ContainerView createContainer() {
-                    return new ContainerView(idGenerator.idShift());
-                }
-            };
-
             FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory);
 
-            for (GroupObjectView clientGroup : groupObjects) {
-                GroupObjectContainerSet<ContainerView, ComponentView> groupSet = GroupObjectContainerSet.create(clientGroup, containerFactory);
-
-                mainContainer.add(groupSet.getGroupContainer());
-
-                groupContainers.put(clientGroup, groupSet.getGroupContainer());
-                panelContainers.put(clientGroup, groupSet.getPanelContainer());
-                controlsContainers.put(clientGroup, groupSet.getControlsContainer());
-                filterContainers.put(clientGroup, groupSet.getFilterContainer());
-                gridContainers.put(clientGroup, groupSet.getGridContainer());
-
-                if (clientGroup.size() == 1) {
-                    groupSet.getGridContainer().add(0, clientGroup.get(0).classChooser);
-                } else if (clientGroup.size() > 1) {
-                    List<ContainerView> containers = new ArrayList<ContainerView>();
-                    for (int i = 0; i < clientGroup.size() - 1; i++) {
-                        ContainerView container = createContainer();
-                        container.type = ContainerType.SPLIT_PANE_HORIZONTAL;
-                        container.add(clientGroup.get(i).classChooser);
-                        containers.add(container);
-                    }
-                    containers.get(containers.size() - 1).add(clientGroup.get(clientGroup.size() - 1).classChooser);
-                    for (int i = containers.size() - 1; i > 0; i--) {
-                        containers.get(i - 1).add(containers.get(i));
-                    }
-                    groupSet.getGridContainer().add(0, containers.get(0));
-                }
+            for (GroupObjectView groupObject : groupObjects) {
+                addGroupObjectView(groupObject);
             }
 
             for (TreeGroupView treeGroupView : treeGroups) {
@@ -189,11 +164,33 @@ public class DefaultFormView extends FormView {
         }
     }
 
-    @Override
-    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity propertyDraw) {
-        PropertyDrawView view = super.addPropertyDrawEntity(propertyDraw);
-        addPropertyDrawView(view);
-        return view;
+    private void addGroupObjectView(GroupObjectView groupObject) {
+        GroupObjectContainerSet<ContainerView, ComponentView> groupSet = GroupObjectContainerSet.create(groupObject, containerFactory);
+
+        mainContainer.add(groupSet.getGroupContainer());
+
+        groupContainers.put(groupObject, groupSet.getGroupContainer());
+        panelContainers.put(groupObject, groupSet.getPanelContainer());
+        controlsContainers.put(groupObject, groupSet.getControlsContainer());
+        filterContainers.put(groupObject, groupSet.getFilterContainer());
+        gridContainers.put(groupObject, groupSet.getGridContainer());
+
+        if (groupObject.size() == 1) {
+            groupSet.getGridContainer().add(0, groupObject.get(0).classChooser);
+        } else if (groupObject.size() > 1) {
+            List<ContainerView> containers = new ArrayList<ContainerView>();
+            for (int i = 0; i < groupObject.size() - 1; i++) {
+                ContainerView container = createContainer();
+                container.type = ContainerType.SPLIT_PANE_HORIZONTAL;
+                container.add(groupObject.get(i).classChooser);
+                containers.add(container);
+            }
+            containers.get(containers.size() - 1).add(groupObject.get(groupObject.size() - 1).classChooser);
+            for (int i = containers.size() - 1; i > 0; i--) {
+                containers.get(i - 1).add(containers.get(i));
+            }
+            groupSet.getGridContainer().add(0, containers.get(0));
+        }
     }
 
     private void addPropertyDrawView(PropertyDrawView propertyDraw) {
@@ -203,6 +200,20 @@ public class DefaultFormView extends FormView {
         addComponent(groupObject, propertyDraw, control.propertyObject.property.getParent());
 
         control.proceedDefaultDesign(propertyDraw, this);
+    }
+
+    @Override
+    public GroupObjectView addGroupObjectEntity(GroupObjectEntity groupObject) {
+        GroupObjectView view = super.addGroupObjectEntity(groupObject);
+        addGroupObjectView(view);
+        return view;
+    }
+
+    @Override
+    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity propertyDraw) {
+        PropertyDrawView view = super.addPropertyDrawEntity(propertyDraw);
+        addPropertyDrawView(view);
+        return view;
     }
 
     private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {

@@ -30,7 +30,7 @@ public class DateIntervalFormEntity<T extends BusinessLogics<T>> extends FormEnt
         gobjDates.add(objDateFrom);
         gobjDates.add(objDateTo);
 
-        addGroup(gobjDates);
+        addGroupObject(gobjDates);
         gobjDates.setSingleClassView(ClassViewType.PANEL);
 
         addPropertyDraw(objDateFrom, LM.objectValue);

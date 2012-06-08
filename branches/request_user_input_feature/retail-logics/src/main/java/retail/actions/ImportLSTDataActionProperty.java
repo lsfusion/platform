@@ -273,7 +273,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-        props.add(new ImportProperty(itemGroupIDField, getLCP("itemGroupSku").getMapping(itemKey),
+        props.add(new ImportProperty(itemGroupIDField, getLCP("itemGroupItem").getMapping(itemKey),
                 LM.object(getClass("itemGroup")).getMapping(itemGroupKey)));
 
         props.add(new ImportProperty(itemIDField, getLCP("extSID").getMapping(itemKey)));
@@ -296,7 +296,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 LM.object(getClass("country")).getMapping(countryKey)));
 
         props.add(new ImportProperty(barcodeField, getLCP("idBarcode").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
-        props.add(new ImportProperty(dateField, getLCP("dateUserBarcode").getMapping(barcodeKey)));
+        props.add(new ImportProperty(dateField, getLCP("dataDateBarcode").getMapping(barcodeKey)));
 
         props.add(new ImportProperty(itemIDField, getLCP("skuBarcode").getMapping(barcodeKey),
                 LM.object(getClass("item")).getMapping(itemKey)));
