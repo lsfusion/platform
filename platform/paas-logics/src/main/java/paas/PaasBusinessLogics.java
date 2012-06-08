@@ -23,6 +23,7 @@ import platform.server.session.DataSession;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
@@ -41,6 +42,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         super.createModules();
 
         paasLM = new PaasLogicsModule(LM, this);
+        paasLM.setRequiredModules(Arrays.asList("BaseLogicsModule"));
         addLogicsModule(paasLM);
     }
 

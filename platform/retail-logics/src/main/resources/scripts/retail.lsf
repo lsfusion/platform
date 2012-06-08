@@ -6081,7 +6081,7 @@ META metaCodeInputMultipleItems (object)
 
 END
 
-META metaCodeInputMultipleItemsBill (object)
+META metaCodeInputMultipleItemsBillSale (object)
 
     inputMultipleItems###object 'Подбор товаров (продажа)' = ACTION (object) {
         FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
@@ -6160,7 +6160,7 @@ META metaCodeInputMultipleItemsSupplier (object)
 
 END
 
-META metaCodeInputMultipleItemsSupplierBill (object)
+META metaCodeInputMultipleItemsBillReturn (object)
 
     inputMultipleItemsSupplier###object 'Подбор товаров (возврат)' = ACTION (object) {
         FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
@@ -9441,8 +9441,8 @@ DESIGN statements FROM DEFAULT {
 
 //----------------------------------- Подбор товаров для чеков -------------------------------------------------------//
 
-@metaCodeInputMultipleItemsBill(bill);
-@metaCodeInputMultipleItemsSupplierBill(bill);
+@metaCodeInputMultipleItemsBillSale(bill);
+@metaCodeInputMultipleItemsBillReturn(bill);
 
 //----------------------------------- Формы чеков -------------------------------------------------//
 
@@ -9758,65 +9758,6 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
             isContainerBatch(bt),
             overMotionContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
-
-// ------------------------------------------------- Форма продаж по товарам ------------------------ //
-
-FORM salesItemDepartmentStore 'Продажи по товарам'
-
-    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  idBarcodeSku
-    FILTERS           nameAttributeItemGroupItem (g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    ORDER BY          nameIt
-
-    PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
-                      quantitySoldSkuStockDateFromTo(i, dep, dFrom, dTo),
-                      balanceASkuLedgerDate(i, dep, dTo)
-;
-
-DESIGN salesItemDepartmentStore FROM DEFAULT {
-
-    main{
-
-    NEW topContainer{
-
-        type = SPLITH;
-        childConstraints = TO THE RIGHT;
-
-            NEW firstCase {
-
-                type = SPLITV;
-                childConstraints = TO THE BOTTOM;
-
-                ADD treeStore.box {title = 'Магазины';};
-                ADD treeGroups.box {title = 'Товарные группы';};
-            }
-
-            NEW secondCase {
-
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-
-                ADD dates.box;
-                ADD dsi.box {fillVertical = 2;}
-            }
-    }
-    }
-
-    ADD functions.box;
-}
 
 //---------------------------------------------- Формы стат. отчетов -------------------------------------//
 
@@ -10555,7 +10496,7 @@ NAVIGATOR {
         }
         NEW sales 'Продажи' {
             ADD salesLedger;
-            ADD salesItemDepartmentStore;
+            ADD salesSkuStock;
         }
         NEW report 'Отчеты' {
             ADD statisticalReport;
