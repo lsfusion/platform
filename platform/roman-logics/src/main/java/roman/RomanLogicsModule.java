@@ -695,6 +695,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP balanceStockSku;
     private LP quantityStockSku;
     private LP quantityFreightUnitSku;
+    private LP quantityImporterFreightUnitSku;
     private LP quantityStock;
     private LP quantityFreightDestination;
     private LP quantityStockArticle;
@@ -820,6 +821,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP diffDocumentInvoiceSku;
     private LP quantitySupplierBoxSku;
     private LP quantityDirectSupplierBoxSku;
+    private LP quantityImporterDirectSupplierBoxSku;
     private LP quantitySupplierBox;
     private LP zeroQuantityListSku;
     private LP zeroQuantityShipDimensionShipmentSku;
@@ -1128,9 +1130,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LP equalsDirectInvoiceFreight;
     private LP grossWeightDirectInvoice;
     private LP palletNumberDirectInvoice;
-    private LP nameOriginCountry;
-    public LP sidOrigin2Country;
-    private LP sidOrigin3Country;
+    //private LP nameOriginCountry;
+    //public LP sidOrigin2Country;
+    //private LP sidOrigin3Country;
     private LP sid3Country;
     public  LP sidOrigin2ToCountry;
     private LP nameCountrySku;
@@ -1592,7 +1594,7 @@ public class RomanLogicsModule extends LogicsModule {
 //        sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", "Код 3 знака (ориг.)", StringClass.get(3), baseLM.country);
         sid3Country = addDProp(baseGroup, "sid3Country", "Код 3 знака", StringClass.get(3), baseLM.country);
 
-        sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", sidOrigin2Country);
+        sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", baseLM.sidOrigin2Country);
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", baseLM.dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", baseLM.name, dictionaryComposition);
@@ -2185,10 +2187,10 @@ public class RomanLogicsModule extends LogicsModule {
         nameCountrySupplierOfOriginArticleSku.property.minimumCharWidth = 15;
 
         countryOfOriginArticle = addJProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", countryCountrySupplier, countrySupplierOfOriginArticle, 1);
-        nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", nameOriginCountry, countryOfOriginArticle, 1);
+        nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginArticle, 1);
 
         countryOfOriginArticleSku = addJProp(idGroup, "countryOfOriginArticleSku", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
-        nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSku, 1);
+        nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginArticleSku, 1);
 
         countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", baseLM.country, article, colorSupplier);
         countryOfOriginArticleColorSku = addJProp(idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
@@ -2199,7 +2201,7 @@ public class RomanLogicsModule extends LogicsModule {
         countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", baseLM.country, sku);
 
         countryOfOriginSku = addSUProp(idGroup, "countryOfOriginSku", true, "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginArticleColorSku);
-        nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
+        nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginSku, 1);
         nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", baseLM.name, countryOfOriginSku, 1);
         nameCountrySku.property.preferredCharWidth = 50;
         nameCountrySku.property.minimumCharWidth = 15;
@@ -2612,10 +2614,10 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто (ед.)", netWeightSku, skuShipmentDetail, 1);
 
         countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
-        nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
+        nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
 
         countryOfOriginSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
-        nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginSkuShipmentDetail, 1);
+        nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginSkuShipmentDetail, 1);
 
         mainCompositionOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "mainCompositionOriginArticleSkuShipmentDetail", "Состав", mainCompositionOriginArticleSku, skuShipmentDetail, 1);
         mainCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "mainCompositionOriginSkuShipmentDetail", "Состав", mainCompositionOriginSku, skuShipmentDetail, 1);
@@ -2790,6 +2792,10 @@ public class RomanLogicsModule extends LogicsModule {
         quantityStockSku = addSGProp(baseGroup, "quantityStockSku", true, true, "Оприход. в короб для транспортировки", quantityShipmentStockSku, 2, 3);
 
         quantityFreightUnitSku = addCUProp(baseGroup, "quantityFreightUnitSku", "Кол-во в коробе", quantityDirectSupplierBoxSku, quantityStockSku);
+
+        quantityImporterDirectSupplierBoxSku = addJProp("quantityImporterDirectSupplierBoxSku", "Кол-во в коробе", baseLM.and1, quantityDirectSupplierBoxSku, 2, 3, is(importer), 1);
+
+        //quantityImporterFreightUnitSku = addCUProp(baseGroup, "quantityImporterFreightUnitSku", "Кол-во", quantityImporterStockSku, quantityImporterDirectSupplierBoxSku);
 
         quantityStock = addSGProp(baseGroup, "quantityStock", "Кол-во оприход.", quantityStockSku, 1);
 
@@ -6596,7 +6602,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objCountry, baseLM.sidCountry);
             if (!translate)
-                addPropertyDraw(objCountry, nameOriginCountry);
+                addPropertyDraw(objCountry, baseLM.nameOriginCountry);
 
             if (translate)
                 addPropertyDraw(objCountry, baseLM.name);
@@ -6787,7 +6793,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objCountry, baseLM.sidCountry);
             if (!translate)
-                addPropertyDraw(objCountry, nameOriginCountry);
+                addPropertyDraw(objCountry, baseLM.nameOriginCountry);
 
             if (translate)
                 addPropertyDraw(objCountry, baseLM.name);
@@ -6969,7 +6975,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objCountry, baseLM.sidCountry);
             if (!translate)
-                addPropertyDraw(objCountry, nameOriginCountry);
+                addPropertyDraw(objCountry, baseLM.nameOriginCountry);
 
             if (translate)
                 addPropertyDraw(objCountry, baseLM.name);

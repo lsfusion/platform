@@ -7,7 +7,7 @@ REQUIRE BaseLogicsModule,
         Numerator,
         Document,
         Historizable,
-
+        //Barcode,
         RomanLogicsModule;
 
 PRIORITY Utils, Stock, RomanLogicsModule;
@@ -546,12 +546,15 @@ quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP 
                                                                                                                              declarationInnerInvoice(innerInvoice),
                                                                                                                              sku PERSISTENT;
 
-inFreightBoxDeclarationDetail 'Связка' (freightBox, declarationDetail) = quantityImporterStockSku(importerDeclarationDetail(declarationDetail),
-                                                                                                  freightBox AS freightBox,
-                                                                                                  skuDeclarationDetail(declarationDetail)) AND
-                                                                              quantityFreightDeclarationSku(freightFreightBox(freightBox),
-                                                                                                            declarationDeclarationDetail(declarationDetail),
-                                                                                                            skuDeclarationDetail(declarationDetail));
+quantityImporterFreightUnitSku 'Кол-во' (importer, freightUnit, sku) = UNION EXCLUSIVE quantityImporterStockSku(importer, freightUnit, sku),
+                                                                                       quantityImporterDirectSupplierBoxSku(importer, freightUnit, sku);
+
+inFreightUnitDeclarationDetail 'Связка' (freightUnit, declarationDetail) = quantityImporterFreightUnitSku(importerDeclarationDetail(declarationDetail),
+                                                                                                          freightUnit AS freightUnit,
+                                                                                                          skuDeclarationDetail(declarationDetail)) AND
+                                                                                             quantityFreightDeclarationSku(freightFreightUnit(freightUnit),
+                                                                                                                           declarationDeclarationDetail(declarationDetail),
+                                                                                                                           skuDeclarationDetail(declarationDetail));
 
 
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
@@ -633,11 +636,11 @@ FORM declaration 'Декларация'
 
     FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
 
-    OBJECTS f=freightBox
+    OBJECTS f=freightUnit
     PROPERTIES (f) barcode, nameDestinationFreightBox
-    PROPERTIES (f, dd) inFreightBoxDeclarationDetail
+    PROPERTIES (f, dd) inFreightUnitDeclarationDetail
 
-    FILTERS inFreightBoxDeclarationDetail(f, dd)
+    FILTERS inFreightUnitDeclarationDetail(f, dd)
 
     EDIT declaration OBJECT d
 ;
@@ -838,14 +841,6 @@ priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article) <- pri
                             WHEN CHANGED (methodPriceChangeDocumentArticle(basePriceChangeDocument, article)) OR
                                  CHANGED (priceOutRatePriceChangeDocumentArticle(basePriceChangeDocument, article)) OR
                                  CHANGED (RRPRatePriceChangeDocumentArticle(basePriceChangeDocument, article));
-
-
-//setPreviousPriceChangeDocumentArticle 'Цена в документе' = ACTION (basePriceChangeDocument, article) {
-//    SET priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article) <- priceRetailPriceChangeDocumentArticle(basePriceChangeDocument, article);
-//} IN baseGroup;
-
-//priceRetailPriceChangeDocumentArticle 'Новая цена' = UNION OVERRIDE priceRetailRatePriceChangeDocumentArticle(basePriceChangeDocument, article),
-//                                                                    priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article);
 
 percentNDSPriceChangeDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceChangeDocument, article) IN baseGroup;
 sumNDSPriceChangeDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceDataBasePriceChangeDocumentArticle(basePriceChangeDocument, article),
@@ -1238,6 +1233,8 @@ CLASS inWarehouseRFFlow 'Приход на склад (РФ)' : historyObject, n
 CLASS inWarehouseFlowDetail 'Строка прихода на склад' : inTransferBalanceSkuLedger;
 CLASS inWarehouseRFFlowDetail 'Строка прихода на склад (РФ)' : inTransferBalanceSkuLedger;
 
+CLASS inWarehouseScan 'Сканирование';
+
 
 @defineDocumentBasePosted(inWarehouseFlow);
 
@@ -1256,25 +1253,27 @@ inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlow) = customFlowInWareho
 skuInWarehouseFlowDetail 'Товар (ИД)' (inWarehouseFlowDetail) = DATA sku(inWarehouseFlowDetail) IN idGroup;
 descriptionInWarehouseFlowDetail 'Описание' (inWarehouseFlowDetail) = DATA STRING[100](inWarehouseFlowDetail);
 
-quantityCustomsFlowBatch (customsFlow, batch) = GROUP SUM costBalanceSkuLedgerBatch(customsFlowDetail, batch)
-                                                       BY customsFlowCustomsFlowDetail(customsFlowDetail), batch;
+//quantityCustomsFlowBatch (customsFlow, batch) = GROUP SUM costBalanceSkuLedgerBatch(customsFlowDetail, batch)
+//                                                       BY customsFlowCustomsFlowDetail(customsFlowDetail), batch;
+
+quantityCustomsFlowBatch (customFlow, batch) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
+                                                      BY customsFlowCustomsFlowDetail(customsFlowDetail), declarationDetailCustomsFlowDetail(customsFlowDetail);
 
 quantityInWarehouseFlowBatch (inWarehouseFlow, batch) = quantityCustomsFlowBatch(customFlowInWarehouseFlow(inWarehouseFlow), batch);
 quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, batch) = quantityInWarehouseFlowBatch(inWarehouseFlowInWarehouseFlowDetail(inWarehouseFlowDetail), batch);
 
 limitInTransferBalanceSkuLedgerBatch (inWarehouseFlowDetail, batch) += quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, batch);
 
-inInWarehouseFlowInDetailDeclarationDetail (inWarehouseFlowDetail, declarationDetail) = TRUE IF quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, declarationDetail);
-
 quantityDCustomFlowSku (customFlow, sku) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
-                                                 BY customsFlowCustomsFlowDetail(customsFlowDetail), skuCustomsFlowDetail(customsFlowDetail);
-
-quantityDInWarehouseFlowSku (inWarehouseFlow, sku) = quantityDCustomFlowSku(customFlowInWarehouseFlow(inWarehouseFlow), sku);
+                                                  BY customsFlowCustomsFlowDetail(customsFlowDetail), skuCustomsFlowDetail(customsFlowDetail);
 
 articleInWarehouseFlowDetail 'Артикул (ИД)' (inWarehouseFlowDetail) = articleSku(skuInWarehouseFlowDetail(inWarehouseFlowDetail));
 sidArticleInWarehouseFlowDetail 'Артикул' (inWarehouseFlowDetail) = sidArticle(articleInWarehouseFlowDetail(inWarehouseFlowDetail));
 
 quantityDataInWarehouseFlowDetail 'Кол-во фактическое' (inWarehouseFlowDetail) = DATA NUMERIC[14,2](inWarehouseFlowDetail) IN baseGroup;
+
+inWarehouseFlowDetailInWarehouseFlowSku (inWarehouseFlow, sku) = GROUP MAX inWarehouseFlowDetail BY inWarehouseFlowInWarehouseFlowDetail(inWarehouseFlowDetail),
+                                                                                                    skuInWarehouseFlowDetail(inWarehouseFlowDetail);
 
 @implementBalanceSkuLedger (inWarehouseFlow, sku, warehouse);
 
@@ -1291,6 +1290,66 @@ toFillInWarehouseDetailsInWarehouseFlow 'Заполнить приход по р
         };
     };
 } CONFIRM;
+
+
+idBarcodeInWarehouseScan 'Штрих-код' = DATA STRING[13] (inWarehouseScan);
+inWarehouseFlowInWarehouseScan 'Приход (ИД)' = DATA inWarehouseFlow(inWarehouseScan) IN idGroup;
+skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
+
+tmpSku() = SESSION DATA sku ();
+
+FORM barcodeInput 'Ввод штрих-кода'
+    OBJECTS barcode=STRING[13] FIXED PANEL
+    PROPERTIES(barcode) objValue = OBJVALUE
+;
+
+DESIGN barcodeInput FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Штрих-код';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
+addInWarehouseScanBarcodeFill 'Добавить' = ACTION (inWarehouseFlow) {
+     FORM barcodeInput MODAL;
+
+     IF formResult() == formResult.ok THEN {
+         SET tmpSku() <- barcodeToObject(chosenString('barcode'));
+
+         IF tmpSku() IS sku THEN {
+              IF inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku()) IS inWarehouseFlowDetail THEN {
+                 SET quantityDataInWarehouseFlowDetail(detail) IF detail == inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku()) <-
+                     quantityDataInWarehouseFlowDetail(inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku())) (+) (1 IF (inWarehouseFlow IS inWarehouseFlow));
+              }
+
+              ELSE {
+                 ADDOBJ inWarehouseFlowDetail;
+                 FOR w == addedObject() DO {
+                     SET inWarehouseFlowInWarehouseFlowDetail(w) <- inWarehouseFlow AS inWarehouseFlow;
+                     SET skuInWarehouseFlowDetail(w) <- tmpSku();
+                     SET quantityDataInWarehouseFlowDetail(w) <- 1;
+                 };
+              };
+         }
+
+         ELSE
+            MESSAGE 'Не найден штрих-код';
+
+     };
+} TOOLBAR EDITKEY 'F4';
+
+
+FORM declarationsCustomsFlow 'Декларации'
+    OBJECTS c=customsFlow FIXED PANEL
+    PROPERTIES (c) READONLY numberObject, seriesObject, dateCustomsFlow, nameCustomStoreCustomsFlow//, nameStoreCustomsFlow
+
+    OBJECTS de=declaration
+
+    PROPERTIES (c, de) inCustomsFlowDeclaration
+    PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration, currentBalanceDeclaration
+    FILTERS isCustomsDeclarationCustomsFlow (de, c)
+;
 
 FORM costSkuLedger 'Себестоимость'
     OBJECTS bil = balanceSkuLedger
@@ -1315,9 +1374,10 @@ FORM costSkuLedger 'Себестоимость'
 ;
 
 FORM inWarehouseFlow 'Приход на оптовый склад'
+
     OBJECTS w = inWarehouseFlow FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateInWarehouseFlow, timeInWarehouseFlow, nameWarehouseInWarehouseFlow,
-                   numberCustomFlowInWarehouseFlow, seriesCustomFlowInWarehouseFlow, toFillInWarehouseDetailsInWarehouseFlow
+                   numberCustomFlowInWarehouseFlow, seriesCustomFlowInWarehouseFlow, toFillInWarehouseDetailsInWarehouseFlow, addInWarehouseScanBarcodeFill
 
     OBJECTS d = inWarehouseFlowDetail
     PROPERTIES(d) indexInWarehouseFlowDetail, barcodeLedger, nameBrandLedger, sidArticleInWarehouseFlowDetail,
@@ -1326,10 +1386,10 @@ FORM inWarehouseFlow 'Приход на оптовый склад'
 
     FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
 
-    OBJECTS dd = declarationDetail
-    PROPERTIES (d, dd) quantityInWarehouseFlowDetailBatch
+    //OBJECTS s = inWarehouseScan
+    //PROPERTIES (s) idBarcodeInWarehouseScan, skuInWarehouseScan
 
-    FILTERS inInWarehouseFlowInDetailDeclarationDetail (d, dd)
+    //FILTERS inWarehouseFlowInWarehouseScan(s)==w
 
     EDIT inWarehouseFlow OBJECT w
 ;
@@ -1355,6 +1415,9 @@ DESIGN inWarehouseFlows FROM DEFAULT {
         askConfirm = TRUE;
     }
 }
+
+
+
 
 
 FORM balanceItemDepartment 'Остатки'
