@@ -1629,117 +1629,109 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return getPropertyList(false);
     }
 
+    // находит свойство входящее в "верхнюю" сильносвязную компоненту
+    private static QuickSet<Link> goDown(Property<?> property, QuickMap<Property, QuickSet<Link>> linksMap, List<Property> order, QuickSet<Link> removedLinks, boolean include, QuickSet<Property> component) {
+        QuickSet<Link> linksIn = linksMap.get(property);
+        if(linksIn==null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
+            linksIn = new QuickSet<Link>();
+            linksMap.add(property, linksIn);
 
-    private static class LinksIn implements Comparable<LinksIn> {
-//        private final QuickMap<LinkType, List<Property>> countLinks = new SimpleMap<LinkType, List<Property>>();
-        private final QuickMap<LinkType, Integer> countLinks = new SimpleMap<LinkType, Integer>();
-        private final boolean usedByCancel;
-        private final Property<?> property;
-
-        public int compareTo(LinksIn o) {
-            if(usedByCancel && !o.usedByCancel)
-                return 1;
-            if(!usedByCancel && o.usedByCancel)
-                return -1;
-
-            for(LinkType linkType : LinkType.order) {
-//                int thisCount = countLinks.get(linkType).size();
-//                int thatCount = o.countLinks.get(linkType).size();
-                int thisCount = countLinks.get(linkType);
-                int thatCount = o.countLinks.get(linkType);
-                if(thisCount>thatCount)
-                    return 1;
-                if(thisCount<thatCount)
-                    return -1;
+            QuickSet<Link> links = property.getLinks();
+            for(int i=0;i<links.size;i++) {
+                Link link = links.get(i);
+                if(!removedLinks.contains(link) && component.contains(link.to)==include)
+                    goDown(link.to, linksMap, order, removedLinks, include, component).add(link);
             }
-            assert (property.getSID().equals(o.property.getSID())==property.equals(o.property));
-            return property.getSID().compareTo(o.property.getSID());
+            order.add(property);
         }
-
-        private LinksIn(Property property, boolean usedByCancel) {
-            for(LinkType linkType : LinkType.order)
-//                countLinks.add(linkType, new ArrayList<Property>());
-                countLinks.add(linkType, 0);
-            this.property = property;
-            this.usedByCancel = usedByCancel;
-        }
-
-        public void reduce(Property property, LinkType link) {
-//            boolean remove = countLinks.get(link).remove(property);
-//            assert remove;
-            countLinks.add(link, countLinks.get(link) - 1);
-        }
-
-        public void add(Property property, LinkType link) {
-//            countLinks.get(link).add(property);
-            countLinks.add(link, countLinks.get(link) + 1);
-        }
+        return linksIn;
     }
-
-    private static void fillLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByCancel, QuickSet<Property> checked) {
-        if(linksMap.get(property)==null)
-            linksMap.add(property, new LinksIn(property, usedByCancel));
-        fillRecLinks(property, linksMap, usedByCancel, checked);
-    }
-    private static void fillRecLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByCancel, QuickSet<Property> checked) {
-        if(checked.add(property)) // было, уходим
+    
+    // бежим вниз отсекая выбирая ребро с минимальным приоритетом из этой компоненты
+    private static void goUp(Property<?> property, QuickMap<Property, QuickSet<Link>> linksMap, QuickSet<Property> proceeded, Result<Link> minLink, QuickSet<Property> component) {
+        if(component.add(property))
             return;
 
-        // сначала строим orderMap, затем
-        for(Pair<Property<?>, LinkType> link : property.getLinks()) {
-            Property<?> linkProperty = link.first;
-            LinksIn linksIn = linksMap.get(linkProperty);
-            if(linksIn==null) {
-                linksIn = new LinksIn(linkProperty, usedByCancel);
-                linksMap.add(linkProperty, linksIn);
+        QuickSet<Link> linksIn = linksMap.get(property);
+        for(int i=0;i<linksIn.size;i++) {
+            Link link = linksIn.get(i);
+            if(!proceeded.contains(link.from)) { // если не в верхней компоненте
+                goUp(link.from, linksMap, proceeded, minLink, component);
+                if(minLink.result==null || link.type.getNum() > minLink.result.type.getNum()) // сразу же ищем минимум из ребер
+                    minLink.set(link);
             }
-            linksIn.add(property, link.second);
-
-            fillLinks(linkProperty, linksMap, usedByCancel, checked);
         }
     }
 
-    private static List<Property> buildList(SortedSet<LinksIn> sortedSet, QuickMap<Property, LinksIn> linksMap) {
-        List<Property> list = new ArrayList<Property>();
-        while(!sortedSet.isEmpty()) {
-            LinksIn firstKey = sortedSet.first();
-//            assert firstKey.countLinks.get(LinkType.DEPEND).isEmpty();
-            assert firstKey.countLinks.get(LinkType.DEPEND).equals(0);
-            sortedSet.remove(firstKey);
+    // upComponent нужен так как изначально неизвестны все элементы
+    private static QuickSet<Property> buildList(QuickSet<Property> props, QuickSet<Property> exclude, QuickSet<Link> removedLinks, List<Property> result) {
+        QuickSet<Property> proceeded;
 
-            for(Pair<Property<?>, LinkType> link : firstKey.property.getLinks()) {
-                LinksIn linkOrder = linksMap.get(link.first);
-                assert linkOrder.property.equals(link.first);
-                if(sortedSet.remove(linkOrder)) { // проверяем что еще не было
-                    linkOrder.reduce(firstKey.property, link.second);
-                    sortedSet.add(linkOrder);
-                }
-            }
-
-            list.add(firstKey.property);
+        List<Property> order = new ArrayList<Property>();
+        QuickMap<Property, QuickSet<Link>> linksMap = new SimpleMap<Property, QuickSet<Link>>();
+        for(int i=0;i<props.size;i++) {
+            Property property = props.get(i);
+            if(linksMap.get(property)==null) // проверка что не было
+                goDown(property, linksMap, order, removedLinks, exclude==null, exclude!=null ? exclude : props);
         }
-        return BaseUtils.reverseThis(list);
+
+        Result<Link> minLink = new Result<Link>();
+        proceeded = new QuickSet<Property>();
+        for(int i=0;i<order.size();i++) { // тут нужн
+            Property orderProperty = order.get(order.size()-1-i);
+            if(!proceeded.contains(orderProperty)) {
+                minLink.set(null);
+                QuickSet<Property> innerComponent = new QuickSet<Property>();
+                goUp(orderProperty, linksMap, proceeded, minLink, innerComponent);
+                assert innerComponent.size > 0;
+                if(innerComponent.size==1) // если цикла нет все ОК
+                    result.add(innerComponent.getSingle());
+                else {
+                    boolean was = removedLinks.add(minLink.result);
+                    assert !was;
+
+                    if(minLink.result.type.equals(LinkType.DEPEND)) { // нашли цикл
+                        List<Property> cycle = new ArrayList<Property>();
+                        buildList(innerComponent, null, removedLinks, cycle);
+                        String print = "";
+                        for(Property property : cycle)
+                            print = (print.length()==0 ? "" : print + " -> ") + property.toString();
+                        throw new RuntimeException(ServerResourceBundle.getString("message.cycle.detected") + " : " + print + " -> " + minLink.result.to);
+                    }
+                    buildList(innerComponent, null, removedLinks, result);
+                }
+                proceeded.addAll(innerComponent);
+            }
+        }
+
+        return proceeded;
     }
 
     @IdentityLazy
-    public Iterable<Property> getPropertyList(boolean onlyCheck) {
-        QuickMap<Property, LinksIn> linksMap = new SimpleMap<Property, LinksIn>();
-        QuickSet<Property> checked = new QuickSet<Property>();
-        
-        List<Property> rest = new ArrayList<Property>();
+    public List<Property> getPropertyList(boolean onlyCheck) {
+        // жестковато тут конечно написано, но пока не сильно времени жрет
+
+        // сначала бежим по Action'ам с cancel'ами
+        QuickSet<Property> cancelActions = new QuickSet<Property>();
+        QuickSet<Property> rest = new QuickSet<Property>();
         for (Property property : getProperties())
             if(property instanceof ActionProperty && ((ActionProperty)property).hasCancel())
-                fillLinks(property, linksMap, true, checked);
+                cancelActions.add(property);
             else
                 rest.add(property);
-        if(!onlyCheck) // именно так чтобы правильные пометки usedByCancel проставились
-            for (Property property : rest)
-                fillLinks(property, linksMap, false, checked);
 
-        SortedSet<LinksIn> sortedLinks = new TreeSet<LinksIn>();
-        for(int i=0;i<linksMap.size;i++)
-            sortedLinks.add(linksMap.getValue(i));
-        return buildList(sortedLinks, linksMap);
+        List<Property> cancelResult = new ArrayList<Property>();
+        QuickSet<Property> proceeded = buildList(cancelActions, new QuickSet<Property>(), new QuickSet<Link>(), cancelResult);
+        if(onlyCheck)
+            return BaseUtils.reverse(cancelResult);
+
+        // потом бежим по всем остальным, за исключением proceeded
+        List<Property> restResult = new ArrayList<Property>();
+        buildList(rest.remove(proceeded), proceeded, new QuickSet<Link>(), restResult);
+
+        // затем по всем кроме proceeded на прошлом шаге
+        assert Collections.disjoint(cancelResult, restResult);
+        return BaseUtils.mergeList(BaseUtils.reverse(cancelResult), BaseUtils.reverse(restResult));
     }
 
     @IdentityLazy

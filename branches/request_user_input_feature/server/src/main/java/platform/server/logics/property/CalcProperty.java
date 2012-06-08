@@ -109,17 +109,17 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Collection<Property> props = new ArrayList<Property>();
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && ((CalcProperty)implement.property).hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
-            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
-//            PropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
-//            setAction.mapDerivedChange(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)));
+//            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
+//            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
+            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
+            setAction.mapEventAction(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
             lm.addProp(setAction.property);
         }
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
-            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), ActionEvent.RESOLVE);
-//            PropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
-//            setAction.mapDerivedChange(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)));
+//            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
+//            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), ActionEvent.RESOLVE);
+            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
+            setAction.mapEventAction(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)), ActionEvent.RESOLVE);
             lm.addProp(setAction.property);
         }
 

@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.Pair;
+import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
 import platform.interop.form.ServerResponse;
@@ -461,11 +462,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     protected abstract Collection<Pair<Property<?>, LinkType>> calculateLinks();
 
-    private Collection<Pair<Property<?>, LinkType>> links;
+    private QuickSet<Link> links;
     @ManualLazy
-    public Collection<Pair<Property<?>, LinkType>> getLinks() {
-        if(links==null)
-            links = calculateLinks();
+    public QuickSet<Link> getLinks() {
+        if(links==null) {
+            links = new QuickSet<Link>();
+            for(Pair<Property<?>, LinkType> link : calculateLinks())
+                links.add(new Link(this, link.first, link.second));
+        }
         return links;
     }
 }

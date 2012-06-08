@@ -69,6 +69,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        if(event==null) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+            return new ArrayList<Pair<Property<?>, LinkType>>();
+
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
         for(CalcProperty depend : getUsedProps())
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.USEDACTION));

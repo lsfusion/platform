@@ -329,6 +329,8 @@ constraintAction (store, article) = ACTION (store, article) {
 };
 constraintAction(store, article) WHEN foo(store,article)>10000;
 
+// inQuantity(document, article) <- 15 WHEN CHANGED(foo(store(document), article));
+
 
 ////////////////FOLLOWS STATEMENT////////////////
 // Syntax:
