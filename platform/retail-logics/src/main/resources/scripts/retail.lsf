@@ -761,17 +761,17 @@ hoursExpiryPackItem 'Срок годности в часах с момента �
 imageItem 'Изображение' = DATA IMAGEFILE (item);
 loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
 
-FORM country 'Страна'
-    OBJECTS c=country FIXED PANEL
-    PROPERTIES(c)      name, sidCountry, residentCountry
-
-    EDIT country OBJECT c
-;
-FORM countries 'Страны'
-    OBJECTS c=country
-    PROPERTIES(c) READONLY name, sidCountry, residentCountry
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
+//FORM country 'Страна'
+//    OBJECTS c=country FIXED PANEL
+//    PROPERTIES(c)      name, sidCountry, residentCountry
+//
+//    EDIT country OBJECT c
+//;
+//FORM countries 'Страны'
+//    OBJECTS c=country
+//    PROPERTIES(c) READONLY name, sidCountry, residentCountry
+//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//;
 
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
@@ -10597,7 +10597,7 @@ NAVIGATOR {
             ADD barcodeInput;
             ADD employee;
             ADD employeeDialog;
-            ADD country;
+//            ADD country;
 //            ADD currency;
             ADD position;
             ADD addTradingSquareDepartmentStore;

@@ -432,6 +432,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP defaultOverrideForegroundColor;
 
     public LP sidCountry;
+    public LP nameOriginCountry;
+    public LP sidOrigin2Country;
+    public LP sidOrigin3Country;
     public LP residentCountry;
     protected LP generateDatesCountry;
     public LP sidToCountry;
@@ -791,11 +794,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
         betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
 
+        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", getString("logics.country.name.origin.country"), InsensitiveStringClass.get(50), country);
         sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
+        sidOrigin2Country = addDProp(baseGroup, "sidOrigin2Country", getString("logics.country.sid.origin.2.country"), StringClass.get(2), country);
+        sidOrigin2Country.setMinimumCharWidth(15);
+        sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", getString("logics.country.sid.origin.3.country"), StringClass.get(3), country);
+        sidOrigin3Country.setMinimumCharWidth(15);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
         sidToCountry = addAGProp("sidToCountry", getString("logics.country"), sidCountry);
         residentCountry = addDProp(baseGroup, "residentCountry", getString("logics.country.resident.country"), LogicalClass.instance, country);
-
+        residentCountry.setMinimumCharWidth(15);
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
 
 
@@ -1436,6 +1444,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
 
         addFormEntity(new CurrenciesFormEntity(catalogElement, "currencies"));
+        addFormEntity(new CountriesFormEntity(catalogElement, "countries"));
     }
 
     public void initClassForms() {
@@ -2380,6 +2389,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objCurrency);
+        }
+
+    }
+
+    private class CountriesFormEntity extends FormEntity {
+        ObjectEntity objCountry;
+
+        public CountriesFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.country.countries"));
+
+            ObjectEntity objCountry = addSingleGroupObject(country, getString("logics.country"));
+            addPropertyDraw(objCountry, baseLM.name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, residentCountry);
+            setEditType(PropertyEditType.READONLY);
+
+            addFormActions(this, objCountry);
         }
 
     }

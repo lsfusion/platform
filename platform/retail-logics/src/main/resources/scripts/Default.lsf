@@ -34,19 +34,22 @@ fillVATDefaultValues 'Заполнить значения НДС по умолч
 
 //----------------------------Справочник стран --------------------------//
 
-addCountryStringNumberValue 'Добавить страны' = ACTION (string, number) {//, value) {
+addCountryStringNumberValue 'Добавить страны' = ACTION (string, number, stringA, stringB, stringC) {//, value) {
     ADDOBJ country;
     FOR c == addedObject() DO {
        SET name(c) <- string AS STRING[110];
        SET sidCountry(c) <- number AS INTEGER;
+       SET nameOriginCountry(c) <- stringA AS STRING[50];
+       SET sidOrigin2Country(c) <- stringB AS STRING[2];
+       SET sidOrigin3Country(c) <- stringC AS STRING[3];
 //       SET residentCountry(c) <- value AS BOOLEAN;
     }
 }
 
 fillCountryDefaultValues 'Заполнить значения страны по умолчанию' = ACTION () {
-    EXEC addCountryStringNumberValue('Республика Беларусь', 110);//, TRUE);
-    EXEC addCountryStringNumberValue('Российская Федерация', 210);//, TRUE);
-    EXEC addCountryStringNumberValue('Китайская Народная Демократическая Республика', 310);//, NULL);
+    EXEC addCountryStringNumberValue('Республика Беларусь', 110, 'BELARUS', 'RB', 'BLR');//, TRUE);
+    EXEC addCountryStringNumberValue('Российская Федерация', 210, 'RUSSIA', 'RU', 'RUS');//, TRUE);
+    EXEC addCountryStringNumberValue('Китайская Народная Демократическая Республика', 310, 'CHINA', 'CH', 'CHI');//, NULL);
 }
 // todo: Пока что проблема с BOOLEAN, не подставляется
 
