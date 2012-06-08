@@ -1434,6 +1434,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
 
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
+
+        addFormEntity(new CurrenciesFormEntity(catalogElement, "currencies"));
     }
 
     public void initClassForms() {
@@ -2364,6 +2366,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             design.getGroupObject(objDays.groupTo).grid.constraints.fillVertical = 3;
             return design;
         }
+    }
+
+
+    private class CurrenciesFormEntity extends FormEntity {
+        ObjectEntity objCurrency;
+
+        public CurrenciesFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.currency.currencies"));
+
+            ObjectEntity objCurrency = addSingleGroupObject(currency, getString("logics.currency"));
+            addPropertyDraw(objCurrency, baseLM.name, shortNameCurrency, symbolCurrency);
+            setEditType(PropertyEditType.READONLY);
+
+            addFormActions(this, objCurrency);
+        }
+
     }
 
     private class DictionariesFormEntity extends FormEntity {

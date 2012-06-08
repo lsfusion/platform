@@ -287,6 +287,8 @@ canonicalNumberStatisticGroup 'Каноническое код' (statisticGroup)
 canonicalNumberNameStatisticGroup 'Канонический код-название' (statisticGroup) = [FORMULA STRING[100] '$1 || \' / \' || $2'](
     canonicalNumberStatisticGroup(statisticGroup), name(statisticGroup));
 
+sidToStatisticGroup(sid) = GROUP UNIQUE statisticGroup BY sidStatisticGroup(statisticGroup);
+
 FORM statisticGroup 'Статистическая группа'
     OBJECTS g=statisticGroup FIXED PANEL
     PROPERTIES(g)   name, nameParentStatisticGroup, sidStatisticGroup, nameUOMStatisticGroup,
@@ -771,17 +773,6 @@ FORM countries 'Страны'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
-FORM currency 'Валюта'
-    OBJECTS c=currency FIXED PANEL
-    PROPERTIES(c)      name, shortNameCurrency, symbolCurrency
-
-    EDIT currency OBJECT c
-;
-FORM currencies 'Валюты'
-    OBJECTS c=currency
-    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
 
@@ -10348,11 +10339,39 @@ numeratorOrder(order) = numeratorObject(order) AND order IS order;
 // todo : включение этого derived'а отключает верхний derived
 //numeratorOrder(order) <- defaultNumeratorOrders() WHEN ASSIGNED(order IS order);
 
+//---------------------------------------------- Автоматическое заполнение -----------------------------------------------------//
+
+//------------------- Статистические группы----------------------------//
+
+addStatisticGroupString 'Добавить стат. группы' = ACTION (sid, stringOne, stringTwo, groupStatic, numeric)  {
+    ADDOBJ statisticGroup;
+    FOR g == addedObject() DO {
+
+        SET parentStatisticGroup(g) <- sidToStatisticGroup(sid AS STRING[12]);
+        SET name(g) <-  stringOne AS STRING[110];
+        SET sidStatisticGroup(g) <- stringTwo AS STRING[12];
+        SET unitMeasureStatisticGroup(g) <- groupStatic AS groupStatic;
+        SET conversionFactorStatisticGroup(g) <- numeric AS NUMERIC[14,5];
+    }
+}
+
+fillStatisticGroupDefaultValues 'Заполнить значения стат групп по умолчанию' = ACTION () {
+    EXEC addStatisticGroupString(' ', 'ВСЕ', 'ВСЕ', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('ВСЕ', 'Непродовольственные товары', '5', groupStatic.pounds, 1);
+    EXEC addStatisticGroupString('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.pounds, 1);
+
+    EXEC addStatisticGroupString('52.2', 'Фрукты', '52.21.10.100', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Овощи', '52.21.10.200', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.thing, 1);
+
+}
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
     PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
-                 fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues;
+                 fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
+                 fillStatisticGroupDefaultValues;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
@@ -10579,7 +10598,7 @@ NAVIGATOR {
             ADD employee;
             ADD employeeDialog;
             ADD country;
-            ADD currency;
+//            ADD currency;
             ADD position;
             ADD addTradingSquareDepartmentStore;
             ADD dialogTradingSquareDepartmentStore;
