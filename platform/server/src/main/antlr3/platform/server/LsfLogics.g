@@ -173,7 +173,7 @@ moduleHeader
 	if (inInitParseState()) {
 		self.initScriptingModule($name.text, namespaceName, requiredModules, namespacePriority);
 	} else if (inGroupParseState()) {
-		self.checkModulesAndNamespaces(requiredModules, namespacePriority);
+		self.initModulesAndNamespaces(requiredModules, namespacePriority);
 	}
 }
 	:	'MODULE' name=ID ';'
@@ -1204,10 +1204,11 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 	String table = null;
 	boolean isPersistent = false;
 	Boolean isLoggable = null;
+	Boolean notNullResolve = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve);
 		self.makeLoggable(property, isLoggable);
 	}
 }
@@ -1228,7 +1229,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
-		|	notNullSetting [property]
+		|	s=notNullSetting { notNullResolve = $s.toResolve; }
 		)*
 	;
 
@@ -1377,15 +1378,7 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting [LP property]
-@init {
-	boolean toResolve = false;
-}
-@after {
-	if (inPropParseState()) {
-		self.setScriptedNotNull(property, toResolve);
-	}
-}
+notNullSetting returns [boolean toResolve = false] 
 	:	'NOT' 'NULL' ('DELETE' { toResolve = true; })?
 	;
 

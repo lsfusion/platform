@@ -430,7 +430,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP<?> property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName, Boolean notNullResolve) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name);
@@ -454,6 +454,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.property.markStored(baseLM.tableFactory, targetTable);
         } else if (isPersistent && (property.property instanceof AggregateProperty)) {
             addPersistent(property, targetTable);
+        }
+
+        if (notNullResolve != null) {
+            setNotNull(property, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
         }
 
         checkPropertyValue(property, name);
@@ -529,10 +533,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setAggProp(LP<?> property) {
         property.property.aggProp = true;
-    }
-
-    public void setScriptedNotNull(LP<?> property, boolean toResolve) {
-        setNotNull(property, toResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
     }
 
     private <T extends LP<?>> void changePropertyName(T lp, String name) {
@@ -1928,8 +1928,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {
-        initNamespacesToModules(this, new HashSet<LogicsModule>()); // todo [dale]: переделать
+    public void initModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {
+        initNamespacesToModules(this, new HashSet<LogicsModule>());
 
         if (namespacePriority.contains(getNamespace())) {
             errLog.emitOwnNamespacePriorityError(parser, getNamespace());
