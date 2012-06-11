@@ -3727,6 +3727,9 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement prices = addNavigatorElement(baseLM.baseElement, "prices", "Ценообразование");
         prices.window = leftToolbar;
 
+        NavigatorElement accountInfo = addNavigatorElement(baseLM.baseElement, "accountInfo", "Сводная информация");
+        accountInfo.window = leftToolbar;
+
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
         addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));

@@ -25,6 +25,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Numerator;
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule Document;
+    public ScriptingLogicsModule Consignment;
+    public ScriptingLogicsModule LegalEntity;
+    public ScriptingLogicsModule Employee;
+    public ScriptingLogicsModule Ware;
+    public ScriptingLogicsModule Tax;
 
     public RomanLogicsModule RomanLM;
     public ScriptingLogicsModule RomanRB;
@@ -44,6 +49,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
         Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
         Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
+        Consignment = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Consignment.lsf"), LM, this));
+        LegalEntity = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/LegalEntity.lsf"), LM, this));
+        Employee = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Employee.lsf"), LM, this));
+        Ware = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
+        Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Ware.lsf"), LM, this));
         RomanLM = addLogicsModule(new RomanLogicsModule(LM, this));
         RomanLM.setRequiredModules(Arrays.asList("BaseLogicsModule", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
         RomanRB = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this));
