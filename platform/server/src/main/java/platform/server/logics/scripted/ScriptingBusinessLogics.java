@@ -30,7 +30,7 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
 
         for (int i = 0; i < scriptFilePaths.size(); ++i) {
             ScriptingLogicsModule scriptedLM = new ScriptingLogicsModule(scriptFilePaths.get(i), LM, this);
-            addLogicsModule(scriptedLM);
+            addModule(scriptedLM);
         }
     }
 

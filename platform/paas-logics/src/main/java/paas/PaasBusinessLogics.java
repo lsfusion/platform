@@ -41,9 +41,8 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     protected void createModules() throws IOException {
         super.createModules();
 
-        paasLM = new PaasLogicsModule(LM, this);
+        paasLM = addModule(new PaasLogicsModule(LM, this));
         paasLM.setRequiredModules(Arrays.asList("System"));
-        addLogicsModule(paasLM);
     }
 
     @Override

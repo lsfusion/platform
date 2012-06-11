@@ -20,9 +20,8 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
 
     public void createModules() throws IOException {
         super.createModules();
-        budgetLM = new BudgetLogicsModule(LM);
+        budgetLM = addModule(new BudgetLogicsModule(LM));
         budgetLM.setRequiredModules(Arrays.asList("System"));
-        addLogicsModule(budgetLM);
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {

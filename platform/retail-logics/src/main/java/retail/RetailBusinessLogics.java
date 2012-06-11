@@ -34,28 +34,6 @@ import java.util.*;
 
 
 public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements RetailRemoteInterface {
-    public ScriptingLogicsModule Utils;
-    public ScriptingLogicsModule Hierarchy;
-    public ScriptingLogicsModule Historizable;
-    public ScriptingLogicsModule Numerator;
-    public ScriptingLogicsModule Stock;
-    public ScriptingLogicsModule Barcode;
-    public ScriptingLogicsModule Document;
-    public ScriptingLogicsModule Tax;
-    public ScriptingLogicsModule Ware;
-    public ScriptingLogicsModule LegalEntity;
-    public ScriptingLogicsModule Employee;
-    public ScriptingLogicsModule Store;
-    public ScriptingLogicsModule ListRegister;
-    public ScriptingLogicsModule Consignment;
-    public ScriptingLogicsModule AccountDocument;
-    public ScriptingLogicsModule StorePrice;
-    public ScriptingLogicsModule Supplier;
-    public ScriptingLogicsModule Sales;
-    public ScriptingLogicsModule PriceChange;
-    public ScriptingLogicsModule Default;
-
-
     ScriptingLogicsModule retailLM;
 
     public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -69,27 +47,29 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        Utils = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this));
-        Hierarchy = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Hierarchy.lsf"), LM, this));
-        Historizable = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Historizable.lsf"), LM, this));
-        Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
-        Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
-        Barcode = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Barcode.lsf"), LM, this));
-        Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
-        Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
-        Ware = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Ware.lsf"), LM, this));
-        LegalEntity = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/LegalEntity.lsf"), LM, this));
-        Employee = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Employee.lsf"), LM, this));
-        Store = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Store.lsf"), LM, this));
-        ListRegister = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/ListRegister.lsf"), LM, this));
-        Consignment = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Consignment.lsf"), LM, this));
-        AccountDocument = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/AccountDocument.lsf"), LM, this));
-        StorePrice = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/StorePrice.lsf"), LM, this));
-        Supplier = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Supplier.lsf"), LM, this));
-        Sales = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Sales.lsf"), LM, this));
-        PriceChange = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/PriceChange.lsf"), LM, this));
-        Default = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Default.lsf"), LM, this));
-        retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
+        addModulesFromResource(
+            "/scripts/Utils.lsf",
+            "/scripts/Hierarchy.lsf",
+            "/scripts/Historizable.lsf",
+            "/scripts/Numerator.lsf",
+            "/scripts/Stock.lsf",
+            "/scripts/Barcode.lsf",
+            "/scripts/Document.lsf",
+            "/scripts/Tax.lsf",
+            "/scripts/Ware.lsf",
+            "/scripts/LegalEntity.lsf",
+            "/scripts/Employee.lsf",
+            "/scripts/Store.lsf",
+            "/scripts/ListRegister.lsf",
+            "/scripts/Consignment.lsf",
+            "/scripts/AccountDocument.lsf",
+            "/scripts/StorePrice.lsf",
+            "/scripts/Supplier.lsf",
+            "/scripts/Sales.lsf",
+            "/scripts/PriceChange.lsf",
+            "/scripts/Default.lsf"
+        );
+        retailLM = addModuleFromResource("/scripts/retail.lsf");
     }
 
     @Override

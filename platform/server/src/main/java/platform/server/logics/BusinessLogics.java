@@ -49,6 +49,7 @@ import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
@@ -694,13 +695,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // по умолчанию с полным стартом
 
-    protected <T extends LogicsModule> T addLogicsModule(T module) {
+    protected <T extends LogicsModule> T addModule(T module) {
         logicModules.add(module);
         return module;
     }
 
     protected void createModules() throws IOException {
-        addLogicsModule(LM);
+        addModule(LM);
+    }
+
+    protected void addModulesFromResource(String... paths) throws IOException {
+        for (String path : paths) {
+            addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(path), LM, this));
+        }
+    }
+
+    protected ScriptingLogicsModule addModuleFromResource(String path) throws IOException {
+        return addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(path), LM, this));
     }
 
     private void fillNameToModules() {
