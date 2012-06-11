@@ -186,6 +186,9 @@ signedCostBalanceSkuLedgerBatch (ledger, batch) = IF ledger IS outBalanceSkuLedg
 currentBalanceBatchLedger 'Текущий остаток' (batch, stock) = GROUP SUM signedCostBalanceSkuLedgerBatch (ledger, batch) AND isPostedBalanceSkuLedger(ledger)
                                                           BY batch, stockBalanceSkuLedger(ledger) PERSISTENT;
 
+expiryDateSkuStock 'Годен до (max.)' (sku, stock) = GROUP MAX  expiryDateBatch(batch) IF currentBalanceBatchLedger(batch, stock)
+                                                          BY skuBatch(batch), stock PERSISTENT;
+
 // -------------------------------------- Последнее движение ---------------------------------- //
 
 dateLastMovedSkuStock 'Дата последнего движения товара' (sku, stock) =

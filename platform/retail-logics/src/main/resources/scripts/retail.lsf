@@ -465,7 +465,8 @@ EXTEND FORM departmentStore PROPERTIES nameWastageCommitteeDepartmentStore(d);
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
-expirationDateSkuDepartmentStore 'Крайний срок годности'= DATA DATE (sku, departmentStore) IN baseGroup;
+//expirationDateSkuDepartmentStore 'Крайний срок годности'= expiryDateBatchStock(skuBatch(batch), departmentStore)
+//DATA DATE (sku, departmentStore) IN baseGroup;     expiryDateSkuStock
 
 //---------------------------- Ценники ----------------------------------------//
 
@@ -962,7 +963,7 @@ labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackI
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
 itemGroupMachineryBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
-expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expirationDateSkuDepartmentStore(skuBarcode(barcode), departmentStore);
+expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expiryDateSkuStock(skuBarcode(barcode), departmentStore);
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
