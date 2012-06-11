@@ -619,6 +619,11 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
                       isParentStockGroupStock(sg, st)
     ORDER BY          dateTimeBatch
 
+    OBJECTS bil=balanceSkuLedger
+    PROPERTIES(bil) descriptionBalanceSkuLedger, dateTimeBalanceSkuLedger, signedQuantityBalanceSkuLedger READONLY
+    FILTERS isPostedBalanceSkuLedger(bil) AND skuBalanceSkuLedger(bil)==skuBatch(bt) AND stockBalanceSkuLedger(bil)==st
+    ORDER BY dateTimeBalanceSkuLedger DESC
+
     FILTERGROUP filterBalance
         FILTER 'Партии с остатком' 'F11' currentBalanceBatchLedger(bt, st) DEFAULT
         FILTER 'Партии пришедшие за последний 1 день' 'F10' dateTimeBatch(bt) >= currentDate() - 1
@@ -648,9 +653,16 @@ DESIGN currentBalanceBatchStock FROM DEFAULT {
                 ADD skuTree.box {title = 'Товарные группы';};
             }
 
-            ADD stb.box {
-                title = 'Партии';
+            NEW secondCase {
                 fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+                ADD stb.box {
+                    title = 'Партии';
+
+                }
+                ADD bil.box {
+                    title = 'Движение';
+                }
             }
         }
 

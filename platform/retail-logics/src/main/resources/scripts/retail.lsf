@@ -465,9 +465,6 @@ EXTEND FORM departmentStore PROPERTIES nameWastageCommitteeDepartmentStore(d);
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
 
-//expirationDateSkuDepartmentStore 'Крайний срок годности'= expiryDateBatchStock(skuBatch(batch), departmentStore)
-//DATA DATE (sku, departmentStore) IN baseGroup;     expiryDateSkuStock
-
 //---------------------------- Ценники ----------------------------------------//
 
 CLASS STATIC printOrientation 'Ориентация' {
@@ -963,7 +960,7 @@ labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackI
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
 itemGroupMachineryBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
-expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expiryDateSkuStock(skuBarcode(barcode), departmentStore);
+expiryDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expiryDateSkuStock(skuBarcode(barcode), departmentStore);
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -6324,7 +6321,7 @@ DESIGN cellScales FROM DEFAULT {
 
 isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
-expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
+expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
 TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
 lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
@@ -6348,8 +6345,8 @@ isWeightBarcodeGroupMachinery 'Весовой товар' (barcode, groupMachine
     isWeightMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 itemGroupBarcodeGroupMachinery 'Группа товара' (barcode, groupMachinery)  =
     itemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-expirationDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
-    expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+expiryDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
+    expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
@@ -6464,7 +6461,7 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
             }
             SET isWeightMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcodeGroupMachinery(barcode, groupMachinery());
             SET itemGroupMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcodeGroupMachinery(barcode, groupMachinery());
-            SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
+            SET expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
             SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
         }
         EXEC apply();
@@ -6537,7 +6534,7 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 }
                 SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
                 SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
-                SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
+                SET expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }
             SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
@@ -6597,7 +6594,7 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
     PROPERTIES(b) READONLY idBarcode
     PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
      daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
-     isWeightMachineryPriceTransactionBarcode, expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
+     isWeightMachineryPriceTransactionBarcode, expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
      compositionMachineryPriceTransactionBarcode FORCE PANEL
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 
@@ -6621,7 +6618,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     PROPERTIES(b)    idBarcode
     PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
-    expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
+    expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
     labelFormatMachineryPriceTransactionBarcode
 
     FILTERS inMachineryPriceTransactionBarcode(t, b)
@@ -7340,7 +7337,32 @@ DESIGN shipment FROM DEFAULT{
             };
             ADD i.box;
         };
-        NEW header.box BEFORE specification.box {
+
+        NEW case1 BEFORE specification.box{
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+            childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Колонки';
+                ADD PROPERTY (toShowPriceImporterShipment(s));
+                ADD PROPERTY (toShowWareShipment(s));
+                ADD PROPERTY (toShowPapersShipment(s));
+            }
+            NEW row2 {
+            childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Дополнительно';
+                ADD PROPERTY (nameRegisterCommitteeShipment(s));
+                ADD PROPERTY (nameWastageCommitteeShipment(s));
+                ADD PROPERTY (noteShipment(s));
+            }
+            NEW row3 {
+            childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Переоценка';
+                ADD PROPERTY (namePriceChangeCommitteeShipment(s));
+                ADD PROPERTY (numberDisposalShipment(s));
+            }
+        }
+
+        NEW header.box BEFORE case1 {
             childConstraints = TO THE RIGHT;
 
             NEW headerCol1 {
