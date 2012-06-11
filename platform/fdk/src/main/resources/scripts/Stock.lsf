@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE BaseLogicsModule, Utils, Hierarchy;
+REQUIRE System, Utils, Hierarchy;
 
 // ----------------------------------- Склады ------------------------------------------ //
 

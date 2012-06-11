@@ -1,6 +1,6 @@
 MODULE Sales;
 
-REQUIRE BaseLogicsModule, Stock, Tax;
+REQUIRE System, Stock, Tax;
 
 CLASS ABSTRACT salesLedger 'Продажа товара' : balanceSkuLedger;
 TABLE salesLedger(salesLedger);

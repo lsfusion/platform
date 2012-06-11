@@ -1,6 +1,6 @@
 MODULE AccountDocument;
 
-REQUIRE BaseLogicsModule, Store, Employee, Utils;
+REQUIRE System, Store, Employee, Utils;
 
 CLASS ABSTRACT accountDocumentLedger 'Учетный документ';
 TABLE accountDocumentLedger (accountDocumentLedger);

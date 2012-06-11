@@ -1,6 +1,6 @@
 MODULE testPresentation;
 
-REQUIRE BaseLogicsModule;
+REQUIRE System;
 
 /////////// GROUP STATEMENT ////////////
 
@@ -8,7 +8,7 @@ REQUIRE BaseLogicsModule;
 // GROUP name ['caption'] [: parentGroup];
 GROUP base 'Основная группа' : baseGroup;
 GROUP simpleGroup;
-GROUP sampleGroup : BaseLogicsModule.baseGroup; // явная квалификация имен
+GROUP sampleGroup : System.baseGroup; // явная квалификация имен
 
 /////////// CLASS STATEMENT ////////////
 

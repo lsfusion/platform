@@ -7,7 +7,7 @@ MODULE retail;
 // Надбавка - NUMERIC[8,3]
 // Норма списания отходов - NUMERIC[10,3]
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
         Utils,
         Hierarchy,
         Historizable,
@@ -10519,8 +10519,8 @@ WINDOW TOOLBAR topToolbar 'Папки' VERTICAL HIDETITLE HIDESCROLLBARS POSITIO
 WINDOW TOOLBAR formsToolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 5, 20, 65);
 WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 5, 20, 65);
 
-HIDE WINDOW BaseLogicsModule.relevantForms;
-HIDE WINDOW BaseLogicsModule.relevantClassForms;
+HIDE WINDOW System.relevantForms;
+HIDE WINDOW System.relevantClassForms;
 
 NAVIGATOR {
 

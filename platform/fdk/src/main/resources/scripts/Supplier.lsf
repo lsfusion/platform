@@ -1,6 +1,6 @@
 MODULE Supplier;
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
         Historizable,
         Utils,
         LegalEntity,

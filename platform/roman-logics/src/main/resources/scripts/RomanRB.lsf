@@ -1,6 +1,6 @@
 MODULE RB;
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
 
         Utils,
         Stock,

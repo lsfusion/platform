@@ -1,6 +1,6 @@
 MODULE Barcode;
 
-REQUIRE BaseLogicsModule, Stock, Utils;
+REQUIRE System, Stock, Utils;
 
 CLASS barcode 'Штрих код';
 TABLE barcode (barcode);

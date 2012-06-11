@@ -1,6 +1,6 @@
 MODULE Document;
 
-REQUIRE BaseLogicsModule;
+REQUIRE System;
 
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
 TABLE postedObject (postedObject);

@@ -1,6 +1,6 @@
 MODULE PriceChange;
 
-REQUIRE BaseLogicsModule, Document, AccountDocument, Stock, Store, StorePrice, Ware;
+REQUIRE System, Document, AccountDocument, Stock, Store, StorePrice, Ware;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 

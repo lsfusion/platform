@@ -1,6 +1,6 @@
 MODULE Consignment;
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
         LegalEntity,
         Stock,
         Employee,

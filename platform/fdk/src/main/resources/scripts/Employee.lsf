@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE BaseLogicsModule, Hierarchy, Utils;
+REQUIRE System, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;

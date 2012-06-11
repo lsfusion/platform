@@ -1,6 +1,6 @@
 MODULE Tax;
 
-REQUIRE BaseLogicsModule, Utils, Hierarchy;
+REQUIRE System, Utils, Hierarchy;
 
 // ---------------------------------- Налог --------------------------------------- //
 

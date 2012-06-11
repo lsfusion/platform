@@ -7,7 +7,7 @@
 
 MODULE Features;
 
-REQUIRE BaseLogicsModule;
+REQUIRE System;
 
 /////////// GROUP STATEMENT ////////////
 
@@ -15,7 +15,7 @@ REQUIRE BaseLogicsModule;
 // GROUP name ['caption'] [: parentGroup];
 GROUP base 'Основная группа' : baseGroup;
 GROUP simpleGroup;
-GROUP sampleGroup : BaseLogicsModule.baseGroup; // явная квалификация имен
+GROUP sampleGroup : System.baseGroup; // явная квалификация имен
 
 /////////// CLASS STATEMENT ////////////
 
@@ -499,8 +499,8 @@ WINDOW TOOLBAR leftToolbar 'Список' VERTICAL POSITION(0, 0, 20, 60);
 WINDOW TREE objectsWindow 'Объекты' POSITION(0, 30, 20, 30) DRAWROOT;
 
 //Hide window
-HIDE WINDOW BaseLogicsModule.log;
-HIDE WINDOW BaseLogicsModule.relevantForms;
+HIDE WINDOW System.log;
+HIDE WINDOW System.relevantForms;
 HIDE WINDOW relevantClassForms;
 
 //////////////// NAVIGATOR STATEMENT /////////////////

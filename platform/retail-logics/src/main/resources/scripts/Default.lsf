@@ -1,7 +1,7 @@
 //---------------------------------------------- Автоматическое заполнение -----------------------------------------------------//
 MODULE Default;
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
         Utils,
         Hierarchy,
 //        Historizable,

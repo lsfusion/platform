@@ -502,7 +502,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     T BL;
 
     public BaseLogicsModule(T BL, Logger logger) {
-        super("BaseLogicsModule");
+        super("System", "System");
         setBaseLogicsModule(this);
         this.BL = BL;
         this.logger = logger;
