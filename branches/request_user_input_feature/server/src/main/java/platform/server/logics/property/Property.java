@@ -282,7 +282,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         Type type = changeAction.property.getSimpleRequestInputType();
 
-        assert type instanceof DataClass;
+        assert type == null || type instanceof DataClass;
 
         return type;
     }
