@@ -21,7 +21,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     protected void createModules() throws IOException {
         super.createModules();
         sampleLM = new SampleLogicsModule(LM);
-        sampleLM.setRequiredModules(Arrays.asList("BaseLogicsModule"));
+        sampleLM.setRequiredModules(Arrays.asList("System"));
         addLogicsModule(sampleLM);
     }
 
