@@ -7349,7 +7349,7 @@ DESIGN shipment FROM DEFAULT{
             }
             NEW row2 {
             childConstraints = TO THE RIGHTBOTTOM;
-                title = 'Дополнительно';
+                title = 'Параметры';
                 ADD PROPERTY (nameRegisterCommitteeShipment(s));
                 ADD PROPERTY (nameWastageCommitteeShipment(s));
                 ADD PROPERTY (noteShipment(s));
@@ -7380,6 +7380,7 @@ DESIGN shipment FROM DEFAULT{
                 NEW headerCol1Row2 {
                     childConstraints = TO THE RIGHT;
                     ADD s.documentPrmGroup {
+                        title = 'Поставщик';
                         childConstraints = TO THE BOTTOM;
                     }
                     ADD s.shipmentOrderGroup {
@@ -8506,6 +8507,8 @@ dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceCha
 // todo: пока что сделал так, что можно выбрать только один экшн на изменение цены.
 //       Для расчета новых показателей цены, необходимо чтобы все поля были не пустые.....
 
+toShowWareUserPriceChange 'Показывать строки с посудой' (userPriceChange) = GROUP SUM 1 IF curWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
@@ -8521,11 +8524,10 @@ FORM userPriceChange 'Переоценка товаров'
                    curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
                    curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                    numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
-                   curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
-                   curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
-                   numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
+                   curWarePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), warePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   curNumberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), curValueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   numberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), valueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
-//    PROPERTIES (u, d)  newMarkupRetailPriceUserPriceChangeDetail, newDiscountRetailPriceUserPriceChangeDetail
 
     PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
                dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
