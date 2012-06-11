@@ -10285,28 +10285,126 @@ numeratorOrder(order) = numeratorObject(order) AND order IS order;
 
 //------------------- Статистические группы----------------------------//
 
-addStatisticGroupString 'Добавить стат. группы' = ACTION (sid, stringOne, stringTwo, groupStatic, numeric)  {
+addStatisticGroupString 'Добавить стат. группы' = ACTION (parentStat, nameStat, sidStat, groupStatic, value)  {
     ADDOBJ statisticGroup;
     FOR g == addedObject() DO {
-
-        SET parentStatisticGroup(g) <- sidToStatisticGroup(sid AS STRING[12]);
-        SET name(g) <-  stringOne AS STRING[110];
-        SET sidStatisticGroup(g) <- stringTwo AS STRING[12];
+        SET parentStatisticGroup(g) <- sidToStatisticGroup(parentStat AS STRING[12]);
+        SET name(g) <- nameStat AS STRING[110];
+        SET sidStatisticGroup(g) <- sidStat AS STRING[12];
         SET unitMeasureStatisticGroup(g) <- groupStatic AS groupStatic;
-        SET conversionFactorStatisticGroup(g) <- numeric AS NUMERIC[14,5];
+        SET conversionFactorStatisticGroup(g) <- value AS NUMERIC[14,5];
     }
 }
 
 fillStatisticGroupDefaultValues 'Заполнить значения стат групп по умолчанию' = ACTION () {
     EXEC addStatisticGroupString(' ', 'ВСЕ', 'ВСЕ', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('ВСЕ', 'Непродовольственные товары', '5', groupStatic.pounds, 1);
-    EXEC addStatisticGroupString('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.pounds, 1);
-
-    EXEC addStatisticGroupString('52.2', 'Фрукты', '52.21.10.100', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Овощи', '52.21.10.200', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.thing, 1);
-
+    EXEC addStatisticGroupString('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Фрукты', '52.21.10.100', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Овощи', '52.21.10.200', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.22.10', 'Продукты из мяса', '52.22.10.410', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.22.10', 'Консервы из мяса', '52.22.10.420', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Рыба, ракообразные и моллюски', '52.23.10', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.23.10', 'Консервы и пресервы из рыбы и  морепродуктов', '52.23.10.420', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Хлеб, пирожные и хлебобулочные изделия', '52.24.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Кондитерские изделия из сахара', '52.24.12', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Напитки, включая алкогольные', '52.25.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.25.10', 'Вино', '52.25.10.100', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.100', 'Вина виноградные', '52.25.10.110', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.100', 'Вина плодовые', '52.25.10.120', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.100', 'Вина игристые, включая шампанское', '52.25.10.130', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Водка', '52.25.10.200', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Коньяк, коньячные напитки и бренди', '52.25.10.300', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Пиво', '52.25.10.400', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Прочие алкогольные напитки', '52.25.10.500', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.500', 'Напитки слабоалкогольные', '52.25.10.510', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.500', 'Прочие алкогольные напитки, не включенные в другие группировки', '52.25.10.590', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Безалкогольные напитки', '52.25.21', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.25.21', 'Фруктовые и овощные соки', '52.25.21.100', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.25.21', 'Минеральная вода', '52.25.21.200', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.21', 'Безалкогольные напитки прочие', '52.25.21.300', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Табачные изделия', '52.26.10', groupStatic.thing, 1000);
+    EXEC addStatisticGroupString('52.2', 'Молочные продукты', '52.27.11.100', groupStatic.thing, 0);
+    EXEC addStatisticGroupString('52.27.11.100', 'Сыр', '52.27.11.110', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.27.11.100', 'Масло сливочное', '52.27.11.120', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Яйца', '52.27.11.200', groupStatic.thing, 1000);
+    EXEC addStatisticGroupString('52.2', 'Сушеные и консервированные орехи, офощи и фрукты', '52.27.12.100', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Чай, кофе, какао, специи', '52.27.12.200', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Пищевые масла и жиры', '52.27.12.300', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.27.12.300', 'Масла растительные', '52.27.12.310', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Мука', '52.27.12.400', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Соль', '52.27.12.500', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Сахар', '52.27.12.600', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Рис и прочие крупы', '52.27.12.700', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Рис', '52.27.12.710', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Овсяная крупа', '52.27.12.720', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Гречневая крупа', '52.27.12.730', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Лапша и прочие макаронные изделия', '52.27.12.800', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Прочие пищевые продукты', '52.27.12.900', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.27.12.900', 'Детское питание', '52.27.12.910', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('ВСЕ', 'Непродовольственные товары', '5', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Автомобили', '50.10.2', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Детали и принадлежности для автомобилей', '50.30.2', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Мотоциклы и относящиеся к ним детали и принадлежности', '50.40.20', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Моторное топливо', '50.50.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('50.50.10', 'Моторное топливо', '50.50.10.100', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Фармацевтические товары', '52.31.10', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Медицинские и ортопедические товары', '52.32.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Парфюмерные и косметические товары и туалетные принадлежности', '52.33.10', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Текстильные товары', '52.41.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Галантерейные товары', '52.41.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Меховая и кожаная одежда', '52.42.10.100', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Верхняя одежда', '52.42.10.200', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Нижнее белье', '52.42.10.300', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Спортивная одежда', '52.42.10.400', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Трикотажные изделия', '52.42.10.510', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Чулочно-носочные изделия', '52.42.10.520', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Головные уборы', '52.42.10.600', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Аксессуары для одежды', '52.42.10.700', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Обувь', '52.43.11', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Изделия из кожи и дорожные принадлежности', '52.43.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Бытовая мебель', '52.44.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Домашняя утварь, ножевые изделия, фаянсовая посуда, изделия из стекла, фарфора и керамики', '52.44.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Осветительные приборы', '52.44.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Портьеры, сетчатые занавеси и различные предметы домашнего обихода из текстильных материалов', '52.44.14', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Изделия из дерева, пробки и плетеные изделия', '52.44.15', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Бытовые неэлектрические приборы, изделия и оборудование, не включенные в другие группировки', '52.44.16', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Бытовые электрические приборы', '52.45.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.45.10', 'Холодильники и морозильники', '52.45.10.001', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.45.10', 'Стиральные машины', '52.45.10.002', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Аудио- и видеоаппаратура', '52.45.21', groupStatic.thing, 0);
+    EXEC addStatisticGroupString('52.45.21', 'Телевизоры', '52.45.21.210', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Аудио- и видеопленка с записями или без, кассеты и компакт-диски, цифровые видеодиски, грампластинки', '52.45.22', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Музыкальные инструменты и партитуры', '52.45.23', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Строительные материалы', '52.46', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('52.46', 'Скобяные товары', '52.46.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Краски, лаки и эмали, лакокрасочные материалы', '52.46.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Стекло', '52.46.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Материалы и оборудование для изготовления поделок в домашних условиях (для "умелых рук")', '52.46.14', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Санитарно-техническое оборудование', '52.46.15', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Строительные материалы, не включенные в другие группировки', '52.46.16', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Книги', '52.47.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Газеты и журналы', '52.47.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Канцелярские товары', '52.47.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Офисная мебель', '52.48.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Офисные машины и оборудование', '52.48.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Компьютеры и программное обеспечение, не приспособленное к индивидуальным требованиям заказчика', '52.48.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Фотоаппаратура, оптические и точные приборы и оборудование', '52.48.14', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Оборудование электросвязи', '52.48.15', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Часы и ювелирные изделия', '52.48.21', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Спортивные товары, включая велосипеды', '52.48.22', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Игры и игрушки', '52.48.23', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Чистящие средства, обои и напольные покрытия', '52.48.31', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.48.31', 'Синтетические моющие средства', '52.48.31.110', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('5', 'Цветы, растения, семена и удобрения', '52.48.32', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Домашние животные и корма для них', '52.48.33', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Сувениры, изделия кустарного промысла и предметы культового и религиозного назначения', '52.48.34', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Жидкое бытовое топливо, газ в баллонах, уголь, древесное топливо', '52.48.35', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Почтовые марки и монеты', '52.48.36', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Произведения искусства', '52.48.37', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Непродовольственные товары, не включенные в другие группировки', '52.48.38', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Подержанные товары', '52.50.1', groupStatic.thing, 1);
 }
 
 //------------------- Справочник норм естественной убыли----------------------------//
