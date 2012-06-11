@@ -220,7 +220,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
         try {
-            form.changeOrder(columnKey, modiType, new ClientGroupObjectValue());
+            form.changePropertyOrder(columnKey, modiType, new ClientGroupObjectValue());
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
@@ -370,7 +370,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         tableColumn.setPreferredWidth(pref);
     }
 
-    public void setCurrentObjects(final ClientGroupObjectValue objects) {
+    public void setCurrentPath(final ClientGroupObjectValue objects) {
         enumerateNodesDepthFirst(new NodeProccessor() {
             @Override
             public void processPath(TreePath nodePath) {
@@ -595,16 +595,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             //здесь немного запутанная схема...
             //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
             //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-            editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID);
+            editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, model.getValueAt(row, column));
             return editorComp != null;
         }
 
         return false;
-    }
-
-    @Override
-    public void setValueAt(Object aValue, int row, int column) {
-        Preconditions.checkState(false, "setValueAt shouldn't be called");
     }
 
     public boolean requestValue(ClientType valueType, Object oldValue) {
@@ -702,7 +697,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             sortableHeaderManager.changeOrder(property, modiType);
         } else {
             //меняем напрямую для верхних groupObjects
-            form.changeOrder(property, modiType, new ClientGroupObjectValue());
+            form.changePropertyOrder(property, modiType, new ClientGroupObjectValue());
         }
     }
 
@@ -738,6 +733,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 }
             }
         }
+    }
+
+    public ClientGroupObjectValue getCurrentPath() {
+        return currentPath;
     }
 
     private class GotNextCellAction extends AbstractAction {

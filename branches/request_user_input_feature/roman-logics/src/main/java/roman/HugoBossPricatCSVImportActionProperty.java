@@ -73,7 +73,7 @@ public class HugoBossPricatCSVImportActionProperty extends CustomReadValueAction
         }
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
+    protected DataClass getReadType() {
         return valueClass;
     }
 }

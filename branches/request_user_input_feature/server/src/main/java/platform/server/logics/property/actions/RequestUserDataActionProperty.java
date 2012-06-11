@@ -2,6 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.AnyValuePropertyHolder;
@@ -36,5 +37,10 @@ public class RequestUserDataActionProperty extends CustomActionProperty {
             requestCanceledProperty.change(null, context);
             requestedValueProperty.write(dataClass, userValue.getValue(), context);
         }
+    }
+
+    @Override
+    public Type getSimpleRequestInputType() {
+        return dataClass;
     }
 }

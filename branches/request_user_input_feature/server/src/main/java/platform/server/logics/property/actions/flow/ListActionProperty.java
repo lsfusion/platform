@@ -1,12 +1,15 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
-import platform.server.logics.BusinessLogics;
+import platform.server.data.type.Type;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static platform.base.BaseUtils.reverse;
 
@@ -51,5 +54,23 @@ public class ListActionProperty extends KeepContextActionProperty {
         }
 
         return result;
+    }
+
+    @Override
+    public Type getSimpleRequestInputType() {
+        Type type = null;
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+            Type actionRequestType = action.property.getSimpleRequestInputType();
+            if (actionRequestType != null) {
+                if (type == null) {
+                    type = actionRequestType;
+                } else {
+                    if (type != null && type != actionRequestType) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return type;
     }
 }

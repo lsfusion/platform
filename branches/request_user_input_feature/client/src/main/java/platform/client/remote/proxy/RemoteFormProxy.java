@@ -2,10 +2,8 @@ package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
 import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ServerResponse;
-import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -53,10 +51,8 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    @Override
     public Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
-        Map<String, String> result = target.getReportPath(toExcel, groupId, userPreferences);
-        return result;
+        return target.getReportPath(toExcel, groupId, userPreferences);
     }
 
     public byte[] getReportHierarchyByteArray() throws RemoteException {
@@ -88,11 +84,11 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    @PendingRemoteMethod
-    public void changePageSize(int groupID, Integer pageSize) throws RemoteException {
+    public ServerResponse changePageSize(int groupID, Integer pageSize) throws RemoteException {
         logRemoteMethodStartVoidCall("changePageSize");
-        target.changePageSize(groupID, pageSize);
+        ServerResponse result = target.changePageSize(groupID, pageSize);
         logRemoteMethodEndVoidCall("changePageSize");
+        return result;
     }
 
     @PendingRemoteMethod
@@ -102,25 +98,25 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("gainedFocus");
     }
 
-    @PendingRemoteMethod
-    public void setTabVisible(int tabpane, int tab) throws RemoteException {
+    public ServerResponse setTabVisible(int tabPaneID, int tabIndex) throws RemoteException {
         logRemoteMethodStartVoidCall("setTabVisible");
-        target.setTabVisible(tabpane, tab);
+        ServerResponse result = target.setTabVisible(tabPaneID, tabIndex);
         logRemoteMethodEndVoidCall("setTabVisible");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void changeGroupObject(int groupID, byte[] value) throws RemoteException {
+    public ServerResponse changeGroupObject(int groupID, byte[] value) throws RemoteException {
         logRemoteMethodStartCall("changeGroupObject");
-        target.changeGroupObject(groupID, value);
+        ServerResponse result = target.changeGroupObject(groupID, value);
         logRemoteMethodEndVoidCall("changeGroupObject");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void changeGroupObject(int groupID, byte changeType) throws RemoteException {
+    public ServerResponse changeGroupObject(int groupID, byte changeType) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGroupObject");
-        target.changeGroupObject(groupID, changeType);
+        ServerResponse result = target.changeGroupObject(groupID, changeType);
         logRemoteMethodEndVoidCall("changeGroupObject");
+        return result;
     }
 
     public ServerResponse pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException {
@@ -137,46 +133,39 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    @PendingRemoteMethod
-    public void changeGridClass(int objectID, int idClass) throws RemoteException {
+    public ServerResponse changeGridClass(int objectID, int idClass) throws RemoteException {
         logRemoteMethodStartVoidCall("changeGridClass");
-        target.changeGridClass(objectID, idClass);
+        ServerResponse result = target.changeGridClass(objectID, idClass);
         logRemoteMethodEndVoidCall("changeGridClass");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void changeClassView(int groupID, ClassViewType classView) throws RemoteException {
+    public ServerResponse changeClassView(int groupID, ClassViewType classView) throws RemoteException {
         logRemoteMethodStartVoidCall("changeClassView");
-        target.changeClassView(groupID, classView);
+        ServerResponse result = target.changeClassView(groupID, classView);
         logRemoteMethodEndVoidCall("changeClassView");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
+    public ServerResponse changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartVoidCall("changePropertyOrder");
-        target.changePropertyOrder(propertyID, modiType, columnKeys);
-        logRemoteMethodEndVoidCall("changePropertyOrder");
+        ServerResponse result = target.changePropertyOrder(propertyID, modiType, columnKeys);
+        logRemoteMethodEndCall("changePropertyOrder", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void clearUserFilters() throws RemoteException {
-        logRemoteMethodStartVoidCall("clearUserFilters");
-        target.clearUserFilters();
-        logRemoteMethodEndVoidCall("clearUserFilters");
+    public ServerResponse setUserFilters(byte[][] filters) throws RemoteException {
+        logRemoteMethodStartVoidCall("setUserFilters");
+        ServerResponse result = target.setUserFilters(filters);
+        logRemoteMethodEndCall("setUserFilters", result);
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void addFilter(byte[] state) throws RemoteException {
-        logRemoteMethodStartVoidCall("addFilter");
-        target.addFilter(state);
-        logRemoteMethodEndVoidCall("addFilter");
-    }
-
-    @PendingRemoteMethod
-    public void setRegularFilter(int groupID, int filterID) throws RemoteException {
+    public ServerResponse setRegularFilter(int groupID, int filterID) throws RemoteException {
         logRemoteMethodStartVoidCall("setRegularFilter");
-        target.setRegularFilter(groupID, filterID);
-        logRemoteMethodEndVoidCall("setRegularFilter");
+        ServerResponse result = target.setRegularFilter(groupID, filterID);
+        logRemoteMethodEndCall("setRegularFilter", result);
+        return result;
     }
 
     public int countRecords(int groupObjectID) throws RemoteException {
@@ -232,30 +221,37 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    @PendingRemoteMethod
-    public void expandGroupObject(int groupId, byte[] treePath) throws RemoteException {
+    public ServerResponse expandGroupObject(int groupId, byte[] treePath) throws RemoteException {
         logRemoteMethodStartVoidCall("expandTreeNode");
-        target.expandGroupObject(groupId, treePath);
+        ServerResponse result = target.expandGroupObject(groupId, treePath);
         logRemoteMethodEndVoidCall("expandTreeNode");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void collapseGroupObject(int groupId, byte[] bytes) throws RemoteException {
+    public ServerResponse collapseGroupObject(int groupId, byte[] bytes) throws RemoteException {
         logRemoteMethodStartVoidCall("collapseTreeNode");
-        target.expandGroupObject(groupId, bytes);
+        ServerResponse result = target.collapseGroupObject(groupId, bytes);
         logRemoteMethodEndVoidCall("collapseTreeNode");
+        return result;
     }
 
-    @PendingRemoteMethod
-    public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
+    public ServerResponse moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
         logRemoteMethodStartVoidCall("moveGroupObject");
-        target.moveGroupObject(parentGroupId, parentKey, childGroupId, childKey, index);
+        ServerResponse result = target.moveGroupObject(parentGroupId, parentKey, childGroupId, childKey, index);
         logRemoteMethodEndVoidCall("moveGroupObject");
+        return result;
     }
 
     public ServerResponse executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
         ServerResponse result = target.executeEditAction(propertyID, columnKey, actionSID);
+        logRemoteMethodEndCall("getPropertyChangeType", result);
+        return result;
+    }
+
+    public ServerResponse changeProperty(int propertyID, byte[] fullKey, byte[] value) throws RemoteException {
+        logRemoteMethodStartCall("executeEditAction");
+        ServerResponse result = target.changeProperty(propertyID, fullKey, value);
         logRemoteMethodEndCall("getPropertyChangeType", result);
         return result;
     }
@@ -272,27 +268,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         ServerResponse result = target.throwInServerInvocation(clientException);
         logRemoteMethodEndCall("throwInServerInvocation", result);
         return result;
-    }
-
-    @NonFlushRemoteMethod
-    private RemoteDialogInterface createDialog(String methodName, Object... args) throws RemoteException {
-        List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteDialogProxy.class);
-
-        MethodInvocation creator = MethodInvocation.create(this.getClass(), methodName, args);
-
-        Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
-
-        RemoteDialogInterface remoteDialog = (RemoteDialogInterface) result[0];
-        if (remoteDialog == null) {
-            return null;
-        }
-
-        RemoteDialogProxy proxy = new RemoteDialogProxy(remoteDialog);
-        for (int i = 0; i < invocations.size(); ++i) {
-            proxy.setProperty(invocations.get(i).name, result[i + 1]);
-        }
-
-        return proxy;
     }
 
     public String getRemoteActionMessage() throws RemoteException {

@@ -38,7 +38,7 @@ public abstract class PausableInvocation<T, E extends Exception> {
                 try {
                     runInvocation();
                     invocationResult = InvocationResult.FINISHED;
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     invocationResult = new InvocationResult(t);
                 }
 
@@ -60,7 +60,7 @@ public abstract class PausableInvocation<T, E extends Exception> {
     /**
      * рабочий поток
      */
-    protected abstract void runInvocation() throws Throwable;
+    protected abstract void runInvocation() throws Exception;
 
     /**
      * основной поток

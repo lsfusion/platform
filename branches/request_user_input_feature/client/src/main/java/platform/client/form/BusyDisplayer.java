@@ -1,58 +1,76 @@
 package platform.client.form;
 
+import platform.base.Provider;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
-import platform.interop.RemoteContextInterface;
-import platform.interop.remote.PendingRemote;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
-import java.rmi.RemoteException;
+import java.util.Timer;
 import java.util.TimerTask;
 
-public class BlockingTask extends TimerTask {
-    Image image;
-    private boolean first = true;
-    private int messagePeriod;
-    PendingRemote target;
+public class BusyDisplayer extends TimerTask {
+    public static int INITIAL_WAIT_PERIOD = 1000;
+    public static int REPAINT_PERIOD = 200;
+    public static int UPDATE_PERIOD = 1000;
 
-    public BlockingTask(PendingRemote target, int messagePeriod) {
-        this.target = target;
-        this.messagePeriod = messagePeriod;
+    private Timer executionTimer;
+    private Window drawingWindow;
+    private final Provider<String> serverMessageProvider;
+
+    private long lastUpdateTime = -UPDATE_PERIOD;
+    private String currentMessage = null;
+    private int segmentCount = 7;
+    private int count = segmentCount;
+
+
+    public BusyDisplayer(Provider<String> serverMessageProvider) {
+        this.serverMessageProvider = serverMessageProvider;
+    }
+
+    public void start() {
+        drawingWindow = SwingUtils.getActiveVisibleWindow();
+        if (drawingWindow != null) {
+            drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        }
+
+        executionTimer = new Timer();
+        executionTimer.schedule(this, INITIAL_WAIT_PERIOD, REPAINT_PERIOD);
+    }
+
+    public void stop() {
+        executionTimer.cancel();
+        if (drawingWindow != null) {
+            drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            drawingWindow.repaint();
+        }
     }
 
     @Override
     public void run() {
-        Window window = SwingUtils.getActiveVisibleWindow();
-        if (window != null) {
-            Graphics gr = window.getGraphics();
-            if (gr != null) {
-                if (image == null) {
-                    //    image = blur(blur(getScreen(window)));
-                    image = darken(getScreen(window));
-                }
-                if (first) {
-                    gr.drawImage(image, 0, 0, null);
-                    first = false;
-                }
-                try {
-                    drawProgressBar(window);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (drawingWindow != null) {
+            initializeIfNeeded(drawingWindow);
+            drawProgressBar(drawingWindow);
         }
     }
 
-    private long previousTime = 0;
-    private String actionMessage = null;
-    private int segmentCount = 7;
-    private int count = segmentCount;
+    private boolean initialized = false;
+    public void initializeIfNeeded(Window window) {
+        if (!initialized) {
+            Graphics gr = window.getGraphics();
+            if (gr != null) {
+//                Image image = blur(blur(getScreen(window)));
+                Image image = darken(getScreen(window));
+                gr.drawImage(image, 0, 0, null);
+            }
+            initialized = true;
+        }
+    }
 
-    private void drawProgressBar(Window window) throws RemoteException {
+    private void drawProgressBar(Window window) {
         Component canvas = null;
         if (window instanceof JDialog) {
             canvas = ((JDialog) window).getRootPane();
@@ -77,12 +95,10 @@ public class BlockingTask extends TimerTask {
             int loadingTextWidth = gr.getFontMetrics(loadingTextFont).stringWidth(loadingText);
             int loadingTextHeight = gr.getFontMetrics(loadingTextFont).getHeight();
 
-            int actionMessageHeight = gr.getFontMetrics(actionMessageFont).getHeight();
             long currentTime = System.currentTimeMillis();
-            if (target instanceof RemoteContextInterface && (previousTime == 0 || currentTime - previousTime >= messagePeriod)) {
-                actionMessage = ((RemoteContextInterface) target).getRemoteActionMessage();
-                //actionMessage = actionMessage.concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage);
-                previousTime = currentTime;
+            if (currentTime - lastUpdateTime >= UPDATE_PERIOD) {
+                currentMessage = serverMessageProvider.get();
+                lastUpdateTime = currentTime;
             }
 
             int barWidth = maxSegmentCount * segmentWidth + (maxSegmentCount - 1) * (segmentGap);
@@ -112,9 +128,9 @@ public class BlockingTask extends TimerTask {
             gr.setFont(loadingTextFont);
             gr.drawString(loadingText, rectX + (rectWidth - loadingTextWidth) / 2, rectY + loadingTextHeight);
 
-            if (actionMessage != null) {
+            if (currentMessage != null) {
                 gr.setFont(actionMessageFont);
-                String[] splittedActionMessage = actionMessage.split(" ");
+                String[] splittedActionMessage = currentMessage.split(" ");
                 String output = "";
                 int maxWidth = messageRectWidth-10;
                 int outputWidth = 0;

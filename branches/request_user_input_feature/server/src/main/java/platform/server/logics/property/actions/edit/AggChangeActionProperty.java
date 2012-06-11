@@ -15,13 +15,10 @@ import platform.server.form.instance.DialogInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.flow.AroundAspectActionProperty;
-import platform.server.logics.property.actions.flow.FlowActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +35,12 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
         super(sID, caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
+    }
+
+    @Override
+    public Type getSimpleRequestInputType() {
+        Type type = aggProp.getType();
+        return type instanceof DataClass ? type : null;
     }
 
     @Override

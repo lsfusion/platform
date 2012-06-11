@@ -1,6 +1,9 @@
 package platform.client;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import org.jdesktop.swingx.SwingXUtilities;
+import platform.base.ERunnable;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.TableTransferHandler;
 import platform.interop.KeyStrokes;
@@ -13,6 +16,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static java.lang.Math.max;
@@ -48,6 +52,10 @@ public class SwingUtils {
         return (Window) comp;
     }
 
+    public static void assertDispatchThread() {
+        Preconditions.checkState(EventQueue.isDispatchThread(), "should be executed in dispatch thread");
+    }
+
     public static Point computeAbsoluteLocation(Component comp) {
         Point result = new Point(0, 0);
         SwingUtilities.convertPointToScreen(result, comp);
@@ -58,6 +66,32 @@ public class SwingUtils {
         Point np = new Point(p);
         np.translate(dx, dy);
         return np;
+    }
+
+    public static void invokeLater(final ERunnable runnable) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    Throwables.propagate(t);
+                }
+            }
+        });
+    }
+
+    public static void invokeAndWait(final ERunnable runnable) throws InvocationTargetException, InterruptedException {
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    Throwables.propagate(t);
+                }
+            }
+        });
     }
 
     private final static WeakHashMap<String, SingleActionTimer> timers = new WeakHashMap<String, SingleActionTimer>();

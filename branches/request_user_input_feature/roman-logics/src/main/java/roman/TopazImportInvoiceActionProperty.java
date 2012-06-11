@@ -49,7 +49,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
 
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
+    protected DataClass getReadType() {
         return CustomStaticFormatFileClass.getDefinedInstance(true, "Файл Excel (*.xls)", "xls *.*");
     }
 }

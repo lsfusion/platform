@@ -88,7 +88,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType() {
-        return getType();
+        return entity.propertyObject.property.getChangeType();
     }
 
     public String getSID() {
@@ -98,7 +98,6 @@ public class PropertyDrawView extends ComponentView {
     public String getDefaultCaption() {
         return entity.propertyObject.property.caption;
     }
-
 
     // предполагается, что для свойств, для которых заголовок динамический (например, группы в колонки),
     // getCaption должно возвращать null
@@ -202,7 +201,12 @@ public class PropertyDrawView extends ComponentView {
 
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
-        TypeSerializer.serializeType(outStream, getChangeType());
+
+        Type changeType = getChangeType();
+        outStream.writeBoolean(changeType != null);
+        if (changeType != null) {
+            TypeSerializer.serializeType(outStream, changeType);
+        }
 
         pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, entity.propertyObject.property.toolTip);

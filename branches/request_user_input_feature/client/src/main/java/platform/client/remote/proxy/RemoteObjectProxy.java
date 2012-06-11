@@ -2,19 +2,21 @@ package platform.client.remote.proxy;
 
 import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
-import platform.client.SwingUtils;
-import platform.client.form.BlockingTask;
+import platform.base.EProvider;
+import platform.client.form.BusyDisplayer;
+import platform.interop.RemoteContextInterface;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 public abstract class RemoteObjectProxy<T extends PendingRemote> implements PendingRemote {
@@ -40,7 +42,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        Object result = executeBlocked(invocations, new Callable<Object>() {
+        Object result = executeBlocked(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 return target.execute(invocations);
@@ -62,7 +64,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        Object[] result = executeBlocked(invocations, new Callable<Object[]>() {
+        Object[] result = executeBlocked(new Callable<Object[]>() {
             @Override
             public Object[] call() throws Exception {
                 return target.createAndExecute(creator, invocations);
@@ -74,35 +76,22 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     }
 
     @NonFlushRemoteMethod
-    private <R> R executeBlocked(MethodInvocation[] invocations, Callable<R> remoteExecute) {
-        boolean screenBlock = false;
-        for (MethodInvocation invocation : invocations) {
-            screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
-        }
+    private <R> R executeBlocked(Callable<R> remoteExecute) {
+        BusyDisplayer busyDisplayer = new BusyDisplayer(new EProvider<String>() {
+            @Override
+            public String getExceptionally() throws RemoteException {
+                return ((RemoteContextInterface) target).getRemoteActionMessage();
+            }
+        });
+        busyDisplayer.start();
 
-        Window window = SwingUtils.getActiveVisibleWindow();
-        if (window != null) {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        }
-
-        TimerTask task = new BlockingTask(target, 1000);
-        Timer timer = new Timer();
-        timer.schedule(task, screenBlock ? 0 : 2500, 200);
-        R result;
         try {
-            result = remoteExecute.call();
+            return remoteExecute.call();
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            timer.cancel();
+            busyDisplayer.stop();
         }
-
-        if (window != null) {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            window.repaint();
-        }
-
-        return result;
     }
 
     @NonFlushRemoteMethod

@@ -11,7 +11,7 @@ import platform.client.form.SimplexLayout;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.navigator.ClientNavigatorWindow;
-import platform.client.remote.PendingExecutionAspect;
+import platform.client.remote.ImmutableProxyMethodsAspect;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
@@ -52,7 +52,7 @@ import static platform.client.StartupProperties.*;
 public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
-    private static PendingExecutionAspect pendingAspect = Aspects.aspectOf(PendingExecutionAspect.class);
+    private static ImmutableProxyMethodsAspect immutablesAspect = Aspects.aspectOf(ImmutableProxyMethodsAspect.class);
 
     public static final String PLATFORM_TITLE = "LS Fusion";
     private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
@@ -441,7 +441,7 @@ public class Main {
     }
 
     private static void clean() {
-        pendingAspect.startRestarting();
+        immutablesAspect.startRestarting();
 
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -481,7 +481,7 @@ public class Main {
 
         System.gc();
 
-        pendingAspect.stopRestarting();
+        immutablesAspect.stopRestarting();
     }
 
     static class DaemonTask extends TimerTask {

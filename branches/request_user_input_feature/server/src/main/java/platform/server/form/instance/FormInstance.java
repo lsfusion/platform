@@ -530,8 +530,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         setRegularFilter(filterGroup, filterGroup.getFilter(filterId));
     }
 
-    public void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
-
+    private void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
         RegularFilterInstance prevFilter = regularFilterValues.get(filterGroup);
         if (prevFilter != null)
             prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);

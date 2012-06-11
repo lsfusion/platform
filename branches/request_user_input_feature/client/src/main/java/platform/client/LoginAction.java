@@ -8,7 +8,9 @@ import platform.interop.exceptions.InternalServerException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
-import java.rmi.*;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.UnknownHostException;
 import java.util.concurrent.CancellationException;
 
 import static platform.client.ClientResourceBundle.getString;

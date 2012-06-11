@@ -14,6 +14,7 @@ import platform.client.form.ClientNavigatorDialog;
 import platform.client.form.classes.ClassDialog;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.remote.proxy.RemoteDialogProxy;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.KeyStrokes;
 import platform.interop.action.*;
@@ -21,7 +22,6 @@ import platform.interop.exceptions.LoginException;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.ServerResponse;
-import platform.interop.form.UserInputResult;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -138,7 +138,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 if (!action.isModal) {
                     Main.frame.runForm(remoteForm);
                 } else {
-                    new ClientModalForm(Main.frame, remoteForm, action.newSession).showDialog(false);
+                    new ClientModalForm(Main.frame, remoteForm).showDialog(false);
                 }
             }
         } catch (Exception e) {
@@ -150,7 +150,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         AWTEvent currentEvent = EventQueue.getCurrentEvent();
 
         Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        RemoteDialogInterface dialog = action.dialog;
+
+        RemoteDialogInterface dialog = new RemoteDialogProxy(action.dialog);
+
         ClientDialog dlg;
         if (KeyStrokes.isSpaceEvent(currentEvent) || KeyStrokes.isObjectEditorDialogEvent(currentEvent)) {
             dlg = new ClientNavigatorDialog(owner, dialog, true);
@@ -427,8 +429,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public Object execute(RequestUserInputClientAction action) {
-        //по умолчанию всегда canceled
-        return UserInputResult.canceled;
+        throw new UnsupportedOperationException("Request user input action is not supported for this dispatcher");
     }
 
     @Override

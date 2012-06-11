@@ -24,33 +24,13 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    protected void preDispatchResponse(ServerResponse serverResponse) {
-        setFormBusy(true);
-    }
-
-    @Override
-    protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
-        setFormBusy(false);
-    }
-
-    @Override
     protected void handleClientActionException(Exception ex) throws IOException {
         getFormController().throwInServerInvocation(ex);
     }
 
     @Override
-    protected void handleDispatchException(Exception e) throws IOException {
-        setFormBusy(false);
-        super.handleDispatchException(e);
-    }
-
-    @Override
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
         return getFormController().continueServerInvocation(actionResults);
-    }
-
-    private void setFormBusy(boolean busy) {
-        getFormController().setBusy(busy);
     }
 
     public void execute(PrintPreviewClientAction action) {
@@ -71,7 +51,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(ProcessFormChangesClientAction action) {
         try {
-            getFormController().applyFormChanges(action.formChanges);
+            getFormController().applyFormChanges(action.indexStamp, action.formChanges);
         } catch (IOException e) {
             Throwables.propagate(e);
         }

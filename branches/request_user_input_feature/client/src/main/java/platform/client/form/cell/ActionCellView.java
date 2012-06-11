@@ -61,7 +61,7 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (form.commitCurrentEditing()) {
-                    editDispatcher.executePropertyEditAction(key, columnKey, ServerResponse.CHANGE);
+                    editDispatcher.executePropertyEditAction(key, columnKey, ServerResponse.CHANGE, null);
                 }
             }
         });

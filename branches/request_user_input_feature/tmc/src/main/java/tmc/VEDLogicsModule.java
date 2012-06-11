@@ -4315,7 +4315,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
 
@@ -4376,7 +4376,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4436,7 +4436,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
@@ -4509,7 +4509,7 @@ public class VEDLogicsModule extends LogicsModule {
             context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }

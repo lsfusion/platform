@@ -36,6 +36,19 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
     }
 
     @Override
+    public Type getSimpleRequestInputType() {
+        Type type = getImplementType();
+        if (type instanceof DataClass) {
+            return type;
+        }
+        return null;
+    }
+
+    private Type getImplementType() {
+        return implement.property.getType();
+    }
+
+    @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         Map<ClassPropertyInterface,DataObject> keys = context.getKeys();
@@ -45,7 +58,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
         final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 
         if (context.getSecurityPolicy().property.change.checkPermission(implement.property)) {
-            Type changeType = implement.property.getType();
+            Type changeType = getImplementType();
 
             if (formInstance.entity.isActionOnChange(implement.property) || propertyValues.canBeChanged(modifier)) {
                 ObjectValue changeValue;
@@ -83,7 +96,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
             }
         }
 
-        context.pendUserInteraction(EditNotPerformedClientAction.instance);
+        context.delayUserInteraction(EditNotPerformedClientAction.instance);
     }
 //            if(GROUP_CHANGE.equals(editActionSID))
 //                implement.execute(getGroupChange(groupObject, modifier, keys, objectInstances, changeValue), context.getEnv(), objectInstances);

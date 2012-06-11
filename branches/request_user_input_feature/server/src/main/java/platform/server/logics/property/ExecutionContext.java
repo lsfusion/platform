@@ -191,7 +191,7 @@ public class ExecutionContext<P extends PropertyInterface> {
         DialogInstance createDialog() throws SQLException;
     }
 
-    public void pendUserInteraction(ClientAction action) {
+    public void delayUserInteraction(ClientAction action) {
         Context.context.get().delayUserInteraction(action);
     }
 

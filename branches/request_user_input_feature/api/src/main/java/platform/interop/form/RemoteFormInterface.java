@@ -19,55 +19,57 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     // синхронное общение с сервером
 
     public ServerResponse getRemoteChanges() throws RemoteException;
+
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
+
     public ServerResponse throwInServerInvocation(Exception clientException) throws RemoteException;
 
-    // события
+    // события формы
 
-    // формы
     void gainedFocus() throws RemoteException;
 
-    void setTabVisible(int tabpane, int tab) throws RemoteException;
+    ServerResponse setTabVisible(int tabPaneID, int tabIndex) throws RemoteException;
 
     ServerResponse closedPressed() throws RemoteException;
 
     ServerResponse okPressed() throws RemoteException;
 
     // события групп объектов
-    void changeGroupObject(int groupID, byte[] value) throws RemoteException;
 
-    void changePageSize(int groupID, Integer pageSize) throws RemoteException; // размер страницы
+    ServerResponse changeGroupObject(int groupID, byte[] value) throws RemoteException;
 
-    void changeGroupObject(int groupID, byte changeType) throws RemoteException; // скроллинг
+    ServerResponse changePageSize(int groupID, Integer pageSize) throws RemoteException; // размер страницы
+
+    ServerResponse changeGroupObject(int groupID, byte changeType) throws RemoteException; // скроллинг
 
     ServerResponse pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException; // paste подряд
 
     ServerResponse pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException; // paste выборочно
 
-    void changeClassView(int groupID, ClassViewType classView) throws RemoteException;
+    ServerResponse changeClassView(int groupID, ClassViewType classView) throws RemoteException;
 
     // деревья
 
-    void expandGroupObject(int groupId, byte[] bytes) throws RemoteException;
+    ServerResponse expandGroupObject(int groupId, byte[] bytes) throws RemoteException;
 
-    void collapseGroupObject(int groupId, byte[] bytes) throws RemoteException;
+    ServerResponse collapseGroupObject(int groupId, byte[] bytes) throws RemoteException;
 
-    void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
+    ServerResponse moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
     // свойства
-    public ServerResponse executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
+    ServerResponse executeEditAction(int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
+
+    ServerResponse changeProperty(int propertyID, byte[] fullKey, byte[] value) throws RemoteException;
 
     // фильтры / порядки
 
-    void changeGridClass(int objectID,int idClass) throws RemoteException;
+    ServerResponse changeGridClass(int objectID, int idClass) throws RemoteException;
 
-    void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
+    ServerResponse changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 
-    void clearUserFilters() throws RemoteException;
+    ServerResponse setUserFilters(byte[][] filters) throws RemoteException;
 
-    void addFilter(byte[] state) throws RemoteException;
-
-    void setRegularFilter(int groupID, int filterID) throws RemoteException;
+    ServerResponse setRegularFilter(int groupID, int filterID) throws RemoteException;
 
     // отчеты
 

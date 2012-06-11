@@ -1553,7 +1553,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.fileProperty = fileProperty;
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return (FileClass) fileProperty.property.getType();
         }
 

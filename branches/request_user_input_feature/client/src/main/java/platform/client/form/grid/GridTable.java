@@ -252,7 +252,7 @@ public class GridTable extends ClientPropertyTable {
 
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
         try {
-            form.changeOrder(columnKey.first, modiType, columnKey.second);
+            form.changePropertyOrder(columnKey.first, modiType, columnKey.second);
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException(getString("errors.error.changing.sorting"), e);
@@ -374,38 +374,27 @@ public class GridTable extends ClientPropertyTable {
         previousSelectedRow = getCurrentRow();
     }
 
-    @Override
-    protected boolean trySelectCell(int row, int column, EventObject e) {
-        if (row < 0 || row >= getRowCount()) {
-            return false;
-        }
-
-        ClientGroupObjectValue objectToSelect = rowKeys.get(row);
-        changeCurrentObject(objectToSelect);
-
-        //начинаем редактирование, если получилось выделить нужный объект
-        return currentObject.equals(objectToSelect);
-    }
-
     private void changeCurrentObjectLater() {
-        final ClientGroupObjectValue changeObject = getSelectedObject();
+        final ClientGroupObjectValue selectedObject = getSelectedObject();
+        if (!currentObject.equals(selectedObject)) {
+            setCurrentObject(selectedObject);
 
-        if (changeObject != null) {
-            SwingUtils.invokeLaterSingleAction(
-                    groupObject.getActionID(),
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent ae) {
-                            changeCurrentObject(changeObject);
-                        }
-                    }, 50);
+            if (selectedObject != null) {
+                SwingUtils.invokeLaterSingleAction(
+                        groupObject.getActionID(),
+                        new ActionListener() {
+                            public void actionPerformed(ActionEvent ae) {
+                                changeCurrentObject(selectedObject);
+                            }
+                        }, 50);
+            }
         }
     }
 
-    private void changeCurrentObject(ClientGroupObjectValue newCurrentObject) {
-        if (!currentObject.equals(newCurrentObject)) {
+    private void changeCurrentObject(ClientGroupObjectValue selectedObject) {
+        if (currentObject.equals(selectedObject)) {
             try {
-                selectObject(newCurrentObject);
-                form.changeGroupObject(groupObject, newCurrentObject);
+                form.changeGroupObject(groupObject, selectedObject);
             } catch (IOException ioe) {
                 throw new RuntimeException(getString("errors.error.changing.current.object"), ioe);
             }
@@ -531,10 +520,20 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    public void selectObject(ClientGroupObjectValue value) {
+    private void setCurrentObject(ClientGroupObjectValue value) {
         if (rowKeys.contains(value)) {
             currentObject = value;
         }
+    }
+
+    public void setCurrentObjectFromServer(ClientGroupObjectValue value) {
+        if (!rowKeys.contains(currentObject)) {
+            currentObject = value;
+        }
+    }
+
+    public ClientGroupObjectValue getCurrentObject() {
+        return currentObject;
     }
 
     @Override
@@ -922,7 +921,7 @@ public class GridTable extends ClientPropertyTable {
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
-                    int currRow = getSelectedRow();
+                    int currRow = getCurrentRow();
                     if (currRow != -1) {
                         Rectangle viewRect = pane.getViewport().getViewRect();
                         int firstRow = rowAtPoint(new Point(0, viewRect.y + getRowHeight() - 1));
@@ -1087,13 +1086,12 @@ public class GridTable extends ClientPropertyTable {
                 } else if (!rowKeys.isEmpty()) {
                     switch (direction) {
                         case HOME:
-                            selectObject(rowKeys.get(0));
+                            selectRow(0);
                             break;
                         case END:
-                            selectObject(rowKeys.get(rowKeys.size() - 1));
+                            selectRow(rowKeys.size() - 1);
                             break;
                     }
-                    updateTable();
                 }
             } catch (IOException ioe) {
                 throw new RuntimeException(getString("errors.error.moving.to.the.node"), ioe);

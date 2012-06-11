@@ -2,6 +2,7 @@ package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
@@ -36,6 +37,11 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         }
         action.property.execute(context.override(readValues, action.mapping));
         return FlowResult.FINISH;
+    }
+
+    @Override
+    public Type getSimpleRequestInputType() {
+        return action.property.getSimpleRequestInputType();
     }
 
     public Set<ActionProperty> getDependActions() {

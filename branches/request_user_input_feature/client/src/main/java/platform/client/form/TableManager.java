@@ -24,12 +24,11 @@ public class TableManager {
     }
 
     public boolean commitCurrentEditing() {
-        return commitCurrentEditing(false) && !form.isBusy();
+        return commitCurrentEditing(false);
     }
 
     public void commitOrCancelCurrentEditing() {
         commitCurrentEditing(true);
-        assert !form.isBusy():"commitOrCancelCurrentEditing() should make form not busy!";
     }
 
     private boolean commitCurrentEditing(boolean cancelIfCantStop) {

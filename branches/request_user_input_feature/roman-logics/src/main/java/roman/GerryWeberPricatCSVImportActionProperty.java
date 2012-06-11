@@ -83,7 +83,7 @@ public class GerryWeberPricatCSVImportActionProperty extends CustomReadValueActi
     }
 
     @Override
-    protected DataClass getReadType(ExecutionContext context) {
+    protected DataClass getReadType() {
         return valueClass;
     }
 }

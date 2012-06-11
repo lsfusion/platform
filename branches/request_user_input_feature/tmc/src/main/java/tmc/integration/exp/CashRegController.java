@@ -427,7 +427,7 @@ public class CashRegController {
             this.type = command;
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return DoubleClass.instance;
         }
 

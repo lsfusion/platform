@@ -32,8 +32,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
-    private ClientGroupObjectValue currentObject;
-
     public ClassViewType classView = ClassViewType.HIDE;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
@@ -124,7 +122,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         if (fc.objects.containsKey(groupObject)) {
-            setCurrentGroupObject(fc.objects.get(groupObject));
+            setCurrentObject(fc.objects.get(groupObject));
         }
 
         // Затем их свойства
@@ -243,10 +241,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         panelProperties.remove(property);
     }
 
-    public ClientGroupObjectValue getCurrentObject() {
-        return currentObject;
-    }
-
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
         grid.setGridObjects(gridObjects);
 
@@ -256,9 +250,12 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
-    public void setCurrentGroupObject(ClientGroupObjectValue value) {
-        currentObject = value;
-        grid.selectObject(currentObject);
+    public void setCurrentObject(ClientGroupObjectValue value) {
+        grid.setCurrentObject(value);
+    }
+
+    public ClientGroupObjectValue getCurrentObject() {
+        return grid != null ? grid.getCurrentObject() : null;
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {

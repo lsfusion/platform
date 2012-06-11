@@ -21,8 +21,10 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GridController {
 
@@ -128,7 +130,7 @@ public class GridController {
                         public void actionPerformed(ActionEvent e) {
                             try {
                                 showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
-                            } catch (IOException ex) {
+                            } catch (Exception ex) {
                                 throw new RuntimeException(ex);
                             }
                         }
@@ -152,7 +154,7 @@ public class GridController {
                                 } else {
                                     showPopupMenu(caption, null);
                                 }
-                            } catch (IOException ex) {
+                            } catch (Exception ex) {
                                 throw new RuntimeException(ex);
                             }
                         }
@@ -333,8 +335,12 @@ public class GridController {
         table.updateRowForegroundValues(rowForeground);
     }
 
-    public void selectObject(ClientGroupObjectValue currentObject) {
-        table.selectObject(currentObject);
+    public void setCurrentObject(ClientGroupObjectValue currentObject) {
+        table.setCurrentObjectFromServer(currentObject);
+    }
+
+    public ClientGroupObjectValue getCurrentObject() {
+        return table.getCurrentObject();
     }
 
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {

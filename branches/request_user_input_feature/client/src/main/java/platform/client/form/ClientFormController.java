@@ -1,8 +1,7 @@
 package platform.client.form;
 
 import com.google.common.base.Throwables;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.*;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.Log;
@@ -15,12 +14,14 @@ import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
-import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.form.*;
+import platform.interop.form.FormColumnUserPreferences;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ServerResponse;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,16 +36,25 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Callable;
 
+import static platform.base.BaseUtils.serializeObject;
 import static platform.client.ClientResourceBundle.getString;
 import static platform.interop.Order.*;
 
 public class ClientFormController {
+
     private final TableManager tableManager = new TableManager(this);
+    private final RmiQueue rmiQueue = new RmiQueue(tableManager, new EProvider<String>() {
+        @Override
+        public String getExceptionally() throws Exception {
+            return remoteForm.getRemoteActionMessage();
+        }
+    });
     private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
-    private RemoteFormInterface remoteForm;
-    private boolean busy = false;
+//    private RemoteFormInterface remoteForm;
+    public RemoteFormInterface remoteForm;
 
     private final ClientForm form;
     private final ClientNavigator clientNavigator;
@@ -61,39 +71,30 @@ public class ClientFormController {
     public Map<ClientGroupObject, GroupObjectController> controllers;
     public Map<ClientTreeGroup, TreeGroupController> treeControllers;
 
-    private JButton buttonApply;
-    private JButton buttonCancel;
-
     public boolean dataChanged;
-
-    private Color defaultApplyBackground;
 
     private boolean defaultOrdersInitialized = false;
 
     private boolean isDialog;
-    private boolean isModal;
-    private boolean isNewSession;
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
-        this(remoteForm, clientNavigator, false, false, true);
+        this(remoteForm, clientNavigator, false);
     }
 
-    public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator, boolean isDialog, boolean isModal, boolean isNewSession) {
-        this.isDialog = isDialog;
-        this.isModal = isModal;
-        this.isNewSession = isNewSession;
+    public ClientFormController(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisDialog) {
+        isDialog = iisDialog;
 
         ID = idGenerator.idShift();
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
-        this.remoteForm = remoteForm;
+        remoteForm = iremoteForm;
 
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
-        this.clientNavigator = clientNavigator;
+        clientNavigator = iclientNavigator;
 
         actionDispatcher = new ClientFormActionDispatcher() {
             @Override
@@ -104,11 +105,6 @@ public class ClientFormController {
 
         try {
             form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
-
-            if (remoteForm instanceof RemoteObjectProxy) {
-                ((RemoteObjectProxy) remoteForm).blockedScreen = form.blockedScreen;
-            }
-
             initializeForm();
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -121,14 +117,6 @@ public class ClientFormController {
 
     public int getID() {
         return ID;
-    }
-
-    public void setBusy(boolean busy) {
-        this.busy = busy;
-    }
-
-    public boolean isBusy() {
-        return busy;
     }
 
     public KeyStroke getKeyStroke() {
@@ -150,7 +138,7 @@ public class ClientFormController {
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
-    void initializeForm() throws IOException {
+    void initializeForm() throws Exception {
         formLayout = new ClientFormLayout(this, form.mainContainer);
 
         applyUserProperties();
@@ -206,9 +194,9 @@ public class ClientFormController {
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
         final JComboBox comboBox = new JComboBox();
-        comboBox.addItem(new ClientRegularFilterWrapped(getString("form.all")));
+        comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (ClientRegularFilter filter : filterGroup.filters) {
-            comboBox.addItem(new ClientRegularFilterWrapped(filter));
+            comboBox.addItem(new ClientRegularFilterWrapper(filter));
         }
 
         if (filterGroup.drawToToolbar()) {
@@ -218,13 +206,13 @@ public class ClientFormController {
 
         if (filterGroup.defaultFilter >= 0) {
             ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
-            comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
+            comboBox.setSelectedItem(new ClientRegularFilterWrapper(defaultFilter));
         }
         comboBox.addItemListener(new ItemAdapter() {
             @Override
             public void itemSelected(ItemEvent e) {
                 try {
-                    setRegularFilter(filterGroup, ((ClientRegularFilterWrapped) e.getItem()).filter);
+                    setRegularFilter(filterGroup, ((ClientRegularFilterWrapper) e.getItem()).filter);
                 } catch (IOException ioe) {
                     throw new RuntimeException(getString("form.error.changing.regular.filter"), ioe);
                 }
@@ -234,7 +222,7 @@ public class ClientFormController {
         for (final ClientRegularFilter filter : filterGroup.filters) {
             formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    comboBox.setSelectedItem(new ClientRegularFilterWrapped(filter));
+                    comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
                 }
             });
         }
@@ -299,9 +287,14 @@ public class ClientFormController {
                 : null;
     }
 
-    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
+    public void saveUserPreferences(final FormUserPreferences preferences, final Boolean forAllUsers) throws RemoteException {
         commitOrCancelCurrentEditing();
-        remoteForm.saveUserPreferences(preferences, forAllUsers);
+        rmiQueue.syncVoidRequest(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                remoteForm.saveUserPreferences(preferences, forAllUsers);
+            }
+        });
     }
 
     public void commitOrCancelCurrentEditing() {
@@ -328,19 +321,28 @@ public class ClientFormController {
         return simpleDispatcher;
     }
 
-    private void applyUserProperties() throws RemoteException {
+    private void applyUserProperties() throws Exception {
         commitOrCancelCurrentEditing();
-        FormUserPreferences preferences = remoteForm.loadUserPreferences();
 
-        if (preferences != null)
-            for (ClientPropertyDraw property : form.getPropertyDraws()) {
-                String propertySID = property.getSID();
-                if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
-                    property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
-                    if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null)
-                        property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
-                }
+        rmiQueue.syncRequest(new CallableCallback<FormUserPreferences>() {
+            @Override
+            public FormUserPreferences call() throws Exception {
+                return remoteForm.loadUserPreferences();
             }
+
+            @Override
+            public void done(FormUserPreferences preferences) throws Exception {
+                if (preferences != null)
+                    for (ClientPropertyDraw property : form.getPropertyDraws()) {
+                        String propertySID = property.getSID();
+                        if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
+                            property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
+                            if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null)
+                                property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
+                        }
+                    }
+            }
+        });
     }
 
     private void initializeDefaultOrders() throws IOException {
@@ -385,27 +387,37 @@ public class ClientFormController {
     }
 
     public void applyRemoteChanges() throws IOException {
-        processServerResponse(remoteForm.getRemoteChanges());
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.getRemoteChanges();
+            }
+        });
     }
 
-    public void applyFormChanges(byte[] bFormChanges) throws IOException {
+    private PriorityQueue<Pair<Long, byte[]>> pendingChanges = new PriorityQueue<Pair<Long, byte[]>>(10, new Comparator<Pair<Long, byte[]>>() {
+        @Override
+        public int compare(Pair<Long, byte[]> o1, Pair<Long, byte[]> o2) {
+            return o1.first.compareTo(o2.first) ;
+        }
+    });
+
+    private long lastStamp = -1;
+
+    public void applyFormChanges(long indexStamp, byte[] bFormChanges) throws IOException {
+        pendingChanges.add(new Pair<Long, byte[]>(indexStamp, bFormChanges));
+        while (!pendingChanges.isEmpty() && pendingChanges.peek().first == lastStamp + 1) {
+            internalApplyFormChanges(pendingChanges.poll().second);
+            lastStamp++;
+        }
+    }
+
+    private void internalApplyFormChanges(byte[] bFormChanges) throws IOException {
         if (bFormChanges == null) {
             return;
         }
 
         ClientFormChanges formChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(bFormChanges)), form, controllers);
-
-        if (formChanges.dataChanged != null) {
-            dataChanged = formChanges.dataChanged;
-            if (buttonApply != null) {
-                Color defaultBackGround = getDefaultApplyBackground();
-                buttonApply.setBackground(dataChanged ? Color.green : defaultBackGround);
-                buttonApply.setEnabled(dataChanged);
-                if (buttonCancel != null) {
-                    buttonCancel.setEnabled(dataChanged);
-                }
-            }
-        }
 
         for (Map.Entry<ClientGroupObject, ClassViewType> entry : formChanges.classViews.entrySet()) {
             ClassViewType classView = entry.getValue();
@@ -434,65 +446,103 @@ public class ClientFormController {
         if (formChanges.message.length() > 0) {
             Log.error(formChanges.message);
         }
-
     }
 
-    private Color getDefaultApplyBackground() {
-        if (defaultApplyBackground == null) {
-            defaultApplyBackground = buttonApply.getBackground();
+    public ClientGroupObjectValue getFullCurrentKey() {
+        ClientGroupObjectValue fullKey = new ClientGroupObjectValue();
+
+        for (GroupObjectController group : controllers.values()) {
+            ClientGroupObjectValue currentGroupKey = group.getCurrentObject();
+            if (currentGroupKey != null) {
+                fullKey.putAll(currentGroupKey);
+            }
         }
-        return defaultApplyBackground;
+
+        for (TreeGroupController tree : treeControllers.values()) {
+            ClientGroupObjectValue currentPath = tree.getCurrentPath();
+            if (currentPath != null) {
+                fullKey.putAll(currentPath);
+            }
+        }
+
+        return fullKey;
     }
 
-    public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+    public void changeGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
         if (objectValue == null || remoteForm == null) {
             // remoteForm может равняться null, если к моменту вызова форму уже закрыли
             return;
         }
 
-        if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
-            commitOrCancelCurrentEditing();
-            SwingUtils.stopSingleAction(group.getActionID(), false);
-
-            // если ClientGroupObject в дереве, то вызывать не надо изменение объекта
-            if (group.parent == null) {
-                controllers.get(group).setCurrentGroupObject(objectValue);
+        asyncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.changeGroupObject(group.getID(), objectValue.serialize());
             }
-            remoteForm.changeGroupObject(group.getID(), objectValue.serialize());
-
-            applyRemoteChanges();
-        }
+        });
     }
 
-    public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
+    public void changeGroupObject(final ClientGroupObject groupObject, final Scroll changeType) throws IOException {
         commitOrCancelCurrentEditing();
-        SwingUtils.stopSingleAction(groupObject.getActionID(), false);
 
-        remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
+            }
+        });
     }
 
-    public void expandGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+    public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
         commitOrCancelCurrentEditing();
-        remoteForm.expandGroupObject(group.getID(), objectValue.serialize());
-
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.expandGroupObject(group.getID(), objectValue.serialize());
+            }
+        });
     }
 
-    public void collapseGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+    public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
         commitOrCancelCurrentEditing();
-        remoteForm.collapseGroupObject(group.getID(), objectValue.serialize());
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.collapseGroupObject(group.getID(), objectValue.serialize());
+            }
+        });
     }
 
-    public ServerResponse executeEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) throws IOException {
+    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value) throws IOException {
+        assert !isEditing();
+
+        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
+        fullCurrentKey.putAll(columnKey);
+
+        commitOrCancelCurrentEditing();
+
+        asyncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.changeProperty(property.getID(), fullCurrentKey.serialize(), serializeObject(value));
+            }
+        });
+    }
+
+    public ServerResponse executeEditAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
         commitOrCancelCurrentEditing();
 
         // для глобальных свойств пока не может быть отложенных действий
         if (property.getGroupObject() != null) {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
-        return remoteForm.executeEditAction(property.getID(), columnKey.serialize(), actionSID);
+
+        return syncGetServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.executeEditAction(property.getID(), columnKey.serialize(), actionSID);
+            }
+        });
     }
 
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
@@ -510,7 +560,13 @@ public class ClientFormController {
                 return;
 
             try {
-                remoteForm.gainedFocus();
+                rmiQueue.asyncVoidRequest(new ERunnable() {
+                    @Override
+                    public void run() throws Exception {
+                        remoteForm.gainedFocus();
+                    }
+                });
+
                 if (clientNavigator != null) {
                     clientNavigator.relevantFormNavigator.currentFormChanged();
                 }
@@ -518,27 +574,36 @@ public class ClientFormController {
                 // если вдруг изменились данные в сессии
                 ClientExternalScreen.invalidate(getID());
                 ClientExternalScreen.repaintAll(getID());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(getString("form.error.form.activation"), e);
             }
         }
     }
 
-    public void setTabVisible(ClientContainer container, ClientComponent component) throws IOException {
-        remoteForm.setTabVisible(container.getID(), component.getID());
-        applyRemoteChanges();
+    public void setTabVisible(final ClientContainer container, final ClientComponent component) throws IOException {
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.setTabVisible(container.getID(), component.getID());
+            }
+        });
     }
 
-    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<List<Object>> table) throws IOException {
-        List<Integer> propertyIdList = new ArrayList<Integer>();
+    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, final List<List<Object>> table) throws IOException {
+        final List<Integer> propertyIdList = new ArrayList<Integer>();
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }
-        processServerResponse(remoteForm.pasteExternalTable(propertyIdList, table));
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.pasteExternalTable(propertyIdList, table);
+            }
+        });
     }
 
-    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, Object value) throws IOException {
-        Map<Integer, List<Map<Integer, Object>>> reCells = new HashMap<Integer, List<Map<Integer, Object>>>();
+    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, final Object value) throws IOException {
+        final Map<Integer, List<Map<Integer, Object>>> reCells = new HashMap<Integer, List<Map<Integer, Object>>>();
         for (ClientPropertyDraw property : cells.keySet()) {
             List<Map<Integer, Object>> keys = new ArrayList<Map<Integer, Object>>();
             for (ClientGroupObjectValue groupObjectValue : cells.get(property)) {
@@ -550,14 +615,23 @@ public class ClientFormController {
             }
             reCells.put(property.getID(), keys);
         }
-        processServerResponse(remoteForm.pasteMulticellValue(reCells, value));
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.pasteMulticellValue(reCells, value);
+            }
+        });
     }
 
-    public void changeGridClass(ClientObject object, ClientObjectClass cls) throws IOException {
+    public void changeGridClass(final ClientObject object, final ClientObjectClass cls) throws IOException {
         commitOrCancelCurrentEditing();
 
-        remoteForm.changeGridClass(object.getID(), cls.ID);
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.changeGridClass(object.getID(), cls.ID);
+            }
+        });
     }
 
     public void switchClassView(ClientGroupObject groupObject) throws IOException {
@@ -565,21 +639,29 @@ public class ClientFormController {
         changeClassView(groupObject, newClassView);
     }
 
-    public void changeClassView(ClientGroupObject groupObject, ClassViewType show) throws IOException {
+    public void changeClassView(final ClientGroupObject groupObject, final ClassViewType show) throws IOException {
         commitOrCancelCurrentEditing();
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
-        remoteForm.changeClassView(groupObject.getID(), show);
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.changeClassView(groupObject.getID(), show);
+            }
+        });
     }
 
-    public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
+    public void changePropertyOrder(final ClientPropertyDraw property, final Order modiType, final ClientGroupObjectValue columnKey) throws IOException {
         if (defaultOrdersInitialized) {
             commitOrCancelCurrentEditing();
 
-            remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
-            applyRemoteChanges();
+            syncProcessServerResponse(new Callable<ServerResponse>() {
+                @Override
+                public ServerResponse call() throws Exception {
+                    return remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
+                }
+            });
         }
     }
 
@@ -614,73 +696,112 @@ public class ClientFormController {
     private void applyCurrentFilters() throws IOException {
         commitOrCancelCurrentEditing();
 
-        remoteForm.clearUserFilters();
+        final List<byte[]> filters = new ArrayList<byte[]>();
 
-        for (List<ClientPropertyFilter> listFilter : currentFilters.values()) {
-            for (ClientPropertyFilter filter : listFilter) {
-                remoteForm.addFilter(Serializer.serializeClientFilter(filter));
+        for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
+            for (ClientPropertyFilter filter : groupFilters) {
+                filters.add(Serializer.serializeClientFilter(filter));
             }
         }
 
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.setUserFilters(filters.toArray(new byte[filters.size()][]));
+            }
+        });
     }
 
-    private void setRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {
+    private void setRegularFilter(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter filter) throws IOException {
         commitOrCancelCurrentEditing();
 
-        remoteForm.setRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID());
-
-        applyOrders(filter != null ? filter.orders : filterGroup.nullOrders);
-
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.setRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID());
+            }
+        });
     }
 
-    public int countRecords(int groupObjectID) throws IOException {
+    public int countRecords(final int groupObjectID) throws Exception {
         commitOrCancelCurrentEditing();
 
-        return remoteForm.countRecords(groupObjectID);
+        return rmiQueue.syncRequest(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return remoteForm.countRecords(groupObjectID);
+            }
+        });
     }
 
-    public Object calculateSum(int propertyID, byte[] columnKeys) throws IOException {
+    public Object calculateSum(final int propertyID, final byte[] columnKeys) throws Exception {
         commitOrCancelCurrentEditing();
 
-        return remoteForm.calculateSum(propertyID, columnKeys);
+        return rmiQueue.syncRequest(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return remoteForm.calculateSum(propertyID, columnKeys);
+            }
+        });
     }
 
-    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, Map<Integer,
-            List<byte[]>> maxMap, boolean onlyNotNull) throws IOException {
+    public Map<List<Object>, List<Object>> groupData(final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap, final Map<Integer,
+            List<byte[]>> maxMap, final boolean onlyNotNull) throws IOException {
         commitOrCancelCurrentEditing();
 
-        return remoteForm.groupData(groupMap, sumMap, maxMap, onlyNotNull);
+        return rmiQueue.syncRequest(new Callable<Map<List<Object>, List<Object>>>() {
+            @Override
+            public Map<List<Object>, List<Object>> call() throws Exception {
+                return remoteForm.groupData(groupMap, sumMap, maxMap, onlyNotNull);
+            }
+        });
     }
 
-    public void changePageSize(ClientGroupObject groupObject, Integer pageSize) throws IOException {
+    public void changePageSize(final ClientGroupObject groupObject, final Integer pageSize) throws IOException {
         if (!tableManager.isEditing()) {
-            remoteForm.changePageSize(groupObject.getID(), pageSize);
+            syncProcessServerResponse(new Callable<ServerResponse>() {
+                @Override
+                public ServerResponse call() throws Exception {
+                    return remoteForm.changePageSize(groupObject.getID(), pageSize);
+                }
+            });
         }
     }
 
-    public void moveGroupObject(ClientGroupObject parentGroup, ClientGroupObjectValue parentKey, ClientGroupObject childGroup, ClientGroupObjectValue childKey, int index) throws IOException {
+    public void moveGroupObject(final ClientGroupObject parentGroup, final ClientGroupObjectValue parentKey, final ClientGroupObject childGroup, final ClientGroupObjectValue childKey, final int index) throws IOException {
         commitOrCancelCurrentEditing();
 
-        remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
-
-        applyRemoteChanges();
+        syncProcessServerResponse(new Callable<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
+            }
+        });
     }
 
-    public void runSingleGroupReport(GroupObjectController groupController) {
+    public void runSingleGroupReport(final GroupObjectController groupController) {
         commitOrCancelCurrentEditing();
         try {
-            Main.frame.runSingleGroupReport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
+            rmiQueue.syncVoidRequest(new ERunnable() {
+                @Override
+                public void run() throws Exception {
+                    Main.frame.runSingleGroupReport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
+                }
+            });
         } catch (Exception e) {
             Throwables.propagate(e);
         }
     }
 
-    public void runSingleGroupXlsExport(GroupObjectController groupController) {
+    public void runSingleGroupXlsExport(final GroupObjectController groupController) {
         commitOrCancelCurrentEditing();
         try {
-            Main.frame.runSingleGroupXlsExport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
+            rmiQueue.syncVoidRequest(new ERunnable() {
+                @Override
+                public void run() throws Exception {
+                    Main.frame.runSingleGroupXlsExport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
+                }
+            });
         } catch (Exception e) {
             Throwables.propagate(e);
         }
@@ -720,26 +841,48 @@ public class ClientFormController {
 
     public void runReport() {
         try {
-            Main.frame.runReport(remoteForm, false, getUserPreferences());
+            rmiQueue.syncVoidRequest(new ERunnable() {
+                @Override
+                public void run() throws Exception {
+                    Main.frame.runReport(remoteForm, false, getUserPreferences());
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }
     }
 
     public void runExcel() {
-        Main.module.runExcel(remoteForm, getUserPreferences());
+        try {
+            rmiQueue.syncVoidRequest(new ERunnable() {
+                @Override
+                public void run() throws Exception {
+                    Main.module.runExcel(remoteForm, getUserPreferences());
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(getString("form.error.running.excel"), e);
+        }
     }
 
     public void runEditReport() {
         try {
-            Map<String, String> pathMap = Main.frame.getReportPath(remoteForm, getUserPreferences());
+            rmiQueue.syncRequest(new CallableCallback<Map<String, String>>() {
+                @Override
+                public Map<String, String> call() throws Exception {
+                    return Main.frame.getReportPath(remoteForm, getUserPreferences());
+                }
 
-            for (String path : pathMap.keySet()) {
-                Desktop.getDesktop().open(new File(path));
-            }
+                @Override
+                public void done(Map<String, String> pathMap) throws Exception {
+                    for (String path : pathMap.keySet()) {
+                        Desktop.getDesktop().open(new File(path));
+                    }
 
-            // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
-            new SavingThread(pathMap).start();
+                    // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
+                    new SavingThread(pathMap).start();
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }
@@ -748,7 +891,12 @@ public class ClientFormController {
     public void okPressed() {
         commitOrCancelCurrentEditing();
         try {
-            processServerResponse(remoteForm.okPressed());
+            syncProcessServerResponse(new Callable<ServerResponse>() {
+                @Override
+                public ServerResponse call() throws Exception {
+                    return remoteForm.okPressed();
+                }
+            });
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
@@ -757,38 +905,36 @@ public class ClientFormController {
     void closePressed() {
         commitOrCancelCurrentEditing();
         try {
-            processServerResponse(remoteForm.closedPressed());
+            syncProcessServerResponse(new Callable<ServerResponse>() {
+                @Override
+                public ServerResponse call() throws Exception {
+                    return remoteForm.closedPressed();
+                }
+            });
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.closing.dialog"), e);
         }
     }
 
-    public class ClientRegularFilterWrapped {
-        public ClientRegularFilter filter;
-        private String caption;
+    private void syncProcessServerResponse(final Callable<ServerResponse> future) throws IOException {
+        processServerResponse(syncGetServerResponse(future));
+    }
 
-        public ClientRegularFilterWrapped(String caption) {
-            this(caption, null);
-        }
+    private ServerResponse syncGetServerResponse(final Callable<ServerResponse> future) {
+        return rmiQueue.syncRequest(future);
+    }
 
-        public ClientRegularFilterWrapped(ClientRegularFilter filter) {
-            this(null, filter);
-        }
+    private void asyncProcessServerResponse(final Callable<ServerResponse> future) throws IOException {
+        rmiQueue.asyncRequest(new CallableCallback<ServerResponse>() {
+            @Override
+            public ServerResponse call() throws Exception {
+                return future.call();
+            }
 
-        public ClientRegularFilterWrapped(String caption, ClientRegularFilter filter) {
-            this.filter = filter;
-            this.caption = caption;
-        }
-
-        @Override
-        public boolean equals(Object wrapped) {
-            return wrapped instanceof ClientRegularFilterWrapped
-                    && (filter != null ? filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped);
-        }
-
-        @Override
-        public String toString() {
-            return caption == null ? filter.getFullCaption() : caption;
-        }
+            @Override
+            public void done(ServerResponse response) throws Exception {
+                actionDispatcher.dispatchResponse(response);
+            }
+        });
     }
 }

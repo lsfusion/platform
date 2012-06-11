@@ -8,17 +8,21 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.ERunnable;
 import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.action.*;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ProcessFormChangesClientAction;
+import platform.interop.action.UpdateCurrentClassClientAction;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ServerResponse;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
@@ -32,6 +36,7 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
@@ -42,8 +47,11 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static platform.base.BaseUtils.deserializeObject;
 import static platform.base.BaseUtils.serializeObject;
@@ -61,6 +69,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener) throws RemoteException {
         super(port);
+
+        releaseCurrentRequestLock();
 
         this.form = form;
         this.richDesign = richDesign;
@@ -85,17 +95,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getReportHierarchyByteArray() {
-        emitExceptionIfHasActiveInvocation();
-
-        Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
-        return getReportHierarchyByteArray(dependencies);
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
+                return getReportHierarchyByteArray(dependencies);
+            }
+        });
     }
 
-    public byte[] getSingleGroupReportHierarchyByteArray(int groupId) {
-        emitExceptionIfHasActiveInvocation();
-
-        Map<String, List<String>> dependencies = form.entity.getSingleGroupReportHierarchy(groupId).getReportHierarchyMap();
-        return getReportHierarchyByteArray(dependencies);
+    public byte[] getSingleGroupReportHierarchyByteArray(final int groupId) {
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                Map<String, List<String>> dependencies = form.entity.getSingleGroupReportHierarchy(groupId).getReportHierarchyMap();
+                return getReportHierarchyByteArray(dependencies);
+            }
+        });
     }
 
     private byte[] getReportHierarchyByteArray(Map<String, List<String>> dependencies) {
@@ -110,17 +126,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) {
-        emitExceptionIfHasActiveInvocation();
-
-        return getReportDesignsByteArray(toExcel, null, userPreferences);
+    public byte[] getReportDesignsByteArray(final boolean toExcel, final FormUserPreferences userPreferences) {
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return getReportDesignsByteArray(toExcel, null, userPreferences);
+            }
+        });
     }
 
     /// Отчет по одной группе
-    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId, FormUserPreferences userPreferences) {
-        emitExceptionIfHasActiveInvocation();
-
-        return getReportDesignsByteArray(toExcel, groupId, userPreferences);
+    public byte[] getSingleGroupReportDesignByteArray(final boolean toExcel, final int groupId, final FormUserPreferences userPreferences) {
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return getReportDesignsByteArray(toExcel, groupId, userPreferences);
+            }
+        });
     }
 
     private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
@@ -146,19 +168,25 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getReportSourcesByteArray() {
-        emitExceptionIfHasActiveInvocation();
-
-        GroupObjectHierarchy.ReportHierarchy hierarchy = form.entity.getReportHierarchy();
-        ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, hierarchy, getGridGroups(null));
-        return getReportSourcesByteArray(sourceGenerator);
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                GroupObjectHierarchy.ReportHierarchy hierarchy = form.entity.getReportHierarchy();
+                ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, hierarchy, getGridGroups(null));
+                return getReportSourcesByteArray(sourceGenerator);
+            }
+        });
     }
 
-    public byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-
-        ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getSingleGroupReportHierarchy(groupId),
-                form.entity.getReportHierarchy(), getGridGroups(groupId));
-        return getReportSourcesByteArray(sourceGenerator);
+    public byte[] getSingleGroupReportSourcesByteArray(final int groupId) throws RemoteException {
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getSingleGroupReportHierarchy(groupId),
+                                                                                        form.entity.getReportHierarchy(), getGridGroups(groupId));
+                return getReportSourcesByteArray(sourceGenerator);
+            }
+        });
     }
 
     private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator) {
@@ -278,49 +306,52 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
-        emitExceptionIfHasActiveInvocation();
+    public Map<String, String> getReportPath(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
+        return processRMIRequest(new Callable<Map<String, String>>() {
+            @Override
+            public Map<String, String> call() throws Exception {
+                Map<String, String> ret = new HashMap<String, String>();
 
-        Map<String, String> ret = new HashMap<String, String>();
+                String sid = getDefaultReportSID(toExcel, groupId);
+                Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
+                if (customDesigns != null) {
+                    Set<String> keySet = customDesigns.keySet();
+                    for (String key : keySet){
+                        ret.put(
+                                System.getProperty("user.dir") + "/src/main/resources/" + getCustomReportName(key, sid),
+                                System.getProperty("user.dir") + "/target/classes/" + getCustomReportName(key, sid)
+                        );
+                    }
+                } else {
+                    Set<Integer> hidedGroupsId = new HashSet<Integer>();
+                    for (GroupObjectInstance group : form.groups) {
+                        if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
+                            hidedGroupsId.add(group.getID());
+                        }
+                    }
+                    try {
+                        ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel);
+                        Map<String, JasperDesign> designs = generator.generate();
+                        String reportName;
+                        for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
+                            String id = entry.getKey();
+                            reportName = getAutoReportName(id, sid);
+                            new File(reportName).getParentFile().mkdirs();
+                            JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
+                            ret.put(
+                                    System.getProperty("user.dir") + "/" + reportName,
+                                    System.getProperty("user.dir") + "/target/classes/reports/custom/" + sid
+                            );
 
-        String sid = getDefaultReportSID(toExcel, groupId);
-        Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
-        if (customDesigns != null) {
-            Set<String> keySet = customDesigns.keySet();
-            for (String key : keySet){
-                ret.put(
-                        System.getProperty("user.dir") + "/src/main/resources/" + getCustomReportName(key, sid),
-                        System.getProperty("user.dir") + "/target/classes/" + getCustomReportName(key, sid)
-                );
-            }
-        } else {
-            Set<Integer> hidedGroupsId = new HashSet<Integer>();
-            for (GroupObjectInstance group : form.groups) {
-                if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
-                    hidedGroupsId.add(group.getID());
+                        }
+
+                    } catch (JRException e) {
+                        throw new RuntimeException(getString("form.instance.error.creating.design"), e);
+                    }
                 }
+                return ret;
             }
-            try {
-                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel);
-                Map<String, JasperDesign> designs = generator.generate();
-                String reportName;
-                for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
-                    String id = entry.getKey();
-                    reportName = getAutoReportName(id, sid);
-                    new File(reportName).getParentFile().mkdirs();
-                    JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
-                    ret.put(
-                            System.getProperty("user.dir") + "/" + reportName,
-                            System.getProperty("user.dir") + "/target/classes/reports/custom/" + sid
-                    );
-
-                }
-
-            } catch (JRException e) {
-                throw new RuntimeException(getString("form.instance.error.creating.design"), e);
-            }
-        }
-        return ret;
+        });
     }
 
     private static final String xlsPrefix = "xls_";
@@ -389,61 +420,76 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getRichDesignByteArray() {
-        emitExceptionIfHasActiveInvocation();
-
-        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        try {
-            new ServerSerializationPool(new ServerContext(richDesign)).serializeObject(new DataOutputStream(outStream), richDesign, SerializationType.GENERAL);
-//            richDesign.serialize(new DataOutputStream(outStream));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return outStream.toByteArray();
+        return processRMIRequest(new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
+                ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+                try {
+                    new ServerSerializationPool(new ServerContext(richDesign)).serializeObject(new DataOutputStream(outStream), richDesign, SerializationType.GENERAL);
+                    //            richDesign.serialize(new DataOutputStream(outStream));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return outStream.toByteArray();
+            }
+        });
     }
 
-    public void changePageSize(int groupID, Integer pageSize) throws RemoteException {
-        //пока разрешаем вызов changePageSize, т.к. он может прийти при показе модального диалога...
-//        emitExceptionIfHasActiveInvocation();
-
-        GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-        form.changePageSize(groupObject, pageSize);
+    public ServerResponse changePageSize(final int groupID, final Integer pageSize) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+                form.changePageSize(groupObject, pageSize);
+            }
+        });
     }
 
     public void gainedFocus() {
-//        emitExceptionIfHasActiveInvocation();
-
-        form.gainedFocus();
+        processRMIRequest(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                form.gainedFocus();
+                return null;
+            }
+        });
     }
 
     private byte[] getFormChangesByteArray() {
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
         try {
             FormChanges formChanges = form.endApply();
-            formChanges.serialize(new DataOutputStream(outStream));
 
             if (logger.isDebugEnabled()) {
                 formChanges.logChanges(form, logger);
             }
+
+            return formChanges.serialize();
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public ServerResponse getRemoteChanges() throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                //ничего не делаем, просто даём по завершению выполниться prepareRemoteChangesResponse
+            }
+        });
+    }
+
+    private long formChangesIndexStamp = 0;
+    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions) {
+        if (rmiRequestsCount.get() > 1) {
+            //todo: возможно стоит сохранять количество пропущенных изменений, и высылать таки их, если пропустили слишком много
+            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
         }
 
-        return outStream.toByteArray();
-    }
-
-    public ServerResponse getRemoteChanges() {
-        emitExceptionIfHasActiveInvocation();
-        return prepareRemoteChangesResponse(new ArrayList<ClientAction>());
-    }
-
-    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions) {
         byte[] formChanges = getFormChangesByteArray();
 
         List<ClientAction> resultActions = new ArrayList<ClientAction>();
-        resultActions.add(new ProcessFormChangesClientAction(formChanges));
+        resultActions.add(new ProcessFormChangesClientAction(formChangesIndexStamp++, formChanges));
 
         if (updateCurrentClass != null) {
             ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
@@ -471,16 +517,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return mapValues;
     }
 
-    private Map<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException {
+    private Map<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException, SQLException {
         Map<ObjectInstance, DataObject> keys = new HashMap<ObjectInstance, DataObject>();
         Map<ObjectInstance, Object> dataKeys = deserializeKeysValues(columnKeys);
 
-        for (GroupObjectInstance groupInstance : propertyDraw.columnGroupObjects) {
-            Map<ObjectInstance, DataObject> key = groupInstance.findGroupObjectValue(dataKeys);
-            if (key != null) {
-                keys.putAll(key);
+        for (Map.Entry<ObjectInstance, Object> e : dataKeys.entrySet()) {
+            if (e.getValue() != null) {
+                keys.put(e.getKey(), form.session.getDataObject(e.getValue(), e.getKey().getType()));
             }
         }
+
         return keys;
     }
 
@@ -488,89 +534,84 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return group.findGroupObjectValue(deserializeKeysValues(treePathKeys));
     }
 
-    public void changeGroupObject(int groupID, byte[] value) {
-        emitExceptionIfHasActiveInvocation();
+    public ServerResponse changeGroupObject(final int groupID, final byte[] value) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+                Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
+                if (valueToSet == null) {
+                    return;
+                }
 
-        try {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-            Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
-            if (valueToSet == null) {
-                return;
-            }
+                groupObject.change(form.session, valueToSet);
 
-            groupObject.change(form.session, valueToSet);
+                updateCurrentClass = groupObject.objects.iterator().next();
 
-            updateCurrentClass = groupObject.objects.iterator().next();
-
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
-                logger.info("   keys: ");
-                for (Map.Entry<ObjectInstance, DataObject> entry : valueToSet.entrySet()) {
-                    logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
+                    logger.info("   keys: ");
+                    for (Map.Entry<ObjectInstance, DataObject> entry : valueToSet.entrySet()) {
+                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                    }
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        });
     }
 
-    public void expandGroupObject(int groupId, byte[] groupValues) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
-            if (valueToSet != null) {
-                form.expandGroupObject(group, valueToSet);
+    public ServerResponse expandGroupObject(final int groupId, final byte[] groupValues) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+                Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+                if (valueToSet != null) {
+                    form.expandGroupObject(group, valueToSet);
+                }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        });
     }
 
-    public void collapseGroupObject(int groupId, byte[] groupValues) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
-            if (valueToSet != null) {
-                form.collapseGroupObject(group, valueToSet);
+    public ServerResponse collapseGroupObject(final int groupId, final byte[] groupValues) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+                Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+                if (valueToSet != null) {
+                    form.collapseGroupObject(group, valueToSet);
+                }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        });
     }
 
-    public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            GroupObjectInstance parentGroup = form.getGroupObjectInstance(parentGroupId);
-            GroupObjectInstance childGroup = form.getGroupObjectInstance(childGroupId);
-            //todo:
+    public ServerResponse moveGroupObject(final int parentGroupId, final byte[] parentKey, final int childGroupId, final byte[] childKey, final int index) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                GroupObjectInstance parentGroup = form.getGroupObjectInstance(parentGroupId);
+                GroupObjectInstance childGroup = form.getGroupObjectInstance(childGroupId);
+                //todo:
 //            form.moveGroupObject(parentGroup, deserializeGroupObjectKeys(parentGroup, parentKey));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+            }
+        });
     }
 
-    public void changeGroupObject(int groupID, byte changeType) {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-            form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
-
-            updateCurrentClass = groupObject.objects.iterator().next();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public ServerResponse changeGroupObject(final int groupID, final byte changeType) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+                form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
+                updateCurrentClass = groupObject.objects.iterator().next();
+            }
+        });
     }
 
     private ObjectInstance updateCurrentClass = null;
 
     public ServerResponse pasteExternalTable(final List<Integer> propertyIDs, final List<List<Object>> table) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
+        return executeWithFormChanges(new ERunnable() {
             @Override
             public void run() throws Exception {
                 form.pasteExternalTable(propertyIDs, table);
@@ -579,8 +620,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse pasteMulticellValue(final Map<Integer, List<Map<Integer, Object>>> cells, final Object value) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
+        return executeWithFormChanges(new ERunnable() {
             @Override
             public void run() throws Exception {
                 form.pasteMulticellValue(cells, value);
@@ -588,96 +628,103 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public void changeGridClass(int objectID, int idClass) {
-        emitExceptionIfHasActiveInvocation();
-        ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
-    }
-
-    public void changeClassView(int groupID, ClassViewType classView) {
-        emitExceptionIfHasActiveInvocation();
-        form.changeClassView(form.getGroupObjectInstance(groupID), classView);
-    }
-
-    public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-        try {
-            Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
-            propertyDraw.toDraw.changeOrder(((CalcPropertyObjectInstance<?>)propertyDraw.propertyObject).getRemappedPropertyObject(keys), Order.deserialize(modiType));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void clearUserFilters() {
-        emitExceptionIfHasActiveInvocation();
-
-        for (GroupObjectInstance group : form.groups) {
-            group.clearUserFilters();
-        }
-    }
-
-    public int countRecords(int groupObjectID) {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            return form.countRecords(groupObjectID);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Object calculateSum(int propertyID, byte[] columnKeys) {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-            Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
-            return form.calculateSum(propertyDraw, keys);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
-                                                     Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
-            List<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>> outMaps = new ArrayList<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>>();
-            for (Map<Integer, List<byte[]>> one : inMaps) {
-                Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> outMap = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
-                for (Integer id : one.keySet()) {
-                    PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
-                    List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
-                    if (propertyDraw != null) {
-                        for (byte[] columnKeys : one.get(id)) {
-                            list.add(deserializePropertyKeys(propertyDraw, columnKeys));
-                        }
-                    }
-                    outMap.put(propertyDraw, list);
-                }
-                outMaps.add(outMap);
+    public ServerResponse changeGridClass(final int objectID, final int idClass) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
             }
-            return form.groupData(outMaps.get(0), outMaps.get(1), outMaps.get(2), onlyNotNull);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        });
     }
 
-    public void addFilter(byte[] state) {
-        emitExceptionIfHasActiveInvocation();
-        try {
-            FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
-            filter.getApplyObject().addUserFilter(filter);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public ServerResponse changeClassView(final int groupID, final ClassViewType classView) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                form.changeClassView(form.getGroupObjectInstance(groupID), classView);
+            }
+        });
     }
 
-    public void setRegularFilter(int groupID, int filterID) {
-        emitExceptionIfHasActiveInvocation();
-        form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
+    public ServerResponse changePropertyOrder(final int propertyID, final byte modiType, final byte[] columnKeys) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
+                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                propertyDraw.toDraw.changeOrder(((CalcPropertyObjectInstance<?>) propertyDraw.propertyObject).getRemappedPropertyObject(keys), Order.deserialize(modiType));
+            }
+        });
+    }
+
+    public int countRecords(final int groupObjectID) {
+        return processRMIRequest(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return form.countRecords(groupObjectID);
+            }
+        });
+    }
+
+    public Object calculateSum(final int propertyID, final byte[] columnKeys) {
+        return processRMIRequest(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
+                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                return form.calculateSum(propertyDraw, keys);
+            }
+        });
+    }
+
+    public Map<List<Object>, List<Object>> groupData(final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap,
+                                                     final Map<Integer, List<byte[]>> maxMap, final boolean onlyNotNull) {
+        return processRMIRequest(new Callable<Map<List<Object>, List<Object>>>() {
+            @Override
+            public Map<List<Object>, List<Object>> call() throws Exception {
+                List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
+                List<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>> outMaps = new ArrayList<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>>();
+                for (Map<Integer, List<byte[]>> one : inMaps) {
+                    Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> outMap = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
+                    for (Integer id : one.keySet()) {
+                        PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
+                        List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
+                        if (propertyDraw != null) {
+                            for (byte[] columnKeys : one.get(id)) {
+                                list.add(deserializePropertyKeys(propertyDraw, columnKeys));
+                            }
+                        }
+                        outMap.put(propertyDraw, list);
+                    }
+                    outMaps.add(outMap);
+                }
+                return form.groupData(outMaps.get(0), outMaps.get(1), outMaps.get(2), onlyNotNull);
+            }
+        });
+    }
+
+    public ServerResponse setUserFilters(final byte[][] filters) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                for (GroupObjectInstance group : form.groups) {
+                    group.clearUserFilters();
+                }
+                for (byte[] state : filters) {
+                    FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
+                    filter.getApplyObject().addUserFilter(filter);
+                }
+            }
+        });
+    }
+
+    public ServerResponse setRegularFilter(final int groupID, final int filterID) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
+            }
+        });
     }
 
     public int getID() {
@@ -685,13 +732,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public String getSID() {
-        emitExceptionIfHasActiveInvocation();
-        return form.entity.getSID();
+        return processRMIRequest(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return form.entity.getSID();
+            }
+        });
     }
 
     public ServerResponse closedPressed() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
+        return executeWithFormChanges(new ERunnable() {
             @Override
             public void run() throws Exception {
                 form.formClose();
@@ -700,8 +750,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse okPressed() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return executeWithFormChanges(new TRunnable() {
+        return executeWithFormChanges(new ERunnable() {
             @Override
             public void run() throws Exception {
                 form.formOk();
@@ -709,20 +758,34 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public void setTabVisible(int tabpane, int tab) throws RemoteException {
-        form.setTabVisible((ContainerView) richDesign.findById(tabpane), richDesign.findById(tab));
+    public ServerResponse setTabVisible(final int tabPaneID, final int tabIndex) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(tabIndex));
+            }
+        });
     }
 
     @Override
-    public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        form.saveUserPreferences(preferences, forAllUsers);
+    public void saveUserPreferences(final FormUserPreferences preferences, final Boolean forAllUsers) throws RemoteException {
+        processRMIRequest(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                form.saveUserPreferences(preferences, forAllUsers);
+                return null;
+            }
+        });
     }
 
     @Override
     public FormUserPreferences loadUserPreferences() throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
-        return form.loadUserPreferences();
+        return processRMIRequest(new Callable<FormUserPreferences>() {
+            @Override
+            public FormUserPreferences call() throws Exception {
+                return form.loadUserPreferences();
+            }
+        });
     }
 
     @Override
@@ -767,10 +830,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public ServerResponse executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
-        return executeWithFormChanges(new TRunnable() {
+    public ServerResponse changeProperty(final int propertyID, final byte[] fullKey, final byte[] value) throws RemoteException {
+        return executeWithFormChanges(new ERunnable() {
             @Override
-            public void run() throws Throwable {
+            public void run() throws Exception {
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+                ObjectValue changeValue = DataObject.getValue(deserializeObject(value), (ConcreteClass) propertyDraw.getEntity().propertyObject.property.getValueClass());
+                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, changeValue);
+            }
+        });
+    }
+
+    public ServerResponse executeEditAction(final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
+        emitExceptionIfHasActiveInvocation();
+        return executeWithFormChanges(new ERunnable() {
+            @Override
+            public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
@@ -798,19 +874,70 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this));
     private RemotePausableInvocation currentInvocation = null;
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private ArrayBlockingQueue currentRequestLock = new ArrayBlockingQueue(1, true);
+    private AtomicInteger rmiRequestsCount = new AtomicInteger();
+
+    public void takeCurrentRequestLock() {
+        try {
+            currentRequestLock.take();
+        } catch (InterruptedException e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    public void releaseCurrentRequestLock() {
+        try {
+            currentRequestLock.put(this);
+        } catch (InterruptedException e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    private <T> T processRMIRequest(Callable<T> request) {
+        takeCurrentRequestLock();
+        try {
+            return request.call();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        } finally {
+            releaseCurrentRequestLock();
+        }
+    }
+
     private ServerResponse executeServerInvocation(RemotePausableInvocation invocation) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
+        rmiRequestsCount.incrementAndGet();
+        takeCurrentRequestLock();
 
         currentInvocation = invocation;
         return invocation.execute();
     }
 
-    private ServerResponse executeWithFormChanges(final TRunnable runnable) throws RemoteException {
+    private ServerResponse executeWithFormChanges(final ERunnable runnable) throws RemoteException {
         return executeServerInvocation(new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
-            protected ServerResponse callInvocation() throws Throwable {
+            protected ServerResponse callInvocation() throws Exception {
                 runnable.run();
                 return prepareRemoteChangesResponse(delayedActions);
+            }
+
+            @Override
+            protected ServerResponse handleFinished() throws RemoteException {
+                unlockNextRmiRequest();
+                return super.handleFinished();
+            }
+
+            @Override
+            protected ServerResponse handleThrows(Throwable t) throws RemoteException {
+                unlockNextRmiRequest();
+                return super.handleThrows(t);
+            }
+
+            private void unlockNextRmiRequest() {
+                currentInvocation = null;
+                int left = rmiRequestsCount.decrementAndGet();
+                assert left >= 0;
+                releaseCurrentRequestLock();
             }
         });
     }

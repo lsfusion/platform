@@ -81,7 +81,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             //здесь немного запутанная схема...
             //executePropertyEditAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
             //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-            editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID);
+            editPerformed = editDispatcher.executePropertyEditAction(property, columnKey, actionSID, getValueAt(row, column));
             return editorComp != null;
         }
 
@@ -100,17 +100,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         return actionSID;
     }
 
-    @Override
-    public void setValueAt(Object aValue, int row, int column) {
-        Preconditions.checkState(false, "setValueAt shouldn't be called");
-    }
-
     public abstract int getCurrentRow();
-
-    protected boolean trySelectCell(int row, int column, EventObject e) {
-        //по умолчанию ничего не делаем
-        return true;
-    }
 
     public boolean requestValue(ClientType valueType, Object oldValue) {
         quickLog("formTable.requestValue: " + valueType);
@@ -172,6 +162,11 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         TableCellEditor editor = getCellEditor();
         if (editor != null) {
             Object value = editor.getCellEditorValue();
+
+            if (getProperty(editRow, editCol).changeType != null) {
+                setValueAt(value, editRow, editCol);
+            }
+
             internalRemoveEditor();
             commitValue(value);
         }

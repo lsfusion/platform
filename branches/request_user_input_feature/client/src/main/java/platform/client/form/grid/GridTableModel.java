@@ -1,6 +1,5 @@
 package platform.client.form.grid;
 
-import com.google.common.base.Preconditions;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -149,7 +148,7 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
-        Preconditions.checkState(false, "GridTableModel.setValueAt shouldn't be called!");
+        data[row][col] = value;
     }
 
     public int getPropertyIndex(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {

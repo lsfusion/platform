@@ -1,10 +1,12 @@
 package platform.server.form.instance;
 
+import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import platform.interop.ClassViewType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -141,6 +143,16 @@ public class FormChanges {
             for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
                 serializeGroupObjectValue(outStream, groupObjectValue);
             }
+        }
+    }
+
+    public byte[] serialize() {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            serialize(new DataOutputStream(outStream));
+            return outStream.toByteArray();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 

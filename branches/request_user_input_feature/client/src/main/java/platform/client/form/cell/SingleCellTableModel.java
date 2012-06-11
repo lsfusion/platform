@@ -54,6 +54,6 @@ final class SingleCellTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object nValue, int row, int col) {
-        throw new IllegalStateException("SingleTableModel.setValueAt shouldn't be called!");
+        value = nValue;
     }
 }

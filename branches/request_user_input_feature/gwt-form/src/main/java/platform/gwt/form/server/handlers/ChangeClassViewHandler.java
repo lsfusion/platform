@@ -19,8 +19,9 @@ public class ChangeClassViewHandler extends FormChangesActionHandler<ChangeClass
     public FormChangesResult executeEx(ChangeClassView action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        form.remoteForm.changeClassView(action.groupObjectId, ClassViewType.valueOf((String) action.value.getValue()));
-
-        return getRemoteChanges(form);
+        return getRemoteChanges(
+                form,
+                form.remoteForm.changeClassView(action.groupObjectId, ClassViewType.valueOf((String) action.value.getValue()))
+        );
     }
 }

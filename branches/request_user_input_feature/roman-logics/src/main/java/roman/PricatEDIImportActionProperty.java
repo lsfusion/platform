@@ -86,7 +86,7 @@ public class PricatEDIImportActionProperty extends CustomReadValueActionProperty
         }
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
+    protected DataClass getReadType() {
         return valueClass;
     }
 }

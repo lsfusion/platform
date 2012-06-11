@@ -63,32 +63,23 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
             return;
         }
 
-
         int oldRow = table.getCurrentRow();
 
-        //сначала сами устанавливаем текущую строку,
-        //если после обновления ключей она исчезла, то не редактируем вообще
-        boolean keySelected = table.trySelectCell(pressedRow, pressedCol, e);
-
-        //реально будем работать с новым текущим рядом, а не с запрошенным,
-        //что позволит спокойно обновить ключи в GridTable
-        pressedRow = table.getCurrentRow();
+        boolean toggle = isLeftMouseButton && SwingUtils.isMenuShortcutKeyDown(e);
+        boolean extend = isLeftMouseButton && e.isShiftDown();
+        table.changeSelection(pressedRow, pressedCol, toggle, extend);
 
         boolean rowHasFocus = (oldRow == pressedRow);
 
         // todo: теперь rowHasFocus не обязательно, работает и без него,
         // todo: поэтому есть возможность корректно реализовать логику editOnSingleClick, если понадобится
-        if (isLeftMouseButton && keySelected && (rowHasFocus || e.getClickCount() > 1)) {
+        if (isLeftMouseButton && (rowHasFocus || e.getClickCount() > 1)) {
             if (table.editCellAt(pressedRow, pressedCol, e)) {
                 setDispatchComponent(e);
                 repostEvent(e);
                 table.prepareTextEditor();
             }
         }
-
-        boolean toggle = isLeftMouseButton && SwingUtils.isMenuShortcutKeyDown(e);
-        boolean extend = isLeftMouseButton && e.isShiftDown();
-        table.changeSelection(pressedRow, pressedCol, toggle, extend);
     }
 
     public void mouseReleased(MouseEvent e) {

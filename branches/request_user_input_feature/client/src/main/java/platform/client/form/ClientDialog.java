@@ -24,7 +24,7 @@ public class ClientDialog extends ClientModalForm {
     private RemoteDialogInterface remoteDialog;
 
     public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent, boolean isDialog) {
-        super(owner, dialog, false, isDialog);
+        super(owner, dialog, isDialog);
 
         remoteDialog = dialog;
 

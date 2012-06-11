@@ -93,7 +93,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * по умолчанию вызывает {@link RemotePausableInvocation#callInvocation()}, и возвращает его результат из {@link RemotePausableInvocation#handleFinished()}
      * @throws Throwable
      */
-    protected void runInvocation() throws Throwable {
+    protected void runInvocation() throws Exception {
         remoteObject.threads.add(Thread.currentThread());
         try {
             invocationResult = callInvocation();
@@ -104,13 +104,13 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     /**
      * по умолчанию просто возвращает null,
-     * переопредлять нужно либо данный метод, возвращая из него результат, либо {@link RemotePausableInvocation#runInvocation()}
+     * переопредлять нужно либо данный метод, возвращая из него результат, либо {@link PausableInvocation#runInvocation()}
      * вместе с {@link RemotePausableInvocation#handleFinished()}
      *
      * @return
      * @throws Throwable
      */
-    protected ServerResponse callInvocation() throws Throwable {
+    protected ServerResponse callInvocation() throws Exception {
         return null;
     }
 

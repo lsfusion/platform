@@ -75,7 +75,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
         this.form = form;
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
+    protected DataClass getReadType() {
         if(valueClass == null || valueClass.equals(ActionClass.instance))
             return null;
         return valueClass;

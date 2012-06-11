@@ -115,12 +115,16 @@ public class TreeGroupController extends AbstractGroupObjectController {
             }
 
             if (fc.objects.containsKey(group)) {
-                view.setCurrentObjects(fc.objects.get(group));
+                view.setCurrentPath(fc.objects.get(group));
             }
         }
 
         panel.update();
         tree.restoreVisualState();
+    }
+
+    public ClientGroupObjectValue getCurrentPath() {
+        return view.getCurrentPath();
     }
 
     public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {

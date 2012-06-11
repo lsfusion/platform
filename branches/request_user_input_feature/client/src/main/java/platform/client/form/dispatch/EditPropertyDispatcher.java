@@ -18,11 +18,14 @@ import static platform.base.BaseUtils.deserializeObject;
 import static platform.client.logics.classes.ClientTypeSerializer.deserialize;
 
 public class EditPropertyDispatcher extends ClientFormActionDispatcher {
-
     protected final EditPropertyHandler handler;
-    private boolean valueRequested = false;
 
+    private boolean valueRequested = false;
     private boolean editPerformed;
+
+    private ClientGroupObjectValue editColumnKey;
+    private ClientPropertyDraw simpleChangeProperty;
+
     private ClientType readType;
     private Object oldValue;
 
@@ -38,12 +41,19 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     /**
      * @return true, если на сервере вызван action для редактирования
      */
-    public boolean executePropertyEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID) {
-        Preconditions.checkState(!handler.getForm().isBusy(), "There is already server interaction in progress");
-
-        readType = null;
-        editPerformed = true;
+    public boolean executePropertyEditAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, Object currentValue) {
         try {
+            readType = null;
+            simpleChangeProperty = null;
+            editColumnKey = null;
+
+            if (actionSID.equals(ServerResponse.CHANGE) && property.changeType != null) {
+                editColumnKey = columnKey;
+                simpleChangeProperty = property;
+                return internalRequestValue(property.changeType, currentValue);
+            }
+
+            editPerformed = true;
             ServerResponse response = handler.getForm().executeEditAction(property, columnKey, actionSID);
             return internalDispatchResponse(response);
         } catch (IOException ex) {
@@ -75,6 +85,17 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     private void internalCommitValue(UserInputResult inputResult) {
         Preconditions.checkState(valueRequested, "value wasn't requested");
+
+        if (simpleChangeProperty != null) {
+            if (!inputResult.isCanceled()) {
+                try {
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue());
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+            return;
+        }
 
         try {
             valueRequested = false;

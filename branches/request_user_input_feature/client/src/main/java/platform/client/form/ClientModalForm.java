@@ -15,17 +15,15 @@ public class ClientModalForm extends JDialog {
 
     protected ClientFormController form;
     protected final RemoteFormInterface remoteForm;
-    private final boolean newSession;
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession) {
-        this(owner, remoteForm, newSession, false);
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm) {
+        this(owner, remoteForm, false);
     }
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession, boolean isDialog) {
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean isDialog) {
         super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
 
         this.remoteForm = remoteForm;
-        this.newSession = newSession;
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
@@ -44,7 +42,7 @@ public class ClientModalForm extends JDialog {
     }
 
     protected ClientFormController createFormController(boolean isDialog) {
-        return new ClientFormController(remoteForm, null, isDialog, true, newSession) {
+        return new ClientFormController(remoteForm, null, isDialog) {
             @Override
             public void hideForm() {
                 hideDialog();

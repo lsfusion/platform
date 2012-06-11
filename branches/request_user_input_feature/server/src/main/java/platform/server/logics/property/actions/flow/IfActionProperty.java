@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
+import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
@@ -66,6 +67,20 @@ public class IfActionProperty extends KeepContextActionProperty {
         ifProp.mapFillDepends(result);
         result.addAll(super.getUsedProps());
         return result;
+    }
+
+    @Override
+    public Type getSimpleRequestInputType() {
+        Type trueType = trueAction == null ? null : trueAction.property.getSimpleRequestInputType();
+        Type falseType = falseAction == null ? null : falseAction.property.getSimpleRequestInputType();
+
+        return trueType == null
+               ? falseType
+               : falseType == null
+                 ? trueType
+                 : trueType == falseType
+                   ? trueType
+                   : null;
     }
 
     @Override

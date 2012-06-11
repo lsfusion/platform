@@ -1,6 +1,5 @@
 package platform.server.form.view;
 
-import platform.base.OrderedMap;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -12,16 +11,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class RegularFilterGroupView extends ComponentView {
     
     public RegularFilterGroupEntity entity;
 
     private List<RegularFilterView> filters = new ArrayList<RegularFilterView>();
-
-    public OrderedMap<PropertyDrawView, Boolean> nullOrders = new OrderedMap<PropertyDrawView, Boolean>();
-
 
     public RegularFilterGroupView() {
         
@@ -58,12 +53,6 @@ public class RegularFilterGroupView extends ComponentView {
         pool.serializeCollection(outStream, filters);
         outStream.writeInt(entity.defaultFilter);
 
-        outStream.writeInt(nullOrders.size());
-        for (Map.Entry<PropertyDrawView, Boolean> entry : nullOrders.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey(), serializationType);
-            outStream.writeBoolean(entry.getValue());
-        }
-
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
     }
 
@@ -73,11 +62,5 @@ public class RegularFilterGroupView extends ComponentView {
 
         entity = pool.context.entity.getRegularFilterGroup(ID);
         filters = pool.deserializeList(inStream);
-
-        int orderCount = inStream.readInt();
-        for (int i = 0; i < orderCount; i++) {
-            PropertyDrawView order = pool.deserializeObject(inStream);
-            nullOrders.put(order, inStream.readBoolean());
-        }
     }
 }

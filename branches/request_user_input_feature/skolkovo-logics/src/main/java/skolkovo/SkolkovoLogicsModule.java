@@ -7913,7 +7913,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными", "*");
         }
 
-        protected DataClass getReadType(ExecutionContext context) {
+        protected DataClass getReadType() {
             return DoubleClass.instance;
         }
 

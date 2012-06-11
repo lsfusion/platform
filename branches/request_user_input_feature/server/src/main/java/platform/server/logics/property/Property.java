@@ -11,6 +11,7 @@ import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ActionClass;
+import platform.server.classes.DataClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -275,6 +276,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);
+
+    public Type getChangeType() {
+        ActionPropertyMapImplement<?, T> changeAction = getEditAction(ServerResponse.CHANGE);
+
+        Type type = changeAction.property.getSimpleRequestInputType();
+
+        assert type instanceof DataClass;
+
+        return type;
+    }
 
     public boolean checkEquals() {
         return this instanceof CalcProperty;

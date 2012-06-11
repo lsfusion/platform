@@ -1,16 +1,20 @@
 package platform.server.logics.property;
 
 import platform.base.Pair;
-import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.*;
+import platform.server.classes.ActionClass;
+import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
-import platform.server.session.*;
+import platform.server.session.ExecutionEnvironment;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChanges;
+import platform.server.session.PropertySet;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -117,6 +121,14 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return getImplement();
+    }
+
+    /**
+     * возвращает тип для "простого" редактирования, когда этот action используется в качестве действия для редактирования </br>
+     * assert, что тип будет DataClass, т.к. для остальных такое редактирование невозможно...
+     */
+    public Type getSimpleRequestInputType() {
+        return null;
     }
 
     protected ActionPropertyClassImplement<P> createClassImplement(List<ValueClassWrapper> classes, List<P> mapping) {

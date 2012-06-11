@@ -5,11 +5,9 @@ import platform.interop.remote.SelectedObject;
 
 import java.rmi.RemoteException;
 
-public class RemoteDialogProxy<T extends RemoteDialogInterface>
-        extends RemoteFormProxy<T>
-        implements RemoteDialogInterface {
+public class RemoteDialogProxy extends RemoteFormProxy<RemoteDialogInterface> implements RemoteDialogInterface {
 
-    public RemoteDialogProxy(T target) {
+    public RemoteDialogProxy(RemoteDialogInterface target) {
         super(target);
     }
 

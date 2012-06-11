@@ -7,7 +7,6 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
 import java.util.Iterator;
@@ -52,7 +51,7 @@ public abstract class BaseImportActionProperty extends CustomReadValueActionProp
         entity.forceViewType = ClassViewType.PANEL;
     }
 
-    protected DataClass getReadType(ExecutionContext context) {
+    protected DataClass getReadType() {
         return valueClass;
     }
 }
