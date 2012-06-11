@@ -1128,6 +1128,7 @@ CLASS subNaturalLossItemGroupDetail 'Строка группы естестве�
 parentNaturalLossItemGroup 'Родительская группа' = DATA naturalLossItemGroup(subNaturalLossItemGroup);
 codeSubNaturalLossItemGroup 'Код нормы естественной убыли' = DATA STRING[3] (subNaturalLossItemGroup);
 
+nameToNaturalLossItemGroup (name) = GROUP UNIQUE naturalLossItemGroup BY name(naturalLossItemGroup);
 subNaturalLossItemGroupSubNaturalLossItemGroupDetail = DATA subNaturalLossItemGroup (subNaturalLossItemGroupDetail);
 dayFromNaturalLossItemGroupDetail 'День' = DATA INTEGER (subNaturalLossItemGroupDetail);
 monthFromNaturalLossItemGroupDetail = DATA month (subNaturalLossItemGroupDetail);
@@ -10307,12 +10308,50 @@ fillStatisticGroupDefaultValues 'Заполнить значения стат г
     EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.thing, 1);
 
 }
+
+//------------------- Справочник норм естественной убыли----------------------------//
+
+addNaturalLossItemGroupString 'Добавить нормы естественной убыли' = ACTION (string)  {
+    ADDOBJ naturalLossItemGroup;
+    FOR cg == addedObject() DO {
+         SET name(cg) <- string AS STRING[110];
+    }
+}
+
+addSubNaturalLossItemGroupString 'Добавить нормы естественной убыли' = ACTION (string, stringOne, stringTwo, numeric)  {
+    ADDOBJ subNaturalLossItemGroup;
+    FOR g == addedObject() DO {
+        SET parentNaturalLossItemGroup(g) <- nameToNaturalLossItemGroup(string AS STRING[110]);
+        SET name(g) <-  stringOne AS STRING[110];
+        SET codeSubNaturalLossItemGroup(g) <- stringTwo AS STRING[3];
+
+        ADDOBJ subNaturalLossItemGroupDetail;
+        FOR d == addedObject() DO {
+            SET subNaturalLossItemGroupSubNaturalLossItemGroupDetail(d) <- g AS subNaturalLossItemGroup;
+            SET percentNaturalLossDetail(d) <- numeric AS NUMERIC[10,5];
+        }
+    }
+}
+
+
+fillLossItemGroupDefaultValues 'Заполнить группы естественной убыли по умолчанию' = ACTION () {
+    EXEC addNaturalLossItemGroupString('Мясо мороженое');
+    EXEC addNaturalLossItemGroupString('Кондитерские товары');
+    EXEC addNaturalLossItemGroupString('Бакалейные товары');
+
+    EXEC addSubNaturalLossItemGroupString('Мясо мороженое', 'Хреновуха', '012', 0.30);
+    EXEC addSubNaturalLossItemGroupString('Кондитерские товары', 'Халва', '075', 0.55);
+    EXEC addSubNaturalLossItemGroupString('Бакалейные товары', 'Кофе в зернах', '086', 0.10);
+}
+// todo: переделать ньюмерик на что-нибудь другое, т.к. не записывает.
+
+
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
     PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
                  fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                 fillStatisticGroupDefaultValues;
+                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
