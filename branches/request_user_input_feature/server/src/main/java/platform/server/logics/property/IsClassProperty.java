@@ -73,7 +73,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     public static boolean fitClass(ConcreteClass concreteClass, ValueClass valueClass) {
         // unknown, custom, concatenateClassSet
         if(concreteClass instanceof ValueClass)
-            return valueClass.isCompatibleParent((ValueClass) concreteClass);
+            return valueClass.getUpSet().containsAll(concreteClass);
         else {
             assert concreteClass instanceof UnknownClass; // с concatenate'ами надо будет разбираться
             return false;

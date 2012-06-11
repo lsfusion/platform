@@ -33,10 +33,6 @@ public class IntegerClass extends IntegralClass<Integer> {
         return Data.INTEGER;
     }
 
-    boolean isCompatible(DataClass compClass) {
-        return compClass instanceof DoubleClass || compClass instanceof LongClass || compClass instanceof NumericClass;
-    }
-
     int getWhole() {
         return 8;
     }

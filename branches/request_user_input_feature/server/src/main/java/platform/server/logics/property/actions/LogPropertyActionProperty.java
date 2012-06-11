@@ -46,7 +46,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Cust
                 if(groupResult.length() > 0)
                     groupResult = "id=" + groupResult;
                 for(PropertyDrawInstance property : groupObj.getValue())
-                    groupResult = (groupResult.length()==0?"":groupResult + ", ") + formRow.values.get(property).toString().trim();
+                    groupResult = (groupResult.length()==0?"":groupResult + ", ") + BaseUtils.toCaption(formRow.values.get(property));
                 if(groupResult.length()>0)
                     rowResult += "[" + groupResult + "] ";
             }
