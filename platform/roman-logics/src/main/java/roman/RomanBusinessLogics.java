@@ -20,6 +20,7 @@ import java.util.Arrays;
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Stock;
+    public ScriptingLogicsModule LegalEntity;
     public RomanLogicsModule RomanLM;
     public ScriptingLogicsModule RomanRB;
 
@@ -33,6 +34,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     protected void createModules() throws IOException {
         super.createModules();
         Stock = addModuleFromResource("/scripts/Stock.lsf");
+        LegalEntity = addModuleFromResource("/scripts/LegalEntity.lsf");
         addModulesFromResource(
             "/scripts/Utils.lsf",
             "/scripts/Hierarchy.lsf",
@@ -40,7 +42,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Numerator.lsf",
             "/scripts/Document.lsf",
             "/scripts/Consignment.lsf",
-            "/scripts/LegalEntity.lsf",
             "/scripts/Employee.lsf",
             "/scripts/Tax.lsf",
             "/scripts/Ware.lsf",
