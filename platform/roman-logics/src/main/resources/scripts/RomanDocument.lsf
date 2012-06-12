@@ -2,7 +2,7 @@ MODULE RomanDocument;
 
 REQUIRE Document;
 
-META defineRBDocument (object, stock, stockCaption)
+META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
     @defineDocumentBasePosted(object);
 
@@ -13,6 +13,14 @@ META defineRBDocument (object, stock, stockCaption)
     @defineDocumentDetailNumbered(object);
 
     @defineDocumentHeaderQuantity(object);
+
+    description###object 'Название документа' (object) =
+        [FORMULA STRING[200] '\' CAST($1 AS TEXT) \' || CAST($2 AS TEXT)'](
+        caption, seriesNumberObject(object));
+
+    description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
+
+    @implementBalanceSkuLedger (object, skuProp, stock);
 
 END
 

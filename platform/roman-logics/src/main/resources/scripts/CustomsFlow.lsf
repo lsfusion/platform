@@ -16,7 +16,8 @@ CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignme
 CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
-@defineRBDocument(CStoWH, customStore, 'СВХ');
+warehouseCStoWH 'Оптовый склад (ИД)' (CStoWH) = DATA warehouse (CStoWH);
+nameWarehouseCStoWH 'Оптовый склад' (CStoWH) = name (warehouseCStoWH (CStoWH));
 
 declarationDetailCStoWHDetail 'Партия (ИД)' = DATA declarationDetail (CStoWHDetail);
 declarationCStoWHDetail 'Декларация (ИД)' (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
@@ -24,6 +25,13 @@ batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCStoW
 
 skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 
+@defineRBDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ');
+
+descriptionBalanceSkuLedger (ledger) += descriptionCStoWHDetail (ledger);
+isPostedBalanceSkuLedger (ledger) += isPostedCStoWHDetail (ledger);
+quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCStoWHDetail (outUserBalanceSkuLedger);
+
+nameArticleSkuCStoWHDetail 'Наименование' (CStoWHDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)));
 barcodeCStoWHDetail 'Штрих-код' (CStoWHDetail) = barcodeLedger (declarationDetailCStoWHDetail(CStoWHDetail));
 brandCStoWHDetail 'Бренд' (CStoWHDetail) = brandLedger (declarationDetailCStoWHDetail(CStoWHDetail));
 sidArticleCStoWHDetail 'Артикул' (CStoWHDetail) = sidArticleLedger (declarationDetailCStoWHDetail(CStoWHDetail));
@@ -39,26 +47,10 @@ sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDe
 totalSumCStoWHDetail 'Общая стоимость' (CStoWH) =
     GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWH) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-nameArticleSkuCStoWHDetail 'Наименование' (CStoWHDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)));
-
-warehouseCStoWH 'Оптовый склад (ИД)' (CStoWH) = DATA warehouse (CStoWH);
-nameWarehouseCStoWH 'Оптовый склад' (CStoWH) = name (warehouseCStoWH (CStoWH));
-
-descriptionCStoWH 'Название документа' (CStoWH) =
-    [FORMULA STRING[200] '\'Расход \' || CAST($1 AS TEXT)'](
-    seriesNumberObject(CStoWH));
-
-descriptionCStoWHDetail 'Название документа' (CStoWHDetail) = descriptionCStoWH(CStoWHCStoWHDetail(CStoWHDetail));
-
-@implementBalanceSkuLedger (CStoWH, sku, customStore);
-
-descriptionBalanceSkuLedger (ledger) += descriptionCStoWHDetail (ledger);
-isPostedBalanceSkuLedger (ledger) += isPostedCStoWHDetail (ledger);
-quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCStoWHDetail (outUserBalanceSkuLedger);
-
 quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
                                                       BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
 
+// подбор строк для расхода
 currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
     currentBalanceBatchLedger(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
 
@@ -81,7 +73,6 @@ inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
 declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255(sidDeclaration(declaration))
     IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-// подбор строк для расхода
 quantityInputDeclarationDetail 'Кол-во' = SESSION DATA NUMERIC[14,3] (declarationDetail);
 isInputDeclarationDetail 'Вкл' = SESSION DATA BOOLEAN (declarationDetail);
 
@@ -130,6 +121,7 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
             }
         SET quantityInputDeclarationDetail(declarationDetail) <- NULL;
 } TOOLBAR;
+
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
