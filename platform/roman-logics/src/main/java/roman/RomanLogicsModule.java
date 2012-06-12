@@ -1370,7 +1370,7 @@ public class RomanLogicsModule extends LogicsModule {
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
-        importer = addConcreteClass("importer", "Импортер", subject);
+        importer = addConcreteClass("importer", "Импортер", subject, (CustomClass) BL.LegalEntity.getClassByName("company"));
         exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
 
         commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);
@@ -1411,7 +1411,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
 
-        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"));
+        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"), (CustomClass) BL.LegalEntity.getClassByName("legalEntity"));
 
 
         creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);

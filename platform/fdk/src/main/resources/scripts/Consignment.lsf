@@ -98,6 +98,8 @@ addressTransportPayerConsignment 'Юридический адрес заказч
 fullNameTransportPayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
     fullNameLegalEntity(transportPayerConsignment(consignment)) ;
 
+noteConsignment 'Примечание' (consignment) = ABSTRACT STRING[100] (consignment) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+
 nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
     (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN carConsignmentGroup;
@@ -107,8 +109,9 @@ consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consign
 skuConsignmentDetail (consignmentDetail) = ABSTRACT sku (consignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
 
-UOMConsignmentDetail (consignmentDetail) = UOMSku(skuConsignmentDetail(consignmentDetail));
-shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
+//UOMConsignmentDetail (consignmentDetail) = UOMSku(skuConsignmentDetail(consignmentDetail));
+//shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
+shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (consignmentDetail);
 
 quantityConsignmentDetail 'Количество' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
 

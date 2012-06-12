@@ -621,6 +621,7 @@ totalSumCustomsFlowDetail 'Общая стоимость' (customsFlow) =
     GROUP SUM sumCustomsFlowDetail(customsFlowDetail) BY customsFlowCustomsFlowDetail(customsFlow) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 nameArticleSkuCustomsFlowDetail 'Наименование' (customsFlowDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)));
+//nameUnitOfMeasureCustomsFlowDetail 'Ед. изм.' (customsFlowDetail) = nameUnitOfMeasureArticleSku(skuCustomsFlowDetail(customsFlowDetail));
 
 warehouseCustomsFlow 'Оптовый склад (ИД)' (customsFlow) = DATA warehouse (customsFlow);
 nameWarehouseCustomsFlow 'Оптовый склад' (customsFlow) = name (warehouseCustomsFlow (customsFlow));
@@ -758,16 +759,6 @@ DESIGN customsFlows FROM DEFAULT {
     }
 }
 
-dateConsignment (consignment) += dateCustomsFlow (consignment);
-stockConsignment (consignment) += customStoreCustomsFlow (consignment);
-
-consignmentConsignmentDetail (consignmentDetail) += customsFlowCustomsFlowDetail (consignmentDetail);
-skuConsignmentDetail (consignmentDetail) += skuCustomsFlowDetail (consignmentDetail);
-quantityConsignmentDetail (consignmentDetail) += quantityCustomsFlowDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += priceCustomsFlowDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += sumCustomsFlowDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCustomsFlowDetail (consignmentDetail);
-
 // Приход на склад
 CLASS warehouse 'Склад' : stock;
 
@@ -788,6 +779,8 @@ CLASS inWarehouseScan 'Сканирование';
 @defineDocumentDetailQuantity(inWarehouseFlow);
 
 freightInWarehouseRFFlow 'Фрахт прихода (ИД)' = DATA freight(inWarehouseRFFlow) IN idGroup;
+
+importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
 
 customFlowInWarehouseFlow 'Расход прихода (ИД)' = DATA customsFlow(inWarehouseFlow) IN idGroup;
 numberCustomFlowInWarehouseFlow 'Расход прихода (номер)' (inWarehouseFlow) = numberObject(customFlowInWarehouseFlow(inWarehouseFlow)) IN baseGroup;
@@ -819,6 +812,22 @@ quantityDataInWarehouseFlowDetail 'Кол-во фактическое' (inWareho
 
 inWarehouseFlowDetailInWarehouseFlowSku (inWarehouseFlow, sku) = GROUP MAX inWarehouseFlowDetail BY inWarehouseFlowInWarehouseFlowDetail(inWarehouseFlowDetail),
                                                                                                     skuInWarehouseFlowDetail(inWarehouseFlowDetail);
+
+@defineConsignment(customsFlow);
+@implementConsignmentHeader(customsFlow, customStore);
+
+senderConsignment (consignment) += customStoreCustomsFlow(consignment);
+recipientConsignment (consignment) += importerWarehouse(warehouseCustomsFlow(consignment));
+
+consignmentConsignmentDetail (consignmentDetail) += customsFlowCustomsFlowDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuCustomsFlowDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityCustomsFlowDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += priceCustomsFlowDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += sumCustomsFlowDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCustomsFlowDetail (consignmentDetail);
+
+//noteConsignment += noteConsignment
+
 
 @implementBalanceSkuLedger (inWarehouseFlow, sku, warehouse);
 
@@ -968,7 +977,110 @@ DESIGN inWarehouseFlows FROM DEFAULT {
     }
 }
 
+FORM importer 'Компания'
+    OBJECTS co=company FIXED PANEL
+    PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
+                   dialogAddressLegalEntity, postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity,
+                   dialogManagerLegalEntity, accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
+                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity,
+                   nameOrigin, addressOriginSubject, addressSubject, contractImporter, sidImporter
 
+    OBJECTS a=account
+    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    FILTERS legalEntityAccount(a) == co
+
+    OBJECTS s=supplier
+    PROPERTIES(s)       name
+//    PROPERTIES(co, s)   numberContractCompanySupplier
+
+//    OBJECTS c=contract
+//    PROPERTIES(c)  READONLY numberContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract,
+//                   dateToContract, nameCurrencyContract, noteContract, delayContract
+//    PROPERTIES(c)  ADDFORM, EDITFORM, delete
+//    FILTERS companyContract(c) == co,
+//            supplierContract(c) == s
+//
+//    FILTERGROUP filters
+//        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F10' countContractCompanySupplier(co, s) DEFAULT
+
+    EDIT company OBJECT co
+;
+
+DESIGN importer FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        co.box {
+        childConstraints = TO THE BOTTOM;
+
+        NEW row1 {
+            childConstraints = TO THE RIGHT;
+            ADD co.lawGroup{
+                childConstraints = TO THE BOTTOM;
+            }
+
+            NEW row11 {
+                title = 'Оригинал';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY (nameOrigin(co));
+                ADD PROPERTY (addressOriginSubject(co));
+                ADD PROPERTY (addressSubject(co));
+                ADD PROPERTY (contractImporter(co));
+                ADD PROPERTY (sidImporter(co));
+            }
+        }
+        NEW row2{
+            childConstraints = TO THE RIGHT;
+            ADD co.contactGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+            ADD co.managementGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+            ADD co.docGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+}
+
+//       co.box {
+//            childConstraints = TO THE RIGHT;
+//
+//            NEW oneCase {
+//                childConstraints = TO THE BOTTOM;
+//                ADD PROPERTY(name(co));
+//                ADD PROPERTY(fullNameLegalEntity(co));
+//                ADD PROPERTY(addressLegalEntity(co));
+//                ADD PROPERTY(phoneLegalEntity(co));
+//                ADD PROPERTY(UNPLegalEntity(co));
+//                ADD co.contactGroup;
+//            };
+//
+//            NEW twoCase{
+//                childConstraints = TO THE BOTTOM;
+//                ADD co.docGroup;
+//            }
+//            NEW threeCase {
+//                title = 'Оригинал';
+//                childConstraints = TO THE RIGHTBOTTOM;
+//                ADD PROPERTY (commonName(co));
+//                ADD PROPERTY (nameOrigin(co));
+//                ADD PROPERTY (addressOriginSubject(co));
+//                ADD PROPERTY (addressSubject(co));
+//                ADD PROPERTY (contractImporter(co));
+//                ADD PROPERTY (sidImporter(co));
+//            }
+//       }
+
+        NEW firstCase BEFORE functions.box {
+            type = TABBED;
+            ADD a.box;
+            NEW v.box { title = 'Поставщик-договор'; }
+            ADD s.box IN v.box;
+        //            ADD c.box IN v.box;
+        //            POSITION s.box TO THE LEFT c.box;
+        }
+    }
+}
 
 
 
