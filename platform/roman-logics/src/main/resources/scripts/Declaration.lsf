@@ -10,6 +10,7 @@ REQUIRE System,
 
 PRIORITY Utils, Stock, RomanLogicsModule;
 
+NAMESPACE RB;
 
 barcodeLedger 'Штрих-код' (ledger) = barcode(skuBalanceSkuLedger(ledger));
 sidSizeLedger 'Размер' (ledger) = sidSizeSupplierItem(skuBalanceSkuLedger(ledger));

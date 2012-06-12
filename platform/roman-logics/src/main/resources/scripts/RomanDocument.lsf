@@ -1,0 +1,18 @@
+MODULE RomanDocument;
+
+REQUIRE Document;
+
+META defineRBDocument (object, stock, stockCaption)
+
+    @defineDocumentBasePosted(object);
+
+    @defineDocumentStock(object, stock, stockCaption);
+
+    @defineDocumentDetailQuantity(object);
+
+    @defineDocumentDetailNumbered(object);
+
+    @defineDocumentHeaderQuantity(object);
+
+END
+

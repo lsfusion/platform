@@ -580,6 +580,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LP dateImporterFreight;
     private LP dateShipmentImporterFreightTypeInvoice;
     private ConcreteCustomClass stock;
+    private ConcreteCustomClass warehouse;
     private ConcreteCustomClass freightBox;
     private ConcreteCustomClass typeFabric;
     public LP sidArticleSku;
@@ -1438,6 +1439,8 @@ public class RomanLogicsModule extends LogicsModule {
         stamp = addConcreteClass("stamp", "Контрольная марка", baseClass);
 
         transitDocument = addConcreteClass("transitDocument", "Транзитный документ", baseClass);
+
+        warehouse = addConcreteClass("warehouse", "СВХ", stock);
     }
 
     @Override
