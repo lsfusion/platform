@@ -1133,7 +1133,7 @@ CLASS subNaturalLossItemGroupDetail 'Строка группы естестве�
 parentNaturalLossItemGroup 'Родительская группа' = DATA naturalLossItemGroup(subNaturalLossItemGroup);
 codeSubNaturalLossItemGroup 'Код нормы естественной убыли' = DATA STRING[3] (subNaturalLossItemGroup);
 
-nameToNaturalLossItemGroup (name) = GROUP UNIQUE naturalLossItemGroup BY name(naturalLossItemGroup);
+nameToNaturalLossItemGroup (name) = GROUP UNIQUE naturalLossItemGroup BY name(naturalLossItemGroup) WHERE naturalLossItemGroup IS naturalLossItemGroup;
 subNaturalLossItemGroupSubNaturalLossItemGroupDetail = DATA subNaturalLossItemGroup (subNaturalLossItemGroupDetail);
 dayFromNaturalLossItemGroupDetail 'День' = DATA INTEGER (subNaturalLossItemGroupDetail);
 monthFromNaturalLossItemGroupDetail = DATA month (subNaturalLossItemGroupDetail);

@@ -86,8 +86,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     importShipment(path + "/_ostn.dbf", context);
                 }
             }
-        }
-        catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         }
     }
@@ -263,7 +262,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportKey<?> brandKey = new ImportKey((ConcreteCustomClass) getClass("brand"),
                 getLP("extSIDToObject").getMapping(brandIDField));
 
-        ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass)getClass("country"),
+        ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass) getClass("country"),
                 getLP("extSIDToCountry").getMapping(countryIDField));
 
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) getClass("barcode"),
@@ -1012,20 +1011,23 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String group1 = new String(importFile.getField("GROUP1").getBytes(), "Cp1251").trim();
             String group2 = new String(importFile.getField("GROUP2").getBytes(), "Cp1251").trim();
             String group3 = new String(importFile.getField("GROUP3").getBytes(), "Cp1251").trim();
+            String group4 = "ВСЕ";
 
             if ((!"".equals(group1)) && (!"".equals(group2)) && (!"".equals(group3))) {
                 if (!parents) {
                     //sid - name
-                    addIfNotContains(Arrays.asList((Object) group3, group3));
-                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group2));
-                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group1));
+                    addIfNotContains(Arrays.asList((Object) group4, group4));
+                    addIfNotContains(Arrays.asList((Object) (group3.substring(0, 3) + "/" + group4), group3));
+                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3) + "/" + group4), group2));
+                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + group4), group1));
                     addIfNotContains(Arrays.asList((Object) k_grtov, pol_naim));
                 } else {
                     //sid - parentSID
-                    addIfNotContains(Arrays.asList((Object) group3, null));
-                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3)), group3));
-                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)), group2 + "/" + group3.substring(0, 3)));
-                    addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3)));
+                    addIfNotContains(Arrays.asList((Object) group4, null));
+                    addIfNotContains(Arrays.asList((Object) (group3.substring(0, 3) + "/" + group4), group4));
+                    addIfNotContains(Arrays.asList((Object) (group2 + "/" + group3.substring(0, 3) + "/" + group4), group3.substring(0, 3) + "/" + group4));
+                    addIfNotContains(Arrays.asList((Object) (group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + group4), group2 + "/" + group3.substring(0, 3) + "/" + group4));
+                    addIfNotContains(Arrays.asList((Object) k_grtov, group1 + "/" + group2.substring(0, 3) + "/" + group3.substring(0, 3) + "/" + group4));
                 }
             }
         }
@@ -1083,7 +1085,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String itemID = new String(quantityImportFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             Double quantityPackItem = new Double(new String(quantityImportFile.getField("PACKSIZE").getBytes(), "Cp1251").trim());
 
-            if (!quantities.containsKey(itemID) || quantityPackItem != 0) {
+            if (quantityPackItem == 0)
+                quantityPackItem = 1.0;
+            if (!quantities.containsKey(itemID)) {
                 quantities.put(itemID, quantityPackItem);
             }
         }
