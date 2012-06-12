@@ -4455,10 +4455,10 @@ TABLE zReport (zReport);
 @defineDocumentHeaderDepartmentStore(zReport);
 
 numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport) IN documentPrmGroup;
-numberToZReportPosted (zReportPosted) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
-
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport)) IN documentPrmGroup;
+numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
+maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
 
 departmentStoreZReport(zReport) <- departmentStoreMachinery(cashRegisterZReport(zReport))
     WHEN CHANGED(cashRegisterZReport(zReport));
@@ -4466,6 +4466,13 @@ departmentStoreZReport(zReport) <- departmentStoreMachinery(cashRegisterZReport(
 descriptionZReport (zReport) =
     [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
+
+generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'retail.actions.GenerateZReport';
+averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
+averageBillCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
+averageBillDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
+dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
+dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -4508,7 +4515,7 @@ itemBillDetail (billDetail) = itemBillReturnDetail(billDetail) OR itemBillSaleDe
 nameAttributeItemBillDetail 'Товар' (billDetail) = nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
-zReportBillToBill (zReport, bill) = GROUP UNIQUE bill BY numberZReport(zReportBill(bill)), numberBill(bill) WHERE bill IS bill;
+zReportBillToBill (zReport, bill, cashRegister) = GROUP UNIQUE bill BY numberZReport(zReportBill(bill)), numberBill(bill), numberCashRegister(cashRegisterZReport(zReportBill(bill))) WHERE bill IS bill;
 
 discountCardBill (bill) = DATA discountCard (bill);
 numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
@@ -4561,7 +4568,7 @@ retailRangeBillDetail (billDetail) = retailRangeBillReturnDetail(billDetail) OR 
 
 // используется только для приема реализации из внешних касс
 numberBillDetail 'Номер позиции чека' = DATA INTEGER (billDetail);
-zReportBillBillDetailToBillDetail (zReport, bill, billDetail) = GROUP UNIQUE billDetail BY numberZReport(zReportBillDetail(billDetail)), numberBill(billBillDetail(billDetail)), numberBillDetail(billDetail) WHERE billDetail IS billDetail;
+zReportBillBillDetailToBillDetail (zReport, bill, billDetail, cashRegister) = GROUP UNIQUE billDetail BY numberZReport(zReportBillDetail(billDetail)), numberBill(billBillDetail(billDetail)), numberBillDetail(billDetail), numberCashRegister(cashRegisterZReport(zReportBillDetail(billDetail))) WHERE billDetail IS billDetail;
 //
 
 addBillDetailBarcodeFill 'Добавить продажу по штрих-коду' = ACTION (bill) {
@@ -4621,7 +4628,7 @@ sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) 
 billPayment (payment) = DATA bill (payment);
 
 numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
-zReportBillPaymentToPayment (zReport, bill, number) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment) WHERE payment IS payment;
+zReportBillPaymentToPayment (zReport, bill, number, cashRegister) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportBill(billPayment(payment)))) WHERE payment IS payment;
 
 sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
 
@@ -4630,6 +4637,7 @@ sumPaymentBill (bill) = GROUP SUM sumPayment(payment) BY billPayment(payment);
 CONSTRAINT bill IS bill AND NOT retailSumBillDetailBill(bill) == sumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
 
 // todo: проверить работает ли CONSTRAINT
+//Ещё как работает!
 
 paymentTypePayment (payment) = DATA paymentType(payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
@@ -9319,14 +9327,15 @@ FORM bills 'Чеки'
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=bill
-    PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, nameDepartmentStoreBill,
+    PROPERTIES(b) READONLY  OBJVALUE, numberBill, dateBill, timeBill, nameDepartmentStoreBill,
                             numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
                             countBillDetailBill, quantityBillDetailBill
 
     FILTERS zReportBill(b)==z
+    ORDER BY                numberBill
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY  objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+    PROPERTIES(d) READONLY  OBJVALUE, objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                             supplierSumBalanceSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
@@ -10274,7 +10283,9 @@ fillLossItemGroupDefaultValues 'Заполнить группы естестве
 FORM parameters 'Параметры'
     PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
                  fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues;
+                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues
+    PROPERTIES()     generateZReport, averageZReportCountGenerateZReport, averageBillCountGenerateZReport, averageBillDetailCountGenerateZReport,
+                     dateFromGenerateZReport, dateToGenerateZReport;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
