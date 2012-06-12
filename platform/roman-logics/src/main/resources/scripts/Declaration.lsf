@@ -276,12 +276,6 @@ descriptionDeclarationDetail = descriptionDeclaration(declarationDeclarationDeta
 
 @implementBatch(declaration, sku);
 
-//dateTimeBatch(ledger) += dateTimeDeclarationDetail(ledger);
-//isPostedBatch (ledger) += isPostedDeclarationDetail(ledger);
-//skuBatch(ledger) += skuDeclarationDetail(ledger);
-//quantityBatch (ledger) += quantityDeclarationDetail(ledger);
-//supplierPriceBatch (ledger) += priceDeclarationDetail(ledger);
-
 @implementBalanceSkuLedger(declaration, sku, customStore);
 
 isPostedBalanceSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
@@ -522,4 +516,159 @@ grossWeightGroupDeclaration 'Вес брутто' (groupDeclaration) = GROUP SUM
 
 sumGroupDeclaration 'Стоимость' (groupDeclaration) = GROUP SUM sumDeclarationDetail(declarationDetail)
                                                             BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
+
+
+FORM declarationInvoices 'Присоединение инвойсов'
+    OBJECTS d=declaration FIXED PANEL
+    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+                  nameImporterDeclaration
+
+    OBJECTS ii=innerInvoice
+    PROPERTIES (ii) sidInnerInvoice
+    PROPERTIES (d, ii) inDeclarationInnerInvoice
+    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+;
+
+showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d NEWSESSION MODAL TOOLBAR;
+
+FORM declaration 'Декларация'
+    OBJECTS d=declaration FIXED PANEL
+    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+                  rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
+                  dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
+                  diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration, exportDeclaration
+
+//    OBJECTS ii=innerInvoice
+//    PROPERTIES (ii) sidInnerInvoice
+//    PROPERTIES (d, ii) inDeclarationInnerInvoice
+//    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+
+    OBJECTS c=correction
+    PROPERTIES(c) date, ADDOBJ, delete
+    FILTERS inDeclarationCorrection(d, c)
+
+    OBJECTS dd=declarationDetail
+    PROPERTIES (dd) numberDeclarationDetail, barcodeLedger, nameBrandLedger, sidArticleLedger,
+                    nameCategoryLedger, mainCompositionDeclarationDetail,
+                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
+                    quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
+                    rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
+                    certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
+                    sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                    correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
+                    diffDutyDeclarationDetail, registrationDeclarationDetail, ADDOBJ, delete
+
+    FILTERS inDeclarationDeclarationDetail(d, dd)
+    PROPERTIES (c, dd) priceCorrectionDeclarationDetail
+
+    OBJECTS gd=groupDeclaration
+    PROPERTIES (gd) numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration,
+                    sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
+                    sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, quantityGroupDeclaration,
+                    sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+                    sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
+
+    //PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
+
+    OBJECTS ii2=innerInvoice
+    PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
+
+    FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
+
+    OBJECTS f=freightUnit
+    PROPERTIES (f) barcode, nameDestinationFreightBox
+    PROPERTIES (f, dd) inFreightUnitDeclarationDetail
+
+    FILTERS inFreightUnitDeclarationDetail(f, dd)
+
+    EDIT declaration OBJECT d
+;
+
+
+DESIGN declaration FROM DEFAULT{
+    main {
+         d.panel {
+            childConstraints = TO THE RIGHTBOTTOM;
+         }
+//        NEW document.box BEFORE dd.box {
+//            type = TABBED;
+//            ADD ii.box;
+//            ADD c.box;
+//        }
+
+        POSITION d.box TO THE LEFT c.box;
+        POSITION gd.box TO THE LEFT ii2.box;
+
+//        ii.grid {
+//            fillHorizontal = 0.5;
+//        }
+
+        c.grid {
+            fillHorizontal = 0.5;
+        }
+
+        dd.grid {
+            fillVertical = 3;
+        }
+
+        gd.grid {
+            fillVertical = 2;
+        }
+
+        ii2.grid {
+            fillVertical = 2;
+            fillHorizontal = 0.4;
+        }
+    }
+};
+
+
+
+FORM declarations 'Декларации'
+    OBJECTS d=declaration
+    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+                           rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
+                           dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion, diffNDSDeclararion, diffDeclaration,
+                           expenseCertificateDeclaration
+    PROPERTIES(d) ADDFORM, EDITFORM, delete, showFormDeclarationInvoices
+
+    OBJECTS dd=declarationDetail
+    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeLedger, nameBrandLedger,
+                            sidArticleLedger, nameCategoryLedger, sidGenderGroupDeclaration,
+                            nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
+                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                            netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
+                            quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
+                            rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
+                            certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
+                            sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                            sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
+                            correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
+                            correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, registrationDeclarationDetail,
+                            priceCustomDeclarationDetail, priceManagerialCustomDeclarationDetail
+    FILTERS inDeclarationDeclarationDetail(d, dd)
+;
+
+DESIGN declarations FROM DEFAULT {
+    d.grid {
+        fillVertical = 0.3;
+    }
+}
+
+
+FORM innerInvoices 'Инвойсы РБ'
+    OBJECTS i=innerInvoice
+    PROPERTIES(i) READONLY nameCustomStoreInnerInvoice, sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice
+    PROPERTIES(i) sidDeclarationInnerInvoice, delete
+    FILTERS freightArrivedInnerInvoice(i)
+
+
+    OBJECTS s=sku
+    PROPERTIES(s) READONLY barcode, sidArticleSku
+    PROPERTIES (i, s) quantityInnerInvoiceSku
+    FILTERS quantityInnerInvoiceSku(i, s)
+;
 

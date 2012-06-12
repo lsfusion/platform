@@ -62,6 +62,9 @@ descriptionBalanceSkuLedger (ledger) += descriptionCustomsFlowDetail (ledger);
 isPostedBalanceSkuLedger (ledger) += isPostedCustomsFlowDetail (ledger);
 quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCustomsFlowDetail (outUserBalanceSkuLedger);
 
+quantityCustomsFlowBatch (customFlow, batch) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
+                                                      BY customsFlowCustomsFlowDetail(customsFlowDetail), declarationDetailCustomsFlowDetail(customsFlowDetail);
+
 currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
     currentBalanceBatchLedger(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
 

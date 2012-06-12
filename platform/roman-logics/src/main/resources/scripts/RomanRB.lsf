@@ -4,6 +4,7 @@ REQUIRE System,
 
         Utils,
         Stock,
+        Barcode,
         Numerator,
         Document,
         Historizable,
@@ -15,6 +16,7 @@ REQUIRE System,
 PRIORITY Utils, Stock, RomanLogicsModule;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
+
 
 META metaCodePriceBaseDiscount(document, caption)
 
@@ -40,26 +42,6 @@ META metaCodePriceBaseDiscount(document, caption)
 
 END
 
-// --------------------------- Имплементация остатков -------------------------- //
-
-//TABLE batchDepartmentStore(batch, departmentStore);
-
-//META implementBalanceSkuLedgerSkuStock(concrete, stock)
-//    dateTimeBalanceSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
-//   // isPostedBalanceSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
-//   // descriptionBalanceSkuLedger (ledger) += description###concrete##Detail(ledger);
-//    skuBalanceSkuLedger (ledger) += sku###concrete##Detail(ledger);
-//    stockBalanceSkuLedger (ledger) += stock###concrete##Detail(ledger);
-//END
-
-META implementBatch(concrete)
-    dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
-    //isPostedBatch (batch) += isPosted###concrete##Detail(batch);
-    //descriptionBatch (batch) += description###concrete##Detail(batch);
-    skuBatch (batch) += sku###concrete##Detail(batch);
-    //supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
-END
-
 //--------------------------------- Наименование товара --------------------------------------------------------------------//
 descriptionSku 'Наименование товара' (sku) =
         [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -74,160 +56,6 @@ FORM customStores 'Склады временного хранения'
     PROPERTIES(c) name, ADDOBJ, delete
 ;
 
-
-FORM declarationInvoices 'Присоединение инвойсов'
-    OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
-                  nameImporterDeclaration
-
-    OBJECTS ii=innerInvoice
-    PROPERTIES (ii) sidInnerInvoice
-    PROPERTIES (d, ii) inDeclarationInnerInvoice
-    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
-;
-
-showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d NEWSESSION MODAL TOOLBAR;
-
-FORM declaration 'Декларация'
-    OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
-                  rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
-                  dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
-                  diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration, exportDeclaration
-
-//    OBJECTS ii=innerInvoice
-//    PROPERTIES (ii) sidInnerInvoice
-//    PROPERTIES (d, ii) inDeclarationInnerInvoice
-//    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
-
-    OBJECTS c=correction
-    PROPERTIES(c) date, ADDOBJ, delete
-    FILTERS inDeclarationCorrection(d, c)
-
-    OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberDeclarationDetail, barcodeLedger, nameBrandLedger, sidArticleLedger,
-                    nameCategoryLedger, mainCompositionDeclarationDetail,
-                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
-                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
-                    quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
-                    rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
-                    certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
-                    sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
-                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
-                    correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
-                    diffDutyDeclarationDetail, registrationDeclarationDetail, ADDOBJ, delete
-
-    FILTERS inDeclarationDeclarationDetail(d, dd)
-    PROPERTIES (c, dd) priceCorrectionDeclarationDetail
-
-    OBJECTS gd=groupDeclaration
-    PROPERTIES (gd) numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration,
-                    sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
-                    sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, quantityGroupDeclaration,
-                    sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
-                    sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
-
-    //PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
-
-    OBJECTS ii2=innerInvoice
-    PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
-
-    FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
-
-    OBJECTS f=freightUnit
-    PROPERTIES (f) barcode, nameDestinationFreightBox
-    PROPERTIES (f, dd) inFreightUnitDeclarationDetail
-
-    FILTERS inFreightUnitDeclarationDetail(f, dd)
-
-    EDIT declaration OBJECT d
-;
-
-
-DESIGN declaration FROM DEFAULT{
-    main {
-         d.panel {
-            childConstraints = TO THE RIGHTBOTTOM;
-         }
-//        NEW document.box BEFORE dd.box {
-//            type = TABBED;
-//            ADD ii.box;
-//            ADD c.box;
-//        }
-
-        POSITION d.box TO THE LEFT c.box;
-        POSITION gd.box TO THE LEFT ii2.box;
-
-//        ii.grid {
-//            fillHorizontal = 0.5;
-//        }
-
-        c.grid {
-            fillHorizontal = 0.5;
-        }
-
-        dd.grid {
-            fillVertical = 3;
-        }
-
-        gd.grid {
-            fillVertical = 2;
-        }
-
-        ii2.grid {
-            fillVertical = 2;
-            fillHorizontal = 0.4;
-        }
-    }
-};
-
-
-
-FORM declarations 'Декларации'
-    OBJECTS d=declaration
-    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
-                           rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
-                           dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion, diffNDSDeclararion, diffDeclaration,
-                           expenseCertificateDeclaration
-    PROPERTIES(d) ADDFORM, EDITFORM, delete, showFormDeclarationInvoices
-
-    OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeLedger, nameBrandLedger,
-                            sidArticleLedger, nameCategoryLedger, sidGenderGroupDeclaration,
-                            nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
-                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
-                            netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
-                            quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
-                            rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
-                            certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
-                            sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
-                            sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
-                            correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
-                            correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, registrationDeclarationDetail,
-                            priceCustomDeclarationDetail, priceManagerialCustomDeclarationDetail
-    FILTERS inDeclarationDeclarationDetail(d, dd)
-;
-
-DESIGN declarations FROM DEFAULT {
-    d.grid {
-        fillVertical = 0.3;
-    }
-}
-
-
-FORM innerInvoices 'Инвойсы РБ'
-    OBJECTS i=innerInvoice
-    PROPERTIES(i) READONLY nameCustomStoreInnerInvoice, sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice
-    PROPERTIES(i) sidDeclarationInnerInvoice, delete
-    FILTERS freightArrivedInnerInvoice(i)
-
-
-    OBJECTS s=sku
-    PROPERTIES(s) READONLY barcode, sidArticleSku
-    PROPERTIES (i, s) quantityInnerInvoiceSku
-    FILTERS quantityInnerInvoiceSku(i, s)
-;
 
 // документы расценки
 CLASS STATIC methodPrice 'Метод расчёта'
@@ -587,10 +415,8 @@ CLASS warehouse 'Склад' : stock;
 
 CLASS inWarehouseFlow 'Приход на склад' : historyObject, numberedObject;
 CLASS inWarehouseFlowPosted 'Закрытый приход с СВХ' : inWarehouseFlow, postedObject;
-CLASS inWarehouseRFFlow 'Приход на склад (РФ)' : historyObject, numberedObject;
 
 CLASS inWarehouseFlowDetail 'Строка прихода на склад' : inTransferBalanceSkuLedger;
-CLASS inWarehouseRFFlowDetail 'Строка прихода на склад (РФ)' : inTransferBalanceSkuLedger;
 
 CLASS inWarehouseScan 'Сканирование';
 
@@ -601,7 +427,6 @@ CLASS inWarehouseScan 'Сканирование';
 
 @defineDocumentDetailQuantity(inWarehouseFlow);
 
-freightInWarehouseRFFlow 'Фрахт прихода (ИД)' = DATA freight(inWarehouseRFFlow) IN idGroup;
 
 importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
 
@@ -612,13 +437,8 @@ seriesCustomFlowInWarehouseFlow 'Расход прихода (серия)' (inWa
 inCustomsFlowInWarehouseFlow (inWarehouseFlow, customsFlow) = customFlowInWarehouseFlow(inWarehouseFlow) == customsFlow;
 
 skuInWarehouseFlowDetail 'Товар (ИД)' (inWarehouseFlowDetail) = DATA sku(inWarehouseFlowDetail) IN idGroup;
+
 descriptionInWarehouseFlowDetail 'Описание' (inWarehouseFlowDetail) = DATA STRING[100](inWarehouseFlowDetail);
-
-//quantityCustomsFlowBatch (customsFlow, batch) = GROUP SUM costBalanceSkuLedgerBatch(customsFlowDetail, batch)
-//                                                       BY customsFlowCustomsFlowDetail(customsFlowDetail), batch;
-
-quantityCustomsFlowBatch (customFlow, batch) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
-                                                      BY customsFlowCustomsFlowDetail(customsFlowDetail), declarationDetailCustomsFlowDetail(customsFlowDetail);
 
 quantityInWarehouseFlowBatch (inWarehouseFlow, batch) = quantityCustomsFlowBatch(customFlowInWarehouseFlow(inWarehouseFlow), batch);
 quantityInWarehouseFlowDetailBatch (inWarehouseFlowDetail, batch) = quantityInWarehouseFlowBatch(inWarehouseFlowInWarehouseFlowDetail(inWarehouseFlowDetail), batch);
@@ -631,7 +451,7 @@ quantityDCustomFlowSku (customFlow, sku) = GROUP SUM quantityCustomsFlowDetail(c
 articleInWarehouseFlowDetail 'Артикул (ИД)' (inWarehouseFlowDetail) = articleSku(skuInWarehouseFlowDetail(inWarehouseFlowDetail));
 sidArticleInWarehouseFlowDetail 'Артикул' (inWarehouseFlowDetail) = sidArticle(articleInWarehouseFlowDetail(inWarehouseFlowDetail));
 
-quantityDataInWarehouseFlowDetail 'Кол-во фактическое' (inWarehouseFlowDetail) = DATA NUMERIC[14,2](inWarehouseFlowDetail) IN baseGroup;
+quantityOriginInWarehouseFlowDetail 'Кол-во плановое' (inWarehouseFlowDetail) = DATA NUMERIC[14,2](inWarehouseFlowDetail) IN baseGroup;
 
 inWarehouseFlowDetailInWarehouseFlowSku (inWarehouseFlow, sku) = GROUP MAX inWarehouseFlowDetail BY inWarehouseFlowInWarehouseFlowDetail(inWarehouseFlowDetail),
                                                                                                     skuInWarehouseFlowDetail(inWarehouseFlowDetail);
@@ -648,66 +468,45 @@ toFillInWarehouseDetailsInWarehouseFlow 'Заполнить приход по р
         FOR w == addedObject() DO {
             SET skuInWarehouseFlowDetail(w) <- sku AS sku;
             SET inWarehouseFlowInWarehouseFlowDetail(w) <- inWarehouseFlow AS inWarehouseFlow;
-            SET quantityInWarehouseFlowDetail(w) <- quantityDCustomFlowSku(customFlowInWarehouseFlow(inWarehouseFlowInWarehouseFlowDetail(w)), sku);
+            SET quantityOriginInWarehouseFlowDetail(w) <- quantityDCustomFlowSku(customFlowInWarehouseFlow(inWarehouseFlowInWarehouseFlowDetail(w)), sku);
         };
     };
 } CONFIRM;
 
 
-// расход со склада
-CLASS outWarehouseFlow 'Расход со склада' : historyObject, numberedObject;
-CLASS outWarehouseFlowPosted 'Закрытый расход со склада' : outWarehouseFlow, postedObject;
-
-CLASS outWarehouseFlowDetail 'Строка прихода на склад' : inTransferBalanceSkuLedger;
-
-///////////////////////////////////////
-
 idBarcodeInWarehouseScan 'Штрих-код' = DATA STRING[13] (inWarehouseScan);
 inWarehouseFlowInWarehouseScan 'Приход (ИД)' = DATA inWarehouseFlow(inWarehouseScan) IN idGroup;
 skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
 
-tmpSku() = SESSION DATA sku ();
 
-FORM barcodeInput 'Ввод штрих-кода'
-    OBJECTS barcode=STRING[13] FIXED PANEL
-    PROPERTIES(barcode) objValue = OBJVALUE
-;
-
-DESIGN barcodeInput FROM DEFAULT {
-    PROPERTY (objValue) {
-        caption = 'Штрих-код';
-        font = 'Tahoma bold 64';
-        panelLabelAbove = TRUE;
-    }
-}
-
-addInWarehouseScanBarcodeFill 'Добавить' = ACTION (inWarehouseFlow) {
-     FORM barcodeInput MODAL;
-
-     IF formResult() == formResult.ok THEN {
-         SET tmpSku() <- barcodeToObject(chosenString('barcode'));
-
-         IF tmpSku() IS sku THEN {
-              IF inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku()) IS inWarehouseFlowDetail THEN {
-                 SET quantityDataInWarehouseFlowDetail(detail) IF detail == inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku()) <-
-                     quantityDataInWarehouseFlowDetail(inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku())) (+) (1 IF (inWarehouseFlow IS inWarehouseFlow));
-              }
-
-              ELSE {
-                 ADDOBJ inWarehouseFlowDetail;
-                 FOR w == addedObject() DO {
-                     SET inWarehouseFlowInWarehouseFlowDetail(w) <- inWarehouseFlow AS inWarehouseFlow;
-                     SET skuInWarehouseFlowDetail(w) <- tmpSku();
-                     SET quantityDataInWarehouseFlowDetail(w) <- 1;
-                 };
-              };
-         }
-
-         ELSE
-            MESSAGE 'Не найден штрих-код';
-
-     };
-} TOOLBAR EDITKEY 'F4';
+@defineAddDetailDialogBarcode(inWarehouseFlow);
+//addInWarehouseScanBarcodeFill 'Добавить' = ACTION (inWarehouseFlow) {
+//     FORM barcodeInput MODAL;
+//
+//     IF formResult() == formResult.ok THEN {
+//         SET tmpSku() <- barcodeToObject(chosenString('barcode'));
+//
+//         IF tmpSku() IS sku THEN {
+//              IF inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku()) IS inWarehouseFlowDetail THEN {
+//                 SET quantityDataInWarehouseFlowDetail(detail) IF detail == inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku()) <-
+//                     quantityDataInWarehouseFlowDetail(inWarehouseFlowDetailInWarehouseFlowSku(inWarehouseFlow, tmpSku())) (+) (1 IF (inWarehouseFlow IS inWarehouseFlow));
+//              }
+//
+//              ELSE {
+//                 ADDOBJ inWarehouseFlowDetail;
+//                 FOR w == addedObject() DO {
+//                     SET inWarehouseFlowInWarehouseFlowDetail(w) <- inWarehouseFlow AS inWarehouseFlow;
+//                     SET skuInWarehouseFlowDetail(w) <- tmpSku();
+//                     SET quantityDataInWarehouseFlowDetail(w) <- 1;
+//                 };
+//              };
+//         }
+//
+//         ELSE
+//            MESSAGE 'Не найден штрих-код';
+//
+//     };
+//} TOOLBAR EDITKEY 'F4';
 
 FORM declarationsCustomsFlow 'Декларации'
     OBJECTS c=customsFlow FIXED PANEL
@@ -720,23 +519,19 @@ FORM declarationsCustomsFlow 'Декларации'
     FILTERS isCustomsDeclarationCustomsFlow (de, c)
 ;
 
+
 FORM inWarehouseFlow 'Приход на оптовый склад'
 
     OBJECTS w = inWarehouseFlow FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateInWarehouseFlow, timeInWarehouseFlow, nameWarehouseInWarehouseFlow,
-                   numberCustomFlowInWarehouseFlow, seriesCustomFlowInWarehouseFlow, toFillInWarehouseDetailsInWarehouseFlow, addInWarehouseScanBarcodeFill
+                   numberCustomFlowInWarehouseFlow, seriesCustomFlowInWarehouseFlow, toFillInWarehouseDetailsInWarehouseFlow, addDetailDialogBarcodeInWarehouseFlow
 
     OBJECTS d = inWarehouseFlowDetail
     PROPERTIES(d) indexInWarehouseFlowDetail, barcodeLedger, nameBrandLedger, sidArticleInWarehouseFlowDetail,
-                  sidColorLedger, nameColorLedger, sidSizeLedger, quantityInWarehouseFlowDetail, quantityDataInWarehouseFlowDetail
+                  sidColorLedger, nameColorLedger, sidSizeLedger, quantityOriginInWarehouseFlowDetail, quantityInWarehouseFlowDetail
     PROPERTIES(d) ADDOBJ, delete
 
     FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
-
-    //OBJECTS s = inWarehouseScan
-    //PROPERTIES (s) idBarcodeInWarehouseScan, skuInWarehouseScan
-
-    //FILTERS inWarehouseFlowInWarehouseScan(s)==w
 
     EDIT inWarehouseFlow OBJECT w
 ;
@@ -751,7 +546,7 @@ FORM inWarehouseFlows 'Приходы на оптовый склад'
     OBJECTS d = inWarehouseFlowDetail
     PROPERTIES(d) READONLY isPostedBalanceSkuLedger, indexInWarehouseFlowDetail, barcodeLedger,
                            nameBrandLedger, sidArticleInWarehouseFlowDetail, sidColorLedger, nameColorLedger, sidSizeLedger,
-                           quantityInWarehouseFlowDetail, quantityDataInWarehouseFlowDetail
+                           quantityOriginInWarehouseFlowDetail, quantityInWarehouseFlowDetail
 
     FILTERS inInWarehouseFlowInWarehouseFlowDetail(w, d)
 ;

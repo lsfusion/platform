@@ -58,6 +58,40 @@ DESIGN barcodeInput FROM DEFAULT {
     }
 }
 
+// ------------------------------------ Добавление сканированием строк в документ ----------------------//
+META defineAddDetailDialogBarcode(object)
+
+    addDetailDialogBarcode###object 'Добавить' = ACTION (object) {
+        FORM barcodeInput MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            LOCAL tmpSku = sku();
+            SET tmpSku() <- barcodeToObject(chosenString('barcode'));
+
+            IF tmpSku() IS sku THEN {
+                IF  object##Detail###object##Sku(object, tmpSku()) IS object##Detail THEN {
+                    SET quantity###object##Detail(detail) IF detail == object##Detail###object##Sku(object, tmpSku()) <-
+                    quantity###object##Detail(object##Detail###object##Sku(object, tmpSku())) (+) (1 IF (object IS object));
+                }
+
+                ELSE {
+                    ADDOBJ object##Detail;
+                    FOR w == addedObject() DO {
+                        SET object###object##Detail(w) <- object AS object;
+                        SET sku###object##Detail(w) <- tmpSku();
+                        SET quantity###object##Detail(w) <- 1;
+                    };
+                };
+            }
+
+            ELSE
+                MESSAGE 'Не найден штрих-код';
+        }
+    } TOOLBAR EDITKEY 'F4';
+
+END
+
+
 // ----------------------------------- Расширение подбора товаров ---------------------------- //
 
 META defineDialogSkuBarcode (form)
