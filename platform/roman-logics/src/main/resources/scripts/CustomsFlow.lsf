@@ -1,4 +1,5 @@
-MODULE CustomsFlow;
+//From CustomStote to WareHouse
+MODULE CStoWH;
 
 REQUIRE System,
 
@@ -11,52 +12,52 @@ REQUIRE System,
         MasterData,
         RomanLogicsModule;
 
-CLASS customsFlow 'Расход с СВХ' : historyObject, numberedObject, consignment;
-CLASS customsFlowDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
-CLASS customsFlowPosted 'Закрытый расход с СВХ' : customsFlow, postedObject, consignment;
+CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
+CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
+CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
-@defineRBDocument(customsFlow, customStore, 'СВХ');
+@defineRBDocument(CStoWH, customStore, 'СВХ');
 
-declarationDetailCustomsFlowDetail 'Партия (ИД)' = DATA declarationDetail (customsFlowDetail);
-declarationCustomsFlowDetail 'Декларация (ИД)' (customsFlowDetail) = declarationDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail));
-batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCustomsFlowDetail (outUserBalanceSkuLedger);
+declarationDetailCStoWHDetail 'Партия (ИД)' = DATA declarationDetail (CStoWHDetail);
+declarationCStoWHDetail 'Декларация (ИД)' (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
+batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCStoWHDetail (outUserBalanceSkuLedger);
 
-skuCustomsFlowDetail 'Товар (ИД)' (customsFlowDetail) = skuDeclarationDetail (declarationDetailCustomsFlowDetail(customsFlowDetail));
+skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 
-barcodeCustomsFlowDetail 'Штрих-код' (customsFlowDetail) = barcodeLedger (declarationDetailCustomsFlowDetail(customsFlowDetail));
-brandCustomsFlowDetail 'Бренд' (customsFlowDetail) = brandLedger (declarationDetailCustomsFlowDetail(customsFlowDetail));
-sidArticleCustomsFlowDetail 'Артикул' (customsFlowDetail) = sidArticleLedger (declarationDetailCustomsFlowDetail(customsFlowDetail));
-categoryCustomsFlowDetail 'Номенклатурная группа (ИД)' (customsFlowDetail) = categoryLedger (declarationDetailCustomsFlowDetail(customsFlowDetail));
-nameCategoryCustomsFlowDetail 'Номенклатурная группа ' (customsFlowDetail) = name(categoryCustomsFlowDetail(customsFlowDetail));
-netWeightCustomsFlowDetail 'Вес нетто (ед.)' (customsFlowDetail) = netWeightDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail));
-sumNetWeightCustomsFlowDetail 'Вес нетто' (customsFlowDetail) = netWeightCustomsFlowDetail(customsFlowDetail)*quantityCustomsFlowDetail(customsFlowDetail);
-sumGrossWeightCustomsFlowDetail 'Вес брутто' (customsFlowDetail) =
-    grossWeightDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)) * quantityCustomsFlowDetail(customsFlowDetail);
+barcodeCStoWHDetail 'Штрих-код' (CStoWHDetail) = barcodeLedger (declarationDetailCStoWHDetail(CStoWHDetail));
+brandCStoWHDetail 'Бренд' (CStoWHDetail) = brandLedger (declarationDetailCStoWHDetail(CStoWHDetail));
+sidArticleCStoWHDetail 'Артикул' (CStoWHDetail) = sidArticleLedger (declarationDetailCStoWHDetail(CStoWHDetail));
+categoryCStoWHDetail 'Номенклатурная группа (ИД)' (CStoWHDetail) = categoryLedger (declarationDetailCStoWHDetail(CStoWHDetail));
+nameCategoryCStoWHDetail 'Номенклатурная группа ' (CStoWHDetail) = name(categoryCStoWHDetail(CStoWHDetail));
+netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
+sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
+sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
+    grossWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)) * quantityCStoWHDetail(CStoWHDetail);
 
-priceCustomsFlowDetail 'Цена' (customsFlowDetail) = supplierPriceDeclarationDetail (declarationDetailCustomsFlowDetail(customsFlowDetail));
-sumCustomsFlowDetail 'Стоимость' (customsFlowDetail) = priceCustomsFlowDetail(customsFlowDetail) * quantityCustomsFlowDetail(customsFlowDetail);
-totalSumCustomsFlowDetail 'Общая стоимость' (customsFlow) =
-    GROUP SUM sumCustomsFlowDetail(customsFlowDetail) BY customsFlowCustomsFlowDetail(customsFlow) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
+priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
+sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
+totalSumCStoWHDetail 'Общая стоимость' (CStoWH) =
+    GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWH) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-nameArticleSkuCustomsFlowDetail 'Наименование' (customsFlowDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail)));
+nameArticleSkuCStoWHDetail 'Наименование' (CStoWHDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)));
 
-warehouseCustomsFlow 'Оптовый склад (ИД)' (customsFlow) = DATA warehouse (customsFlow);
-nameWarehouseCustomsFlow 'Оптовый склад' (customsFlow) = name (warehouseCustomsFlow (customsFlow));
+warehouseCStoWH 'Оптовый склад (ИД)' (CStoWH) = DATA warehouse (CStoWH);
+nameWarehouseCStoWH 'Оптовый склад' (CStoWH) = name (warehouseCStoWH (CStoWH));
 
-descriptionCustomsFlow 'Название документа' (customsFlow) =
+descriptionCStoWH 'Название документа' (CStoWH) =
     [FORMULA STRING[200] '\'Расход \' || CAST($1 AS TEXT)'](
-    seriesNumberObject(customsFlow));
+    seriesNumberObject(CStoWH));
 
-descriptionCustomsFlowDetail 'Название документа' (customsFlowDetail) = descriptionCustomsFlow(customsFlowCustomsFlowDetail(customsFlowDetail));
+descriptionCStoWHDetail 'Название документа' (CStoWHDetail) = descriptionCStoWH(CStoWHCStoWHDetail(CStoWHDetail));
 
-@implementBalanceSkuLedger (customsFlow, sku, customStore);
+@implementBalanceSkuLedger (CStoWH, sku, customStore);
 
-descriptionBalanceSkuLedger (ledger) += descriptionCustomsFlowDetail (ledger);
-isPostedBalanceSkuLedger (ledger) += isPostedCustomsFlowDetail (ledger);
-quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCustomsFlowDetail (outUserBalanceSkuLedger);
+descriptionBalanceSkuLedger (ledger) += descriptionCStoWHDetail (ledger);
+isPostedBalanceSkuLedger (ledger) += isPostedCStoWHDetail (ledger);
+quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCStoWHDetail (outUserBalanceSkuLedger);
 
-quantityCustomsFlowBatch (customFlow, batch) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
-                                                      BY customsFlowCustomsFlowDetail(customsFlowDetail), declarationDetailCustomsFlowDetail(customsFlowDetail);
+quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
+                                                      BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
 
 currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
     currentBalanceBatchLedger(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
@@ -64,21 +65,21 @@ currentBalanceDeclarationDetail 'Текущий остаток' (declarationDeta
 currentBalanceBDeclaration 'Текущий остаток по декларации' (declaration) = GROUP SUM currentBalanceDeclarationDetail (declarationDetail)
     IF declarationDeclarationDetail(declarationDetail) == declaration BY declaration;
 
-isAvailableDeclarationCustomsFlow 'Декларация доступна для расхода' (declaration, customsFlow) =
+isAvailableDeclarationCStoWH 'Декларация доступна для расхода' (declaration, CStoWH) =
     currentBalanceBDeclaration (declaration)>0 AND
-    dateTimeCustomsFlow(customsFlow)>=dateTimeDeclaration(declaration) AND
-    customStoreCustomsFlow(customsFlow)==customStoreDeclaration(declaration);
+    dateTimeCStoWH(CStoWH)>=dateTimeDeclaration(declaration) AND
+    customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration);
 
-isCustomsDeclarationCustomsFlow 'Отгрузка с СВХ декларации' (declaration, customsFlow) =
-    customStoreDeclaration (declaration) == customStoreCustomsFlow (customsFlow);
+isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
+    customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
 
-inCustomsFlowDeclaration (customsFlow, declaration) = GROUP SUM 1
-    IF declarationCustomsFlowDetail(customsFlowDetail) == declaration AS declaration
-        AND customsFlowCustomsFlowDetail (customsFlowDetail) == customsFlow AS customsFlow
-    BY customsFlowCustomsFlowDetail(customsFlowDetail), declarationCustomsFlowDetail(customsFlowDetail);
+inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
+    IF declarationCStoWHDetail(CStoWHDetail) == declaration AS declaration
+        AND CStoWHCStoWHDetail (CStoWHDetail) == CStoWH AS CStoWH
+    BY CStoWHCStoWHDetail(CStoWHDetail), declarationCStoWHDetail(CStoWHDetail);
 
-declarationsCustomsFlow 'Декларации' (customsFlow) = GROUP CONCAT castToString255(sidDeclaration(declaration))
-    IF inCustomsFlowDeclaration (customsFlow, declaration), ', ' BY customsFlow MINCHARWIDTH 10 PREFCHARWIDTH 10;
+declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255(sidDeclaration(declaration))
+    IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 // подбор строк для расхода
 quantityInputDeclarationDetail 'Кол-во' = SESSION DATA NUMERIC[14,3] (declarationDetail);
@@ -95,8 +96,8 @@ toFillQuantityInputAllDeclarationDetails 'Проставить количест�
     }
 }
 
-FORM declarationDetailCustomsFlowInput 'Подбор строк декларации'
-    OBJECTS c=customsFlow FIXED PANEL
+FORM declarationDetailCStoWHInput 'Подбор строк декларации'
+    OBJECTS c=CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject
 
     OBJECTS d=declaration
@@ -107,7 +108,7 @@ FORM declarationDetailCustomsFlowInput 'Подбор строк декларац
     PROPERTIES (dd) READONLY barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
     PROPERTIES (dd) quantityInputDeclarationDetail, toFillQuantityInputDeclarationDetail
 
-    FILTERS isAvailableDeclarationCustomsFlow (d, c)
+    FILTERS isAvailableDeclarationCStoWH (d, c)
 
     FILTERGROUP filters1
         FILTER 'Сроки текущей декларации' 'F10' inDeclarationDeclarationDetail(d, dd) DEFAULT
@@ -115,76 +116,76 @@ FORM declarationDetailCustomsFlowInput 'Подбор строк декларац
         FILTER 'Выбранные' 'F9' quantityInputDeclarationDetail(dd)
 ;
 
-inputDeclarationDetailCustomsFlow 'Подбор строк декларации' = ACTION (customsFlow) {
-    FORM declarationDetailCustomsFlowInput MODAL;
+inputDeclarationDetailCStoWH 'Подбор строк декларации' = ACTION (CStoWH) {
+    FORM declarationDetailCStoWHInput MODAL;
         IF formResult() == formResult.ok THEN {
             FOR quantityInputDeclarationDetail(declarationDetail) DO {
-                ADDOBJ customsFlowDetail;
+                ADDOBJ CStoWHDetail;
                 FOR cd == addedObject() DO {
-                SET customsFlowCustomsFlowDetail(cd) <- customsFlow AS customsFlow;
-                SET declarationDetailCustomsFlowDetail(cd) <- declarationDetail AS declarationDetail;
-                SET quantityCustomsFlowDetail(cd) <- quantityInputDeclarationDetail(declarationDetail);
+                SET CStoWHCStoWHDetail(cd) <- CStoWH AS CStoWH;
+                SET declarationDetailCStoWHDetail(cd) <- declarationDetail AS declarationDetail;
+                SET quantityCStoWHDetail(cd) <- quantityInputDeclarationDetail(declarationDetail);
                 }
                }
             }
         SET quantityInputDeclarationDetail(declarationDetail) <- NULL;
 } TOOLBAR;
 
-FORM customsFlow 'Расход с СВХ'
-    OBJECTS c = customsFlow FIXED PANEL
-    PROPERTIES (c) numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow, nameWarehouseCustomsFlow,
-                   quantityCustomsFlowDetailCustomsFlow, totalSumCustomsFlowDetail,
-                   inputDeclarationDetailCustomsFlow, cleanAllCustomsFlowDetailsCustomsFlow, declarationsCustomsFlow
+FORM CStoWH 'Расход с СВХ'
+    OBJECTS c = CStoWH FIXED PANEL
+    PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
+                   quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
+                   inputDeclarationDetailCStoWH, cleanAllCStoWHDetailsCStoWH, declarationsCStoWH
 
-    OBJECTS d = customsFlowDetail
-    PROPERTIES(d) numberCustomsFlowDetail, barcodeCustomsFlowDetail, brandCustomsFlowDetail, sidArticleCustomsFlowDetail,
-                  nameCategoryCustomsFlowDetail, sumNetWeightCustomsFlowDetail, sumGrossWeightCustomsFlowDetail,
-                  priceCustomsFlowDetail, quantityCustomsFlowDetail, sumCustomsFlowDetail
+    OBJECTS d = CStoWHDetail
+    PROPERTIES(d) numberCStoWHDetail, barcodeCStoWHDetail, brandCStoWHDetail, sidArticleCStoWHDetail,
+                  nameCategoryCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
+                  priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
     PROPERTIES(d) ADDOBJ, delete
 
-    FILTERS inCustomsFlowCustomsFlowDetail(c, d)
+    FILTERS inCStoWHCStoWHDetail(c, d)
 
-    EDIT customsFlow OBJECT c
+    EDIT CStoWH OBJECT c
 ;
 
-DESIGN customsFlow FROM DEFAULT {
+DESIGN CStoWH FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
     }
 }
 
-FORM customsFlows 'Расходы с СВХ'
-    OBJECTS c = customsFlow
-    PROPERTIES (c) READONLY numberObject, seriesObject, dateCustomsFlow, timeCustomsFlow, nameCustomStoreCustomsFlow,
-                            nameWarehouseCustomsFlow, declarationsCustomsFlow, totalSumCustomsFlowDetail
+FORM CStoWHs 'Расходы с СВХ'
+    OBJECTS c = CStoWH
+    PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
+                            nameWarehouseCStoWH, declarationsCStoWH, totalSumCStoWHDetail
 
-    PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCustomsFlow(c), delete FORCE PANEL SHOWIF isDraftCustomsFlow(c),
-                   postCustomsFlow SHOWIF isDraftCustomsFlow(c), unpostCustomsFlow SHOWIF isPostedCustomsFlow(c)
+    PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCStoWH(c), delete FORCE PANEL SHOWIF isDraftCStoWH(c),
+                   postCStoWH SHOWIF isDraftCStoWH(c), unpostCStoWH SHOWIF isPostedCStoWH(c)
 
-    OBJECTS d = customsFlowDetail
-    PROPERTIES(d) READONLY numberCustomsFlowDetail, barcodeCustomsFlowDetail, brandCustomsFlowDetail, sidArticleCustomsFlowDetail,
-                  nameCategoryCustomsFlowDetail, sumNetWeightCustomsFlowDetail, sumGrossWeightCustomsFlowDetail,
-                  priceCustomsFlowDetail, quantityCustomsFlowDetail, sumCustomsFlowDetail
+    OBJECTS d = CStoWHDetail
+    PROPERTIES(d) READONLY numberCStoWHDetail, barcodeCStoWHDetail, brandCStoWHDetail, sidArticleCStoWHDetail,
+                  nameCategoryCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
+                  priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
 
-    FILTERS inCustomsFlowCustomsFlowDetail(c, d)
+    FILTERS inCStoWHCStoWHDetail(c, d)
 ;
 
-DESIGN customsFlows FROM DEFAULT {
+DESIGN CStoWHs FROM DEFAULT {
     PROPERTY (delete(c)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 }
 
-@defineConsignment(customsFlow);
-@implementConsignmentHeader(customsFlow, customStore);
+@defineConsignment(CStoWH);
+@implementConsignmentHeader(CStoWH, customStore);
 
-senderConsignment (consignment) += customStoreCustomsFlow(consignment);
-recipientConsignment (consignment) += importerWarehouse(warehouseCustomsFlow(consignment));
+senderConsignment (consignment) += customStoreCStoWH(consignment);
+recipientConsignment (consignment) += importerWarehouse(warehouseCStoWH(consignment));
 
-consignmentConsignmentDetail (consignmentDetail) += customsFlowCustomsFlowDetail (consignmentDetail);
-skuConsignmentDetail (consignmentDetail) += skuCustomsFlowDetail (consignmentDetail);
-quantityConsignmentDetail (consignmentDetail) += quantityCustomsFlowDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += priceCustomsFlowDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += sumCustomsFlowDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCustomsFlowDetail (consignmentDetail);
+consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);

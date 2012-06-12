@@ -275,6 +275,7 @@ descriptionDeclaration 'Название документа' (declaration) =
 descriptionDeclarationDetail = descriptionDeclaration(declarationDeclarationDetail(declarationDetail));
 
 @implementBatch(declaration, sku);
+quantityBatch (batch) += quantityDeclarationDetail(batch);
 
 @implementBalanceSkuLedger(declaration, sku, customStore);
 

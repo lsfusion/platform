@@ -10,7 +10,7 @@ REQUIRE System,
         Historizable,
         Consignment,
         Declaration,
-        CustomsFlow,
+        CStoWH,
         RomanLogicsModule;
 
 PRIORITY Utils, Stock, RomanLogicsModule;
@@ -416,23 +416,23 @@ CLASS inWarehouseScan 'Сканирование';
 
 importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
 
-customFlowWHfromCS 'Расход прихода (ИД)' = DATA customsFlow(WHfromCS) IN idGroup;
-numberCustomFlowWHfromCS 'Расход прихода (номер)' (WHfromCS) = numberObject(customFlowWHfromCS(WHfromCS)) IN baseGroup;
-seriesCustomFlowWHfromCS 'Расход прихода (серия)' (WHfromCS) = seriesObject(customFlowWHfromCS(WHfromCS)) IN baseGroup;
+CStoWHWHfromCS 'Расход прихода (ИД)' = DATA CStoWH(WHfromCS) IN idGroup;
+numberCStoWHWHfromCS 'Расход прихода (номер)' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup;
+seriesCStoWHWHfromCS 'Расход прихода (серия)' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup;
 
-inCustomsFlowWHfromCS (WHfromCS, customsFlow) = customFlowWHfromCS(WHfromCS) == customsFlow;
+inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
 
 skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
 
 descriptionWHfromCSDetail 'Описание' (WHfromCSDetail) = DATA STRING[100](WHfromCSDetail);
 
-quantityWHfromCSBatch (WHfromCS, batch) = quantityCustomsFlowBatch(customFlowWHfromCS(WHfromCS), batch);
+quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
 quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
 
 limitInTransferBalanceSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
 
-quantityDCustomFlowSku (customFlow, sku) = GROUP SUM quantityCustomsFlowDetail(customsFlowDetail)
-                                                  BY customsFlowCustomsFlowDetail(customsFlowDetail), skuCustomsFlowDetail(customsFlowDetail);
+quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
+                                                  BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
 
 articleWHfromCSDetail 'Артикул (ИД)' (WHfromCSDetail) = articleSku(skuWHfromCSDetail(WHfromCSDetail));
 sidArticleWHfromCSDetail 'Артикул' (WHfromCSDetail) = sidArticle(articleWHfromCSDetail(WHfromCSDetail));
@@ -449,12 +449,12 @@ currentBalanceDeclaration 'Остаток по декларации' (declaratio
     BY declarationDeclarationDetail (declarationDetail);
 
 toFillInWarehouseDetailsWHfromCS 'Заполнить приход по расходу' =  ACTION (WHfromCS) {
-    FOR quantityDCustomFlowSku (customFlowWHfromCS(WHfromCS), sku) DO {
+    FOR quantityDCStoWHSku (CStoWHWHfromCS(WHfromCS), sku) DO {
         ADDOBJ WHfromCSDetail;
         FOR w == addedObject() DO {
             SET skuWHfromCSDetail(w) <- sku AS sku;
             SET WHfromCSWHfromCSDetail(w) <- WHfromCS AS WHfromCS;
-            SET quantityOriginWHfromCSDetail(w) <- quantityDCustomFlowSku(customFlowWHfromCS(WHfromCSWHfromCSDetail(w)), sku);
+            SET quantityOriginWHfromCSDetail(w) <- quantityDCStoWHSku(CStoWHWHfromCS(WHfromCSWHfromCSDetail(w)), sku);
         };
     };
 } CONFIRM;
@@ -467,15 +467,15 @@ skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
 
 @defineAddDetailDialogBarcode(WHfromCS);
 
-FORM declarationsCustomsFlow 'Декларации'
-    OBJECTS c=customsFlow FIXED PANEL
-    PROPERTIES (c) READONLY numberObject, seriesObject, dateCustomsFlow, nameCustomStoreCustomsFlow//, nameStoreCustomsFlow
+FORM declarationsCStoWH 'Декларации'
+    OBJECTS c=CStoWH FIXED PANEL
+    PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, nameCustomStoreCStoWH//, nameStoreCStoWH
 
     OBJECTS de=declaration
 
-    PROPERTIES (c, de) inCustomsFlowDeclaration
+    PROPERTIES (c, de) inCStoWHDeclaration
     PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration, currentBalanceDeclaration
-    FILTERS isCustomsDeclarationCustomsFlow (de, c)
+    FILTERS isCustomsDeclarationCStoWH (de, c)
 ;
 
 
@@ -483,7 +483,7 @@ FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-                   numberCustomFlowWHfromCS, seriesCustomFlowWHfromCS, toFillInWarehouseDetailsWHfromCS, addDetailDialogBarcodeWHfromCS
+                   numberCStoWHWHfromCS, seriesCStoWHWHfromCS, toFillInWarehouseDetailsWHfromCS, addDetailDialogBarcodeWHfromCS
 
     OBJECTS d = WHfromCSDetail
     PROPERTIES(d) indexWHfromCSDetail, barcodeLedger, nameBrandLedger, sidArticleWHfromCSDetail,
@@ -606,7 +606,7 @@ NAVIGATOR {
         ADD certificates;
         ADD declarations;
         ADD innerInvoices;
-        ADD customsFlows;
+        ADD CStoWHs;
         ADD WHfromCSs;
     }
 
@@ -648,9 +648,9 @@ NAVIGATOR {
         ADD dialogDate;
         ADD numerators;
         ADD numerator;
-        ADD customsFlow;
+        ADD CStoWH;
         ADD WHfromCS;
-        ADD declarationDetailCustomsFlowInput;
+        ADD declarationDetailCStoWHInput;
         ADD unitsOfMeasure;
         ADD tax;
         ADD ware;
@@ -677,6 +677,6 @@ NAVIGATOR {
         ADD employee;
         ADD employeeDialog;
         ADD barcodeInput;
-        ADD declarationsCustomsFlow;
+        ADD declarationsCStoWH;
     }
 }
