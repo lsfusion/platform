@@ -2063,7 +2063,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public String getNamePrefix() {
-        return getName();
+        return getNamespace();
     }
 
     public abstract class CompoundNameResolver<T> {
