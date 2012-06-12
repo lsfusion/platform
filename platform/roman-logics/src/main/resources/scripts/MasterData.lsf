@@ -1,0 +1,45 @@
+MODULE MasterData;
+
+REQUIRE System,
+        Stock,
+        LegalEntity,
+        RomanLogicsModule;
+
+PRIORITY Stock, LegalEntity, RomanLogicsModule;
+
+//--------------------------------- Наименование товара -------------------------------------------//
+descriptionSku 'Наименование товара' (sku) =
+        [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+        sidArticleSku(sku), nameCategoryArticleSku(sku), nameArticleSku(sku));
+
+nameSku(sku) += descriptionSku (sku);
+
+//---------------------------------  -------------------------------------------//
+CLASS warehouse 'Склад' : stock;
+
+importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
+
+
+
+FORM customStores 'Склады временного хранения'
+    OBJECTS c=customStore
+    PROPERTIES(c) name, ADDOBJ, delete
+;
+
+FORM importer 'Компания'
+    OBJECTS co=company FIXED PANEL
+    PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
+                   dialogAddressLegalEntity, postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity,
+                   dialogManagerLegalEntity, accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
+                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity,
+                   nameOrigin, addressOriginSubject, addressSubject, contractImporter, sidImporter
+
+    OBJECTS a=account
+    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    FILTERS legalEntityAccount(a) == co
+
+    OBJECTS s=supplier
+    PROPERTIES(s)       name
+
+    EDIT company OBJECT co
+;

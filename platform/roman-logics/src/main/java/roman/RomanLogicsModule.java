@@ -1440,7 +1440,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         transitDocument = addConcreteClass("transitDocument", "Транзитный документ", baseClass);
 
-        warehouse = addConcreteClass("warehouse", "СВХ", stock);
     }
 
     @Override

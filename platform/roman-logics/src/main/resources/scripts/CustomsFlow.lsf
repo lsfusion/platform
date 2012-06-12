@@ -8,21 +8,14 @@ REQUIRE System,
         RomanDocument,
         Consignment,
         Declaration,
+        MasterData,
         RomanLogicsModule;
 
 CLASS customsFlow 'Расход с СВХ' : historyObject, numberedObject, consignment;
 CLASS customsFlowDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
 CLASS customsFlowPosted 'Закрытый расход с СВХ' : customsFlow, postedObject, consignment;
 
-@defineDocumentBasePosted(customsFlow);
-
-@defineDocumentStock(customsFlow, customStore, 'СВХ');
-
-@defineDocumentDetailQuantity(customsFlow);
-
-@defineDocumentDetailNumbered(customsFlow);
-
-@defineDocumentHeaderQuantity(customsFlow);
+@defineRBDocument(customsFlow, customStore, 'СВХ');
 
 declarationDetailCustomsFlowDetail 'Партия (ИД)' = DATA declarationDetail (customsFlowDetail);
 declarationCustomsFlowDetail 'Декларация (ИД)' (customsFlowDetail) = declarationDeclarationDetail(declarationDetailCustomsFlowDetail(customsFlowDetail));
@@ -187,7 +180,7 @@ DESIGN customsFlows FROM DEFAULT {
 @implementConsignmentHeader(customsFlow, customStore);
 
 senderConsignment (consignment) += customStoreCustomsFlow(consignment);
-//recipientConsignment (consignment) += importerWarehouse(warehouseCustomsFlow(consignment));
+recipientConsignment (consignment) += importerWarehouse(warehouseCustomsFlow(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += customsFlowCustomsFlowDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCustomsFlowDetail (consignmentDetail);
