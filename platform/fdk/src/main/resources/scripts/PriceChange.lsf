@@ -60,6 +60,9 @@ valueRetailRangePriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail
 curRetailPricePriceChangeDocumentDetail 'Розничная цена (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 
+@defineDocumentDetailOutPriceAggregation(priceChangeDocument);
+@defineDocumentDetailOutPriceAggregationPrefix(priceChangeDocument, cur, ' (тек.)');
+
 @defineDocumentDetailIndex(priceChangeDocument);
 
 @defineDocumentDetailBaseSum(priceChangeDocument);
@@ -69,12 +72,6 @@ retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeD
 
 @defineDocumentHeaderBaseSum(priceChangeDocument);
 @defineDocumentHeaderBaseSumPrefix(priceChangeDocument, cur, ' (тек.)');
-
-retailMarkupPriceChangeDocumentDetail 'Наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
-    markupSumPriceChangeDocumentDetail(priceChangeDocumentDetail), supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
-
-curRetailMarkupPriceChangeDocumentDetail 'Текущая наценка,%' (priceChangeDocumentDetail) = [round2(X*100/Y)](
-    curMarkupSumPriceChangeDocumentDetail(priceChangeDocumentDetail), curSupplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail));
 
 commonMarkupPriceChangeDocumentDetail 'Общий процент надбавки от цены изготовителя' (priceChangeDocumentDetail) = [(X/Y-1)*100](
     supplierPricePriceChangeDocumentDetail(priceChangeDocumentDetail), importerPricePriceChangeDocumentDetail(priceChangeDocumentDetail));

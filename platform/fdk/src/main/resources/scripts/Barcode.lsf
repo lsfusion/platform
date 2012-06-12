@@ -57,3 +57,11 @@ DESIGN barcodeInput FROM DEFAULT {
         panelLabelAbove = TRUE;
     }
 }
+
+// ----------------------------------- Расширение подбора товаров ---------------------------- //
+
+META defineDialogSkuBarcode (form)
+    EXTEND FORM form
+        PROPERTIES idBarcodeSku(s), idBarcodeSku(si)
+    ;
+END

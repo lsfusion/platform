@@ -62,9 +62,27 @@ META defineDocumentDetailOutPricePrefix (object, prefix, caption)
     CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
     @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
+    @defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption);
 END
 META defineDocumentDetailOutPrice (object)
-    @defineDocumentDetailOutPricePrefix(object,);
+    @defineDocumentDetailOutPricePrefix(object, ,);
+END
+
+META defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption)
+    prefix###retailIPrice###object##Detail 'Цена розничная (без посуды)'###caption (detail) =
+        prefix###retailPrice###object##Detail(detail) (-) prefix###warePrice###object##Detail(detail);
+
+    prefix###retailVATIPrice###object##Detail 'Цена НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
+                prefix###retailIPrice###object##Detail(detail), prefix###valueRetailRange###object##Detail(detail));
+
+    prefix###markupPrice###object##Detail 'Цена надбавки'###caption (detail) =
+        prefix###retailIPrice###object##Detail(detail) (-) prefix###retailVATIPrice###object##Detail(detail) (-) prefix###supplierPrice###object##Detail(detail);
+
+    prefix###calcRetailMarkup###object##Detail 'Наценка, %'###caption (detail) = [round2(X*100/Y)](
+        prefix###markupPrice###object##Detail(detail), prefix###supplierPrice###object##Detail(detail));
+END
+META defineDocumentDetailOutPriceAggregation (object)
+    @defineDocumentDetailOutPriceAggregationPrefix(object, ,);
 END
 
 META defineDocumentDetailBasePricePrefix (object, prefix, caption)
@@ -547,3 +565,16 @@ EXTEND DESIGN balanceSkuStock {
     }
 }
 
+// ----------------------------------------- Расширяем формы подбора товаров ----------------------------------- //
+
+META defineDialogSkuStorePrice (form)
+
+    form###supplierPrice 'Цена поставщика' (sku) = currentSupplierPriceLedger(sku, form###stock());
+    form###valueRetailRange 'НДС, %' (sku) = currentValueRetailRangeLedger(sku, form###stock());
+    form###retailPrice 'Розничная цена' (sku) = currentRetailPriceLedger(sku, form###stock());
+
+    EXTEND FORM form
+        PROPERTIES(s) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailRange, form###retailPrice
+        PROPERTIES(si) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailRange, form###retailPrice
+    ;
+END

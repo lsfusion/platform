@@ -29,6 +29,13 @@ REQUIRE System,
         PriceChange,
         Default;
 
+// подключаем формы подбора товаров (пока сделано здесь, поскольку есть проблемы с EXTEND DESIGN в рамках нескольких модулей
+// todo : перенести в stock
+@defineDialogSku(dialogSku);
+@defineDialogSkuBarcode(dialogSku);
+@defineDialogSkuSupplier(dialogSku);
+@defineDialogSkuStorePrice(dialogSku);
+
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
 
@@ -3774,6 +3781,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 @implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 expiryDateBatch (ledger) += expiryDateShipmentDetail(ledger);
+supplierBatch (ledger) += supplierShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
@@ -6023,215 +6031,6 @@ DESIGN printTimeTable FROM DEFAULT {
     ADD functions.box;
 }
 
-//----------------------------------- Подбор товаров -------------------------------------------------------
-
-quantityInputItem 'Кол-во' = SESSION DATA NUMERIC[14,3] (item);
-isInputItem 'Вкл' = SESSION DATA BOOLEAN (item);
-
-FORM itemDepartmentStoreInput 'Подбор товаров'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY name
-
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    PROPERTIES currentBalanceSkuLedger(i, d), currentRetailPriceLedger(i, d), quantityInputItem(i)
-
-    FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceSkuLedger(i, d)
-    FILTERGROUP filterSelected
-        FILTER 'Выбранные' 'F9' quantityInputItem(i)
-;
-
-DESIGN itemDepartmentStoreInput FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-META metaCodeInputMultipleItems (object)
-
-    inputMultipleItems###object 'Подбор товаров' = ACTION (object) {
-        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Detail(w) <- object AS object;
-                    SET item###object##Detail(w) <- item AS item;
-                    SET quantity###object##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-META metaCodeInputMultipleItemsBillSale (object)
-
-    inputMultipleItems###object 'Подбор товаров (продажа)' = ACTION (object) {
-        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Sale##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Sale##Detail(w) <- object AS object;
-                    SET item###object##Sale##Detail(w) <- item AS item;
-                    SET quantity###object##Sale##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-//------------------------------------------------Подбор товара для возврата поставщику-----------------------------------------
-
-FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY name
-
-    OBJECTS s=supplier FIXED PANEL
-    PROPERTIES(s) READONLY name
-
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    PROPERTIES currentBalanceSkuLedger(i, d), currentRetailPriceLedger(i, d), quantityInputItem(i)
-
-    FILTERGROUP filterSupply
-        FILTER 'Поставлявшиеся' 'F11' sumQuantityItemShipment(d, s, i) DEFAULT
-    FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceSkuLedger(i, d) DEFAULT
-    FILTERGROUP filterSelected
-        FILTER 'Выбранные' 'F9' quantityInputItem(i)
-;
-
-DESIGN itemDepartmentStoreSupplierInput FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-    POSITION d.box TO THE LEFT s.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-META metaCodeInputMultipleItemsSupplier (object)
-
-    inputMultipleItemsSupplier###object 'Подбор товаров' = ACTION (object) {
-        FORM itemDepartmentStoreSupplierInput OBJECTS d = departmentStore###object(object), s = supplier###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Detail(w) <- object AS object;
-                    SET item###object##Detail(w) <- item AS item;
-                    SET quantity###object##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-META metaCodeInputMultipleItemsBillReturn (object)
-
-    inputMultipleItemsSupplier###object 'Подбор товаров (возврат)' = ACTION (object) {
-        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Return##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Return##Detail(w) <- object AS object;
-                    SET item###object##Return##Detail(w) <- item AS item;
-                    SET quantity###object##Return##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-//----------------------------------- Подбор товаров для переоценки -------------------------------------------------------
-
-FORM itemDepartmentStoreBalanceInput 'Подбор товаров'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY name
-
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    PROPERTIES currentBalanceSkuLedger(i, d), currentRetailPriceLedger(i, d), isInputItem(i)
-
-    FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceSkuLedger(i, d)
-    FILTERGROUP filterSelected
-        FILTER 'Выбранные' 'F9' quantityInputItem(i)
-;
-
-DESIGN itemDepartmentStoreBalanceInput FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-META metaCodeInputMultipleItemsBalance (object)
-
-    inputMultipleItemsBalance###object 'Подбор товаров' = ACTION (object) {
-        FORM itemDepartmentStoreBalanceInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR isInputItem(item) DO {
-                ADDOBJ object##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Detail(w) <- object AS object;
-                    SET item###object##Detail(w) <- item AS item;
-                    SET quantity###object##Detail(w) <- currentBalanceSkuLedger(item, departmentStore###object(object));
-                }
-            }
-        }
-        SET isInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
 inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
@@ -6899,7 +6698,7 @@ META metaCodeDocumentLabelTransaction (document)
 END
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
-@metaCodeInputMultipleItems(shipment);
+@defineAddDetailDialogSku(shipment, item, dialogSku);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
 @metaCodeDocumentLabelTransaction(shipment);
 
@@ -6960,7 +6759,7 @@ FORM writeOffPrint 'Списание' PRINT
 toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 
-@metaCodeInputMultipleItems(writeOff);
+@defineAddDetailDialogSkuStock(writeOff, item, departmentStore, dialogSku);
 @defineDocumentDetailItemOfTerminal(writeOff);
 
 FORM writeOff 'Списание'
@@ -6976,7 +6775,7 @@ FORM writeOff 'Списание'
     PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
                                     balanceDepartmentStoreItemWriteOff(d)
 
-    PROPERTIES  inputMultipleItemsWriteOff(w) TODRAW d, fillOfTerminalDocumentWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d,
+    PROPERTIES  addDetailDialogSkuStockWriteOffDetailWriteOff(w) TODRAW d, fillOfTerminalDocumentWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d,
                 cleanAllWriteOffDetailsWriteOff(w) FORCE PANEL TODRAW d
     FILTERS inWriteOffWriteOffDetail(w, d)
 
@@ -7098,7 +6897,7 @@ quantityDisparityDetailItemDisparity 'Кол-во для закачки в об�
 printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(uniquePriceChangeDisparity(disparity)) IN printGroup;
 printPriceChangeInputDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
 
-@metaCodeInputMultipleItems(disparity);
+@defineAddDetailDialogSkuStock(disparity, item, departmentStore, dialogSku);
 
 FORM disparity 'Пересортица'
 
@@ -7110,7 +6909,7 @@ FORM disparity 'Пересортица'
                     inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
                     numberDisposalDisparity SHOWIF showPriceChangeDisparity(dis),
                     namePriceChangeCommitteeDisparity SHOWIF showPriceChangeDisparity(dis),
-                    inputMultipleItemsDisparity TODRAW d
+                    addDetailDialogSkuStockDisparityDetailDisparity TODRAW d
 
     PROPERTIES(d)   indexDisparityDetail,
                     idBarcodeSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
@@ -7303,7 +7102,7 @@ FORM shipment 'Поставка'
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
 
-    PROPERTIES     inputMultipleItemsShipment(s) TODRAW d, fillOfTerminalDocumentShipment(s) TODRAW d,
+    PROPERTIES     addDetailDialogSkuShipmentDetailShipment(s) TODRAW d, fillOfTerminalDocumentShipment(s) TODRAW d,
                    addShipmentDetailBarcode(s) TODRAW d, cleanAllShipmentDetailsShipment(s) FORCE PANEL TODRAW d
 
 
@@ -7519,7 +7318,7 @@ DESIGN wastages FROM DEFAULT {
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
-@metaCodeInputMultipleItemsSupplier(returnSupplier);
+@defineAddDetailDialogSkuStockSupplier(returnSupplier, item, departmentStore, dialogSku);
 @defineDocumentDetailItemOfTerminal(returnSupplier);
 
 printPriceChangeReturnSupplier 'Акт переоценки' (returnSupplier) = printPriceChange(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
@@ -7558,7 +7357,7 @@ FORM returnSupplier 'Возврат поставщику'
                   nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                   retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES    inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, fillOfTerminalDocumentReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d,
+    PROPERTIES    addDetailDialogSkuStockSupplierReturnSupplierDetailReturnSupplier(r) TODRAW d, fillOfTerminalDocumentReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d,
                   cleanAllReturnSupplierDetailsReturnSupplier(r) FORCE PANEL TODRAW d
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailRangeReturnSupplierDetail(d),
@@ -8427,7 +8226,7 @@ DESIGN inventories FROM DEFAULT {
 
 //---------------------------Акты переоценок-------------------------------------//
 
-@metaCodeInputMultipleItemsBalance (userPriceChange);
+@defineAddDetailDialogSkuStock(userPriceChange, item, departmentStore, dialogSku);
 @metaCodeDocumentMachineryPriceTransaction(userPriceChange);
 @metaCodeDocumentLabelTransaction(userPriceChange);
 @defineDocumentDetailItemOfTerminal(userPriceChange);
@@ -8521,7 +8320,7 @@ FORM userPriceChange 'Переоценка товаров'
     PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                   curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
+                   curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
                    curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                    numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                    curWarePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), warePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
@@ -8532,7 +8331,7 @@ FORM userPriceChange 'Переоценка товаров'
     PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
                dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
                fillOfTerminalDocumentUserPriceChange(u) TODRAW d,
-               inputMultipleItemsBalanceUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d,
+               addDetailDialogSkuStockUserPriceChangeDetailUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d,
                cleanAllUserPriceChangeDetailsUserPriceChange(u) FORCE PANEL TODRAW d
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
@@ -8570,7 +8369,7 @@ DESIGN userPriceChange FROM DEFAULT {
 
         PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(retailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
+        PROPERTY(calcRetailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
         PROPERTY(numberRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(valueRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(warePriceUserPriceChangeDetail) { background = #FFFFCC; }
@@ -8603,7 +8402,7 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                             curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                            curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
+                            curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
                             curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                             numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                             curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
@@ -8656,8 +8455,8 @@ DESIGN userPriceChanges FROM DEFAULT {
 
 //---------------- Формы внутреннего перемещения (приход и расход)-------------------------------------//
 
-@metaCodeInputMultipleItems (innerFlow);
-@metaCodeInputMultipleItems (innerArrival);
+@defineAddDetailDialogSkuStock(innerFlow, item, departmentStore, dialogSku);
+@defineAddDetailDialogSku(innerArrival, item, dialogSku);
 @metaCodeDocumentMachineryPriceTransaction(innerArrival);
 @metaCodeDocumentLabelTransaction(innerArrival);
 @defineDocumentDetailItemOfTerminal(innerFlow);
@@ -8684,7 +8483,7 @@ FORM innerFlow 'Расход в другой отдел'
                    warePriceInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
-    PROPERTIES     inputMultipleItemsInnerFlow(f) TODRAW d, fillOfTerminalDocumentInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d,
+    PROPERTIES     addDetailDialogSkuStockInnerFlowDetailInnerFlow(f) TODRAW d, fillOfTerminalDocumentInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d,
                    cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
@@ -8919,7 +8718,7 @@ FORM innerArrival 'Приход из другого отдела'
     PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
                    curWarePriceInnerArrivalDetail, curValueRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
-    PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d, cleanAllInnerArrivalDetailsInnerArrival(a) FORCE PANEL  TODRAW d // SHOWIF innerFlowInnerArrival(a)
+    PROPERTIES addDetailDialogSkuInnerArrivalDetailInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d, cleanAllInnerArrivalDetailsInnerArrival(a) FORCE PANEL  TODRAW d // SHOWIF innerFlowInnerArrival(a)
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
     OBJECTS i=item
@@ -9126,7 +8925,7 @@ DESIGN specificationForm FROM DEFAULT{
 
 dialogSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
 
-@metaCodeInputMultipleItems (specification);
+@defineAddDetailDialogSkuStock (specification, item, departmentStore, dialogSku);
 @defineDocumentDetailItemOfTerminal(specification);
 
 FORM specification 'Счет-фактура'
@@ -9145,7 +8944,7 @@ FORM specification 'Счет-фактура'
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
                    BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND notNullAvailableQuantityItemBySpecificationDetail(d)
 
-    PROPERTIES     inputMultipleItemsSpecification(sp) TODRAW d, fillOfTerminalDocumentSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d,
+    PROPERTIES     addDetailDialogSkuSpecificationDetailSpecification(sp) TODRAW d, fillOfTerminalDocumentSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d,
                    cleanAllSpecificationDetailsSpecification(sp) FORCE PANEL TODRAW d
     FILTERS inSpecificationSpecificationDetail(sp, d)
 
@@ -9263,7 +9062,7 @@ FORM specificationsStatement 'Счета'
 
 dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
-@metaCodeInputMultipleItems (statement);
+@defineAddDetailDialogSkuStock (statement, item, departmentStore, dialogSku);
 @defineDocumentDetailItemOfTerminal(statement);
 
 printPriceChangeStatement 'Акт переоценки' (statement) = printPriceChange(uniquePriceChangeStatement(statement)) IN printGroup;
@@ -9296,7 +9095,7 @@ FORM statement 'Отгрузка из розницы'
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
 
-    PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, fillOfTerminalDocumentStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d,
+    PROPERTIES      addDetailDialogSkuStatementDetailStatement(st) TODRAW d, fillOfTerminalDocumentStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d,
                     cleanAllStatementDetailsStatement(st) FORCE PANEL TODRAW d
 
     FILTERS         inStatementStatementDetail(st, d)
@@ -9467,8 +9266,8 @@ DESIGN statements FROM DEFAULT {
 
 //----------------------------------- Подбор товаров для чеков -------------------------------------------------------//
 
-@metaCodeInputMultipleItemsBillSale(bill);
-@metaCodeInputMultipleItemsBillReturn(bill);
+@defineAddDetailDialogSkuStockCustom(bill, billSaleDetail, ' (продажа)', item, departmentStore, dialogSku);
+@defineAddDetailDialogSkuStockCustom(bill, billReturnDetail, ' (возврат)', item, departmentStore, dialogSku);
 
 //----------------------------------- Формы чеков -------------------------------------------------//
 
@@ -9480,8 +9279,9 @@ FORM bill 'Z-отчет'
     OBJECTS b=bill, d=billDetail
     PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
                   numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
-                  countBillDetailBill, quantityBillDetailBill, inputMultipleItemsBill TODRAW d,
-                  inputMultipleItemsSupplierBill TODRAW d, ADDOBJ, delete
+                  countBillDetailBill, quantityBillDetailBill,
+                  addDetailDialogSkuStockBillSaleDetailBill TODRAW d, addDetailDialogSkuStockBillReturnDetailBill TODRAW d,
+                  ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
     PROPERTIES(d) objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
@@ -10527,6 +10327,9 @@ NAVIGATOR {
     baseElement TO topToolbar;
 
     NEW lists 'Справочники' TO formsToolbar {
+//
+//        NEW testInput 'Тест ввода товара' ACTION testDialogSku;
+//
         NEW goods 'Товары' {
             ADD items;
             ADD wares;
@@ -10859,12 +10662,9 @@ NAVIGATOR {
             ADD discountCard;
             ADD actOfStudy;
             ADD seriesNumberCuttingStudyInputDetail;
-            ADD itemDepartmentStoreInput;
-            ADD itemDepartmentStoreBalanceInput;
             ADD machineryPriceTransaction;
             ADD groupMachineryInput;
             ADD filterItemsGroupMachinery;
-            ADD itemDepartmentStoreSupplierInput;
             ADD labelType;
             ADD printLabelTransaction;
             ADD customLabelTransaction;
@@ -10872,6 +10672,7 @@ NAVIGATOR {
             ADD dialogDate;
             ADD naturalLoss;
             ADD consignment;
+            ADD dialogSku;
         }
         ADD parameters;
         ADD importData;

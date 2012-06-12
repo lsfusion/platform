@@ -287,3 +287,40 @@ META defineDocumentHeaderSupplierContract(object)
     CONSTRAINT contract###object(object) AND NOT activeContract(contract###object(object), date###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите действующий договор';
 END
+
+
+// -------------------------------------------- Sku ------------------------------------------------- //
+
+supplierBatch(batch) = ABSTRACT supplier (batch) PERSISTENT INDEXED;
+nameSupplierBatch 'Поставщик' (batch) = name(supplierBatch(batch));
+
+countSupplierSku 'Кол-во партий' (supplier, sku) = GROUP SUM 1 BY supplierBatch(batch), skuBatch(batch);
+
+// --------------------------------- Добавляем фильтр в подбор товаров -------------------------------------------- //
+
+META defineDialogSkuSupplier (form)
+    form###supplier = SESSION DATA supplier ();
+    form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
+    form###supplierFilter = countSupplierSku(form###supplier(), sku) OR (sku IS sku AND NOT form###supplier());
+
+    EXTEND FORM form
+        PROPERTIES form###nameSupplier()
+        FILTERS form###supplierFilter(s)
+    ;
+
+    EXTEND DESIGN form {
+        filterContainer { ADD PROPERTY(form###nameSupplier()); }
+    }
+END
+
+META defineAddDetailDialogSkuStockSupplier (object, skuProp, stockProp, form)
+    @defineAddDetailDialogSkuStockSupplierCustom (object, object##Detail, , skuProp, stockProp, form);
+END
+
+META defineAddDetailDialogSkuStockSupplierCustom (object, detail, caption, skuProp, stockProp, form)
+    @defineAddDetailDialogSkuStockCustom(object, detail, caption, skuProp, stockProp, form);
+    addDetailDialogSkuStockSupplier###detail###object 'Подбор товаров'###caption = ACTION (object) {
+        SET form###supplier() <- supplier###object(object);
+        EXEC addDetailDialogSkuStock###detail###object(object AS object);
+    } TOOLBAR;
+END
