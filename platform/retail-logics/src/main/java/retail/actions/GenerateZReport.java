@@ -1,20 +1,14 @@
 package retail.actions;
 
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.poi.util.Internal;
-import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.interop.action.MessageClientAction;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
@@ -22,13 +16,11 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 import retail.RetailBusinessLogics;
 import retail.api.remote.SalesInfo;
-import retail.api.remote.TerminalDocumentTypeInfo;
 
 import java.io.IOException;
-import java.sql.*;
-import java.text.ParseException;
+import java.sql.SQLException;
+import java.sql.Time;
 import java.util.*;
-import java.util.Date;
 
 public class GenerateZReport extends ScriptingActionProperty {
     public GenerateZReport(ScriptingLogicsModule LM) {
@@ -127,7 +119,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                     Map.Entry<String, Integer> numberCashRegisterDepartmentStore = (Map.Entry<String, Integer>) (numberCashRegisterDepartmentStoreMap.entrySet().toArray()[r.nextInt(numberCashRegisterDepartmentStoreMap.size())/*1*/]);
                     String numberCashRegister = numberCashRegisterDepartmentStore.getKey();
                     Integer departmentStore = numberCashRegisterDepartmentStore.getValue();
-                    Integer maxNumberZReport = (Integer) getLP("maxNumberZReport").read(session, session.modifier, new DataObject(getLP("numberCashRegisterToCashRegister").read(session, session.modifier, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
+                    Integer maxNumberZReport = (Integer) getLP("maxNumberZReport").read(session, session.modifier, new DataObject(getLP("cashRegisterNumber").read(session, session.modifier, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
                     Integer numberZReport = null;
                     while (numberZReport == null || (numberZReportCashRegisterMap.containsKey(numberZReport) && numberZReportCashRegisterMap.containsValue(numberCashRegister)))
                         numberZReport = (maxNumberZReport == null ? 0 : maxNumberZReport) + (zReportCount < 1 ? 0 : r.nextInt(zReportCount)) + 1;

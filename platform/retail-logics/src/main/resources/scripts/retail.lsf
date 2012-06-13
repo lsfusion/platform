@@ -1938,100 +1938,16 @@ FORM discountCards 'Дисконтные карты'
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
-//---------------------------- Модели оборудования ----------------------------------------//
-CLASS ABSTRACT model 'Модель' : named;
-TABLE model (model);
-
-CLASS cashRegisterModel 'Модель касс' : model;
-CLASS scalesModel 'Модель весов' : model;
-CLASS checkModel 'Модель прайс чекеров' : model;
-CLASS terminalModel 'Модель ТСД' : model;
-
-CLASS frontOffice 'Фронт офис';
-TABLE frontOffice (frontOffice);
-
-nameFrontOffice 'Версия фронт офиса на кассе' = DATA STRING[100] (frontOffice) IN baseGroup;
-
-noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
-useModel 'Модель используется' = DATA BOOLEAN (model) IN baseGroup;
-lettersModel 'Преобразовать наименование товара В ЗАГЛАВНЫЕ БУКВЫ' = DATA BOOLEAN (model) IN baseGroup;
-handlerModel 'Обработчик' = DATA STRING[200] (model) IN baseGroup;
-
-
-frontOfficeCashRegisterModel 'Модель касс (ИД)' = DATA frontOffice (cashRegisterModel) IN idGroup;
-nameFrontOfficeCashRegisterModel 'Версия фронт офиса на кассе' (cashRegisterModel) = nameFrontOffice(frontOfficeCashRegisterModel(cashRegisterModel)) IN baseGroup;
-dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashRegisterModel) IN baseGroup;
-maxProductModel 'MAX допустимое колич.товаров' = DATA INTEGER (model) IN baseGroup;
-
-CLASS flash 'Прошивка';
-TABLE flash (flash);
-
-nameFlash 'Модель весов/версия прошивки' = DATA STRING[100] (flash) IN baseGroup;
-
-flashScalesModel 'Прошивка (ИД)' = DATA flash (scalesModel) IN idGroup;
-nameFlashScalesModel 'Модель весов/версия прошивки' = nameFlash(flashScalesModel(scalesModel)) IN baseGroup;
-maxTextScalesModel 'MAX допустимое колич.дополнительных текстов' = DATA INTEGER (scalesModel) IN baseGroup;
-folderScalesModel 'Папка на сервере весов с драйвером весов' = DATA STRING[200] (scalesModel) IN baseGroup;
-compositionScalesModel 'Число знаков в доп.тексте(составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
-nameToScalesModel (scalesModel) = GROUP UNIQUE scalesModel BY name (scalesModel) WHERE scalesModel IS scalesModel;
-
-CLASS modelCheck 'Модель чекера';
-TABLE modelCheck (modelCheck);
-
-nameModelCheck 'Модель прайс чекера' = DATA STRING[100] (modelCheck) IN baseGroup;
-
-modelCheckModel 'Модель (ИД)' = DATA modelCheck (checkModel) IN idGroup;
-nameModelCheckModel 'Модель прайс чекера' = nameModelCheck(modelCheckModel(checkModel)) IN baseGroup;
-
-FORM checkModels 'Модели прайс чекеров'
-OBJECTS m=checkModel
-PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
-
-FORM scalesModels 'Модели весов'
-OBJECTS m=scalesModel
-PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
-
-FORM cashRegistersModels 'Модели касс'
-OBJECTS m=cashRegisterModel
-PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
-
-FORM terminalModels 'Модели ТСД'
-OBJECTS m=terminalModel
-PROPERTIES(m) READONLY objectClassName, name, useModel, maxProductModel, noteModel, handlerModel
-PROPERTIES(m) ADDFORM, EDITFORM, delete;
-
-FORM checkModel 'Модель прайс чекера'
-OBJECTS ch=checkModel FIXED PANEL
-PROPERTIES(ch) name, nameModelCheckModel, noteModel, handlerModel, useModel, maxProductModel
-EDIT checkModel OBJECT ch;
-
-FORM cashRegisterModel 'Модель касс'
-OBJECTS c=cashRegisterModel FIXED PANEL
-PROPERTIES(c) name, nameFrontOfficeCashRegisterModel, noteModel, handlerModel, useModel, dateToCashRegisterModel, lettersModel
-EDIT cashRegisterModel OBJECT c;
-
-FORM scalesModel 'Модель весов'
-OBJECTS s=scalesModel FIXED PANEL
-PROPERTIES(s) name, nameFlashScalesModel, noteModel, handlerModel, useModel, maxProductModel, maxTextScalesModel,
-              folderScalesModel, lettersModel, compositionScalesModel
-EDIT scalesModel OBJECT s;
-
-FORM terminalModel 'Модель ТСД'
-OBJECTS t=terminalModel FIXED PANEL
-PROPERTIES(t) name, noteModel, handlerModel, useModel, maxProductModel
-EDIT terminalModel OBJECT t;
-
 //---------------------------- Сервера управления оборудования ----------------------------//
 CLASS equipmentServer 'Сервер оборудования' : named;
 TABLE equipmentServer (equipmentServer);
+
 sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
 sidToEquipmentServer(equipmentServer) = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
 delayEquipmentServer 'Период обновления (в миллисекундах)' = DATA INTEGER (equipmentServer) IN baseGroup;
 
 //---------------------------- Ошибки сервера оборудования ----------------------------//
+
 CLASS equipmentServerError 'Ошибки';
 TABLE equipmentServerError (equipmentServerError);
 
@@ -2041,6 +1957,7 @@ dateEquipmentServerError 'Время возникновения' = DATA DATETIME
 equipmentServerEquipmentServerError 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerError) IN baseGroup;
 
 //---------------------------- Лог сервера оборудования ----------------------------//
+
 CLASS equipmentServerLog 'Лог';
 TABLE equipmentServerLog (equipmentServerLog);
 
@@ -2048,195 +1965,73 @@ dataEquipmentServerLog 'Сообщение' = DATA TEXT (equipmentServerLog) IN 
 dateEquipmentServerLog 'Время' = DATA DATETIME (equipmentServerLog) IN baseGroup;
 equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerLog) IN baseGroup;
 
+//---------------------------- Формы для серверов оборудования ----------------------------//
+
+FORM equipmentServer 'Серверы оборудования'
+    OBJECTS es = equipmentServer
+    PROPERTIES(es)  READONLY sidEquipmentServer
+    PROPERTIES(es)  delayEquipmentServer, ADDFORM, EDITFORM, delete
+
+    OBJECTS e = equipmentServerError
+    PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
+    PROPERTIES(e) delete
+    PROPERTIES(e) FORCE PANEL erTraceEquipmentServerError
+
+    OBJECTS l = equipmentServerLog
+    PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
+    PROPERTIES(l) delete
+
+    FILTERS equipmentServerEquipmentServerError (e) == es
+    FILTERS equipmentServerEquipmentServerLog (l) == es
+;
+
+DESIGN equipmentServer FROM DEFAULT {
+    main {
+        NEW topContainer {
+            type = SPLITV;
+            childConstraints =  TO THE BOTTOM;
+
+            ADD es.box;
+
+            NEW specContainer {
+                type = TABBED;
+
+                NEW errorContainer {
+                    title = 'Ошибки';
+                    ADD e.box;
+                    PROPERTY(erTraceEquipmentServerError(e)) {
+                        fillHorizontal = 1;
+                        panelLabelAbove = TRUE;
+                    }
+                }
+                ADD l.box;
+            }
+        }
+        ADD functions.box;
+    }
+}
 
 //---------------------------- группы оборудования ----------------------------------------//
 
 CLASS ABSTRACT groupMachinery 'Группы оборудования';
 TABLE groupMachinery (groupMachinery);
 
-CLASS groupScales 'Группы весов' : groupMachinery;
-CLASS groupCashRegister 'Группы касс' : groupMachinery;
-CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
-CLASS groupTerminal 'Группы ТСД' : groupMachinery;
+nameGroupMachinery 'Наименование' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-CLASS groupTerminalDocumentType 'Группа типов документов';
+equipmentServerGroupMachinery = DATA equipmentServer (groupMachinery);
+nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
+sidEquipmentServerGroupMachinery 'ИД сервера оборудования' (groupMachinery) = sidEquipmentServer(equipmentServerGroupMachinery(groupMachinery));
 
-nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
-groupTerminalDocumentTypeGroupTerminal 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (groupTerminal);
-nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов документов' (groupTerminal) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeGroupTerminal(groupTerminal));
-
-nameGroupMachinery 'Наименование группы' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
-transferGroupMachinery 'Передать товар на группу оборудования' = DATA BOOLEAN (groupMachinery) IN baseGroup;
-roundSalesGroupMachinery 'Округление цен до' = DATA INTEGER (groupMachinery) IN baseGroup;
-
-cellGroupScales 'Помещать на ценники номера ячеек с этой группы' = DATA BOOLEAN (groupScales) IN baseGroup;
-sidSectionGroupScales 'Код отдела в Set Retail' = DATA INTEGER (groupScales) IN baseGroup;
-directoryGroupScales 'Директория сервера Set Retail' = DATA STRING[200] (groupScales) IN baseGroup;
-pieceItemCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
-weightItemCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+// -------------------------------- Склады --------------------------------------------- //
 
 departmentStoreGroupMachinery 'Подразделение (ИД)' = DATA departmentStore (groupMachinery);
 nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) = name(departmentStoreGroupMachinery(groupMachinery)) IN baseGroup;
-
-equipmentServerGroupMachinery 'Сервер оборудования (ИД)' = DATA equipmentServer (groupMachinery);
-nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
-sidEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = sidEquipmentServer(equipmentServerGroupMachinery(groupMachinery));
-
-//---------------------------- типы оборудования  ----------------------------------------//
-CLASS ABSTRACT machinery 'Оборудование';
-TABLE machinery(machinery);
-
-CLASS cashRegister 'Касса' : machinery, computer;
-CLASS scales 'Весы' : machinery;
-CLASS check 'Прайс чекер' : machinery;
-CLASS terminal 'ТСД' : machinery;
-
-isGroupCashRegister (machinery) = machinery IS groupCashRegister;
-groupCashRegisterCashRegister 'Группа (ИД)' = DATA groupCashRegister (cashRegister) IN idGroup;
-isGroupCashRegisterCashRegister (groupCashRegister, cashRegister) = groupCashRegisterCashRegister(cashRegister) == groupCashRegister;
-
-isGroupScales (machinery) = machinery IS groupScales;
-groupScalesScales 'Группа (ИД)' = DATA groupScales (scales) IN idGroup;
-isGroupScalesScales (groupScales, scales) = groupScalesScales(scales) == groupScales;
-
-isGroupCheck (machinery) = machinery IS groupCheck;
-groupCheckCheck 'Группа (ИД)' = DATA groupCheck (check) IN idGroup;
-isGroupCheckCheck (groupCheck, check) = groupCheckCheck(check) == groupCheck;
-
-isTerminal (machinery) = machinery IS terminal;
-groupTerminalTerminal 'Группа (ИД)' = DATA groupTerminal (terminal) IN idGroup;
-isGroupTerminalTerminal (groupTerminal, terminal) = groupTerminalTerminal(terminal) == groupTerminal;
-
-// todo : persistent почему-то не работает
-groupMachineryMachinery 'Группа (ИД)' (machinery) = UNION EXCLUSIVE groupCashRegisterCashRegister(machinery),
-                                                                   groupScalesScales(machinery),
-                                                                   groupCheckCheck(machinery),
-                                                                   groupTerminalTerminal(machinery);
-nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
-
-departmentStoreMachinery(cashRegister) = departmentStoreGroupMachinery(groupMachineryMachinery(cashRegister));
-nameDepartmentStoreMachinery 'Наименование отдела' (cashRegister) = name(departmentStoreMachinery(cashRegister)) IN baseGroup;
-nameStoreDepartmentStoreMachinery 'Наименование магазина' (cashRegister) = name(storeDepartmentStore(departmentStoreMachinery(cashRegister))) IN baseGroup;
-
-nameGroupMachineryCashRegister 'Наименование группы' (cashRegister) = nameGroupMachinery(groupCashRegisterCashRegister(cashRegister)) IN baseGroup;
-nameGroupMachineryScales 'Наименование группы' (scales) = nameGroupMachinery(groupScalesScales(scales)) IN baseGroup;
-nameGroupMachineryCheck 'Наименование группы' (check) = nameGroupMachinery(groupCheckCheck(check)) IN baseGroup;
-nameGroupMachineryTerminal 'Наименование группы' (terminal) = nameGroupMachinery(groupTerminalTerminal(terminal)) IN baseGroup;
-
-nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN baseGroup;
-descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
-portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
-useMachinery 'Оборудование используется' = DATA BOOLEAN (machinery) IN baseGroup;
-
-numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
-numberCashRegisterToCashRegister (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
-
-cashRegisterModelCashRegister 'Модель ИД' = DATA cashRegisterModel (cashRegister) IN idGroup;
-directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
-nameCashRegisterModelCashRegister 'Модель кассы' (cashRegister) = name(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
-handlerCashRegisterModelCashRegister 'Обработчик кассы' (cashRegister) = handlerModel(cashRegisterModelCashRegister(cashRegister)) IN baseGroup;
-dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
-
-terminalModelTerminal 'Модель ИД' = DATA terminalModel (terminal) IN idGroup;
-directoryTerminal 'Директория обмена с ТСД' = DATA STRING[100] (terminal) IN baseGroup;
-nameTerminalModelTerminal 'Модель ТСД' (terminal) = name(terminalModelTerminal(terminal)) IN baseGroup;
-handlerTerminalModelTerminal 'Обработчик ТСД' (terminal) = handlerModel(terminalModelTerminal(terminal)) IN baseGroup;
-
-CLASS STATIC feature 'Свойство для оборудования'
-{
-    never 'HET,(пример: для годен это значит - печатаем в поле этикетки "Годен до")',
-    always 'ДА для ВСЕХ товаров поместить в состав',
-    sometimes 'ДА (для товаров с признаком [Контролировать срок годности по товару?]'
-};
-
-scalesModelScales 'Модель ИД' = DATA scalesModel (scales) IN idGroup;
-numberScales 'Заводской(серийный) номер ' = DATA STRING[100] (scales) IN baseGroup;
-nameScalesModelScales 'Модель весов' (scales) = name(scalesModelScales(scales)) IN baseGroup;
-handlerScalesModelScales 'Обработчик весов' (scales) = handlerModel(scalesModelScales(scales)) IN baseGroup;
-dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
-passScales 'свойство ИД' = DATA feature (scales) IN idGroup;
-namePassScales 'Свойство товара [Годен до] помещать в ингредиенты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
-                                                                                                  passScales(scales)) IN baseGroup;
-manufactureScales 'свойство ИД' = DATA feature (scales) IN idGroup;
-nameManufactureScales 'Свойство товара [Дата изг.] помещать в ингредиенты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
-                                                                                                  manufactureScales(scales)) IN baseGroup;
-productionScales 'свойство ИД' = DATA feature (scales) IN idGroup;
-nameProductionScales 'Св-во товара[Срок годн.в часах] поместить в ингр-ты' (scales) = name(UNION OVERRIDE feature.always IF scales IS scales,
-                                                                                                  productionScales(scales)) IN baseGroup;
-sidScales 'ID весов для Set Retail' = DATA INTEGER (scales) IN baseGroup;
 
 // фильтрация по группам товаров
 
 filterItemsGroupMachinery 'Фильтровать по группам товаров' = DATA BOOLEAN (groupMachinery);
 
 inGroupMachineryItemGroup 'Вкл' = DATA BOOLEAN (groupMachinery, itemGroup);
-
-CLASS cellScales 'Ячейка весов';
-groupScalesCellScales 'Группа весов ИД' = DATA groupScales (cellScales);
-compositionCellScales 'Ячейка' = DATA TEXT (cellScales);
-numberCellScales 'Номер' = PARTITION SUM 1 IF c IS cellScales BY groupScalesCellScales (c) ORDER c;
-groupScalesCompositionToCellScales (groupScales, composition) = GROUP UNIQUE cellScales BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS cellScales;
-isGroupScalesCellScales (groupScales, cellScales) = groupScalesCellScales(cellScales) == groupScales;
-//---------------------------- типы документов ----------------------------------------//
-
-CLASS terminalDocumentType 'Тип документов';
-
-nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
-idToTerminalDocumentType (terminalDocumentType) = GROUP UNIQUE terminalDocumentType BY idTerminalDocumentType (terminalDocumentType) WHERE terminalDocumentType IS terminalDocumentType;
-
-groupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (terminalDocumentType);
-nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
-isGroupTerminalDocumentTypeTerminalDocumentType (groupTerminalDocumentType, terminalDocumentType) = groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType) == groupTerminalDocumentType;
-
-CLASS STATIC terminalHandbookType 'Вид справочника ТСД'
-{
-supplier 'Поставщик',
-customer 'Покупатель'
-};
-
-idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
-idToTerminalHandbookType (terminalHandbookType) = GROUP UNIQUE terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS terminalHandbookType;
-
-terminalHandbookType1TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
-terminalHandbookType2TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
-idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-
-nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-
-CLASS terminalDocument 'Документ ТСД';
-
-idTerminalDocument 'Номер' = DATA INTEGER (terminalDocument) IN baseGroup;
-titleTerminalDocument 'Имя' = DATA STRING[100] (terminalDocument) IN baseGroup;
-quantityTerminalDocument 'Количество' = DATA NUMERIC[14,3] (terminalDocument) IN baseGroup;
-idTerminalHandbookType1TerminalDocument 'Код в справочнике 1' = DATA INTEGER (terminalDocument) IN baseGroup;
-idTerminalHandbookType2TerminalDocument 'Код в справочнике 2' = DATA INTEGER (terminalDocument) IN baseGroup;
-
-terminalDocumentTypeTerminalDocument = DATA terminalDocumentType(terminalDocument);
-nameTerminalDocumentTypeTerminalDocument 'Тип документа' (terminalDocument) = nameTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
-idTerminalDocumentTypeTerminalDocument (terminalDocument) = idTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
-usedTerminalDocument 'Использован' (terminalDocument) = DATA BOOLEAN (terminalDocument) IN baseGroup;
-noUsedTerminalDocument 'Неиспользован' (terminalDocument) = terminalDocument IS terminalDocument AND NOT usedTerminalDocument(terminalDocument);
-
-idToTerminalDocument (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument) WHERE terminalDocument IS terminalDocument;
-
-CLASS terminalDocumentDetail 'Строка документа ТСД';
-terminalDocumentTerminalDocumentDetail = DATA terminalDocument(terminalDocumentDetail);
-numberTerminalDocumentDetail 'Номер' = DATA INTEGER (terminalDocumentDetail) IN baseGroup;
-barcodeTerminalDocumentDetail 'Штрихкод' = DATA STRING[14] (terminalDocumentDetail) IN baseGroup;
-quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-nameTerminalDocumentDetail 'Наименование' = DATA STRING[200] (terminalDocumentDetail) IN baseGroup;
-isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (terminalDocumentDetail) IN baseGroup;
-
-idTerminalDocumentNumberToTerminalDocumentDetail (terminalDocumentDetail, terminalDocument) = GROUP UNIQUE terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail) WHERE terminalDocumentDetail IS terminalDocumentDetail;
 
 FORM filterItemsGroupMachinery 'Фильтрация по группам товаров'
     OBJECTS gm = groupMachinery FIXED PANEL
@@ -2266,108 +2061,109 @@ DESIGN filterItemsGroupMachinery FROM DEFAULT {
 
 showFilterItemsGroupMachinery 'Выбрать группы' (groupMachinery) = ACTION FORM filterItemsGroupMachinery OBJECTS gm MODAL;
 
+//---------------------------- Модели оборудования ----------------------------------------//
+CLASS ABSTRACT model 'Модель' : named;
+TABLE model (model);
+
+noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
+handlerModel 'Обработчик' = DATA STRING[200] (model) IN baseGroup;
+
+dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashRegisterModel) IN baseGroup;
+maxProductModel 'MAX допустимое колич. товаров' = DATA INTEGER (model) IN baseGroup;
+
+//---------------------------- типы оборудования  ----------------------------------------//
+CLASS ABSTRACT machinery 'Оборудование';
+TABLE machinery(machinery);
+
+groupMachineryMachinery = ABSTRACT groupMachinery (machinery) PERSISTENT;
+nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
+
+departmentStoreMachinery(machinery) = departmentStoreGroupMachinery(groupMachineryMachinery(machinery));
+
+modelMachinery = ABSTRACT model (machinery);
+nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN baseGroup;
+handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN baseGroup;
+
+nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN baseGroup;
+descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
+portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
+
+// ------------------------- Кассы ------------------------------------------ //
+
+// Группы
+CLASS groupCashRegister 'Группы касс' : groupMachinery;
+
+// Модели
+CLASS cashRegisterModel 'Модель касс' : model;
+
+FORM cashRegisterModel 'Модель касс'
+    OBJECTS c=cashRegisterModel FIXED PANEL
+    PROPERTIES(c) name, noteModel, handlerModel, dateToCashRegisterModel
+    EDIT cashRegisterModel OBJECT c
+;
+
+FORM cashRegistersModels 'Модели касс'
+    OBJECTS m=cashRegisterModel
+    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) ADDFORM, EDITFORM, delete
+;
+
+// Кассы
+CLASS cashRegister 'Касса' : machinery, computer;
+isGroupCashRegister (machinery) = machinery IS groupCashRegister;
+
+groupCashRegisterCashRegister = DATA groupCashRegister (cashRegister);
+groupMachineryMachinery(machinery) += groupCashRegisterCashRegister(machinery);
+
+cashRegisterModelCashRegister = DATA cashRegisterModel (cashRegister);
+modelMachinery(machinery) += cashRegisterModelCashRegister(machinery);
+
+roundSalesGroupCashRegister 'Округление цен до' = DATA INTEGER (groupMachinery) IN baseGroup;
+
+numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
+cashRegisterNumber (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
+
+dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
+
+directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
+
 FORM cashRegister 'Касса'
     OBJECTS c=cashRegister FIXED PANEL
-    PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+    PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
                   dateCashRegister
     EDIT cashRegister OBJECT c
 ;
 
-FORM scales 'Весы'
-    OBJECTS s=scales FIXED PANEL
-    PROPERTIES(s) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
-                  dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
-    EDIT scales OBJECT s
-;
-
-FORM check 'Прайс чекер'
-    OBJECTS ch=check FIXED PANEL
-    PROPERTIES(ch) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery
-    EDIT check OBJECT ch
-;
-
-FORM terminal 'ТСД'
-    OBJECTS t=terminal FIXED PANEL
-    PROPERTIES(t) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, directoryTerminal, nameTerminalModelTerminal
-    EDIT terminal OBJECT t
-;
-
-FORM groupScales 'Группа весов'
-    OBJECTS grs=groupScales FIXED PANEL
-    PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    roundSalesGroupMachinery,
-                    transferGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
-                    pieceItemCodeGroupScales, weightItemCodeGroupScales,
-                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grs)
-
-    OBJECTS s=scales
-    PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
-                    dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales, ADDOBJ, delete
-    FILTERGROUP filters1
-        FILTER 'Показывать только для данной группы' 'F10' isGroupScalesScales(grs, s) DEFAULT
-    EDIT groupScales OBJECT grs
-;
-
-FORM groupsScales 'Группы весов'
-    OBJECTS grs=groupScales
-    PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
-                         transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
-                         pieceItemCodeGroupScales, weightItemCodeGroupScales
-    PROPERTIES(grs) ADDFORM, EDITFORM, delete
-
-    OBJECTS s=scales
-    PROPERTIES(s)   READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberScales, nameScalesModelScales,
-                             dateScales, namePassScales, nameManufactureScales, nameProductionScales, sidScales
-    FILTERS isGroupScalesScales(grs, s)
-;
-
-DESIGN groupsScales FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grs.box;
-        ADD s.box;
-    }
-    ADD functions.box;
-}
-
 FORM groupCashRegister 'Группа касс'
-
     OBJECTS grc=groupCashRegister FIXED PANEL
     PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    roundSalesGroupMachinery, transferGroupMachinery,
+                    roundSalesGroupCashRegister,
                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grc)
 
     OBJECTS c=cashRegister
-    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
                     dateCashRegister, ADDOBJ, delete
 
     FILTERGROUP filters2
-        FILTER 'Показывать только для данной группы' 'F10' isGroupCashRegisterCashRegister(grc, c) DEFAULT
+        FILTER 'Показывать только для данной группы' 'F10' groupCashRegisterCashRegister(c) == grc DEFAULT
 
     EDIT groupCashRegister OBJECT grc
 ;
 
-
 FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=groupCashRegister, c=cashRegister
     PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
+                     roundSalesGroupCashRegister, filterItemsGroupMachinery
     PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           useMachinery, numberCashRegister, directoryCashRegister, nameCashRegisterModelCashRegister,
+                           numberCashRegister, directoryCashRegister, nameModelMachinery,
                            dateCashRegister
-    FILTERS isGroupCashRegisterCashRegister(grc, c)
+    FILTERS groupCashRegisterCashRegister(c) == grc
 ;
 
 DESIGN groupsCashRegister FROM DEFAULT {
-
-    NEW topContainer{
-
+    NEW topContainer {
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
@@ -2377,34 +2173,163 @@ DESIGN groupsCashRegister FROM DEFAULT {
     ADD functions.box;
 }
 
+// ------------------------- Весы ------------------------------------------ //
+
+// Группы
+CLASS groupScales 'Группы весов' : groupMachinery;
+
+directoryGroupScales 'Каталог обмена' = DATA STRING[200] (groupScales) IN baseGroup;
+pieceItemCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+weightItemCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+
+// Модели
+CLASS scalesModel 'Модель весов' : model;
+
+scalesModelName (scalesModel) = GROUP UNIQUE scalesModel BY name (scalesModel) WHERE scalesModel IS scalesModel;
+
+maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (scalesModel) IN baseGroup;
+compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
+
+FORM scalesModel 'Модель весов'
+    OBJECTS s=scalesModel FIXED PANEL
+    PROPERTIES(s) name, noteModel, handlerModel, maxProductModel, maxTextScalesModel,
+                  compositionScalesModel
+    EDIT scalesModel OBJECT s
+;
+
+FORM scalesModels 'Модели весов'
+    OBJECTS m=scalesModel
+    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) ADDFORM, EDITFORM, delete
+;
+
+// Весы
+CLASS scales 'Весы' : machinery;
+isGroupScales (machinery) = machinery IS groupScales;
+
+groupScalesScales = DATA groupScales (scales);
+groupMachineryMachinery(machinery) += groupScalesScales(machinery);
+
+scalesModelScales = DATA scalesModel (scales);
+modelMachinery(machinery) += scalesModelScales(machinery);
+
+numberScales 'Заводской(серийный) номер' = DATA STRING[100] (scales) IN baseGroup;
+dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
+
+FORM scales 'Весы'
+    OBJECTS s=scales FIXED PANEL
+    PROPERTIES(s) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
+                  dateScales
+    EDIT scales OBJECT s
+;
+
+FORM groupScales 'Группа весов'
+    OBJECTS grs=groupScales FIXED PANEL
+    PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    directoryGroupScales,
+                    pieceItemCodeGroupScales, weightItemCodeGroupScales,
+                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grs)
+
+    OBJECTS s=scales
+    PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
+                    dateScales, ADDOBJ, delete
+    FILTERGROUP filters1
+        FILTER 'Показывать только для данной группы' 'F10' groupScalesScales(s) == grs DEFAULT
+    EDIT groupScales OBJECT grs
+;
+
+FORM groupsScales 'Группы весов'
+    OBJECTS grs=groupScales
+    PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                         filterItemsGroupMachinery, directoryGroupScales,
+                         pieceItemCodeGroupScales, weightItemCodeGroupScales
+    PROPERTIES(grs) ADDFORM, EDITFORM, delete
+
+    OBJECTS s=scales
+    PROPERTIES(s)   READONLY nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
+                             dateScales
+    FILTERS groupScalesScales(s) == grs
+;
+
+DESIGN groupsScales FROM DEFAULT {
+    NEW topContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grs.box;
+        ADD s.box;
+    }
+}
+
+// Ячейки
+CLASS cellScales 'Ячейка весов';
+
+groupScalesCellScales = DATA groupScales (cellScales);
+
+compositionCellScales 'Ячейка' = DATA TEXT (cellScales);
+numberCellScales 'Номер' = PARTITION SUM 1 IF c IS cellScales BY groupScalesCellScales (c) ORDER c;
+
+groupScalesCompositionToCellScales (groupScales, composition) = GROUP UNIQUE cellScales
+            BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS cellScales;
+
+// ------------------------- Прайс-чекеры ------------------------------------- //
+
+// Группы
+CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
+
+// Модели
+CLASS checkModel 'Модель прайс чекеров' : model;
+
+FORM checkModel 'Модель прайс чекера'
+    OBJECTS ch=checkModel FIXED PANEL
+    PROPERTIES(ch) name, noteModel, handlerModel, maxProductModel
+    EDIT checkModel OBJECT ch
+;
+
+FORM checkModels 'Модели прайс чекеров'
+    OBJECTS m=checkModel
+    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) ADDFORM, EDITFORM, delete
+;
+
+// Прайс-чекеры
+CLASS check 'Прайс чекер' : machinery;
+isGroupCheck (machinery) = machinery IS groupCheck;
+
+groupCheckCheck = DATA groupCheck (check);
+groupMachineryMachinery(machinery) += groupCheckCheck(machinery);
+
+FORM check 'Прайс чекер'
+    OBJECTS ch=check FIXED PANEL
+    PROPERTIES(ch) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery
+    EDIT check OBJECT ch
+;
+
 FORM groupCheck 'Группа прайс чекеров'
     OBJECTS grch=groupCheck FIXED PANEL
     PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     roundSalesGroupMachinery, transferGroupMachinery,
                      filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grch)
 
     OBJECTS ch=check
-    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, ADDOBJ, delete
+    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, ADDOBJ, delete
     FILTERGROUP filters3
-        FILTER 'Показывать только для данной группы' 'F10' isGroupCheckCheck(grch, ch) DEFAULT
+        FILTER 'Показывать только для данной группы' 'F10' groupCheckCheck(ch) == grch DEFAULT
     EDIT groupCheck OBJECT grch
 ;
 
 FORM groupsCheck 'Группы прайс чекеров'
     OBJECTS grch=groupCheck
     PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                              roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
+                              filterItemsGroupMachinery
     PROPERTIES(grch)          ADDFORM, EDITFORM, delete
 
     OBJECTS ch=check
-    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, nameModelCheckModel, portMachinery, useMachinery
-    FILTERS isGroupCheckCheck(grch, ch)
+    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, portMachinery
+    FILTERS groupCheckCheck(ch) == grch
 ;
 
 DESIGN groupsCheck FROM DEFAULT {
-
     NEW topContainer{
-
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
@@ -2414,53 +2339,94 @@ DESIGN groupsCheck FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM groupTerminal 'Группа ТСД'
+// ------------------------- Терминалы сбора данных --------------------------- //
 
-    OBJECTS grt=groupTerminal FIXED PANEL
-    PROPERTIES(grt) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    roundSalesGroupMachinery, transferGroupMachinery, nameGroupTerminalDocumentTypeGroupTerminal,
-                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grt)
+// Группы
+CLASS groupTerminal 'Группы ТСД' : groupMachinery;
 
-    OBJECTS t=terminal
-    PROPERTIES(t)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, useMachinery, directoryTerminal, nameTerminalModelTerminal,
-                    ADDOBJ, delete
+// Модели
+CLASS terminalModel 'Модель ТСД' : model;
 
-    FILTERGROUP filters3
-        FILTER 'Показывать только для данной группы' 'F10' isGroupTerminalTerminal(grt, t) DEFAULT
-
-    EDIT groupTerminal OBJECT grt
+FORM terminalModel 'Модель ТСД'
+    OBJECTS t=terminalModel FIXED PANEL
+    PROPERTIES(t) name, noteModel, handlerModel, maxProductModel
+    EDIT terminalModel OBJECT t
 ;
 
-
-FORM groupsTerminal 'Группы ТСД'
-    OBJECTS grt=groupTerminal, t=terminal
-    PROPERTIES(grt)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     nameGroupTerminalDocumentTypeGroupTerminal,
-                     roundSalesGroupMachinery, transferGroupMachinery, filterItemsGroupMachinery
-    PROPERTIES(grt)  ADDFORM, EDITFORM, delete
-
-    PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           useMachinery, directoryTerminal, nameTerminalModelTerminal,
-                           nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
-                           nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
-    FILTERS isGroupTerminalTerminal(grt, t)
+FORM terminalModels 'Модели ТСД'
+    OBJECTS m=terminalModel
+    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) ADDFORM, EDITFORM, delete
 ;
 
-DESIGN groupsTerminal FROM DEFAULT {
+// Терминалы
+CLASS terminal 'ТСД' : machinery;
+isTerminal (machinery) = machinery IS terminal;
 
-    NEW topContainer{
+groupTerminalTerminal = DATA groupTerminal (terminal);
+groupMachineryMachinery(machinery) += groupTerminalTerminal(machinery);
 
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
+terminalModelTerminal = DATA terminalModel (terminal);
+modelMachinery(machinery) += terminalModelTerminal(machinery);
 
-        ADD grt.box;
-        ADD t.box;
-    }
-    ADD functions.box;
-}
+directoryTerminal 'Директория обмена с ТСД' = DATA STRING[100] (terminal) IN baseGroup;
+
+FORM terminal 'ТСД'
+    OBJECTS t=terminal FIXED PANEL
+    PROPERTIES(t) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, directoryTerminal, nameModelMachinery
+    EDIT terminal OBJECT t
+;
+
+// ------------------------ Группы типов документов ------------------------- //
+CLASS groupTerminalDocumentType 'Группа типов документов';
+
+nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+groupTerminalDocumentTypeGroupTerminal 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (groupTerminal);
+nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов документов' (groupTerminal) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeGroupTerminal(groupTerminal));
+
+// ------------------------------------- Виды справочников ТСД --------------------------------- //
+
+CLASS STATIC terminalHandbookType 'Вид справочника ТСД' {
+    supplier 'Поставщик',
+    customer 'Покупатель'
+};
+
+idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
+terminalHandbookTypeID (terminalHandbookType) = GROUP UNIQUE terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS terminalHandbookType;
+
+FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
+    OBJECTS h=terminalHandbookType
+    PROPERTIES(h)  name, idTerminalHandbookType
+    PROPERTIES(h)  ADDFORM, EDITFORM, delete
+;
+
+//---------------------------- типы документов ----------------------------------------//
+
+CLASS terminalDocumentType 'Тип документов';
+
+groupTerminalDocumentTypeTerminalDocumentType = DATA groupTerminalDocumentType (terminalDocumentType);
+nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
+
+nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+
+idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
+terminalDocumentTypeID (terminalDocumentType) = GROUP UNIQUE terminalDocumentType BY idTerminalDocumentType (terminalDocumentType) WHERE terminalDocumentType IS terminalDocumentType;
+
+terminalHandbookType1TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
+idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+
+nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
+
+terminalHandbookType2TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
+idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
+
+nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
 
 FORM groupTerminalDocumentType 'Группа типов документов'
-
     OBJECTS gtdt=groupTerminalDocumentType FIXED PANEL
     PROPERTIES(gtdt) nameGroupTerminalDocumentType
 
@@ -2471,7 +2437,7 @@ FORM groupTerminalDocumentType 'Группа типов документов'
                       ADDOBJ, delete
 
     FILTERGROUP filters3
-        FILTER 'Показывать только для данной группы' 'F10' isGroupTerminalDocumentTypeTerminalDocumentType(gtdt, tdt) DEFAULT
+        FILTER 'Показывать только для данной группы' 'F10' groupTerminalDocumentTypeTerminalDocumentType(tdt) == gtdt DEFAULT
 
     EDIT groupTerminalDocumentType OBJECT gtdt
 ;
@@ -2489,9 +2455,7 @@ FORM groupsTerminalDocumentType 'Группы типов документов'
 ;
 
 DESIGN groupsTerminalDocumentType FROM DEFAULT {
-
     NEW topContainer{
-
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
@@ -2501,58 +2465,83 @@ DESIGN groupsTerminalDocumentType FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
-    OBJECTS h=terminalHandbookType
-    PROPERTIES(h)  name, idTerminalHandbookType
-    PROPERTIES(h)  ADDFORM, EDITFORM, delete
+FORM groupTerminal 'Группа ТСД'
+    OBJECTS grt=groupTerminal FIXED PANEL
+    PROPERTIES(grt) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                    nameGroupTerminalDocumentTypeGroupTerminal,
+                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grt)
+
+    OBJECTS t=terminal
+    PROPERTIES(t)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, directoryTerminal, nameModelMachinery,
+                    ADDOBJ, delete
+
+    FILTERGROUP filters3
+        FILTER 'Показывать только для данной группы' 'F10' groupTerminalTerminal(t) == grt DEFAULT
+
+    EDIT groupTerminal OBJECT grt
 ;
 
-FORM equipmentServer 'Серверы оборудования'
-    OBJECTS es=equipmentServer, e = equipmentServerError, l = equipmentServerLog
-    PROPERTIES(es)  READONLY sidEquipmentServer
-    PROPERTIES(es)  delayEquipmentServer, ADDFORM, EDITFORM, delete
+FORM groupsTerminal 'Группы ТСД'
+    OBJECTS grt=groupTerminal, t=terminal
+    PROPERTIES(grt)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                     nameGroupTerminalDocumentTypeGroupTerminal,
+                     filterItemsGroupMachinery
+    PROPERTIES(grt)  ADDFORM, EDITFORM, delete
 
-    PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
-    PROPERTIES(e) delete
-    PROPERTIES(e) FORCE PANEL erTraceEquipmentServerError
-
-    PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
-    PROPERTIES(l) delete
-
-    FILTERS equipmentServerEquipmentServerError (e) == es
-    FILTERS equipmentServerEquipmentServerLog (l) == es
-
+    PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
+                           directoryTerminal, nameModelMachinery,
+                           nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
+                           nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
+    FILTERS groupTerminalTerminal(t) == grt
 ;
 
-DESIGN equipmentServer FROM DEFAULT {
+DESIGN groupsTerminal FROM DEFAULT {
+    NEW topContainer{
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
 
-    main {
-
-        NEW topContainer {
-
-            type = SPLITV;
-            childConstraints =  TO THE BOTTOM;
-
-            ADD es.box;
-
-            NEW specContainer {
-                type = TABBED;
-
-                NEW errorContainer {
-                title = 'Ошибки';
-                ADD e.box;
-                PROPERTY(erTraceEquipmentServerError(e)) {
-                fillHorizontal = 1;
-                panelLabelAbove = TRUE;
-                }
-                }
-                ADD l.box;
-            }
-        }
-
-        ADD functions.box;
+        ADD grt.box;
+        ADD t.box;
     }
+    ADD functions.box;
 }
+
+// ------------------------------------ Документы ТСД ------------------------------- //
+
+CLASS terminalDocument 'Документ ТСД';
+
+idTerminalDocument 'Номер' = DATA INTEGER (terminalDocument) IN baseGroup;
+terminalDocumentID (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument)
+                                                       WHERE terminalDocument IS terminalDocument;
+
+titleTerminalDocument 'Имя' = DATA STRING[100] (terminalDocument) IN baseGroup;
+quantityTerminalDocument 'Количество' = DATA NUMERIC[14,3] (terminalDocument) IN baseGroup;
+idTerminalHandbookType1TerminalDocument 'Код в справочнике 1' = DATA INTEGER (terminalDocument) IN baseGroup;
+idTerminalHandbookType2TerminalDocument 'Код в справочнике 2' = DATA INTEGER (terminalDocument) IN baseGroup;
+
+terminalDocumentTypeTerminalDocument = DATA terminalDocumentType (terminalDocument);
+nameTerminalDocumentTypeTerminalDocument 'Тип документа' (terminalDocument) = nameTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
+
+idTerminalDocumentTypeTerminalDocument (terminalDocument) = idTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
+
+usedTerminalDocument 'Использован' (terminalDocument) = DATA BOOLEAN (terminalDocument) IN baseGroup;
+notUsedTerminalDocument 'Неиспользован' (terminalDocument) = terminalDocument IS terminalDocument AND NOT usedTerminalDocument(terminalDocument);
+
+terminalDocumentTerminalDocumentDetail = DATA terminalDocument(terminalDocumentDetail);
+
+CLASS terminalDocumentDetail 'Строка документа ТСД';
+
+numberTerminalDocumentDetail 'Номер' = DATA INTEGER (terminalDocumentDetail) IN baseGroup;
+terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocument) =
+    GROUP UNIQUE terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail)
+          WHERE terminalDocumentDetail IS terminalDocumentDetail;
+
+barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[14] (terminalDocumentDetail) IN baseGroup;
+quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
+priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
+sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
+nameTerminalDocumentDetail 'Наименование' = DATA STRING[200] (terminalDocumentDetail) IN baseGroup;
+isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (terminalDocumentDetail) IN baseGroup;
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -2742,14 +2731,14 @@ labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DA
 compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
 FORM cellScales 'Ячейки весов'
     OBJECTS grs=groupScales
-        PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
-                             transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
+        PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+                             filterItemsGroupMachinery, directoryGroupScales,
                              pieceItemCodeGroupScales, weightItemCodeGroupScales
 
     OBJECTS cs=cellScales
     PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
 
-    FILTERS isGroupScalesCellScales(grs, cs)
+    FILTERS groupScalesCellScales(cs) == grs
 ;
 
 DESIGN cellScales FROM DEFAULT {
@@ -2851,12 +2840,12 @@ FORM groupMachineryInput 'Выбор оборудования для перез�
 
     OBJECTS m = machinery
     PROPERTIES(m)          selectedMachinery
-    PROPERTIES(m) READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery
+    PROPERTIES(m) READONLY nppMachinery, descriptionMachinery, portMachinery
 
     PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
-                                                                    nameCashRegisterModelCashRegister, dateCashRegister
+                                                                    nameModelMachinery, dateCashRegister
 
-    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameScalesModelScales
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
 
     FILTERS groupMachineryMachinery(m) == g
 ;
@@ -3120,7 +3109,7 @@ FORM terminalDocuments 'Документы ТСД'
     FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
 
     FILTERGROUP filterUse
-        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
+        FILTER 'Неиспользованные' 'F10' notUsedTerminalDocument(td) DEFAULT
 
 ;
 
@@ -3151,7 +3140,7 @@ FORM terminalDocumentsDialog 'Документы ТСД'
 
     FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
     FILTERGROUP filterUse
-        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
+        FILTER 'Неиспользованные' 'F10' notUsedTerminalDocument(td) DEFAULT
 ;
 
 DESIGN terminalDocumentsDialog FROM DEFAULT {

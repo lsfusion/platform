@@ -165,8 +165,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 cashRegisterQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(cashRegisterKey));
                 cashRegisterQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(cashRegisterKey));
                 cashRegisterQuery.properties.put("numberCashRegister", retailLM.getLPByName("numberCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("nameCashRegisterModelCashRegister", retailLM.getLPByName("nameCashRegisterModelCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("nameModelMachinery", retailLM.getLPByName("nameModelMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.properties.put("handlerModelMachinery", retailLM.getLPByName("handlerModelMachinery").getExpr(cashRegisterKey));
 
                 cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
                 cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(groupObject, Compare.EQUALS));
@@ -181,8 +181,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     String portMachinery = (String) values.getValue().get("portMachinery");
                     Integer nppMachinery = (Integer) values.getValue().get("nppMachinery");
                     String numberCashRegister = (String) values.getValue().get("numberCashRegister");
-                    String nameModel = (String) values.getValue().get("nameCashRegisterModelCashRegister");
-                    String handlerModel = (String) values.getValue().get("handlerCashRegisterModelCashRegister");
+                    String nameModel = (String) values.getValue().get("nameModelMachinery");
+                    String handlerModel = (String) values.getValue().get("handlerModelMachinery");
                     cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, null));
                 }
 
@@ -203,8 +203,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
                 scalesQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(scalesKey));
                 scalesQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(scalesKey));
-                scalesQuery.properties.put("nameScalesModelScales", retailLM.getLPByName("nameScalesModelScales").getExpr(scalesKey));
-                scalesQuery.properties.put("handlerScalesModelScales", retailLM.getLPByName("handlerScalesModelScales").getExpr(scalesKey));
+                scalesQuery.properties.put("nameModelMachinery", retailLM.getLPByName("nameModelMachinery").getExpr(scalesKey));
+                scalesQuery.properties.put("handlerModelMachinery", retailLM.getLPByName("handlerModelMachinery").getExpr(scalesKey));
                 scalesQuery.and(isScales.property.getExpr(scalesKeys).getWhere());
                 scalesQuery.and(retailLM.getLPByName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
                 //if (snapshotTransaction)
@@ -215,8 +215,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 for (Map<Object, Object> values : scalesResult.values()) {
                     String portMachinery = (String) values.get("portMachinery");
                     Integer nppMachinery = (Integer) values.get("nppMachinery");
-                    String nameModel = (String) values.get("nameScalesModelScales");
-                    String handlerModel = (String) values.get("handlerScalesModelScales");
+                    String nameModel = (String) values.get("nameModelMachinery");
+                    String handlerModel = (String) values.get("handlerModelMachinery");
                     scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory,
                             pieceItemCodeGroupScales, weightItemCodeGroupScales));
                 }
@@ -267,8 +267,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 terminalQuery.properties.put("directoryTerminal", retailLM.getLPByName("directoryTerminal").getExpr(terminalKey));
                 terminalQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(terminalKey));
                 terminalQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(terminalKey));
-                terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLPByName("nameTerminalModelTerminal").getExpr(terminalKey));
-                terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
+                terminalQuery.properties.put("nameModelMachinery", retailLM.getLPByName("nameModelMachinery").getExpr(terminalKey));
+                terminalQuery.properties.put("handlerModelMachinery", retailLM.getLPByName("handlerModelMachinery").getExpr(terminalKey));
                 terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
                 terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
 
@@ -278,8 +278,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     String directory = (String) values.get("directoryTerminal");
                     String portMachinery = (String) values.get("portMachinery");
                     Integer nppMachinery = (Integer) values.get("nppMachinery");
-                    String nameModel = (String) values.get("nameTerminalModelTerminal");
-                    String handlerModel = (String) values.get("handlerTerminalModelTerminal");
+                    String nameModel = (String) values.get("nameModelMachinery");
+                    String handlerModel = (String) values.get("handlerModelMachinery");
                     terminalInfoList.add(new TerminalInfo(directory, nppMachinery, nameModel, handlerModel, portMachinery));
                 }
                 transactionList.add(new TransactionTerminalInfo((Integer) transactionObject.getValue(),
@@ -298,20 +298,20 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         Map<Object, KeyExpr> keys = isGroupMachinery.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("roundSalesGroupMachinery", retailLM.getLPByName("roundSalesGroupMachinery").getExpr(key));
+        query.properties.put("roundSalesGroupCashRegister", retailLM.getLPByName("roundSalesGroupCashRegister").getExpr(key));
         query.and(retailLM.getLPByName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
 
         OrderedMap<Map<Object, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
         List<Object[]> groupMachineryObjects = new ArrayList<Object[]>();
         for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
             DataObject groupMachineryObject = entry.getKey().values().iterator().next();
-            Integer roundSalesGroupMachinery = (Integer) entry.getValue().get("roundSalesGroupMachinery").getValue();
-            groupMachineryObjects.add(new Object[]{groupMachineryObject, roundSalesGroupMachinery});
+            Integer roundSalesGroupCashRegister = (Integer) entry.getValue().get("roundSalesGroupCashRegister").getValue();
+            groupMachineryObjects.add(new Object[]{groupMachineryObject, roundSalesGroupCashRegister});
         }
 
         for (Object[] groupMachinery : groupMachineryObjects) {
             DataObject groupMachineryObject = (DataObject) groupMachinery[0];
-            Integer roundSalesGroupMachinery = (Integer) groupMachinery[1];
+            Integer roundSalesGroupCashRegister = (Integer) groupMachinery[1];
 
             LP isCashRegister = LM.is(retailLM.getClassByName("cashRegister"));
 
@@ -323,8 +323,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             cashRegisterQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(cashRegisterKey));
             cashRegisterQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(cashRegisterKey));
             cashRegisterQuery.properties.put("numberCashRegister", retailLM.getLPByName("numberCashRegister").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("nameCashRegisterModelCashRegister", retailLM.getLPByName("nameCashRegisterModelCashRegister").getExpr(cashRegisterKey));
-            cashRegisterQuery.properties.put("handlerCashRegisterModelCashRegister", retailLM.getLPByName("handlerCashRegisterModelCashRegister").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("nameModelMachinery", retailLM.getLPByName("nameModelMachinery").getExpr(cashRegisterKey));
+            cashRegisterQuery.properties.put("handlerModelMachinery", retailLM.getLPByName("handlerModelMachinery").getExpr(cashRegisterKey));
 
             cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
             cashRegisterQuery.and(retailLM.getLPByName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
@@ -337,9 +337,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String portMachinery = (String) values.getValue().get("portMachinery");
                 Integer nppMachinery = (Integer) values.getValue().get("nppMachinery");
                 String numberCashRegister = (String) values.getValue().get("numberCashRegister");
-                String nameModel = (String) values.getValue().get("nameCashRegisterModelCashRegister");
-                String handlerModel = (String) values.getValue().get("handlerCashRegisterModelCashRegister");
-                cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, roundSalesGroupMachinery));
+                String nameModel = (String) values.getValue().get("nameModelMachinery");
+                String handlerModel = (String) values.getValue().get("handlerModelMachinery");
+                cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, roundSalesGroupCashRegister));
             }
         }
         return cashRegisterInfoList;
@@ -375,8 +375,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             terminalQuery.properties.put("directoryTerminal", retailLM.getLPByName("directoryTerminal").getExpr(terminalKey));
             terminalQuery.properties.put("portMachinery", retailLM.getLPByName("portMachinery").getExpr(terminalKey));
             terminalQuery.properties.put("nppMachinery", retailLM.getLPByName("nppMachinery").getExpr(terminalKey));
-            terminalQuery.properties.put("nameTerminalModelTerminal", retailLM.getLPByName("nameTerminalModelTerminal").getExpr(terminalKey));
-            terminalQuery.properties.put("handlerTerminalModelTerminal", retailLM.getLPByName("handlerTerminalModelTerminal").getExpr(terminalKey));
+            terminalQuery.properties.put("nameModelMachinery", retailLM.getLPByName("nameModelMachinery").getExpr(terminalKey));
+            terminalQuery.properties.put("handlerModelMachinery", retailLM.getLPByName("handlerModelMachinery").getExpr(terminalKey));
 
             terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
             terminalQuery.and(retailLM.getLPByName("groupTerminalTerminal").getExpr(terminalKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
@@ -388,8 +388,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String directoryTerminal = (String) values.getValue().get("directoryTerminal");
                 String portMachinery = (String) values.getValue().get("portMachinery");
                 Integer nppMachinery = (Integer) values.getValue().get("nppMachinery");
-                String nameModel = (String) values.getValue().get("nameTerminalModelTerminal");
-                String handlerModel = (String) values.getValue().get("handlerTerminalModelTerminal");
+                String nameModel = (String) values.getValue().get("nameModelMachinery");
+                String handlerModel = (String) values.getValue().get("handlerModelMachinery");
                 terminalInfoList.add(new TerminalInfo(directoryTerminal, nppMachinery, nameModel, handlerModel, portMachinery));
             }
         }
@@ -505,7 +505,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<ImportProperty<?>> paymentProperties = new ArrayList<ImportProperty<?>>();
 
         ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLPByName("numberNumberCashRegisterToZReportPosted").getMapping(zReportNumberField, cashRegisterField));
-        ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
+        ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLPByName("cashRegisterNumber").getMapping(cashRegisterField));
         ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField, cashRegisterField));
         ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), getLP("Barcode_skuBarcodeIdDate").getMapping(idBarcodeBillDetailField, dateField));
 
@@ -659,7 +659,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<ImportProperty<?>> terminalDocumentProperties = new ArrayList<ImportProperty<?>>();
         List<ImportProperty<?>> terminalDocumentDetailProperties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> terminalDocumentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocument"), retailLM.getLPByName("idToTerminalDocument").getMapping(idTerminalDocumentField));
+        ImportKey<?> terminalDocumentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocument"), retailLM.getLPByName("terminalDocumentID").getMapping(idTerminalDocumentField));
 
         terminalDocumentProperties.add(new ImportProperty(idTerminalDocumentField, retailLM.getLPByName("idTerminalDocument").getMapping(terminalDocumentKey)));
         //terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLPByName("typeTerminalDocument").getMapping(terminalDocumentKey)));
@@ -668,7 +668,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         terminalDocumentProperties.add(new ImportProperty(idTerminalHandbookType2TerminalDocumentField, retailLM.getLPByName("idTerminalHandbookType2TerminalDocument").getMapping(terminalDocumentKey)));
         terminalDocumentProperties.add(new ImportProperty(quantityTerminalDocumentField, retailLM.getLPByName("quantityTerminalDocument").getMapping(terminalDocumentKey)));
 
-        ImportKey<?> terminalDocumentDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentDetail"), retailLM.getLPByName("idTerminalDocumentNumberToTerminalDocumentDetail").getMapping(idTerminalDocumentField, numberTerminalDocumentDetailField));
+        ImportKey<?> terminalDocumentDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentDetail"), retailLM.getLPByName("terminalDocumentDetailIDDocumentIDDetail").getMapping(idTerminalDocumentField, numberTerminalDocumentDetailField));
 
         terminalDocumentDetailProperties.add(new ImportProperty(numberTerminalDocumentDetailField, retailLM.getLPByName("numberTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
         terminalDocumentDetailProperties.add(new ImportProperty(barcodeTerminalDocumentDetailField, retailLM.getLPByName("barcodeTerminalDocumentDetail").getMapping(terminalDocumentDetailKey)));
@@ -681,7 +681,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 LM.baseLM.object(retailLM.getClassByName("terminalDocument")).getMapping(terminalDocumentKey)));
 
 
-        ImportKey<?> terminalDocumentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentType"), retailLM.getLPByName("idToTerminalDocumentType").getMapping(typeTerminalDocumentField));
+        ImportKey<?> terminalDocumentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("terminalDocumentType"), retailLM.getLPByName("terminalDocumentTypeID").getMapping(typeTerminalDocumentField));
         terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLPByName("idTerminalDocumentType").getMapping(terminalDocumentTypeKey)));
         terminalDocumentProperties.add(new ImportProperty(typeTerminalDocumentField, retailLM.getLPByName("terminalDocumentTypeTerminalDocument").getMapping(terminalDocumentKey),
                 LM.baseLM.object(retailLM.getClassByName("terminalDocumentType")).getMapping(terminalDocumentTypeKey)));
@@ -747,7 +747,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
 
         for (String scalesModel : scalesModelsList) {
 
-            DataObject scalesModelObject = new DataObject(retailLM.getLPByName("nameToScalesModel").read(session, session.modifier, new DataObject(scalesModel)), (ConcreteClass) retailLM.getClassByName("scalesModel"));
+            DataObject scalesModelObject = new DataObject(retailLM.getLPByName("scalesModelName").read(session, session.modifier, new DataObject(scalesModel)), (ConcreteClass) retailLM.getClassByName("scalesModel"));
 
             LP isLabelFormat = LM.is(retailLM.getClassByName("labelFormat"));
 
