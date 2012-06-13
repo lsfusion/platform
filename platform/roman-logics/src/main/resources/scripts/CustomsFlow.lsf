@@ -34,7 +34,7 @@ sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
 priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
 totalSumCStoWHDetail 'Общая стоимость' (CStoWH) =
-    GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWH) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
+    GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
                                                       BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
@@ -98,7 +98,7 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES(d) toFillQuantityInputAllDeclarationDetails
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
+    PROPERTIES (dd) READONLY barcodeDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
     PROPERTIES (dd) quantityInputDeclarationDetail, toFillQuantityInputDeclarationDetail
 
     FILTERS isAvailableDeclarationCStoWH (d, c)

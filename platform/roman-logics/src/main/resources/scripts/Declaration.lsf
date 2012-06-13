@@ -5,12 +5,31 @@ REQUIRE System,
         Stock,
         Numerator,
         Document,
+        RomanDocument,
         Historizable,
+        MasterData,
         RomanLogicsModule;
 
 PRIORITY Utils, Stock, RomanLogicsModule;
 
 NAMESPACE RB;
+
+//META defineSkuProp(detail)
+//
+//    barcode###detail 'Штрих-код' (detail) = barcode(sku###detail(detail));
+//    sidSize###detail 'Размер' (detail) = sidSizeSupplierItem(sku###detail(detail));
+//    sidColor###detail 'Цвет (код)' (detail) = sidColorSupplierItem(sku###detail(detail));
+//    nameColor###detail 'Цвет' (detail) = nameColorSupplierItem(sku###detail(detail));
+//
+//    article###detail 'Артикул (ИД)' (detail) = articleSku(sku###detail(detail)) IN idGroup;
+//    sidArticle###detail 'Артикул' (detail) = sidArticle(article###detail(detail));
+//    brand###detail 'Бренд (ИД)' (detail) = brandSupplierArticle(article###detail(detail)) IN idGroup;
+//    nameBrand###detail 'Бренд' (detail) = name(brand###detail(detail));
+//    category###detail 'Номенклатурная группа (ИД)' (detail) = categoryArticle(article###detail(detail)) IN idGroup;
+//    nameCategory###detail 'Номенклатурная группа' (detail) = name(category###detail(detail));
+//
+//
+//END
 
 barcodeLedger 'Штрих-код' (ledger) = barcode(skuBalanceSkuLedger(ledger));
 sidSizeLedger 'Размер' (ledger) = sidSizeSupplierItem(skuBalanceSkuLedger(ledger));
@@ -164,7 +183,8 @@ numberDeclarationDetail 'Номер строки' (declarationDetail) =
         PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
         ORDER declarationDetail;
 
-barcodeSkuDeclarationDetail 'Штрих-код' = barcode(skuDeclarationDetail(declarationDetail)) IN baseGroup;
+@defineDocumentDetailProps (declaration);
+//barcodeSkuDeclarationDetail 'Штрих-код' = barcode(skuDeclarationDetail(declarationDetail)) IN baseGroup;
 
 inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
 
@@ -181,8 +201,8 @@ importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationD
                                                                                 skuDeclarationDetail(declarationDetail))) IN idGroup;
 
 
-articleDeclarationDetail 'Артикул товара (ИД)' (declarationDetail) = articleSku(skuDeclarationDetail(declarationDetail)) IN idGroup;
-sidArticleDeclarationDetail 'Артикул товара' (declarationDetail) = sidArticle(articleDeclarationDetail(declarationDetail));
+//articleDeclarationDetail 'Артикул товара (ИД)' (declarationDetail) = articleSku(skuDeclarationDetail(declarationDetail)) IN idGroup;
+//sidArticleDeclarationDetail 'Артикул товара' (declarationDetail) = sidArticle(articleDeclarationDetail(declarationDetail));
 
 //categoryArticleDeclarationDetail 'Ном. группа (ИД)' (declarationDetail) = categoryArticle(articleDeclarationDetail(declarationDetail));
 //nameCategoryArticleDeclarationDetail 'Ном. группа' (declarationDetail) = name(categoryArticleDeclarationDetail(declarationDetail));
@@ -415,7 +435,7 @@ TABLE declarationArtCatCompCountry(declaration, article, customCategory10, STRIN
 
 quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                            BY declarationDeclarationDetail(declarationDetail),
-                                              articleLedger(declarationDetail),
+                                              articleDeclarationDetail(declarationDetail),
                                               customCategory10DeclarationDetail(declarationDetail),
                                               mainCompositionDeclarationDetail(declarationDetail),
                                               countryDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
@@ -549,8 +569,8 @@ FORM declaration 'Декларация'
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberDeclarationDetail, barcodeLedger, nameBrandLedger, sidArticleLedger,
-                    nameCategoryLedger, mainCompositionDeclarationDetail,
+    PROPERTIES (dd) numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
+                    nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                     quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
@@ -637,8 +657,8 @@ FORM declarations 'Декларации'
     PROPERTIES(d) ADDFORM, EDITFORM, delete, showFormDeclarationInvoices
 
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeLedger, nameBrandLedger,
-                            sidArticleLedger, nameCategoryLedger, sidGenderGroupDeclaration,
+    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail,
+                            sidArticleDeclarationDetail, nameCategoryDeclarationDetail, sidGenderGroupDeclaration,
                             nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
                             nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
