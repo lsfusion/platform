@@ -24,16 +24,12 @@ skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (decla
 
 @defineRBCorrespondingDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ', warehouse, 'Оптовый склад');
 
+@defineDocumentDetailProps (CStoWH);
+
 descriptionBalanceSkuLedger (ledger) += descriptionCStoWHDetail (ledger);
 isPostedBalanceSkuLedger (ledger) += isPostedCStoWHDetail (ledger);
 quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCStoWHDetail (outUserBalanceSkuLedger);
 
-nameArticleSkuCStoWHDetail 'Наименование' (CStoWHDetail) = nameArticleSku (skuDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)));
-barcodeCStoWHDetail 'Штрих-код' (CStoWHDetail) = barcodeLedger (declarationDetailCStoWHDetail(CStoWHDetail));
-brandCStoWHDetail 'Бренд' (CStoWHDetail) = brandLedger (declarationDetailCStoWHDetail(CStoWHDetail));
-sidArticleCStoWHDetail 'Артикул' (CStoWHDetail) = sidArticleLedger (declarationDetailCStoWHDetail(CStoWHDetail));
-categoryCStoWHDetail 'Номенклатурная группа (ИД)' (CStoWHDetail) = categoryLedger (declarationDetailCStoWHDetail(CStoWHDetail));
-nameCategoryCStoWHDetail 'Номенклатурная группа ' (CStoWHDetail) = name(categoryCStoWHDetail(CStoWHDetail));
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
 sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
@@ -142,7 +138,7 @@ FORM CStoWH 'Расход с СВХ'
                    innerInvoicesCStoWH, shortNameCurrencyCStoWH
 
     OBJECTS d = CStoWHDetail
-    PROPERTIES(d) numberCStoWHDetail, barcodeCStoWHDetail, brandCStoWHDetail, sidArticleCStoWHDetail,
+    PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
                   nameCategoryCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
                   priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
     PROPERTIES(d) ADDOBJ, delete
@@ -172,7 +168,7 @@ FORM CStoWHs 'Расходы с СВХ'
                      printConsignmentSimpleVertical//, printConsignmentSimpleAttach,  printConsignmentAttach
 
     OBJECTS d = CStoWHDetail
-    PROPERTIES(d) READONLY numberCStoWHDetail, barcodeCStoWHDetail, brandCStoWHDetail, sidArticleCStoWHDetail,
+    PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
                   nameCategoryCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
                   priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
 

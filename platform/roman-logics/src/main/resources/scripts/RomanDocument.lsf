@@ -32,3 +32,20 @@ META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, captio
     name###corresponder###object corresponderCaption (object) = name (corresponder###object(object));
 
 END
+
+// для использования метакода должно быть определено свойство sku###object##Detail
+META defineDocumentDetailProps (object)
+
+    barcode###object##Detail 'Штрих-код' (object##Detail) = barcode(sku###object##Detail(object##Detail));
+
+    sidSize###object##Detail 'Размер' (object##Detail) = sidSizeSupplierItem(sku###object##Detail(object##Detail));
+    sidColor###object##Detail 'Цвет (код)' (object##Detail) = sidColorSupplierItem(sku###object##Detail(object##Detail));
+    nameColor###object##Detail 'Цвет' (object##Detail) = nameColorSupplierItem(sku###object##Detail(object##Detail));
+
+    article###object##Detail 'Артикул (ИД)' (object##Detail) = articleSku(sku###object##Detail(object##Detail)) IN idGroup;
+    sidArticle###object##Detail 'Артикул' (object##Detail) = sidArticle(article###object##Detail(object##Detail));
+    brand###object##Detail 'Бренд (ИД)' (object##Detail) = brandSupplierArticle(article###object##Detail(object##Detail)) IN idGroup;
+    nameBrand###object##Detail 'Бренд' (object##Detail) = name(brand###object##Detail(object##Detail));
+    category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
+    nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail));
+END
