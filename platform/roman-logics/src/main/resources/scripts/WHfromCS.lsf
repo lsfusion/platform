@@ -55,10 +55,6 @@ sidArticleWHfromCSDetail 'Артикул' (WHfromCSDetail) = sidArticle(articleW
 
 quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
 
-WHfromCSDetailWHfromCSSku (WHfromCS, sku) = GROUP MAX WHfromCSDetail BY WHfromCSWHfromCSDetail(WHfromCSDetail),
-                                                                                                    skuWHfromCSDetail(WHfromCSDetail);
-
-
 @implementBalanceSkuLedger (WHfromCS, sku, warehouse);
 
 currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
@@ -81,7 +77,7 @@ WHfromCSInWarehouseScan 'Приход (ИД)' = DATA WHfromCS(inWarehouseScan) I
 skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
 
 
-@defineAddDetailDialogBarcode(WHfromCS);
+@defineAddDetailDialogBarcode(WHfromCS, sku);
 
 FORM declarationsCStoWH 'Декларации'
     OBJECTS c=CStoWH FIXED PANEL
@@ -99,12 +95,14 @@ FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-                   numberCStoWHWHfromCS, seriesCStoWHWHfromCS, toFillInWarehouseDetailsWHfromCS, addDetailDialogBarcodeWHfromCS
+                   numberCStoWHWHfromCS, seriesCStoWHWHfromCS, toFillInWarehouseDetailsWHfromCS
 
     OBJECTS d = WHfromCSDetail
     PROPERTIES(d) indexWHfromCSDetail, barcodeLedger, nameBrandLedger, sidArticleWHfromCSDetail,
                   sidColorLedger, nameColorLedger, sidSizeLedger, quantityOriginWHfromCSDetail, quantityWHfromCSDetail
     PROPERTIES(d) ADDOBJ, delete
+
+    PROPERTIES(w) TODRAW d addDetailDialogBarcodeWHfromCSDetailWHfromCS
 
     FILTERS inWHfromCSWHfromCSDetail(w, d)
 

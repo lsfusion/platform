@@ -11,7 +11,7 @@ idBarcode 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXE
 dataDateBarcode 'Дата действия' = DATA DATE (barcode);
 dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS barcode) OR dataDateBarcode(barcode) IN baseGroup PERSISTENT;
 
-dataBarcodeIdDate (id, date) = GROUP UNIQUE barcode BY idBarcode(barcode), dateBarcode(barcode) PERSISTENT;
+dataBarcodeIdDate (id, date) = GROUP UNIQUE barcode BY idBarcode(barcode), dateBarcode(barcode) WHERE barcode IS barcode PERSISTENT;
 orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX LIST(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN baseGroup;
 barcodeIdDate (id, date) = orderBarcodeIdDate(id, date)[2];
 
@@ -59,36 +59,33 @@ DESIGN barcodeInput FROM DEFAULT {
 }
 
 // ------------------------------------ Добавление сканированием строк в документ ----------------------//
-META defineAddDetailDialogBarcode(object)
-
-    addDetailDialogBarcode###object 'Добавить' = ACTION (object) {
+META defineAddDetailDialogBarcode(object, skuProp)
+    detail###object##Sku(object, sku) = GROUP MAX detail BY object###object##Detail(detail), skuProp###object##Detail(detail);
+    addDetailDialogBarcode###object##Detail###object 'Ввод штрих-кода' = ACTION (object) {
         FORM barcodeInput MODAL;
 
         IF formResult() == formResult.ok THEN {
-            LOCAL tmpSku = sku();
-            SET tmpSku() <- barcodeToObject(chosenString('barcode'));
+            LOCAL dialogBarcodeSku = sku();
+            SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), date###object(object));
 
-            IF tmpSku() IS sku THEN {
-                IF  object##Detail###object##Sku(object, tmpSku()) IS object##Detail THEN {
-                    SET quantity###object##Detail(detail) IF detail == object##Detail###object##Sku(object, tmpSku()) <-
-                    quantity###object##Detail(object##Detail###object##Sku(object, tmpSku())) (+) (1 IF (object IS object));
-                }
-
-                ELSE {
+            IF dialogBarcodeSku() IS sku THEN {
+                LOCAL dialogBarcodeDetail = object##Detail();
+                SET dialogBarcodeDetail() <- detail###object##Sku(object, dialogBarcodeSku());
+                IF dialogBarcodeDetail() IS object##Detail THEN {
+                    SET quantity###object##Detail(detail) IF detail == dialogBarcodeDetail() <-
+                        quantity###object##Detail(detail) (+) (1.0 IF detail IS object###Detail);
+                } ELSE {
                     ADDOBJ object##Detail;
                     FOR w == addedObject() DO {
                         SET object###object##Detail(w) <- object AS object;
-                        SET sku###object##Detail(w) <- tmpSku();
-                        SET quantity###object##Detail(w) <- 1;
-                    };
-                };
-            }
-
-            ELSE
+                        SET skuProp###object##Detail(w) <- dialogBarcodeSku();
+                        SET quantity###object##Detail(w) <- 1.0;
+                    }
+                }
+            } ELSE
                 MESSAGE 'Не найден штрих-код';
         }
     } TOOLBAR EDITKEY 'F4';
-
 END
 
 

@@ -138,7 +138,7 @@ FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
-                   inputDeclarationDetailCStoWH, cleanAllCStoWHDetailsCStoWH, declarationsCStoWH,
+                   inputDeclarationDetailCStoWH, deleteCStoWHDetailCStoWH, declarationsCStoWH,
                    innerInvoicesCStoWH, shortNameCurrencyCStoWH
 
     OBJECTS d = CStoWHDetail
