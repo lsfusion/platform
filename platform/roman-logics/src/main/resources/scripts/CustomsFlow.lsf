@@ -96,7 +96,11 @@ stringInnerInvoice (innerInvoice) =
 
 innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
     IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 10;
-    
+
+currencyCStoWH 'Валюта (ИД)' (CStoWH) = DATA currency (CStoWH);
+shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH));
+currencyConsignment(consignment) += currencyCStoWH(consignment);
+
 FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     OBJECTS c=CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject

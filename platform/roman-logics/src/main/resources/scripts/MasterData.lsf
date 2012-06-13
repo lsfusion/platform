@@ -21,9 +21,9 @@ importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse)
 
 
 
-FORM customStores 'Склады временного хранения'
+FORM customStore 'Склад временного хранения'
 
-    OBJECTS c=customStore
+    OBJECTS c=customStore FIXED PANEL
 
     PROPERTIES(c) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
@@ -32,8 +32,21 @@ FORM customStores 'Склады временного хранения'
                   managerLegalEntity, dialogManagerLegalEntity,
                   accountantLegalEntity, dialogAccountantLegalEntity,
                   phoneLegalEntity, dialogPhoneLegalEntity,
-                  emailLegalEntity, siteLegalEntity,
-                  ADDOBJ, delete
+                  emailLegalEntity, siteLegalEntity
+
+    EDIT customStore OBJECT c
+;
+
+FORM customStores 'Склады временного хранения'
+
+    OBJECTS c=customStore
+
+    PROPERTIES(c) READONLY name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                  UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
+                  addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
+                  emailLegalEntity, siteLegalEntity
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
 
 ;
 

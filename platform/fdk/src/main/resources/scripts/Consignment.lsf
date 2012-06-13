@@ -257,7 +257,7 @@ FORM consignment 'Атрибуты накладной'
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
-                   countConsignmentDetailConsignment, noteConsignment
+                   countConsignmentDetailConsignment, noteConsignment, currencyConsignment SHOWIF isCustomsFlowConsignment(c)
 
 
     OBJECTS d=consignmentDetail
