@@ -11,10 +11,13 @@ import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.IsClassProperty;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty {
     // обозначает класс объекта, который нужно добавить
@@ -31,6 +34,11 @@ public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty
         this.valueClass = valueClass;
 
         this.storeNewObjectProperty = storeNewObjectProperty;
+    }
+
+    @Override
+    public Set<CalcProperty> getChangeProps() {
+        return IsClassProperty.getParentProps(valueClass);
     }
 
     protected Read getReadClass(ExecutionContext context) {

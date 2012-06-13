@@ -19,13 +19,8 @@ import java.util.Arrays;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
-    public ScriptingLogicsModule Utils;
-    public ScriptingLogicsModule Hierarchy;
-    public ScriptingLogicsModule Historizable;
-    public ScriptingLogicsModule Numerator;
     public ScriptingLogicsModule Stock;
-    public ScriptingLogicsModule Document;
-
+    public ScriptingLogicsModule LegalEntity;
     public RomanLogicsModule RomanLM;
     public ScriptingLogicsModule RomanRB;
 
@@ -38,15 +33,29 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        Utils = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this));
-        Hierarchy = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Hierarchy.lsf"), LM, this));
-        Historizable = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Historizable.lsf"), LM, this));
-        Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
-        Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
-        Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
-        RomanLM = addLogicsModule(new RomanLogicsModule(LM, this));
-        RomanLM.setRequiredModules(Arrays.asList("BaseLogicsModule", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
-        RomanRB = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/RomanRB.lsf"), LM, this));
+        Stock = addModuleFromResource("/scripts/Stock.lsf");
+        LegalEntity = addModuleFromResource("/scripts/LegalEntity.lsf");
+        addModulesFromResource(
+            "/scripts/Utils.lsf",
+            "/scripts/Hierarchy.lsf",
+            "/scripts/Historizable.lsf",
+            "/scripts/Numerator.lsf",
+            "/scripts/Document.lsf",
+            "/scripts/Consignment.lsf",
+            "/scripts/Employee.lsf",
+            "/scripts/Tax.lsf",
+            "/scripts/Ware.lsf",
+            "/scripts/Declaration.lsf",
+            "/scripts/Barcode.lsf",
+            "/scripts/RomanDocument.lsf",
+            "/scripts/CustomsFlow.lsf",
+            "/scripts/WHfromCS.lsf",
+            "/scripts/MasterData.lsf"
+        );
+        RomanLM = addModule(new RomanLogicsModule(LM, this));
+        RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
+
+        RomanRB = addModuleFromResource("/scripts/RomanRB.lsf");
     }
 
     @Override

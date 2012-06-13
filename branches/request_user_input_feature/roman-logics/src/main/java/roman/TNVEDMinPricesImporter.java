@@ -21,7 +21,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
     private ImportField category10IdField = new ImportField(LM.sidCustomCategory10);
     private ImportField subcategoryNameField = new ImportField(LM.nameSubCategory);
     private ImportField relationField = new ImportField(LM.relationCustomCategory10SubCategory);
-    private ImportField countryIdField = new ImportField(LM.sidOrigin2Country);
+    private ImportField countryIdField = new ImportField(LM.baseLM.sidOrigin2Country);
     private ImportField countryNameField = new ImportField(LM.baseLM.name);
     private ImportField minPriceField = new ImportField(LM.minPriceCustomCategory10SubCategory);
 
@@ -47,7 +47,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
         new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize();
 
         propertiesCountry.add(new ImportProperty(subcategoryNameField, LM.nameSubCategory.getMapping(subcategoryKey)));
-        propertiesCountry.add(new ImportProperty(countryIdField, LM.sidOrigin2Country.getMapping(countryKey)));
+        propertiesCountry.add(new ImportProperty(countryIdField, LM.baseLM.sidOrigin2Country.getMapping(countryKey)));
         propertiesCountry.add(new ImportProperty(countryNameField, LM.baseLM.name.getMapping(countryKey)));
         propertiesCountry.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
         propertiesCountry.add(new ImportProperty(minPriceField, LM.minPriceCustomCategory10SubCategoryCountry.getMapping(category10Key, subcategoryKey, countryKey)));

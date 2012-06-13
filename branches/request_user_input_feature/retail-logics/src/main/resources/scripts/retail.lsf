@@ -7,7 +7,7 @@ MODULE retail;
 // Надбавка - NUMERIC[8,3]
 // Норма списания отходов - NUMERIC[10,3]
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
         Utils,
         Hierarchy,
         Historizable,
@@ -28,6 +28,13 @@ REQUIRE BaseLogicsModule,
         Sales,
         PriceChange,
         Default;
+
+// подключаем формы подбора товаров (пока сделано здесь, поскольку есть проблемы с EXTEND DESIGN в рамках нескольких модулей
+// todo : перенести в stock
+@defineDialogSku(dialogSku);
+@defineDialogSkuBarcode(dialogSku);
+@defineDialogSkuSupplier(dialogSku);
+@defineDialogSkuStorePrice(dialogSku);
 
 GROUP emailGroup 'E-mail' : baseGroup;
 GROUP committeeGroup 'Комиссия' : publicGroup;
@@ -113,7 +120,6 @@ META defineDocumentBaseDepartmentStoreItem (object)
     @defineDocumentDepartmentStore(object);
 
     @defineDocumentDetailItem(object);
-    @defineDocumentDetailItemActions(object);
 END
 
 META defineDocumentBasePostedDepartmentStoreItem (object)
@@ -189,8 +195,8 @@ END
 
 //-----------------------------Заполнение из документа ТСД--------------------------------//
 
-META defineDocumentDetailItemOfTerminal (object)
-    fillOfTerminalDocument###object 'Заполнить из документа ТСД' (object) = ACTION (object) {
+META defineAddDetailDialogTerminal (object)
+    addDetailDialogTerminal###object##Detail###object 'Импорт из ТСД' (object) = ACTION (object) {
         FORM terminalDocumentsDialog MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL document = terminalDocument ();
@@ -203,7 +209,6 @@ META defineDocumentDetailItemOfTerminal (object)
                     SET object###object##Detail(o) <- object AS object;
                     SET item###object##Detail(o) <- skuBarcode(barcodeIdDate(barcodeTerminalDocumentDetail(tdd), date###object(object)));
                     SET quantity###object##Detail(o) <- quantityTerminalDocumentDetail(tdd);
-
                 }
             }
 
@@ -464,8 +469,6 @@ CONSTRAINT wastageCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeE
 EXTEND FORM departmentStore PROPERTIES nameWastageCommitteeDepartmentStore(d);
 
 //--------------------------------------Формы--------------------------------------------------------------------------//
-
-expirationDateSkuDepartmentStore 'Крайний срок годности'= DATA DATE (sku, departmentStore) IN baseGroup;
 
 //---------------------------- Ценники ----------------------------------------//
 
@@ -761,17 +764,17 @@ hoursExpiryPackItem 'Срок годности в часах с момента �
 imageItem 'Изображение' = DATA IMAGEFILE (item);
 loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
 
-FORM country 'Страна'
-    OBJECTS c=country FIXED PANEL
-    PROPERTIES(c)      name, sidCountry, residentCountry
-
-    EDIT country OBJECT c
-;
-FORM countries 'Страны'
-    OBJECTS c=country
-    PROPERTIES(c) READONLY name, sidCountry, residentCountry
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
+//FORM country 'Страна'
+//    OBJECTS c=country FIXED PANEL
+//    PROPERTIES(c)      name, sidCountry, residentCountry
+//
+//    EDIT country OBJECT c
+//;
+//FORM countries 'Страны'
+//    OBJECTS c=country
+//    PROPERTIES(c) READONLY name, sidCountry, residentCountry
+//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//;
 
 
 // ----------------------------------- Атрибуты ------------------------------------------ //
@@ -962,7 +965,7 @@ labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackI
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
 itemGroupMachineryBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
-expirationDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expirationDateSkuDepartmentStore(skuBarcode(barcode), departmentStore);
+expiryDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expiryDateSkuStock(skuBarcode(barcode), departmentStore);
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -1128,6 +1131,7 @@ CLASS subNaturalLossItemGroupDetail 'Строка группы естестве�
 parentNaturalLossItemGroup 'Родительская группа' = DATA naturalLossItemGroup(subNaturalLossItemGroup);
 codeSubNaturalLossItemGroup 'Код нормы естественной убыли' = DATA STRING[3] (subNaturalLossItemGroup);
 
+nameToNaturalLossItemGroup (name) = GROUP UNIQUE naturalLossItemGroup BY name(naturalLossItemGroup) WHERE naturalLossItemGroup IS naturalLossItemGroup;
 subNaturalLossItemGroupSubNaturalLossItemGroupDetail = DATA subNaturalLossItemGroup (subNaturalLossItemGroupDetail);
 dayFromNaturalLossItemGroupDetail 'День' = DATA INTEGER (subNaturalLossItemGroupDetail);
 monthFromNaturalLossItemGroupDetail = DATA month (subNaturalLossItemGroupDetail);
@@ -2674,6 +2678,499 @@ TABLE priceTransactionDocument (priceTransactionDocument);
 isDraftPriceTransactionDocument 'Открыт' = ABSTRACT BOOLEAN (priceTransactionDocument);
 descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument);
 
+//----------------------------------- Загрузка в ВУ -------------------------------------------------------
+
+inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
+                                                    AND item IS item
+                                                         AND NOT (filterItemsGroupMachinery(groupMachinery) AND NOT inGroupMachineryItemGroup(groupMachinery, itemGroupItem(item)))
+                                                         AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
+
+CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
+TABLE machineryPriceTransaction (machineryPriceTransaction);
+TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
+
+CLASS cashRegisterPriceTransaction 'Загрузка прайса в кассы' : machineryPriceTransaction;
+CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
+CLASS checkPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
+CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machineryPriceTransaction;
+
+groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
+groupScalesScalesRegisterPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
+groupCheckCheckRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupCheck (checkPriceTransaction);
+groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
+
+groupMachineryMachineryPriceTransaction 'Группа оборудования (ИД)' (transaction) = UNION EXCLUSIVE groupCashRegisterCashRegisterPriceTransaction(transaction),
+                                                                                                   groupScalesScalesRegisterPriceTransaction(transaction),
+                                                                                                   groupCheckCheckRegisterPriceTransaction(transaction),
+                                                                                                   groupTerminalTerminalPriceTransaction(transaction)PERSISTENT;
+
+nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+
+departmentStoreMachineryPriceTransaction (transaction) = departmentStoreGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+
+equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+
+sidEquipmentServerMachineryPriceTransaction (transaction) = sidEquipmentServer(equipmentServerMachineryPriceTransaction (transaction));
+
+dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
+dateMachineryPriceTransaction (transaction) <- currentDate() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
+
+timeMachineryPriceTransaction 'Время' = DATA TIME (machineryPriceTransaction);
+timeMachineryPriceTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
+
+dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
+
+snapshotMachineryPriceTransaction 'Целиком' = DATA BOOLEAN (machineryPriceTransaction);
+
+succeededMachineryPriceTransaction 'Загружена' = DATA BOOLEAN (machineryPriceTransaction);
+canceledMachineryPriceTransaction 'Отменена' = DATA BOOLEAN (machineryPriceTransaction);
+processMachineryPriceTransaction 'Требуется загрузка' = machineryPriceTransaction IS machineryPriceTransaction AND NOT
+                                                        succeededMachineryPriceTransaction(machineryPriceTransaction) AND NOT
+                                                        canceledMachineryPriceTransaction(machineryPriceTransaction);
+
+inMachineryPriceTransactionMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
+nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
+
+orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
+
+inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
+nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
+priceMachineryPriceTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (machineryPriceTransaction, barcode);
+daysExpiryMachineryPriceTransactionBarcode 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (machineryPriceTransaction, barcode);
+hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
+labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
+compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
+FORM cellScales 'Ячейки весов'
+    OBJECTS grs=groupScales
+        PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
+                             transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
+                             pieceItemCodeGroupScales, weightItemCodeGroupScales
+
+    OBJECTS cs=cellScales
+    PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
+
+    FILTERS isGroupScalesCellScales(grs, cs)
+;
+
+DESIGN cellScales FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD grs.box;
+        ADD cs.box;
+    }
+    ADD functions.box;
+}
+
+isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
+itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
+expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
+TABLE barcodeGroupMachinery (barcode, groupMachinery);
+
+lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
+                                                                          AND inMachineryPriceTransactionBarcode(transaction, barcode)
+                                                                          AND NOT snapshotMachineryPriceTransaction(transaction)
+                                                                          AND NOT canceledMachineryPriceTransaction(transaction)
+                                                                      BY barcode, groupMachineryMachineryPriceTransaction(transaction);
+lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
+
+transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
+    nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionDaysExpiryBarcodeGroupMachinery 'Текущий срок годности в днях в оборудовании' (barcode, groupMachinery)  =
+    daysExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionHoursExpiryBarcodeGroupMachinery 'Текущий срок годности в часах в оборудовании' (barcode, groupMachinery)  =
+    hoursExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionLabelFormatBarcodeGroupMachinery 'Формат этикетки' (barcode, groupMachinery)  =
+    labelFormatMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionCompositionBarcodeGroupMachinery 'Состав товара' (barcode, groupMachinery)  =
+    compositionMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+isWeightBarcodeGroupMachinery 'Весовой товар' (barcode, groupMachinery)  =
+    isWeightMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+itemGroupBarcodeGroupMachinery 'Группа товара' (barcode, groupMachinery)  =
+    itemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+expiryDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
+    expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
+    priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
+
+commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
+
+priceTransactionDocumentMachineryPriceTransaction = DATA priceTransactionDocument (machineryPriceTransaction);
+descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание загрузки' (transaction) =
+    descriptionPriceTransactionDocument(priceTransactionDocumentMachineryPriceTransaction(transaction));
+
+// todo : persistent почему-то не работает
+descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
+                                                                             commentMachineryPriceTransaction(document);
+
+sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
+sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
+
+// todo : это свойство тоже не становится PERSISTENT
+countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
+                                                                                 BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;
+
+succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
+
+statusEquipmentPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
+                                                        CASE
+                                                            WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS priceTransactionDocument
+                                                            WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS priceTransactionDocument
+                                                            DEFAULT 'Не загружен' IF document IS priceTransactionDocument
+                                                        END;
+
+// перезагрузка прайса целиком
+selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
+
+GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
+
+//--------------------Сообщения об ошибках транзакций--------------------//
+CLASS machineryPriceTransactionError 'Ошибка';
+TABLE machineryPriceTransactionError (machineryPriceTransactionError);
+
+dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN baseGroup;
+dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN baseGroup;
+errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN baseGroup;
+machineryPriceTransactionMachineryPriceTransactionError 'Транзакция (ID)' = DATA machineryPriceTransaction(machineryPriceTransactionError) IN baseGroup;
+quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количество ошибок' (MachineryPriceTransaction) = GROUP SUM 1 IF machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) == MachineryPriceTransaction
+    BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN baseGroup;
+
+
+FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
+
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES(d) READONLY dname = name
+
+    OBJECTS g = groupMachinery
+    PROPERTIES(g) READONLY nameGroupMachinery, nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery
+    FILTERS departmentStoreGroupMachinery(g) == d
+
+    OBJECTS m = machinery
+    PROPERTIES(m)          selectedMachinery
+    PROPERTIES(m) READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery
+
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
+                                                                    nameCashRegisterModelCashRegister, dateCashRegister
+
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameScalesModelScales
+
+    FILTERS groupMachineryMachinery(m) == g
+;
+
+DESIGN groupMachineryInput FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+    }
+    PROPERTY(dname) {
+        focusable = FALSE;
+    }
+}
+
+snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (departmentStore) NEWSESSION {
+    FORM groupMachineryInput OBJECTS d = (departmentStore AS departmentStore) MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL groupMachinery = groupMachinery ();
+        SET groupMachinery() <- chosenObject('g');
+        IF groupMachinery() IS groupScales THEN
+            ADDOBJ scalesPriceTransaction
+        ELSE IF groupMachinery() IS groupCheck THEN
+            ADDOBJ checkPriceTransaction
+        ELSE IF groupMachinery() IS groupTerminal THEN
+            ADDOBJ terminalPriceTransaction
+        ELSE
+            ADDOBJ cashRegisterPriceTransaction;
+        FOR t == addedObject() DO {
+            SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
+            SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
+            SET snapshotMachineryPriceTransaction(t) <- TRUE;
+            SET inMachineryPriceTransactionMachinery(t, machinery) <- selectedMachinery(machinery);
+            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, groupMachinery())
+                                                                       AND inGroupMachineryItem(groupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
+                                                                       AND activeBarcode(barcode);
+            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, groupMachinery());
+            SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionDaysExpiryBarcodeGroupMachinery(barcode, groupMachinery());
+            SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionHoursExpiryBarcodeGroupMachinery(barcode, groupMachinery());
+            SET labelFormatMachineryPriceTransactionBarcode(t, barcode) <- transactionLabelFormatBarcodeGroupMachinery(barcode, groupMachinery());
+            SET compositionMachineryPriceTransactionBarcode(t, barcode) <- transactionCompositionBarcodeGroupMachinery(barcode, groupMachinery());
+            FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
+                AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
+
+                ADDOBJ cellScales;
+                FOR c == addedObject() DO {
+                    SET groupScalesCellScales(c) <- groupMachinery() AS groupScales;
+                    SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
+                }
+            }
+            SET isWeightMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcodeGroupMachinery(barcode, groupMachinery());
+            SET itemGroupMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcodeGroupMachinery(barcode, groupMachinery());
+            SET expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
+            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
+        }
+        EXEC apply();
+    }
+} CONFIRM IN snapshotMachineryPriceGroup;
+
+// Инкрементная загрузка
+GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
+
+createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
+
+createMachineryPriceTransactionItem = SESSION DATA BOOLEAN (item);
+createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) = createMachineryPriceTransactionItem(skuBarcode(barcode)) // если передали параметром
+                                                                                 AND inGroupMachineryItem(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
+                                                                                 AND activeBarcode(barcode) // если активный штрих-код
+                                                                                 AND ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery); // если есть цена розничная
+
+createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
+createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
+
+createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
+    LOCAL message = STRING[3000] ();
+    LOCAL sentSomething = BOOLEAN();
+    SET message() <- 'Принято к загрузке в оборудование : \n';
+
+    FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
+        LOCAL inBarcode = BOOLEAN (barcode);
+        // todo : не работает
+//        SET tempBarcode(barcode) <- NULL;
+        IF createMachineryPriceTransactionSnapshot() THEN
+            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+        ELSE
+            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+                                        AND NOT (ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)); // если цена изменилась
+
+        LOCAL countBarcode = INTEGER();
+        SET countBarcode() <- [GROUP SUM 1 IF inBarcode(barcode)]();
+        IF countBarcode() THEN {
+
+            IF groupMachinery IS groupScales THEN
+                ADDOBJ scalesPriceTransaction
+            ELSE IF groupMachinery IS groupCheck THEN
+                ADDOBJ checkPriceTransaction
+            ELSE IF groupMachinery IS groupTerminal THEN
+                ADDOBJ terminalPriceTransaction
+            ELSE
+                ADDOBJ cashRegisterPriceTransaction;
+
+            FOR t == addedObject() DO {
+                SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
+                SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
+                SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
+                SET inMachineryPriceTransactionBarcode(t, barcode) <- inBarcode(barcode);
+                IF groupMachinery IS groupScales THEN
+                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
+                ELSE
+                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
+                SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- daysExpiryMachineryBarcode(barcode);
+                SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryMachineryBarcode(barcode);
+                SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatMachineryBarcode(barcode);
+                SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionMachineryBarcode(barcode);
+                FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
+                    AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
+
+                    ADDOBJ cellScales;
+                    FOR c == addedObject() DO {
+                        SET groupScalesCellScales(c) <- groupMachinery AS groupScales;
+                        SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
+                    }
+                }
+                SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
+                SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
+                SET expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
+                SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
+            }
+            SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
+                             (message(), nameGroupMachinery(groupMachinery), countBarcode());
+            SET sentSomething() <- TRUE;
+        }
+    }
+
+    IF sentSomething() THEN
+        MESSAGE message()
+    ELSE
+        MESSAGE 'Загрузка прайса в оборудование не требуется.';
+};
+
+createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceSkuLedger(item, departmentStore);
+    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка остатков';
+    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
+} CONFIRM IN incrementMachineryPriceGroup;
+
+createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentRetailPriceLedger(item, departmentStore);
+    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
+    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
+} CONFIRM IN incrementMachineryPriceGroup;
+
+META metaCodeDocumentMachineryPriceTransaction (document)
+
+    create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
+        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        EXEC createMachineryPriceTransaction(departmentStore###document(document));
+        SET sentPriceTransactionDocument(document) <- TRUE;
+    } TOOLBAR CONFIRM;
+
+    createSnapshot###document##MachineryPriceTransaction 'Перегрузить все позиции' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createMachineryPriceTransactionSnapshot() <- TRUE;
+        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
+        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        EXEC createMachineryPriceTransaction(departmentStore###document(document));
+        SET sentPriceTransactionDocument(document) <- TRUE;
+    } SHORTCUT statusEquipmentPriceTransactionDocument CONFIRM;
+
+    showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
+    backgroundCreateMachineryPriceTransaction###document 'Цвет' (document) = IF countProcessPriceTransactionDocument(document) THEN
+                                                                                RGB(255,255,128)
+                                                                             ELSE
+                                                                                RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
+END
+
+FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
+    OBJECTS t = machineryPriceTransaction FIXED PANEL
+    PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
+                  snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
+
+    OBJECTS b = barcode, d = departmentStore
+    PROPERTIES(b) READONLY idBarcode
+    PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
+     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
+     isWeightMachineryPriceTransactionBarcode, expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
+     compositionMachineryPriceTransactionBarcode FORCE PANEL
+    FILTERS inMachineryPriceTransactionBarcode(t, b)
+
+    EDIT machineryPriceTransaction OBJECT t;
+;
+
+FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES name(d) SELECTOR, createBalanceMachineryPriceTransaction(d), createPriceMachineryPriceTransaction(d), snapshotGroupMachineryDepartmentStore(d)
+
+    OBJECTS t = machineryPriceTransaction
+    PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
+                           descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
+                           quantityMachineryPriceTransactionErrorMachineryPriceTransaction BACKGROUND quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
+                           nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
+    PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
+    PROPERTIES(t)          ADDFORM, EDITFORM, delete
+    FILTERS departmentStoreMachineryPriceTransaction(t) == d
+
+    OBJECTS b = barcode
+    PROPERTIES(b)    idBarcode
+    PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
+    daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
+    expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
+    labelFormatMachineryPriceTransactionBarcode
+
+    FILTERS inMachineryPriceTransactionBarcode(t, b)
+
+    OBJECTS e = machineryPriceTransactionError
+    PROPERTIES(e)    dataMachineryPriceTransactionError, dateMachineryPriceTransactionError
+    PROPERTIES(e)  FORCE PANEL  errorTraceMachineryPriceTransactionError
+    FILTERS machineryPriceTransactionMachineryPriceTransactionError(e) == t
+;
+
+DESIGN machineryPriceTransactions FROM DEFAULT {
+
+    main {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD t.box {
+            preferredSize = ( -1, 300);
+            minimumSize = ( -1, 300);
+            maximumSize = ( -1, 300);
+        }
+
+        NEW specContainer{
+            type = TABBED;
+            ADD b.box;
+            NEW errorContainer {
+               title = 'Сообщения об ошибках';
+               ADD e.box;
+               PROPERTY(errorTraceMachineryPriceTransactionError(e)) {
+                  fillHorizontal = 1;
+                  panelLabelAbove = TRUE;
+               }
+            }
+        }
+    }
+    }
+
+    ADD functions.box;
+}
+
+FORM terminalDocuments 'Документы ТСД'
+    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
+    PROPERTIES(td)  idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
+                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument, usedTerminalDocument READONLY
+    PROPERTIES(td)  ADDFORM, EDITFORM, delete
+
+    PROPERTIES(tdd) numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
+    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail, ADDOBJ
+
+    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
+
+    FILTERGROUP filterUse
+        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
+
+;
+
+DESIGN terminalDocuments FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW topContainer{
+
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD td.box;
+            ADD tdd.box;
+        }
+    }
+
+    ADD functions.box;
+}
+
+FORM terminalDocumentsDialog 'Документы ТСД'
+    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
+    PROPERTIES(td)  READONLY idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
+                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
+
+    PROPERTIES(tdd) READONLY numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
+    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail
+
+    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
+    FILTERGROUP filterUse
+        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
+;
+
+DESIGN terminalDocumentsDialog FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW topContainer{
+
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD td.box;
+            ADD tdd.box;
+        }
+    }
+
+    ADD functions.box;
+}
+
 //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
 GROUP actGroup 'Акт' : publicGroup;
@@ -3005,7 +3502,7 @@ toFillStudyOutputDetailsStudyInputDetail 'Заполнить данные для
 
 showNotStudyInputDetailStudyOutputDetail(studyInputDetail, studyOutputDetail) = studyInputDetail IS studyInputDetail AND NOT studyInputDetailStudyOutputDetail(studyOutputDetail);
 
-cleanAllStudyInputDetail 'Очистить позиции' = ACTION (studyInputDetail) {
+deleteStudyOutputDetailStudyInputDetail 'Очистить позиции' = ACTION (studyInputDetail) {
     FOR studyInputDetailStudyOutputDetail(studyOutputDetail) == studyInputDetail DO {
         EXEC delete(studyOutputDetail AS studyOutputDetail);
     }
@@ -3506,6 +4003,10 @@ CLASS specificationDetail 'Строка счет-фактуры';
 descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '\'С-ф № \' || \' \' || CAST($1 AS TEXT) || \' от \' || \' \' || CAST($2 AS TEXT)']
             (seriesNumberSpecificationDetail(specificationDetail), dateSpecificationDetail(specificationDetail));
 
+@defineAddDetailDialogSkuStock(specification, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(specification, item);
+@defineAddDetailDialogTerminal(specification);
+
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
 fullNameCustomerSpecification 'Полное наименование' (specification) = fullNameLegalEntity(customerSpecification(specification)) IN customerGroup;
@@ -3637,6 +4138,10 @@ descriptionStatement 'Название документа' (statement) =
     (seriesNumberObject(statement), dateStatement(statement), nameCustomerStatement(statement));
 
 descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
+
+@defineAddDetailDialogSkuStock(statement, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(statement, item);
+@defineAddDetailDialogTerminal(statement);
 
 @implementBalanceSkuLedger(statement, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityStatementDetail(ledger);
@@ -3771,10 +4276,15 @@ descriptionShipment 'Название документа' (shipment) =
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
+@defineAddDetailDialogSku(shipment, item, dialogSku);
+@defineAddDetailDialogBarcode(shipment, item);
+@defineAddDetailDialogTerminal(shipment);
+
 @implementBalanceSkuLedger(shipment, item, departmentStore);
 @implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 expiryDateBatch (ledger) += expiryDateShipmentDetail(ledger);
+supplierBatch (ledger) += supplierShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
@@ -4028,6 +4538,10 @@ descriptionWriteOff 'Название документа' (writeOff) =
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
+@defineAddDetailDialogSkuStock(writeOff, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(writeOff, item);
+@defineAddDetailDialogTerminal(writeOff);
+
 @implementBalanceSkuLedger(writeOff, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 
@@ -4065,6 +4579,10 @@ descriptionInnerFlow 'Название документа' (innerFlow) =
     seriesNumberObject(innerFlow), dateInnerFlow(innerFlow), nameRecipientDepartmentInnerFlow(innerFlow));
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
+
+@defineAddDetailDialogSkuStock(innerFlow, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(innerFlow, item);
+@defineAddDetailDialogTerminal(innerFlow);
 
 @implementBalanceSkuLedger(innerFlow, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
@@ -4217,6 +4735,10 @@ descriptionInnerArrival 'Название документа' (innerArrival) =
     seriesNumberInnerArrival(innerArrival), dateInnerArrival(innerArrival), nameSenderDepartmentInnerArrival(innerArrival));
 
 descriptionInnerArrivalDetail 'Название документа' (innerArrivalDetail) = descriptionInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
+
+@defineAddDetailDialogSku(innerArrival, item, dialogSku);
+@defineAddDetailDialogBarcode(innerArrival, item);
+@defineAddDetailDialogTerminal(innerArrival);
 
 // для расчета себестоимости
 
@@ -4378,6 +4900,10 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
+@defineAddDetailDialogSkuStockSupplier(returnSupplier, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(returnSupplier, item);
+@defineAddDetailDialogTerminal(returnSupplier);
+
 @implementBalanceSkuLedger(returnSupplier, item, departmentStore);
 quantityOutUserBalanceSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
 batchOutUserBalanceSkuLedger (ledger) += batchReturnSupplierDetail(ledger);
@@ -4448,10 +4974,10 @@ TABLE zReport (zReport);
 @defineDocumentHeaderDepartmentStore(zReport);
 
 numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport) IN documentPrmGroup;
-numberToZReportPosted (zReportPosted) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
-
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport)) IN documentPrmGroup;
+numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
+maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
 
 departmentStoreZReport(zReport) <- departmentStoreMachinery(cashRegisterZReport(zReport))
     WHEN CHANGED(cashRegisterZReport(zReport));
@@ -4459,6 +4985,13 @@ departmentStoreZReport(zReport) <- departmentStoreMachinery(cashRegisterZReport(
 descriptionZReport (zReport) =
     [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
+
+generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'retail.actions.GenerateZReport';
+averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
+averageBillCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
+averageBillDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
+dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
+dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
@@ -4501,7 +5034,7 @@ itemBillDetail (billDetail) = itemBillReturnDetail(billDetail) OR itemBillSaleDe
 nameAttributeItemBillDetail 'Товар' (billDetail) = nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
 
 numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderGroup;
-zReportBillToBill (zReport, bill) = GROUP UNIQUE bill BY numberZReport(zReportBill(bill)), numberBill(bill) WHERE bill IS bill;
+zReportBillToBill (zReport, bill, cashRegister) = GROUP UNIQUE bill BY numberZReport(zReportBill(bill)), numberBill(bill), numberCashRegister(cashRegisterZReport(zReportBill(bill))) WHERE bill IS bill;
 
 discountCardBill (bill) = DATA discountCard (bill);
 numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
@@ -4554,27 +5087,8 @@ retailRangeBillDetail (billDetail) = retailRangeBillReturnDetail(billDetail) OR 
 
 // используется только для приема реализации из внешних касс
 numberBillDetail 'Номер позиции чека' = DATA INTEGER (billDetail);
-zReportBillBillDetailToBillDetail (zReport, bill, billDetail) = GROUP UNIQUE billDetail BY numberZReport(zReportBillDetail(billDetail)), numberBill(billBillDetail(billDetail)), numberBillDetail(billDetail) WHERE billDetail IS billDetail;
+zReportBillBillDetailToBillDetail (zReport, bill, billDetail, cashRegister) = GROUP UNIQUE billDetail BY numberZReport(zReportBillDetail(billDetail)), numberBill(billBillDetail(billDetail)), numberBillDetail(billDetail), numberCashRegister(cashRegisterZReport(zReportBillDetail(billDetail))) WHERE billDetail IS billDetail;
 //
-
-addBillDetailBarcodeFill 'Добавить продажу по штрих-коду' = ACTION (bill) {
-    FORM barcodeInput MODAL;
-
-    IF formResult() == formResult.ok THEN {
-         SET tmpSku() <- skuBarcodeIdDate(chosenString('barcode'), dateBill(bill));
-         IF tmpSku() IS item THEN {
-             ADDOBJ billSaleDetail;
-             FOR o == addedObject() DO {
-                 SET billBillSaleDetail(o) <- bill AS bill;
-                 SET itemBillDetail(o) <- tmpSku();
-                 SET idBarcodeBillDetail(o) <- chosenString('barcode');
-            //   SET quantity###object##Detail(o) <- amountBarcode(barcodeIdDate(chosenString('barcode'), date###object(object)));
-            };
-        } ELSE
-        MESSAGE 'Не найден штрих-код';
-    };
-
-} TOOLBAR EDITKEY 'F4';
 
 descriptionBill 'Название документа' (bill) = [FORMULA STRING[200] '\'Чек № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '](
                                                numberBill(bill), dateTimeBill(bill));
@@ -4586,6 +5100,9 @@ descriptionBillReturnDetail (billDetail) = [FORMULA STRING[200] '\'Возвра�
                                             numberBill(billBillReturnDetail(billDetail)), dateTimeBill(billBillReturnDetail(billDetail)));
 
 descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR descriptionBillSaleDetail(billDetail);
+
+@defineAddDetailDialogSkuStockCustom(bill, billSaleDetail, ' (продажа)', item, departmentStore, dialogSku);
+@defineAddDetailDialogSkuStockCustom(bill, billReturnDetail, ' (возврат)', item, departmentStore, dialogSku);
 
 @implementBalanceSkuLedger(bill, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityBillSaleDetail(ledger);
@@ -4614,7 +5131,7 @@ sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) 
 billPayment (payment) = DATA bill (payment);
 
 numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
-zReportBillPaymentToPayment (zReport, bill, number) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment) WHERE payment IS payment;
+zReportBillPaymentToPayment (zReport, bill, number, cashRegister) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportBill(billPayment(payment)))) WHERE payment IS payment;
 
 sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
 
@@ -4623,6 +5140,7 @@ sumPaymentBill (bill) = GROUP SUM sumPayment(payment) BY billPayment(payment);
 CONSTRAINT bill IS bill AND NOT retailSumBillDetailBill(bill) == sumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
 
 // todo: проверить работает ли CONSTRAINT
+//Ещё как работает!
 
 paymentTypePayment (payment) = DATA paymentType(payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
@@ -4753,6 +5271,10 @@ descriptionUserPriceChange 'Название документа' (userPriceChang
 
 descriptionUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
 
+@defineAddDetailDialogSkuStock(userPriceChange, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(userPriceChange, item);
+@defineAddDetailDialogTerminal(userPriceChange);
+
 @implementBaseSkuDepartmentStoreLedger(userPriceChange, item);
 
 @implementPriceChangeDocument(userPriceChange, item);
@@ -4791,6 +5313,10 @@ CLASS disparityDetail 'Строка пересортицы': outAutoBalanceSkuLe
 descriptionDisparityDetail 'Название документа' (disparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
+
+@defineAddDetailDialogSkuStock(disparity, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(disparity, item);
+@defineAddDetailDialogTerminal(disparity);
 
 @implementBalanceSkuLedger(disparity, item, departmentStore);
 quantityOutAutoBalanceSkuLedger (ledger) += quantityDisparityDetail(ledger);
@@ -6024,708 +6550,6 @@ DESIGN printTimeTable FROM DEFAULT {
     ADD functions.box;
 }
 
-//----------------------------------- Подбор товаров -------------------------------------------------------
-
-quantityInputItem 'Кол-во' = SESSION DATA NUMERIC[14,3] (item);
-isInputItem 'Вкл' = SESSION DATA BOOLEAN (item);
-
-FORM itemDepartmentStoreInput 'Подбор товаров'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY name
-
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    PROPERTIES currentBalanceSkuLedger(i, d), currentRetailPriceLedger(i, d), quantityInputItem(i)
-
-    FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceSkuLedger(i, d)
-    FILTERGROUP filterSelected
-        FILTER 'Выбранные' 'F9' quantityInputItem(i)
-;
-
-DESIGN itemDepartmentStoreInput FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-META metaCodeInputMultipleItems (object)
-
-    inputMultipleItems###object 'Подбор товаров' = ACTION (object) {
-        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Detail(w) <- object AS object;
-                    SET item###object##Detail(w) <- item AS item;
-                    SET quantity###object##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-META metaCodeInputMultipleItemsBill (object)
-
-    inputMultipleItems###object 'Подбор товаров (продажа)' = ACTION (object) {
-        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Sale##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Sale##Detail(w) <- object AS object;
-                    SET item###object##Sale##Detail(w) <- item AS item;
-                    SET quantity###object##Sale##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-//------------------------------------------------Подбор товара для возврата поставщику-----------------------------------------
-
-FORM itemDepartmentStoreSupplierInput 'Подбор товаров'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY name
-
-    OBJECTS s=supplier FIXED PANEL
-    PROPERTIES(s) READONLY name
-
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    PROPERTIES currentBalanceSkuLedger(i, d), currentRetailPriceLedger(i, d), quantityInputItem(i)
-
-    FILTERGROUP filterSupply
-        FILTER 'Поставлявшиеся' 'F11' sumQuantityItemShipment(d, s, i) DEFAULT
-    FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceSkuLedger(i, d) DEFAULT
-    FILTERGROUP filterSelected
-        FILTER 'Выбранные' 'F9' quantityInputItem(i)
-;
-
-DESIGN itemDepartmentStoreSupplierInput FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-    POSITION d.box TO THE LEFT s.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-META metaCodeInputMultipleItemsSupplier (object)
-
-    inputMultipleItemsSupplier###object 'Подбор товаров' = ACTION (object) {
-        FORM itemDepartmentStoreSupplierInput OBJECTS d = departmentStore###object(object), s = supplier###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Detail(w) <- object AS object;
-                    SET item###object##Detail(w) <- item AS item;
-                    SET quantity###object##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-META metaCodeInputMultipleItemsSupplierBill (object)
-
-    inputMultipleItemsSupplier###object 'Подбор товаров (возврат)' = ACTION (object) {
-        FORM itemDepartmentStoreInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR quantityInputItem(item) DO {
-                ADDOBJ object##Return##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Return##Detail(w) <- object AS object;
-                    SET item###object##Return##Detail(w) <- item AS item;
-                    SET quantity###object##Return##Detail(w) <- quantityInputItem(item);
-                }
-            }
-        }
-        SET quantityInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-//----------------------------------- Подбор товаров для переоценки -------------------------------------------------------
-
-FORM itemDepartmentStoreBalanceInput 'Подбор товаров'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY name
-
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    PROPERTIES currentBalanceSkuLedger(i, d), currentRetailPriceLedger(i, d), isInputItem(i)
-
-    FILTERGROUP filterBalance
-        FILTER 'На остатках' 'F10' currentBalanceSkuLedger(i, d)
-    FILTERGROUP filterSelected
-        FILTER 'Выбранные' 'F9' quantityInputItem(i)
-;
-
-DESIGN itemDepartmentStoreBalanceInput FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    i.grid {
-        defaultComponent = TRUE;
-    }
-}
-
-META metaCodeInputMultipleItemsBalance (object)
-
-    inputMultipleItemsBalance###object 'Подбор товаров' = ACTION (object) {
-        FORM itemDepartmentStoreBalanceInput OBJECTS d = departmentStore###object(object) MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR isInputItem(item) DO {
-                ADDOBJ object##Detail;
-                FOR w == addedObject() DO {
-                    SET object###object##Detail(w) <- object AS object;
-                    SET item###object##Detail(w) <- item AS item;
-                    SET quantity###object##Detail(w) <- currentBalanceSkuLedger(item, departmentStore###object(object));
-                }
-            }
-        }
-        SET isInputItem(item) <- NULL;
-    } TOOLBAR;
-
-END
-
-//----------------------------------- Загрузка в ВУ -------------------------------------------------------
-
-inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
-                                                    AND item IS item
-                                                         AND NOT (filterItemsGroupMachinery(groupMachinery) AND NOT inGroupMachineryItemGroup(groupMachinery, itemGroupItem(item)))
-                                                         AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
-
-CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
-TABLE machineryPriceTransaction (machineryPriceTransaction);
-TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
-
-CLASS cashRegisterPriceTransaction 'Загрузка прайса в кассы' : machineryPriceTransaction;
-CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
-CLASS checkPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
-CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machineryPriceTransaction;
-
-groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
-groupScalesScalesRegisterPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
-groupCheckCheckRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupCheck (checkPriceTransaction);
-groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
-
-groupMachineryMachineryPriceTransaction 'Группа оборудования (ИД)' (transaction) = UNION EXCLUSIVE groupCashRegisterCashRegisterPriceTransaction(transaction),
-                                                                                                   groupScalesScalesRegisterPriceTransaction(transaction),
-                                                                                                   groupCheckCheckRegisterPriceTransaction(transaction),
-                                                                                                   groupTerminalTerminalPriceTransaction(transaction)PERSISTENT;
-
-nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
-
-departmentStoreMachineryPriceTransaction (transaction) = departmentStoreGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
-
-equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
-
-sidEquipmentServerMachineryPriceTransaction (transaction) = sidEquipmentServer(equipmentServerMachineryPriceTransaction (transaction));
-
-dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
-dateMachineryPriceTransaction (transaction) <- currentDate() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
-
-timeMachineryPriceTransaction 'Время' = DATA TIME (machineryPriceTransaction);
-timeMachineryPriceTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
-
-dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
-
-snapshotMachineryPriceTransaction 'Целиком' = DATA BOOLEAN (machineryPriceTransaction);
-
-succeededMachineryPriceTransaction 'Загружена' = DATA BOOLEAN (machineryPriceTransaction);
-canceledMachineryPriceTransaction 'Отменена' = DATA BOOLEAN (machineryPriceTransaction);
-processMachineryPriceTransaction 'Требуется загрузка' = machineryPriceTransaction IS machineryPriceTransaction AND NOT
-                                                        succeededMachineryPriceTransaction(machineryPriceTransaction) AND NOT
-                                                        canceledMachineryPriceTransaction(machineryPriceTransaction);
-
-inMachineryPriceTransactionMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
-nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
-
-orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
-
-inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
-nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
-priceMachineryPriceTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (machineryPriceTransaction, barcode);
-daysExpiryMachineryPriceTransactionBarcode 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (machineryPriceTransaction, barcode);
-hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
-labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
-compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
-FORM cellScales 'Ячейки весов'
-    OBJECTS grs=groupScales
-        PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery, roundSalesGroupMachinery,
-                             transferGroupMachinery, filterItemsGroupMachinery, cellGroupScales, sidSectionGroupScales, directoryGroupScales,
-                             pieceItemCodeGroupScales, weightItemCodeGroupScales
-
-    OBJECTS cs=cellScales
-    PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
-
-    FILTERS isGroupScalesCellScales(grs, cs)
-;
-
-DESIGN cellScales FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grs.box;
-        ADD cs.box;
-    }
-    ADD functions.box;
-}
-
-isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
-itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
-expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
-TABLE barcodeGroupMachinery (barcode, groupMachinery);
-
-lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
-                                                                          AND inMachineryPriceTransactionBarcode(transaction, barcode)
-                                                                          AND NOT snapshotMachineryPriceTransaction(transaction)
-                                                                          AND NOT canceledMachineryPriceTransaction(transaction)
-                                                                      BY barcode, groupMachineryMachineryPriceTransaction(transaction);
-lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
-
-transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
-    nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-transactionDaysExpiryBarcodeGroupMachinery 'Текущий срок годности в днях в оборудовании' (barcode, groupMachinery)  =
-    daysExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-transactionHoursExpiryBarcodeGroupMachinery 'Текущий срок годности в часах в оборудовании' (barcode, groupMachinery)  =
-    hoursExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-transactionLabelFormatBarcodeGroupMachinery 'Формат этикетки' (barcode, groupMachinery)  =
-    labelFormatMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-transactionCompositionBarcodeGroupMachinery 'Состав товара' (barcode, groupMachinery)  =
-    compositionMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-isWeightBarcodeGroupMachinery 'Весовой товар' (barcode, groupMachinery)  =
-    isWeightMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-itemGroupBarcodeGroupMachinery 'Группа товара' (barcode, groupMachinery)  =
-    itemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-expirationDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
-    expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
-    priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
-
-commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
-
-priceTransactionDocumentMachineryPriceTransaction = DATA priceTransactionDocument (machineryPriceTransaction);
-descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание загрузки' (transaction) =
-    descriptionPriceTransactionDocument(priceTransactionDocumentMachineryPriceTransaction(transaction));
-
-// todo : persistent почему-то не работает
-descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
-                                                                             commentMachineryPriceTransaction(document);
-
-sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
-sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
-
-// todo : это свойство тоже не становится PERSISTENT
-countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
-                                                                                 BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;
-
-succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
-
-statusEquipmentPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
-                                                        CASE
-                                                            WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS priceTransactionDocument
-                                                            WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS priceTransactionDocument
-                                                            DEFAULT 'Не загружен' IF document IS priceTransactionDocument
-                                                        END;
-
-// перезагрузка прайса целиком
-selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
-
-GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
-
-//--------------------Сообщения об ошибках транзакций--------------------//
-CLASS machineryPriceTransactionError 'Ошибка';
-TABLE machineryPriceTransactionError (machineryPriceTransactionError);
-
-dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN baseGroup;
-dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN baseGroup;
-errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN baseGroup;
-machineryPriceTransactionMachineryPriceTransactionError 'Транзакция (ID)' = DATA machineryPriceTransaction(machineryPriceTransactionError) IN baseGroup;
-quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количество ошибок' (MachineryPriceTransaction) = GROUP SUM 1 IF machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) == MachineryPriceTransaction
-    BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN baseGroup;
-
-
-FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
-
-    OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY dname = name
-
-    OBJECTS g = groupMachinery
-    PROPERTIES(g) READONLY nameGroupMachinery, nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery
-    FILTERS departmentStoreGroupMachinery(g) == d
-
-    OBJECTS m = machinery
-    PROPERTIES(m)          selectedMachinery
-    PROPERTIES(m) READONLY nppMachinery, descriptionMachinery, portMachinery, useMachinery
-
-    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
-                                                                    nameCashRegisterModelCashRegister, dateCashRegister
-
-    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameScalesModelScales
-
-    FILTERS groupMachineryMachinery(m) == g
-;
-
-DESIGN groupMachineryInput FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-    }
-    PROPERTY(dname) {
-        focusable = FALSE;
-    }
-}
-
-snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (departmentStore) NEWSESSION {
-    FORM groupMachineryInput OBJECTS d = (departmentStore AS departmentStore) MODAL;
-    IF formResult() == formResult.ok THEN {
-        LOCAL groupMachinery = groupMachinery ();
-        SET groupMachinery() <- chosenObject('g');
-        IF groupMachinery() IS groupScales THEN
-            ADDOBJ scalesPriceTransaction
-        ELSE IF groupMachinery() IS groupCheck THEN
-            ADDOBJ checkPriceTransaction
-        ELSE IF groupMachinery() IS groupTerminal THEN
-            ADDOBJ terminalPriceTransaction
-        ELSE
-            ADDOBJ cashRegisterPriceTransaction;
-        FOR t == addedObject() DO {
-            SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
-            SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
-            SET snapshotMachineryPriceTransaction(t) <- TRUE;
-            SET inMachineryPriceTransactionMachinery(t, machinery) <- selectedMachinery(machinery);
-            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, groupMachinery())
-                                                                       AND inGroupMachineryItem(groupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
-                                                                       AND activeBarcode(barcode);
-            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, groupMachinery());
-            SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionDaysExpiryBarcodeGroupMachinery(barcode, groupMachinery());
-            SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) <- transactionHoursExpiryBarcodeGroupMachinery(barcode, groupMachinery());
-            SET labelFormatMachineryPriceTransactionBarcode(t, barcode) <- transactionLabelFormatBarcodeGroupMachinery(barcode, groupMachinery());
-            SET compositionMachineryPriceTransactionBarcode(t, barcode) <- transactionCompositionBarcodeGroupMachinery(barcode, groupMachinery());
-            FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
-                AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
-
-                ADDOBJ cellScales;
-                FOR c == addedObject() DO {
-                    SET groupScalesCellScales(c) <- groupMachinery() AS groupScales;
-                    SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
-                }
-            }
-            SET isWeightMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcodeGroupMachinery(barcode, groupMachinery());
-            SET itemGroupMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcodeGroupMachinery(barcode, groupMachinery());
-            SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
-            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
-        }
-        EXEC apply();
-    }
-} CONFIRM IN snapshotMachineryPriceGroup;
-
-// Инкрементная загрузка
-GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
-
-createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
-
-createMachineryPriceTransactionItem = SESSION DATA BOOLEAN (item);
-createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) = createMachineryPriceTransactionItem(skuBarcode(barcode)) // если передали параметром
-                                                                                 AND inGroupMachineryItem(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
-                                                                                 AND activeBarcode(barcode) // если активный штрих-код
-                                                                                 AND ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery); // если есть цена розничная
-
-createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
-createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
-
-createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
-    LOCAL message = STRING[3000] ();
-    LOCAL sentSomething = BOOLEAN();
-    SET message() <- 'Принято к загрузке в оборудование : \n';
-
-    FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
-        LOCAL inBarcode = BOOLEAN (barcode);
-        // todo : не работает
-//        SET tempBarcode(barcode) <- NULL;
-        IF createMachineryPriceTransactionSnapshot() THEN
-            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
-        ELSE
-            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
-                                        AND NOT (ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)); // если цена изменилась
-
-        LOCAL countBarcode = INTEGER();
-        SET countBarcode() <- [GROUP SUM 1 IF inBarcode(barcode)]();
-        IF countBarcode() THEN {
-
-            IF groupMachinery IS groupScales THEN
-                ADDOBJ scalesPriceTransaction
-            ELSE IF groupMachinery IS groupCheck THEN
-                ADDOBJ checkPriceTransaction
-            ELSE IF groupMachinery IS groupTerminal THEN
-                ADDOBJ terminalPriceTransaction
-            ELSE
-                ADDOBJ cashRegisterPriceTransaction;
-
-            FOR t == addedObject() DO {
-                SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
-                SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
-                SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
-                SET inMachineryPriceTransactionBarcode(t, barcode) <- inBarcode(barcode);
-                IF groupMachinery IS groupScales THEN
-                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
-                ELSE
-                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
-                SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- daysExpiryMachineryBarcode(barcode);
-                SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryMachineryBarcode(barcode);
-                SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatMachineryBarcode(barcode);
-                SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionMachineryBarcode(barcode);
-                FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
-                    AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
-
-                    ADDOBJ cellScales;
-                    FOR c == addedObject() DO {
-                        SET groupScalesCellScales(c) <- groupMachinery AS groupScales;
-                        SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
-                    }
-                }
-                SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
-                SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
-                SET expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expirationDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
-                SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
-            }
-            SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
-                             (message(), nameGroupMachinery(groupMachinery), countBarcode());
-            SET sentSomething() <- TRUE;
-        }
-    }
-
-    IF sentSomething() THEN
-        MESSAGE message()
-    ELSE
-        MESSAGE 'Загрузка прайса в оборудование не требуется.';
-};
-
-createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceSkuLedger(item, departmentStore);
-    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка остатков';
-    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
-} CONFIRM IN incrementMachineryPriceGroup;
-
-createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentRetailPriceLedger(item, departmentStore);
-    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
-    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
-} CONFIRM IN incrementMachineryPriceGroup;
-
-META metaCodeDocumentMachineryPriceTransaction (document)
-
-    create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
-        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
-        EXEC createMachineryPriceTransaction(departmentStore###document(document));
-        SET sentPriceTransactionDocument(document) <- TRUE;
-    } TOOLBAR CONFIRM;
-
-    createSnapshot###document##MachineryPriceTransaction 'Перегрузить все позиции' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createMachineryPriceTransactionSnapshot() <- TRUE;
-        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
-        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
-        EXEC createMachineryPriceTransaction(departmentStore###document(document));
-        SET sentPriceTransactionDocument(document) <- TRUE;
-    } SHORTCUT statusEquipmentPriceTransactionDocument CONFIRM;
-
-    showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
-    backgroundCreateMachineryPriceTransaction###document 'Цвет' (document) = IF countProcessPriceTransactionDocument(document) THEN
-                                                                                RGB(255,255,128)
-                                                                             ELSE
-                                                                                RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
-END
-
-FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
-    OBJECTS t = machineryPriceTransaction FIXED PANEL
-    PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                  snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
-
-    OBJECTS b = barcode, d = departmentStore
-    PROPERTIES(b) READONLY idBarcode
-    PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
-     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
-     isWeightMachineryPriceTransactionBarcode, expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
-     compositionMachineryPriceTransactionBarcode FORCE PANEL
-    FILTERS inMachineryPriceTransactionBarcode(t, b)
-
-    EDIT machineryPriceTransaction OBJECT t;
-;
-
-FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
-    OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR, createBalanceMachineryPriceTransaction(d), createPriceMachineryPriceTransaction(d), snapshotGroupMachineryDepartmentStore(d)
-
-    OBJECTS t = machineryPriceTransaction
-    PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                           descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
-                           quantityMachineryPriceTransactionErrorMachineryPriceTransaction BACKGROUND quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
-                           nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
-    PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
-    PROPERTIES(t)          ADDFORM, EDITFORM, delete
-    FILTERS departmentStoreMachineryPriceTransaction(t) == d
-
-    OBJECTS b = barcode
-    PROPERTIES(b)    idBarcode
-    PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
-    daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
-    expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
-    labelFormatMachineryPriceTransactionBarcode
-
-    FILTERS inMachineryPriceTransactionBarcode(t, b)
-
-    OBJECTS e = machineryPriceTransactionError
-    PROPERTIES(e)    dataMachineryPriceTransactionError, dateMachineryPriceTransactionError
-    PROPERTIES(e)  FORCE PANEL  errorTraceMachineryPriceTransactionError
-    FILTERS machineryPriceTransactionMachineryPriceTransactionError(e) == t
-;
-
-DESIGN machineryPriceTransactions FROM DEFAULT {
-
-    main {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD t.box {
-            preferredSize = ( -1, 300);
-            minimumSize = ( -1, 300);
-            maximumSize = ( -1, 300);
-        }
-
-        NEW specContainer{
-            type = TABBED;
-            ADD b.box;
-            NEW errorContainer {
-               title = 'Сообщения об ошибках';
-               ADD e.box;
-               PROPERTY(errorTraceMachineryPriceTransactionError(e)) {
-                  fillHorizontal = 1;
-                  panelLabelAbove = TRUE;
-               }
-            }
-        }
-    }
-    }
-
-    ADD functions.box;
-}
-
-FORM terminalDocuments 'Документы ТСД'
-    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
-    PROPERTIES(td)  idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
-                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument, usedTerminalDocument READONLY
-    PROPERTIES(td)  ADDFORM, EDITFORM, delete
-
-    PROPERTIES(tdd) numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
-    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail, ADDOBJ
-
-    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
-
-    FILTERGROUP filterUse
-        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
-
-;
-
-DESIGN terminalDocuments FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW topContainer{
-
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD td.box;
-            ADD tdd.box;
-        }
-    }
-
-    ADD functions.box;
-}
-
-FORM terminalDocumentsDialog 'Документы ТСД'
-    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
-    PROPERTIES(td)  READONLY idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
-                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
-
-    PROPERTIES(tdd) READONLY numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
-    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail
-
-    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
-    FILTERGROUP filterUse
-        FILTER 'Неиспользованные' 'F10' noUsedTerminalDocument(td) DEFAULT
-;
-
-DESIGN terminalDocumentsDialog FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW topContainer{
-
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD td.box;
-            ADD tdd.box;
-        }
-    }
-
-    ADD functions.box;
-}
-
 //----------------------------------- Печать ценников -------------------------------------------------------
 
 CLASS labelTransaction 'Печать ценников' : historyObject;
@@ -6900,7 +6724,6 @@ META metaCodeDocumentLabelTransaction (document)
 END
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
-@metaCodeInputMultipleItems(shipment);
 @metaCodeDocumentMachineryPriceTransaction(shipment);
 @metaCodeDocumentLabelTransaction(shipment);
 
@@ -6960,10 +6783,6 @@ FORM writeOffPrint 'Списание' PRINT
 
 toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
-
-@metaCodeInputMultipleItems(writeOff);
-@defineDocumentDetailItemOfTerminal(writeOff);
-
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
@@ -6977,8 +6796,8 @@ FORM writeOff 'Списание'
     PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
                                     balanceDepartmentStoreItemWriteOff(d)
 
-    PROPERTIES  inputMultipleItemsWriteOff(w) TODRAW d, fillOfTerminalDocumentWriteOff(w) TODRAW d, addWriteOffDetailBarcode(w) TODRAW d,
-                cleanAllWriteOffDetailsWriteOff(w) FORCE PANEL TODRAW d
+    PROPERTIES(w) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailDialogTerminalWriteOffDetailWriteOff,
+                           addDetailDialogBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
     FILTERS inWriteOffWriteOffDetail(w, d)
 
     EDIT writeOff OBJECT w
@@ -7099,28 +6918,27 @@ quantityDisparityDetailItemDisparity 'Кол-во для закачки в об�
 printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(uniquePriceChangeDisparity(disparity)) IN printGroup;
 printPriceChangeInputDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
 
-@metaCodeInputMultipleItems(disparity);
-
 FORM disparity 'Пересортица'
 
-    OBJECTS dis=disparity FIXED PANEL, d=disparityDetail
+    OBJECTS dis=disparity FIXED PANEL
 
     PROPERTIES(dis) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
                     dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
                     inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
                     numberDisposalDisparity SHOWIF showPriceChangeDisparity(dis),
-                    namePriceChangeCommitteeDisparity SHOWIF showPriceChangeDisparity(dis),
-                    inputMultipleItemsDisparity TODRAW d
+                    namePriceChangeCommitteeDisparity SHOWIF showPriceChangeDisparity(dis)
 
+    OBJECTS d = disparityDetail
     PROPERTIES(d)   indexDisparityDetail,
                     idBarcodeSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
                     quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
                     inputIdBarcodeSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
                     inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
-    PROPERTIES(d) ADDOBJ, delete
+    PROPERTIES(d)   ADDOBJ, delete
 
-    PROPERTIES      addDisparityDetailBarcode(dis) TODRAW d
+    PROPERTIES(dis) TODRAW d addDetailDialogSkuStockDisparityDetailDisparity, addDetailDialogTerminalDisparityDetailDisparity,
+                             addDetailDialogBarcodeDisparityDetailDisparity, deleteDisparityDetailDisparity
 
     PROPERTIES (d)  FORCE PANEL importerPriceDisparityDetail, supplierPriceDisparityDetail, nameWareDisparityDetail,
                                 warePriceDisparityDetail, valueRetailRangeDisparityDetail, balanceBeforeDisparityDetail,
@@ -7173,7 +6991,6 @@ DESIGN disparity FROM DEFAULT {
                 ADD PROPERTY (warePriceDisparityDetail);
                 ADD PROPERTY (valueRetailRangeDisparityDetail);
                 ADD PROPERTY (balanceBeforeDisparityDetail);
-
             }
 
             NEW row1 {
@@ -7274,7 +7091,6 @@ DESIGN disparities FROM DEFAULT {
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
-@defineDocumentDetailItemOfTerminal(shipment);
 printPriceChangeShipment 'Акт переоценки' (shipment) = printPriceChange(uniquePriceChangeShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
@@ -7303,10 +7119,8 @@ FORM shipment 'Поставка'
                                curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailRangeShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
-
-    PROPERTIES     inputMultipleItemsShipment(s) TODRAW d, fillOfTerminalDocumentShipment(s) TODRAW d,
-                   addShipmentDetailBarcode(s) TODRAW d, cleanAllShipmentDetailsShipment(s) FORCE PANEL TODRAW d
-
+    PROPERTIES(s) TODRAW d addDetailDialogSkuShipmentDetailShipment, addDetailDialogTerminalShipmentDetailShipment,
+                           addDetailDialogBarcodeShipmentDetailShipment, deleteShipmentDetailShipment
 
     FILTERS inShipmentShipmentDetail(s, d)
 
@@ -7338,7 +7152,32 @@ DESIGN shipment FROM DEFAULT{
             };
             ADD i.box;
         };
-        NEW header.box BEFORE specification.box {
+
+        NEW case1 BEFORE specification.box{
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+            childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Колонки';
+                ADD PROPERTY (toShowPriceImporterShipment(s));
+                ADD PROPERTY (toShowWareShipment(s));
+                ADD PROPERTY (toShowPapersShipment(s));
+            }
+            NEW row2 {
+            childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Параметры';
+                ADD PROPERTY (nameRegisterCommitteeShipment(s));
+                ADD PROPERTY (nameWastageCommitteeShipment(s));
+                ADD PROPERTY (noteShipment(s));
+            }
+            NEW row3 {
+            childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Переоценка';
+                ADD PROPERTY (namePriceChangeCommitteeShipment(s));
+                ADD PROPERTY (numberDisposalShipment(s));
+            }
+        }
+
+        NEW header.box BEFORE case1 {
             childConstraints = TO THE RIGHT;
 
             NEW headerCol1 {
@@ -7356,6 +7195,7 @@ DESIGN shipment FROM DEFAULT{
                 NEW headerCol1Row2 {
                     childConstraints = TO THE RIGHT;
                     ADD s.documentPrmGroup {
+                        title = 'Поставщик';
                         childConstraints = TO THE BOTTOM;
                     }
                     ADD s.shipmentOrderGroup {
@@ -7494,9 +7334,6 @@ DESIGN wastages FROM DEFAULT {
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
-@metaCodeInputMultipleItemsSupplier(returnSupplier);
-@defineDocumentDetailItemOfTerminal(returnSupplier);
-
 printPriceChangeReturnSupplier 'Акт переоценки' (returnSupplier) = printPriceChange(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
@@ -7533,8 +7370,10 @@ FORM returnSupplier 'Возврат поставщику'
                   nameWareReturnSupplierDetail, warePriceReturnSupplierDetail, numberRetailRangeReturnSupplierDetail, valueRetailRangeReturnSupplierDetail,
                   retailPriceReturnSupplierDetail
     PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES    inputMultipleItemsSupplierReturnSupplier(r) TODRAW d, fillOfTerminalDocumentReturnSupplier(r) TODRAW d, addReturnSupplierDetailBarcode(r) TODRAW d,
-                  cleanAllReturnSupplierDetailsReturnSupplier(r) FORCE PANEL TODRAW d
+
+    PROPERTIES(r) TODRAW d addDetailDialogSkuStockSupplierReturnSupplierDetailReturnSupplier, addDetailDialogTerminalReturnSupplierDetailReturnSupplier,
+                           addDetailDialogBarcodeReturnSupplierDetailReturnSupplier, deleteReturnSupplierDetailReturnSupplier
+
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailRangeReturnSupplierDetail(d),
                                     controlExpiryItemReturnSupplierDetail(d), isManufacturedItemReturnSupplierDetail(d),
@@ -7859,7 +7698,7 @@ toPrintListInventoryTime 'Опись' (listInventory, time) =
 toPrintListInventory 'Опись' (listInventory) = toPrintListInventoryTime(listInventory, currentDateTime());
 
 
-fillOfTerminalDocumentListInventory 'Заполнить из документа ТСД' (listInventory) = ACTION (listInventory) {
+addDetailDialogTerminalListInventory 'Заполнить из документа ТСД' (listInventory) = ACTION (listInventory) {
     FORM terminalDocumentsDialog MODAL;
     IF formResult() == formResult.ok THEN {
         LOCAL document = terminalDocument ();
@@ -7962,7 +7801,7 @@ FORM listInventory 'Опись'
     PROPERTIES (i)    idBarcodeSku, nameAttributeItem
     PROPERTIES (li,i) quantityPageInventoryDetailListInventoryItem, accountPricePageInventoryDetailListInventoryItem, accountSumPageInventoryDetailListInventoryItem
 
-    PROPERTIES      fillOfTerminalDocumentListInventory(li) TODRAW dp
+    PROPERTIES      addDetailDialogTerminalListInventory(li) TODRAW dp
 
     FILTERS listInventoryPageInventory(pl) == li,
             pageInventoryPageInventoryDetail(dp) == pl,
@@ -8402,11 +8241,8 @@ DESIGN inventories FROM DEFAULT {
 
 //---------------------------Акты переоценок-------------------------------------//
 
-@metaCodeInputMultipleItemsBalance (userPriceChange);
 @metaCodeDocumentMachineryPriceTransaction(userPriceChange);
 @metaCodeDocumentLabelTransaction(userPriceChange);
-@defineDocumentDetailItemOfTerminal(userPriceChange);
-
 
 percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
 percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (userPriceChange);
@@ -8482,6 +8318,8 @@ dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceCha
 // todo: пока что сделал так, что можно выбрать только один экшн на изменение цены.
 //       Для расчета новых показателей цены, необходимо чтобы все поля были не пустые.....
 
+toShowWareUserPriceChange 'Показывать строки с посудой' (userPriceChange) = GROUP SUM 1 IF curWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
@@ -8494,20 +8332,19 @@ FORM userPriceChange 'Переоценка товаров'
     PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                   curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
+                   curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
                    curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                    numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
-                   curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
-                   curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
-                   numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
+                   curWarePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), warePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   curNumberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), curValueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   numberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), valueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
-//    PROPERTIES (u, d)  newMarkupRetailPriceUserPriceChangeDetail, newDiscountRetailPriceUserPriceChangeDetail
 
     PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
-               dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u),
-               fillOfTerminalDocumentUserPriceChange(u) TODRAW d,
-               inputMultipleItemsBalanceUserPriceChange(u) TODRAW d, addUserPriceChangeDetailBarcode(u) TODRAW d,
-               cleanAllUserPriceChangeDetailsUserPriceChange(u) FORCE PANEL TODRAW d
+               dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
+
+    PROPERTIES(u) TODRAW d addDetailDialogSkuStockUserPriceChangeDetailUserPriceChange, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
+                           addDetailDialogBarcodeUserPriceChangeDetailUserPriceChange, deleteUserPriceChangeDetailUserPriceChange
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 
@@ -8544,7 +8381,7 @@ DESIGN userPriceChange FROM DEFAULT {
 
         PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(retailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
+        PROPERTY(calcRetailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
         PROPERTY(numberRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(valueRetailRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(warePriceUserPriceChangeDetail) { background = #FFFFCC; }
@@ -8577,7 +8414,7 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                             curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                            curRetailMarkupPriceChangeDocumentDetail, retailMarkupPriceChangeDocumentDetail,
+                            curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
                             curNumberRetailRangeUserPriceChangeDetail, curValueRetailRangeUserPriceChangeDetail,
                             numberRetailRangeUserPriceChangeDetail, valueRetailRangeUserPriceChangeDetail,
                             curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
@@ -8630,11 +8467,8 @@ DESIGN userPriceChanges FROM DEFAULT {
 
 //---------------- Формы внутреннего перемещения (приход и расход)-------------------------------------//
 
-@metaCodeInputMultipleItems (innerFlow);
-@metaCodeInputMultipleItems (innerArrival);
 @metaCodeDocumentMachineryPriceTransaction(innerArrival);
 @metaCodeDocumentLabelTransaction(innerArrival);
-@defineDocumentDetailItemOfTerminal(innerFlow);
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
@@ -8658,8 +8492,8 @@ FORM innerFlow 'Расход в другой отдел'
                    warePriceInnerFlowDetail SHOWIF showWareInnerFlow(f),
                    retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
-    PROPERTIES     inputMultipleItemsInnerFlow(f) TODRAW d, fillOfTerminalDocumentInnerFlow(f) TODRAW d, addInnerFlowDetailBarcode(f) TODRAW d,
-                   cleanAllInnerFlowDetailsInnerFlow(f) FORCE PANEL TODRAW d
+    PROPERTIES(f) TODRAW d addDetailDialogSkuStockInnerFlowDetailInnerFlow, addDetailDialogTerminalInnerFlowDetailInnerFlow,
+                           addDetailDialogBarcodeInnerFlowDetailInnerFlow, deleteInnerFlowDetailInnerFlow
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     EDIT innerFlow OBJECT f
@@ -8893,7 +8727,9 @@ FORM innerArrival 'Приход из другого отдела'
     PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
                    curWarePriceInnerArrivalDetail, curValueRetailRangeInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
-    PROPERTIES inputMultipleItemsInnerArrival(a) TODRAW d, addInnerArrivalDetailBarcode(a) TODRAW d, cleanAllInnerArrivalDetailsInnerArrival(a) FORCE PANEL  TODRAW d // SHOWIF innerFlowInnerArrival(a)
+    PROPERTIES(a) TODRAW d addDetailDialogSkuInnerArrivalDetailInnerArrival, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
+                           addDetailDialogBarcodeInnerArrivalDetailInnerArrival, deleteInnerArrivalDetailInnerArrival
+
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
     OBJECTS i=item
@@ -8946,7 +8782,7 @@ DESIGN innerArrival FROM DEFAULT{
                         title = 'Действия';
                         childConstraints = TO THE BOTTOM;
                         ADD PROPERTY (toFillInnerArrivalDetailsInnerArrival);
-                        ADD PROPERTY (cleanAllInnerArrivalDetailsInnerArrival);
+                        ADD PROPERTY (deleteInnerArrivalDetailInnerArrival);
                     }
                 }
             }
@@ -9100,9 +8936,6 @@ DESIGN specificationForm FROM DEFAULT{
 
 dialogSpecificationForm 'Показать отгрузки по данной с/ф' (specification) = ACTION FORM specificationForm OBJECTS sp MODAL TOOLBAR;
 
-@metaCodeInputMultipleItems (specification);
-@defineDocumentDetailItemOfTerminal(specification);
-
 FORM specification 'Счет-фактура'
     OBJECTS sp=specification FIXED PANEL
     PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
@@ -9119,8 +8952,9 @@ FORM specification 'Счет-фактура'
     PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
                    BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND notNullAvailableQuantityItemBySpecificationDetail(d)
 
-    PROPERTIES     inputMultipleItemsSpecification(sp) TODRAW d, fillOfTerminalDocumentSpecification(sp) TODRAW d, addSpecificationDetailBarcode(sp) TODRAW d,
-                   cleanAllSpecificationDetailsSpecification(sp) FORCE PANEL TODRAW d
+    PROPERTIES(sp) TODRAW d addDetailDialogSkuStockSpecificationDetailSpecification, addDetailDialogTerminalSpecificationDetailSpecification,
+                            addDetailDialogBarcodeSpecificationDetailSpecification, deleteSpecificationDetailSpecification
+
     FILTERS inSpecificationSpecificationDetail(sp, d)
 
     EDIT specification OBJECT sp
@@ -9237,9 +9071,6 @@ FORM specificationsStatement 'Счета'
 
 dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
-@metaCodeInputMultipleItems (statement);
-@defineDocumentDetailItemOfTerminal(statement);
-
 printPriceChangeStatement 'Акт переоценки' (statement) = printPriceChange(uniquePriceChangeStatement(statement)) IN printGroup;
 
 FORM statement 'Отгрузка из розницы'
@@ -9269,9 +9100,8 @@ FORM statement 'Отгрузка из розницы'
                                 articleItemStatementDetail, nameCountryItemStatementDetail,
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
-
-    PROPERTIES      inputMultipleItemsStatement(st) TODRAW d, fillOfTerminalDocumentStatement(st) TODRAW d, addStatementDetailBarcode(st) TODRAW d,
-                    cleanAllStatementDetailsStatement(st) FORCE PANEL TODRAW d
+    PROPERTIES(st) TODRAW d addDetailDialogSkuStatementDetailStatement, addDetailDialogTerminalStatementDetailStatement,
+                            addDetailDialogBarcodeStatementDetailStatement, deleteStatementDetailStatement
 
     FILTERS         inStatementStatementDetail(st, d)
 
@@ -9439,11 +9269,6 @@ DESIGN statements FROM DEFAULT {
     }
 }
 
-//----------------------------------- Подбор товаров для чеков -------------------------------------------------------//
-
-@metaCodeInputMultipleItemsBill(bill);
-@metaCodeInputMultipleItemsSupplierBill(bill);
-
 //----------------------------------- Формы чеков -------------------------------------------------//
 
 FORM bill 'Z-отчет'
@@ -9454,9 +9279,11 @@ FORM bill 'Z-отчет'
     OBJECTS b=bill, d=billDetail
     PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
                   numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
-                  countBillDetailBill, quantityBillDetailBill, inputMultipleItemsBill TODRAW d,
-                  inputMultipleItemsSupplierBill TODRAW d, ADDOBJ, delete
+                  countBillDetailBill, quantityBillDetailBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
+
+    PROPERTIES(b) TODRAW d addDetailDialogSkuStockBillSaleDetailBill, addDetailDialogSkuStockBillReturnDetailBill
+                           // todo : добавить операции возврата по штрих-коду
 
     PROPERTIES(d) objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                   retailSumBillDetail, discountSumBillDetail, ADDOBJ, delete
@@ -9465,7 +9292,6 @@ FORM bill 'Z-отчет'
 
     OBJECTS p=payment
     PROPERTIES(p) namePaymentTypePayment, namePaymentMeansPayment, sumPayment, ADDOBJ, delete
-    PROPERTIES addBillDetailBarcodeFill (b) TODRAW d
 
     FILTERS billPayment(p)==b
 
@@ -9493,14 +9319,15 @@ FORM bills 'Чеки'
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=bill
-    PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, nameDepartmentStoreBill,
+    PROPERTIES(b) READONLY  OBJVALUE, numberBill, dateBill, timeBill, nameDepartmentStoreBill,
                             numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
                             countBillDetailBill, quantityBillDetailBill
 
     FILTERS zReportBill(b)==z
+    ORDER BY                numberBill
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY  objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+    PROPERTIES(d) READONLY  OBJVALUE, objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                             supplierSumBalanceSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
@@ -9574,8 +9401,8 @@ FORM actOfStudy 'Акт проработки'
                     retailPriceStudyInputDetail, quantityStudyInputDetail, retailSumStudyInputDetail,
                     totalPercGoodsStudyInputDetail BACKGROUND highlightStudyInputDetail(sid) READONLY, ADDOBJ, delete
 
-    PROPERTIES(sid) toFillStudyOutputDetailsStudyInputDetail FORCE PANEL SHOWIF showNotStudyInputDetailStudyOutputDetail(sid,sod),
-                    cleanAllStudyInputDetail FORCE PANEL
+    PROPERTIES(sid) FORCE PANEL toFillStudyOutputDetailsStudyInputDetail SHOWIF showNotStudyInputDetailStudyOutputDetail(sid, sod),
+                                deleteStudyOutputDetailStudyInputDetail
 
     PROPERTIES(sod) nameAttributeItemStudyOutputDetail, shortNameUOMItemStudyOutputDetail, importerPriceStudyOutputDetail, supplierPriceStudyOutputDetail,
                     numberRetailRangeStudyOutputDetail, valueRetailRangeStudyOutputDetail, factorStudyOutputDetail, percGoodsStudyOutputDetail,
@@ -9758,65 +9585,6 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
             isContainerBatch(bt),
             overMotionContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
-
-// ------------------------------------------------- Форма продаж по товарам ------------------------ //
-
-FORM salesItemDepartmentStore 'Продажи по товарам'
-
-    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY gname = name(g)
-    ORDER BY gname
-
-    OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeItemGroupItem(g, i), nameDep=name(dep)  //  idBarcodeSku
-    FILTERS           nameAttributeItemGroupItem (g, i),
-                      inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    ORDER BY          nameIt
-
-    PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
-                      quantitySoldSkuStockDateFromTo(i, dep, dFrom, dTo),
-                      balanceASkuLedgerDate(i, dep, dTo)
-;
-
-DESIGN salesItemDepartmentStore FROM DEFAULT {
-
-    main{
-
-    NEW topContainer{
-
-        type = SPLITH;
-        childConstraints = TO THE RIGHT;
-
-            NEW firstCase {
-
-                type = SPLITV;
-                childConstraints = TO THE BOTTOM;
-
-                ADD treeStore.box {title = 'Магазины';};
-                ADD treeGroups.box {title = 'Товарные группы';};
-            }
-
-            NEW secondCase {
-
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-
-                ADD dates.box;
-                ADD dsi.box {fillVertical = 2;}
-            }
-    }
-    }
-
-    ADD functions.box;
-}
 
 //---------------------------------------------- Формы стат. отчетов -------------------------------------//
 
@@ -10343,35 +10111,173 @@ numeratorOrder(order) = numeratorObject(order) AND order IS order;
 
 //------------------- Статистические группы----------------------------//
 
-addStatisticGroupString 'Добавить стат. группы' = ACTION (sid, stringOne, stringTwo, groupStatic, numeric)  {
+addStatisticGroupString 'Добавить стат. группы' = ACTION (parentStat, nameStat, sidStat, groupStatic, value)  {
     ADDOBJ statisticGroup;
     FOR g == addedObject() DO {
-
-        SET parentStatisticGroup(g) <- sidToStatisticGroup(sid AS STRING[12]);
-        SET name(g) <-  stringOne AS STRING[110];
-        SET sidStatisticGroup(g) <- stringTwo AS STRING[12];
+        SET parentStatisticGroup(g) <- sidToStatisticGroup(parentStat AS STRING[12]);
+        SET name(g) <- nameStat AS STRING[110];
+        SET sidStatisticGroup(g) <- sidStat AS STRING[12];
         SET unitMeasureStatisticGroup(g) <- groupStatic AS groupStatic;
-        SET conversionFactorStatisticGroup(g) <- numeric AS NUMERIC[14,5];
+        SET conversionFactorStatisticGroup(g) <- value AS NUMERIC[14,5];
     }
 }
 
 fillStatisticGroupDefaultValues 'Заполнить значения стат групп по умолчанию' = ACTION () {
     EXEC addStatisticGroupString(' ', 'ВСЕ', 'ВСЕ', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('ВСЕ', 'Непродовольственные товары', '5', groupStatic.pounds, 1);
-    EXEC addStatisticGroupString('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.pounds, 1);
-
-    EXEC addStatisticGroupString('52.2', 'Фрукты', '52.21.10.100', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Овощи', '52.21.10.200', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.thing, 1);
-
+    EXEC addStatisticGroupString('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Фрукты', '52.21.10.100', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Овощи', '52.21.10.200', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.22.10', 'Продукты из мяса', '52.22.10.410', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.22.10', 'Консервы из мяса', '52.22.10.420', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Рыба, ракообразные и моллюски', '52.23.10', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.23.10', 'Консервы и пресервы из рыбы и  морепродуктов', '52.23.10.420', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Хлеб, пирожные и хлебобулочные изделия', '52.24.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Кондитерские изделия из сахара', '52.24.12', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Напитки, включая алкогольные', '52.25.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.25.10', 'Вино', '52.25.10.100', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.100', 'Вина виноградные', '52.25.10.110', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.100', 'Вина плодовые', '52.25.10.120', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.100', 'Вина игристые, включая шампанское', '52.25.10.130', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Водка', '52.25.10.200', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Коньяк, коньячные напитки и бренди', '52.25.10.300', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Пиво', '52.25.10.400', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Прочие алкогольные напитки', '52.25.10.500', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.500', 'Напитки слабоалкогольные', '52.25.10.510', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.10.500', 'Прочие алкогольные напитки, не включенные в другие группировки', '52.25.10.590', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Безалкогольные напитки', '52.25.21', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.25.21', 'Фруктовые и овощные соки', '52.25.21.100', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.25.21', 'Минеральная вода', '52.25.21.200', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.25.21', 'Безалкогольные напитки прочие', '52.25.21.300', groupStatic.liter, 10);
+    EXEC addStatisticGroupString('52.2', 'Табачные изделия', '52.26.10', groupStatic.thing, 1000);
+    EXEC addStatisticGroupString('52.2', 'Молочные продукты', '52.27.11.100', groupStatic.thing, 0);
+    EXEC addStatisticGroupString('52.27.11.100', 'Сыр', '52.27.11.110', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.27.11.100', 'Масло сливочное', '52.27.11.120', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Яйца', '52.27.11.200', groupStatic.thing, 1000);
+    EXEC addStatisticGroupString('52.2', 'Сушеные и консервированные орехи, офощи и фрукты', '52.27.12.100', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Чай, кофе, какао, специи', '52.27.12.200', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Пищевые масла и жиры', '52.27.12.300', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.27.12.300', 'Масла растительные', '52.27.12.310', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Мука', '52.27.12.400', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Соль', '52.27.12.500', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.2', 'Сахар', '52.27.12.600', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('52.2', 'Рис и прочие крупы', '52.27.12.700', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Рис', '52.27.12.710', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Овсяная крупа', '52.27.12.720', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Гречневая крупа', '52.27.12.730', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Лапша и прочие макаронные изделия', '52.27.12.800', groupStatic.pounds, 100);
+    EXEC addStatisticGroupString('52.2', 'Прочие пищевые продукты', '52.27.12.900', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.27.12.900', 'Детское питание', '52.27.12.910', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('ВСЕ', 'Непродовольственные товары', '5', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Автомобили', '50.10.2', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Детали и принадлежности для автомобилей', '50.30.2', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Мотоциклы и относящиеся к ним детали и принадлежности', '50.40.20', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Моторное топливо', '50.50.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('50.50.10', 'Моторное топливо', '50.50.10.100', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Фармацевтические товары', '52.31.10', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Медицинские и ортопедические товары', '52.32.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Парфюмерные и косметические товары и туалетные принадлежности', '52.33.10', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Текстильные товары', '52.41.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Галантерейные товары', '52.41.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Меховая и кожаная одежда', '52.42.10.100', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Верхняя одежда', '52.42.10.200', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Нижнее белье', '52.42.10.300', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Спортивная одежда', '52.42.10.400', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Трикотажные изделия', '52.42.10.510', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Чулочно-носочные изделия', '52.42.10.520', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Головные уборы', '52.42.10.600', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Аксессуары для одежды', '52.42.10.700', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Обувь', '52.43.11', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('5', 'Изделия из кожи и дорожные принадлежности', '52.43.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Бытовая мебель', '52.44.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Домашняя утварь, ножевые изделия, фаянсовая посуда, изделия из стекла, фарфора и керамики', '52.44.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Осветительные приборы', '52.44.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Портьеры, сетчатые занавеси и различные предметы домашнего обихода из текстильных материалов', '52.44.14', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Изделия из дерева, пробки и плетеные изделия', '52.44.15', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Бытовые неэлектрические приборы, изделия и оборудование, не включенные в другие группировки', '52.44.16', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Бытовые электрические приборы', '52.45.10', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.45.10', 'Холодильники и морозильники', '52.45.10.001', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.45.10', 'Стиральные машины', '52.45.10.002', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Аудио- и видеоаппаратура', '52.45.21', groupStatic.thing, 0);
+    EXEC addStatisticGroupString('52.45.21', 'Телевизоры', '52.45.21.210', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Аудио- и видеопленка с записями или без, кассеты и компакт-диски, цифровые видеодиски, грампластинки', '52.45.22', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Музыкальные инструменты и партитуры', '52.45.23', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Строительные материалы', '52.46', groupStatic.ruble, 1000000);
+    EXEC addStatisticGroupString('52.46', 'Скобяные товары', '52.46.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Краски, лаки и эмали, лакокрасочные материалы', '52.46.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Стекло', '52.46.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Материалы и оборудование для изготовления поделок в домашних условиях (для "умелых рук")', '52.46.14', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Санитарно-техническое оборудование', '52.46.15', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.46', 'Строительные материалы, не включенные в другие группировки', '52.46.16', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Книги', '52.47.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Газеты и журналы', '52.47.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Канцелярские товары', '52.47.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Офисная мебель', '52.48.11', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Офисные машины и оборудование', '52.48.12', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Компьютеры и программное обеспечение, не приспособленное к индивидуальным требованиям заказчика', '52.48.13', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Фотоаппаратура, оптические и точные приборы и оборудование', '52.48.14', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Оборудование электросвязи', '52.48.15', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Часы и ювелирные изделия', '52.48.21', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Спортивные товары, включая велосипеды', '52.48.22', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Игры и игрушки', '52.48.23', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Чистящие средства, обои и напольные покрытия', '52.48.31', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('52.48.31', 'Синтетические моющие средства', '52.48.31.110', groupStatic.pounds, 1000);
+    EXEC addStatisticGroupString('5', 'Цветы, растения, семена и удобрения', '52.48.32', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Домашние животные и корма для них', '52.48.33', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Сувениры, изделия кустарного промысла и предметы культового и религиозного назначения', '52.48.34', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Жидкое бытовое топливо, газ в баллонах, уголь, древесное топливо', '52.48.35', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Почтовые марки и монеты', '52.48.36', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Произведения искусства', '52.48.37', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Непродовольственные товары, не включенные в другие группировки', '52.48.38', groupStatic.thing, 1);
+    EXEC addStatisticGroupString('5', 'Подержанные товары', '52.50.1', groupStatic.thing, 1);
 }
+
+//------------------- Справочник норм естественной убыли----------------------------//
+
+addNaturalLossItemGroupString 'Добавить нормы естественной убыли' = ACTION (string)  {
+    ADDOBJ naturalLossItemGroup;
+    FOR cg == addedObject() DO {
+         SET name(cg) <- string AS STRING[110];
+    }
+}
+
+addSubNaturalLossItemGroupString 'Добавить нормы естественной убыли' = ACTION (string, stringOne, stringTwo, numeric)  {
+    ADDOBJ subNaturalLossItemGroup;
+    FOR g == addedObject() DO {
+        SET parentNaturalLossItemGroup(g) <- nameToNaturalLossItemGroup(string AS STRING[110]);
+        SET name(g) <-  stringOne AS STRING[110];
+        SET codeSubNaturalLossItemGroup(g) <- stringTwo AS STRING[3];
+
+        ADDOBJ subNaturalLossItemGroupDetail;
+        FOR d == addedObject() DO {
+            SET subNaturalLossItemGroupSubNaturalLossItemGroupDetail(d) <- g AS subNaturalLossItemGroup;
+            SET percentNaturalLossDetail(d) <- numeric AS NUMERIC[10,5];
+        }
+    }
+}
+
+
+fillLossItemGroupDefaultValues 'Заполнить группы естественной убыли по умолчанию' = ACTION () {
+    EXEC addNaturalLossItemGroupString('Мясо мороженое');
+    EXEC addNaturalLossItemGroupString('Кондитерские товары');
+    EXEC addNaturalLossItemGroupString('Бакалейные товары');
+
+    EXEC addSubNaturalLossItemGroupString('Мясо мороженое', 'Хреновуха', '012', 0.30);
+    EXEC addSubNaturalLossItemGroupString('Кондитерские товары', 'Халва', '075', 0.55);
+    EXEC addSubNaturalLossItemGroupString('Бакалейные товары', 'Кофе в зернах', '086', 0.10);
+}
+// todo: переделать ньюмерик на что-нибудь другое, т.к. не записывает.
+
+
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
     PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
                  fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                 fillStatisticGroupDefaultValues;
+                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues
+    PROPERTIES()     generateZReport, averageZReportCountGenerateZReport, averageBillCountGenerateZReport, averageBillDetailCountGenerateZReport,
+                     dateFromGenerateZReport, dateToGenerateZReport;
 ;
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
@@ -10416,14 +10322,17 @@ WINDOW TOOLBAR topToolbar 'Папки' VERTICAL HIDETITLE HIDESCROLLBARS POSITIO
 WINDOW TOOLBAR formsToolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 5, 20, 65);
 WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 5, 20, 65);
 
-HIDE WINDOW BaseLogicsModule.relevantForms;
-HIDE WINDOW BaseLogicsModule.relevantClassForms;
+HIDE WINDOW System.relevantForms;
+HIDE WINDOW System.relevantClassForms;
 
 NAVIGATOR {
 
     baseElement TO topToolbar;
 
     NEW lists 'Справочники' TO formsToolbar {
+//
+//        NEW testInput 'Тест ввода товара' ACTION testDialogSku;
+//
         NEW goods 'Товары' {
             ADD items;
             ADD wares;
@@ -10555,7 +10464,7 @@ NAVIGATOR {
         }
         NEW sales 'Продажи' {
             ADD salesLedger;
-            ADD salesItemDepartmentStore;
+            ADD salesSkuStock;
         }
         NEW report 'Отчеты' {
             ADD statisticalReport;
@@ -10597,7 +10506,7 @@ NAVIGATOR {
             ADD barcodeInput;
             ADD employee;
             ADD employeeDialog;
-            ADD country;
+//            ADD country;
 //            ADD currency;
             ADD position;
             ADD addTradingSquareDepartmentStore;
@@ -10756,12 +10665,9 @@ NAVIGATOR {
             ADD discountCard;
             ADD actOfStudy;
             ADD seriesNumberCuttingStudyInputDetail;
-            ADD itemDepartmentStoreInput;
-            ADD itemDepartmentStoreBalanceInput;
             ADD machineryPriceTransaction;
             ADD groupMachineryInput;
             ADD filterItemsGroupMachinery;
-            ADD itemDepartmentStoreSupplierInput;
             ADD labelType;
             ADD printLabelTransaction;
             ADD customLabelTransaction;
@@ -10769,6 +10675,7 @@ NAVIGATOR {
             ADD dialogDate;
             ADD naturalLoss;
             ADD consignment;
+            ADD dialogSku;
         }
         ADD parameters;
         ADD importData;

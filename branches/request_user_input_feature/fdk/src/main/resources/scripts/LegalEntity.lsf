@@ -1,6 +1,6 @@
 MODULE LegalEntity;
 
-REQUIRE BaseLogicsModule, Historizable, Tax;
+REQUIRE System, Historizable, Tax;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 

@@ -50,6 +50,7 @@ import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
@@ -700,41 +701,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // по умолчанию с полным стартом
 
-    protected <T extends LogicsModule> T addLogicsModule(T module) {
+    protected <T extends LogicsModule> T addModule(T module) {
         logicModules.add(module);
         return module;
     }
 
     protected void createModules() throws IOException {
-        addLogicsModule(LM);
+        addModule(LM);
     }
 
-    private void sortModules(String cur, LinkedList<String> way, Set<String> used, List<String> outModules, Map<String, List<String>> graph) {
-        way.add(cur);
-        used.add(cur);
-        for (String next : graph.get(cur)) {
-            if (!used.contains(next)) {
-                sortModules(next, way, used, outModules, graph);
-            } else if (way.contains(next)) {
-                String errMsg = next;
-                while (way.peekLast().equals(next)) {
-                    errMsg = errMsg + " <- " + way.pollLast();
-                }
-                throw new RuntimeException("[error]:\tthere is a circular dependency: " + errMsg);
-            }
+    protected void addModulesFromResource(String... paths) throws IOException {
+        for (String path : paths) {
+            addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(path), LM, this));
         }
-        way.removeLast();
-        outModules.add(cur);
     }
 
-    private List<LogicsModule> orderModules() {
+    protected ScriptingLogicsModule addModuleFromResource(String path) throws IOException {
+        return addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(path), LM, this));
+    }
+
+    private void fillNameToModules() {
         for (LogicsModule module : logicModules) {
             if (nameToModule.containsKey(module.getName())) {
                 throw new RuntimeException(String.format("[error]:\tmodule '%s' has already been added", module.getName()));
             }
             nameToModule.put(module.getName(), module);
         }
+    }
 
+    private Map<String, List<String>> buildModuleGraph() {
         Map<String, List<String>> graph = new HashMap<String, List<String>>();
         for (LogicsModule module : logicModules) {
             graph.put(module.getName(), new ArrayList<String>());
@@ -748,33 +743,58 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 graph.get(reqModule).add(module.getName());
             }
         }
+        return graph;
+    }
 
-        List<LogicsModule> orderedModules = new ArrayList<LogicsModule>();
-        Set<String> usedModules = new HashSet<String>();
-        LinkedList<String> currentWay = new LinkedList<String>();
+    private void checkCycles(String cur, LinkedList<String> way, Set<String> used, Map<String, List<String>> graph) {
+        way.add(cur);
+        used.add(cur);
+        for (String next : graph.get(cur)) {
+            if (!used.contains(next)) {
+                checkCycles(next, way, used, graph);
+            } else if (way.contains(next)) {
+                String errMsg = next;
+                do {
+                    errMsg = errMsg + " <- " + way.peekLast();
+                } while (!way.pollLast().equals(next));
+                throw new RuntimeException("[error]:\tthere is a circular dependency: " + errMsg);
+            }
+        }
+        way.removeLast();
+    }
+
+    private void checkCycles(Map<String, List<String>> graph) {
+        Set<String> used = new HashSet<String>();
+        for (Map.Entry<String, List<String>> vertex : graph.entrySet()) {
+            if (!used.contains(vertex.getKey())) {
+                checkCycles(vertex.getKey(), new LinkedList<String>(), used, graph);
+            }
+        }
+    }
+
+    private List<LogicsModule> orderModules() {
+        fillNameToModules();
+        Map<String, List<String>> graph = buildModuleGraph();
+        checkCycles(graph);
+
+        Map<String, Integer> degree = new HashMap<String, Integer>();
         for (LogicsModule module : logicModules) {
-            if (module.getRequiredModules().isEmpty()) {
-                List<String> outModules = new ArrayList<String>();
-                sortModules(module.getName(), currentWay, usedModules, outModules, graph);
-                Collections.reverse(outModules);
-                List<LogicsModule> newModules = new ArrayList<LogicsModule>();
-                for (String moduleName : outModules) {
-                    newModules.add(nameToModule.get(moduleName));
+            degree.put(module.getName(), module.getRequiredModules().size());
+        }
+
+        Set<LogicsModule> usedModules = new LinkedHashSet<LogicsModule>();
+        for (int i = 0; i < logicModules.size(); ++i) {
+            for (LogicsModule module : logicModules) {
+                if (degree.get(module.getName()) == 0 && !usedModules.contains(module)) {
+                    for (String nextModule : graph.get(module.getName())) {
+                        degree.put(nextModule, degree.get(nextModule) - 1);
+                    }
+                    usedModules.add(module);
+                    break;
                 }
-                newModules.addAll(orderedModules);
-                orderedModules = newModules;
             }
         }
-
-        // Проверка на возможные оставшиеся циклы
-        for (LogicsModule module : logicModules) {
-            if (!usedModules.contains(module.getName())) {
-                List<String> outModules = new ArrayList<String>();
-                sortModules(module.getName(), currentWay, usedModules, outModules, graph);
-            }
-        }
-
-        return orderedModules;
+        return new ArrayList<LogicsModule>(usedModules);
     }
 
     protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
@@ -2197,6 +2217,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP getLP(String sID) {
         return LM.getLP(sID);
+    }
+
+    protected LCP getLCP(String sID) {
+        return (LCP)LM.getLP(sID);
     }
 
     private boolean intersect(LCP[] props) {

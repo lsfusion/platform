@@ -1,6 +1,6 @@
 MODULE HockeyStats;
 
-REQUIRE BaseLogicsModule;
+REQUIRE System;
 
 CLASS Game 'Game';
 CLASS Team 'Team' : named;

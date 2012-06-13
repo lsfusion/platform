@@ -1,7 +1,5 @@
 MODULE Hierarchy;
 
-REQUIRE BaseLogicsModule; // todo [dale]: нужно только для того, чтобы BaseLogicsModule создавался раньше всех, надо пофиксать в будущем
-
 META defineHierarchy (object)
     parent###object = DATA object (object);
     @defineHierarchyCustom(object);

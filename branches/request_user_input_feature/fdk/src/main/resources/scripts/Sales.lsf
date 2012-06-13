@@ -1,6 +1,6 @@
 MODULE Sales;
 
-REQUIRE BaseLogicsModule, Stock, Tax;
+REQUIRE System, Stock, Tax;
 
 CLASS ABSTRACT salesLedger 'Продажа товара' : balanceSkuLedger;
 TABLE salesLedger(salesLedger);
@@ -77,6 +77,57 @@ FORM salesLedger 'Продажи по позициям'
     FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
+
+FORM salesSkuStock 'Продажи по SKU'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS           sts=(st=stock, s=sku)
+    PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
+    FILTERS           isParentSkuGroupSku(sk, s),
+                      isParentStockGroupStock(sg, st)
+    ORDER BY          nameSku
+
+    PROPERTIES        balanceBSkuLedgerDate(s, st, dFrom),
+                      quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
+                      balanceASkuLedgerDate(s, st, dTo)
+;
+
+DESIGN salesSkuStock FROM DEFAULT {
+
+    main {
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            NEW firstCase {
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+
+                ADD stockTree.box {title = 'Магазины';};
+                ADD skuTree.box {title = 'Товарные группы';};
+            }
+
+            NEW secondCase {
+                type = SPLITV;
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+
+                ADD dates.box;
+                ADD sts.box { fillVertical = 2; }
+            }
+        }
+        ADD functions.box;
+    }
+}
 
 //---------------------------------------------- Макросы для имплементаций -------------------------------------//
 

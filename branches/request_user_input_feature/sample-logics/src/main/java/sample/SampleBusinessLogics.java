@@ -20,9 +20,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        sampleLM = new SampleLogicsModule(LM);
-        sampleLM.setRequiredModules(Arrays.asList("BaseLogicsModule"));
-        addLogicsModule(sampleLM);
+        sampleLM = addModule(new SampleLogicsModule(LM));
+        sampleLM.setRequiredModules(Arrays.asList("System"));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {

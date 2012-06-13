@@ -1,6 +1,6 @@
 MODULE Consignment;
 
-REQUIRE BaseLogicsModule,
+REQUIRE System,
         LegalEntity,
         Stock,
         Employee,
@@ -98,6 +98,8 @@ addressTransportPayerConsignment 'Юридический адрес заказч
 fullNameTransportPayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
     fullNameLegalEntity(transportPayerConsignment(consignment)) ;
 
+noteConsignment 'Примечание' (consignment) = ABSTRACT STRING[100] (consignment) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+
 nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
     (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN carConsignmentGroup;
@@ -107,8 +109,9 @@ consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consign
 skuConsignmentDetail (consignmentDetail) = ABSTRACT sku (consignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
 
-UOMConsignmentDetail (consignmentDetail) = UOMSku(skuConsignmentDetail(consignmentDetail));
-shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
+//UOMConsignmentDetail (consignmentDetail) = UOMSku(skuConsignmentDetail(consignmentDetail));
+//shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
+shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (consignmentDetail);
 
 quantityConsignmentDetail 'Количество' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
 
@@ -141,6 +144,12 @@ grossWeightConsignmentDetailConsignment 'Общая масса груза, т.' 
 
 sumKgGrossWeightConsignment 'Общая масса груза, кг.'(consignment) = grossWeightConsignmentDetailConsignment(consignment)*1000;
 
+
+isCustomsFlowConsignment 'Расход с СВХ' (consignment) = ABSTRACT BOOLEAN (consignment);
+
+currencyConsignment 'Валюта (ИД)' (consignment) = ABSTRACT currency (consignment);
+shortNameCurrencyConsignment 'Валюта' (consignment) = shortNameCurrency(currencyConsignment(consignment));
+isCurrencyConsignment 'Выбрана валюта' (consignment) = TRUE IF currencyConsignment(consignment);
 
 // Посуда на возврате
 isWareConsignment 'Возврат поставщику' (consignment) = ABSTRACT BOOLEAN (consignment);
@@ -180,7 +189,7 @@ META defineConsignmentFormSimple(form, caption)
                        quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
                        fullNameRecipientConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
-                       isWareConsignment
+                       isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -211,10 +220,9 @@ META defineConsignmentForm(form, caption)
                        commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                        quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment, sumKgGrossWeightConsignment,
-                       sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment, UNPSenderConsignment,
-                       addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment, fullNameRecipientConsignment,
+                       sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
                        countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
-                       seriesObject, numberObject, isWareConsignment
+                       seriesObject, numberObject, isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -249,7 +257,7 @@ FORM consignment 'Атрибуты накладной'
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
-                   countConsignmentDetailConsignment
+                   countConsignmentDetailConsignment, noteConsignment, currencyConsignment SHOWIF isCustomsFlowConsignment(c)
 
 
     OBJECTS d=consignmentDetail

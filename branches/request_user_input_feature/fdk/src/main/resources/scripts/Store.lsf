@@ -1,6 +1,6 @@
 MODULE Store;
 
-REQUIRE BaseLogicsModule, Utils, Historizable, Stock, Employee, Tax, LegalEntity;
+REQUIRE System, Utils, Historizable, Stock, Employee, Tax, LegalEntity;
 
 // -------------------------------------- Торговая сеть ------------------------------- //
 

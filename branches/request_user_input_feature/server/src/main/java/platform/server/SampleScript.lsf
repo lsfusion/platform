@@ -1,6 +1,6 @@
 MODULE Sample;
 
-REQUIRE BaseLogicsModule;
+REQUIRE System;
 
 GROUP base : baseGroup;
 

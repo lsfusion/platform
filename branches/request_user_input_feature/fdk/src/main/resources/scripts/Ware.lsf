@@ -1,6 +1,6 @@
 MODULE Ware;
 
-REQUIRE BaseLogicsModule, Historizable, Tax;
+REQUIRE System, Historizable, Tax;
 
 CLASS ware 'Посуда' : named, externalObject;
 TABLE ware(ware);

@@ -35,28 +35,6 @@ import java.util.*;
 
 
 public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements RetailRemoteInterface {
-    public ScriptingLogicsModule Utils;
-    public ScriptingLogicsModule Hierarchy;
-    public ScriptingLogicsModule Historizable;
-    public ScriptingLogicsModule Numerator;
-    public ScriptingLogicsModule Stock;
-    public ScriptingLogicsModule Barcode;
-    public ScriptingLogicsModule Document;
-    public ScriptingLogicsModule Tax;
-    public ScriptingLogicsModule Ware;
-    public ScriptingLogicsModule LegalEntity;
-    public ScriptingLogicsModule Employee;
-    public ScriptingLogicsModule Store;
-    public ScriptingLogicsModule ListRegister;
-    public ScriptingLogicsModule Consignment;
-    public ScriptingLogicsModule AccountDocument;
-    public ScriptingLogicsModule StorePrice;
-    public ScriptingLogicsModule Supplier;
-    public ScriptingLogicsModule Sales;
-    public ScriptingLogicsModule PriceChange;
-    public ScriptingLogicsModule Default;
-
-
     ScriptingLogicsModule retailLM;
 
     public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -70,27 +48,29 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        Utils = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Utils.lsf"), LM, this));
-        Hierarchy = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Hierarchy.lsf"), LM, this));
-        Historizable = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Historizable.lsf"), LM, this));
-        Numerator = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Numerator.lsf"), LM, this));
-        Stock = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Stock.lsf"), LM, this));
-        Barcode = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Barcode.lsf"), LM, this));
-        Document = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Document.lsf"), LM, this));
-        Tax = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Tax.lsf"), LM, this));
-        Ware = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Ware.lsf"), LM, this));
-        LegalEntity = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/LegalEntity.lsf"), LM, this));
-        Employee = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Employee.lsf"), LM, this));
-        Store = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Store.lsf"), LM, this));
-        ListRegister = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/ListRegister.lsf"), LM, this));
-        Consignment = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Consignment.lsf"), LM, this));
-        AccountDocument = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/AccountDocument.lsf"), LM, this));
-        StorePrice = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/StorePrice.lsf"), LM, this));
-        Supplier = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Supplier.lsf"), LM, this));
-        Sales = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Sales.lsf"), LM, this));
-        PriceChange = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/PriceChange.lsf"), LM, this));
-        Default = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/Default.lsf"), LM, this));
-        retailLM = addLogicsModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/scripts/retail.lsf"), LM, this));
+        addModulesFromResource(
+            "/scripts/Utils.lsf",
+            "/scripts/Hierarchy.lsf",
+            "/scripts/Historizable.lsf",
+            "/scripts/Numerator.lsf",
+            "/scripts/Stock.lsf",
+            "/scripts/Barcode.lsf",
+            "/scripts/Document.lsf",
+            "/scripts/Tax.lsf",
+            "/scripts/Ware.lsf",
+            "/scripts/LegalEntity.lsf",
+            "/scripts/Employee.lsf",
+            "/scripts/Store.lsf",
+            "/scripts/ListRegister.lsf",
+            "/scripts/Consignment.lsf",
+            "/scripts/AccountDocument.lsf",
+            "/scripts/StorePrice.lsf",
+            "/scripts/Supplier.lsf",
+            "/scripts/Sales.lsf",
+            "/scripts/PriceChange.lsf",
+            "/scripts/Default.lsf"
+        );
+        retailLM = addModuleFromResource("/scripts/retail.lsf");
     }
 
     @Override
@@ -525,10 +505,10 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         List<ImportProperty<?>> returnProperties = new ArrayList<ImportProperty<?>>();
         List<ImportProperty<?>> paymentProperties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLCPByName("numberToZReportPosted").getMapping(zReportNumberField));
+        ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("zReportPosted"), retailLM.getLCPByName("numberNumberCashRegisterToZReportPosted").getMapping(zReportNumberField, cashRegisterField));
         ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("cashRegister"), retailLM.getLCPByName("numberCashRegisterToCashRegister").getMapping(cashRegisterField));
-        ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLCPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField));
-        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), retailLM.getLCPByName("skuBarcodeIdDate").getMapping(idBarcodeBillDetailField, dateField));
+        ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("bill"), retailLM.getLCPByName("zReportBillToBill").getMapping(zReportNumberField, numberBillField, cashRegisterField));
+        ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("item"), ((LCP) getLP("Barcode_skuBarcodeIdDate")).getMapping(idBarcodeBillDetailField, dateField));
 
         saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("numberZReport").getMapping(zReportKey)));
         saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLCPByName("cashRegisterZReport").getMapping(zReportKey),
@@ -541,7 +521,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("zReportBill").getMapping(billKey),
                 LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
-        ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
+        ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billSaleDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField, cashRegisterField));
         saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLCPByName("numberBillDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLCPByName("idBarcodeBillDetail").getMapping(billSaleDetailKey)));
         saleProperties.add(new ImportProperty(quantityBillSaleDetailField, retailLM.getLCPByName("quantityBillSaleDetail").getMapping(billSaleDetailKey)));
@@ -566,7 +546,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLCPByName("zReportBill").getMapping(billKey),
                 LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
-        ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField));
+        ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("billReturnDetail"), retailLM.getLCPByName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField, cashRegisterField));
         returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.getLCPByName("numberBillDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.getLCPByName("idBarcodeBillDetail").getMapping(billReturnDetailKey)));
         returnProperties.add(new ImportProperty(quantityBillReturnDetailField, retailLM.getLCPByName("quantityBillReturnDetail").getMapping(billReturnDetailKey)));
@@ -594,7 +574,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
                             sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
                             sale.discountSumBillDetail));
-                dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, "cash", sale.sumBill, 1));
+                dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, sale.cashRegisterNumber, "cash", sale.sumBill, 1));
             }
 
         List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
@@ -612,7 +592,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, billKey, billReturnDetailKey, itemKey),
                 returnProperties).synchronize(true);
 
-        ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("payment"), retailLM.getLCPByName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField));
+        ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("payment"), retailLM.getLCPByName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField, cashRegisterField));
         ImportKey<?> paymentTypeKey = new ImportKey((ConcreteCustomClass) retailLM.getClassByName("paymentType"), retailLM.getLCPByName("sidToTypePayment").getMapping(sidTypePaymentField));
         paymentProperties.add(new ImportProperty(sumPaymentField, retailLM.getLCPByName("sumPayment").getMapping(paymentKey)));
         paymentProperties.add(new ImportProperty(numberPaymentField, retailLM.getLCPByName("numberPayment").getMapping(paymentKey)));
@@ -621,7 +601,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         paymentProperties.add(new ImportProperty(numberBillField, retailLM.getLCPByName("billPayment").getMapping(paymentKey),
                 LM.baseLM.object(retailLM.getClassByName("bill")).getMapping(billKey)));
 
-        List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, sidTypePaymentField,
+        List<ImportField> paymentImportFields = Arrays.asList(zReportNumberField, numberBillField, cashRegisterField, sidTypePaymentField,
                 sumPaymentField, numberPaymentField);
 
         if (salesInfoList != null && salesInfoList.size() != 0) {
@@ -631,7 +611,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             for (SalesInfo salesInfo : salesInfoList) {
                 if (!cashRegisterNumbers.contains(salesInfo.cashRegisterNumber.trim()))
                     cashRegisterNumbers.add(salesInfo.cashRegisterNumber.trim());
-                if (!fileNames.contains(salesInfo.filename.trim()))
+                if ((salesInfo.filename!=null) && (!fileNames.contains(salesInfo.filename.trim())))
                     fileNames.add(salesInfo.filename.trim());
             }
             message += "\nИз касс: ";
@@ -651,7 +631,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             retailLM.getLCPByName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
         }
 
-        new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey),
+        new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, billKey, cashRegisterKey),
                 paymentProperties).synchronize(true);
 
         return session.applyMessage(this);
