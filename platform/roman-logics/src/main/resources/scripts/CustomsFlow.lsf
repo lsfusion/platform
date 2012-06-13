@@ -87,6 +87,16 @@ toFillQuantityInputAllDeclarationDetails 'Проставить количест�
     }
 }
 
+inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice (declarationDetailCStoWHDetail(CStoWHDetail), innerInvoice)
+    BY CStoWHCStoWHDetail(CStoWHDetail), innerInvoice;
+
+stringInnerInvoice (innerInvoice) =
+    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
+    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
+
+innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
+    IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 10;
+    
 FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     OBJECTS c=CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject
@@ -127,7 +137,8 @@ FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
-                   inputDeclarationDetailCStoWH, cleanAllCStoWHDetailsCStoWH, declarationsCStoWH
+                   inputDeclarationDetailCStoWH, cleanAllCStoWHDetailsCStoWH, declarationsCStoWH,
+                   innerInvoicesCStoWH, shortNameCurrencyCStoWH
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) numberCStoWHDetail, barcodeCStoWHDetail, brandCStoWHDetail, sidArticleCStoWHDetail,
@@ -149,10 +160,15 @@ DESIGN CStoWH FROM DEFAULT {
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
     PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
-                            nameWarehouseCStoWH, declarationsCStoWH, totalSumCStoWHDetail
+                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, totalSumCStoWHDetail
 
     PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCStoWH(c), delete FORCE PANEL SHOWIF isDraftCStoWH(c),
                    postCStoWH SHOWIF isDraftCStoWH(c), unpostCStoWH SHOWIF isPostedCStoWH(c)
+
+    PROPERTIES (c)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                     printConsignmentVerticalB, printConsignmentHorizontalB,
+                     printConsignmentSimpleHorizontal, editConsignment,
+                     printConsignmentSimpleVertical//, printConsignmentSimpleAttach,  printConsignmentAttach
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) READONLY numberCStoWHDetail, barcodeCStoWHDetail, brandCStoWHDetail, sidArticleCStoWHDetail,
@@ -163,17 +179,21 @@ FORM CStoWHs 'Расходы с СВХ'
 ;
 
 DESIGN CStoWHs FROM DEFAULT {
-    PROPERTY (delete(c)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
+    ADD c.box{
+        PROPERTY (delete(c)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        }
     }
+    ADD d.box;
+    ADD c.panel;
+    ADD functions.box;
 }
 
 @defineConsignment(CStoWH);
 @implementConsignmentHeader(CStoWH, customStore);
 
 senderConsignment (consignment) += customStoreCStoWH(consignment);
-recipientConsignment (consignment) += importerWarehouse(warehouseCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

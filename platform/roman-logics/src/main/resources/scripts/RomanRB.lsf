@@ -442,6 +442,7 @@ quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = D
 WHfromCSDetailWHfromCSSku (WHfromCS, sku) = GROUP MAX WHfromCSDetail BY WHfromCSWHfromCSDetail(WHfromCSDetail),
                                                                                                     skuWHfromCSDetail(WHfromCSDetail);
 
+recipientConsignment (consignment) += importerWarehouse(warehouseCStoWH(consignment));
 
 @implementBalanceSkuLedger (WHfromCS, sku, warehouse);
 
@@ -517,89 +518,13 @@ DESIGN WHfromCSs FROM DEFAULT {
     }
 }
 
-DESIGN importer FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-        co.box {
-        childConstraints = TO THE BOTTOM;
-
-        NEW row1 {
-            childConstraints = TO THE RIGHT;
-            ADD co.lawGroup{
-                childConstraints = TO THE BOTTOM;
-            }
-
-            NEW row11 {
-                title = 'Оригинал';
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY (nameOrigin(co));
-                ADD PROPERTY (addressOriginSubject(co));
-                ADD PROPERTY (addressSubject(co));
-                ADD PROPERTY (contractImporter(co));
-                ADD PROPERTY (sidImporter(co));
-            }
-        }
-        NEW row2{
-            childConstraints = TO THE RIGHT;
-            ADD co.contactGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-            ADD co.managementGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-            ADD co.docGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-}
-
-//       co.box {
-//            childConstraints = TO THE RIGHT;
-//
-//            NEW oneCase {
-//                childConstraints = TO THE BOTTOM;
-//                ADD PROPERTY(name(co));
-//                ADD PROPERTY(fullNameLegalEntity(co));
-//                ADD PROPERTY(addressLegalEntity(co));
-//                ADD PROPERTY(phoneLegalEntity(co));
-//                ADD PROPERTY(UNPLegalEntity(co));
-//                ADD co.contactGroup;
-//            };
-//
-//            NEW twoCase{
-//                childConstraints = TO THE BOTTOM;
-//                ADD co.docGroup;
-//            }
-//            NEW threeCase {
-//                title = 'Оригинал';
-//                childConstraints = TO THE RIGHTBOTTOM;
-//                ADD PROPERTY (commonName(co));
-//                ADD PROPERTY (nameOrigin(co));
-//                ADD PROPERTY (addressOriginSubject(co));
-//                ADD PROPERTY (addressSubject(co));
-//                ADD PROPERTY (contractImporter(co));
-//                ADD PROPERTY (sidImporter(co));
-//            }
-//       }
-
-        NEW firstCase BEFORE functions.box {
-            type = TABBED;
-            ADD a.box;
-            NEW v.box { title = 'Поставщик-договор'; }
-            ADD s.box IN v.box;
-        //            ADD c.box IN v.box;
-        //            POSITION s.box TO THE LEFT c.box;
-        }
-    }
-}
-
-
 NAVIGATOR {
     classifier {
         ADD UOM;
         ADD taxes;
         ADD banks;
         ADD employees;
+        ADD importers;
     }
     customs {
         ADD customStores;
@@ -678,5 +603,6 @@ NAVIGATOR {
         ADD employeeDialog;
         ADD barcodeInput;
         ADD declarationsCStoWH;
+        ADD importer;        
     }
 }

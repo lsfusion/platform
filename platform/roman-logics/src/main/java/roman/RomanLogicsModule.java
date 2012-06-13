@@ -3582,7 +3582,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new CommonSizeEditFormEntity(classifier, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(classifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
         classifier.add(seasonSupplier.getListForm(baseLM).form);
-        classifier.add(importer.getListForm(baseLM).form);
+//        classifier.add(importer.getListForm(baseLM).form);
         classifier.add(exporter.getListForm(baseLM).form);
         addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
         addFormEntity(new StoreFormEntity(classifier, "storeForm", "Магазины"));
