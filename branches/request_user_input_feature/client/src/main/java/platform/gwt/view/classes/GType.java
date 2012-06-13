@@ -41,7 +41,7 @@ public abstract class GType implements Serializable {
 
     public GTypeRenderer createPanelRenderer(FormLogicsProvider formLogics, GPropertyDraw property) {
         // по умолчанию рендеринг через FormItem
-        FormItem item = property.changeType.createPanelFormItem(formLogics, property);
+        FormItem item = property.baseType.createPanelFormItem(formLogics, property);
         item.setAttribute("readOnly",
                           item.getAttributeAsBoolean("readOnly") != null && item.getAttributeAsBoolean("readOnly")
                           || property.editType == GPropertyEditType.READONLY

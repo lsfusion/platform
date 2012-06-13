@@ -162,6 +162,10 @@ public class GGridTable extends ListGrid {
         setFields(newFields);
     }
 
+    public GGroupObjectValue getCurrentKey() {
+        return currentKey;
+    }
+
     public void setCurrentKey(GGroupObjectValue currentKey) {
         this.currentKey = currentKey;
     }

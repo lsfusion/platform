@@ -1,15 +1,11 @@
 package platform.gwt.view;
 
-import platform.gwt.view.changes.dto.GFormChangesDTO;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GForm implements Serializable {
     public String sessionID;
-
-    public GFormChangesDTO changes;
 
     public String caption;
 

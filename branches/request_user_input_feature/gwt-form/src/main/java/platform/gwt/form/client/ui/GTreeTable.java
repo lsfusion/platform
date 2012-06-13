@@ -43,6 +43,7 @@ public class GTreeTable extends TreeGrid {
         setSelectionType(SelectionStyle.SINGLE);
 
         setShowConnectors(true);
+//        setEmptyCellValue("--");
 
         setData(tree);
 

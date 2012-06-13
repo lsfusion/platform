@@ -21,7 +21,7 @@ public class GPropertyDraw extends GComponent {
     public ListGridField createGridField(FormLogicsProvider formLogics) {
         ListGridField gridField = baseType.createGridField(formLogics, this);
         gridField.setCanEdit(!(editType == GPropertyEditType.EDITABLE));
-        if (baseType != changeType) {
+        if (changeType != null && baseType != changeType) {
             gridField.setEditorType(changeType.createEditorType(formLogics, this));
         }
         gridField.setShowHover(true);

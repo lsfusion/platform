@@ -1,9 +1,9 @@
 package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.shared.Action;
-import platform.client.logics.ClientFormChanges;
 import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
+import platform.gwt.form.server.dispatch.GWTFormActionDispatcher;
 import platform.gwt.form.shared.actions.form.FormChangesResult;
 import platform.interop.form.ServerResponse;
 
@@ -19,10 +19,8 @@ public abstract class FormChangesActionHandler<A extends Action<FormChangesResul
     }
 
     protected FormChangesResult getRemoteChanges(FormSessionObject form, ServerResponse remoteChanges) throws IOException {
-//        ClientFormChanges clientChanges =
-//                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.formChanges)), form.clientForm, null);
-        //todo:
-        ClientFormChanges clientChanges = null;
-        return new FormChangesResult(clientChanges.getGwtFormChangesDTO());
+        GWTFormActionDispatcher dispatcher = new GWTFormActionDispatcher(form);
+        dispatcher.dispatchResponse(remoteChanges);
+        return new FormChangesResult(dispatcher.formChanges);
     }
 }

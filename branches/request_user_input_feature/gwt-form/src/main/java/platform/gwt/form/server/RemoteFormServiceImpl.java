@@ -17,6 +17,7 @@ public class RemoteFormServiceImpl extends LogicsDispatchServlet<RemoteLogicsInt
         registry.addHandler(new SetRegularFilterHandler(this));
         registry.addHandler(new ApplyChangesHandler(this));
         registry.addHandler(new CancelChangesHandler(this));
+        registry.addHandler(new ExecuteEditActionHandler(this));
         registry.addHandler(new ChangePropertyHandler(this));
         registry.addHandler(new CreateEditorFormHandler(this));
     }

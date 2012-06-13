@@ -42,7 +42,7 @@ public class GActionType extends GDataType {
         buttonItem.addClickHandler(new com.smartgwt.client.widgets.form.fields.events.ClickHandler() {
             @Override
             public void onClick(com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
-                formLogics.changePropertyDraw(property, true);
+                formLogics.executeEditAction(property, "change");
             }
         });
 
@@ -79,7 +79,7 @@ public class GActionType extends GDataType {
             addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                    formLogics.changePropertyDraw(group, record.key, property, true);
+                    formLogics.executeEditAction(property, record.key, "change");
                 }
             });
         }

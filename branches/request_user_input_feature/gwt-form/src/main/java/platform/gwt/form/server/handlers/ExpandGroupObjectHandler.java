@@ -32,8 +32,6 @@ public class ExpandGroupObjectHandler extends FormChangesActionHandler<ExpandGro
             BaseUtils.serializeObject(outStream, one.getValue().getValue());
         }
 
-        form.remoteForm.expandGroupObject(action.groupObjectId, byteStream.toByteArray());
-
-        return getRemoteChanges(form);
+        return getRemoteChanges(form, form.remoteForm.expandGroupObject(action.groupObjectId, byteStream.toByteArray()));
     }
 }

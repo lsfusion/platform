@@ -516,7 +516,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             gwtPropertyDraw.caption = caption;
             gwtPropertyDraw.groupObject = groupObject == null ? null : groupObject.getGwtGroupObject();
             gwtPropertyDraw.baseType = baseType.getGwtType();
-            gwtPropertyDraw.changeType = changeType.getGwtType();
+            gwtPropertyDraw.changeType = changeType == null ? null : changeType.getGwtType();
             gwtPropertyDraw.iconPath = design.iconPath;
             try {
                 gwtPropertyDraw.editType = GPropertyEditType.deserialize(editType.serialize());

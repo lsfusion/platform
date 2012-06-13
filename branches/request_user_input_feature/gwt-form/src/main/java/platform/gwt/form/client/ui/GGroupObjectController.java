@@ -195,4 +195,8 @@ public class GGroupObjectController {
     public boolean isInGrid() {
         return showType == GClassViewType.GRID;
     }
+
+    public GGroupObjectValue getCurrentKey() {
+        return grid != null ? grid.getTable().getCurrentKey() : null;
+    }
 }
