@@ -56,13 +56,8 @@ import static platform.base.BaseUtils.merge;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> {
 
-    public static boolean depends(CalcProperty<?> property, CalcProperty check) { // пока только для getChangeConstrainedProperties
-        if (property.equals(check))
-            return true;
-        for (CalcProperty depend : property.getDepends())
-            if (depends(depend, check))
-                return true;
-        return false;
+    public static boolean depends(CalcProperty<?> property, CalcProperty check) {
+        return property.getRecDepends().contains(check);
     }
 
     // используется если создаваемый WhereBuilder нужен только если задан changed
@@ -339,15 +334,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getPullDataChanges(changes, toNull).add(changes);
     }
 
-    public Map<CalcProperty, List<CalcProperty>> getRecDepends(Stack<CalcProperty> current) {
-
-        current.push(this);
-        Map<CalcProperty,List<CalcProperty>> result = new HashMap<CalcProperty, List<CalcProperty>>();
-        for(CalcProperty<?> depend : getDepends()) {
-            result.put(depend, new ArrayList<CalcProperty>(current));
-            result.putAll(depend.getRecDepends(current));
-        }
-        current.pop();
+    public QuickSet<CalcProperty> getRecDepends() {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+        for(CalcProperty<?> depend : getDepends())
+            result.addAll(depend.getRecDepends());
+        result.add(this);
         return result;
     }
 
@@ -636,8 +627,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         ChangeEvent<T> event = new ChangeEvent<T>(this, valueImplement, whereImplement);
         // запишем в DataProperty
-        for(DataProperty dataProperty : getChangeProps())
+        for(DataProperty dataProperty : getChangeProps()) {
+            if(Settings.instance.isCheckUniqueEvent() && dataProperty.event!=null)
+                throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", dataProperty));
             dataProperty.event = event;
+        }
     }
 
     public void setJoinNotNull(Map<T, ? extends Expr> implementKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {

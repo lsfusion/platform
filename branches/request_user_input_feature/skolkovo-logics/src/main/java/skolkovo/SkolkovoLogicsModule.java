@@ -3116,7 +3116,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
-        nameNativeShortAggregateClusterProject = addOGProp(baseGroup, "nameNativeShortAggregateClusterProject", false, "Кластеры", GroupType.STRING_AGG, 1, true, 2, addJProp(baseLM.and1, nameNativeShort, 2, inProjectCluster, 1, 2), 1, 2, addCProp(StringClass.get(5), ";"), numberCluster, 2, 1);
+        nameNativeShortAggregateClusterProject = addOGProp(baseGroup, "nameNativeShortAggregateClusterProject", false, "Кластеры", GroupType.STRING_AGG, 1, Settings.instance.isDefaultOrdersNotNull(), true, 2, addJProp(baseLM.and1, nameNativeShort, 2, inProjectCluster, 1, 2), 1, 2, addCProp(StringClass.get(5), ";"), numberCluster, 2, 1);
 
         currentClusterProject = addJProp("currentClusterProject", true, "Рабочий кластер (ИД)", clusterNumber,
                 addMGProp(addJProp(and(false, true), numberCluster, 2, inProjectCluster, 1, 2, rejectedProjectCluster, 1, 2), 1), 1);

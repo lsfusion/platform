@@ -1,12 +1,14 @@
 package platform.server.logics.property;
 
 import platform.base.Pair;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
@@ -139,6 +141,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
+        if(Settings.instance.isCheckUniqueEvent() && event!=null)
+            throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", this));
         event = new ActionEvent<P>(this, whereImplement, options);
     }
 

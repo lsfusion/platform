@@ -7,6 +7,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.form.ServerResponse;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
@@ -1278,7 +1279,7 @@ public abstract class LogicsModule {
         return mapLProp(group, persistent, orderProperty, sum);
     }
 
-    protected <P extends PropertyInterface> LCP addOProp(AbstractGroup group, String name, boolean persistent, String caption, PartitionType partitionType, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LCP addOProp(AbstractGroup group, String name, boolean persistent, String caption, PartitionType partitionType, boolean ascending, boolean ordersNotNull, boolean includeLast, int partNum, Object... params) {
         List<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
         List<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(interfaces, params);
 
@@ -1287,7 +1288,7 @@ public abstract class LogicsModule {
         OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
                 new OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
-        return mapLProp(group, persistent, DerivedProperty.createOProp(name, caption, partitionType, interfaces, mainProp, partitions, orders, includeLast), interfaces);
+        return mapLProp(group, persistent, DerivedProperty.createOProp(name, caption, partitionType, interfaces, mainProp, partitions, orders, ordersNotNull, includeLast), interfaces);
     }
 
     protected <P extends PropertyInterface> LCP addRProp(AbstractGroup group, String name, boolean persistent, String caption, Cycle cycle, List<Integer> resInterfaces, Map<Integer, Integer> mapPrev, Object... params) {
@@ -1343,10 +1344,10 @@ public abstract class LogicsModule {
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LCP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, boolean ascending, LCP<R> restriction, LCP<L> ungroup, Object... params) {
-        return addUGProp(group, name, persistent, over, caption, restriction.listInterfaces.size(), ascending, ungroup, add(directLI(restriction), params));
+        return addUGProp(group, name, persistent, over, caption, restriction.listInterfaces.size(), ascending, Settings.instance.isDefaultOrdersNotNull(), ungroup, add(directLI(restriction), params));
     }
 
-    protected <L extends PropertyInterface> LCP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, int intCount, boolean ascending, LCP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LCP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, int intCount, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         List<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         List<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
@@ -1358,14 +1359,14 @@ public abstract class LogicsModule {
                 new OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
         return mapLProp(group, persistent, DerivedProperty.createUGProp(name, caption, innerInterfaces,
-                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>)ungroup.property, groupImplement), orders, restriction, over), innerInterfaces);
+                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>)ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LCP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, LCP<R> proportion, LCP<L> ungroup, Object... params) {
-        return addPGProp(group, name, persistent, roundlen, roundfirst, caption, proportion.listInterfaces.size(), true, ungroup, add(add(directLI(proportion), params), getParams(proportion)));
+        return addPGProp(group, name, persistent, roundlen, roundfirst, caption, proportion.listInterfaces.size(), true, Settings.instance.isDefaultOrdersNotNull(), ungroup, add(add(directLI(proportion), params), getParams(proportion)));
     }
 
-    protected <L extends PropertyInterface> LCP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, int intCount, boolean ascending, LCP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LCP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, int intCount, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         List<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         List<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
@@ -1377,7 +1378,7 @@ public abstract class LogicsModule {
                 new OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
         return mapLProp(group, persistent, DerivedProperty.createPGProp(name, caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces,
-                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>)ungroup.property, groupImplement), proportion, orders), innerInterfaces);
+                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>)ungroup.property, groupImplement), proportion, orders, ordersNotNull), innerInterfaces);
     }
 
     /*
@@ -1508,18 +1509,18 @@ public abstract class LogicsModule {
         return addOGProp(null, name, persist, caption, type, numOrders, descending, groupProp, params);
     }
     public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean descending, LCP<T> groupProp, Object... params) {
-        return addOGProp(group, name, persist, caption, type, numOrders, descending, groupProp.listInterfaces, add(((CalcProperty<T>)groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
+        return addOGProp(group, name, persist, caption, type, numOrders, Settings.instance.isDefaultOrdersNotNull(), descending, groupProp.listInterfaces, add(((CalcProperty<T>)groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
     }
-    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean descending, int interfaces, Object... params) {
+    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addOGProp(group, name, persist, caption, type, numOrders, descending, innerInterfaces, readCalcImplements(innerInterfaces, params));
+        return addOGProp(group, name, persist, caption, type, numOrders, ordersNotNull, descending, innerInterfaces, readCalcImplements(innerInterfaces, params));
     }
-    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean descending, Collection<T> innerInterfaces, List<CalcPropertyInterfaceImplement<T>> listImplements) {
+    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, Collection<T> innerInterfaces, List<CalcPropertyInterfaceImplement<T>> listImplements) {
         int numExprs = type.numExprs();
         List<CalcPropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
         OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean>(listImplements.subList(numExprs, numExprs + numOrders), descending);
         List<CalcPropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
-        OrderGroupProperty<T> property = new OrderGroupProperty<T>(name, caption, innerInterfaces, groups, props, type, orders);
+        OrderGroupProperty<T> property = new OrderGroupProperty<T>(name, caption, innerInterfaces, groups, props, type, orders, ordersNotNull);
 
         return mapLGProp(group, persist, property, groups);
     }
@@ -1700,7 +1701,7 @@ public abstract class LogicsModule {
         T aggrInterface = (T) readImplements.get(0);
         List<CalcPropertyInterfaceImplement<T>> groupImplements = readImplements.subList(1, readImplements.size());
         List<CalcPropertyInterfaceImplement<T>> fullInterfaces = BaseUtils.mergeList(groupImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface));
-        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, mergeList(toList(aggrInterface, ((CalcProperty<T>)lp.property).getImplement()), fullInterfaces));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, lp.listInterfaces, mergeList(toList(aggrInterface, ((CalcProperty<T>) lp.property).getImplement()), fullInterfaces));
     }
 
     protected LCP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, int interfaces, Object... props) {

@@ -41,7 +41,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     }
 
     private CalcPropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
-    private CalcPropertyMapImplement<?, I> distribute;
+    public CalcPropertyMapImplement<?, I> distribute;
 
     public <L extends PropertyInterface> void setDataChanges(OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> mapOrders, CalcPropertyMapImplement<L, I> restriction, boolean over) {
         OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders = new OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean>();

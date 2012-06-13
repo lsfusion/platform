@@ -249,7 +249,6 @@ public class VEDLogicsModule extends LogicsModule {
     CustomClass specification;
     CustomClass assortment;
     public ConcreteCustomClass article;
-    public ConcreteCustomClass currency;
     public ConcreteCustomClass unitOfMeasure;
     public ConcreteCustomClass gender;
     CustomClass store, importSupplier, orderLocal, format, line;
@@ -424,7 +423,6 @@ public class VEDLogicsModule extends LogicsModule {
         legalEntity = addAbstractClass("legalEntity", "Юр.лицо", baseClass.named);
         storeLegalEntity = addConcreteClass("storeLegalEntity", "Юр.лицо складов", legalEntity);
 
-        currency = addConcreteClass("currency", "Валюта", baseClass.named);
         unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
 
         // новый классы
@@ -856,11 +854,11 @@ public class VEDLogicsModule extends LogicsModule {
         addJProp(artExtraGroup, "Пол", baseLM.name, genderArticle, 1);
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
-        currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", currency, article);
+        currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", baseLM.currency, article);
         nameCurrencyArticle = addJProp(priceGroup, "nameCurrencyArticle", "Валюта", baseLM.name, currencyArticle, 1);
         unitOfMeasureArticle = addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
         nameUnitOfMeasureArticle = addJProp(baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", baseLM.name, unitOfMeasureArticle, 1);
-        LCP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, currency);
+        LCP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, baseLM.currency);
         LCP currentFormatDiscount = addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
         LCP currentWarehouseDiscount = addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
 
@@ -1295,7 +1293,7 @@ public class VEDLogicsModule extends LogicsModule {
         quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
 
         // для импорта
-        nameToCurrency = addAGProp("nameToCurrency", "Валюта", currency, baseLM.name);
+        nameToCurrency = addAGProp("nameToCurrency", "Валюта", baseLM.currency, baseLM.name);
         nameToArticleGroup = addAGProp("nameToArticleGroup", "Гр. тов.", articleGroup, baseLM.name);
         nameToUnitOfMeasure = addAGProp("nameToUnitOfMeasure", "Ед. изм.", unitOfMeasure, baseLM.name);
         nameToBrend = addAGProp("nameToBrend", "Бренд", brend, baseLM.name);
@@ -4353,7 +4351,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             addImportField(fields, properties, articleKey, baseLM.name);
             addImportField(fields, properties, articleKey, currentRRP);
-            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, currency);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, baseLM.currency);
 
             java.util.List<java.util.List<Object>> rows = new ArrayList<java.util.List<Object>>();
 

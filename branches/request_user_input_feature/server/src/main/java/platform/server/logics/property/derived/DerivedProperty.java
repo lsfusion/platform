@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.identity.DefaultSIDGenerator;
 import platform.interop.Compare;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
@@ -400,7 +401,7 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, CalcProperty<T> property, Collection<CalcPropertyInterfaceImplement<T>> partitions, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         if(true) {
             List<CalcPropertyInterfaceImplement<T>> propList = Collections.<CalcPropertyInterfaceImplement<T>>singletonList(property.getImplement());
-            return createOProp(sID, caption, partitionType, property.interfaces, propList, partitions, orders, includeLast);
+            return createOProp(sID, caption, partitionType, property.interfaces, propList, partitions, orders, Settings.instance.isDefaultOrdersNotNull(), includeLast);
         }
 
         assert orders.size()>0;
@@ -422,8 +423,8 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<UnionProperty.Interface,T>(new SumUnionProperty(sID,caption,listInterfaces,operands),BaseUtils.reverse(mapInterfaces));
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<CalcPropertyInterfaceImplement<T>> props, Collection<CalcPropertyInterfaceImplement<T>> partitions, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
-        PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, partitionType, innerInterfaces, props, partitions, orders, includeLast);
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<CalcPropertyInterfaceImplement<T>> props, Collection<CalcPropertyInterfaceImplement<T>> partitions, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, boolean includeLast) {
+        PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, partitionType, innerInterfaces, props, partitions, orders, ordersNotNull, includeLast);
         return new CalcPropertyMapImplement<PartitionProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
     }
 
@@ -472,16 +473,16 @@ public class DerivedProperty {
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, CalcProperty<T> restriction, boolean over) {
-        return createUGProp(genID(), "sys", restriction.interfaces, group, orders, restriction.getImplement(), over);
+        return createUGProp(genID(), "sys", restriction.interfaces, group, orders, Settings.instance.isDefaultOrdersNotNull(), restriction.getImplement(), over);
     }
-    public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(String sID, String caption, Collection<T> innerInterfaces, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, CalcPropertyInterfaceImplement<T> restriction, boolean over) {
+    public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(String sID, String caption, Collection<T> innerInterfaces, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, CalcPropertyInterfaceImplement<T> restriction, boolean over) {
         Collection<CalcPropertyInterfaceImplement<T>> partitions = group.mapping.values();
 
         // строим связное distribute св-во, узнаем все использованные интерфейсы, строим map
         CalcPropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(true) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, over ? PartitionType.DISTR_RESTRICT_OVER : PartitionType.DISTR_RESTRICT, innerInterfaces, toList(restriction, distribute), partitions, orders, true);
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, over ? PartitionType.DISTR_RESTRICT_OVER : PartitionType.DISTR_RESTRICT, innerInterfaces, toList(restriction, distribute), partitions, orders, ordersNotNull, true);
             return new CalcPropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 
@@ -524,7 +525,7 @@ public class DerivedProperty {
         return createAnd(restriction.interfaces, min, compare);*/
     }
 
-    public static <L extends PropertyInterface, T extends PropertyInterface<T>> CalcPropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, boolean roundfirst, BaseClass baseClass, Collection<T> innerInterfaces, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, CalcPropertyInterfaceImplement<T> proportion, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders) {
+    public static <L extends PropertyInterface, T extends PropertyInterface<T>> CalcPropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, boolean roundfirst, BaseClass baseClass, Collection<T> innerInterfaces, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, CalcPropertyInterfaceImplement<T> proportion, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
 
         Collection<CalcPropertyInterfaceImplement<T>> partitions = group.mapping.values();
 
@@ -532,7 +533,7 @@ public class DerivedProperty {
         CalcPropertyMapImplement<?, T> distribute = createJoin(group);
 
         if(roundfirst && true) {
-            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, innerInterfaces, toList(proportion, distribute), partitions, orders, false);
+            PartitionProperty<T> orderProperty = new PartitionProperty<T>(sID, caption, PartitionType.DISTR_CUM_PROPORTION, innerInterfaces, toList(proportion, distribute), partitions, orders, ordersNotNull, false);
             return new CalcPropertyMapImplement<PartitionProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
 

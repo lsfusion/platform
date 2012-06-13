@@ -61,8 +61,11 @@ public class AutoHintsAspect {
 
     private static boolean allowHint(CalcProperty property) {
         FormInstance catchHint = catchAutoHint.get();
-        return catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
-    } 
+        boolean allow = catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
+        if(allow && catchHint.forceHintIncrement(property)) // сразу кидаем exception
+            throw new AutoHintException(property, true);
+        return allow;
+    }
     @Around("execution(* platform.server.logics.property.CalcProperty.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
         assert property.isFull();

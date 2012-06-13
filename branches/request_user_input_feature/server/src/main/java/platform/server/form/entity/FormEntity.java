@@ -1,10 +1,7 @@
 package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
-import platform.base.AddSet;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.Subsets;
+import platform.base.*;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
@@ -131,6 +128,24 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void addRegularFilterGroup(RegularFilterGroupEntity group) {
         regularFilterGroups.add(group);
+    }
+
+    // получает свойства, которые изменяют propChanges и соответственно hint'ить нельзя - временная затычка
+    @IdentityLazy
+    public Set<CalcProperty> getChangeModifierProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(PropertyDrawEntity propertyDraw : propertyDraws) {
+            Property property = propertyDraw.propertyObject.property;
+            if(property instanceof CalcProperty) {
+                QuickSet<CalcProperty> depends = ((CalcProperty<?>) property).getRecDepends();
+                for(int i=0;i<depends.size;i++) {
+                    CalcProperty depend = depends.get(i);
+                    if(depend instanceof SumGroupProperty && ((SumGroupProperty)depend).distribute!=null)
+                        result.add(((SumGroupProperty)depend).distribute.property);
+                }
+            }
+        }
+        return result;
     }
 
     protected RegularFilterGroupEntity addSingleRegularFilterGroup(FilterEntity ifilter, String iname, KeyStroke ikey) {

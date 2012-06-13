@@ -16,6 +16,7 @@ import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.auth.SecurityPolicy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
 import platform.server.data.QueryEnvironment;
@@ -298,58 +299,45 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     private Set<CalcProperty> hintsIncrementTable;
-    private List<CalcProperty> hintsIncrementList = null;
-    private List<CalcProperty> getHintsIncrementList() {
-        if(hintsIncrementList==null) {
-            hintsIncrementList = new ArrayList<CalcProperty>();
-            for(Property property : BL.getPropertyList())
-                if(property instanceof CalcProperty && hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
-                    hintsIncrementList.add((CalcProperty) property);
-        }
-        return hintsIncrementList;
-    }
-
-    Set<CalcProperty> hintsNoUpdate = new HashSet<CalcProperty>();
 
     public final DataSession session;
     public final NoUpdate noUpdate = new NoUpdate();
     public final IncrementProps increment = new IncrementProps();
 
     public void addHintNoUpdate(CalcProperty property) {
-        hintsNoUpdate.add(property);
         noUpdate.add(property);
     }
 
+    private CalcProperty readProperty;
     public boolean isHintIncrement(CalcProperty property) {
-        return hintsIncrementTable.contains(property);
+        return increment.getTable(property)!=null || (readProperty!=null && readProperty.equals(property));
+    }
+    public boolean forceHintIncrement(CalcProperty property) {
+        return entity.hintsIncrementTable.contains(property);
     }
     public boolean allowHintIncrement(CalcProperty property) {
-        return true;
+        if(Settings.instance.isDisableChangeModifierAllHints())
+            return entity.getChangeModifierProps().isEmpty();
+        else {
+            for(CalcProperty changeProp : entity.getChangeModifierProps()) // если так сделать
+                if(CalcProperty.depends(changeProp, property))
+                    return false;
+            return true;
+        }
     }
     public void addHintIncrement(CalcProperty property) {
-        hintsIncrementList = null;
-        usedProperties = null;
-        boolean noHint = hintsIncrementTable.add(property);
-        assert noHint;
         try {
-            readIncrement(property);
+            assert property.hasChanges(this) && increment.getTable(property) == null;
+            readProperty = property;
+            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, getQueryEnv()));
+            readProperty = null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private <P extends PropertyInterface> void rereadIncrement(CalcProperty<P> property) throws SQLException {
-        increment.remove(property, session.sql);
-        readIncrement(property);
-    }
-
-    private <P extends PropertyInterface> void readIncrement(CalcProperty<P> property) throws SQLException {
-        if(property.hasChanges(this))
-            increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, getQueryEnv()));
-    }
-
     public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
-        for(CalcProperty property : hintsIncrementTable)
+        for(CalcProperty property : new HashSet<CalcProperty>(increment.getProperties()))
             if(property.hasChanges(changes, true)) // если зависит от changes - drop'аем
                 increment.remove(property, session.sql);
     }
@@ -902,14 +890,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         if(restart) {
             increment.cleanIncrementTables(session.sql);
             noUpdate.clear();
-            
-            hintsIncrementList = null;
-            usedProperties = null;
         }
 
-        hintsIncrementTable = new HashSet<CalcProperty>(entity.hintsIncrementTable);
-        hintsNoUpdate = new HashSet<CalcProperty>(entity.hintsNoUpdate);
-        noUpdate.addAll(hintsNoUpdate);
+        noUpdate.addAll(entity.hintsNoUpdate);
     }
     
     private boolean syncApply() throws SQLException {
@@ -988,38 +971,35 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    private Set<CalcProperty> usedProperties;
+    @IdentityLazy
     public Collection<CalcProperty> getUsedProperties() {
-        if(usedProperties == null) {
-            usedProperties = new HashSet<CalcProperty>();
-            for (PropertyDrawInstance<?> propertyDraw : properties) {
-                usedProperties.add(propertyDraw.getDrawInstance().property);
-                if (propertyDraw.propertyCaption != null) {
-                    usedProperties.add((CalcProperty) propertyDraw.propertyCaption.property);
-                }
-                if (propertyDraw.propertyReadOnly != null) {
-                    usedProperties.add((CalcProperty) propertyDraw.propertyReadOnly.property);
-                }
-                if (propertyDraw.propertyFooter != null) {
-                    usedProperties.add((CalcProperty) propertyDraw.propertyFooter.property);
-                }
-                if (propertyDraw.propertyBackground != null) {
-                    usedProperties.add((CalcProperty) propertyDraw.propertyBackground.property);
-                }
-                if (propertyDraw.propertyForeground != null) {
-                    usedProperties.add((CalcProperty) propertyDraw.propertyForeground.property);
-                }
+        Set<CalcProperty> usedProperties = new HashSet<CalcProperty>();
+        for (PropertyDrawInstance<?> propertyDraw : properties) {
+            usedProperties.add(propertyDraw.getDrawInstance().property);
+            if (propertyDraw.propertyCaption != null) {
+                usedProperties.add((CalcProperty) propertyDraw.propertyCaption.property);
             }
-            for (GroupObjectInstance group : groups) {
-                if (group.propertyBackground != null) {
-                    usedProperties.add((CalcProperty) group.propertyBackground.property);
-                }
-                if (group.propertyForeground != null) {
-                    usedProperties.add((CalcProperty) group.propertyForeground.property);
-                }
-                group.fillUpdateProperties(usedProperties);
+            if (propertyDraw.propertyReadOnly != null) {
+                usedProperties.add((CalcProperty) propertyDraw.propertyReadOnly.property);
             }
-            usedProperties.addAll(hintsIncrementTable); // собственно пока только hintsIncrementTable не позволяет сделать usedProperties просто IdentityLazy
+            if (propertyDraw.propertyFooter != null) {
+                usedProperties.add((CalcProperty) propertyDraw.propertyFooter.property);
+            }
+            if (propertyDraw.propertyBackground != null) {
+                usedProperties.add((CalcProperty) propertyDraw.propertyBackground.property);
+            }
+            if (propertyDraw.propertyForeground != null) {
+                usedProperties.add((CalcProperty) propertyDraw.propertyForeground.property);
+            }
+        }
+        for (GroupObjectInstance group : groups) {
+            if (group.propertyBackground != null) {
+                usedProperties.add((CalcProperty) group.propertyBackground.property);
+            }
+            if (group.propertyForeground != null) {
+                usedProperties.add((CalcProperty) group.propertyForeground.property);
+            }
+            group.fillUpdateProperties(usedProperties);
         }
         return usedProperties;
     }
@@ -1161,13 +1141,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    @Message("message.form.increment.read.properties")
-    private <P extends PropertyInterface> void updateIncrementTableProps(Collection<CalcProperty> changedProps) throws SQLException {
-        for(CalcProperty<P> property : getHintsIncrementList()) // в changedProps могут быть и cancel'ы и новые изменения
-            if(refresh || changedProps.contains(property))
-                rereadIncrement(property);
-    }
-
     @Message("message.form.update.props")
     private void updateDrawProps(FormChanges result, Set<GroupObjectInstance> keyGroupObjects, @ParamMessage Set<PropertyReaderInstance> propertyList) throws SQLException {
         Query<ObjectInstance, PropertyReaderInstance> selectProps = new Query<ObjectInstance, PropertyReaderInstance>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
@@ -1200,11 +1173,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         // если изменились данные, применяем изменения
         Collection<CalcProperty> changedProps;
-        if (dataChanged) {
+        if (dataChanged)
             changedProps = session.update(this);
-
-            updateIncrementTableProps(changedProps);
-        } else
+        else
             changedProps = new ArrayList<CalcProperty>();
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group

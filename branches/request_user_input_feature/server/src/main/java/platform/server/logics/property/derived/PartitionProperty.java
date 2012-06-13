@@ -1,9 +1,9 @@
 package platform.server.logics.property.derived;
 
-import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.AggrExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.expr.query.PartitionType;
@@ -21,18 +21,16 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     protected final Collection<T> innerInterfaces;
     protected final List<CalcPropertyInterfaceImplement<T>> props;
     protected final OrderedMap<CalcPropertyInterfaceImplement<T>,Boolean> orders;
+    protected final boolean ordersNotNull;
     protected final Collection<CalcPropertyInterfaceImplement<T>> partitions;
     protected boolean includeLast;
 
-    public PartitionProperty(String sID, String caption, PartitionType partitionType, CalcProperty<T> property, Collection<CalcPropertyInterfaceImplement<T>> partitions, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, List<CalcPropertyInterfaceImplement<T>> extras, boolean includeLast) {
-        this(sID, caption, partitionType, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extras), partitions, orders, includeLast);
-    }
-
-    public PartitionProperty(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<CalcPropertyInterfaceImplement<T>> props, Collection<CalcPropertyInterfaceImplement<T>> partitions, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+    public PartitionProperty(String sID, String caption, PartitionType partitionType, Collection<T> innerInterfaces, List<CalcPropertyInterfaceImplement<T>> props, Collection<CalcPropertyInterfaceImplement<T>> partitions, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, boolean includeLast) {
         super(sID, caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;
         this.orders = orders;
+        this.ordersNotNull = ordersNotNull;
         this.partitionType = partitionType;
         this.partitions = partitions;
         this.includeLast = includeLast;
@@ -124,10 +122,10 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
                     getExprImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), getOrderImplements(mapKeys, propClasses, PropertyChanges.EMPTY, null), mapExprs));
         }
 
-        return PartitionExpr.create(partitionType, exprs, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs, null);
+        return PartitionExpr.create(partitionType, exprs, orderExprs, ordersNotNull, new HashSet<Expr>(partitionImplements.values()), mapExprs, null);
     }
 
     private Where getPartitionWhere(Where where, Map<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Map<KeyExpr, Expr> mapExprs) {
-        return GroupExpr.create(partitionImplements, where.and(Expr.getWhere(exprs)).and(Expr.getWhere(orders.keySet())), partitionImplements).getWhere().map(mapExprs);
+        return GroupExpr.create(partitionImplements, where.and(Expr.getWhere(exprs)).and(AggrExpr.getOrderWhere(orders, ordersNotNull)), partitionImplements).getWhere().map(mapExprs);
     }
 }

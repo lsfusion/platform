@@ -490,4 +490,34 @@ public class Settings {
     public void setDisableTabbedOptimization(boolean disableTabbedOptimization) {
         this.disableTabbedOptimization = disableTabbedOptimization;
     }
+
+    private boolean checkUniqueEvent = false; // проверять на то что для одного свойства один event
+
+    public void setCheckUniqueEvent(boolean checkUniqueEvent) {
+        this.checkUniqueEvent = checkUniqueEvent;
+    }
+
+    public boolean isCheckUniqueEvent() {
+        return checkUniqueEvent;
+    }
+
+    private boolean disableChangeModifierAllHints = true; // если есть change modifier то disable'ить hint'ы - временное решение
+
+    public boolean isDisableChangeModifierAllHints() {
+        return disableChangeModifierAllHints;
+    }
+
+    public void setDisableChangeModifierAllHints(boolean disableChangeModifierAllHints) {
+        this.disableChangeModifierAllHints = disableChangeModifierAllHints;
+    }
+
+    public boolean defaultOrdersNotNull = true; // временно
+
+    public boolean isDefaultOrdersNotNull() {
+        return defaultOrdersNotNull;
+    }
+
+    public void setDefaultOrdersNotNull(boolean defaultOrdersNotNull) {
+        this.defaultOrdersNotNull = defaultOrdersNotNull;
+    }
 }

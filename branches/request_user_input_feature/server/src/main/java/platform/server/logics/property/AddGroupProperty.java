@@ -52,9 +52,7 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
 
     protected Expr calculateNewExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges) {
         Map<I, Expr> mapKeys = getGroupKeys(joinImplement);
-
-        return GroupExpr.create(getGroupImplements(mapKeys, propClasses, propChanges), getExprImplements(mapKeys, propClasses, propChanges),
-                                getOrderImplements(mapKeys, propClasses, propChanges), getGroupType(), joinImplement);
+        return GroupExpr.create(getGroupImplements(mapKeys, propClasses, propChanges), groupProperty.mapExpr(mapKeys, propClasses, propChanges, null), getGroupType(), joinImplement);
     }
 
     protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {

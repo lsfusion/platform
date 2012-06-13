@@ -482,10 +482,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public void update(SessionChanges session, FormChanges changes, Map<ObjectInstance, DataObject> value) throws SQLException {
-        if(value.isEmpty())
-            changes.objects.put(this, NullValue.getMap(getObjects(getUpTreeGroups())));
-        else
-            changes.objects.put(this, value);
+        changes.objects.put(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);
         change(session, value);
     }
 

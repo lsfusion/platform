@@ -10,6 +10,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -1069,7 +1070,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), !ascending, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), Settings.instance.isDefaultOrdersNotNull(), !ascending, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.UNIQUE) {
             resultProp = addAGProp(null, false, genSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
@@ -1096,6 +1097,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedPartitionProp(PartitionType partitionType, LP ungroupProp, boolean strict, int precision, boolean isAscending,
                                                  boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+        boolean ordersNotNull = Settings.instance.isDefaultOrdersNotNull();
         scriptLogger.info("addScriptedPartitionProp(" + partitionType + ", " + ungroupProp + ", " + strict + ", " + precision + ", " +
                                                         isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ");");
         checkPartitionWindowConsistence(partitionType, useLast);
@@ -1105,11 +1107,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> usedParams = mergeAllParams(paramProps);
         LP prop;
         if (partitionType == PartitionType.SUM || partitionType == PartitionType.PREVIOUS) {
-            prop = addOProp(null, genSID(), false, "", partitionType, isAscending, useLast, groupPropsCnt, resultParams.toArray());
+            prop = addOProp(null, genSID(), false, "", partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.DISTR_CUM_PROPORTION) {
-            prop = addPGProp(null, genSID(), false, precision, strict, "", usedParams.size(), isAscending, (LCP) ungroupProp, resultParams.toArray());
+            prop = addPGProp(null, genSID(), false, precision, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         } else {
-            prop = addUGProp(null, genSID(), false, strict, "", usedParams.size(), isAscending, (LCP) ungroupProp, resultParams.toArray());
+            prop = addUGProp(null, genSID(), false, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         }
         return new LPWithParams(prop, usedParams);
     }
