@@ -1,0 +1,134 @@
+MODULE WHfromCS;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        CStoWH,
+        Barcode,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// Приход на склад
+CLASS WHfromCS 'Приход на склад' : historyObject, numberedObject;
+CLASS WHfromCSPosted 'Закрытый приход с СВХ' : WHfromCS, postedObject;
+
+CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferBalanceSkuLedger;
+
+CLASS inWarehouseScan 'Сканирование';
+
+
+@defineDocumentBasePosted(WHfromCS);
+
+@defineDocumentStock(WHfromCS, warehouse, 'Оптовый склад');
+
+@defineDocumentDetailQuantity(WHfromCS);
+
+
+importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
+
+CStoWHWHfromCS 'Расход прихода (ИД)' = DATA CStoWH(WHfromCS) IN idGroup;
+numberCStoWHWHfromCS 'Расход прихода (номер)' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup;
+seriesCStoWHWHfromCS 'Расход прихода (серия)' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup;
+
+inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
+
+skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
+
+descriptionWHfromCSDetail 'Описание' (WHfromCSDetail) = DATA STRING[100](WHfromCSDetail);
+
+quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
+quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
+
+limitInTransferBalanceSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
+
+quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
+                                                  BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
+
+articleWHfromCSDetail 'Артикул (ИД)' (WHfromCSDetail) = articleSku(skuWHfromCSDetail(WHfromCSDetail));
+sidArticleWHfromCSDetail 'Артикул' (WHfromCSDetail) = sidArticle(articleWHfromCSDetail(WHfromCSDetail));
+
+quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
+
+WHfromCSDetailWHfromCSSku (WHfromCS, sku) = GROUP MAX WHfromCSDetail BY WHfromCSWHfromCSDetail(WHfromCSDetail),
+                                                                                                    skuWHfromCSDetail(WHfromCSDetail);
+
+
+@implementBalanceSkuLedger (WHfromCS, sku, warehouse);
+
+currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
+    BY declarationDeclarationDetail (declarationDetail);
+
+toFillInWarehouseDetailsWHfromCS 'Заполнить приход по расходу' =  ACTION (WHfromCS) {
+    FOR quantityDCStoWHSku (CStoWHWHfromCS(WHfromCS), sku) DO {
+        ADDOBJ WHfromCSDetail;
+        FOR w == addedObject() DO {
+            SET skuWHfromCSDetail(w) <- sku AS sku;
+            SET WHfromCSWHfromCSDetail(w) <- WHfromCS AS WHfromCS;
+            SET quantityOriginWHfromCSDetail(w) <- quantityDCStoWHSku(CStoWHWHfromCS(WHfromCSWHfromCSDetail(w)), sku);
+        };
+    };
+} CONFIRM;
+
+
+idBarcodeInWarehouseScan 'Штрих-код' = DATA STRING[13] (inWarehouseScan);
+WHfromCSInWarehouseScan 'Приход (ИД)' = DATA WHfromCS(inWarehouseScan) IN idGroup;
+skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
+
+
+@defineAddDetailDialogBarcode(WHfromCS);
+
+FORM declarationsCStoWH 'Декларации'
+    OBJECTS c=CStoWH FIXED PANEL
+    PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, nameCustomStoreCStoWH//, nameStoreCustomsFlow
+
+    OBJECTS de=declaration
+
+    PROPERTIES (c, de) inCStoWHDeclaration
+    PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration, currentBalanceDeclaration
+    FILTERS isCustomsDeclarationCStoWH (de, c)
+;
+
+
+FORM WHfromCS 'Приход на оптовый склад'
+
+    OBJECTS w = WHfromCS FIXED PANEL
+    PROPERTIES (w) numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
+                   numberCStoWHWHfromCS, seriesCStoWHWHfromCS, toFillInWarehouseDetailsWHfromCS, addDetailDialogBarcodeWHfromCS
+
+    OBJECTS d = WHfromCSDetail
+    PROPERTIES(d) indexWHfromCSDetail, barcodeLedger, nameBrandLedger, sidArticleWHfromCSDetail,
+                  sidColorLedger, nameColorLedger, sidSizeLedger, quantityOriginWHfromCSDetail, quantityWHfromCSDetail
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inWHfromCSWHfromCSDetail(w, d)
+
+    EDIT WHfromCS OBJECT w
+;
+
+FORM WHfromCSs 'Приходы на оптовый склад'
+    OBJECTS w = WHfromCS
+    PROPERTIES (w) READONLY numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHfromCS(w), delete FORCE PANEL SHOWIF isDraftWHfromCS(w),
+                   postWHfromCS SHOWIF isDraftWHfromCS(w), unpostWHfromCS SHOWIF isPostedWHfromCS(w)
+
+    OBJECTS d = WHfromCSDetail
+    PROPERTIES(d) READONLY isPostedBalanceSkuLedger, indexWHfromCSDetail, barcodeLedger,
+                           nameBrandLedger, sidArticleWHfromCSDetail, sidColorLedger, nameColorLedger, sidSizeLedger,
+                           quantityOriginWHfromCSDetail, quantityWHfromCSDetail
+
+    FILTERS inWHfromCSWHfromCSDetail(w, d)
+;
+
+DESIGN WHfromCSs FROM DEFAULT {
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
