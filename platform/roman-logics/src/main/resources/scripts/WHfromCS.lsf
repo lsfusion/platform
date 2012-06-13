@@ -29,16 +29,13 @@ CLASS inWarehouseScan 'Сканирование';
 
 @defineDocumentDetailQuantity(WHfromCS);
 
-
-importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
-
 CStoWHWHfromCS 'Расход прихода (ИД)' = DATA CStoWH(WHfromCS) IN idGroup;
 numberCStoWHWHfromCS 'Расход прихода (номер)' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup;
 seriesCStoWHWHfromCS 'Расход прихода (серия)' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup;
 
 inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
 
-skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
+skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku (WHfromCSDetail) IN idGroup;
 
 descriptionWHfromCSDetail 'Описание' (WHfromCSDetail) = DATA STRING[100](WHfromCSDetail);
 
