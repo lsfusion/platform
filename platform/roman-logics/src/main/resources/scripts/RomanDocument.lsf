@@ -24,3 +24,11 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
 END
 
+META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, caption, corresponder, corresponderCaption)
+
+    @defineRBDocument (object, stock, stockCaption, skuProp, caption);
+
+    corresponder###object (object) = DATA corresponder (object);
+    name###corresponder###object corresponderCaption (object) = name (corresponder###object(object));
+
+END

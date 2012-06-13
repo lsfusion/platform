@@ -16,16 +16,13 @@ CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignme
 CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
-warehouseCStoWH 'Оптовый склад (ИД)' (CStoWH) = DATA warehouse (CStoWH);
-nameWarehouseCStoWH 'Оптовый склад' (CStoWH) = name (warehouseCStoWH (CStoWH));
-
 declarationDetailCStoWHDetail 'Партия (ИД)' = DATA declarationDetail (CStoWHDetail);
 declarationCStoWHDetail 'Декларация (ИД)' (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCStoWHDetail (outUserBalanceSkuLedger);
 
 skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 
-@defineRBDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ');
+@defineRBCorrespondingDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ', warehouse, 'Оптовый склад');
 
 descriptionBalanceSkuLedger (ledger) += descriptionCStoWHDetail (ledger);
 isPostedBalanceSkuLedger (ledger) += isPostedCStoWHDetail (ledger);
