@@ -57,6 +57,36 @@ FORM customStore 'Склад временного хранения'
     EDIT customStore OBJECT c
 ;
 
+DESIGN customStore FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        c.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW row1 {
+                childConstraints = TO THE RIGHT;
+                ADD c.lawGroup{
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            NEW row2{
+                childConstraints = TO THE RIGHT;
+                ADD c.contactGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD c.managementGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD c.docGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
 FORM customStores 'Склады временного хранения'
 
     OBJECTS c=customStore

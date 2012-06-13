@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
@@ -49,6 +49,9 @@
 	<field name="fullNameSenderConsignment" class="java.lang.String"/>
 	<field name="fullNameRecipientConsignment" class="java.lang.String"/>
 	<field name="fullNameTransportPayerConsignment" class="java.lang.String"/>
+	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
+	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
+	<field name="noteConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
@@ -63,28 +66,28 @@
 	<summary>
 		<band height="494">
 			<textField>
-				<reportElement x="499" y="58" width="115" height="12"/>
+				<reportElement x="499" y="58" width="303" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{packQuantityConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест":"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="132" y="70" width="115" height="12"/>
+				<reportElement x="132" y="70" width="261" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{commonNameIssuanceAllowedConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{commonNameIssuanceAllowedConsignment}==null?"":$F{commonNameIssuanceAllowedConsignment})]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="18" y="172" width="784" height="1"/>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement x="524" y="118" width="203" height="12"/>
+				<reportElement x="524" y="118" width="278" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{goodsAcceptedConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{goodsAcceptedConsignment}!=null?$F{goodsAcceptedConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="158" width="141" height="12"/>
@@ -112,7 +115,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sumVATConsignmentDetailConsignment}!=null ? platform.base.Words.toString($F{sumVATConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="422" y="158" width="141" height="12"/>
@@ -136,11 +139,11 @@
 				<textFieldExpression><![CDATA["Всего количество грузовых мест"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="132" y="82" width="115" height="12"/>
+				<reportElement x="132" y="82" width="261" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{commonNameIssuanceExecutedConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{commonNameIssuanceExecutedConsignment}!=null?$F{commonNameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="125" width="130" height="12"/>
@@ -164,11 +167,11 @@
 				<textFieldExpression><![CDATA["Отпуск разрешил"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="132" y="58" width="115" height="12"/>
+				<reportElement x="132" y="58" width="261" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{grossWeightConsignmentDetailConsignment}) + " кг"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{grossWeightConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{grossWeightConsignmentDetailConsignment}) + " кг":"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="17" y="82" width="115" height="12"/>
@@ -192,11 +195,11 @@
 				<textFieldExpression><![CDATA["Всего масса груза"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="499" y="106" width="115" height="12"/>
+				<reportElement x="499" y="106" width="303" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{warrantConsignment}+" выданной "+$F{warrantHolderConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{warrantConsignment}!=null?$F{warrantConsignment}+" выданной "+$F{warrantHolderConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="422" y="106" width="77" height="12"/>
@@ -206,11 +209,11 @@
 				<textFieldExpression><![CDATA["по доверенности"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="499" y="82" width="115" height="12"/>
+				<reportElement x="499" y="82" width="303" height="12"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{forwarderConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{forwarderConsignment}!=null?$F{forwarderConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="413" y="65" width="1" height="107"/>
@@ -220,7 +223,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + " рублей"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sumInvoiceConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{sumInvoiceConsignmentDetailConsignment}) + ($F{isCustomsFlowConsignment}==null?" рублей":$F{documentNameCurrencyConsignment}):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="118" y="331" width="17" height="12"/>

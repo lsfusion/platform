@@ -484,6 +484,7 @@ NAVIGATOR {
         ADD employeeDialog;
         ADD barcodeInput;
         ADD declarationsCStoWH;
-        ADD importer;        
+        ADD importer;
+        ADD customStore;
     }
 }

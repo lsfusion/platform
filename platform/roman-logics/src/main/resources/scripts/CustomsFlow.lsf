@@ -88,7 +88,6 @@ innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(
 
 currencyCStoWH 'Валюта (ИД)' (CStoWH) = DATA currency (CStoWH);
 shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH));
-currencyConsignment(consignment) += currencyCStoWH(consignment);
 
 FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     OBJECTS c=CStoWH FIXED PANEL
@@ -153,7 +152,7 @@ DESIGN CStoWH FROM DEFAULT {
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
     PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
-                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, totalSumCStoWHDetail
+                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, totalSumCStoWHDetail
 
     PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCStoWH(c), delete FORCE PANEL SHOWIF isDraftCStoWH(c),
                    postCStoWH SHOWIF isDraftCStoWH(c), unpostCStoWH SHOWIF isPostedCStoWH(c)
@@ -194,3 +193,8 @@ quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignme
 priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
+
+currencyConsignment(consignment) += currencyCStoWH(consignment);
+isCustomsFlowConsignment (consignment) += consignment IS CStoWH;
+noteConsignment(consignment) += innerInvoicesCStoWH(consignment);
+
