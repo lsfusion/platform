@@ -1,12 +1,13 @@
+import org.apache.commons.lang.time.DateUtils;
+import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
+import org.xBaseJ.xBaseJException;
 import retail.api.remote.*;
 
 import java.io.*;
+import java.sql.Time;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
 
@@ -96,10 +97,103 @@ public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
 
     @Override
     public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) throws IOException, ParseException {
-        return new KristalSalesBatch(null);
+
+        Map<String, String> cashRegisterDirectories = new HashMap<String, String>();
+        for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
+            if ((cashRegister.directory != null) && (!cashRegisterDirectories.containsValue(cashRegister.directory)))
+                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.directory);
+            if ((cashRegister.port != null) && (!cashRegisterDirectories.containsValue(cashRegister.port)))
+                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.port);
+        }
+
+        List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
+        List<String> filePathList = new ArrayList<String>();
+        for (Map.Entry<String, String> entry : cashRegisterDirectories.entrySet()) {
+
+            try {
+                if (entry.getValue() != null) {
+                    String billFilePath = entry.getValue().trim() + "/Export/data/CH_HEAD.dbf";
+                    DBF billFile = new DBF(billFilePath);
+
+                    Map<Integer, BillInfo> billInfoMap = new HashMap<Integer, BillInfo>();
+
+                    for (int i = 0; i < billFile.getRecordCount(); i++) {
+
+                        billFile.read();
+
+                        Integer zReportNumber = new Integer(new String(billFile.getField("CREG").getBytes(), "Cp1251").trim());
+                        Integer billNumber = new Integer(new String(billFile.getField("ID").getBytes(), "Cp1251").trim());
+                        java.sql.Date date = new java.sql.Date(DateUtils.parseDate(new String(billFile.getField("DATE").getBytes(), "Cp1251").trim(), new String[]{"dd.MM.yyyy hh:mm", "dd.MM.yyyy hh:mm:"}).getTime());
+                        Time time = new Time(date.getTime());
+                        Double cost1 = new Double(new String(billFile.getField("COST1").getBytes(), "Cp1251").trim()); //cash
+                        Double cost3 = new Double(new String(billFile.getField("COST3").getBytes(), "Cp1251").trim()); //card
+                        Double discountSum = new Double(new String(billFile.getField("SUMDISC").getBytes(), "Cp1251"));
+                        String cashRegisterNumber = new String(billFile.getField("CASHIER").getBytes(), "Cp1251");
+                        billInfoMap.put(billNumber, new BillInfo(zReportNumber, date, time, cost1 + cost3, cost3, cost1, discountSum, cashRegisterNumber));
+                    }
+                    billFile.close();
+
+                    String billDetailFilePath = entry.getValue().trim() + "/Export/data/CH_POS.dbf";
+                    DBF billDetailFile = new DBF(billDetailFilePath);
+                    for (int i = 0; i < billDetailFile.getRecordCount()/*111*/; i++) {
+
+                        billDetailFile.read();
+                        Integer billNumber = new Integer(new String(billDetailFile.getField("IDHEAD").getBytes(), "Cp1251").trim());
+                        BillInfo billInfo = billInfoMap.get(billNumber);
+                        if (billInfo != null) {
+                            String cashRegisterNumber = new String(billDetailFile.getField("CASHIER").getBytes(), "Cp1251").trim();
+                            Integer zReportNumber = new Integer(new String(billDetailFile.getField("CREG").getBytes(), "Cp1251").trim());
+                            String barcode = new String(billDetailFile.getField("BARCODE").getBytes(), "Cp1251").trim();
+                            Double quantity = new Double(new String(billDetailFile.getField("COUNT").getBytes(), "Cp1251").trim());
+                            Double price = new Double(new String(billDetailFile.getField("PRICE").getBytes(), "Cp1251").trim());
+                            Double sumBillDetail = new Double(new String(billDetailFile.getField("SUM").getBytes(), "Cp1251").trim());
+                            salesInfoList.add(new SalesInfo(cashRegisterNumber, zReportNumber, billNumber, billInfo.date,
+                                    billInfo.time, billInfo.sumBill, billInfo.sumCard, billInfo.sumCash, barcode, quantity, price, sumBillDetail, null, billInfo.discountSum, billInfo.numberBillDetail++, null));
+                        }
+                    }
+                    billDetailFile.close();
+                    filePathList.add(billFilePath);
+                    filePathList.add(billDetailFilePath);
+                }
+            } catch (xBaseJException e) {
+                throw new RuntimeException(e.toString(), e.getCause());
+            }
+        }
+
+
+        return new KristalSalesBatch(salesInfoList, filePathList);
     }
 
     @Override
     public void finishReadingSalesInfo(KristalSalesBatch salesBatch) {
+        for (String readFile : salesBatch.readFiles) {
+            File f = new File(readFile);
+            if (!f.delete())
+                throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
+        }
+    }
+
+    private class BillInfo {
+        Integer zReportNumber;
+        java.sql.Date date;
+        Time time;
+        Double sumBill;
+        Double sumCard;
+        Double sumCash;
+        Double discountSum;
+        String cashRegisterNumber;
+        Integer numberBillDetail;
+
+        BillInfo(Integer zReportNumber, java.sql.Date date, Time time, Double sumBill, Double sumCard, Double sumCash, Double discountSum, String cashRegisterNumber) {
+            this.zReportNumber = zReportNumber;
+            this.date = date;
+            this.time = time;
+            this.sumBill = sumBill;
+            this.sumCard = sumCard;
+            this.sumCash = sumCash;
+            this.discountSum = discountSum;
+            this.cashRegisterNumber = cashRegisterNumber;
+            this.numberBillDetail = 1;
+        }
     }
 }

@@ -5058,11 +5058,14 @@ retailSumBillDetailBill 'Сумма чека' (bill) = retailSumSaleBillDetailSa
 
 discountSumSaleBillDetailSaleBill 'Сумма скидки (продажи)' (bill) = GROUP SUM discountSumBillSaleDetail(billDetail)
     BY billBillSaleDetail (billDetail) IN documentSumGroup;
+discountSumSaleBill 'Сумма скидки (продажи) по чеку' (bill) = DATA NUMERIC[16,2] (bill);
 
 discountSumReturnBillDetailReturnBill 'Сумма скидки (возврат)' (bill) = GROUP SUM discountSumBillReturnDetail(billDetail)
     BY billBillReturnDetail (billDetail) IN documentSumGroup;
+discountSumReturnBill 'Сумма скидки (возврат) по чеку' (bill) = DATA NUMERIC[16,2] (bill);
 
 discountSumBillDetailBill 'Сумма скидки' (bill) = discountSumSaleBillDetailSaleBill(bill) (-) discountSumReturnBillDetailReturnBill(bill);
+discountSumBill 'Сумма скидки по чеку' (bill) = discountSumSaleBill(bill) (-) discountSumReturnBill(bill);
 
 @defineDocumentHeaderCount(bill);
 
@@ -5143,6 +5146,8 @@ namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansP
 
 retailSumBillDetailZReport 'Сумма Z-отчета' (zReport) = GROUP SUM retailSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
 discountSumBillDetailZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
+discountSumBillZReport 'Сумма скидок по чекам Z-отчета' (zReport) = GROUP SUM discountSumBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
+discountSumZReport 'Сумма скидок Z-отчета' (zReport) = discountSumBillDetailZReport(zReport) (+) discountSumBillZReport(zReport);
 
 @implementAccountDocumentLedger(zReport);
 sumOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
@@ -9263,12 +9268,12 @@ DESIGN statements FROM DEFAULT {
 FORM bill 'Z-отчет'
     OBJECTS z=zReport FIXED PANEL
     PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateZReport, timeZReport, numberZReport,
-                    countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumBillDetailZReport
+                    countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumZReport
 
     OBJECTS b=bill, d=billDetail
     PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
                   numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
-                  countBillDetailBill, quantityBillDetailBill, ADDOBJ, delete
+                  discountSumBill, countBillDetailBill, quantityBillDetailBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
     PROPERTIES(b) TODRAW d addDetailDialogSkuStockBillSaleDetailBill, addDetailDialogSkuStockBillReturnDetailBill
@@ -9303,20 +9308,20 @@ DESIGN bill FROM DEFAULT{
 FORM bills 'Чеки'
     OBJECTS z=zReport
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
-                            numberZReport, countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumBillDetailZReport
+                            numberZReport, countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=bill
-    PROPERTIES(b) READONLY  OBJVALUE, numberBill, dateBill, timeBill, nameDepartmentStoreBill,
+    PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, nameDepartmentStoreBill,
                             numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
-                            countBillDetailBill, quantityBillDetailBill
+                            discountSumBill, countBillDetailBill, quantityBillDetailBill
 
     FILTERS zReportBill(b)==z
     ORDER BY                numberBill
 
     OBJECTS d=billDetail
-    PROPERTIES(d) READONLY  OBJVALUE, objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
+    PROPERTIES(d) READONLY  objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
                             supplierSumBalanceSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b

@@ -48,26 +48,26 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     protected void createModules() throws IOException {
         super.createModules();
         addModulesFromResource(
-            "/scripts/Utils.lsf",
-            "/scripts/Hierarchy.lsf",
-            "/scripts/Historizable.lsf",
-            "/scripts/Numerator.lsf",
-            "/scripts/Stock.lsf",
-            "/scripts/Barcode.lsf",
-            "/scripts/Document.lsf",
-            "/scripts/Tax.lsf",
-            "/scripts/Ware.lsf",
-            "/scripts/LegalEntity.lsf",
-            "/scripts/Employee.lsf",
-            "/scripts/Store.lsf",
-            "/scripts/ListRegister.lsf",
-            "/scripts/Consignment.lsf",
-            "/scripts/AccountDocument.lsf",
-            "/scripts/StorePrice.lsf",
-            "/scripts/Supplier.lsf",
-            "/scripts/Sales.lsf",
-            "/scripts/PriceChange.lsf",
-            "/scripts/Default.lsf"
+                "/scripts/Utils.lsf",
+                "/scripts/Hierarchy.lsf",
+                "/scripts/Historizable.lsf",
+                "/scripts/Numerator.lsf",
+                "/scripts/Stock.lsf",
+                "/scripts/Barcode.lsf",
+                "/scripts/Document.lsf",
+                "/scripts/Tax.lsf",
+                "/scripts/Ware.lsf",
+                "/scripts/LegalEntity.lsf",
+                "/scripts/Employee.lsf",
+                "/scripts/Store.lsf",
+                "/scripts/ListRegister.lsf",
+                "/scripts/Consignment.lsf",
+                "/scripts/AccountDocument.lsf",
+                "/scripts/StorePrice.lsf",
+                "/scripts/Supplier.lsf",
+                "/scripts/Sales.lsf",
+                "/scripts/PriceChange.lsf",
+                "/scripts/Default.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
     }
@@ -119,12 +119,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             itemKeys.put("barcode", barcodeExpr);
 
             Query<Object, Object> itemQuery = new Query<Object, Object>(itemKeys);
-            itemQuery.properties.put("idBarcode", retailLM.getLPByName("idBarcode").getExpr(barcodeExpr));
+            itemQuery.properties.put("idBarcode", getLP("Barcode_idBarcode").getExpr(barcodeExpr));
             itemQuery.properties.put("name", retailLM.getLPByName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("price", retailLM.getLPByName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("daysExpiry", retailLM.getLPByName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("hoursExpiry", retailLM.getLPByName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-            itemQuery.properties.put("expirationDate", retailLM.getLPByName("expirationDateSkuDepartmentStoreMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+            itemQuery.properties.put("expiryDate", retailLM.getLPByName("expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("labelFormat", retailLM.getLPByName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("composition", retailLM.getLPByName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
             itemQuery.properties.put("isWeight", retailLM.getLPByName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
@@ -140,7 +140,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 Double price = (Double) entry.getValue().get("price");
                 Double daysExpiry = (Double) entry.getValue().get("daysExpiry");
                 Integer hoursExpiry = (Integer) entry.getValue().get("hoursExpiry");
-                Date expirationDate = (Date) entry.getValue().get("expirationDate");
+                Date expiryDate = (Date) entry.getValue().get("expiryDate");
                 Integer labelFormat = (Integer) entry.getValue().get("labelFormat");
                 String composition = (String) entry.getValue().get("composition");
                 Boolean isWeight = entry.getValue().get("isWeight") != null;
@@ -148,9 +148,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 String canonicalNameItemGroup = numberItemGroup == null ? "" : (String) retailLM.getLPByName("canonicalNameItemGroup").read(session, session.modifier, new DataObject(numberItemGroup, (ConcreteClass) retailLM.getClassByName("itemGroup")));
 
                 Integer cellScalesObject = (Integer) retailLM.getLPByName("groupScalesCompositionToCellScales").read(session, session.modifier, groupObject, new DataObject(composition, TextClass.instance));
-                Integer compositionNumberCellScales = cellScalesObject==null ? null : (Integer) retailLM.getLPByName("numberCellScales").read(session, session.modifier, new DataObject(cellScalesObject, (ConcreteClass) retailLM.getClassByName("cellScales")));
-                
-                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expirationDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberItemGroup == null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
+                Integer compositionNumberCellScales = cellScalesObject == null ? null : (Integer) retailLM.getLPByName("numberCellScales").read(session, session.modifier, new DataObject(cellScalesObject, (ConcreteClass) retailLM.getClassByName("cellScales")));
+
+                itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expiryDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberItemGroup == null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
             }
 
             if (transactionObject.objectClass.equals(retailLM.getClassByName("cashRegisterPriceTransaction"))) {
@@ -490,11 +490,13 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         ImportField retailPriceBillSaleDetailField = new ImportField(retailLM.getLPByName("retailPriceBillSaleDetail"));
         ImportField retailSumBillSaleDetailField = new ImportField(retailLM.getLPByName("retailSumBillSaleDetail"));
         ImportField discountSumBillSaleDetailField = new ImportField(retailLM.getLPByName("discountSumBillSaleDetail"));
+        ImportField discountSumSaleBillField = new ImportField(retailLM.getLPByName("discountSumSaleBill"));
 
         ImportField quantityBillReturnDetailField = new ImportField(retailLM.getLPByName("quantityBillReturnDetail"));
         ImportField retailPriceBillReturnDetailField = new ImportField(retailLM.getLPByName("retailPriceBillReturnDetail"));
         ImportField retailSumBillReturnDetailField = new ImportField(retailLM.getLPByName("retailSumBillReturnDetail"));
         ImportField discountSumBillReturnDetailField = new ImportField(retailLM.getLPByName("discountSumBillReturnDetail"));
+        ImportField discountSumReturnBillField = new ImportField(retailLM.getLPByName("discountSumReturnBill"));
 
         ImportField sidTypePaymentField = new ImportField(retailLM.getLPByName("sidPaymentType"));
         ImportField sumPaymentField = new ImportField(retailLM.getLPByName("sumPayment"));
@@ -513,10 +515,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         saleProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
                 LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
         saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateZReport").getMapping(zReportKey)));
+        saleProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeZReport").getMapping(zReportKey)));
 
         saleProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
         saleProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
         saleProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
+        saleProperties.add(new ImportProperty(discountSumSaleBillField, retailLM.getLPByName("discountSumSaleBill").getMapping(billKey)));
         saleProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
                 LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
@@ -538,10 +542,12 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
         returnProperties.add(new ImportProperty(cashRegisterField, retailLM.getLPByName("cashRegisterZReport").getMapping(zReportKey),
                 LM.baseLM.object(retailLM.getClassByName("cashRegister")).getMapping(cashRegisterKey)));
         returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateZReport").getMapping(zReportKey)));
+        returnProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeZReport").getMapping(zReportKey)));
 
         returnProperties.add(new ImportProperty(numberBillField, retailLM.getLPByName("numberBill").getMapping(billKey)));
         returnProperties.add(new ImportProperty(dateField, retailLM.getLPByName("dateBill").getMapping(billKey)));
         returnProperties.add(new ImportProperty(timeField, retailLM.getLPByName("timeBill").getMapping(billKey)));
+        returnProperties.add(new ImportProperty(discountSumReturnBillField, retailLM.getLPByName("discountSumReturnBill").getMapping(billKey)));
         returnProperties.add(new ImportProperty(zReportNumberField, retailLM.getLPByName("zReportBill").getMapping(billKey),
                 LM.baseLM.object(retailLM.getClassByName("zReport")).getMapping(zReportKey)));
 
@@ -568,21 +574,26 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 if (sale.quantityBillDetail < 0)
                     dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
                             sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                            sale.discountSumBillDetail));
+                            sale.discountSumBillDetail, sale.discountSumBill));
                 else
                     dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
                             sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                            sale.discountSumBillDetail));
-                dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, sale.cashRegisterNumber, "cash", sale.sumBill, 1));
+                            sale.discountSumBillDetail, sale.discountSumBill));
+                if (sale.sumCash != 0)
+                    dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, sale.cashRegisterNumber, "cash", sale.sumCash, 1));
+                if (sale.sumCard != 0)
+                    dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, sale.cashRegisterNumber, "card", sale.sumCard, 2));
             }
 
         List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
                 numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillSaleDetailField,
-                retailPriceBillSaleDetailField, retailSumBillSaleDetailField, discountSumBillSaleDetailField);
+                retailPriceBillSaleDetailField, retailSumBillSaleDetailField, discountSumBillSaleDetailField,
+                discountSumSaleBillField);
 
         List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
                 numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillReturnDetailField,
-                retailPriceBillReturnDetailField, retailSumBillReturnDetailField, discountSumBillReturnDetailField);
+                retailPriceBillReturnDetailField, retailSumBillReturnDetailField, discountSumBillReturnDetailField,
+                discountSumReturnBillField);
 
 
         new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, billKey, billSaleDetailKey, itemKey),
@@ -610,7 +621,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             for (SalesInfo salesInfo : salesInfoList) {
                 if (!cashRegisterNumbers.contains(salesInfo.cashRegisterNumber.trim()))
                     cashRegisterNumbers.add(salesInfo.cashRegisterNumber.trim());
-                if ((salesInfo.filename!=null) && (!fileNames.contains(salesInfo.filename.trim())))
+                if ((salesInfo.filename != null) && (!fileNames.contains(salesInfo.filename.trim())))
                     fileNames.add(salesInfo.filename.trim());
             }
             message += "\nИз касс: ";
