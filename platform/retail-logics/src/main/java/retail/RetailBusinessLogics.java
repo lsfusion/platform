@@ -229,7 +229,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 transactionList.add(new TransactionScalesInfo((Integer) transactionObject.getValue(),
                         dateTimeCode, itemTransactionList, scalesInfoList, snapshotTransaction));
 
-            } else if (transactionObject.objectClass.equals(retailLM.getClassByName("checkPriceTransaction"))) {
+            } else if (transactionObject.objectClass.equals(retailLM.getClassByName("priceCheckerPriceTransaction"))) {
                 List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
                 LP isCheck = LM.is(retailLM.getClassByName("check"));
 

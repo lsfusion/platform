@@ -264,3 +264,10 @@ DESIGN terminalDocumentsDialog FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+// -------------------------------------------- Загрузка в ВУ ------------------------------------------------ //
+
+CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machineryPriceTransaction;
+groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
+groupMachineryMachineryPriceTransaction (transaction) += groupTerminalTerminalPriceTransaction(transaction);
+

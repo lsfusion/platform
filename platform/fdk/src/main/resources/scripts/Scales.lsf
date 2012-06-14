@@ -124,3 +124,13 @@ DESIGN cellScales FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+// ----------------------------------------- Загрузка в ВУ -------------------------------------- //
+
+CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
+groupScalesScalesPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
+groupMachineryMachineryPriceTransaction (transaction) += groupScalesScalesPriceTransaction(transaction);
+
+EXTEND FORM groupMachineryInput
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
+;

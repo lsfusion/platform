@@ -964,12 +964,12 @@ titleOriginCashBarcode 'Наименование для касс' = DATA STRING[
 titleScalesSkuBarcode 'Наименование для весов' = nameScalesAttributeItem(skuBarcode(barcode));
 titleCashSkuBarcode 'Наименование для касс' = nameCashAttributeItem(skuBarcode(barcode));
 
-daysExpiryMachineryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
-hoursExpiryMachineryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
-labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
-compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
-isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
-itemGroupMachineryBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
+daysExpiryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
+hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
+labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
+compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
+isWeightBarcode 'Весовой' = isWeightItem(skuBarcode(barcode));
+itemGroupBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
 expiryDateBarcodeStock 'Крайний срок годности' (barcode, stock) = expiryDateSkuStock(skuBarcode(barcode), stock);
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -2060,71 +2060,11 @@ FORM papers 'Документы качества'
     ORDER BY objectClassName
 ;
 
-//---------------------------- Загрузка в ВУ  ----------------------------------------//
-CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
-TABLE priceTransactionDocument (priceTransactionDocument);
+// ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
-isDraftPriceTransactionDocument 'Открыт' = ABSTRACT BOOLEAN (priceTransactionDocument);
-descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument);
+ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 
-//----------------------------------- Загрузка в ВУ -------------------------------------------------------
-
-inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
-                                                    AND item IS item
-                                                         AND NOT (filterSkuGroupMachinery(groupMachinery) AND NOT inGroupMachinerySkuGroup(groupMachinery, itemGroupItem(item)))
-                                                         AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
-
-CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
-TABLE machineryPriceTransaction (machineryPriceTransaction);
-TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
-
-CLASS cashRegisterPriceTransaction 'Загрузка прайса в кассы' : machineryPriceTransaction;
-CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
-CLASS checkPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
-CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machineryPriceTransaction;
-
-groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
-groupScalesScalesRegisterPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
-groupPriceCheckerPriceCheckerRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupPriceChecker (checkPriceTransaction);
-groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
-
-groupMachineryMachineryPriceTransaction 'Группа оборудования (ИД)' (transaction) = UNION EXCLUSIVE groupCashRegisterCashRegisterPriceTransaction(transaction),
-                                                                                                   groupScalesScalesRegisterPriceTransaction(transaction),
-                                                                                                   groupPriceCheckerPriceCheckerRegisterPriceTransaction(transaction),
-                                                                                                   groupTerminalTerminalPriceTransaction(transaction)PERSISTENT;
-
-nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
-
-stockMachineryPriceTransaction (transaction) = stockGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
-
-equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
-
-sidEquipmentServerMachineryPriceTransaction (transaction) = sidEquipmentServer(equipmentServerMachineryPriceTransaction (transaction));
-
-dateMachineryPriceTransaction 'Дата' = DATA DATE (machineryPriceTransaction);
-dateMachineryPriceTransaction (transaction) <- currentDate() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
-
-timeMachineryPriceTransaction 'Время' = DATA TIME (machineryPriceTransaction);
-timeMachineryPriceTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
-
-dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
-
-snapshotMachineryPriceTransaction 'Целиком' = DATA BOOLEAN (machineryPriceTransaction);
-
-succeededMachineryPriceTransaction 'Загружена' = DATA BOOLEAN (machineryPriceTransaction);
-canceledMachineryPriceTransaction 'Отменена' = DATA BOOLEAN (machineryPriceTransaction);
-processMachineryPriceTransaction 'Требуется загрузка' = machineryPriceTransaction IS machineryPriceTransaction AND NOT
-                                                        succeededMachineryPriceTransaction(machineryPriceTransaction) AND NOT
-                                                        canceledMachineryPriceTransaction(machineryPriceTransaction);
-
-inMachineryPriceTransactionMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
-nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
-
-orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
-
-inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
-nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
-priceMachineryPriceTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (machineryPriceTransaction, barcode);
+// Дополнительные параметры
 daysExpiryMachineryPriceTransactionBarcode 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (machineryPriceTransaction, barcode);
 hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
 labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
@@ -2133,17 +2073,8 @@ compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA T
 isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
 expiryDataMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
-TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
-lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
-                                                                          AND inMachineryPriceTransactionBarcode(transaction, barcode)
-                                                                          AND NOT snapshotMachineryPriceTransaction(transaction)
-                                                                          AND NOT canceledMachineryPriceTransaction(transaction)
-                                                                      BY barcode, groupMachineryMachineryPriceTransaction(transaction);
-lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
-
-transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
-    nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+// Дополнительные параметры
 transactionDaysExpiryBarcodeGroupMachinery 'Текущий срок годности в днях в оборудовании' (barcode, groupMachinery)  =
     daysExpiryMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 transactionHoursExpiryBarcodeGroupMachinery 'Текущий срок годности в часах в оборудовании' (barcode, groupMachinery)  =
@@ -2158,82 +2089,11 @@ itemGroupBarcodeGroupMachinery 'Группа товара' (barcode, groupMachin
     itemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 expiryDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
     expiryDataMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
-    priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 
-commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
-
-priceTransactionDocumentMachineryPriceTransaction = DATA priceTransactionDocument (machineryPriceTransaction);
-descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание загрузки' (transaction) =
-    descriptionPriceTransactionDocument(priceTransactionDocumentMachineryPriceTransaction(transaction));
-
-// todo : persistent почему-то не работает
-descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
-                                                                             commentMachineryPriceTransaction(document);
-
-sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
-sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
-
-// todo : это свойство тоже не становится PERSISTENT
-countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
-                                                                                 BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;
-
-succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
-
-statusEquipmentPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
-                                                        CASE
-                                                            WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS priceTransactionDocument
-                                                            WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS priceTransactionDocument
-                                                            DEFAULT 'Не загружен' IF document IS priceTransactionDocument
-                                                        END;
-
-// перезагрузка прайса целиком
-selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
-
-GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
-
-//--------------------Сообщения об ошибках транзакций--------------------//
-CLASS machineryPriceTransactionError 'Ошибка';
-TABLE machineryPriceTransactionError (machineryPriceTransactionError);
-
-dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN baseGroup;
-dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN baseGroup;
-errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN baseGroup;
-machineryPriceTransactionMachineryPriceTransactionError 'Транзакция (ID)' = DATA machineryPriceTransaction(machineryPriceTransactionError) IN baseGroup;
-quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количество ошибок' (MachineryPriceTransaction) = GROUP SUM 1 IF machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) == MachineryPriceTransaction
-    BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN baseGroup;
-
-
-FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
-
-    OBJECTS s = stock FIXED PANEL
-    PROPERTIES(s) READONLY sname = name
-
-    OBJECTS g = groupMachinery
-    PROPERTIES(g) READONLY nameGroupMachinery, nameStockGroupMachinery, nameEquipmentServerGroupMachinery
-    FILTERS stockGroupMachinery(g) == s
-
-    OBJECTS m = machinery
-    PROPERTIES(m)          selectedMachinery
-    PROPERTIES(m) READONLY nppMachinery, descriptionMachinery, portMachinery
-
-    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
-                                                                    nameModelMachinery, dateCashRegister
-
-    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
-
-    FILTERS groupMachineryMachinery(m) == g
-;
-
-DESIGN groupMachineryInput FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-    }
-    PROPERTY(sname) {
-        focusable = FALSE;
-    }
-}
+inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
+                                                    AND item IS item
+                                                         AND NOT (filterSkuGroupMachinery(groupMachinery) AND NOT inGroupMachinerySkuGroup(groupMachinery, itemGroupItem(item)))
+                                                         AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
 
 snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (stock) NEWSESSION {
     FORM groupMachineryInput OBJECTS s = (stock AS stock) MODAL;
@@ -2243,13 +2103,22 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
         IF groupMachinery() IS groupScales THEN
             ADDOBJ scalesPriceTransaction
         ELSE IF groupMachinery() IS groupPriceChecker THEN
-            ADDOBJ checkPriceTransaction
+            ADDOBJ priceCheckerPriceTransaction
         ELSE IF groupMachinery() IS groupTerminal THEN
             ADDOBJ terminalPriceTransaction
         ELSE
             ADDOBJ cashRegisterPriceTransaction;
         FOR t == addedObject() DO {
-            SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
+            IF groupMachinery() IS groupScales THEN
+                SET groupScalesScalesPriceTransaction(t) <- groupMachinery()
+            ELSE IF groupMachinery() IS groupPriceChecker THEN
+                SET groupPriceCheckerPriceCheckerPriceTransaction(t) <- groupMachinery()
+            ELSE IF groupMachinery() IS groupTerminal THEN
+                SET groupTerminalTerminalPriceTransaction(t) <- groupMachinery()
+            ELSE
+                SET groupCashRegisterCashRegisterPriceTransaction(t) <- groupMachinery();
+            // todo : надо переделать на запись абстрактного свойства
+//            SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
             SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
             SET snapshotMachineryPriceTransaction(t) <- TRUE;
             SET inMachineryPriceTransactionMachinery(t, machinery) <- selectedMachinery(machinery);
@@ -2315,14 +2184,22 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
             IF groupMachinery IS groupScales THEN
                 ADDOBJ scalesPriceTransaction
             ELSE IF groupMachinery IS groupPriceChecker THEN
-                ADDOBJ checkPriceTransaction
+                ADDOBJ priceCheckerPriceTransaction
             ELSE IF groupMachinery IS groupTerminal THEN
                 ADDOBJ terminalPriceTransaction
             ELSE
                 ADDOBJ cashRegisterPriceTransaction;
 
             FOR t == addedObject() DO {
-                SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
+                IF groupMachinery IS groupScales THEN
+                    SET groupScalesScalesPriceTransaction(t) <- groupMachinery AS groupMachinery
+                ELSE IF groupMachinery IS groupPriceChecker THEN
+                    SET groupPriceCheckerPriceCheckerPriceTransaction(t) <- groupMachinery AS groupMachinery
+                ELSE IF groupMachinery IS groupTerminal THEN
+                    SET groupTerminalTerminalPriceTransaction(t) <- groupMachinery AS groupMachinery
+                ELSE
+                    SET groupCashRegisterCashRegisterPriceTransaction(t) <- groupMachinery AS groupMachinery;
+//                SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
                 SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
                 SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
                 SET inMachineryPriceTransactionBarcode(t, barcode) <- inBarcode(barcode);
@@ -2330,10 +2207,10 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
                 ELSE
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
-                SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- daysExpiryMachineryBarcode(barcode);
-                SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryMachineryBarcode(barcode);
-                SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatMachineryBarcode(barcode);
-                SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionMachineryBarcode(barcode);
+                SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- daysExpiryBarcode(barcode);
+                SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryBarcode(barcode);
+                SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatBarcode(barcode);
+                SET compositionMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- compositionBarcode(barcode);
                 FOR compositionMachineryPriceTransactionBarcode(t, barcode) AND groupMachineryMachineryPriceTransaction(t) IS groupScales
                     AND NOT groupScalesCompositionToCellScales (groupMachineryMachineryPriceTransaction(t), compositionMachineryPriceTransactionBarcode(t, barcode)) DO {
 
@@ -2343,8 +2220,8 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                         SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (t, barcode);
                     }
                 }
-                SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
-                SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
+                SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcode(barcode);
+                SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcode(barcode);
                 SET expiryDataMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expiryDateBarcodeStock(barcode, stock);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }

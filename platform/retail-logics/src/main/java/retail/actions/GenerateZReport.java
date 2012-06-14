@@ -79,7 +79,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                 KeyExpr groupCashRegisterKey = BaseUtils.singleValue(groupCashRegisterKeys);
                 Query<Object, Object> groupCashRegisterQuery = new Query<Object, Object>(groupCashRegisterKeys);
                 groupCashRegisterQuery.and(isGroupCashRegister.property.getExpr(groupCashRegisterKeys).getWhere());
-                groupCashRegisterQuery.and(getLP("departmentStoreGroupMachinery").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
+                groupCashRegisterQuery.and(getLP("departmentStoreGroupCashRegister").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> groupCashRegisterResult = groupCashRegisterQuery.execute(session.sql);
 

@@ -91,3 +91,14 @@ DESIGN groupsCashRegister FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+// ----------------------------------------- Загрузка в ВУ -------------------------------------- //
+
+CLASS cashRegisterPriceTransaction 'Загрузка прайса в кассы' : machineryPriceTransaction;
+groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
+groupMachineryMachineryPriceTransaction (transaction) += groupCashRegisterCashRegisterPriceTransaction(transaction);
+
+EXTEND FORM groupMachineryInput
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
+                                                                    nameModelMachinery, dateCashRegister
+;

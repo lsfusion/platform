@@ -69,3 +69,9 @@ DESIGN groupsPriceChecker FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+// ----------------------------------------- Загрузка в ВУ -------------------------------------- //
+
+CLASS priceCheckerPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
+groupPriceCheckerPriceCheckerPriceTransaction 'Группа прайс чекеров' = DATA groupPriceChecker (priceCheckerPriceTransaction);
+groupMachineryMachineryPriceTransaction (transaction) += groupPriceCheckerPriceCheckerPriceTransaction(transaction);
