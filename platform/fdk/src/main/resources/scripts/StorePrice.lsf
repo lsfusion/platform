@@ -411,7 +411,7 @@ currentValueRetailRangeLedger 'НДС, %' (sku, departmentStore) =
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
 @defineSkuDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
-currentRetailPriceBarcodeDepartmentStore 'Текущая цена по учету' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
+currentRetailPriceBarcodeDepartmentStore 'Розничная цена' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
 CLASS ABSTRACT accountPriceLedger 'Изменение учетной цены';
 TABLE accountPriceLedger (accountPriceLedger);

@@ -48,26 +48,31 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     protected void createModules() throws IOException {
         super.createModules();
         addModulesFromResource(
-                "/scripts/Utils.lsf",
-                "/scripts/Hierarchy.lsf",
-                "/scripts/Historizable.lsf",
-                "/scripts/Numerator.lsf",
-                "/scripts/Stock.lsf",
-                "/scripts/Barcode.lsf",
-                "/scripts/Document.lsf",
-                "/scripts/Tax.lsf",
-                "/scripts/Ware.lsf",
-                "/scripts/LegalEntity.lsf",
-                "/scripts/Employee.lsf",
-                "/scripts/Store.lsf",
-                "/scripts/ListRegister.lsf",
-                "/scripts/Consignment.lsf",
-                "/scripts/AccountDocument.lsf",
-                "/scripts/StorePrice.lsf",
-                "/scripts/Supplier.lsf",
-                "/scripts/Sales.lsf",
-                "/scripts/PriceChange.lsf",
-                "/scripts/Default.lsf"
+            "/scripts/Utils.lsf",
+            "/scripts/Hierarchy.lsf",
+            "/scripts/Historizable.lsf",
+            "/scripts/Numerator.lsf",
+            "/scripts/Stock.lsf",
+            "/scripts/Barcode.lsf",
+            "/scripts/Document.lsf",
+            "/scripts/Tax.lsf",
+            "/scripts/Ware.lsf",
+            "/scripts/LegalEntity.lsf",
+            "/scripts/Employee.lsf",
+            "/scripts/Store.lsf",
+            "/scripts/ListRegister.lsf",
+            "/scripts/Consignment.lsf",
+            "/scripts/AccountDocument.lsf",
+            "/scripts/StorePrice.lsf",
+            "/scripts/Supplier.lsf",
+            "/scripts/Sales.lsf",
+            "/scripts/PriceChange.lsf",
+            "/scripts/Machinery.lsf",
+            "/scripts/CashRegister.lsf",
+            "/scripts/Scales.lsf",
+            "/scripts/PriceChecker.lsf",
+            "/scripts/Terminal.lsf",
+            "/scripts/Default.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
     }
@@ -237,7 +242,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 checkQuery.properties.put("nameCheckModelCheck", retailLM.getLPByName("nameCheckModelCheck").getExpr(checkKey));
                 //checkQuery.properties.put("handlerCheckModelCheck", retailLM.getLPByName("handlerCheckModelCheck").getExpr(checkKey));
                 checkQuery.and(isCheck.property.getExpr(checkKeys).getWhere());
-                checkQuery.and(retailLM.getLPByName("groupCheckCheck").getExpr(checkKey).compare(groupObject, Compare.EQUALS));
+                checkQuery.and(retailLM.getLPByName("groupPriceCheckerPriceChecker").getExpr(checkKey).compare(groupObject, Compare.EQUALS));
 
                 if (snapshotTransaction)
                     checkQuery.and(retailLM.getLPByName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), checkKey).getWhere());

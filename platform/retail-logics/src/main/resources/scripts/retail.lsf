@@ -27,6 +27,11 @@ REQUIRE System,
         Supplier,
         Sales,
         PriceChange,
+        Machinery,
+        CashRegister,
+        Scales,
+        PriceChecker,
+        Terminal,
         Default;
 
 // подключаем формы подбора товаров (пока сделано здесь, поскольку есть проблемы с EXTEND DESIGN в рамках нескольких модулей
@@ -965,7 +970,7 @@ labelFormatMachineryBarcode 'Формат этикетки' = idLabelFormatPackI
 compositionMachineryBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 isWeightMachineryBarcode 'Вес товара' = isWeightItem(skuBarcode(barcode));
 itemGroupMachineryBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
-expiryDateSkuDepartmentStoreMachineryBarcode 'Крайний срок годности' = expiryDateSkuStock(skuBarcode(barcode), departmentStore);
+expiryDateBarcodeStock 'Крайний срок годности' (barcode, stock) = expiryDateSkuStock(skuBarcode(barcode), stock);
 
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -1938,611 +1943,6 @@ FORM discountCards 'Дисконтные карты'
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
-//---------------------------- Сервера управления оборудования ----------------------------//
-CLASS equipmentServer 'Сервер оборудования' : named;
-TABLE equipmentServer (equipmentServer);
-
-sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
-sidToEquipmentServer(equipmentServer) = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
-delayEquipmentServer 'Период обновления (в миллисекундах)' = DATA INTEGER (equipmentServer) IN baseGroup;
-
-//---------------------------- Ошибки сервера оборудования ----------------------------//
-
-CLASS equipmentServerError 'Ошибки';
-TABLE equipmentServerError (equipmentServerError);
-
-dataEquipmentServerError 'Сообщение об ошибке' = DATA STRING[200] (equipmentServerError) IN baseGroup;
-erTraceEquipmentServerError 'След ошибки' = DATA TEXT (equipmentServerError) IN baseGroup;
-dateEquipmentServerError 'Время возникновения' = DATA DATETIME (equipmentServerError) IN baseGroup;
-equipmentServerEquipmentServerError 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerError) IN baseGroup;
-
-//---------------------------- Лог сервера оборудования ----------------------------//
-
-CLASS equipmentServerLog 'Лог';
-TABLE equipmentServerLog (equipmentServerLog);
-
-dataEquipmentServerLog 'Сообщение' = DATA TEXT (equipmentServerLog) IN baseGroup;
-dateEquipmentServerLog 'Время' = DATA DATETIME (equipmentServerLog) IN baseGroup;
-equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerLog) IN baseGroup;
-
-//---------------------------- Формы для серверов оборудования ----------------------------//
-
-FORM equipmentServer 'Серверы оборудования'
-    OBJECTS es = equipmentServer
-    PROPERTIES(es)  READONLY sidEquipmentServer
-    PROPERTIES(es)  delayEquipmentServer, ADDFORM, EDITFORM, delete
-
-    OBJECTS e = equipmentServerError
-    PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
-    PROPERTIES(e) delete
-    PROPERTIES(e) FORCE PANEL erTraceEquipmentServerError
-
-    OBJECTS l = equipmentServerLog
-    PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
-    PROPERTIES(l) delete
-
-    FILTERS equipmentServerEquipmentServerError (e) == es
-    FILTERS equipmentServerEquipmentServerLog (l) == es
-;
-
-DESIGN equipmentServer FROM DEFAULT {
-    main {
-        NEW topContainer {
-            type = SPLITV;
-            childConstraints =  TO THE BOTTOM;
-
-            ADD es.box;
-
-            NEW specContainer {
-                type = TABBED;
-
-                NEW errorContainer {
-                    title = 'Ошибки';
-                    ADD e.box;
-                    PROPERTY(erTraceEquipmentServerError(e)) {
-                        fillHorizontal = 1;
-                        panelLabelAbove = TRUE;
-                    }
-                }
-                ADD l.box;
-            }
-        }
-        ADD functions.box;
-    }
-}
-
-//---------------------------- группы оборудования ----------------------------------------//
-
-CLASS ABSTRACT groupMachinery 'Группы оборудования';
-TABLE groupMachinery (groupMachinery);
-
-nameGroupMachinery 'Наименование' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
-
-equipmentServerGroupMachinery = DATA equipmentServer (groupMachinery);
-nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
-sidEquipmentServerGroupMachinery 'ИД сервера оборудования' (groupMachinery) = sidEquipmentServer(equipmentServerGroupMachinery(groupMachinery));
-
-// -------------------------------- Склады --------------------------------------------- //
-
-departmentStoreGroupMachinery 'Подразделение (ИД)' = DATA departmentStore (groupMachinery);
-nameDepartmentStoreGroupMachinery 'Подразделение' (groupMachinery) = name(departmentStoreGroupMachinery(groupMachinery)) IN baseGroup;
-
-// фильтрация по группам товаров
-
-filterItemsGroupMachinery 'Фильтровать по группам товаров' = DATA BOOLEAN (groupMachinery);
-
-inGroupMachineryItemGroup 'Вкл' = DATA BOOLEAN (groupMachinery, itemGroup);
-
-FORM filterItemsGroupMachinery 'Фильтрация по группам товаров'
-    OBJECTS gm = groupMachinery FIXED PANEL
-    PROPERTIES(gm) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
-
-    OBJECTS cg=itemGroup
-    PROPERTIES(cg) READONLY canonicalNameItemGroup
-    PROPERTIES(gm, cg)      inGroupMachineryItemGroup
-    ORDER BY canonicalNameItemGroup
-    FILTERS isParentLeafItemGroupItemGroup(cg, g)
-
-    FILTERGROUP filters
-        FILTER 'Только выбранные группы' 'F10' inGroupMachineryItemGroup(gm, cg)
-;
-
-DESIGN filterItemsGroupMachinery FROM DEFAULT {
-    POSITION treeGroups.box TO THE LEFT cg.box;
-
-    treeGroups.tree {
-        fillHorizontal = 0.5;
-    }
-}
-
-showFilterItemsGroupMachinery 'Выбрать группы' (groupMachinery) = ACTION FORM filterItemsGroupMachinery OBJECTS gm MODAL;
-
-//---------------------------- Модели оборудования ----------------------------------------//
-CLASS ABSTRACT model 'Модель' : named;
-TABLE model (model);
-
-noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
-handlerModel 'Обработчик' = DATA STRING[200] (model) IN baseGroup;
-
-dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashRegisterModel) IN baseGroup;
-maxProductModel 'MAX допустимое колич. товаров' = DATA INTEGER (model) IN baseGroup;
-
-//---------------------------- типы оборудования  ----------------------------------------//
-CLASS ABSTRACT machinery 'Оборудование';
-TABLE machinery(machinery);
-
-groupMachineryMachinery = ABSTRACT groupMachinery (machinery) PERSISTENT;
-nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
-
-departmentStoreMachinery(machinery) = departmentStoreGroupMachinery(groupMachineryMachinery(machinery));
-
-modelMachinery = ABSTRACT model (machinery);
-nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN baseGroup;
-handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN baseGroup;
-
-nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN baseGroup;
-descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
-portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
-
-// ------------------------- Кассы ------------------------------------------ //
-
-// Группы
-CLASS groupCashRegister 'Группы касс' : groupMachinery;
-
-// Модели
-CLASS cashRegisterModel 'Модель касс' : model;
-
-FORM cashRegisterModel 'Модель касс'
-    OBJECTS c=cashRegisterModel FIXED PANEL
-    PROPERTIES(c) name, noteModel, handlerModel, dateToCashRegisterModel
-    EDIT cashRegisterModel OBJECT c
-;
-
-FORM cashRegistersModels 'Модели касс'
-    OBJECTS m=cashRegisterModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
-;
-
-// Кассы
-CLASS cashRegister 'Касса' : machinery, computer;
-isGroupCashRegister (machinery) = machinery IS groupCashRegister;
-
-groupCashRegisterCashRegister = DATA groupCashRegister (cashRegister);
-groupMachineryMachinery(machinery) += groupCashRegisterCashRegister(machinery);
-
-cashRegisterModelCashRegister = DATA cashRegisterModel (cashRegister);
-modelMachinery(machinery) += cashRegisterModelCashRegister(machinery);
-
-roundSalesGroupCashRegister 'Округление цен до' = DATA INTEGER (groupMachinery) IN baseGroup;
-
-numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
-cashRegisterNumber (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
-
-dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
-
-directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
-
-FORM cashRegister 'Касса'
-    OBJECTS c=cashRegister FIXED PANEL
-    PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
-                  dateCashRegister
-    EDIT cashRegister OBJECT c
-;
-
-FORM groupCashRegister 'Группа касс'
-    OBJECTS grc=groupCashRegister FIXED PANEL
-    PROPERTIES(grc) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    roundSalesGroupCashRegister,
-                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grc)
-
-    OBJECTS c=cashRegister
-    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
-                    dateCashRegister, ADDOBJ, delete
-
-    FILTERGROUP filters2
-        FILTER 'Показывать только для данной группы' 'F10' groupCashRegisterCashRegister(c) == grc DEFAULT
-
-    EDIT groupCashRegister OBJECT grc
-;
-
-FORM groupsCashRegister 'Группы касс'
-    OBJECTS grc=groupCashRegister, c=cashRegister
-    PROPERTIES(grc)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     roundSalesGroupCashRegister, filterItemsGroupMachinery
-    PROPERTIES(grc)  ADDFORM, EDITFORM, delete
-
-    PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           numberCashRegister, directoryCashRegister, nameModelMachinery,
-                           dateCashRegister
-    FILTERS groupCashRegisterCashRegister(c) == grc
-;
-
-DESIGN groupsCashRegister FROM DEFAULT {
-    NEW topContainer {
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grc.box;
-        ADD c.box;
-    }
-    ADD functions.box;
-}
-
-// ------------------------- Весы ------------------------------------------ //
-
-// Группы
-CLASS groupScales 'Группы весов' : groupMachinery;
-
-directoryGroupScales 'Каталог обмена' = DATA STRING[200] (groupScales) IN baseGroup;
-pieceItemCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
-weightItemCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
-
-// Модели
-CLASS scalesModel 'Модель весов' : model;
-
-scalesModelName (scalesModel) = GROUP UNIQUE scalesModel BY name (scalesModel) WHERE scalesModel IS scalesModel;
-
-maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (scalesModel) IN baseGroup;
-compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
-
-FORM scalesModel 'Модель весов'
-    OBJECTS s=scalesModel FIXED PANEL
-    PROPERTIES(s) name, noteModel, handlerModel, maxProductModel, maxTextScalesModel,
-                  compositionScalesModel
-    EDIT scalesModel OBJECT s
-;
-
-FORM scalesModels 'Модели весов'
-    OBJECTS m=scalesModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
-;
-
-// Весы
-CLASS scales 'Весы' : machinery;
-isGroupScales (machinery) = machinery IS groupScales;
-
-groupScalesScales = DATA groupScales (scales);
-groupMachineryMachinery(machinery) += groupScalesScales(machinery);
-
-scalesModelScales = DATA scalesModel (scales);
-modelMachinery(machinery) += scalesModelScales(machinery);
-
-numberScales 'Заводской(серийный) номер' = DATA STRING[100] (scales) IN baseGroup;
-dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
-
-FORM scales 'Весы'
-    OBJECTS s=scales FIXED PANEL
-    PROPERTIES(s) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
-                  dateScales
-    EDIT scales OBJECT s
-;
-
-FORM groupScales 'Группа весов'
-    OBJECTS grs=groupScales FIXED PANEL
-    PROPERTIES(grs) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    directoryGroupScales,
-                    pieceItemCodeGroupScales, weightItemCodeGroupScales,
-                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grs)
-
-    OBJECTS s=scales
-    PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
-                    dateScales, ADDOBJ, delete
-    FILTERGROUP filters1
-        FILTER 'Показывать только для данной группы' 'F10' groupScalesScales(s) == grs DEFAULT
-    EDIT groupScales OBJECT grs
-;
-
-FORM groupsScales 'Группы весов'
-    OBJECTS grs=groupScales
-    PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                         filterItemsGroupMachinery, directoryGroupScales,
-                         pieceItemCodeGroupScales, weightItemCodeGroupScales
-    PROPERTIES(grs) ADDFORM, EDITFORM, delete
-
-    OBJECTS s=scales
-    PROPERTIES(s)   READONLY nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,
-                             dateScales
-    FILTERS groupScalesScales(s) == grs
-;
-
-DESIGN groupsScales FROM DEFAULT {
-    NEW topContainer BEFORE functions.box {
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grs.box;
-        ADD s.box;
-    }
-}
-
-// Ячейки
-CLASS cellScales 'Ячейка весов';
-
-groupScalesCellScales = DATA groupScales (cellScales);
-
-compositionCellScales 'Ячейка' = DATA TEXT (cellScales);
-numberCellScales 'Номер' = PARTITION SUM 1 IF c IS cellScales BY groupScalesCellScales (c) ORDER c;
-
-groupScalesCompositionToCellScales (groupScales, composition) = GROUP UNIQUE cellScales
-            BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS cellScales;
-
-// ------------------------- Прайс-чекеры ------------------------------------- //
-
-// Группы
-CLASS groupCheck 'Группы прайс чекеров' : groupMachinery;
-
-// Модели
-CLASS checkModel 'Модель прайс чекеров' : model;
-
-FORM checkModel 'Модель прайс чекера'
-    OBJECTS ch=checkModel FIXED PANEL
-    PROPERTIES(ch) name, noteModel, handlerModel, maxProductModel
-    EDIT checkModel OBJECT ch
-;
-
-FORM checkModels 'Модели прайс чекеров'
-    OBJECTS m=checkModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
-;
-
-// Прайс-чекеры
-CLASS check 'Прайс чекер' : machinery;
-isGroupCheck (machinery) = machinery IS groupCheck;
-
-groupCheckCheck = DATA groupCheck (check);
-groupMachineryMachinery(machinery) += groupCheckCheck(machinery);
-
-FORM check 'Прайс чекер'
-    OBJECTS ch=check FIXED PANEL
-    PROPERTIES(ch) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery
-    EDIT check OBJECT ch
-;
-
-FORM groupCheck 'Группа прайс чекеров'
-    OBJECTS grch=groupCheck FIXED PANEL
-    PROPERTIES(grch) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grch)
-
-    OBJECTS ch=check
-    PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, ADDOBJ, delete
-    FILTERGROUP filters3
-        FILTER 'Показывать только для данной группы' 'F10' groupCheckCheck(ch) == grch DEFAULT
-    EDIT groupCheck OBJECT grch
-;
-
-FORM groupsCheck 'Группы прайс чекеров'
-    OBJECTS grch=groupCheck
-    PROPERTIES(grch) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                              filterItemsGroupMachinery
-    PROPERTIES(grch)          ADDFORM, EDITFORM, delete
-
-    OBJECTS ch=check
-    PROPERTIES(ch)   READONLY nppMachinery, descriptionMachinery, portMachinery
-    FILTERS groupCheckCheck(ch) == grch
-;
-
-DESIGN groupsCheck FROM DEFAULT {
-    NEW topContainer{
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grch.box;
-        ADD ch.box;
-    }
-    ADD functions.box;
-}
-
-// ------------------------- Терминалы сбора данных --------------------------- //
-
-// Группы
-CLASS groupTerminal 'Группы ТСД' : groupMachinery;
-
-// Модели
-CLASS terminalModel 'Модель ТСД' : model;
-
-FORM terminalModel 'Модель ТСД'
-    OBJECTS t=terminalModel FIXED PANEL
-    PROPERTIES(t) name, noteModel, handlerModel, maxProductModel
-    EDIT terminalModel OBJECT t
-;
-
-FORM terminalModels 'Модели ТСД'
-    OBJECTS m=terminalModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
-;
-
-// Терминалы
-CLASS terminal 'ТСД' : machinery;
-isTerminal (machinery) = machinery IS terminal;
-
-groupTerminalTerminal = DATA groupTerminal (terminal);
-groupMachineryMachinery(machinery) += groupTerminalTerminal(machinery);
-
-terminalModelTerminal = DATA terminalModel (terminal);
-modelMachinery(machinery) += terminalModelTerminal(machinery);
-
-directoryTerminal 'Директория обмена с ТСД' = DATA STRING[100] (terminal) IN baseGroup;
-
-FORM terminal 'ТСД'
-    OBJECTS t=terminal FIXED PANEL
-    PROPERTIES(t) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, directoryTerminal, nameModelMachinery
-    EDIT terminal OBJECT t
-;
-
-// ------------------------ Группы типов документов ------------------------- //
-CLASS groupTerminalDocumentType 'Группа типов документов';
-
-nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
-groupTerminalDocumentTypeGroupTerminal 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (groupTerminal);
-nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов документов' (groupTerminal) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeGroupTerminal(groupTerminal));
-
-// ------------------------------------- Виды справочников ТСД --------------------------------- //
-
-CLASS STATIC terminalHandbookType 'Вид справочника ТСД' {
-    supplier 'Поставщик',
-    customer 'Покупатель'
-};
-
-idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
-terminalHandbookTypeID (terminalHandbookType) = GROUP UNIQUE terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS terminalHandbookType;
-
-FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
-    OBJECTS h=terminalHandbookType
-    PROPERTIES(h)  name, idTerminalHandbookType
-    PROPERTIES(h)  ADDFORM, EDITFORM, delete
-;
-
-//---------------------------- типы документов ----------------------------------------//
-
-CLASS terminalDocumentType 'Тип документов';
-
-groupTerminalDocumentTypeTerminalDocumentType = DATA groupTerminalDocumentType (terminalDocumentType);
-nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
-
-nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-
-idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
-terminalDocumentTypeID (terminalDocumentType) = GROUP UNIQUE terminalDocumentType BY idTerminalDocumentType (terminalDocumentType) WHERE terminalDocumentType IS terminalDocumentType;
-
-terminalHandbookType1TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
-idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-
-nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
-
-terminalHandbookType2TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
-idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-
-nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
-nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
-
-FORM groupTerminalDocumentType 'Группа типов документов'
-    OBJECTS gtdt=groupTerminalDocumentType FIXED PANEL
-    PROPERTIES(gtdt) nameGroupTerminalDocumentType
-
-    OBJECTS tdt=terminalDocumentType
-    PROPERTIES(tdt)   idTerminalDocumentType, nameTerminalDocumentType, nameGroupTerminalDocumentTypeTerminalDocumentType,
-                      nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
-                      nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType,
-                      ADDOBJ, delete
-
-    FILTERGROUP filters3
-        FILTER 'Показывать только для данной группы' 'F10' groupTerminalDocumentTypeTerminalDocumentType(tdt) == gtdt DEFAULT
-
-    EDIT groupTerminalDocumentType OBJECT gtdt
-;
-
-FORM groupsTerminalDocumentType 'Группы типов документов'
-    OBJECTS gtdt=groupTerminalDocumentType, tdt=terminalDocumentType
-    PROPERTIES(gtdt) nameGroupTerminalDocumentType
-    PROPERTIES(gtdt)  ADDFORM, EDITFORM, delete
-
-    PROPERTIES(tdt) READONLY idTerminalDocumentType, nameTerminalDocumentType,
-    nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
-    nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
-
-    FILTERS groupTerminalDocumentTypeTerminalDocumentType (tdt) == gtdt
-;
-
-DESIGN groupsTerminalDocumentType FROM DEFAULT {
-    NEW topContainer{
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD gtdt.box;
-        ADD tdt.box;
-    }
-    ADD functions.box;
-}
-
-FORM groupTerminal 'Группа ТСД'
-    OBJECTS grt=groupTerminal FIXED PANEL
-    PROPERTIES(grt) nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    nameGroupTerminalDocumentTypeGroupTerminal,
-                    filterItemsGroupMachinery, showFilterItemsGroupMachinery SHOWIF filterItemsGroupMachinery(grt)
-
-    OBJECTS t=terminal
-    PROPERTIES(t)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, directoryTerminal, nameModelMachinery,
-                    ADDOBJ, delete
-
-    FILTERGROUP filters3
-        FILTER 'Показывать только для данной группы' 'F10' groupTerminalTerminal(t) == grt DEFAULT
-
-    EDIT groupTerminal OBJECT grt
-;
-
-FORM groupsTerminal 'Группы ТСД'
-    OBJECTS grt=groupTerminal, t=terminal
-    PROPERTIES(grt)  READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     nameGroupTerminalDocumentTypeGroupTerminal,
-                     filterItemsGroupMachinery
-    PROPERTIES(grt)  ADDFORM, EDITFORM, delete
-
-    PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           directoryTerminal, nameModelMachinery,
-                           nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
-                           nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
-    FILTERS groupTerminalTerminal(t) == grt
-;
-
-DESIGN groupsTerminal FROM DEFAULT {
-    NEW topContainer{
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grt.box;
-        ADD t.box;
-    }
-    ADD functions.box;
-}
-
-// ------------------------------------ Документы ТСД ------------------------------- //
-
-CLASS terminalDocument 'Документ ТСД';
-
-idTerminalDocument 'Номер' = DATA INTEGER (terminalDocument) IN baseGroup;
-terminalDocumentID (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument)
-                                                       WHERE terminalDocument IS terminalDocument;
-
-titleTerminalDocument 'Имя' = DATA STRING[100] (terminalDocument) IN baseGroup;
-quantityTerminalDocument 'Количество' = DATA NUMERIC[14,3] (terminalDocument) IN baseGroup;
-idTerminalHandbookType1TerminalDocument 'Код в справочнике 1' = DATA INTEGER (terminalDocument) IN baseGroup;
-idTerminalHandbookType2TerminalDocument 'Код в справочнике 2' = DATA INTEGER (terminalDocument) IN baseGroup;
-
-terminalDocumentTypeTerminalDocument = DATA terminalDocumentType (terminalDocument);
-nameTerminalDocumentTypeTerminalDocument 'Тип документа' (terminalDocument) = nameTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
-
-idTerminalDocumentTypeTerminalDocument (terminalDocument) = idTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
-
-usedTerminalDocument 'Использован' (terminalDocument) = DATA BOOLEAN (terminalDocument) IN baseGroup;
-notUsedTerminalDocument 'Неиспользован' (terminalDocument) = terminalDocument IS terminalDocument AND NOT usedTerminalDocument(terminalDocument);
-
-terminalDocumentTerminalDocumentDetail = DATA terminalDocument(terminalDocumentDetail);
-
-CLASS terminalDocumentDetail 'Строка документа ТСД';
-
-numberTerminalDocumentDetail 'Номер' = DATA INTEGER (terminalDocumentDetail) IN baseGroup;
-terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocument) =
-    GROUP UNIQUE terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail)
-          WHERE terminalDocumentDetail IS terminalDocumentDetail;
-
-barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[14] (terminalDocumentDetail) IN baseGroup;
-quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-nameTerminalDocumentDetail 'Наименование' = DATA STRING[200] (terminalDocumentDetail) IN baseGroup;
-isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (terminalDocumentDetail) IN baseGroup;
-
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
 TABLE recipe (recipe);
@@ -2671,7 +2071,7 @@ descriptionPriceTransactionDocument 'Название документа заг�
 
 inGroupMachineryItem 'Вкл' (groupMachinery, item) = groupMachinery IS groupMachinery
                                                     AND item IS item
-                                                         AND NOT (filterItemsGroupMachinery(groupMachinery) AND NOT inGroupMachineryItemGroup(groupMachinery, itemGroupItem(item)))
+                                                         AND NOT (filterSkuGroupMachinery(groupMachinery) AND NOT inGroupMachinerySkuGroup(groupMachinery, itemGroupItem(item)))
                                                          AND NOT (groupMachinery IS groupScales AND NOT passScalesItem(item));
 
 CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
@@ -2685,17 +2085,17 @@ CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machi
 
 groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA groupCashRegister (cashRegisterPriceTransaction);
 groupScalesScalesRegisterPriceTransaction 'Группа весов' = DATA groupScales (scalesPriceTransaction);
-groupCheckCheckRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupCheck (checkPriceTransaction);
+groupPriceCheckerPriceCheckerRegisterPriceTransaction 'Группа прайс чекеров' = DATA groupPriceChecker (checkPriceTransaction);
 groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
 
 groupMachineryMachineryPriceTransaction 'Группа оборудования (ИД)' (transaction) = UNION EXCLUSIVE groupCashRegisterCashRegisterPriceTransaction(transaction),
                                                                                                    groupScalesScalesRegisterPriceTransaction(transaction),
-                                                                                                   groupCheckCheckRegisterPriceTransaction(transaction),
+                                                                                                   groupPriceCheckerPriceCheckerRegisterPriceTransaction(transaction),
                                                                                                    groupTerminalTerminalPriceTransaction(transaction)PERSISTENT;
 
 nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
-departmentStoreMachineryPriceTransaction (transaction) = departmentStoreGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
+stockMachineryPriceTransaction (transaction) = stockGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
 equipmentServerMachineryPriceTransaction (transaction) = equipmentServerGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
 
@@ -2729,34 +2129,10 @@ daysExpiryMachineryPriceTransactionBarcode 'Срок годности в дня�
 hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
 labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
 compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
-FORM cellScales 'Ячейки весов'
-    OBJECTS grs=groupScales
-        PROPERTIES(grs) READONLY nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                             filterItemsGroupMachinery, directoryGroupScales,
-                             pieceItemCodeGroupScales, weightItemCodeGroupScales
-
-    OBJECTS cs=cellScales
-    PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
-
-    FILTERS groupScalesCellScales(cs) == grs
-;
-
-DESIGN cellScales FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD grs.box;
-        ADD cs.box;
-    }
-    ADD functions.box;
-}
 
 isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 itemGroupMachineryPriceTransactionBarcode 'Группа товара' = DATA itemGroup (machineryPriceTransaction, barcode);
-expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
+expiryDataMachineryPriceTransactionBarcode 'Крайний срок годности' = DATA DATE (machineryPriceTransaction, barcode);
 TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
 lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
@@ -2781,10 +2157,10 @@ isWeightBarcodeGroupMachinery 'Весовой товар' (barcode, groupMachine
 itemGroupBarcodeGroupMachinery 'Группа товара' (barcode, groupMachinery)  =
     itemGroupMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 expiryDateSkuDepartmentStoreBarcodeGroupMachinery 'Крайний срок годности' (barcode, groupMachinery)  =
-    expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+    expiryDataMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
-ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, departmentStoreGroupMachinery(groupMachinery));
+ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 
 commentMachineryPriceTransaction 'Примечание' = DATA STRING[30] (machineryPriceTransaction);
 
@@ -2831,12 +2207,12 @@ quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количес�
 
 FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
 
-    OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES(d) READONLY dname = name
+    OBJECTS s = stock FIXED PANEL
+    PROPERTIES(s) READONLY sname = name
 
     OBJECTS g = groupMachinery
-    PROPERTIES(g) READONLY nameGroupMachinery, nameDepartmentStoreGroupMachinery, nameEquipmentServerGroupMachinery
-    FILTERS departmentStoreGroupMachinery(g) == d
+    PROPERTIES(g) READONLY nameGroupMachinery, nameStockGroupMachinery, nameEquipmentServerGroupMachinery
+    FILTERS stockGroupMachinery(g) == s
 
     OBJECTS m = machinery
     PROPERTIES(m)          selectedMachinery
@@ -2854,19 +2230,19 @@ DESIGN groupMachineryInput FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
     }
-    PROPERTY(dname) {
+    PROPERTY(sname) {
         focusable = FALSE;
     }
 }
 
-snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (departmentStore) NEWSESSION {
-    FORM groupMachineryInput OBJECTS d = (departmentStore AS departmentStore) MODAL;
+snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (stock) NEWSESSION {
+    FORM groupMachineryInput OBJECTS s = (stock AS stock) MODAL;
     IF formResult() == formResult.ok THEN {
         LOCAL groupMachinery = groupMachinery ();
         SET groupMachinery() <- chosenObject('g');
         IF groupMachinery() IS groupScales THEN
             ADDOBJ scalesPriceTransaction
-        ELSE IF groupMachinery() IS groupCheck THEN
+        ELSE IF groupMachinery() IS groupPriceChecker THEN
             ADDOBJ checkPriceTransaction
         ELSE IF groupMachinery() IS groupTerminal THEN
             ADDOBJ terminalPriceTransaction
@@ -2896,7 +2272,7 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
             }
             SET isWeightMachineryPriceTransactionBarcode(t, barcode) <- isWeightBarcodeGroupMachinery(barcode, groupMachinery());
             SET itemGroupMachineryPriceTransactionBarcode(t, barcode) <- itemGroupBarcodeGroupMachinery(barcode, groupMachinery());
-            SET expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
+            SET expiryDataMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreBarcodeGroupMachinery(barcode, groupMachinery());
             SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
         }
         EXEC apply();
@@ -2917,12 +2293,12 @@ createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) =
 createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
 createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
 
-createMachineryPriceTransaction 'Создать транзакцию' = ACTION (departmentStore) {
+createMachineryPriceTransaction 'Создать транзакцию' = ACTION (stock) {
     LOCAL message = STRING[3000] ();
     LOCAL sentSomething = BOOLEAN();
     SET message() <- 'Принято к загрузке в оборудование : \n';
 
-    FOR departmentStoreGroupMachinery(groupMachinery) == departmentStore DO {
+    FOR stockGroupMachinery(groupMachinery) == stock DO {
         LOCAL inBarcode = BOOLEAN (barcode);
         // todo : не работает
 //        SET tempBarcode(barcode) <- NULL;
@@ -2938,7 +2314,7 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
 
             IF groupMachinery IS groupScales THEN
                 ADDOBJ scalesPriceTransaction
-            ELSE IF groupMachinery IS groupCheck THEN
+            ELSE IF groupMachinery IS groupPriceChecker THEN
                 ADDOBJ checkPriceTransaction
             ELSE IF groupMachinery IS groupTerminal THEN
                 ADDOBJ terminalPriceTransaction
@@ -2969,7 +2345,7 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 }
                 SET isWeightMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- isWeightMachineryBarcode(barcode);
                 SET itemGroupMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- itemGroupMachineryBarcode(barcode);
-                SET expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expiryDateSkuDepartmentStoreMachineryBarcode(barcode, departmentStore);
+                SET expiryDataMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- expiryDateBarcodeStock(barcode, stock);
                 SET priceMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- ledgerPriceBarcodeGroupMachinery(barcode, groupMachinery);
             }
             SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
@@ -2984,24 +2360,24 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
         MESSAGE 'Загрузка прайса в оборудование не требуется.';
 };
 
-createBalanceMachineryPriceTransaction 'Остатки' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceSkuLedger(item, departmentStore);
+createBalanceMachineryPriceTransaction 'Остатки' = ACTION (stock) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceSkuLedger(item, stock);
     SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка остатков';
-    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
+    EXEC createMachineryPriceTransaction(stock AS stock);
 } CONFIRM IN incrementMachineryPriceGroup;
 
-createPriceMachineryPriceTransaction 'Все товары' = ACTION (departmentStore) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentRetailPriceLedger(item, departmentStore);
+createPriceMachineryPriceTransaction 'Все товары' = ACTION (stock) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentRetailPriceLedger(item, stock);
     SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
-    EXEC createMachineryPriceTransaction(departmentStore AS departmentStore);
+    EXEC createMachineryPriceTransaction(stock AS stock);
 } CONFIRM IN incrementMachineryPriceGroup;
 
-META metaCodeDocumentMachineryPriceTransaction (document)
+META metaCodeDocumentMachineryPriceTransaction (document, stockProp)
 
     create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
         SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
-        EXEC createMachineryPriceTransaction(departmentStore###document(document));
+        EXEC createMachineryPriceTransaction(stockProp###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
 
@@ -3009,7 +2385,7 @@ META metaCodeDocumentMachineryPriceTransaction (document)
         SET createMachineryPriceTransactionSnapshot() <- TRUE;
         SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
         SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
-        EXEC createMachineryPriceTransaction(departmentStore###document(document));
+        EXEC createMachineryPriceTransaction(stockProp###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
     } SHORTCUT statusEquipmentPriceTransactionDocument CONFIRM;
 
@@ -3025,11 +2401,11 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
     PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
                   snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
 
-    OBJECTS b = barcode, d = departmentStore
+    OBJECTS b = barcode
     PROPERTIES(b) READONLY idBarcode
     PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
      daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
-     isWeightMachineryPriceTransactionBarcode, expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
+     isWeightMachineryPriceTransactionBarcode, expiryDataMachineryPriceTransactionBarcode,
      compositionMachineryPriceTransactionBarcode FORCE PANEL
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 
@@ -3037,8 +2413,8 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
 ;
 
 FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
-    OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR, createBalanceMachineryPriceTransaction(d), createPriceMachineryPriceTransaction(d), snapshotGroupMachineryDepartmentStore(d)
+    OBJECTS s = stock FIXED PANEL
+    PROPERTIES name(s) SELECTOR, createBalanceMachineryPriceTransaction(s), createPriceMachineryPriceTransaction(s), snapshotGroupMachineryDepartmentStore(s)
 
     OBJECTS t = machineryPriceTransaction
     PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
@@ -3047,14 +2423,13 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
                            nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
     PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
-    FILTERS departmentStoreMachineryPriceTransaction(t) == d
+    FILTERS stockMachineryPriceTransaction(t) == s
 
     OBJECTS b = barcode
     PROPERTIES(b)    idBarcode
     PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
-    daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
-    expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode,
-    labelFormatMachineryPriceTransactionBarcode
+                     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
+                     expiryDataMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode
 
     FILTERS inMachineryPriceTransactionBarcode(t, b)
 
@@ -3092,69 +2467,6 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
             }
         }
     }
-    }
-
-    ADD functions.box;
-}
-
-FORM terminalDocuments 'Документы ТСД'
-    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
-    PROPERTIES(td)  idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
-                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument, usedTerminalDocument READONLY
-    PROPERTIES(td)  ADDFORM, EDITFORM, delete
-
-    PROPERTIES(tdd) numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
-    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail, ADDOBJ
-
-    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
-
-    FILTERGROUP filterUse
-        FILTER 'Неиспользованные' 'F10' notUsedTerminalDocument(td) DEFAULT
-
-;
-
-DESIGN terminalDocuments FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW topContainer{
-
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD td.box;
-            ADD tdd.box;
-        }
-    }
-
-    ADD functions.box;
-}
-
-FORM terminalDocumentsDialog 'Документы ТСД'
-    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
-    PROPERTIES(td)  READONLY idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
-                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
-
-    PROPERTIES(tdd) READONLY numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
-    isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail
-
-    FILTERS terminalDocumentTerminalDocumentDetail(tdd) == td
-    FILTERGROUP filterUse
-        FILTER 'Неиспользованные' 'F10' notUsedTerminalDocument(td) DEFAULT
-;
-
-DESIGN terminalDocumentsDialog FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW topContainer{
-
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD td.box;
-            ADD tdd.box;
-        }
     }
 
     ADD functions.box;
@@ -4968,7 +4280,7 @@ numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegi
 numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
 maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
 
-departmentStoreZReport(zReport) <- departmentStoreMachinery(cashRegisterZReport(zReport))
+departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
     WHEN CHANGED(cashRegisterZReport(zReport));
 
 descriptionZReport (zReport) =
@@ -6718,7 +6030,7 @@ META metaCodeDocumentLabelTransaction (document)
 END
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
-@metaCodeDocumentMachineryPriceTransaction(shipment);
+@metaCodeDocumentMachineryPriceTransaction(shipment, departmentStore);
 @metaCodeDocumentLabelTransaction(shipment);
 
 toShowPriceImporterShipment 'Есть оптовая надбавка' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
@@ -6906,7 +6218,7 @@ toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM spec
 
 quantityDisparityDetailItemDisparity 'Кол-во для закачки в оборудование (приход)' (item, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputItemDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
 
-@metaCodeDocumentMachineryPriceTransaction(disparity);
+@metaCodeDocumentMachineryPriceTransaction(disparity, departmentStore);
 @metaCodeDocumentLabelTransaction(disparity);
 
 printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(uniquePriceChangeDisparity(disparity)) IN printGroup;
@@ -8235,7 +7547,7 @@ DESIGN inventories FROM DEFAULT {
 
 //---------------------------Акты переоценок-------------------------------------//
 
-@metaCodeDocumentMachineryPriceTransaction(userPriceChange);
+@metaCodeDocumentMachineryPriceTransaction(userPriceChange, departmentStore);
 @metaCodeDocumentLabelTransaction(userPriceChange);
 
 percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
@@ -8461,7 +7773,7 @@ DESIGN userPriceChanges FROM DEFAULT {
 
 //---------------- Формы внутреннего перемещения (приход и расход)-------------------------------------//
 
-@metaCodeDocumentMachineryPriceTransaction(innerArrival);
+@metaCodeDocumentMachineryPriceTransaction(innerArrival, departmentStore);
 @metaCodeDocumentLabelTransaction(innerArrival);
 
 FORM innerFlow 'Расход в другой отдел'
@@ -9372,7 +8684,7 @@ DESIGN bills FROM DEFAULT{
 }
 
 //----------------------------------- Акты проработки -------------------------------------------------//
-@metaCodeDocumentMachineryPriceTransaction(actOfStudy);
+@metaCodeDocumentMachineryPriceTransaction(actOfStudy, departmentStore);
 @metaCodeDocumentLabelTransaction(actOfStudy);
 
 FORM actOfStudy 'Акт проработки'
@@ -10373,8 +9685,8 @@ NAVIGATOR {
                 ADD cellScales;
             }
             NEW equipmentChecks 'Прайс чекеры'{
-                ADD groupsCheck;
-                ADD checkModels;
+                ADD groupsPriceChecker;
+                ADD priceCheckerModels;
             }
             NEW equipmentTerminals 'ТСД' {
                 ADD groupsTerminal;
@@ -10521,7 +9833,7 @@ NAVIGATOR {
             ADD contract;
             ADD cashRegisterModel;
             ADD scalesModel;
-            ADD checkModel;
+            ADD priceCheckerModel;
             ADD terminalModel;
             ADD typeItem;
             ADD rowTorg1;
@@ -10596,14 +9908,14 @@ NAVIGATOR {
             ADD preliminaryOrder;
             ADD cashRegister;
             ADD scales;
-            ADD check;
+            ADD priceChecker;
             ADD terminal;
             ADD tax;
             ADD cutting;
             ADD recipe;
             ADD groupCashRegister;
             ADD groupScales;
-            ADD groupCheck;
+            ADD groupPriceChecker;
             ADD groupTerminal;
             ADD groupTerminalDocumentType;
             ADD component;
@@ -10661,7 +9973,7 @@ NAVIGATOR {
             ADD seriesNumberCuttingStudyInputDetail;
             ADD machineryPriceTransaction;
             ADD groupMachineryInput;
-            ADD filterItemsGroupMachinery;
+            ADD filterSkuGroupMachinery;
             ADD labelType;
             ADD printLabelTransaction;
             ADD customLabelTransaction;
