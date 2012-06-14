@@ -160,7 +160,7 @@ FORM CStoWHs 'Расходы с СВХ'
     PROPERTIES (c)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
                      printConsignmentSimpleHorizontal, editConsignment,
-                     printConsignmentSimpleVertical//, printConsignmentSimpleAttach,  printConsignmentAttach
+                     printConsignmentSimpleVertical
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
@@ -191,6 +191,7 @@ consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignm
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
 

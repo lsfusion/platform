@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30">
-	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="305"/>
+	<property name="ireport.y" value="30"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -116,7 +116,7 @@
 						<rightPen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="9"/>
+						<font size="8"/>
 						<paragraph firstLineIndent="25"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Ассортимент товара в соответствии с приложением на "+"листах"]]></textFieldExpression>
@@ -133,89 +133,89 @@
 						<rightPen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="9"/>
+						<font size="8"/>
 						<paragraph firstLineIndent="25"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Товар по инвойсам "+($F{noteConsignment}!=null?$F{noteConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Товар по инвойсам :"+($F{noteConsignment}!=null?$F{noteConsignment}:"")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="15">
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="136" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="136" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Center">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA["ИТОГО "]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="490" y="0" width="65" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="490" y="0" width="65" height="14" backcolor="#FFFFFF"/>
 					<textElement>
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="168" y="0" width="30" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="168" y="0" width="30" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="329" y="0" width="40" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="329" y="0" width="40" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumVATConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="136" y="0" width="32" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="136" y="0" width="32" height="14" backcolor="#FFFFFF"/>
 					<textElement>
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="14" backcolor="#FFFFFF"/>
 					<textElement>
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="422" y="0" width="38" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.#" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="422" y="0" width="38" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{packQuantityConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="460" y="0" width="30" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.#" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="460" y="0" width="30" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{grossWeightConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="287" y="0" width="42" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="287" y="0" width="42" height="14" backcolor="#FFFFFF"/>
 					<textElement>
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="240" y="0" width="47" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="240" y="0" width="47" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="369" y="0" width="53" height="14" backcolor="#FFFFFF"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="369" y="0" width="53" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="8"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
@@ -356,7 +356,7 @@
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dateConsignment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{dateConsignment})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="123" y="201" width="161" height="12"/>
@@ -636,7 +636,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{packQuantityConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -648,7 +648,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{shortNameUOMConsignmentDetail}]]></textFieldExpression>
 			</textField>
@@ -660,7 +660,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{priceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -672,7 +672,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{vatConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -684,7 +684,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumVATConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -696,7 +696,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}]]></textFieldExpression>
 			</textField>
@@ -708,7 +708,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{noteConsignmentDetail}]]></textFieldExpression>
 			</textField>
@@ -720,7 +720,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumInvoiceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -732,7 +732,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{npp}]]></textFieldExpression>
 			</textField>
@@ -744,7 +744,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{grossWeightConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -756,7 +756,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -768,7 +768,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
 			</textField>
@@ -783,7 +783,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nameWareConsignmentDetail}]]></textFieldExpression>
 			</textField>
@@ -795,7 +795,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSupplierPriceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -807,7 +807,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{valueWareRangeConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -819,7 +819,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -831,7 +831,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -843,7 +843,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -855,7 +855,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -867,7 +867,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareVATSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
@@ -879,7 +879,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -891,7 +891,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -903,7 +903,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{warePriceConsignmentDetail}>0?$F{quantityConsignmentDetail}:0.0]]></textFieldExpression>
 			</textField>
@@ -915,7 +915,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSupplierSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
