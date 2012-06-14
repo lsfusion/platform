@@ -1,6 +1,6 @@
 MODULE RomanDocument;
 
-REQUIRE Document;
+REQUIRE Document, Stock, Barcode, StorePrice, Supplier;
 
 META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
@@ -23,6 +23,13 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
     @implementBalanceSkuLedger (object, skuProp, stock);
 
     @defineDocumentDetailProps (object);
+
+    @defineDialogSku(dialogSku);
+    @defineDialogSkuBarcode(dialogSku);
+    @defineDialogSkuSupplier(dialogSku);
+  //  @defineDialogSkuStorePrice(dialogSku);
+
+    @defineAddDetailDialogSkuStock(object, sku, stock, dialogSku);
 END
 
 META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, caption, corresponder, corresponderCaption)
@@ -50,3 +57,5 @@ META defineDocumentDetailProps (object)
     category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
     nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail));
 END
+
+

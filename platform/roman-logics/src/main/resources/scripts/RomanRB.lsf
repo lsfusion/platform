@@ -14,7 +14,7 @@ REQUIRE System,
         WHfromCS,
         RomanLogicsModule;
 
-PRIORITY Utils, Stock, RomanLogicsModule;
+PRIORITY RomanLogicsModule, Utils, Stock, Store;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
 
@@ -486,5 +486,48 @@ NAVIGATOR {
         ADD declarationsCStoWH;
         ADD importer;
         ADD customStore;
+        ADD UOM;
+        ADD ware;
+        ADD barcodeInput;
+        ADD employee;
+        ADD employeeDialog;
+        ADD position;
+        ADD addTradingSquareDepartmentStore;
+        ADD dialogTradingSquareDepartmentStore;
+        ADD departmentStore;
+        ADD departmentStores;
+        ADD store;
+        ADD chainStores;
+        ADD bank;
+        ADD ownership;
+        ADD supplier;
+        ADD contract;
+        ADD tax;
+        ADD addAddressLegalEntity;
+        ADD dialogAddressLegalEntity;
+        ADD addPostAddressLegalEntity;
+        ADD dialogPostAddressLegalEntity;
+        ADD addManagerLegalEntity;
+        ADD dialogManagerLegalEntity;
+        ADD addAccountantLegalEntity;
+        ADD dialogAccountantLegalEntity;
+        ADD addPhoneLegalEntity;
+        ADD dialogPhoneLegalEntity;
+        ADD addControlSupplierStock;
+        ADD dialogControlSupplierStock;
+        ADD addSureSupplierStock;
+        ADD dialogSureSupplierStock;
+        ADD addAddressBank;
+        ADD dialogAddressBank;
+        ADD addFormContract;
+        ADD dialogFormContract;
+        ADD addDelayContract;
+        ADD dialogDelayContract;
+        ADD numerator;
+        ADD dialogDate;
+        ADD dialogSku;
+        ADD stores;
+        ADD suppliers;
+        ADD contracts;
     }
 }

@@ -12,6 +12,8 @@ REQUIRE System,
         MasterData,
         RomanLogicsModule;
 
+PRIORITY RomanLogicsModule, Utils, Stock, Store;
+
 CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
 CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
@@ -130,7 +132,7 @@ FORM CStoWH 'Расход с СВХ'
     PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
                    inputDeclarationDetailCStoWH, deleteCStoWHDetailCStoWH, declarationsCStoWH,
-                   innerInvoicesCStoWH, shortNameCurrencyCStoWH
+                   innerInvoicesCStoWH, shortNameCurrencyCStoWH, addDetailDialogSkuCStoWHDetailCStoWH
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
