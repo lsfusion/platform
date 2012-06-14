@@ -154,6 +154,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return null;
         }
 
+        //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
+        forceCreateNew = true;
+
         removeExpiredNavigators();
 
         DataSession session;
