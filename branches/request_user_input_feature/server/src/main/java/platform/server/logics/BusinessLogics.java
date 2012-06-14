@@ -2637,7 +2637,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, null);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, exportPort, null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

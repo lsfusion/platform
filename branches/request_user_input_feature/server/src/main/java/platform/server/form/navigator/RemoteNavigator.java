@@ -813,7 +813,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     @Override
     public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, this);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, exportPort, this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

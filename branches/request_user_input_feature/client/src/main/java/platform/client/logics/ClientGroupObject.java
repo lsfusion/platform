@@ -132,7 +132,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
         //находим декартово произведение ключей колонок
         List<ClientGroupObjectValue> propColumnKeys = new ArrayList<ClientGroupObjectValue>();
-        propColumnKeys.add(new ClientGroupObjectValue());
+        propColumnKeys.add(ClientGroupObjectValue.EMPTY);
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
             List<ClientGroupObjectValue> groupObjectKeys = entry.getValue();
 

@@ -255,7 +255,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public ClientGroupObjectValue getCurrentObject() {
-        return grid != null ? grid.getCurrentObject() : null;
+        return grid != null ? grid.getCurrentObject() : ClientGroupObjectValue.EMPTY;
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {

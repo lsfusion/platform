@@ -7,19 +7,19 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.view.JRViewer;
 import platform.client.Main;
 import platform.client.SwingUtils;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
 public class ReportDialog extends JDialog {
-    public ReportDialog(JFrame owner, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+    public ReportDialog(JFrame owner, ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         super(owner, true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        ReportGenerator report = new ReportGenerator(remoteForm, Main.timeZone);
-        JasperPrint print = report.createReport(false, false, null, null);
+        ReportGenerator report = new ReportGenerator(generationData, Main.timeZone);
+        JasperPrint print = report.createReport(false, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
         final DialogReportViewer viewer = new DialogReportViewer(print);
@@ -40,6 +40,15 @@ public class ReportDialog extends JDialog {
 
         public double getRealZoom() {
             return realZoom;
+        }
+    }
+
+    public static void showReportDialog(ReportGenerationData generationData) throws ClassNotFoundException, IOException {
+        try {
+            ReportDialog dlg = new ReportDialog(Main.frame, generationData);
+            dlg.setVisible(true);
+        } catch (JRException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -6,14 +6,10 @@ import java.io.IOException;
 
 public class FormClientAction extends ExecuteClientAction {
 
-    public boolean newSession;
     public boolean isModal;
-    public boolean isPrintForm;
     public RemoteFormInterface remoteForm;
 
-    public FormClientAction(boolean isPrintForm, boolean newSession, boolean isModal, RemoteFormInterface remoteForm) {
-        this.isPrintForm = isPrintForm;
-        this.newSession = newSession;
+    public FormClientAction(boolean isModal, RemoteFormInterface remoteForm) {
         this.isModal = isModal;
         this.remoteForm = remoteForm;
     }

@@ -33,6 +33,6 @@ public class ExecuteEditActionHandler extends FormChangesActionHandler<ExecuteEd
             serializeObject(outStream, entry.getValue().getValue());
         }
 
-        return getRemoteChanges(form, form.remoteForm.executeEditAction(action.propertyId, byteStream.toByteArray(), action.actionSID));
+        return getRemoteChanges(form, form.remoteForm.executeEditAction(-1, action.propertyId, byteStream.toByteArray(), action.actionSID));
     }
 }

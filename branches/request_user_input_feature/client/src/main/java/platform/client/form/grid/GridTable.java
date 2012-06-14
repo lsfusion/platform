@@ -342,12 +342,13 @@ public class GridTable extends ClientPropertyTable {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
 
+        // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
+        // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
+        setSize(getSize().width, getRowHeight() * getRowCount());
+
         adjustSelection();
 
         setPreferredScrollableViewportSize(getPreferredSize());
-        // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
-        // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
-//        setSize(getWidthUser(), getRowHeight() * getRowCount());
         if (groupObject.tableRowsCount >= 0) {
             int count = groupObject.tableRowsCount == 0 ? getRowCount() : groupObject.tableRowsCount;
             int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
@@ -471,16 +472,30 @@ public class GridTable extends ClientPropertyTable {
 
     private void adjustSelection() {
         //надо сдвинуть ViewPort - иначе дергаться будет
-        final Point viewPos = ((JViewport) getParent()).getViewPosition();
-        final int dltpos = viewMoveInterval * getRowHeight();
-        viewPos.y += dltpos;
-        if (viewPos.y < 0) {
-            viewPos.y = 0;
-        }
-        ((JViewport) getParent()).setViewPosition(viewPos);
-        viewMoveInterval = 0;
 
-        selectRow(rowKeys.indexOf(currentObject));
+        int currentRow = getCurrentRow();
+
+        final int dltpos = viewMoveInterval * getRowHeight();
+        final Rectangle viewRect = ((JViewport) getParent()).getViewRect();
+
+        viewRect.y += dltpos;
+        if (viewRect.y < 0) {
+            viewRect.y = 0;
+        }
+
+        int currentRowTop = currentRow * getRowHeight();
+        int currentRowBottom = currentRowTop + getRowHeight() - 1;
+
+        if (currentRowTop < viewRect.getMinY()) {
+            viewRect.y = currentRowTop;
+        } else if (currentRowBottom > viewRect.getMaxY()) {
+            viewRect.y = currentRowBottom - viewRect.height;
+        }
+        ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
+
+        selectRow(currentRow);
+
+        viewMoveInterval = 0;
     }
 
     protected void selectRow(int rowNumber) {
@@ -520,16 +535,9 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    private void setCurrentObject(ClientGroupObjectValue value) {
-        if (rowKeys.contains(value)) {
-            currentObject = value;
-        }
-    }
-
-    public void setCurrentObjectFromServer(ClientGroupObjectValue value) {
-        if (!rowKeys.contains(currentObject)) {
-            currentObject = value;
-        }
+    public void setCurrentObject(ClientGroupObjectValue value) {
+        assert rowKeys.contains(value);
+        currentObject = value;
     }
 
     public ClientGroupObjectValue getCurrentObject() {
@@ -743,6 +751,18 @@ public class GridTable extends ClientPropertyTable {
         return edited;
     }
 
+    @Override
+    public void setValueAt(Object value, int row, int column) {
+        if (row < getRowCount() && column < getColumnCount()) {
+            values.get(getProperty(column)).put(
+                    new ClientGroupObjectValue(rowKeys.get(row), model.getColumnKey(column)),
+                    value
+            );
+        }
+
+        super.setValueAt(value, row, column);
+    }
+
     private void moveToFocusableCellIfNeeded() {
         int row = getSelectionModel().getLeadSelectionIndex();
         int col = getColumnModel().getSelectionModel().getLeadSelectionIndex();
@@ -858,8 +878,8 @@ public class GridTable extends ClientPropertyTable {
         return model.getColumnProperty(col);
     }
 
-    public ClientPropertyDraw getProperty(int num) {
-        return properties.get(num);
+    public ClientPropertyDraw getProperty(int col) {
+        return model.getColumnProperty(col);
     }
 
     public int getPropertyCount() {
@@ -888,7 +908,7 @@ public class GridTable extends ClientPropertyTable {
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         int ind = getMinPropertyIndex(property);
-        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind == -1 ? new ClientGroupObjectValue() : model.getColumnKey(ind)), modiType);
+        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind == -1 ? ClientGroupObjectValue.EMPTY : model.getColumnKey(ind)), modiType);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {

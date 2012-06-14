@@ -5,6 +5,8 @@ public interface ClientActionDispatcher {
 
     public void execute(FormClientAction action);
 
+    public void execute(ReportClientAction action);
+
     public void execute(DialogClientAction action);
 
     public Object execute(RuntimeClientAction action);
@@ -31,9 +33,9 @@ public interface ClientActionDispatcher {
 
     public void execute(AudioClientAction action);
 
-    public void execute(PrintPreviewClientAction action);
+    public void execute(RunPrintReportClientAction action);
 
-    public void execute(RunExcelClientAction action);
+    public void execute(RunOpenInExcelClientAction action);
 
     public void execute(RunEditReportClientAction action);
 

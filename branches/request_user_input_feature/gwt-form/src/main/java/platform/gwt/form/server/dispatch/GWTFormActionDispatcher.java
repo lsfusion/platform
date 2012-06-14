@@ -34,6 +34,11 @@ public class GWTFormActionDispatcher implements ClientActionDispatcher, Serializ
     }
 
     @Override
+    public void execute(ReportClientAction action) {
+        //todo:
+    }
+
+    @Override
     public void execute(DialogClientAction action) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -99,12 +104,12 @@ public class GWTFormActionDispatcher implements ClientActionDispatcher, Serializ
     }
 
     @Override
-    public void execute(PrintPreviewClientAction action) {
+    public void execute(RunPrintReportClientAction action) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void execute(RunExcelClientAction action) {
+    public void execute(RunOpenInExcelClientAction action) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

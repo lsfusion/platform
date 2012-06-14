@@ -33,12 +33,12 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         return getFormController().continueServerInvocation(actionResults);
     }
 
-    public void execute(PrintPreviewClientAction action) {
-        getFormController().runReport();
+    public void execute(RunPrintReportClientAction action) {
+        getFormController().runPrintReport();
     }
 
-    public void execute(RunExcelClientAction action) {
-        getFormController().runExcel();
+    public void execute(RunOpenInExcelClientAction action) {
+        getFormController().runOpenInExcel();
     }
 
     public void execute(RunEditReportClientAction action) {
@@ -51,7 +51,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(ProcessFormChangesClientAction action) {
         try {
-            getFormController().applyFormChanges(action.indexStamp, action.formChanges);
+            getFormController().applyFormChanges(action.formChanges);
         } catch (IOException e) {
             Throwables.propagate(e);
         }

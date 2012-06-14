@@ -69,6 +69,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                         try {
                             dispatchResult = action.dispatch(this);
                         } catch (Exception ex) {
+                            ex.printStackTrace();
                             handleClientActionException(ex);
                             break;
                         }
@@ -132,17 +133,21 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(FormClientAction action) {
         try {
             RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
-            if (action.isPrintForm) {
-                Main.frame.runReport(remoteForm, action.isModal, getFormUserPreferences());
+            if (!action.isModal) {
+                Main.frame.runForm(remoteForm);
             } else {
-                if (!action.isModal) {
-                    Main.frame.runForm(remoteForm);
-                } else {
-                    new ClientModalForm(Main.frame, remoteForm).showDialog(false);
-                }
+                new ClientModalForm(Main.frame, remoteForm).showDialog(false);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
+        }
+    }
+
+    public void execute(ReportClientAction action) {
+        try {
+            Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
+        } catch (Exception e) {
+            Throwables.propagate(e);
         }
     }
 
@@ -410,10 +415,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(PrintPreviewClientAction action) {
+    public void execute(RunPrintReportClientAction action) {
     }
 
-    public void execute(RunExcelClientAction action) {
+    public void execute(RunOpenInExcelClientAction action) {
     }
 
     public void execute(RunEditReportClientAction action) {

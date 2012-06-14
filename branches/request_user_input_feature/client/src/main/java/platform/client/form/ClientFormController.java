@@ -1,7 +1,12 @@
 package platform.client.form;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import platform.base.*;
+import com.google.common.collect.*;
+import platform.base.BaseUtils;
+import platform.base.Callback;
+import platform.base.EProvider;
+import platform.base.OrderedMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.Log;
@@ -18,10 +23,7 @@ import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.form.FormColumnUserPreferences;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.ServerResponse;
+import platform.interop.form.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +38,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static platform.base.BaseUtils.serializeObject;
 import static platform.client.ClientResourceBundle.getString;
@@ -245,10 +246,12 @@ public class ClientFormController {
         checkBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent ie) {
                 try {
-                    if (ie.getStateChange() == ItemEvent.SELECTED)
+                    if (ie.getStateChange() == ItemEvent.SELECTED) {
                         setRegularFilter(filterGroup, singleFilter);
-                    if (ie.getStateChange() == ItemEvent.DESELECTED)
+                    }
+                    if (ie.getStateChange() == ItemEvent.DESELECTED) {
                         setRegularFilter(filterGroup, null);
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(getString("form.error.changing.regular.filter"), e);
                 }
@@ -289,10 +292,10 @@ public class ClientFormController {
 
     public void saveUserPreferences(final FormUserPreferences preferences, final Boolean forAllUsers) throws RemoteException {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncVoidRequest(new ERunnable() {
+        rmiQueue.syncRequest(new RmiVoidRequest() {
             @Override
-            public void run() throws Exception {
-                remoteForm.saveUserPreferences(preferences, forAllUsers);
+            protected void doExecute(long requestIndex) throws RemoteException {
+                remoteForm.saveUserPreferences(requestIndex, preferences, forAllUsers);
             }
         });
     }
@@ -324,23 +327,25 @@ public class ClientFormController {
     private void applyUserProperties() throws Exception {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new CallableCallback<FormUserPreferences>() {
+        rmiQueue.syncRequest(new RmiRequest<FormUserPreferences>() {
             @Override
-            public FormUserPreferences call() throws Exception {
-                return remoteForm.loadUserPreferences();
+            protected FormUserPreferences doRequest(long requestIndex) throws Exception {
+                return remoteForm.getUserPreferences();
             }
 
             @Override
-            public void done(FormUserPreferences preferences) throws Exception {
-                if (preferences != null)
+            public void onResponse(long requestIndex, FormUserPreferences preferences) throws Exception {
+                if (preferences != null) {
                     for (ClientPropertyDraw property : form.getPropertyDraws()) {
                         String propertySID = property.getSID();
                         if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
                             property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
-                            if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null)
+                            if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null) {
                                 property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
+                            }
                         }
                     }
+                }
             }
         });
     }
@@ -387,32 +392,18 @@ public class ClientFormController {
     }
 
     public void applyRemoteChanges() throws IOException {
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.getRemoteChanges();
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.getRemoteChanges(requestIndex);
             }
         });
     }
 
-    private PriorityQueue<Pair<Long, byte[]>> pendingChanges = new PriorityQueue<Pair<Long, byte[]>>(10, new Comparator<Pair<Long, byte[]>>() {
-        @Override
-        public int compare(Pair<Long, byte[]> o1, Pair<Long, byte[]> o2) {
-            return o1.first.compareTo(o2.first) ;
-        }
-    });
-
-    private long lastStamp = -1;
-
-    public void applyFormChanges(long indexStamp, byte[] bFormChanges) throws IOException {
-        pendingChanges.add(new Pair<Long, byte[]>(indexStamp, bFormChanges));
-        while (!pendingChanges.isEmpty() && pendingChanges.peek().first == lastStamp + 1) {
-            internalApplyFormChanges(pendingChanges.poll().second);
-            lastStamp++;
-        }
-    }
-
-    private void internalApplyFormChanges(byte[] bFormChanges) throws IOException {
+    private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Optional<Object>> lastChangePropertyRequestValues = HashBasedTable.create();
+    public void applyFormChanges(byte[] bFormChanges) throws IOException {
         if (bFormChanges == null) {
             return;
         }
@@ -426,6 +417,10 @@ public class ClientFormController {
             }
         }
         currentGridObjects.putAll(formChanges.gridObjects);
+
+        modifyFormChangesWithChangeCurrentObjectAsyncs(formChanges);
+
+        modifyFormChangesWithChangePropertyAsyncs(formChanges);
 
         for (GroupObjectController controller : controllers.values()) {
             controller.processFormChanges(formChanges, currentGridObjects);
@@ -448,14 +443,134 @@ public class ClientFormController {
         }
     }
 
+    private void modifyFormChangesWithChangeCurrentObjectAsyncs(ClientFormChanges formChanges) {
+        for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<ClientGroupObject, Long> entry = iterator.next();
+
+            if (entry.getValue() > rmiQueue.getCurrentDispatchingRequestIndex()) {
+                formChanges.objects.remove(entry.getKey());
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+    private void modifyFormChangesWithChangePropertyAsyncs(ClientFormChanges formChanges) {
+        long currentDispatchingRequestIndex = rmiQueue.getCurrentDispatchingRequestIndex();
+
+        for (Iterator<Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, Long>> iterator = lastChangePropertyRequestIndices.cellSet().iterator(); iterator.hasNext(); ) {
+            Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, Long> cell = iterator.next();
+            if (cell.getValue() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+                lastChangePropertyRequestValues.remove(cell.getRowKey(), cell.getColumnKey());
+            }
+        }
+
+        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Optional<Object>>> e : lastChangePropertyRequestValues.rowMap().entrySet()) {
+            Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(e.getKey());
+            if (propertyValues != null) {
+                for (Map.Entry<ClientGroupObjectValue, Optional<Object>> keyValue : e.getValue().entrySet()) {
+                    propertyValues.put(keyValue.getKey(), keyValue.getValue().orNull());
+                }
+            }
+        }
+    }
+
+    public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
+        commitOrCancelCurrentEditing();
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
+            @Override
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.expandGroupObject(requestIndex, group.getID(), objectValue.serialize());
+            }
+        });
+    }
+
+    public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
+        commitOrCancelCurrentEditing();
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
+            @Override
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.collapseGroupObject(requestIndex, group.getID(), objectValue.serialize());
+            }
+        });
+    }
+
+    public void changeGroupObject(final ClientGroupObject groupObject, final Scroll changeType) throws IOException {
+        commitOrCancelCurrentEditing();
+
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
+            @Override
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.changeGroupObject(requestIndex, groupObject.getID(), changeType.serialize());
+            }
+        });
+    }
+
+    public void changeGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
+        if (objectValue == null || remoteForm == null) {
+            // remoteForm может равняться null, если к моменту вызова форму уже закрыли
+            return;
+        }
+
+        rmiQueue.asyncRequest(
+                new RmiRequest<ServerResponse>() {
+                    @Override
+                    public void preRequest(long requestIndex) {
+                        lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
+                    }
+
+                    @Override
+                    protected ServerResponse doRequest(long requestIndex) throws Exception {
+                        return remoteForm.changeGroupObject(requestIndex, group.getID(), objectValue.serialize());
+                    }
+
+                    @Override
+                    protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                        processServerResponse(result);
+                    }
+                }
+        );
+    }
+
+    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value) throws IOException {
+        assert !isEditing();
+
+        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
+        fullCurrentKey.putAll(columnKey);
+
+        commitOrCancelCurrentEditing();
+
+        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
+            ClientGroupObjectValue propertyKey = null;
+
+            @Override
+            protected void preRequest(long requestIndex) {
+                GroupObjectController controller = controllers.get(property.groupObject);
+
+                propertyKey = controller != null ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey) : columnKey;
+
+                lastChangePropertyRequestIndices.put(property, propertyKey, requestIndex);
+                lastChangePropertyRequestValues.put(property, propertyKey, Optional.fromNullable(value));
+            }
+
+            @Override
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey.serialize(), serializeObject(value));
+            }
+
+            @Override
+            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                processServerResponse(result);
+            }
+        });
+    }
+
     public ClientGroupObjectValue getFullCurrentKey() {
         ClientGroupObjectValue fullKey = new ClientGroupObjectValue();
 
         for (GroupObjectController group : controllers.values()) {
-            ClientGroupObjectValue currentGroupKey = group.getCurrentObject();
-            if (currentGroupKey != null) {
-                fullKey.putAll(currentGroupKey);
-            }
+            fullKey.putAll(group.getCurrentObject());
         }
 
         for (TreeGroupController tree : treeControllers.values()) {
@@ -468,67 +583,6 @@ public class ClientFormController {
         return fullKey;
     }
 
-    public void changeGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
-        if (objectValue == null || remoteForm == null) {
-            // remoteForm может равняться null, если к моменту вызова форму уже закрыли
-            return;
-        }
-
-        asyncProcessServerResponse(new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.changeGroupObject(group.getID(), objectValue.serialize());
-            }
-        });
-    }
-
-    public void changeGroupObject(final ClientGroupObject groupObject, final Scroll changeType) throws IOException {
-        commitOrCancelCurrentEditing();
-
-        syncProcessServerResponse(new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
-            }
-        });
-    }
-
-    public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
-        commitOrCancelCurrentEditing();
-        syncProcessServerResponse(new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.expandGroupObject(group.getID(), objectValue.serialize());
-            }
-        });
-    }
-
-    public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
-        commitOrCancelCurrentEditing();
-        syncProcessServerResponse(new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.collapseGroupObject(group.getID(), objectValue.serialize());
-            }
-        });
-    }
-
-    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value) throws IOException {
-        assert !isEditing();
-
-        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
-        fullCurrentKey.putAll(columnKey);
-
-        commitOrCancelCurrentEditing();
-
-        asyncProcessServerResponse(new Callable<ServerResponse>() {
-            @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.changeProperty(property.getID(), fullCurrentKey.serialize(), serializeObject(value));
-            }
-        });
-    }
-
     public ServerResponse executeEditAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
         commitOrCancelCurrentEditing();
 
@@ -537,10 +591,10 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        return syncGetServerResponse(new Callable<ServerResponse>() {
+        return syncGetServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.executeEditAction(property.getID(), columnKey.serialize(), actionSID);
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.executeEditAction(requestIndex, property.getID(), columnKey.serialize(), actionSID);
             }
         });
     }
@@ -556,14 +610,15 @@ public class ClientFormController {
     public void gainedFocus() {
         //remoteForm может быть == null, если сработал closed, и тогда ничего вызывать не надо
         if (!isEditing() && remoteForm != null) {
-            if (remoteForm == null)
+            if (remoteForm == null) {
                 return;
+            }
 
             try {
-                rmiQueue.asyncVoidRequest(new ERunnable() {
+                rmiQueue.syncRequest(new RmiVoidRequest() {
                     @Override
-                    public void run() throws Exception {
-                        remoteForm.gainedFocus();
+                    protected void doExecute(long requestIndex) throws Exception {
+                        remoteForm.gainedFocus(requestIndex);
                     }
                 });
 
@@ -581,10 +636,10 @@ public class ClientFormController {
     }
 
     public void setTabVisible(final ClientContainer container, final ClientComponent component) throws IOException {
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.setTabVisible(container.getID(), component.getID());
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.setTabVisible(requestIndex, container.getID(), component.getID());
             }
         });
     }
@@ -594,10 +649,10 @@ public class ClientFormController {
         for (ClientPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.getID());
         }
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.pasteExternalTable(propertyIdList, table);
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.pasteExternalTable(requestIndex, propertyIdList, table);
             }
         });
     }
@@ -615,10 +670,10 @@ public class ClientFormController {
             }
             reCells.put(property.getID(), keys);
         }
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.pasteMulticellValue(reCells, value);
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.pasteMulticellValue(requestIndex, reCells, value);
             }
         });
     }
@@ -626,10 +681,10 @@ public class ClientFormController {
     public void changeGridClass(final ClientObject object, final ClientObjectClass cls) throws IOException {
         commitOrCancelCurrentEditing();
 
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.changeGridClass(object.getID(), cls.ID);
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.changeGridClass(requestIndex, object.getID(), cls.ID);
             }
         });
     }
@@ -644,10 +699,10 @@ public class ClientFormController {
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.changeClassView(groupObject.getID(), show);
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.changeClassView(requestIndex, groupObject.getID(), show);
             }
         });
     }
@@ -656,10 +711,10 @@ public class ClientFormController {
         if (defaultOrdersInitialized) {
             commitOrCancelCurrentEditing();
 
-            syncProcessServerResponse(new Callable<ServerResponse>() {
+            syncProcessServerResponse(new RmiRequest<ServerResponse>() {
                 @Override
-                public ServerResponse call() throws Exception {
-                    return remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
+                protected ServerResponse doRequest(long requestIndex) throws Exception {
+                    return remoteForm.changePropertyOrder(requestIndex, property.getID(), modiType.serialize(), columnKey.serialize());
                 }
             });
         }
@@ -704,10 +759,10 @@ public class ClientFormController {
             }
         }
 
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.setUserFilters(filters.toArray(new byte[filters.size()][]));
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.setUserFilters(requestIndex, filters.toArray(new byte[filters.size()][]));
             }
         });
     }
@@ -715,10 +770,10 @@ public class ClientFormController {
     private void setRegularFilter(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter filter) throws IOException {
         commitOrCancelCurrentEditing();
 
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.setRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID());
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.setRegularFilter(requestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());
             }
         });
     }
@@ -726,10 +781,10 @@ public class ClientFormController {
     public int countRecords(final int groupObjectID) throws Exception {
         commitOrCancelCurrentEditing();
 
-        return rmiQueue.syncRequest(new Callable<Integer>() {
+        return rmiQueue.syncRequest(new RmiRequest<Integer>() {
             @Override
-            public Integer call() throws Exception {
-                return remoteForm.countRecords(groupObjectID);
+            public Integer doRequest(long requestIndex) throws Exception {
+                return remoteForm.countRecords(requestIndex, groupObjectID);
             }
         });
     }
@@ -737,10 +792,10 @@ public class ClientFormController {
     public Object calculateSum(final int propertyID, final byte[] columnKeys) throws Exception {
         commitOrCancelCurrentEditing();
 
-        return rmiQueue.syncRequest(new Callable<Object>() {
+        return rmiQueue.syncRequest(new RmiRequest<Object>() {
             @Override
-            public Object call() throws Exception {
-                return remoteForm.calculateSum(propertyID, columnKeys);
+            public Object doRequest(long requestIndex) throws Exception {
+                return remoteForm.calculateSum(requestIndex, propertyID, columnKeys);
             }
         });
     }
@@ -749,20 +804,20 @@ public class ClientFormController {
             List<byte[]>> maxMap, final boolean onlyNotNull) throws IOException {
         commitOrCancelCurrentEditing();
 
-        return rmiQueue.syncRequest(new Callable<Map<List<Object>, List<Object>>>() {
+        return rmiQueue.syncRequest(new RmiRequest<Map<List<Object>, List<Object>>>() {
             @Override
-            public Map<List<Object>, List<Object>> call() throws Exception {
-                return remoteForm.groupData(groupMap, sumMap, maxMap, onlyNotNull);
+            public Map<List<Object>, List<Object>> doRequest(long requestIndex) throws Exception {
+                return remoteForm.groupData(requestIndex, groupMap, sumMap, maxMap, onlyNotNull);
             }
         });
     }
 
     public void changePageSize(final ClientGroupObject groupObject, final Integer pageSize) throws IOException {
         if (!tableManager.isEditing()) {
-            syncProcessServerResponse(new Callable<ServerResponse>() {
+            syncProcessServerResponse(new RmiRequest<ServerResponse>() {
                 @Override
-                public ServerResponse call() throws Exception {
-                    return remoteForm.changePageSize(groupObject.getID(), pageSize);
+                protected ServerResponse doRequest(long requestIndex) throws Exception {
+                    return remoteForm.changePageSize(requestIndex, groupObject.getID(), pageSize);
                 }
             });
         }
@@ -771,40 +826,12 @@ public class ClientFormController {
     public void moveGroupObject(final ClientGroupObject parentGroup, final ClientGroupObjectValue parentKey, final ClientGroupObject childGroup, final ClientGroupObjectValue childKey, final int index) throws IOException {
         commitOrCancelCurrentEditing();
 
-        syncProcessServerResponse(new Callable<ServerResponse>() {
+        syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.moveGroupObject(requestIndex, parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
             }
         });
-    }
-
-    public void runSingleGroupReport(final GroupObjectController groupController) {
-        commitOrCancelCurrentEditing();
-        try {
-            rmiQueue.syncVoidRequest(new ERunnable() {
-                @Override
-                public void run() throws Exception {
-                    Main.frame.runSingleGroupReport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
-                }
-            });
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
-    }
-
-    public void runSingleGroupXlsExport(final GroupObjectController groupController) {
-        commitOrCancelCurrentEditing();
-        try {
-            rmiQueue.syncVoidRequest(new ERunnable() {
-                @Override
-                public void run() throws Exception {
-                    Main.frame.runSingleGroupXlsExport(remoteForm, groupController.getGroupObject().getID(), getUserPreferences());
-                }
-            });
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
     }
 
     public void dropLayoutCaches() {
@@ -839,12 +866,19 @@ public class ClientFormController {
         //do nothing by default
     }
 
-    public void runReport() {
+    public void runPrintReport() {
+        assert Main.module.isFull();
+
         try {
-            rmiQueue.syncVoidRequest(new ERunnable() {
+            rmiQueue.syncRequest(new RmiRequest<ReportGenerationData>() {
                 @Override
-                public void run() throws Exception {
-                    Main.frame.runReport(remoteForm, false, getUserPreferences());
+                protected ReportGenerationData doRequest(long requestIndex) throws Exception {
+                    return remoteForm.getReportData(requestIndex, null, false, getUserPreferences());
+                }
+
+                @Override
+                public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
+                    Main.frame.runReport(remoteForm.getSID(), false, generationData);
                 }
             });
         } catch (Exception e) {
@@ -852,12 +886,19 @@ public class ClientFormController {
         }
     }
 
-    public void runExcel() {
+    public void runOpenInExcel() {
+        assert Main.module.isFull();
+
         try {
-            rmiQueue.syncVoidRequest(new ERunnable() {
+            rmiQueue.syncRequest(new RmiRequest<ReportGenerationData>() {
                 @Override
-                public void run() throws Exception {
-                    Main.module.runExcel(remoteForm, getUserPreferences());
+                protected ReportGenerationData doRequest(long requestIndex) throws Exception {
+                    return remoteForm.getReportData(requestIndex, null, true, getUserPreferences());
+                }
+
+                @Override
+                public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
+                    Main.module.openInExcel(generationData);
                 }
             });
         } catch (Exception e) {
@@ -866,15 +907,17 @@ public class ClientFormController {
     }
 
     public void runEditReport() {
+        assert Main.module.isFull();
+
         try {
-            rmiQueue.syncRequest(new CallableCallback<Map<String, String>>() {
+            rmiQueue.syncRequest(new RmiRequest<Map<String, String>>() {
                 @Override
-                public Map<String, String> call() throws Exception {
-                    return Main.frame.getReportPath(remoteForm, getUserPreferences());
+                protected Map<String, String> doRequest(long requestIndex) throws Exception {
+                    return remoteForm.getReportPath(requestIndex, false, null, getUserPreferences());
                 }
 
                 @Override
-                public void done(Map<String, String> pathMap) throws Exception {
+                public void onResponse(long requstIndex, Map<String, String> pathMap) throws Exception {
                     for (String path : pathMap.keySet()) {
                         Desktop.getDesktop().open(new File(path));
                     }
@@ -888,13 +931,51 @@ public class ClientFormController {
         }
     }
 
+    public void runSingleGroupReport(final GroupObjectController groupController) {
+        commitOrCancelCurrentEditing();
+        try {
+            rmiQueue.syncRequest(new RmiRequest<ReportGenerationData>() {
+                @Override
+                protected ReportGenerationData doRequest(long requestIndex) throws Exception {
+                    return remoteForm.getReportData(requestIndex, groupController.getGroupObject().getID(), false, getUserPreferences());
+                }
+
+                @Override
+                public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
+                    Main.frame.runReport("SingleGroupReport_" + remoteForm.getSID(), false, generationData);
+                }
+            });
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    public void runSingleGroupXlsExport(final GroupObjectController groupController) {
+        commitOrCancelCurrentEditing();
+        try {
+            rmiQueue.syncRequest(new RmiRequest<ReportGenerationData>() {
+                @Override
+                protected ReportGenerationData doRequest(long requestIndex) throws Exception {
+                    return remoteForm.getReportData(requestIndex, groupController.getGroupObject().getID(), true, getUserPreferences());
+                }
+
+                @Override
+                public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
+                    Main.module.openInExcel(generationData);
+                }
+            });
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+
     public void okPressed() {
         commitOrCancelCurrentEditing();
         try {
-            syncProcessServerResponse(new Callable<ServerResponse>() {
+            syncProcessServerResponse(new RmiRequest<ServerResponse>() {
                 @Override
-                public ServerResponse call() throws Exception {
-                    return remoteForm.okPressed();
+                protected ServerResponse doRequest(long requestIndex) throws Exception {
+                    return remoteForm.okPressed(requestIndex);
                 }
             });
         } catch (IOException e) {
@@ -905,10 +986,10 @@ public class ClientFormController {
     void closePressed() {
         commitOrCancelCurrentEditing();
         try {
-            syncProcessServerResponse(new Callable<ServerResponse>() {
+            syncProcessServerResponse(new RmiRequest<ServerResponse>() {
                 @Override
-                public ServerResponse call() throws Exception {
-                    return remoteForm.closedPressed();
+                protected ServerResponse doRequest(long requestIndex) throws Exception {
+                    return remoteForm.closedPressed(requestIndex);
                 }
             });
         } catch (IOException e) {
@@ -916,24 +997,19 @@ public class ClientFormController {
         }
     }
 
-    private void syncProcessServerResponse(final Callable<ServerResponse> future) throws IOException {
-        processServerResponse(syncGetServerResponse(future));
+    private ServerResponse syncGetServerResponse(final RmiRequest<ServerResponse> request) {
+        return rmiQueue.syncRequest(request);
     }
 
-    private ServerResponse syncGetServerResponse(final Callable<ServerResponse> future) {
-        return rmiQueue.syncRequest(future);
+    private void syncProcessServerResponse(final RmiRequest<ServerResponse> request) throws IOException {
+        processServerResponse(syncGetServerResponse(request));
     }
 
-    private void asyncProcessServerResponse(final Callable<ServerResponse> future) throws IOException {
-        rmiQueue.asyncRequest(new CallableCallback<ServerResponse>() {
+    private void asyncProcessServerResponse(final RmiRequest<ServerResponse> request) throws IOException {
+        rmiQueue.asyncRequest(request, new Callback<ServerResponse>() {
             @Override
-            public ServerResponse call() throws Exception {
-                return future.call();
-            }
-
-            @Override
-            public void done(ServerResponse response) throws Exception {
-                actionDispatcher.dispatchResponse(response);
+            public void done(ServerResponse result) throws Exception {
+                processServerResponse(result);
             }
         });
     }

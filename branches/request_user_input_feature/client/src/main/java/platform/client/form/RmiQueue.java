@@ -1,10 +1,10 @@
 package platform.client.form;
 
 import com.google.common.base.Throwables;
-import platform.base.CallableCallback;
 import platform.base.Callback;
 import platform.base.ERunnable;
 import platform.base.Provider;
+import platform.base.Result;
 import platform.client.SwingUtils;
 import platform.interop.DaemonThreadFactory;
 
@@ -13,42 +13,27 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 public class RmiQueue {
+    private RmiFuture currentDispatchingFuture;
+
     private final Queue<RmiFuture> rmiFutures = new ArrayDeque<RmiFuture>();
     private final ExecutorService rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("-client-dispatch-"));
 
     private final TableManager tableManager;
     private final Provider<String> serverMessageProvider;
 
+    private long nextRmiRequestIndex = 0;
+
     public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider) {
         this.serverMessageProvider = serverMessageProvider;
         this.tableManager = tableManager;
     }
 
-    public void syncVoidRequest(final ERunnable runnable) {
-        syncRequest(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                runnable.run();
-                return null;
-            }
-        });
-    }
-
-    public <T> void syncRequest(CallableCallback<T> request) throws Exception {
-        syncRequest(request, request);
-    }
-
-    public <T> void syncRequest(Callable<T> request, Callback<T> callback) throws Exception {
-        callback.done(syncRequest(request));
-    }
-
-    public <T> T syncRequest(Callable<T> request) {
+    public <T> T syncRequest(final RmiRequest<T> request) {
         //todo: надо бы переделать эту логику, либо вообще убрать...
 //        boolean screenBlock = false;
 //        for (MethodInvocation invocation : invocations) {
@@ -59,11 +44,20 @@ public class RmiQueue {
         busyDisplayer.start();
 
         try {
+            final Result<T> result = new Result<T>();
+            asyncRequest(request, new Callback<T>() {
+                @Override
+                public void done(T r) throws Exception {
+                    result.set(r);
+                    request.done(r);
+                }
+            });
+
             while (!rmiFutures.isEmpty()) {
-                rmiFutures.remove().execCallback();
+                execNextFutureCallback();
             }
 
-            return request.call();
+            return result.result;
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
@@ -71,24 +65,17 @@ public class RmiQueue {
         }
     }
 
-    public void asyncVoidRequest(final ERunnable runnable) {
-        asyncRequest(new CallableCallback<Void>() {
-            @Override
-            public Void call() throws Exception {
-                runnable.run();
-                return null;
-            }
-
-            @Override
-            public void done(Void result) throws Exception {
-            }
-        });
+    public <T> void asyncRequest(RmiRequest<T> request) {
+        asyncRequest(request, request);
     }
 
-    public <T> void asyncRequest(CallableCallback<T> request) {
+    public <T> void asyncRequest(RmiRequest<T> request, Callback<T> callback) {
         SwingUtils.assertDispatchThread();
 
-        RmiFuture<T> rmiFuture = new RmiFuture<T>(request);
+        request.setRequestIndex(nextRmiRequestIndex++);
+
+        RmiFuture<T> rmiFuture = new RmiFuture<T>(request, callback);
+        request.preRequest();
 
         rmiFutures.add(rmiFuture);
         rmiExecutor.execute(rmiFuture);
@@ -110,7 +97,7 @@ public class RmiQueue {
         } else {
             while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
                 try {
-                    rmiFutures.remove().execCallback();
+                    execNextFutureCallback();
                 } catch (Exception e) {
                     Throwables.propagate(e);
                 }
@@ -118,12 +105,27 @@ public class RmiQueue {
         }
     }
 
-    public class RmiFuture<T> extends FutureTask<T> {
-        private final CallableCallback<T> callback;
+    private void execNextFutureCallback() throws Exception {
+        currentDispatchingFuture = rmiFutures.remove();
+        currentDispatchingFuture.execCallback();
+    }
 
-        public RmiFuture(CallableCallback<T> callback) {
-            super(callback);
+    public long getCurrentDispatchingRequestIndex() {
+        return currentDispatchingFuture.getRequestIndex();
+    }
+
+    public class RmiFuture<T> extends FutureTask<T> {
+        private final RmiRequest<T> request;
+        private final Callback<T> callback;
+
+        public RmiFuture(final RmiRequest<T> request, Callback<T> callback) {
+            super(request);
+            this.request = request;
             this.callback = callback;
+        }
+
+        public long getRequestIndex() {
+            return request.getRequestIndex();
         }
 
         @Override

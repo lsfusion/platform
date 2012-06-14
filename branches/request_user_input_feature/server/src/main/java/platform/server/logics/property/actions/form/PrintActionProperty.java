@@ -1,7 +1,7 @@
 package platform.server.logics.property.actions.form;
 
 import platform.base.ApiResourceBundle;
-import platform.interop.action.PrintPreviewClientAction;
+import platform.interop.action.RunPrintReportClientAction;
 import platform.server.form.entity.FormEntity;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -17,6 +17,6 @@ public class PrintActionProperty extends FormToolbarActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.delayUserInterfaction(new PrintPreviewClientAction());
+        context.delayUserInterfaction(new RunPrintReportClientAction());
     }
 }

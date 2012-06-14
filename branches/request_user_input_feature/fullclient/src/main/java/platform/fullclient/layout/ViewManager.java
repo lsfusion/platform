@@ -1,17 +1,19 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGridArea;
+import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.action.predefined.CCloseAction;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
 import net.sf.jasperreports.engine.JRException;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientModalForm;
-import platform.client.ClientResourceBundle;
 import platform.client.navigator.ClientNavigator;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 
 import javax.swing.*;
 import java.io.File;
@@ -75,12 +77,8 @@ public class ViewManager {
         new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, currentSession, true)).showDialog(showFullScreen);
     }
 
-    public void openReport(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        openForm(new ReportDockable(navigator, remoteForm, pageFactory, userPreferences));
-    }
-
-    public void openSingleGroupReport(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        openForm(new ReportDockable(navigator, remoteForm, groupId, pageFactory, userPreferences));
+    public void openReport(String formSID, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(formSID, generationData, pageFactory));
     }
 
     public void openReport(File file) throws JRException {

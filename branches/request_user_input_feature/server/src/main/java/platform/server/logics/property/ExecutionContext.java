@@ -8,7 +8,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.server.Context;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteCustomClass;
@@ -31,7 +31,9 @@ import platform.server.session.Modifier;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static platform.base.BaseUtils.join;
 
@@ -236,10 +238,11 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {
 
-        RemoteFormInterface remoteForm = createReportForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
+        RemoteForm remoteForm = createReportForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
         try {
-            ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
-            JasperPrint print = report.createReport(false, false, new HashMap(), null);
+            ReportGenerationData generationData = remoteForm.reportManager.getReportData();
+            ReportGenerator report = new ReportGenerator(generationData, BL.getTimeZone());
+            JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");
 
             JRAbstractExporter exporter = new JRPdfExporter();

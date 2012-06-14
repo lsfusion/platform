@@ -3,11 +3,9 @@ package platform.interop.action;
 import java.io.IOException;
 
 public class ProcessFormChangesClientAction extends ExecuteClientAction {
-    public final long indexStamp;
     public final byte[] formChanges;
 
-    public ProcessFormChangesClientAction(long indexStamp, byte[] formChanges) {
-        this.indexStamp = indexStamp;
+    public ProcessFormChangesClientAction(byte[] formChanges) {
         this.formChanges = formChanges;
     }
 

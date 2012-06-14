@@ -1,12 +1,16 @@
 package platform.server.form.instance;
 
+import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
 import platform.interop.Scroll;
-import platform.interop.action.*;
+import platform.interop.action.ConfirmClientAction;
+import platform.interop.action.EditNotPerformedClientAction;
+import platform.interop.action.HideFormClientAction;
+import platform.interop.action.LogMessageClientAction;
 import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ServerResponse;
@@ -258,7 +262,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                 preferences.put(propertyDrawSID, new FormColumnUserPreferences(needToHide, width));
             }
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Throwables.propagate(e);
         }
         return new FormUserPreferences(preferences);
     }
@@ -282,7 +286,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
             }
             dataSession.apply(BL);
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Throwables.propagate(e);
         }
     }
 

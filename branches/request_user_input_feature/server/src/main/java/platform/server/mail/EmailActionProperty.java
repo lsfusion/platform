@@ -14,14 +14,18 @@ import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import org.apache.log4j.Logger;
 import platform.base.ByteArray;
 import platform.interop.action.MessageClientAction;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
+import platform.server.logics.property.CalcPropertyInterfaceImplement;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
 
 import javax.mail.Message;
@@ -125,7 +129,7 @@ public class EmailActionProperty extends CustomActionProperty {
                 CalcPropertyInterfaceImplement attachmentProp = attachmentProps.get(i);
                 Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = mapObjects.get(i);
 
-                RemoteFormInterface remoteForm = createReportForm(context, form, objectsImplements);
+                RemoteForm remoteForm = createReportForm(context, form, objectsImplements);
 
                 // если объекты подошли
                 if (remoteForm != null) {
@@ -229,7 +233,7 @@ public class EmailActionProperty extends CustomActionProperty {
         return new EmailSender.AttachmentProperties(filePath, attachmentName, attachmentFormat);
     }
 
-    private RemoteFormInterface createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException {
+    private RemoteForm createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException {
         Map<ObjectEntity, DataObject> objectValues = new HashMap<ObjectEntity, DataObject>();
         for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet()) {
             ObjectValue objectValue = objectImpl.getValue().readClasses(context, context.getKeys());
@@ -241,9 +245,12 @@ public class EmailActionProperty extends CustomActionProperty {
         return context.createReportForm(form, objectValues);
     }
 
-    private String createReportFile(RemoteFormInterface remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
-        ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
-        JasperPrint print = report.createReport(false, inlineForm, attachmentFiles, null);
+    private String createReportFile(RemoteForm remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
+
+        ReportGenerationData generationData = remoteForm.reportManager.getReportData();
+
+        ReportGenerator report = new ReportGenerator(generationData, BL.getTimeZone());
+        JasperPrint print = report.createReport(inlineForm, attachmentFiles);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         try {
             String filePath = File.createTempFile("lsfReport", attachmentFormat != null ? attachmentFormat.getExtension() : null).getAbsolutePath();

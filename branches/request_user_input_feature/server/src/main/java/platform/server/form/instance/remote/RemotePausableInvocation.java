@@ -84,6 +84,8 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     }
 
     public final ServerResponse resumWithException(Exception clientException) throws RemoteException {
+        Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
+
         this.clientException = clientException;
         return resume();
     }

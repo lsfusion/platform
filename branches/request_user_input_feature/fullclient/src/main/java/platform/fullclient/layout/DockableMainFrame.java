@@ -8,7 +8,6 @@ import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
-import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.ExceptionUtils;
 import platform.client.Log;
@@ -24,8 +23,8 @@ import platform.client.navigator.ClientNavigatorForm;
 import platform.fullclient.navigator.NavigatorController;
 import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -222,32 +221,12 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+    public void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         if (isModal) {
-            try {
-                ReportDialog dlg = new ReportDialog(Main.frame, remoteForm);
-                dlg.setVisible(true);
-            } catch (JRException e) {
-                throw new RuntimeException(e);
-            }
+            ReportDialog.showReportDialog(generationData);
         } else {
-            viewManager.openReport(mainNavigator, remoteForm, userPreferences);
+            viewManager.openReport(reportSID, generationData);
         }
-    }
-
-    @Override
-    public Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        return remoteForm.getReportPath(false, null, userPreferences);
-    }
-
-    @Override
-    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        viewManager.openSingleGroupReport(mainNavigator, remoteForm, groupId, userPreferences);
-    }
-
-    @Override
-    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone, userPreferences);
     }
 
     @Override

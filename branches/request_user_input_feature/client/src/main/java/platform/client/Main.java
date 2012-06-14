@@ -20,8 +20,7 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.ServerInfo;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -125,66 +124,71 @@ public class Main {
         mainThreadGroup = new ExceptionThreadGroup();
         mainThread = new Thread(mainThreadGroup, "Init thread") {
             public void run() {
-                try {
-                    //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
+                            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    LoginAction loginAction = LoginAction.getInstance();
-                    if (!loginAction.login()) {
-                        return;
-                    }
-
-                    remoteLogics = loginAction.getRemoteLogics();
-                    remoteNavigator = loginAction.getRemoteNavigator();
-                    computerId = loginAction.getComputerId();
-
-                    timeZone = remoteLogics.getTimeZone();
-
-                    startSplashScreen();
-
-                    logger.info("Before init frame");
-                    frame = module.initFrame(remoteNavigator);
-                    logger.info("After init frame");
-
-                    pingThread = new PingThread(remoteNavigator.getClientCallBack());
-                    pingThread.start();
-                    remoteNavigator.setUpdateTime(pingThread.updateTime);
-
-                    frame.addWindowListener(
-                            new WindowAdapter() {
-                                public void windowOpened(WindowEvent e) {
-                                    closeSplashScreen();
-                                }
-
-                                public void windowClosing(WindowEvent e) {
-                                    try {
-                                        remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
-                                    } catch (Exception ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                }
+                            LoginAction loginAction = LoginAction.getInstance();
+                            if (!loginAction.login()) {
+                                return;
                             }
-                    );
 
-                    frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-                    logger.info("After setExtendedState");
+                            remoteLogics = loginAction.getRemoteLogics();
+                            remoteNavigator = loginAction.getRemoteNavigator();
+                            computerId = loginAction.getComputerId();
 
-                    ConnectionLostManager.install(frame);
+                            timeZone = remoteLogics.getTimeZone();
 
-                    frame.setVisible(true);
+                            startSplashScreen();
 
-                    ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
-                    Timer timer = new Timer();
-                    for (IDaemonTask task : tasks) {
-                        task.setEventBus(eventBus);
-                        timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
+                            logger.info("Before init frame");
+                            frame = module.initFrame(remoteNavigator);
+                            logger.info("After init frame");
+
+                            pingThread = new PingThread(remoteNavigator.getClientCallBack());
+                            pingThread.start();
+                            remoteNavigator.setUpdateTime(pingThread.updateTime);
+
+                            frame.addWindowListener(
+                                    new WindowAdapter() {
+                                        public void windowOpened(WindowEvent e) {
+                                            closeSplashScreen();
+                                        }
+
+                                        public void windowClosing(WindowEvent e) {
+                                            try {
+                                                remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
+                                            } catch (Exception ex) {
+                                                throw new RuntimeException(ex);
+                                            }
+                                        }
+                                    }
+                            );
+
+                            frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+                            logger.info("After setExtendedState");
+
+                            ConnectionLostManager.install(frame);
+
+                            frame.setVisible(true);
+
+                            ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
+                            Timer timer = new Timer();
+                            for (IDaemonTask task : tasks) {
+                                task.setEventBus(eventBus);
+                                timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
+                            }
+                            // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
+                        } catch (Exception e) {
+                            closeSplashScreen();
+                            logger.error(getString("client.error.application.initialization"), e);
+                            throw new RuntimeException(getString("client.error.application.initialization"), e);
+                        }
                     }
-                    // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
-                } catch (Exception e) {
-                    closeSplashScreen();
-                    logger.error(getString("client.error.application.initialization"), e);
-                    throw new RuntimeException(getString("client.error.application.initialization"), e);
-                }
+                });
             }
         };
         mainThread.start();
@@ -500,7 +504,7 @@ public class Main {
     public interface ModuleFactory {
         MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
 
-        void runExcel(RemoteFormInterface remoteForm, FormUserPreferences userPreferences);
+        void openInExcel(ReportGenerationData generationData);
 
         boolean isFull();
 
@@ -526,7 +530,7 @@ public class Main {
                 return new SimpleMainFrame(remoteNavigator, forms);
             }
 
-            public void runExcel(RemoteFormInterface remoteForm, FormUserPreferences preferences) {
+            public void openInExcel(ReportGenerationData generationData) {
                 // not supported
             }
 

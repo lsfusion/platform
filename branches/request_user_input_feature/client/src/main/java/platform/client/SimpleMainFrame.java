@@ -2,15 +2,14 @@ package platform.client;
 
 import platform.client.form.ClientFormController;
 import platform.client.logics.DeSerializer;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class SimpleMainFrame extends MainFrame {
@@ -45,21 +44,7 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        // надо здесь подумать, что вызывать
-    }
-
-    @Override
-    public Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-       return null;
-    }
-
-    @Override
-    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) {
-    }
-
-    @Override
-    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
+    public void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) {
     }
 
     @Override

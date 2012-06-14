@@ -10,8 +10,24 @@ import java.util.Map;
 
 import static platform.base.BaseUtils.*;
 
-public class ClientGroupObjectValue extends HashMap<ClientObject, Object>
-        implements Serializable {
+public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implements Serializable {
+    public static final ClientGroupObjectValue EMPTY = new ClientGroupObjectValue() {
+        @Override
+        public void putAll(Map<? extends ClientObject, ? extends Object> m) {
+            throw new UnsupportedOperationException("not supported");
+        }
+
+        @Override
+        public Object put(ClientObject key, Object value) {
+            throw new UnsupportedOperationException("not supported");
+        }
+
+        @Override
+        public Object remove(Object key) {
+            throw new UnsupportedOperationException("not supported");
+        }
+    };
+
     public ClientGroupObjectValue(ClientGroupObjectValue... clones) {
         super();
         for (ClientGroupObjectValue clone : clones) {

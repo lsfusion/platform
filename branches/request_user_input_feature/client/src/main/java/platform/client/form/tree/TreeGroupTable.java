@@ -220,7 +220,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
         try {
-            form.changePropertyOrder(columnKey, modiType, new ClientGroupObjectValue());
+            form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY);
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
@@ -456,7 +456,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             if (node instanceof TreeGroupNode)
                 return ((TreeGroupNode) node).key;
         }
-        return new ClientGroupObjectValue();
+        return ClientGroupObjectValue.EMPTY;
     }
 
     public void pasteTable(List<List<String>> table) {
@@ -697,7 +697,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             sortableHeaderManager.changeOrder(property, modiType);
         } else {
             //меняем напрямую для верхних groupObjects
-            form.changePropertyOrder(property, modiType, new ClientGroupObjectValue());
+            form.changePropertyOrder(property, modiType, ClientGroupObjectValue.EMPTY);
         }
     }
 

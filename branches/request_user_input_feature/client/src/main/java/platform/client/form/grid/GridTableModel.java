@@ -48,7 +48,7 @@ public class GridTableModel extends AbstractTableModel {
                 }
             } else {
                 columnPropsList.add(property);
-                columnKeysList.add(new ClientGroupObjectValue());
+                columnKeysList.add(ClientGroupObjectValue.EMPTY);
             }
         }
 

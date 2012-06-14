@@ -2,14 +2,19 @@ package platform.server.logics.property.actions;
 
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.interop.action.ReportClientAction;
 import platform.server.classes.ActionClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.*;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
@@ -103,10 +108,13 @@ public class FormActionProperty extends CustomReadValueActionProperty {
             for (ActionPropertyObjectEntity<?> startProperty : startProperties)
                 newFormInstance.instanceFactory.getInstance(startProperty).execute(new ExecutionEnvironment(newFormInstance));
 
-            context.requestUserInteraction(
-                    new FormClientAction(form.isPrintForm, newSession, isModal,
-                            context.createRemoteForm(newFormInstance))
-            );
+
+            RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
+            if (form.isPrintForm) {
+                context.requestUserInteraction(new ReportClientAction(form.getSID(), isModal, newRemoteForm.reportManager.getReportData()));
+            } else {
+                context.requestUserInteraction(new FormClientAction(isModal, newRemoteForm));
+            }
 
             FormCloseType formResult = newFormInstance.getFormResult();
 

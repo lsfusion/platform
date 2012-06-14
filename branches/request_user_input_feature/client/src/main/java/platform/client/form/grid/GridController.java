@@ -336,7 +336,7 @@ public class GridController {
     }
 
     public void setCurrentObject(ClientGroupObjectValue currentObject) {
-        table.setCurrentObjectFromServer(currentObject);
+        table.setCurrentObject(currentObject);
     }
 
     public ClientGroupObjectValue getCurrentObject() {

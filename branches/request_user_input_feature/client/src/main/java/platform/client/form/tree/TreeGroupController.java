@@ -83,7 +83,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
                         //пока не поддерживаем группы в колонках в дереве, поэтому делаем
                         if (panelProperties.contains(property)) {
-                            panel.updateColumnKeys(property, Collections.singletonList(new ClientGroupObjectValue()));
+                            panel.updateColumnKeys(property, Collections.singletonList(ClientGroupObjectValue.EMPTY));
                         }
                     }
                 }
