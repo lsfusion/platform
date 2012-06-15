@@ -2238,7 +2238,7 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
 };
 
 createBalanceMachineryPriceTransaction 'Остатки' = ACTION (stock) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceSkuLedger(item, stock);
+    SET createMachineryPriceTransactionItem(item) <- TRUE IF currentBalanceSkuStock(item, stock);
     SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка остатков';
     EXEC createMachineryPriceTransaction(stock AS stock);
 } CONFIRM IN incrementMachineryPriceGroup;
@@ -2551,7 +2551,7 @@ CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStu
 @defineDocumentHeaderDepartmentStore(actOfStudy);
 @defineDocumentHeaderPosted (actOfStudy);
 
-CLASS studyInputDetail 'Строка проработки (вход)' : outAutoBalanceSkuLedger;
+CLASS studyInputDetail 'Строка проработки (вход)' : outAutoSkuLedger;
 TABLE studyInputDetail(studyInputDetail);
 
 CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailRangeLedger, accountPriceLedger, retailPriceLedger;
@@ -2715,7 +2715,7 @@ descriptionParish 'Название документа' (parish) =
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(uniqueParish(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
-@implementBalanceSkuLedger(studyOutput, item, departmentStore);
+@implementSkuLedger(studyOutput, item, departmentStore);
 @implementBatch(studyOutput, item);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 expiryDateBatch (ledger) += expiryDateStudyOutputDetail(ledger);
@@ -2751,8 +2751,8 @@ descriptionConsumption 'Название документа' (consumption) =
 
 descriptionStudyInputDetail 'Название документа' (studyInputDetail) = descriptionConsumption(uniqueConsumption(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
 
-@implementBalanceSkuLedger(studyInput, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityStudyInputDetail(ledger);
+@implementSkuLedger(studyInput, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityStudyInputDetail(ledger);
 
 @implementAccountDocumentLedger(consumption);
 sumOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
@@ -3048,7 +3048,7 @@ differentPriceCollationSheetItem(collationSheet, item) = accountPricePageInvento
 
 fillBalanceInventory 'Заполнить остатки' (inventory) = ACTION(inventory) {
     SET quantityBalanceCollationSheetItem(collationSheet, item) AND inventoryCollationSheet(collationSheet)==inventory  AND item IS item
-        <- balanceBSkuLedgerDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
+        <- balanceBSkuStockDateTime(item, departmentStoreCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
 
 } CONFIRM;
 //  todo: зацикливается на includeCollationSheetItem, пока на action поставили - переделать потом
@@ -3094,11 +3094,11 @@ includeManyDepartmentStoreInventory(departmentStore, inventory) =
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
-CLASS ABSTRACT inventoryDetail 'Изменение остатка инвентаризации' : balanceSkuLedger; // todo : опять же для ClassWhere
+CLASS ABSTRACT inventoryDetail 'Изменение остатка инвентаризации' : skuLedger;
 TABLE inventoryDetail (inventoryDetail);
 
-CLASS outInventoryDetail 'Недостача инвентаризации' : inventoryDetail, outAutoBalanceSkuLedger;
-CLASS inInventoryDetail 'Излишки инвентаризации' : inventoryDetail, inAutoBalanceSkuLedger;
+CLASS outInventoryDetail 'Недостача инвентаризации' : inventoryDetail, outAutoSkuLedger;
+CLASS inInventoryDetail 'Излишки инвентаризации' : inventoryDetail, inAutoSkuLedger;
 
 needToOutLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) > 0
     AND includeCollationSheetItem(collationSheet, item) AND isPostedCollationSheet(collationSheet);
@@ -3140,9 +3140,9 @@ descriptionInInventoryDetail 'Название документа' (inventoryDet
 
 descriptionInventoryDetail 'Название документа' (inventoryDetail) = descriptionOutInventoryDetail(inventoryDetail) OR descriptionInInventoryDetail(inventoryDetail);
 
-@implementBalanceSkuLedger(inventory, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityOutInventoryDetail(ledger);
-quantityInAutoBalanceSkuLedger (ledger) += quantityInInventoryDetail(ledger);
+@implementSkuLedger(inventory, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityOutInventoryDetail(ledger);
+quantityInAutoSkuLedger (ledger) += quantityInInventoryDetail(ledger);
 
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
 
@@ -3231,7 +3231,7 @@ phoneCompanySpecification 'Телефон компании' (specification) = ph
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
 
-balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (specificationDetail) = balanceBSkuLedgerDateTime(
+balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (specificationDetail) = balanceBSkuStockDateTime(
                 itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail)) IN itemDetailGroup;
 
 highlightSpecificationDetail(specificationDetail) =  quantitySpecificationDetailItemSpecification(itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail)) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
@@ -3254,7 +3254,7 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
 CLASS statement 'Выписка из розницы' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
-CLASS statementDetail 'Строка выписки из розницы' : outAutoBalanceSkuLedger, salesLedger, consignmentDetail;
+CLASS statementDetail 'Строка выписки из розницы' : outAutoSkuLedger, salesLedger, consignmentDetail;
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
 @defineDocumentBasePostedDepartmentStoreItem(statement);
@@ -3321,8 +3321,8 @@ descriptionStatementDetail 'Название документа' (statementDetai
 @defineAddDetailDialogBarcode(statement, item);
 @defineAddDetailDialogTerminal(statement);
 
-@implementBalanceSkuLedger(statement, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityStatementDetail(ledger);
+@implementSkuLedger(statement, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityStatementDetail(ledger);
 
 @implementAccountDocumentLedger(statement);
 sumOutAccountDocumentLedger (ledger) += retailSumStatementDetailStatement(ledger);
@@ -3331,7 +3331,7 @@ sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerStatementDeta
 
 @implementSalesLedgerStore(statement);
 
-balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBSkuLedgerDateTime(
+balanceDepartmentStoreItemStatementDetail 'Текущий остаток' (statementDetail) = balanceBSkuStockDateTime(
                 itemStatementDetail(statementDetail), departmentStoreStatementDetail(statementDetail), dateTimeStatementDetail(statementDetail)) IN itemDetailGroup;
 
 highlightStatementDetail(statementDetail) = quantityStatementDetailItemStatement(itemStatementDetail(statementDetail), statementStatementDetail(statementDetail)) > balanceDepartmentStoreItemStatementDetail(statementDetail);
@@ -3458,7 +3458,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 @defineAddDetailDialogBarcode(shipment, item);
 @defineAddDetailDialogTerminal(shipment);
 
-@implementBalanceSkuLedger(shipment, item, departmentStore);
+@implementSkuLedger(shipment, item, departmentStore);
 @implementBatch(shipment, item);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 expiryDateBatch (ledger) += expiryDateShipmentDetail(ledger);
@@ -3549,7 +3549,7 @@ retailPriceShipmentDetail (shipmentDetail) <-
 
 // Запись текущих параметров
 balanceBeforeShipmentShipmentDetail 'Остаток до поставки' (shipmentDetail) = DATA NUMERIC[14,3] (shipmentDetail);
-balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBSkuLedgerDateTime (
+balanceBeforeShipmentShipmentDetail (shipmentDetail) <- balanceBSkuStockDateTime (
                 itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateTimeShipmentDetail(shipmentDetail))
                 WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
@@ -3608,7 +3608,7 @@ needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipme
 
 CLASS wastage 'Списание отходов' : outAccountDocumentLedger, historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
-CLASS wastageDetail 'Строка документа': outAutoBalanceSkuLedger;
+CLASS wastageDetail 'Строка документа': outAutoSkuLedger;
 
 @defineDocumentAggregation (shipment, wastage, needToWasteShipment);
 
@@ -3652,8 +3652,8 @@ descriptionWastage 'Название документа' (wastage) =
 
 descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
 
-@implementBalanceSkuLedger(wastage, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityWastageDetail(ledger);
+@implementSkuLedger(wastage, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityWastageDetail(ledger);
 
 @implementAccountDocumentLedger(wastage);
 sumOutAccountDocumentLedger (ledger) += retailSumWastageDetailWastage(ledger);
@@ -3683,7 +3683,7 @@ FORM reasonOff 'Причина списания'
 ;
 
 CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedObject;
-CLASS writeOffDetail 'Строка списания' : outAutoBalanceSkuLedger;
+CLASS writeOffDetail 'Строка списания' : outAutoSkuLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
 @defineDocumentBasePostedDepartmentStoreItem (writeOff);
@@ -3708,7 +3708,7 @@ reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (wri
 nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
 
 balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDetail) =
-    currentBalanceSkuLedger(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail)) PERSISTENT;
+    currentBalanceSkuStock(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail)) PERSISTENT;
 
 descriptionWriteOff 'Название документа' (writeOff) =
     [FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
@@ -3720,8 +3720,8 @@ descriptionWriteOffDetail 'Название документа' (writeOffDetail)
 @defineAddDetailDialogBarcode(writeOff, item);
 @defineAddDetailDialogTerminal(writeOff);
 
-@implementBalanceSkuLedger(writeOff, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityWriteOffDetail(ledger);
+@implementSkuLedger(writeOff, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 
 @implementAccountDocumentLedger(writeOff);
 sumOutAccountDocumentLedger (ledger) += accountSumWriteOffDetailWriteOff(ledger);
@@ -3731,7 +3731,7 @@ sumContainerOutAccountDocumentLedger (ledger) += accountSumContainerWriteOffDeta
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 
 CLASS innerFlow 'Расход в отдел' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
-CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoBalanceSkuLedger, consignmentDetail;
+CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoSkuLedger, consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
 @defineDocumentBasePostedDepartmentStoreItem (innerFlow);
@@ -3762,8 +3762,8 @@ descriptionInnerFlowDetail 'Название документа' (innerFlowDetai
 @defineAddDetailDialogBarcode(innerFlow, item);
 @defineAddDetailDialogTerminal(innerFlow);
 
-@implementBalanceSkuLedger(innerFlow, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
+@implementSkuLedger(innerFlow, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 
 @implementAccountDocumentLedger(innerFlow);
 sumOutAccountDocumentLedger (ledger) += retailSumInnerFlowDetailInnerFlow(ledger);
@@ -3816,7 +3816,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 
 
 CLASS innerArrival 'Приход в отдел' : incAccountDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : inTransferBalanceSkuLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : inTransferSkuLedger, importerPriceLedger, supplierPriceLedger, accountPriceLedger, retailPriceLedger, retailRangeLedger, warePriceLedger, inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
 
@@ -3859,7 +3859,7 @@ CONSTRAINT recipientDepartmentInnerFlow(innerFlowInnerArrival(innerArrival)) != 
     MESSAGE 'Накладная с другого отдела';
 
 balanceBeforeInnerArrivalInnerArrivalDetail 'Остаток до' (innerArrivalDetail) = DATA NUMERIC[14,3] (innerArrivalDetail);
-balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBSkuLedgerDateTime (
+balanceBeforeInnerArrivalInnerArrivalDetail(innerArrivalDetail) <- balanceBSkuStockDateTime (
                 itemInnerArrivalDetail(innerArrivalDetail), departmentStoreInnerArrivalDetail(innerArrivalDetail), dateTimeInnerArrivalDetail(innerArrivalDetail))
                 WHEN CHANGED(itemInnerArrivalDetail(innerArrivalDetail));
 
@@ -3920,17 +3920,17 @@ descriptionInnerArrivalDetail 'Название документа' (innerArriva
 
 // для расчета себестоимости
 
-quantityInnerFlowBatch (innerFlow, batch) = GROUP SUM costBalanceSkuLedgerBatch (innerFlowDetail, batch)
+quantityInnerFlowBatch (innerFlow, batch) = GROUP SUM costSkuLedgerBatch (innerFlowDetail, batch)
                                                   BY innerFlowInnerFlowDetail(innerFlowDetail), batch;
 
 quantityInnerArrivalBatch (innerArrival, batch) = quantityInnerFlowBatch (innerFlowInnerArrival(innerArrival), batch);
 
 quantityInnerArrivalDetailBatch (innerArrivalDetail, batch) = quantityInnerArrivalBatch(innerArrivalInnerArrivalDetail(innerArrivalDetail), batch);
 
-limitInTransferBalanceSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
+limitInTransferSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
 
-@implementBalanceSkuLedger(innerArrival, item, departmentStore);
-quantityInTransferBalanceSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
+@implementSkuLedger(innerArrival, item, departmentStore);
+quantityInTransferSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
 
 @implementBaseSkuDepartmentStoreLedger(innerArrival, item);
 
@@ -3984,7 +3984,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
-CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserBalanceSkuLedger, consignmentDetail;
+CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserSkuLedger, consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
 @defineDocumentBasePostedDepartmentStoreItem(returnSupplier);
@@ -4082,9 +4082,9 @@ descriptionReturnSupplierDetail 'Название документа' (returnSup
 @defineAddDetailDialogBarcode(returnSupplier, item);
 @defineAddDetailDialogTerminal(returnSupplier);
 
-@implementBalanceSkuLedger(returnSupplier, item, departmentStore);
-quantityOutUserBalanceSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
-batchOutUserBalanceSkuLedger (ledger) += batchReturnSupplierDetail(ledger);
+@implementSkuLedger(returnSupplier, item, departmentStore);
+quantityOutUserSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
+batchOutUserSkuLedger (ledger) += batchReturnSupplierDetail(ledger);
 
 @implementAccountDocumentLedger(returnSupplier);
 sumOutAccountDocumentLedger (ledger) += retailSumReturnSupplierDetailReturnSupplier(ledger);
@@ -4176,8 +4176,8 @@ dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
 CLASS bill 'Чек' : historyObject;
 
 CLASS ABSTRACT billDetail 'Строка чека';
-CLASS billSaleDetail 'Строка продажи' : billDetail, outAutoBalanceSkuLedger, salesLedger;
-CLASS billReturnDetail 'Строка возврата' : billDetail, inAutoBalanceSkuLedger;
+CLASS billSaleDetail 'Строка продажи' : billDetail, outAutoSkuLedger, salesLedger;
+CLASS billReturnDetail 'Строка возврата' : billDetail, inAutoSkuLedger;
 
 TABLE bill (bill);
 TABLE billSaleDetail (billSaleDetail);
@@ -4285,9 +4285,9 @@ descriptionBillDetail (billDetail) = descriptionBillReturnDetail(billDetail) OR 
 @defineAddDetailDialogSkuStockCustom(bill, billSaleDetail, ' (продажа)', item, departmentStore, dialogSku);
 @defineAddDetailDialogSkuStockCustom(bill, billReturnDetail, ' (возврат)', item, departmentStore, dialogSku);
 
-@implementBalanceSkuLedger(bill, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityBillSaleDetail(ledger);
-quantityInAutoBalanceSkuLedger (ledger) += quantityBillReturnDetail(ledger);
+@implementSkuLedger(bill, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityBillSaleDetail(ledger);
+quantityInAutoSkuLedger (ledger) += quantityBillReturnDetail(ledger);
 
 @implementSalesLedgerStore(billSale);
 
@@ -4478,7 +4478,7 @@ CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'У
 
 CLASS disparity 'Пересортица' : historyObject, numeratedObject, priceTransactionDocument;
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
-CLASS disparityDetail 'Строка пересортицы': outAutoBalanceSkuLedger;
+CLASS disparityDetail 'Строка пересортицы': outAutoSkuLedger;
 
 @defineDocumentBasePostedDepartmentStoreItem(disparity);
 @defineDocumentHeaderPriceChange(disparity);
@@ -4501,8 +4501,8 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
 @defineAddDetailDialogBarcode(disparity, item);
 @defineAddDetailDialogTerminal(disparity);
 
-@implementBalanceSkuLedger(disparity, item, departmentStore);
-quantityOutAutoBalanceSkuLedger (ledger) += quantityDisparityDetail(ledger);
+@implementSkuLedger(disparity, item, departmentStore);
+quantityOutAutoSkuLedger (ledger) += quantityDisparityDetail(ledger);
 
                                   // Приход
 
@@ -4525,7 +4525,7 @@ inputRetailSumDisparityDetail 'Розничная сумма (приход)'(dis
 @derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, inputCur, inputItem);
 
 balanceBeforeDisparityDetail 'Остаток до пересорта (расход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN baseGroup;
-balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuLedgerDateTime (
+balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuStockDateTime (
                 itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(itemDisparityDetail(disparityDetail));
 
@@ -4552,7 +4552,7 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
 
-@implementBalanceSkuLedger(inputDisparity, item, departmentStore);
+@implementSkuLedger(inputDisparity, item, departmentStore);
 @implementBatch(inputDisparity, item);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateInputDisparityDetail(ledger);
@@ -4568,7 +4568,7 @@ descriptionPriceTransactionDocument (document) += descriptionDisparity(document)
 // ---------------------------------- Дооценка остатка при пересорте ------------------------------------------
 
 inputBalanceBeforeDisparityDetail 'Остаток до пересорта (приход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN priceDetailGroup;
-inputBalanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuLedgerDateTime (
+inputBalanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuStockDateTime (
                 inputItemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
                 WHEN CHANGED(inputItemDisparityDetail(disparityDetail));
 
@@ -5052,7 +5052,7 @@ quantityDaysAfterNextOrder 'Дней до следующей поставки' (
 
 CONSTRAINT nextDateOrderSupplier(orderSupplier) < dateOrderSupplier(orderSupplier) MESSAGE 'Дата поставки не должна превышать дату поставки следующей поставки';
 
-currentBalanceOrderSupplierItem 'Текущий остаток' (orderSupplier, item) = currentBalanceSkuLedger(item, departmentStoreOrderSupplier(orderSupplier));
+currentBalanceOrderSupplierItem 'Текущий остаток' (orderSupplier, item) = currentBalanceSkuStock(item, departmentStoreOrderSupplier(orderSupplier));
 
 quantityToSellNextOrder 'Предполагаемое количество реализации товара до следующей поставки' (orderSupplier, item) =
     averageSoldSkuStock(item, departmentStoreOrderSupplier(orderSupplier)) * daysInclBetweenDates(currentDate(), nextDateOrderSupplier(orderSupplier));
@@ -6315,7 +6315,7 @@ FORM shipment 'Поставка'
     FILTERS isShippedOrOrderedItemShipment(i, s)
 
     HINTNOUPDATE LIST isPostedShipment,
-                  balanceBSkuLedgerDateTime, importerPriceBLedgerDateTime, wareBLedgerDateTime, warePriceBLedgerDateTime,
+                  balanceBSkuStockDateTime, importerPriceBLedgerDateTime, wareBLedgerDateTime, warePriceBLedgerDateTime,
                   retailRangeBLedgerDateTime, retailPriceBLedgerDateTime, supplierPriceBLedgerDateTime, accountPriceBLedgerDateTime
 
     EDIT shipment OBJECT s
@@ -8511,7 +8511,7 @@ FORM bills 'Чеки'
 
     OBJECTS d=billDetail
     PROPERTIES(d) READONLY  objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
-                            supplierSumBalanceSkuLedger, retailSumBillDetail, discountSumBillDetail
+                            supplierSumSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
 
@@ -8827,17 +8827,17 @@ retailSumSoldResidentByStatisticGroupDateFromTo 'Продано, руб.' (stati
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
 netWeightBalanceAItemLedgerDate 'Вес товара на конец , кг' (item, departmentStore, dateTo) =
-    balanceASkuLedgerDate (item, departmentStore, dateTo) * (UNION OVERRIDE 1 IF item IS item, netWeightItem(item) AND NOT isWeightItem(item));
+    balanceASkuStockDate (item, departmentStore, dateTo) * (UNION OVERRIDE 1 IF item IS item, netWeightItem(item) AND NOT isWeightItem(item));
 volumeBalanceAItemLedgerDate 'Объем товара на конец , л' (item, departmentStore, dateTo) =
-    balanceASkuLedgerDate (item, departmentStore, dateTo) * volumeItem(item);
+    balanceASkuStockDate (item, departmentStore, dateTo) * volumeItem(item);
 retailSumBalanceAItemLedgerDate 'Сумма товара на конец , руб' (item, departmentStore, dateTo) =
-    retailPriceALedgerDate (item, departmentStore, dateTo) * balanceASkuLedgerDate(item, departmentStore, dateTo);
-//balanceASkuLedgerDate (item, departmentStore, dateTo)    - шт.
+    retailPriceALedgerDate (item, departmentStore, dateTo) * balanceASkuStockDate(item, departmentStore, dateTo);
+//balanceASkuStockDate (item, departmentStore, dateTo)    - шт.
 
                                    //с коэффициентом пересчета на коцен//
 // всего
 balanceByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, departmentStore, dateTo)=
-    [GROUP SUM balanceASkuLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM balanceASkuStockDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 netWeightByStatisticGroupDateTo 'Вес на конец, кг' (statisticGroup, departmentStore, dateTo)=
@@ -8855,7 +8855,7 @@ retailSumByStatisticGroupDateTo 'Сумма на конец, руб' (statisticG
 
 // бел. пр-ва
 balanceResidentByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, departmentStore, dateTo)=
-    [GROUP SUM balanceASkuLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM balanceASkuStockDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, departmentStore, dateTo](statisticGroup, departmentStore, dateTo)/
         (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 netWeightResidentByStatisticGroupDateTo 'Вес на конец, кг' (statisticGroup, departmentStore, dateTo)=
@@ -8940,9 +8940,9 @@ FORM statisticalReport '12-Торг (продажи) справочно'
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
 
-    PROPERTIES        balanceBSkuLedgerDate(i, dep, dFrom),
+    PROPERTIES        balanceBSkuStockDate(i, dep, dFrom),
                       quantitySoldSkuStockDateFromTo(i, dep, dFrom, dTo),
-                      balanceASkuLedgerDate(i, dep, dTo)
+                      balanceASkuStockDate(i, dep, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateFromTo(g, ds, dFrom, dTo), valueResidentByStatisticGroupDateFromTo(g, ds, dFrom, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ds, dTo), valueResidentByStatisticGroupDateTo(g, ds, dTo)
     PROPERTIES  FORCE PANEL retailSumCardDepartmentDateFromTo(ds, dFrom, dTo), retailSumSaleDepartmentDateFromTo(ds, dFrom, dTo)
@@ -9049,7 +9049,7 @@ retailSumSoldResidentByStatisticGroupRegionDateFromTo 'Продано, руб.' 
                              //с коэффициентом пересчета на коцен//
 // всего
 balanceByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, company, region, dateTo)=
-    [GROUP SUM balanceASkuLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM balanceASkuStockDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
         (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
@@ -9069,7 +9069,7 @@ retailSumByStatisticGroupRegionDateTo 'Сумма на конец, руб' (stat
         (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 // белорусского производства
 balanceResidentByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, company, region, dateTo)=
-    [GROUP SUM balanceASkuLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
+    [GROUP SUM balanceASkuStockDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
         (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 

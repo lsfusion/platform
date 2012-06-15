@@ -49,9 +49,9 @@ public class GenerateZReport extends ScriptingActionProperty {
             newKeys.put("item", itemExpr);
 
             Query<Object, Object> query = new Query<Object, Object>(newKeys);
-            query.properties.put("currentBalanceSkuLedger", getLP("currentBalanceSkuLedger").getExpr(itemExpr, departmentStoreExpr));
+            query.properties.put("currentBalanceSkuStock", getLP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
             query.properties.put("currentRetailPriceLedger", getLP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
-            query.and(getLP("currentBalanceSkuLedger").getExpr(itemExpr, departmentStoreExpr).getWhere());
+            query.and(getLP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr).getWhere());
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -59,14 +59,14 @@ public class GenerateZReport extends ScriptingActionProperty {
             List<Integer> departmentStoreList = new ArrayList<Integer>();
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
                 DataObject itemObject = new DataObject(rows.getKey().get("item"), (ConcreteClass) getClass("item"));
-                Double currentBalanceSkuLedger = (Double) rows.getValue().get("currentBalanceSkuLedger");
-                if (currentBalanceSkuLedger > 0) {
+                Double currentBalanceSkuStock = (Double) rows.getValue().get("currentBalanceSkuStock");
+                if (currentBalanceSkuStock > 0) {
                     Integer departmentStore = (Integer) rows.getKey().get("departmentStore");
                     if ((departmentStore != null) && (!departmentStoreList.contains(departmentStore)))
                         departmentStoreList.add(departmentStore);
                     Double currentRetailPriceLedger = (Double) rows.getValue().get("currentRetailPriceLedger");
                     String barcodeItem = (String) getLP("idBarcodeSku").read(session, session.modifier, itemObject);
-                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuLedger, currentRetailPriceLedger, departmentStore));
+                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, departmentStore));
                 }
             }
 
@@ -135,9 +135,9 @@ public class GenerateZReport extends ScriptingActionProperty {
                         Time time = new Time(r.nextLong() % date.getTime());
                         Integer currentBillDetailCount = addDeviation(billDetailCount, 0.25, r);
                         for (ItemZReportInfo itemZReportInfo : itemZReportInfoList) {
-                            Double currentBalanceSkuLedger = itemZReportInfo.count;
-                            if ((currentBalanceSkuLedger > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
-                                Double quantityBillDetail = (double) r.nextInt((int) Math.ceil(currentBalanceSkuLedger / 5));
+                            Double currentBalanceSkuStock = itemZReportInfo.count;
+                            if ((currentBalanceSkuStock > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
+                                Double quantityBillDetail = (double) r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
                                 if ((quantityBillDetail > 0) && (currentBillDetailCount >= numberBillDetail)) {
                                     Double sumBillDetail = quantityBillDetail * (itemZReportInfo.price == null ? 0 : itemZReportInfo.price);
                                     numberBillDetail++;

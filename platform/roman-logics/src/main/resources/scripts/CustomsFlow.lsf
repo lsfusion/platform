@@ -15,18 +15,18 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
 
 CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
-CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
+CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
 declarationDetailCStoWHDetail 'Партия (ИД)' = DATA declarationDetail (CStoWHDetail);
 declarationCStoWHDetail 'Декларация (ИД)' (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
-batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCStoWHDetail (outUserBalanceSkuLedger);
+batchOutUserSkuLedger (outUserSkuLedger) += declarationDetailCStoWHDetail (outUserSkuLedger);
 
 skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 
 @defineRBCorrespondingDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ', warehouse, 'Оптовый склад');
 
-quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCStoWHDetail (outUserBalanceSkuLedger);
+quantityOutUserSkuLedger (outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
 
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
@@ -43,7 +43,7 @@ quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHD
 
 // подбор строк для расхода
 currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
-    currentBalanceBatchLedger(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
+    currentBalanceBatchStock(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
 
 currentBalanceBDeclaration 'Текущий остаток по декларации' (declaration) = GROUP SUM currentBalanceDeclarationDetail (declarationDetail)
     IF declarationDeclarationDetail(declarationDetail) == declaration BY declaration;

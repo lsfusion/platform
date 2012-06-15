@@ -20,7 +20,7 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
     description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
 
-    @implementBalanceSkuLedger (object, skuProp, stock);
+    @implementSkuLedger (object, skuProp, stock);
 
     @defineDocumentDetailProps (object);
 

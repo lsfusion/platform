@@ -2,7 +2,7 @@ MODULE Sales;
 
 REQUIRE System, Stock, Tax;
 
-CLASS ABSTRACT salesLedger 'Продажа товара' : balanceSkuLedger;
+CLASS ABSTRACT salesLedger 'Продажа товара' : skuLedger;
 TABLE salesLedger(salesLedger);
 
 dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;
@@ -28,7 +28,7 @@ valueVATSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSalesLedger(led
 sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         sumSalesLedger(ledger), valueVATSalesLedger(ledger));
 
-markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - supplierSumBalanceSkuLedger(ledger);
+markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - supplierSumSkuLedger(ledger);
 
 quantitySoldSkuStockDateFromTo 'Продано за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
@@ -48,7 +48,7 @@ calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
     LOCAL dateCur = DATE();
 
     SET dateCur() <- (dateFrom AS DATE);
-    SET balance(sku, stock) <- balanceBSkuLedgerDate(sku, stock, dateFrom);
+    SET balance(sku, stock) <- balanceBSkuStockDate(sku, stock, dateFrom);
 
     WHILE dateCur() <= (dateTo AS DATE) DO {
         SET days(sku, stock) <- days(sku, stock) (+)
@@ -73,7 +73,7 @@ FORM salesLedger 'Продажи по позициям'
 
     OBJECTS s = salesLedger
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, supplierSumBalanceSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger
+                           quantitySalesLedger, supplierSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger
     FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
@@ -96,9 +96,9 @@ FORM salesSkuStock 'Продажи по SKU'
                       isParentStockGroupStock(sg, st)
     ORDER BY          nameSku
 
-    PROPERTIES        balanceBSkuLedgerDate(s, st, dFrom),
+    PROPERTIES        balanceBSkuStockDate(s, st, dFrom),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
-                      balanceASkuLedgerDate(s, st, dTo)
+                      balanceASkuStockDate(s, st, dTo)
 ;
 
 DESIGN salesSkuStock FROM DEFAULT {

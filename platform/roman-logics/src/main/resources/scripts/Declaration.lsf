@@ -31,12 +31,12 @@ NAMESPACE RB;
 //
 //END
 
-barcodeLedger 'Штрих-код' (ledger) = barcode(skuBalanceSkuLedger(ledger));
-sidSizeLedger 'Размер' (ledger) = sidSizeSupplierItem(skuBalanceSkuLedger(ledger));
-sidColorLedger 'Цвет (код)' (ledger) = sidColorSupplierItem(skuBalanceSkuLedger(ledger));
-nameColorLedger 'Цвет' (ledger) = nameColorSupplierItem(skuBalanceSkuLedger(ledger));
+barcodeLedger 'Штрих-код' (ledger) = barcode(skuSkuLedger(ledger));
+sidSizeLedger 'Размер' (ledger) = sidSizeSupplierItem(skuSkuLedger(ledger));
+sidColorLedger 'Цвет (код)' (ledger) = sidColorSupplierItem(skuSkuLedger(ledger));
+nameColorLedger 'Цвет' (ledger) = nameColorSupplierItem(skuSkuLedger(ledger));
 
-articleLedger 'Артикул (ИД)' (ledger) = articleSku(skuBalanceSkuLedger(ledger)) IN idGroup;
+articleLedger 'Артикул (ИД)' (ledger) = articleSku(skuSkuLedger(ledger)) IN idGroup;
 sidArticleLedger 'Артикул' (ledger) = sidArticle(articleLedger(ledger));
 brandLedger 'Бренд (ИД)' (ledger) = brandSupplierArticle(articleLedger(ledger)) IN idGroup;
 nameBrandLedger 'Бренд' (ledger) = name(brandLedger(ledger));
@@ -297,10 +297,10 @@ descriptionDeclarationDetail = descriptionDeclaration(declarationDeclarationDeta
 @implementBatch(declaration, sku);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
 
-@implementBalanceSkuLedger(declaration, sku, customStore);
+@implementSkuLedger(declaration, sku, customStore);
 
-isPostedBalanceSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
-quantityInAutoBalanceSkuLedger (ledger) += quantityDeclarationDetail(ledger);
+isPostedSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
+quantityInAutoSkuLedger (ledger) += quantityDeclarationDetail(ledger);
 
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX

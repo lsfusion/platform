@@ -18,7 +18,7 @@ PRIORITY Stock, RomanLogicsModule;
 CLASS WHfromCS 'Приход на склад' : historyObject;
 CLASS WHfromCSPosted 'Закрытый приход с СВХ' : WHfromCS, postedObject;
 
-CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferBalanceSkuLedger;
+CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferSkuLedger;
 
 CLASS inWarehouseScan 'Сканирование';
 
@@ -50,7 +50,7 @@ descriptionWHfromCSDetail 'Описание' (WHfromCSDetail) = DATA STRING[100]
 quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
 quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
 
-limitInTransferBalanceSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
+limitInTransferSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
 
 quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
                                                   BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
@@ -60,7 +60,7 @@ quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
 
 quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
 
-@implementBalanceSkuLedger (WHfromCS, sku, warehouse);
+@implementSkuLedger (WHfromCS, sku, warehouse);
 
 currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
     BY declarationDeclarationDetail (declarationDetail);
@@ -122,7 +122,7 @@ FORM WHfromCSs 'Приходы на оптовый склад'
                    postWHfromCS SHOWIF isDraftWHfromCS(w), unpostWHfromCS SHOWIF isPostedWHfromCS(w)
 
     OBJECTS d = WHfromCSDetail
-    PROPERTIES(d) READONLY isPostedBalanceSkuLedger, indexWHfromCSDetail, barcodeWHfromCSDetail,
+    PROPERTIES(d) READONLY isPostedSkuLedger, indexWHfromCSDetail, barcodeWHfromCSDetail,
                            nameBrandWHfromCSDetail, sidArticleWHfromCSDetail, sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail,
                            quantityOriginWHfromCSDetail, quantityWHfromCSDetail
 
