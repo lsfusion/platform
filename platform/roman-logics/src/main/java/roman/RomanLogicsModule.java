@@ -1397,7 +1397,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         pallet = addConcreteClass("pallet", "Паллета", baseLM.barcodeObject);
 
-        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named);
+        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, (CustomClass) BL.Stock.getClassByName("skuGroup"));
 
         customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
 
