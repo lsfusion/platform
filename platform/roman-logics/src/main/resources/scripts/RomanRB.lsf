@@ -12,6 +12,7 @@ REQUIRE System,
         Declaration,
         CStoWH,
         WHfromCS,
+        WHtoS,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -443,6 +444,13 @@ NAVIGATOR {
         ADD consignmentSimpleAttach;
         ADD consignment;
     }
+
+    baseElement {
+        NEW merchandising 'Товародвижение' {  //TO leftToolbar
+            ADD WHtoSs;
+        }
+    }
+
     adminElement {
         ADD certificate;
         ADD declaration;
@@ -456,6 +464,7 @@ NAVIGATOR {
         ADD numerator;
         ADD CStoWH;
         ADD WHfromCS;
+        ADD WHtoS;
         ADD declarationDetailCStoWHInput;
         ADD unitsOfMeasure;
         ADD tax;

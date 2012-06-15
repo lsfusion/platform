@@ -126,19 +126,23 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
         SET quantityInputDeclarationDetail(declarationDetail) <- NULL;
 } TOOLBAR;
 
+@defineAddDetailDialogBarcode(CStoWH, sku);
+//@defineAddDetailDialogTerminal(WHtoS);
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
                    inputDeclarationDetailCStoWH, deleteCStoWHDetailCStoWH, declarationsCStoWH,
-                   innerInvoicesCStoWH, shortNameCurrencyCStoWH, addDetailDialogSkuCStoWHDetailCStoWH
+                   innerInvoicesCStoWH, shortNameCurrencyCStoWH
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
                   nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
                   priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
     PROPERTIES(d) ADDOBJ, delete
+    PROPERTIES(c) TODRAW d addDetailDialogSkuCStoWHDetailCStoWH, addDetailDialogBarcodeCStoWHDetailCStoWH,
+                  deleteCStoWHDetailCStoWH //addDetailDialogTerminalCStoWHDetailCStoWH
 
     FILTERS inCStoWHCStoWHDetail(c, d)
 

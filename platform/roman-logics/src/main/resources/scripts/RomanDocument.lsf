@@ -24,11 +24,6 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
     @defineDocumentDetailProps (object);
 
-    @defineDialogSku(dialogSku);
-    @defineDialogSkuBarcode(dialogSku);
-    @defineDialogSkuSupplier(dialogSku);
-  //  @defineDialogSkuStorePrice(dialogSku);
-
     @defineAddDetailDialogSkuStock(object, sku, stock, dialogSku);
 END
 
@@ -58,4 +53,8 @@ META defineDocumentDetailProps (object)
     nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail));
 END
 
-
+//-----------Для подбора товаров------------------//
+    @defineDialogSku(dialogSku);
+    @defineDialogSkuBarcode(dialogSku);
+    @defineDialogSkuSupplier(dialogSku);
+  //  @defineDialogSkuStorePrice(dialogSku);
