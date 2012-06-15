@@ -53,10 +53,7 @@ quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfr
 limitInTransferSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
 
 quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
-                                                  BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
-
-//articleWHfromCSDetail 'Артикул (ИД)' (WHfromCSDetail) = articleSku(skuWHfromCSDetail(WHfromCSDetail));
-//sidArticleWHfromCSDetail 'Артикул' (WHfromCSDetail) = sidArticle(articleWHfromCSDetail(WHfromCSDetail));
+                                          BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
 
 quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
 
