@@ -3533,24 +3533,24 @@ public class RomanLogicsModule extends LogicsModule {
 
     private void initNavigators() {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор");
+        ToolBarNavigatorWindow mainToolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор"));
         mainToolbar.titleShown = false;
         mainToolbar.drawScrollBars = false;
 
         baseLM.navigatorWindow.y = 10;
         baseLM.navigatorWindow.height -= 10;
 
-        PanelNavigatorWindow generateToolbar = new PanelNavigatorWindow(SwingConstants.HORIZONTAL, "generateToolbar", "Генерация");
+        PanelNavigatorWindow generateToolbar = addWindow(new PanelNavigatorWindow(SwingConstants.HORIZONTAL, "generateToolbar", "Генерация"));
         generateToolbar.titleShown = false;
         generateToolbar.drawRoot = true;
         generateToolbar.drawScrollBars = false;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список");
+        ToolBarNavigatorWindow leftToolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список"));
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
 
-        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты");
+        TreeNavigatorWindow objectsWindow = addWindow(new TreeNavigatorWindow("objectsWindow", "Объекты"));
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 

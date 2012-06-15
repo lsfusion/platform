@@ -446,7 +446,7 @@ NAVIGATOR {
     }
 
     baseElement {
-        NEW merchandising 'Товародвижение' {  //TO leftToolbar
+        NEW merchandising 'Товародвижение' TO leftToolbar {
             ADD WHtoSs;
         }
     }

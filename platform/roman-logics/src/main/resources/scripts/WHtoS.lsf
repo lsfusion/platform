@@ -173,3 +173,4 @@ grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHtoS (consignme
 //isCustomsFlowConsignment (consignment) += consignment IS WHtoS;
 noteConsignment(consignment) += noteWHtoS(consignment);
 
+//todo: Надо наполнить свойствами накладную.
