@@ -40,6 +40,7 @@ public class RmiQueue {
 //            screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
 //        }
 
+//        System.out.println("----Sync request # " + nextRmiRequestIndex);
         BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
         busyDisplayer.start();
 
@@ -70,6 +71,7 @@ public class RmiQueue {
     }
 
     public <T> void asyncRequest(RmiRequest<T> request, Callback<T> callback) {
+//        System.out.println("----Async request # " + nextRmiRequestIndex);
         SwingUtils.assertDispatchThread();
 
         request.setRequestIndex(nextRmiRequestIndex++);

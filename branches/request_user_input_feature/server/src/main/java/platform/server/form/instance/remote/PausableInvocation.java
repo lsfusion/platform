@@ -5,6 +5,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 
 public abstract class PausableInvocation<T, E extends Exception> {
+    protected final String sid;
     private final ExecutorService invocationsExecutor;
 
     private InvocationResult invocationResult;
@@ -18,7 +19,8 @@ public abstract class PausableInvocation<T, E extends Exception> {
     /**
      * @param invocationsExecutor
      */
-    public PausableInvocation(ExecutorService invocationsExecutor) {
+    public PausableInvocation(String sid, ExecutorService invocationsExecutor) {
+        this.sid = sid;
         this.invocationsExecutor = invocationsExecutor;
     }
 
@@ -38,7 +40,7 @@ public abstract class PausableInvocation<T, E extends Exception> {
                 try {
                     runInvocation();
                     invocationResult = InvocationResult.FINISHED;
-                } catch (Exception t) {
+                } catch (Throwable t) {
                     invocationResult = new InvocationResult(t);
                 }
 
@@ -60,7 +62,7 @@ public abstract class PausableInvocation<T, E extends Exception> {
     /**
      * рабочий поток
      */
-    protected abstract void runInvocation() throws Exception;
+    protected abstract void runInvocation() throws Throwable;
 
     /**
      * основной поток

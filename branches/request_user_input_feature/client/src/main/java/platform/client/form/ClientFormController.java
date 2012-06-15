@@ -327,27 +327,19 @@ public class ClientFormController {
     private void applyUserProperties() throws Exception {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new RmiRequest<FormUserPreferences>() {
-            @Override
-            protected FormUserPreferences doRequest(long requestIndex) throws Exception {
-                return remoteForm.getUserPreferences();
-            }
-
-            @Override
-            public void onResponse(long requestIndex, FormUserPreferences preferences) throws Exception {
-                if (preferences != null) {
-                    for (ClientPropertyDraw property : form.getPropertyDraws()) {
-                        String propertySID = property.getSID();
-                        if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
-                            property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
-                            if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null) {
-                                property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
-                            }
-                        }
+        //не посылаем в rmiQueue, т.к. ImmutableMethod и значит не будет rmi-call'а
+        FormUserPreferences preferences = remoteForm.getUserPreferences();
+        if (preferences != null) {
+            for (ClientPropertyDraw property : form.getPropertyDraws()) {
+                String propertySID = property.getSID();
+                if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
+                    property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
+                    if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null) {
+                        property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
                     }
                 }
             }
-        });
+        }
     }
 
     private void initializeDefaultOrders() throws IOException {

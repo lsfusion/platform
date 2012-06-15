@@ -770,7 +770,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         final ActionProperty property = ((NavigatorAction) element).getProperty();
         currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
-            protected ServerResponse callInvocation() throws Exception {
+            protected ServerResponse callInvocation() throws Throwable {
                 DataSession session = createSession();
                 property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
                 session.apply(BL);

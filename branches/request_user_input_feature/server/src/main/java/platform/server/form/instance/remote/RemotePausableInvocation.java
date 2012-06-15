@@ -22,7 +22,11 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * @param invocationsExecutor
      */
     public RemotePausableInvocation(ExecutorService invocationsExecutor, RemoteContextObject remoteObject) {
-        super(invocationsExecutor);
+        this(null, invocationsExecutor, remoteObject);
+    }
+
+    public RemotePausableInvocation(String sid, ExecutorService invocationsExecutor, RemoteContextObject remoteObject) {
+        super(sid, invocationsExecutor);
         this.remoteObject = remoteObject;
     }
 
@@ -95,7 +99,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * по умолчанию вызывает {@link RemotePausableInvocation#callInvocation()}, и возвращает его результат из {@link RemotePausableInvocation#handleFinished()}
      * @throws Throwable
      */
-    protected void runInvocation() throws Exception {
+    protected void runInvocation() throws Throwable {
         remoteObject.threads.add(Thread.currentThread());
         try {
             invocationResult = callInvocation();
@@ -112,7 +116,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * @return
      * @throws Throwable
      */
-    protected ServerResponse callInvocation() throws Exception {
+    protected ServerResponse callInvocation() throws Throwable {
         return null;
     }
 

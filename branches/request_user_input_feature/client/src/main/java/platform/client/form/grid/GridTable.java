@@ -536,7 +536,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void setCurrentObject(ClientGroupObjectValue value) {
-        assert rowKeys.contains(value);
+        assert rowKeys.isEmpty() || rowKeys.contains(value);
         currentObject = value;
     }
 

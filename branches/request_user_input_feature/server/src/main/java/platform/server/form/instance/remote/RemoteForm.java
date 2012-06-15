@@ -65,11 +65,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener) throws RemoteException {
         super(port);
 
-        releaseCurrentRequestLock(0);
-
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
         this.reportManager = new FormReportManager(form);
+
+        initRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
@@ -565,25 +565,38 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private ArrayBlockingQueue requestLock = new ArrayBlockingQueue(1, true);
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private BlockingMap sequentialRequestLock = new BlockingHashMap();
+    private BlockingMap<Long, Object> sequentialRequestLock = new BlockingHashMap<Long, Object>();
+
+    public void initRequestLock() {
+        try {
+            sequentialRequestLock.offer(0L, LOCK_OBJECT);
+            requestLock.put(LOCK_OBJECT);
+        } catch (InterruptedException e) {
+            Throwables.propagate(e);
+        }
+    }
 
     public void acquireRequestLock(long requestIndex) {
+//        System.out.println("Acquiring lock for form #" + getID() + " for request #" + requestIndex);
         try {
             if (requestIndex >= 0) {
                 sequentialRequestLock.take(requestIndex);
             }
             requestLock.take();
+//            System.out.println(".Acquired lock for form #" + getID() + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
     }
 
     public void releaseCurrentRequestLock(long requestIndex) {
+//        System.out.println("Releasing lock for form #" + getID() + " for request #" + requestIndex);
         try {
             requestLock.put(LOCK_OBJECT);
             if (requestIndex >= 0) {
                 sequentialRequestLock.offer(requestIndex + 1, LOCK_OBJECT);
             }
+//            System.out.println("Released lock for form #" + getID() + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
@@ -609,9 +622,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private ServerResponse processPausableRMIRequest(final long requestIndex, final ERunnable runnable) throws RemoteException {
-        return executeServerInvocation(requestIndex, new RemotePausableInvocation(pausablesExecutor, this) {
+        return executeServerInvocation(requestIndex, new RemotePausableInvocation("f#" + getID() + "_rq#" + requestIndex,  pausablesExecutor, this) {
             @Override
-            protected ServerResponse callInvocation() throws Exception {
+            protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
                 return prepareRemoteChangesResponse(delayedActions);
             }
