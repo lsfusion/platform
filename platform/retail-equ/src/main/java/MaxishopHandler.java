@@ -150,7 +150,7 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
                                         numberBillDetail = 1;
                                         oldBillNumber = billNumber;
                                     }
-                                    salesInfoList.add(new SalesInfo(entry.getKey(), zReportNumber, billNumber, date, time, sumBill, null, sumBill, barcodeBillDetail,
+                                    salesInfoList.add(new SalesInfo(entry.getKey(), zReportNumber, billNumber, date, time, sumBill, 0.0, sumBill, barcodeBillDetail,
                                             quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, null, numberBillDetail, fileName));
                                     numberBillDetail++;
                                 }

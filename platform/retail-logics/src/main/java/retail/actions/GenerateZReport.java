@@ -143,7 +143,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                                     numberBillDetail++;
                                     sumBill += sumBillDetail;
                                     SalesInfo salesInfo = new SalesInfo(numberCashRegister, numberZReport,
-                                            billNumber, date, time, null, null, null, itemZReportInfo.barcode == null ? null : itemZReportInfo.barcode.trim(),
+                                            billNumber, date, time, 0.0, 0.0, 0.0, itemZReportInfo.barcode == null ? null : itemZReportInfo.barcode.trim(),
                                             quantityBillDetail, itemZReportInfo.price, sumBillDetail, null, null, numberBillDetail, null);
                                     billSalesInfoList.add(salesInfo);
                                     itemZReportInfo.count -= quantityBillDetail;
