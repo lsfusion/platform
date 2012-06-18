@@ -20,8 +20,8 @@
 	<field name="idBarcodeSku" class="java.lang.String"/>
 	<field name="nameAttributeItem" class="java.lang.String"/>
 	<field name="quantityPageInventoryDetailListInventoryItem" class="java.lang.Double"/>
-	<field name="accountPricePageInventoryDetailListInventoryItem" class="java.lang.Double"/>
-	<field name="accountSumPageInventoryDetailListInventoryItem" class="java.lang.Double"/>
+	<field name="pricePageInventoryDetailListInventoryItem" class="java.lang.Double"/>
+	<field name="sumPageInventoryDetailListInventoryItem" class="java.lang.Double"/>
 	<detail>
 		<band height="12">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
@@ -57,14 +57,14 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{accountPricePageInventoryDetailListInventoryItem}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pricePageInventoryDetailListInventoryItem}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="467" y="0" width="70" height="12"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{accountSumPageInventoryDetailListInventoryItem}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sumPageInventoryDetailListInventoryItem}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

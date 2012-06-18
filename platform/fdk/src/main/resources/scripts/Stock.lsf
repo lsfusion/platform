@@ -134,6 +134,18 @@ quantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(l
 signedQuantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
                                                             -quantityOutSkuLedger(ledger) PERSISTENT;
 
+// ---------------------------- Учетные цены и суммы ------------------------------- //
+
+// сумма операции
+sumInSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (inSkuLedger) PERSISTENT;
+sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (outSkuLedger) PERSISTENT;
+
+signedSumSkuLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumInSkuLedger(ledger),
+                                                      -sumOutSkuLedger(ledger) PERSISTENT;
+
+// управленческие цены
+priceSkuStockDateTime 'Цена' (sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
+
 // ---------------------------- Остаток по товару -------------------------------- //
 
 TABLE stockSku(stock, sku);
@@ -188,6 +200,13 @@ currentBalanceBatchStock 'Текущий остаток' (batch, stock) = GROUP 
 
 expiryDateSkuStock 'Годен до (max.)' (sku, stock) = GROUP MAX expiryDateBatch(batch) IF currentBalanceBatchStock(batch, stock)
                                                           BY skuBatch(batch), stock PERSISTENT;
+
+// ---------------------------- Суммы по товару -------------------------------- //
+
+currentSumSkuStock 'Сумма остатка' (sku, stock) = GROUP SUM signedSumSkuLedger (ledger) AND isPostedSkuLedger(ledger)
+                                                        BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+
+averagePriceSkuStock 'Цена (средневзв.)' (sku, stock) = currentSumSkuStock(sku, stock) / currentBalanceSkuStock(sku, stock) IF NOT currentBalanceSkuStock(sku, stock) == 0;
 
 // -------------------------------------- Последнее движение ---------------------------------- //
 
@@ -367,6 +386,32 @@ META defineDocumentDetailAggregationSku (primObject, aggrObject, skuProp)
     @defineDocumentDetailAggregationSkuPrefix(primObject, aggrObject, skuProp, );
 END
 
+// ---------------------------------------------- Учетные суммы -------------------------------------------- //
+
+META defineDocumentDetailPrice (object)
+    price###object##Detail 'Цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
+END
+
+META defineDocumentDetailSumCustom (object, detail)
+    sum###detail 'Сумма' (detail) = quantity###detail(detail) * price###detail(detail);
+END
+META defineDocumentDetailSum (object)
+    @defineDocumentDetailSumCustom(object, object##Detail);
+END
+
+META defineDocumentHeaderSumCustom (object, detail)
+    sum###detail###object 'Сумма' (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentHeaderSum (object)
+    @defineDocumentHeaderSumCustom(object, object##Detail);
+END
+
+META derivePriceOnSkuChange(concrete, skuProp, stockProp)
+    price###concrete##Detail (detail)  <- priceSkuStockDateTime(
+                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail));
+END
+
 // ----------------------------------------------- Формы --------------------------------------------------- //
 
 FORM costSkuLedger 'Себестоимость (операции)'
@@ -467,7 +512,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY          nameSku
 
 
-    PROPERTIES(s, st) READONLY currentBalanceSkuStock, dateLastMovedSkuStock
+    PROPERTIES(s, st) READONLY currentBalanceSkuStock, averagePriceSkuStock, currentSumSkuStock, dateLastMovedSkuStock
 
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' currentBalanceSkuStock(s, st) DEFAULT
