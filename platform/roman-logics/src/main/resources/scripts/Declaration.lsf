@@ -125,6 +125,8 @@ endDeclaration 'Конец обработки' = DATA TIME (declaration) IN base
 
 dateTimeDeclaration 'Дата/время' (declaration) = toDateTime(date(declaration), endDeclaration(declaration));
 
+dateTimeRegistrationDeclaration 'Дата/время регистрации' = DATA DATETIME(declaration) IN baseGroup;
+
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
@@ -270,7 +272,10 @@ descriptionDeclarationDetail = descriptionDeclaration(declarationDeclarationDeta
 declarationCorrection 'Декларация КТС (ИД)' = DATA declaration(correction) IN idGroup;
 inDeclarationCorrection (declaration, correction) = declarationCorrection(correction)==declaration;
 
-priceCorrectionDeclarationDetail 'Скорректированная цена' = DATA NUMERIC[14,2](correction, declarationDetail) IN baseGroup;
+dateTimePayCorrection 'Дата/время оплаты' = DATA DATETIME(correction) IN baseGroup;
+
+sumCorrectionDeclarationDetail 'Скорректированная стоимость' = DATA NUMERIC[14,2](correction, declarationDetail) IN baseGroup;
+priceCorrectionDeclarationDetail 'Скорректированная цена' (correction, declarationDetail) = sumCorrectionDeclarationDetail(correction, declarationDetail)/quantityDeclarationDetail(declarationDetail) IN baseGroup;
 
 correctionPriceDeclarationDetail 'Скорректированная цена' (declarationDetail) = GROUP MAX priceCorrectionDeclarationDetail(correction, declarationDetail) BY declarationDetail PERSISTENT;
 
@@ -396,16 +401,25 @@ expenseCertificateManagerialDeclaration 'Расходы на сертифика�
 dutyFinDeclarationDetail 'Пошлина' =  UNION OVERRIDE dutyDataDeclarationDetail(declarationDetail), correctionDutyDataDeclarationDetail(declarationDetail);
 NDSFinDeclarationDetail 'НДС' =  UNION OVERRIDE NDSDataDeclarationDetail(declarationDetail), correctionNDSDataDeclarationDetail(declarationDetail);
 
+priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDetail) = UNION SUM declarationPriceDeclarationDetail(declarationDetail),
+                                                                                  dutyFinDeclarationDetail(declarationDetail),
+                                                                                  NDSFinDeclarationDetail(declarationDetail),
+                                                                                  registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
-priceCustomDeclarationDetail 'Цена с расходами (БУ)' (declarationDetail) = UNION SUM declarationPriceDeclarationDetail(declarationDetail),
-                                                                                     dutyFinDeclarationDetail(declarationDetail),
-                                                                                     NDSFinDeclarationDetail(declarationDetail),
-                                                                                     registrationDeclarationDetail(declarationDetail) PERSISTENT;
+priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) = UNION SUM priceManagerialDeclarationDetail(declarationDetail),
+                                                                                            dutyFinDeclarationDetail(declarationDetail),
+                                                                                            NDSFinDeclarationDetail(declarationDetail),
+                                                                                            registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
-priceManagerialCustomDeclarationDetail 'Цена с расходами (УУ)' (declarationDetail) = UNION SUM priceManagerialDeclarationDetail(declarationDetail),
-                                                                                               dutyFinDeclarationDetail(declarationDetail),
-                                                                                               NDSFinDeclarationDetail(declarationDetail),
-                                                                                               registrationDeclarationDetail(declarationDetail) PERSISTENT;
+
+quantityDeclarationArticle 'Кол-во' (declaration, article) = GROUP SUM quantityDeclarationSku(declaration, sku) BY declaration, articleSku(sku);
+inDeclarationArticle (declaration, article) = TRUE IF quantityDeclarationArticle(declaration, article);
+
+priceDeclarationSku 'Себестоимость (БУ)' (declaration, sku) = priceCustomDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
+
+priceDeclarationArticle 'Себестоимость (БУ)' (declaration, article) = GROUP MAX priceDeclarationSku(declaration, sku)
+                                                                             BY declaration, articleSku(sku);
+
 
 // для экспорта в Декларант
 TABLE groupDeclaration (groupDeclaration);
@@ -534,7 +548,7 @@ showFormDeclarationInvoices 'Присоединить инвойсы' (declarati
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
     PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
-                  rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
+                  dateTimeRegistrationDeclaration, nameImporterDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration, exportDeclaration
 
@@ -544,11 +558,11 @@ FORM declaration 'Декларация'
 //    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 
     OBJECTS c=correction
-    PROPERTIES(c) date, ADDOBJ, delete
+    PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
+    PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
                     nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
@@ -556,15 +570,16 @@ FORM declaration 'Декларация'
                     rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
                     certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
-                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
-                    correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
-                    diffDutyDeclarationDetail, registrationDeclarationDetail, ADDOBJ, delete
+                    sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
-    PROPERTIES (c, dd) priceCorrectionDeclarationDetail
+    PROPERTIES (c, dd) sumCorrectionDeclarationDetail
+
+    PROPERTIES (dd) correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
+                    diffDutyDeclarationDetail, registrationDeclarationDetail, ADDOBJ, delete
 
     OBJECTS gd=groupDeclaration
-    PROPERTIES (gd) numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
+    PROPERTIES (gd) READONLY numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration,
                     sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
                     sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, quantityGroupDeclaration,

@@ -13,6 +13,7 @@ REQUIRE System,
         CStoWH,
         WHfromCS,
         WHtoS,
+        PriceDocument,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -176,21 +177,9 @@ priceDiscountPriceChangeDocumentArticle 'Цена без процентов' (di
 priceDataDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article) <- priceDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article)
                                         WHEN CHANGED (priceDiscountPriceChangeDocumentArticle(discountPriceChangeDocument, article));
 
-
-inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
-inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
-
-inArticleCategory (category, article) = UNION OVERRIDE categoryArticle(article) == category,
-                                                       article == article AND NOT category;
-
 inArticlePriceChangeDocument 'Артикул в документе' = DATA BOOLEAN(priceChangeDocument, article);
 inArticleFreight (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
-stringEqualsAll(string) = string == 'Все';
-
-inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierArticle(article) == brand AND supplier,
-                                                                  supplierArticle(article) == supplier AND NOT brand,
-                                                                  article == article AND NOT supplier AND NOT brand;
 
 toSetPricesPriceChangeDocument 'Взять цены поставщика' =  ACTION (basePriceChangeDocument) {
     FOR p == basePriceChangeDocument AND inArticlePriceChangeDocument(p, article) DO {
@@ -422,6 +411,7 @@ NAVIGATOR {
         ADD discountPriceChangeDocuments;
         ADD freights;
         ADD coefficientRetails;
+        ADD wholesalePriceDocuments;
     }
 
     accountInfo {
@@ -538,5 +528,6 @@ NAVIGATOR {
         ADD stores;
         ADD suppliers;
         ADD contracts;
+        ADD wholesalePriceDocument;
     }
 }

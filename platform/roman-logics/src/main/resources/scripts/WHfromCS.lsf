@@ -57,6 +57,8 @@ quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
 
 quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
 
+diffQuantityWHfromCSDetail (WHfromCSDetail) = quantityOriginWHfromCSDetail(WHfromCSDetail)!= quantityWHfromCSDetail(WHfromCSDetail);
+
 @implementSkuLedger (WHfromCS, sku, warehouse);
 
 currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
@@ -100,13 +102,21 @@ FORM WHfromCS 'Приход на оптовый склад'
                    numberCStoWHWHfromCS, seriesCStoWHWHfromCS, toFillInWarehouseDetailsWHfromCS
 
     OBJECTS d = WHfromCSDetail
-    PROPERTIES(d) indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
-                  sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail, quantityOriginWHfromCSDetail, quantityWHfromCSDetail
+    PROPERTIES (d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
+                            sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail
+
+    PROPERTIES(d) quantityOriginWHfromCSDetail, quantityWHfromCSDetail
     PROPERTIES(d) ADDOBJ, delete
 
     PROPERTIES(w) TODRAW d addDetailDialogBarcodeWHfromCSDetailWHfromCS
 
     FILTERS inWHfromCSWHfromCSDetail(w, d)
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantityWHfromCSDetail(d) DEFAULT
+
+    FILTERGROUP filtersDiff
+        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSDetail(d)
 
     EDIT WHfromCS OBJECT w
 ;
