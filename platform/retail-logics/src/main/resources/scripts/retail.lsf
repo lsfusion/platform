@@ -9453,12 +9453,58 @@ fillLossItemGroupDefaultValues 'Заполнить группы естестве
 // todo: переделать ньюмерик на что-нибудь другое, т.к. не записывает.
 
 
+addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ cashRegisterModel;
+    FOR crm == addedObject() DO {
+         SET name(crm) <- stringOne AS STRING[110];
+         SET handlerModel(crm) <- stringTwo AS STRING[200];
+    }
+}
+
+addScalesModel 'Добавить модель весов' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ scalesModel;
+    FOR sm == addedObject() DO {
+         SET name(sm) <- stringOne AS STRING[110];
+         SET handlerModel(sm) <- stringTwo AS STRING[200];
+    }
+}
+
+addPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ priceCheckerModel;
+    FOR pcm == addedObject() DO {
+         SET name(pcm) <- stringOne AS STRING[110];
+         SET handlerModel(pcm) <- stringTwo AS STRING[200];
+    }
+}
+
+addTerminalModel 'Добавить модель терминала' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ terminalModel;
+    FOR tm == addedObject() DO {
+         SET name(tm) <- stringOne AS STRING[110];
+         SET handlerModel(tm) <- stringTwo AS STRING[200];
+    }
+}
+
+
+fillMachineryModelDefaultValues 'Заполнить значения моделей оборудования по умолчанию' = ACTION () {
+    EXEC addCashRegisterModel('Кассы EasyCSV', 'EasyCSVHandler');
+    EXEC addCashRegisterModel('Кассы Kristal', 'KristalHandler');
+    EXEC addCashRegisterModel('Кассы Maxishop', 'MaxishopHandler');
+    EXEC addCashRegisterModel('Кассы UKM4', 'UKM4Handler');
+    EXEC addScalesModel('Весы Digi', 'DigiHandler');
+    EXEC addScalesModel('Весы EasyCSV', 'EasyCSVHandler');
+    EXEC addScalesModel('Весы Штрих-Принт', 'ShtrihPrintHandler');
+    EXEC addPriceCheckerModel('Прайс-чекеры EasyCSV', 'EasyCSVHandler');
+    EXEC addTerminalModel('ТСД InventoryTech', 'InventoryTechHandler');
+    EXEC addTerminalModel('ТСД EasyCSV', 'EasyCSVHandler');
+}
+
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
     PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
                  fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues
+                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues
     PROPERTIES()     generateZReport, averageZReportCountGenerateZReport, averageBillCountGenerateZReport, averageBillDetailCountGenerateZReport,
                      dateFromGenerateZReport, dateToGenerateZReport;
 ;
