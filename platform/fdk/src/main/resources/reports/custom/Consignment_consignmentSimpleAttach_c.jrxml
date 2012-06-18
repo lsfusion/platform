@@ -88,7 +88,7 @@
 				<line>
 					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
 					<graphicElement>
-						<pen lineWidth="1.0" lineStyle="Solid"/>
+						<pen lineWidth="0.75" lineStyle="Solid"/>
 					</graphicElement>
 				</line>
 				<staticText>
@@ -154,6 +154,9 @@
 				</staticText>
 				<line>
 					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75" lineStyle="Solid"/>
+					</graphicElement>
 				</line>
 			</band>
 			<band height="21">
@@ -181,6 +184,9 @@
 				</staticText>
 				<line>
 					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75" lineStyle="Solid"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="90" y="14" width="465" height="7"/>
@@ -426,6 +432,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="84" y="13" width="471" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<textField>
 					<reportElement x="0" y="0" width="84" height="12"/>
@@ -470,6 +479,9 @@
 				</staticText>
 				<line>
 					<reportElement positionType="Float" x="105" y="13" width="450" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="105" y="0" width="450" height="12"/>
@@ -488,6 +500,9 @@
 			<band height="21">
 				<line>
 					<reportElement positionType="Float" x="84" y="12" width="471" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<textField>
 					<reportElement x="0" y="0" width="84" height="12"/>
@@ -571,6 +586,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="105" y="13" width="450" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 			</band>
 			<band height="21">
@@ -589,6 +607,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="110" y="12" width="445" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="110" y="0" width="445" height="12"/>
@@ -659,6 +680,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="303" y="13" width="252" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="303" y="14" width="252" height="7"/>
@@ -688,6 +712,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="80" y="13" width="172" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="80" y="14" width="172" height="7"/>
@@ -719,6 +746,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="110" y="13" width="445" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="110" y="14" width="445" height="7"/>
@@ -750,6 +780,9 @@
 			<band height="13">
 				<line>
 					<reportElement x="140" y="12" width="415" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<textField>
 					<reportElement x="0" y="0" width="140" height="12"/>

@@ -25,7 +25,8 @@ skuWHtoSDetail 'Товар (ИД)' (WHtoSDetail) = DATA sku (WHtoSDetail)IN idGr
 
 nameImporterWHtoS 'Компания' (WHtoS) = name(importerWarehouse(warehouseWHtoS(WHtoS)));
 
-//quantityOutAutoBalanceSkuLedger (outAutoBalanceSkuLedger) += quantityWHtoSDetail (outAutoBalanceSkuLedger);
+quantityOutAutoSkuLedger (ledger) += quantityWHtoSDetail (ledger);
+//descriptionSkuLedger (ledger) += descriptionWHtoS (ledger);
 
 netWeightWHtoSDetail 'Вес нетто (ед.)' (WHtoSDetail) = netWeightSku(skuWHtoSDetail(WHtoSDetail));
 

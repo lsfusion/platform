@@ -107,6 +107,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement x="25" y="0" width="100" height="12"/>
@@ -158,6 +161,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="125" y="14" width="685" height="7"/>
@@ -211,6 +217,9 @@
 				</staticText>
 				<line>
 					<reportElement positionType="Float" mode="Opaque" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 			</band>
 			<band height="68">
@@ -493,6 +502,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="15" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="109" y="16" width="701" height="7"/>
@@ -550,6 +562,9 @@
 				</staticText>
 				<line>
 					<reportElement positionType="Float" x="130" y="13" width="680" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 			</band>
 			<band height="21">
@@ -594,6 +609,9 @@
 				</staticText>
 				<line>
 					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 			</band>
 			<band height="21">
@@ -625,6 +643,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="130" y="13" width="680" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="130" y="14" width="680" height="7"/>
@@ -669,6 +690,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="135" y="13" width="675" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="135" y="14" width="675" height="7"/>
@@ -739,9 +763,15 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="328" y="13" width="482" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<line>
 					<reportElement positionType="Float" x="105" y="13" width="172" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="105" y="14" width="172" height="7"/>
@@ -799,6 +829,9 @@
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="135" y="13" width="675" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 				<staticText>
 					<reportElement positionType="Float" x="134" y="14" width="675" height="7"/>
@@ -830,6 +863,9 @@
 				</textField>
 				<line>
 					<reportElement x="165" y="12" width="645" height="1"/>
+					<graphicElement>
+						<pen lineWidth="0.75"/>
+					</graphicElement>
 				</line>
 			</band>
 		</groupFooter>

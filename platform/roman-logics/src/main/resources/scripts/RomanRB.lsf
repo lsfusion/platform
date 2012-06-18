@@ -535,6 +535,7 @@ NAVIGATOR {
         ADD numerator;
         ADD dialogDate;
         ADD dialogSku;
+        ADD stockDialog;
         ADD stores;
         ADD suppliers;
         ADD contracts;

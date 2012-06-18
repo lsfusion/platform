@@ -1,6 +1,7 @@
 MODULE RomanDocument;
 
-REQUIRE Document, Stock, Barcode, StorePrice, Supplier;
+REQUIRE Document, Stock, Barcode, StorePrice, Supplier, RomanLogicsModule;
+PRIORITY RomanLogicsModule, Stock;
 
 META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
@@ -54,6 +55,22 @@ META defineDocumentDetailProps (object)
 END
 
 //-----------Для подбора товаров------------------//
+
+isFreightBox (stock) = stock IS freightBox;
+isNotFreightBox (stock) = stock AS Stock.stock AND NOT isFreightBox(stock);
+
+FORM stockDialog 'Склад'
+    OBJECTS s=Stock.stock
+    PROPERTIES(s) READONLY objectClassName, name
+    PROPERTIES(s) EDITFORM
+    ORDER BY name
+
+    FILTERGROUP filter1
+        FILTER 'Не короба' 'F11' isNotFreightBox(s) DEFAULT
+
+    DIALOG stock OBJECT s
+;
+
     @defineDialogSku(dialogSku);
     @defineDialogSkuBarcode(dialogSku);
     @defineDialogSkuSupplier(dialogSku);
