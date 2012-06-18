@@ -228,4 +228,15 @@ public class Words {
     public static String toString(Double numObject, Integer numOfDigits) {
         return toString(numObject, numOfDigits, false);
     }
+
+    public static String toString(Double numObject) {
+        double num = numObject == null ? 0.0 : numObject;
+        int numOfDig = 0;
+        while ((num - (int)num) != 0) {
+            numOfDig++;
+            num = num * 10;
+        }
+        return toString(numObject, Math.min(numOfDig, 4));
+
+    }
 }
