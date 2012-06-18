@@ -1332,7 +1332,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipDimension = addConcreteClass("shipDimension", "Разрез поставки", baseClass);
 
-        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("stock"));
+        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject);  //, (CustomClass) BL.Stock.getClassByName("stock")
 
         freightUnit = addAbstractClass("freightUnit", "Машиноместо", baseClass);
 
