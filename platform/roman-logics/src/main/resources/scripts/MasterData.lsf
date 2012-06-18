@@ -17,6 +17,8 @@ nameSku(sku) += descriptionSku (sku);
 
 skuGroupSku (sku) += categoryArticleSku(sku);
 
+quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+
 //------------------------ Приведение штрих-кодов RomanLogicsModule к логике Barcode.lsf -----------------------------//
 
 syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sku) {

@@ -20,24 +20,47 @@ CLASS WHtoSPosted 'Закрытый расход на магазин' : WHtoS, p
 
 
 skuWHtoSDetail 'Товар (ИД)' (WHtoSDetail) = DATA sku (WHtoSDetail)IN idGroup;
+nameSkuWHtoSDetail 'Наименование товара' (WHtoSDetail) = nameSku(skuWHtoSDetail(WHtoSDetail));
 
 @defineRBCorrespondingDocument(WHtoS, warehouse, 'Оптовый склад', sku, 'Расход на магазин', store, 'Магазин');
 
 nameImporterWHtoS 'Компания' (WHtoS) = name(importerWarehouse(warehouseWHtoS(WHtoS)));
 
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSDetail (ledger);
-//descriptionSkuLedger (ledger) += descriptionWHtoS (ledger);
+descriptionSkuLedger (ledger) += descriptionWHtoS (ledger);
 
-netWeightWHtoSDetail 'Вес нетто (ед.)' (WHtoSDetail) = netWeightSku(skuWHtoSDetail(WHtoSDetail));
+UOMWHtoSDetail 'Единица измерения (ИД)' (WHtoSDetail) = DATA UOM (WHtoSDetail) IN idGroup;
+shortNameUOMWHtoSDetail 'Единица измерения' (WHtoSDetail) = shortName(UOMWHtoSDetail(WHtoSDetail));
 
-sumNetWeightWHtoSDetail 'Вес нетто' (WHtoSDetail) = netWeightWHtoSDetail(WHtoSDetail)*quantityWHtoSDetail(WHtoSDetail);
+importerPriceWHtoSDetail 'Цена без НДС (ед.)' (WHtoSDetail) = DATA NUMERIC[14,3] (WHtoSDetail);
 
-sumNetWeightWHtoS 'Вес нетто' (WHtoS) = GROUP SUM sumNetWeightWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail);
+importerSumWHtoSDetail 'Стоимость без НДС' (WHtoSDetail) = importerPriceWHtoSDetail(WHtoSDetail) * quantityWHtoSDetail(WHtoSDetail);
 
-//priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
-//sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
-//totalSumCStoWHDetail 'Общая стоимость' (CStoWH) =
-//    GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
+importerSumWHtoSDetailWHtoS 'Стоимость без НДС' (WHtoS)= GROUP SUM importerSumWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
+
+VATWHtoSDetail 'НДС, %' (WHtoSDetail) = DATA NUMERIC[10,5] (WHtoSDetail);
+
+sumVATWHtoSDetail 'Сумма НДС' (WHtoSDetail) = [X*Y/100](
+    importerSumWHtoSDetail(WHtoSDetail), VATWHtoSDetail(WHtoSDetail));
+
+sumVATWHtoSDetailWHtoS 'Сумма НДС' (WHtoS) = GROUP SUM sumVATWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
+
+sumInvoiceWHtoSDetail 'Стоимость с НДС' (WHtoSDetail) = importerSumWHtoSDetail(WHtoSDetail) (+) sumVATWHtoSDetail(WHtoSDetail);
+
+sumInvoiceWHtoSDetailWHtoS 'Стоимость с НДС' (WHtoS)= GROUP SUM sumInvoiceWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
+
+netWeightWHtoSDetail 'Вес (ед.)' (WHtoSDetail) = netWeightSku(skuWHtoSDetail(WHtoSDetail));
+
+sumNetWeightWHtoSDetail 'Общая масса груза, кг.' (WHtoSDetail) = netWeightWHtoSDetail(WHtoSDetail)*quantityWHtoSDetail(WHtoSDetail);
+
+sumNetWeightWHtoS 'Общая масса груза, кг.' (WHtoS) = GROUP SUM sumNetWeightWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
+
+noteWHtoSDetail 'Примечание' (WHtoSDetail) = DATA STRING[100] (WHtoSDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+
+packQuantityWHtoSDetail 'Количество грузовых мест' (WHtoSDetail) = round0(quantityWHtoSDetail(WHtoSDetail)/
+    UNION OVERRIDE 1 IF WHtoSDetail IS WHtoSDetail, quantityPackSku(skuWHtoSDetail(WHtoSDetail)));
+
+packQuantityWHtoSDetailWHtoS 'Общее количество грузовых мест' (WHtoS) = GROUP SUM packQuantityWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
 
 balanceBSkuWHtoSDetail 'Остаток до' (WHtoSDetail) = balanceBSkuStockDateTime(skuWHtoSDetail(WHtoSDetail), warehouseWHtoSDetail(WHtoSDetail), dateTimeWHtoSDetail(WHtoSDetail));
 
@@ -45,14 +68,16 @@ balanceBSkuWHtoSDetail 'Остаток до' (WHtoSDetail) = balanceBSkuStockDat
 
 FORM WHtoS 'Расход на магазин'
     OBJECTS w = WHtoS FIXED PANEL
-    PROPERTIES (w) READONLY objectClassName
     PROPERTIES (w) numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
-                   quantityWHtoSDetail, sumNetWeightWHtoS
+                   quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumVATWHtoSDetailWHtoS,
+                   sumInvoiceWHtoSDetailWHtoS, sumNetWeightWHtoS, packQuantityWHtoSDetailWHtoS, noteWHtoS
 
     OBJECTS d = WHtoSDetail
-    PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameBrandWHtoSDetail, sidArticleWHtoSDetail,
-                  nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, sumNetWeightWHtoSDetail,
-                  balanceBSkuWHtoSDetail, quantityWHtoSDetail
+    PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, nameBrandWHtoSDetail, sidArticleWHtoSDetail,
+                  nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, shortNameUOMWHtoSDetail, balanceBSkuWHtoSDetail,
+                  quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, VATWHtoSDetail, sumInvoiceWHtoSDetail,
+                  sumInvoiceWHtoSDetailWHtoS, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
+
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoSDetailWHtoS, addDetailDialogBarcodeWHtoSDetailWHtoS,
                   deleteWHtoSDetailWHtoS
 
@@ -68,16 +93,41 @@ FORM WHtoS 'Расход на магазин'
 DESIGN WHtoS FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
-        PROPERTY (objectClassName(w)) {
-            preferredCharWidth = 15;
-        }
+        ADD w.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD w.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameWarehouseWHtoS);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateWHtoS);
+                    ADD PROPERTY (timeWHtoS);
+                }
+                NEW case {
+                childConstraints = TO THE BOTTOM;
+                    title = 'Контрагент';
+                    ADD PROPERTY (nameStoreWHtoS);
+                }
+                ADD w.documentPrmGroup;
+            }
+            NEW row2 {
+                ADD w.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        };
+        ADD d.box;
+        ADD functions.box;
     }
 }
 
 FORM WHtoSs 'Расходы на магазин'
     OBJECTS w = WHtoS
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
-                            quantityWHtoSDetail, sumNetWeightWHtoS
+                   countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumVATWHtoSDetailWHtoS,
+                   sumInvoiceWHtoSDetailWHtoS, packQuantityWHtoSDetailWHtoS, sumNetWeightWHtoS
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -91,9 +141,9 @@ FORM WHtoSs 'Расходы на магазин'
                    printConsignmentSimpleVertical, printConsignmentSimpleAttach
 
     OBJECTS d = WHtoSDetail
-    PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameBrandWHtoSDetail, sidArticleWHtoSDetail,
-                  nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, sumNetWeightWHtoSDetail,
-                  balanceBSkuWHtoSDetail, quantityWHtoSDetail
+    PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail,
+                  quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, VATWHtoSDetail, sumInvoiceWHtoSDetail,
+                  sumInvoiceWHtoSDetailWHtoS, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
 
     FILTERS inWHtoSWHtoSDetail(w, d)
 ;
@@ -164,14 +214,19 @@ senderConsignment (consignment) += warehouseWHtoS(consignment);
 
 consignmentConsignmentDetail (consignmentDetail) += WHtoSWHtoSDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuWHtoSDetail (consignmentDetail);
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHtoSDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityWHtoSDetail (consignmentDetail);
-//priceConsignmentDetail (consignmentDetail) += priceWHtoSDetail (consignmentDetail);
-//sumInvoiceConsignmentDetail (consignmentDetail) += sumWHtoSDetail (consignmentDetail);
-//sumConsignmentDetail (consignmentDetail) += sumWHtoSDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHtoS (consignmentDetail);
-
+priceConsignmentDetail (consignmentDetail) += importerPriceWHtoSDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += VATWHtoSDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += sumVATWHtoSDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += importerSumWHtoSDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceWHtoSDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHtoSDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityWHtoSDetail(consignmentDetail);
 //currencyConsignment(consignment) += currencyWHtoS(consignment);
 //isCustomsFlowConsignment (consignment) += consignment IS WHtoS;
 noteConsignment(consignment) += noteWHtoS(consignment);
+
+//noteConsignmentDetail
 
 //todo: Надо наполнить свойствами накладную.
