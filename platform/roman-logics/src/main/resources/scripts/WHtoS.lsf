@@ -38,14 +38,23 @@ importerSumWHtoSDetail 'Стоимость без НДС' (WHtoSDetail) = import
 
 importerSumWHtoSDetailWHtoS 'Стоимость без НДС' (WHtoS)= GROUP SUM importerSumWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
 
-VATWHtoSDetail 'НДС, %' (WHtoSDetail) = DATA NUMERIC[10,5] (WHtoSDetail);
 
-sumVATWHtoSDetail 'Сумма НДС' (WHtoSDetail) = [X*Y/100](
-    importerSumWHtoSDetail(WHtoSDetail), VATWHtoSDetail(WHtoSDetail));
+supplierVATWHtoSDetail(WHtoSDetail) = DATA range (WHtoSDetail);
+numberSupplierVATWHtoSDetail 'НДС, номер' (WHtoSDetail) = numberRange(supplierVATWHtoSDetail(WHtoSDetail));
+valueSupplierVATWHtoSDetail 'НДС, %' (WHtoSDetail) = valueRateRangeDate
+    (supplierVATWHtoSDetail(WHtoSDetail), dateWHtoSDetail(WHtoSDetail));
 
-sumVATWHtoSDetailWHtoS 'Сумма НДС' (WHtoS) = GROUP SUM sumVATWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
+    CONSTRAINT taxRange(supplierVATWHtoSDetail(WHtoSDetail)) != tax.taxVAT CHECKED BY supplierVATWHtoSDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-sumInvoiceWHtoSDetail 'Стоимость с НДС' (WHtoSDetail) = importerSumWHtoSDetail(WHtoSDetail) (+) sumVATWHtoSDetail(WHtoSDetail);
+
+//VATWHtoSDetail 'НДС, %' (WHtoSDetail) = DATA NUMERIC[10,5] (WHtoSDetail);
+
+sumSupplierVATWHtoSDetail 'Сумма НДС' (WHtoSDetail) = [X*Y/100](
+    importerSumWHtoSDetail(WHtoSDetail), valueSupplierVATWHtoSDetail(WHtoSDetail));
+
+sumSupplierVATWHtoSDetailWHtoS 'Сумма НДС' (WHtoS) = GROUP SUM sumSupplierVATWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
+
+sumInvoiceWHtoSDetail 'Стоимость с НДС' (WHtoSDetail) = importerSumWHtoSDetail(WHtoSDetail) (+) sumSupplierVATWHtoSDetail(WHtoSDetail);
 
 sumInvoiceWHtoSDetailWHtoS 'Стоимость с НДС' (WHtoS)= GROUP SUM sumInvoiceWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
 
@@ -69,14 +78,14 @@ balanceBSkuWHtoSDetail 'Остаток до' (WHtoSDetail) = balanceBSkuStockDat
 FORM WHtoS 'Расход на магазин'
     OBJECTS w = WHtoS FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
-                   quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumVATWHtoSDetailWHtoS,
+                   quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumSupplierVATWHtoSDetailWHtoS,
                    sumInvoiceWHtoSDetailWHtoS, sumNetWeightWHtoS, packQuantityWHtoSDetailWHtoS, noteWHtoS
 
     OBJECTS d = WHtoSDetail
     PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, nameBrandWHtoSDetail, sidArticleWHtoSDetail,
                   nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, shortNameUOMWHtoSDetail, balanceBSkuWHtoSDetail,
-                  quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, VATWHtoSDetail, sumInvoiceWHtoSDetail,
-                  sumInvoiceWHtoSDetailWHtoS, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
+                  quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, numberSupplierVATWHtoSDetail, valueSupplierVATWHtoSDetail,
+                  sumSupplierVATWHtoSDetail, sumInvoiceWHtoSDetail, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoSDetailWHtoS, addDetailDialogBarcodeWHtoSDetailWHtoS,
                   deleteWHtoSDetailWHtoS
@@ -126,7 +135,7 @@ DESIGN WHtoS FROM DEFAULT {
 FORM WHtoSs 'Расходы на магазин'
     OBJECTS w = WHtoS
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
-                   countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumVATWHtoSDetailWHtoS,
+                   countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumSupplierVATWHtoSDetailWHtoS,
                    sumInvoiceWHtoSDetailWHtoS, packQuantityWHtoSDetailWHtoS, sumNetWeightWHtoS
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -142,8 +151,8 @@ FORM WHtoSs 'Расходы на магазин'
 
     OBJECTS d = WHtoSDetail
     PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail,
-                  quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, VATWHtoSDetail, sumInvoiceWHtoSDetail,
-                  sumInvoiceWHtoSDetailWHtoS, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
+                  quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, numberSupplierVATWHtoSDetail, valueSupplierVATWHtoSDetail,
+                  sumSupplierVATWHtoSDetail, sumInvoiceWHtoSDetail, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
 
     FILTERS inWHtoSWHtoSDetail(w, d)
 ;
@@ -217,8 +226,8 @@ skuConsignmentDetail (consignmentDetail) += skuWHtoSDetail (consignmentDetail);
 shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHtoSDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityWHtoSDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += importerPriceWHtoSDetail (consignmentDetail);
-vatConsignmentDetail (consignmentDetail) += VATWHtoSDetail (consignmentDetail);
-sumVATConsignmentDetail (consignmentDetail) += sumVATWHtoSDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATWHtoSDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += sumSupplierVATWHtoSDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += importerSumWHtoSDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceWHtoSDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHtoSDetail (consignmentDetail);
@@ -229,4 +238,4 @@ noteConsignment(consignment) += noteWHtoS(consignment);
 
 //noteConsignmentDetail
 
-//todo: Надо наполнить свойствами накладную.
+//todo: Надо наполнить свойствами накладную. (УНП...)
