@@ -17,12 +17,12 @@ META defineDocumentDetailInvoicePrice (object)
     overSupplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) =
             UNION OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
 
-    supplierRange###object##Detail(detail) = DATA range (object##Detail);
-    numberSupplierRange###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierRange###object##Detail(detail)) IN priceDetailGroup;
-    valueSupplierRange###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
-        (supplierRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+    supplierVAT###object##Detail(detail) = DATA range (object##Detail);
+    numberSupplierVAT###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierVAT###object##Detail(detail)) IN priceDetailGroup;
+    valueSupplierVAT###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
+        (supplierVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(supplierRange###object##Detail(detail)) != tax.taxVAT CHECKED BY supplierRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(supplierVAT###object##Detail(detail)) != tax.taxVAT CHECKED BY supplierVAT###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 END
 
 META defineDocumentDetailWareRangePrefix (object, prefix, caption)
@@ -54,12 +54,12 @@ META defineDocumentDetailRetailPrice (object)
 END
 
 META defineDocumentDetailOutPricePrefix (object, prefix, caption)
-    prefix###retailRange###object##Detail = DATA range (object##Detail);
-    prefix###numberRetailRange###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailRange###object##Detail(detail)) IN priceDetailGroup;
-    prefix###valueRetailRange###object##Detail 'НДС розничный, %'###caption (detail) =
-       valueRateRangeDate(prefix###retailRange###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
+    prefix###retailVAT###object##Detail = DATA range (object##Detail);
+    prefix###numberRetailVAT###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailVAT###object##Detail(detail)) IN priceDetailGroup;
+    prefix###valueRetailVAT###object##Detail 'НДС розничный, %'###caption (detail) =
+       valueRateRangeDate(prefix###retailVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(prefix###retailRange###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(prefix###retailVAT###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailVAT###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
     @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
     @defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption);
@@ -73,7 +73,7 @@ META defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption)
         prefix###retailPrice###object##Detail(detail) (-) prefix###warePrice###object##Detail(detail);
 
     prefix###retailVATIPrice###object##Detail 'Цена НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
-                prefix###retailIPrice###object##Detail(detail), prefix###valueRetailRange###object##Detail(detail));
+                prefix###retailIPrice###object##Detail(detail), prefix###valueRetailVAT###object##Detail(detail));
 
     prefix###markupPrice###object##Detail 'Цена надбавки'###caption (detail) =
         prefix###retailIPrice###object##Detail(detail) (-) prefix###retailVATIPrice###object##Detail(detail) (-) prefix###supplierPrice###object##Detail(detail);
@@ -121,7 +121,7 @@ END
 
 META defineDocumentDetailInvoiceSum (object)
     supplierVATIPrice###object##Detail 'Цена НДС поставщика (без посуды)' (detail) = [X*Y/100](
-        supplierPrice###object##Detail(detail), valueSupplierRange###object##Detail(detail));
+        supplierPrice###object##Detail(detail), valueSupplierVAT###object##Detail(detail));
 
     calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
         quantity###object##Detail(detail) * supplierVATIPrice###object##Detail(detail));
@@ -176,7 +176,7 @@ META defineDocumentDetailOutSumPrefix (object, prefix, caption)
     prefix###retailISum###object##Detail 'Розничная сумма (без посуды)'###caption (detail) = prefix###retailSum###object##Detail(detail) (-) prefix###wareSum###object##Detail(detail);
 
     prefix###retailVATISum###object##Detail 'Сумма НДС (без посуды)'###caption (detail) = [round0(X*Y/(100+Y))](
-                prefix###retailISum###object##Detail(detail), prefix###valueRetailRange###object##Detail(detail));
+                prefix###retailISum###object##Detail(detail), prefix###valueRetailVAT###object##Detail(detail));
 
     prefix###retailVATSum###object##Detail 'Сумма НДС'###caption (detail) = prefix###retailVATISum###object##Detail(detail) (+) prefix###wareVATSum###object##Detail(detail);
 
@@ -333,8 +333,8 @@ META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP
     prefixA###importerPrice###aggrObject##Detail 'Цена изготовителя'###caption (detail) = prefixP###importerPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###supplierPrice###aggrObject##Detail 'Цена поставщика'###caption (detail) = prefixP###supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
-    prefixA###retailRange###aggrObject##Detail (detail) = prefixP###retailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    prefixA###valueRetailRange###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###valueRetailRange###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###retailVAT###aggrObject##Detail (detail) = prefixP###retailVAT###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###valueRetailVAT###aggrObject##Detail 'НДС, %'###caption (detail) = prefixP###valueRetailVAT###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
     prefixA###ware###aggrObject##Detail (detail) = prefixP###ware###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###valueWareRange###aggrObject##Detail 'НДС посуды, %'###caption (detail) =
@@ -369,7 +369,7 @@ END
 META implementBaseISkuDepartmentStoreLedger(concrete, skuProp)
     @implementSkuDepartmentStoreLedger(importerPrice, concrete, skuProp);
     @implementSkuDepartmentStoreLedger(supplierPrice, concrete, skuProp);
-    @implementSkuDepartmentStoreLedger(retailRange, concrete, skuProp);
+    @implementSkuDepartmentStoreLedger(retailVAT, concrete, skuProp);
     @implementSkuDepartmentStoreLedger(retailPrice, concrete, skuProp);
     @implementSkuDepartmentStoreLedgerCustom(accountPrice, concrete, skuProp, retailPrice);
 END
@@ -397,16 +397,16 @@ CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщи
 TABLE supplierPriceLedger (supplierPriceLedger);
 @defineSkuDepartmentStoreLedger(supplierPrice, 'Цена поставщика', NUMERIC[14,2]);
 
-CLASS ABSTRACT retailRangeLedger 'Изменение НДС';
-TABLE retailRangeLedger (retailRangeLedger);
-@defineSkuDepartmentStoreLedger(retailRange, 'НДС', range);
-valueRetailRangeRetailRangeLedger 'НДС, %' (ledger) = valueRateRangeDate(retailRangeRetailRangeLedger(ledger), dateInTime(dateTimeRetailRangeLedger(ledger))) PERSISTENT;
-valueRetailRangeBLedgerDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
-            valueRateRangeDate(retailRangeBLedgerDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
-valueRetailRangeALedgerDateTime 'НДС, % (после)' (sku, departmentStore, dateTime) =
-            valueRateRangeDate(retailRangeALedgerDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
-currentValueRetailRangeLedger 'НДС, %' (sku, departmentStore) =
-            valueCurrentRateRange(currentRetailRangeLedger(sku, departmentStore));
+CLASS ABSTRACT retailVATLedger 'Изменение НДС';
+TABLE retailVATLedger (retailVATLedger);
+@defineSkuDepartmentStoreLedger(retailVAT, 'НДС', range);
+valueRetailVATRetailVATLedger 'НДС, %' (ledger) = valueRateRangeDate(retailVATRetailVATLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger))) PERSISTENT;
+valueRetailVATBLedgerDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
+            valueRateRangeDate(retailVATBLedgerDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
+valueRetailVATALedgerDateTime 'НДС, % (после)' (sku, departmentStore, dateTime) =
+            valueRateRangeDate(retailVATALedgerDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
+currentValueRetailVATLedger 'НДС, %' (sku, departmentStore) =
+            valueCurrentRateRange(currentRetailVATLedger(sku, departmentStore));
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
@@ -434,7 +434,7 @@ META deriveBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, prefixS)
     @derivePriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP, prefixS);
     @derivePriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP, prefixS);
     @derivePriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP, prefixS);
-    @derivePriceLedgerOnSkuChangePrefix(retailRange, concrete, prefixP, prefixS);
+    @derivePriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP, prefixS);
     @derivePriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP, prefixS);
 END
 
@@ -453,7 +453,7 @@ META derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, prefixS)
     @derivePrevPriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP, prefixS);
     @derivePrevPriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP, prefixS);
     @derivePrevPriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP, prefixS);
-    @derivePrevPriceLedgerOnSkuChangePrefix(retailRange, concrete, prefixP, prefixS);
+    @derivePrevPriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP, prefixS);
     @derivePrevPriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP, prefixS);
 END
 
@@ -464,7 +464,7 @@ END
 META implementSalesLedgerStore(concrete)
     @implementSalesLedger(concrete, item, departmentStore);
     quantitySalesLedger (ledger) += quantity###concrete##Detail(ledger);
-    VATSalesLedger (ledger) += retailRange###concrete##Detail(ledger);
+    VATSalesLedger (ledger) += retailVAT###concrete##Detail(ledger);
     sumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
 END
 
@@ -472,7 +472,7 @@ END
 
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s, st)   currentImporterPriceLedger, currentSupplierPriceLedger,
-                        currentAccountPriceLedger, currentValueRetailRangeLedger, currentRetailPriceLedger,
+                        currentAccountPriceLedger, currentValueRetailVATLedger, currentRetailPriceLedger,
                         currentWarePriceLedger
 
     OBJECTS apl=accountPriceLedger
@@ -496,10 +496,10 @@ EXTEND FORM currentBalanceSkuStock
     FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
     ORDER BY dateTimeSupplierPriceLedger DESC
 
-    OBJECTS rvl=retailRangeLedger
-    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
-    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==s AND departmentStoreRetailRangeLedger(rvl)==st
-    ORDER BY dateTimeRetailRangeLedger DESC
+    OBJECTS rvl=retailVATLedger
+    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
+    FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
+    ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl=warePriceLedger
     PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
@@ -520,7 +520,7 @@ EXTEND DESIGN currentBalanceSkuStock {
 
 EXTEND FORM balanceSkuStock
     PROPERTIES (s, st, t) READONLY importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
-                                   accountPriceBLedgerDateTime, valueRetailRangeALedgerDateTime,
+                                   accountPriceBLedgerDateTime, valueRetailVATALedgerDateTime,
                                    retailPriceALedgerDateTime, warePriceALedgerDateTime
 
     OBJECTS apl=accountPriceLedger
@@ -543,10 +543,10 @@ EXTEND FORM balanceSkuStock
     FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
     ORDER BY dateTimeSupplierPriceLedger DESC
 
-    OBJECTS rvl=retailRangeLedger
-    PROPERTIES(rvl) descriptionRetailRangeLedger, dateTimeRetailRangeLedger, valueRetailRangeRetailRangeLedger
-    FILTERS isPostedRetailRangeLedger(rvl) AND skuRetailRangeLedger(rvl)==s AND departmentStoreRetailRangeLedger(rvl)==st
-    ORDER BY dateTimeRetailRangeLedger DESC
+    OBJECTS rvl=retailVATLedger
+    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
+    FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
+    ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl= warePriceLedger
     PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
@@ -570,11 +570,11 @@ EXTEND DESIGN balanceSkuStock {
 META defineDialogSkuStorePrice (form)
 
     form###supplierPrice 'Цена поставщика' (sku) = currentSupplierPriceLedger(sku, form###stock());
-    form###valueRetailRange 'НДС, %' (sku) = currentValueRetailRangeLedger(sku, form###stock());
+    form###valueRetailVAT 'НДС, %' (sku) = currentValueRetailVATLedger(sku, form###stock());
     form###retailPrice 'Розничная цена' (sku) = currentRetailPriceLedger(sku, form###stock());
 
     EXTEND FORM form
-        PROPERTIES(s) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailRange, form###retailPrice
-        PROPERTIES(si) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailRange, form###retailPrice
+        PROPERTIES(s) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailVAT, form###retailPrice
+        PROPERTIES(si) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailVAT, form###retailPrice
     ;
 END

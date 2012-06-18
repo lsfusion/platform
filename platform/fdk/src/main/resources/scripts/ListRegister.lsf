@@ -161,7 +161,7 @@ importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (i
 
 markupSumListRegisterDetail 'Сумма надбавки' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
-valueRetailRangeListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+valueRetailVATListRegisterDetail 'НДС розничный, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
 
 retailVATSumListRegisterDetail 'Сумма НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
@@ -182,7 +182,7 @@ numberContractListRegister 'Договор' (listRegister) = ABSTRACT STRING[30]
 
 supplierVATISumListRegisterDetail 'Сумма НДС поставщика (без посуды)' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
 
-valueSupplierRangeListRegisterDetail 'НДС поставщика, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
+valueSupplierVATListRegisterDetail 'НДС поставщика, %' (listRegisterDetail) = ABSTRACT NUMERIC[6,2] (listRegisterDetail);
 
 invoiceSumListRegisterDetail 'Сумма поставщика с НДС' (listRegisterDetail) = ABSTRACT NUMERIC[14,2] (listRegisterDetail);
 
@@ -200,9 +200,9 @@ FORM listRegister 'Реестр цен (поставка)' PRINT
 
     OBJECTS d=listRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
-                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, valueSupplierRangeListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, valueSupplierVATListRegisterDetail,
                     wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
-                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
+                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
     FILTERS listRegisterListRegisterDetail(d) == l
@@ -222,7 +222,7 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
                     wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
-                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailRangeListRegisterDetail,
+                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
     FILTERS listRegisterListRegisterDetail(d) == l
@@ -287,7 +287,7 @@ META implementInputListRegisterDetail (concrete, skuProp)
     valueWareRangeListRegisterDetail (inputListRegisterDetail) += valueWareRange###concrete##Detail (inputListRegisterDetail);
     importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkup###concrete##Detail (inputListRegisterDetail);
     markupSumListRegisterDetail (inputListRegisterDetail) += markupSum###concrete##Detail (inputListRegisterDetail);
-    valueRetailRangeListRegisterDetail (inputListRegisterDetail) += valueRetailRange###concrete##Detail (inputListRegisterDetail);
+    valueRetailVATListRegisterDetail (inputListRegisterDetail) += valueRetailVAT###concrete##Detail (inputListRegisterDetail);
     retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSum###concrete##Detail (inputListRegisterDetail);
     retailPriceListRegisterDetail (inputListRegisterDetail) += retailPrice###concrete##Detail (inputListRegisterDetail);
     retailSumListRegisterDetail (inputListRegisterDetail) += retailSum###concrete##Detail (inputListRegisterDetail);
@@ -305,7 +305,7 @@ END
 
 META implementListRegisterDetail (concrete)
     supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISum###concrete##Detail(listRegisterDetail);
-    valueSupplierRangeListRegisterDetail (listRegisterDetail) += valueSupplierRange###concrete##Detail(listRegisterDetail);
+    valueSupplierVATListRegisterDetail (listRegisterDetail) += valueSupplierVAT###concrete##Detail(listRegisterDetail);
 
     invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSum###concrete##Detail(listRegisterDetail);
 END

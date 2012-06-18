@@ -243,7 +243,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField isWeightItemField = new ImportField(getLP("isWeightItem"));
         ImportField compositionField = new ImportField(getLP("compositionScalesItem"));
         ImportField dataSuppliersRangeItemField = new ImportField(getLP("valueRate"));
-        ImportField valueRetailRangeItemField = new ImportField(getLP("valueRate"));
+        ImportField valueRetailVATItemField = new ImportField(getLP("valueRate"));
         ImportField quantityPackItemField = new ImportField(getLP("quantityPackItem"));
         ImportField wareIDField = new ImportField(getLP("extSID"));
         ImportField priceWareField = new ImportField(getLP("warePriceDate"));
@@ -268,11 +268,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) getClass("barcode"),
                 getLP("barcodeIdDate").getMapping(barcodeField, dateField));
 
-        ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+        ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
                 getLP("valueCurrentRangeValue").getMapping(dataSuppliersRangeItemField));
 
-        ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                getLP("valueCurrentRangeValue").getMapping(valueRetailRangeItemField));
+        ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+                getLP("valueCurrentRangeValue").getMapping(valueRetailVATItemField));
 
         ImportKey<?> wareKey = new ImportKey((ConcreteCustomClass) getClass("ware"),
                 getLP("extSIDToObject").getMapping(wareIDField));
@@ -319,10 +319,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(isLoafCutItemField, getLP("isLoafCutItem").getMapping(itemKey)));
         props.add(new ImportProperty(isWeightItemField, getLP("isWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(compositionField, getLP("compositionScalesItem").getMapping(itemKey)));
-        props.add(new ImportProperty(dataSuppliersRangeItemField, getLP("supplierRangeItemDate").getMapping(itemKey, dateField, supplierRangeKey),
-                LM.object(getClass("range")).getMapping(supplierRangeKey)));
-        props.add(new ImportProperty(valueRetailRangeItemField, getLP("retailRangeItemDate").getMapping(itemKey, dateField, retailRangeKey),
-                LM.object(getClass("range")).getMapping(retailRangeKey)));
+        props.add(new ImportProperty(dataSuppliersRangeItemField, getLP("supplierVATItemDate").getMapping(itemKey, dateField, supplierVATKey),
+                LM.object(getClass("range")).getMapping(supplierVATKey)));
+        props.add(new ImportProperty(valueRetailVATItemField, getLP("retailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
+                LM.object(getClass("range")).getMapping(retailVATKey)));
         props.add(new ImportProperty(quantityPackItemField, getLP("quantityPackItem").getMapping(itemKey)));
 
         props.add(new ImportProperty(wareIDField, getLP("wareItem").getMapping(itemKey),
@@ -339,12 +339,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
                 nameUOMField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
                 importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
-                compositionField, dataSuppliersRangeItemField, valueRetailRangeItemField, quantityPackItemField, wareIDField,
+                compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, quantityPackItemField, wareIDField,
                 priceWareField, ndsWareField, rateWasteIDField), data);
 
         DataSession session = createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
-                brandKey, countryKey, barcodeKey, supplierRangeKey, retailRangeKey, wareKey, rangeKey, rateWasteKey), props);
+                brandKey, countryKey, barcodeKey, supplierVATKey, retailVATKey, wareKey, rangeKey, rateWasteKey), props);
         service.synchronize(true, false);
         if (session.hasChanges()) {
             String result = applySession(session);
@@ -428,7 +428,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField retailPriceShipmentDetailField = new ImportField(getLP("retailPriceShipmentDetail"));
                 ImportField retailMarkupShipmentDetailField = new ImportField(getLP("retailMarkupShipmentDetail"));
                 ImportField dataSuppliersRangeField = new ImportField(getLP("valueRate"));
-                ImportField valueRetailRangeField = new ImportField(getLP("valueRate"));
+                ImportField valueRetailVATField = new ImportField(getLP("valueRate"));
                 ImportField toShowWareField = new ImportField(getLP("toShowWareShipment"));
 
                 ImportKey<?> shipmentKey = new ImportKey((ConcreteCustomClass) getClass("shipment"),
@@ -446,11 +446,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) getClass("item"),
                         getLP("extSIDToObject").getMapping(itemIDField));
 
-                ImportKey<?> supplierRangeKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+                ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
                         getLP("valueCurrentRangeValue").getMapping(dataSuppliersRangeField));
 
-                ImportKey<?> retailRangeKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                        getLP("valueCurrentRangeValue").getMapping(valueRetailRangeField));
+                ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+                        getLP("valueCurrentRangeValue").getMapping(valueRetailVATField));
 
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
@@ -471,10 +471,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 props.add(new ImportProperty(retailPriceShipmentDetailField, getLP("retailPriceShipmentDetail").getMapping(shipmentDetailKey)));
                 props.add(new ImportProperty(retailMarkupShipmentDetailField, getLP("retailMarkupShipmentDetail").getMapping(shipmentDetailKey)));
 
-                props.add(new ImportProperty(dataSuppliersRangeField, getLP("supplierRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierRangeKey),
-                        LM.object(getClass("range")).getMapping(supplierRangeKey)));
-                props.add(new ImportProperty(valueRetailRangeField, getLP("retailRangeShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */retailRangeKey),
-                        LM.object(getClass("range")).getMapping(retailRangeKey)));
+                props.add(new ImportProperty(dataSuppliersRangeField, getLP("supplierVATShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierVATKey),
+                        LM.object(getClass("range")).getMapping(supplierVATKey)));
+                props.add(new ImportProperty(valueRetailVATField, getLP("retailVATShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */retailVATKey),
+                        LM.object(getClass("range")).getMapping(retailVATKey)));
 
                 props.add(new ImportProperty(itemIDField, getLP("itemShipmentDetail").getMapping(shipmentDetailKey),
                         LM.object(getClass("item")).getMapping(itemKey)));
@@ -485,10 +485,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportTable table = new ImportTable(Arrays.asList(waybillShipmentField, seriesWaybillShipmentField,
                         departmentStoreIDField, supplierIDField, dateShipmentField, itemIDField, shipmentDetailIDField,
                         quantityShipmentDetailField, supplierPriceShipmentDetail, importerPriceShipmentDetail, retailPriceShipmentDetailField,
-                        retailMarkupShipmentDetailField, dataSuppliersRangeField, valueRetailRangeField, toShowWareField), data);
+                        retailMarkupShipmentDetailField, dataSuppliersRangeField, valueRetailVATField, toShowWareField), data);
 
                 DataSession session = createSession();
-                IntegrationService service = new IntegrationService(session, table, Arrays.asList(shipmentKey, supplierKey, departmentStoreKey, shipmentDetailKey, itemKey, supplierRangeKey, retailRangeKey), props);
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(shipmentKey, supplierKey, departmentStoreKey, shipmentDetailKey, itemKey, supplierVATKey, retailVATKey), props);
                 service.synchronize(true, false);
                 if (session.hasChanges()) {
                     String result = applySession(session);
@@ -1137,7 +1137,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     composition = new String(itemsImportFile.getField("FORMULA").getBytes(), "Cp1251").replace("\n", "").replace("\r", "");
                 }
                 Double suppliersRange = new Double(new String(itemsImportFile.getField("NDSP").getBytes(), "Cp1251").trim());
-                Double retailRange = new Double(new String(itemsImportFile.getField("NDSR").getBytes(), "Cp1251").trim());
+                Double retailVAT = new Double(new String(itemsImportFile.getField("NDSR").getBytes(), "Cp1251").trim());
                 Double quantityPackItem = quantities.containsKey(itemID) ? quantities.get(itemID) : null;
                 Boolean isWare = "T".equals(new String(itemsImportFile.getField("LGRMSEC").getBytes(), "Cp1251").substring(0, 1));
                 String wareID = new String(itemsImportFile.getField("K_GRMSEC").getBytes(), "Cp1251").trim();
@@ -1148,7 +1148,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
                     data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + UOM, UOM, brand, "B_" + brand, "C_" + country, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
-                            "".equals(composition) ? null : composition, suppliersRange, retailRange, quantityPackItem, wareID,
+                            "".equals(composition) ? null : composition, suppliersRange, retailVAT, quantityPackItem, wareID,
                             wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
                             "RW_".equals(rateWasteID) ? null : rateWasteID));
             } catch (ParseException e) {
@@ -1210,12 +1210,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             Double retailPriceShipmentDetail = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
             Double retailMarkupShipmentDetail = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
             Double suppliersRange = new Double(new String(importFile.getField("NDSP").getBytes(), "Cp1251").trim());
-            Double retailRange = new Double(new String(importFile.getField("NDSR").getBytes(), "Cp1251").trim());
+            Double retailVAT = new Double(new String(importFile.getField("NDSR").getBytes(), "Cp1251").trim());
 
             if (post_dok.length != 1)
                 data.add(Arrays.asList((Object) number, series, departmentStoreID, supplierID, dateShipment, itemID,
                         shipmentDetailID, quantityShipmentDetail, supplierPriceShipmentDetail, importerPriceShipmentDetail, retailPriceShipmentDetail,
-                        retailMarkupShipmentDetail, suppliersRange, retailRange, true));
+                        retailMarkupShipmentDetail, suppliersRange, retailVAT, true));
         }
         return data;
     }

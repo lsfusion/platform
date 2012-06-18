@@ -73,7 +73,7 @@
 	<field name="valueWareRangeListRegisterDetail" class="java.lang.Double"/>
 	<field name="importerMarkupListRegisterDetail" class="java.lang.Double"/>
 	<field name="markupSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="valueRetailRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="valueRetailVATListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailVATSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailSumListRegisterDetail" class="java.lang.Double"/>
@@ -701,7 +701,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{valueRetailRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueRetailVATListRegisterDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

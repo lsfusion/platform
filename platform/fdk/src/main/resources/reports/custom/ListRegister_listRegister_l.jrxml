@@ -69,7 +69,7 @@
 	<field name="supplierSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="supplierMarkupListRegisterDetail" class="java.lang.Double"/>
 	<field name="supplierVATISumListRegisterDetail" class="java.lang.Double"/>
-	<field name="valueSupplierRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="valueSupplierVATListRegisterDetail" class="java.lang.Double"/>
 	<field name="wareSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="warePriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="wareVATSumListRegisterDetail" class="java.lang.Double"/>
@@ -77,7 +77,7 @@
 	<field name="invoiceSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="importerMarkupListRegisterDetail" class="java.lang.Double"/>
 	<field name="markupSumListRegisterDetail" class="java.lang.Double"/>
-	<field name="valueRetailRangeListRegisterDetail" class="java.lang.Double"/>
+	<field name="valueRetailVATListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailVATSumListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailPriceListRegisterDetail" class="java.lang.Double"/>
 	<field name="retailSumListRegisterDetail" class="java.lang.Double"/>
@@ -575,7 +575,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{valueSupplierRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueSupplierVATListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>
@@ -809,7 +809,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{valueRetailRangeListRegisterDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueRetailVATListRegisterDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
