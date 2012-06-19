@@ -498,6 +498,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return form.BL;
     }
 
+    public FormInstance getFormInstance() {
+        return form;
+    }
+
     /**
      * готовит форму для восстановленного подключения
      */

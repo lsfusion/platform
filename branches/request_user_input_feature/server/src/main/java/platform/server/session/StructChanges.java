@@ -9,7 +9,7 @@ import java.util.Collection;
 public class StructChanges extends TwinImmutableObject {
 
     public StructChanges(PropertyChanges propChanges) {
-        changes = new SimpleMap<CalcProperty, Type>();
+        changes = new Changes();
         for(CalcProperty prop : propChanges.getProperties()) {
             ModifyChange modify = propChanges.getModify(prop);
             Type type;
@@ -33,8 +33,58 @@ public class StructChanges extends TwinImmutableObject {
             return this==FINAL || this==NOUPDATE;
         }
     }
+
+    private static class Changes extends QuickMap<CalcProperty, Type> {
+
+        private Changes() {
+        }
+
+        private Changes(QuickMap<? extends CalcProperty, ? extends Type> set) {
+            super(set);
+        }
+
+        private Changes(Collection<? extends CalcProperty> keys, Type value) {
+            super(keys, value);
+        }
+
+        private Changes(CalcProperty key, Type value) {
+            super(key, value);
+        }
+
+        protected Type addValue(CalcProperty key, Type prevValue, Type newValue) {
+            if(prevValue.equals(Type.FINAL) || prevValue.equals(Type.NOUPDATE) || newValue.equals(Type.NOTFINAL))
+                return prevValue;
+            return newValue;
+        }
+
+        protected boolean containsAll(Type who, Type what) {
+            throw new RuntimeException("not supported");
+        }
+    }
     private final QuickMap<CalcProperty, Type> changes;
     
+    private StructChanges(StructChanges changes1, StructChanges changes2) {
+        changes = new Changes(changes1.changes);
+        changes.addAll(changes2.changes);
+    }
+    public StructChanges add(StructChanges add) {
+        if(isEmpty())
+            return add;
+        if(add.isEmpty())
+            return this;
+        if(BaseUtils.hashEquals(this, add))
+            return this;
+        return new StructChanges(this, add);
+    }
+
+    public StructChanges(Collection<? extends CalcProperty> props) {
+        changes = new Changes(props, Type.NOTFINAL);
+    }
+
+    public StructChanges(CalcProperty property) {
+        changes = new Changes(property, Type.NOTFINAL);
+    }
+
     public boolean isEmpty() {
         return changes.isEmpty();
     }

@@ -19,6 +19,11 @@ public class IncrementProps extends BaseMutableModifier {
         add(property, table);
     }
 
+    public <P extends PropertyInterface> IncrementProps(Map<? extends CalcProperty, ? extends SinglePropertyTableUsage> tables) {
+        for(Map.Entry<? extends CalcProperty, ? extends SinglePropertyTableUsage> table : tables.entrySet())
+            add(table.getKey(), table.getValue());
+    }
+
     private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
 
     public Collection<CalcProperty> getProperties() {

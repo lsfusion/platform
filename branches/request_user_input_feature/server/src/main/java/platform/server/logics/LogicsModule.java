@@ -6,7 +6,6 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
-import platform.interop.form.ServerResponse;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -699,7 +698,7 @@ public abstract class LogicsModule {
                 (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(1))));
     }
 
-    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean recursive, boolean hasElse, int resInterfaces, Object... params) {
+    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
 
@@ -718,7 +717,7 @@ public abstract class LogicsModule {
         List<PropertyInterface> mapInterfaces = BaseUtils.<List<PropertyInterface>>immutableCast(readImplements.subList(0, resInterfaces));
 
         return addProperty(group, new LAP<PropertyInterface>(
-                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces, mapInterfaces, ifProp, orders, action, elseAction, recursive))
+                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces, mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, recursive))
         );
     }
 
@@ -968,9 +967,10 @@ public abstract class LogicsModule {
         LCP timeProperty = addDProp(group, name, caption, time.getConcreteValueClass(), isStored, overrideClasses(changeProp.getInterfaceClasses(), classes));
         LCP curTime = addTProp(time);
         LAP setCurTime = addSetPropertyAProp(BaseUtils.add(directLI(timeProperty), curTime));
-        LAP editAction = changeProp.getEditAction(ServerResponse.CHANGE);
+        setCurTime.setEventAction(true, changeProp, getIntParams(changeProp));
+/*        LAP editAction = changeProp.getEditAction(ServerResponse.CHANGE);
         LAP<?> overrideAction = addListAProp(BaseUtils.add(directLI(editAction), directLI(setCurTime)));
-        changeProp.setEditAction(ServerResponse.CHANGE, overrideAction);
+        changeProp.setEditAction(ServerResponse.CHANGE, overrideAction);*/
         return timeProperty;
     }
 

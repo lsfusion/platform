@@ -45,6 +45,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -1637,7 +1638,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getIDSql());
+                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getIDSql(), getSessionEvents());
     }
 
     public List<Property> getProperties() {
@@ -1767,11 +1768,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public LinkedHashSet<OldProperty> getEventDependProperties() {
+    public LinkedHashSet<OldProperty> getApplyEventDependProps() {
         LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
         for (Property property : getPropertyList()) {
-            if (property instanceof ActionProperty && ((ActionProperty) property).event!=null)
-                result.addAll(((ActionProperty)property).event.getOldDepends());
+            if (property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event!=null && !event.session)
+                    result.addAll(event.getOldDepends());
+            }
             if (property instanceof DataProperty && ((DataProperty) property).event!=null)
                 result.addAll(((DataProperty)property).event.getOldDepends());
         }
@@ -1782,10 +1786,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<Property> getAppliedProperties(boolean onlyCheck) {
         // здесь нужно вернуть список stored или тех кто
         List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList(onlyCheck))
-            if ((property instanceof CalcProperty && ((CalcProperty)property).isStored())
-                    || (property instanceof ActionProperty && ((ActionProperty)property).event!=null))
+        for (Property property : getPropertyList(onlyCheck)) {
+            if (property instanceof CalcProperty && ((CalcProperty)property).isStored())
                 result.add(property);
+            if (property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event!=null && !event.session)
+                    result.add(property);
+            }
+        }
         return result;
     }
 
@@ -1797,8 +1806,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 CalcProperty<?> where = (((DataProperty) property).event).getWhere();
                 changes.add(where, where.getNoChange());
             }
-        
-        return new ImmutableModifier(new PropertyChanges(changes));
+
+        return new ImmutableModifier(changes);
     }
 
     private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, Set<CalcProperty>> mapDepends) {
@@ -1809,6 +1818,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 fillAppliedDependFrom(depend, applied, mapDepends);
     }
 
+    @IdentityLazy
+    public List<ActionProperty> getSessionEvents() {
+        List<ActionProperty> result = new ArrayList<ActionProperty>();
+        for(Property property : getPropertyList())
+            if(property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event !=null && event.session)
+                    result.add((ActionProperty)property);
+            }
+        return result;
+    }
+
     // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityLazy
     private Map<CalcProperty, List<CalcProperty>> getMapAppliedDepends() {
@@ -1817,7 +1838,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             mapDepends.put(property, new HashSet<CalcProperty>());
             fillAppliedDependFrom(property, property, mapDepends);
         }
-        for(OldProperty old : getEventDependProperties())
+        for(OldProperty old : getApplyEventDependProps())
             fillAppliedDependFrom(old.property, old, mapDepends);
 
         Iterable<Property> propertyList = getPropertyList();
@@ -2191,8 +2212,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void recalculateFollows(DataSession session) throws SQLException {
         for(Property property : getPropertyList())
-            if(property instanceof ActionProperty && ((ActionProperty)property).event!=null)
-                ((ActionProperty)property).event.resolve(session);
+            if(property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event!=null)
+                    event.resolve(session);
+            }
     }
 
     public void updateStats() throws SQLException {
@@ -2865,5 +2889,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @Override
     public BusinessLogics getBL() {
         return this;
+    }
+
+    public FormInstance getFormInstance() {
+        return null;
     }
 }

@@ -105,8 +105,16 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         depends.add(property);
     }
 
+    public Set<SessionCalcProperty> mapSessionCalcDepends() {
+        return property.getSessionCalcDepends();
+    }
+
     public Set<OldProperty> mapOldDepends() {
         return property.getOldDepends();
+    }
+
+    public Set<ChangedProperty> mapChangedDepends() {
+        return property.getChangedDepends();
     }
 
     public Object read(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {

@@ -22,6 +22,7 @@ public interface Context {
     ThreadLocal<Context> context = new ThreadLocal<Context>();
 
     BusinessLogics getBL();
+    FormInstance getFormInstance();
 
     void setActionMessage(String message);
     String getActionMessage();

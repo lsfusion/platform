@@ -1,12 +1,9 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
-import platform.server.classes.ValueClass;
+import platform.base.OrderedMap;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
-import platform.server.form.instance.ActionPropertyObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.session.ExecutionEnvironment;
@@ -33,7 +30,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public <L extends PropertyInterface> void mapEventAction(CalcPropertyMapImplement<L, T> where, int options) {
-        property.setEventAction(where.map(BaseUtils.reverse(mapping)), options);
+        property.setEventAction(where.map(BaseUtils.reverse(mapping)), new OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean>(), false, false, options);
     }
 
     public ActionPropertyObjectEntity<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {

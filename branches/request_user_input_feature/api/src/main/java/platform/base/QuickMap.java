@@ -43,7 +43,7 @@ public abstract class QuickMap<K, V> {
         add(key, value);
     }
 
-    protected QuickMap(Collection<K> keys, V value) {
+    protected QuickMap(Collection<? extends K> keys, V value) {
         this();
         addAll(keys, value);
     }
@@ -141,7 +141,7 @@ public abstract class QuickMap<K, V> {
         return true;
     }
 
-    public void addAll(Collection<K> keys, V value) {
+    public void addAll(Collection<? extends K> keys, V value) {
         for(K key : keys)
             add(key, value);
     }

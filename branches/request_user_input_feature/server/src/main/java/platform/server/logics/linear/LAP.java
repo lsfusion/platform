@@ -1,7 +1,7 @@
 package platform.server.logics.linear;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
+import platform.base.OrderedMap;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
@@ -10,7 +10,9 @@ import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platform.server.logics.PropertyUtils.readCalcImplements;
 
@@ -36,17 +38,25 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         setEventAction(false, lp, mapping);
     }
 
+    public <P extends PropertyInterface> void setEventAction(boolean session, LCP<P> lp, Integer... mapping) {
+        setEventAction(false, session, lp, mapping);
+    }
+
     public <P extends PropertyInterface> void setEventSetAction(LCP<P> lp, Integer... mapping) {
-        setEventAction(true, lp, mapping);
+        setEventAction(true, false, lp, mapping);
     }
 
-    public <P extends PropertyInterface> void setEventAction(boolean changedSet, LCP<P> lp, Integer... mapping) {
-        property.setEventAction(new CalcPropertyMapImplement<P, T>(lp.property.getChanged(changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE), lp.getMap(listInterfaces)), 0);
+    public <P extends PropertyInterface> void setEventAction(boolean changedSet, boolean session, LCP<P> lp, Integer... mapping) {
+        Map<P,T> map = new HashMap<P, T>();
+        for(int i=0;i<lp.listInterfaces.size();i++)
+            map.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
+        property.setEventAction(new CalcPropertyMapImplement<P, T>(lp.property.getChanged(changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE), map), new OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean>(), false, session, 0);
     }
 
-    public <P extends PropertyInterface> void setEventAction(Object... params) {
+    public <P extends PropertyInterface> void setEventAction(boolean session, boolean descending, boolean ordersNotNull, Object... params) {
         List<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
-        property.setEventAction((CalcPropertyMapImplement<?, T>) listImplements.get(0), 0);
+        OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders = BaseUtils.toOrderedMap(listImplements.subList(1, listImplements.size()), descending);
+        property.setEventAction((CalcPropertyMapImplement<?, T>) listImplements.get(0), orders, ordersNotNull, session, 0);
     }
 
     public ValueClass[] getInterfaceClasses() {

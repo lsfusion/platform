@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
@@ -137,13 +138,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyClassImplement<P>(this, classes, mapping);
     }
 
-    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, P> whereImplement, int options) {
+    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, P> whereImplement, OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, boolean session, int options) {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
         if(Settings.instance.isCheckUniqueEvent() && event!=null)
             throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", this));
-        event = new ActionEvent<P>(this, whereImplement, options);
+        event = new ActionEvent<P>(this, whereImplement, orders, ordersNotNull, session, options);
     }
 
     @IdentityLazy

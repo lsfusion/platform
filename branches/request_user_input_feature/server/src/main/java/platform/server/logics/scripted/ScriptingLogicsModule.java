@@ -808,6 +808,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(baseLM.minus, asList(prop));
     }
 
+    private boolean doesExtendContext(List<LPWithParams> list, List<LPWithParams> orders) {
+        Set<Integer> listContext = new HashSet<Integer>();
+        for(LPWithParams lp : list)
+            if(lp.property != null)
+                listContext.addAll(lp.usedParams);
+        return !listContext.containsAll(mergeAllParams(orders));
+    }
     private List<Integer> mergeAllParams(List<LPWithParams> lpList) {
         Set<Integer> s = new TreeSet<Integer>();
         for (LPWithParams mappedLP : lpList) {
@@ -954,6 +961,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
+        boolean ordersNotNull = doesExtendContext(Collections.singletonList(condition), orders);
+
         List<LPWithParams> creationParams = new ArrayList<LPWithParams>();
         creationParams.add(condition);
         creationParams.addAll(orders);
@@ -978,7 +987,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(creationParams);
 
-        LP result = addForAProp(null, genSID(), "", !descending, recursive, elseAction != null, usedParams.size(), getParamsPlainList(allCreationParams).toArray());
+        LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 
@@ -1063,6 +1072,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
+        boolean ordersNotNull = doesExtendContext(mergeLists(mainProps, groupProps), orderProps);
+
         int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
         LCP resultProp = null;
         if (type == GroupingType.SUM) {
@@ -1070,7 +1081,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), Settings.instance.isDefaultOrdersNotNull(), !ascending, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.UNIQUE) {
             resultProp = addAGProp(null, false, genSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
@@ -1097,11 +1108,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedPartitionProp(PartitionType partitionType, LP ungroupProp, boolean strict, int precision, boolean isAscending,
                                                  boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
-        boolean ordersNotNull = Settings.instance.isDefaultOrdersNotNull();
         scriptLogger.info("addScriptedPartitionProp(" + partitionType + ", " + ungroupProp + ", " + strict + ", " + precision + ", " +
                                                         isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ");");
         checkPartitionWindowConsistence(partitionType, useLast);
         checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
+
+        boolean ordersNotNull = doesExtendContext(paramProps.subList(0, groupPropsCnt + 1), paramProps.subList(groupPropsCnt + 1, paramProps.size()));
 
         List<Object> resultParams = getParamsPlainList(paramProps);
         List<Integer> usedParams = mergeAllParams(paramProps);
@@ -1383,7 +1395,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp, List<LPWithParams> orders, boolean descending, boolean session) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedWriteWhen(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
         LP mainProp = findLPByCompoundName(mainPropName);
         checkParamCount(mainProp, namedParams.size());
@@ -1394,8 +1406,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             params = getParamsPlainList(asList(valueProp, whenProp));
             ((LCP)mainProp).setEventChange(params.toArray());
         } else {
-            params = getParamsPlainList(asList(whenProp));
-            ((LAP<?>)mainProp).setEventAction(params.toArray());
+            boolean ordersNotNull = doesExtendContext(asList(whenProp), orders);
+            params = getParamsPlainList(asList(whenProp), orders);
+            ((LAP<?>)mainProp).setEventAction(session, descending, ordersNotNull, params.toArray());
         }
     }
 

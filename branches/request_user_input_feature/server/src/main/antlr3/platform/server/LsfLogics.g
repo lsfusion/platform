@@ -1828,10 +1828,13 @@ writeWhenStatement
 @init {
 	List<String> context;
 	LPWithParams value = null;
+	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
+	boolean session = false;
+	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property);
+		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, !ascending, session);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
@@ -1841,6 +1844,9 @@ writeWhenStatement
 		)?
 		'WHEN'
 		whenExpr=propertyExpression[context, false]
+		('ORDER' ('DESC' { ascending = false; } )?
+		orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); })?
+		('SESSION' { session = true; })?
 		';'
 	;
 

@@ -322,12 +322,12 @@ createNewStore 'Добавить большой склад' = ACTION () {
 CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
 constraintAction (store, article) = ACTION (store, article) {
-    EXEC cancel();
+//    EXEC cancel();
     IF foo(store, article) > 300000 THEN {
-        MESSAGE 'Forbidden';
+        MESSAGE name(article);
     }
 };
-constraintAction(store, article) WHEN foo(store,article)>10000;
+constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(article) SESSION;
 
 // inQuantity(document, article) <- 15 WHEN CHANGED(foo(store(document), article));
 

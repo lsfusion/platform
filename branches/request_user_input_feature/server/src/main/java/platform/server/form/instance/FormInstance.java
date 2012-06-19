@@ -331,7 +331,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
     public void addHintIncrement(CalcProperty property) {
         try {
-            assert property.hasChanges(this) && increment.getTable(property) == null;
+            assert increment.getTable(property) == null;
             readProperty = property;
             increment.add(property, property.readChangeTable(session.sql, this, BL.LM.baseClass, getQueryEnv()));
             readProperty = null;
@@ -340,18 +340,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         }
     }
 
-    public <P extends PropertyInterface> void dropIncrement(PropertyChanges changes) throws SQLException {
-        for(CalcProperty property : new HashSet<CalcProperty>(increment.getProperties()))
-            if(property.hasChanges(changes, true)) // если зависит от changes - drop'аем
-                increment.remove(property, session.sql);
+    public <P extends PropertyInterface> void dropIncrement(StructChanges changes) throws SQLException {
+        for(CalcProperty property : CalcProperty.hasChanges(new HashSet<CalcProperty>(increment.getProperties()), changes, true))
+            increment.remove(property, session.sql);
     }
 
-    public Set<CalcProperty> getUpdateProperties(PropertyChanges propChanges) {
-        return CalcProperty.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().add(propChanges), true);
+    public Set<CalcProperty> getUpdateProperties(StructChanges propChanges) {
+        return CalcProperty.hasChanges(getUsedProperties(), noUpdate.getPropertyChanges().getStruct().add(propChanges), true);
     }
 
     public Set<CalcProperty> getUpdateProperties() {
-        return CalcProperty.hasChanges(getUsedProperties(), getPropertyChanges(), false);
+        return CalcProperty.hasChanges(getUsedProperties(), getPropertyChanges().getStruct(), false);
     }
 
     private final WeakReference<FocusListener<T>> weakFocusListener;
@@ -1170,6 +1169,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     public FormChanges endApply() throws SQLException {
 
         assert interactive;
+
+        session.executeSessionEvents(this);
 
         QueryEnvironment queryEnv = getQueryEnv();
 

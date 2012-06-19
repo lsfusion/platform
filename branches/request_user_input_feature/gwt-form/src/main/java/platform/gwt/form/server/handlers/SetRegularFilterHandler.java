@@ -17,6 +17,6 @@ public class SetRegularFilterHandler extends FormChangesActionHandler<SetRegular
     @Override
     public FormChangesResult executeEx(SetRegularFilter action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getRemoteChanges(form, form.remoteForm.setRegularFilter(action.groupId, action.filterId));
+        return getRemoteChanges(form, form.remoteForm.setRegularFilter(-1, action.groupId, action.filterId));
     }
 }

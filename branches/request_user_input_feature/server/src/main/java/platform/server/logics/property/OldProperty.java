@@ -10,22 +10,10 @@ import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
-public class OldProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
-    public final CalcProperty<T> property;
+public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
     public OldProperty(CalcProperty<T> property) {
-        super("OLD_" + property.getSID(), property.caption + " (в БД)", (List<T>)property.interfaces);
-        this.property = property;
-    }
-
-    @Override
-    public ClassWhere<Object> getClassValueWhere() {
-        return property.getClassValueWhere();
-    }
-
-    @Override
-    public Set<OldProperty> getOldDepends() {
-        return Collections.<OldProperty>singleton(this);
+        super("OLD_" + property.getSID(), property.caption + " (в БД)", property);
     }
 
     @Override
@@ -33,15 +21,14 @@ public class OldProperty<T extends PropertyInterface> extends SimpleIncrementPro
         return BaseUtils.add(super.calculateLinks(), new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION)); // чтобы лексикографику для applied была
     }
 
+    public OldProperty<T> getOldProperty() {
+        return this;
+    }
+
     protected Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(propClasses)
             return getClassTableExpr(joinImplement);
 
         return property.getExpr(joinImplement); // возвращаем старое значение
-    }
-
-    @Override
-    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
-        return property.getInterfaceCommonClasses(commonValue);
     }
 }

@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.interop.Compare;
@@ -366,10 +367,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getDepends(true);
     }
 
+    @IdentityLazy
+    public Set<SessionCalcProperty> getSessionCalcDepends() {
+        Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
+        for(CalcProperty<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
+            result.addAll(property.getSessionCalcDepends());
+        return result;
+    }
+
     public Set<OldProperty> getOldDepends() {
         Set<OldProperty> result = new HashSet<OldProperty>();
-        for(CalcProperty<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
-            result.addAll(property.getOldDepends());
+        for(SessionCalcProperty sessionCalc : getSessionCalcDepends())
+            result.add(sessionCalc.getOldProperty());
         return result;
     }
 
@@ -397,10 +406,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return hasChanges(propChanges, false);
     }
     public boolean hasChanges(PropertyChanges propChanges, boolean cascade) {
-        StructChanges struct = propChanges.getStruct();
-        return struct.hasChanges(getUsedChanges(struct, cascade));
+        return hasChanges(propChanges.getStruct(), cascade);
     }
-    public static Set<CalcProperty> hasChanges(Collection<CalcProperty> properties, PropertyChanges propChanges, boolean cascade) {
+    public boolean hasChanges(StructChanges propChanges, boolean cascade) {
+        return propChanges.hasChanges(getUsedChanges(propChanges, cascade));
+    }
+    public static Set<CalcProperty> hasChanges(Collection<CalcProperty> properties, StructChanges propChanges, boolean cascade) {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
         for (CalcProperty<?> updateProperty : properties)
             if (updateProperty.hasChanges(propChanges, cascade))
@@ -648,7 +659,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         setNotNull(mapValues, mapKeys, where, env, notNull, true);
     }
     public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
-        setNotNull(new PropertySet<T>(mapValues, mapKeys, where), env, notNull, check);
+        setNotNull(new PropertySet<T>(mapValues, mapKeys, where, new OrderedMap<Expr, Boolean>(), false), env, notNull, check);
     }
     public void setNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
         if(check) {

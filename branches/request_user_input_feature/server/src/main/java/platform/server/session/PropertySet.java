@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
@@ -8,6 +9,7 @@ import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.AggrExpr;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
@@ -24,38 +26,38 @@ public class PropertySet<T extends PropertyInterface> {
 
     public final Map<T,KeyExpr> mapKeys;
     public final Where where;
+    public final OrderedMap<Expr, Boolean> orders;
+    public final boolean ordersNotNull;
 
     public Map<T, Expr> getMapExprs() {
         return PropertyChange.getMapExprs(mapKeys, mapValues, where);
     }
 
-    public PropertySet(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where) {
+    public PropertySet(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull) {
         this.mapValues = mapValues;
         this.mapKeys = mapKeys;
         this.where = where;
+        this.orders = orders;
+        this.ordersNotNull = ordersNotNull;
     }
 
-    public PropertySet(PropertyChange<T> change) { // assert что Expr ActionClass, временное решение пока нет EventChange, EventAction
-        this(change.getMapValues(), change.getMapKeys(), change.where);
+    @IdentityLazy
+    private Query<T,Expr> getQuery() {
+        return new Query<T, Expr>(PropertyChange.getFullMapKeys(mapKeys, mapValues), where.and(AggrExpr.getOrderWhere(orders, ordersNotNull)), mapValues, BaseUtils.toMap(orders.keySet()));
     }
 
     public Collection<Map<T, DataObject>> executeClasses(ExecutionEnvironment env) throws SQLException {
         if(mapKeys.isEmpty() && where.isTrue()) // оптимизация для нее в том числе mapValues ведется                     
             return Collections.singleton(mapValues);
-            
-        return getQuery().executeClasses(env).keySet();
+
+        return getQuery().executeClasses(env, orders).keySet();
     }
 
     public PropertySet<T> and(Where andWhere) {
         if(andWhere.isTrue())
             return this;
 
-        return new PropertySet<T>(mapValues, mapKeys, where.and(andWhere));
-    }
-
-    @IdentityLazy
-    public Query<T,String> getQuery() {
-        return new Query<T, String>(PropertyChange.getFullMapKeys(mapKeys, mapValues), where, mapValues);
+        return new PropertySet<T>(mapValues, mapKeys, where.and(andWhere), orders, ordersNotNull);
     }
 
     public boolean isEmpty() {

@@ -15,7 +15,7 @@ public abstract class FormChangesActionHandler<A extends Action<FormChangesResul
     }
 
     protected FormChangesResult getRemoteChanges(FormSessionObject form) throws IOException {
-        return getRemoteChanges(form, form.remoteForm.getRemoteChanges());
+        return getRemoteChanges(form, form.remoteForm.getRemoteChanges(-1));
     }
 
     protected FormChangesResult getRemoteChanges(FormSessionObject form, ServerResponse remoteChanges) throws IOException {

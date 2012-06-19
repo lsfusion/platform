@@ -32,6 +32,6 @@ public class CollapseGroupObjectHandler extends FormChangesActionHandler<Collaps
             BaseUtils.serializeObject(outStream, one.getValue().getValue());
         }
 
-        return getRemoteChanges(form, form.remoteForm.collapseGroupObject(action.groupObjectId, byteStream.toByteArray()));
+        return getRemoteChanges(form, form.remoteForm.collapseGroupObject(-1, action.groupObjectId, byteStream.toByteArray()));
     }
 }

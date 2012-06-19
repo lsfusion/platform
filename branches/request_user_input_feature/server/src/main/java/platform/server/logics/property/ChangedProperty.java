@@ -12,17 +12,19 @@ import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
-public class ChangedProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
+public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
-    private final CalcProperty<T> property;
     private final IncrementType type;
 
     public ChangedProperty(CalcProperty<T> property, IncrementType type) {
-        super("CHANGED_" + type + "_" + property.getSID(), property.caption + " (" + type + ")", (List<T>)property.interfaces);
-        this.property = property;
+        super("CHANGED_" + type + "_" + property.getSID(), property.caption + " (" + type + ")", property);
         this.type = type;
 
         property.getOld();// чтобы зарегить old
+    }
+
+    public OldProperty<T> getOldProperty() {
+        return property.getOld();
     }
 
     @Override
@@ -36,11 +38,6 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
         property.getIncrementExpr(joinImplement, changedIncrementWhere, propClasses, propChanges, type);
         if(changedWhere!=null) changedWhere.add(changedIncrementWhere.toWhere());
         return ValueExpr.get(changedIncrementWhere.toWhere());
-    }
-
-    @Override
-    public Set<ChangedProperty> getChangedDepends() {
-        return Collections.<ChangedProperty>singleton(this);
     }
 
     // для resolve'а следствий в частности
@@ -59,9 +56,5 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
                 throw new RuntimeException();
         }
         return new PropertyChange<T>(mapKeys, ValueExpr.get(where), Where.TRUE);
-    }
-
-    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
-        return property.getInterfaceCommonClasses(commonValue);
     }
 }

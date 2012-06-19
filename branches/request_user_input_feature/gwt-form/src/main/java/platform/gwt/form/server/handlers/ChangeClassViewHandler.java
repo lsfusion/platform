@@ -21,7 +21,7 @@ public class ChangeClassViewHandler extends FormChangesActionHandler<ChangeClass
 
         return getRemoteChanges(
                 form,
-                form.remoteForm.changeClassView(action.groupObjectId, ClassViewType.valueOf((String) action.value.getValue()))
+                form.remoteForm.changeClassView(-1, action.groupObjectId, ClassViewType.valueOf((String) action.value.getValue()))
         );
     }
 }

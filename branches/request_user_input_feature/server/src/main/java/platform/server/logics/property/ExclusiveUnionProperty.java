@@ -26,19 +26,11 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     }
 
     @Override
-    public Set<OldProperty> getOldDepends() {
+    public Set<SessionCalcProperty> getSessionCalcDepends() {
         if(isAbstract())
-            return new HashSet<OldProperty>();
+            return new HashSet<SessionCalcProperty>();
 
-        return super.getOldDepends();
-    }
-
-    @Override
-    public Set<ChangedProperty> getChangedDepends() {
-        if(isAbstract())
-            return new HashSet<ChangedProperty>();
-
-        return super.getChangedDepends();
+        return super.getSessionCalcDepends();
     }
 
     public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<CalcPropertyInterfaceImplement<Interface>> operands) {

@@ -1,7 +1,9 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.classes.ValueClass;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
@@ -128,7 +130,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
     }
 
     private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, Map<P, KeyExpr> keys, Map<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException {
-        context.getEnv().execute(property, new PropertySet<P>(new HashMap<P, DataObject>(), keys, where),
+        context.getEnv().execute(property, new PropertySet<P>(new HashMap<P, DataObject>(), keys, where, new OrderedMap<Expr, Boolean>(), false),
                                     new FormEnvironment<P>(objects, context.getForm().getDrawInstance()));
     }
     

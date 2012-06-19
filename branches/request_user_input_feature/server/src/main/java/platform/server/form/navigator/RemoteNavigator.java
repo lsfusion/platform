@@ -46,10 +46,7 @@ import platform.server.logics.property.*;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.PropertyChange;
-import platform.server.session.PropertyChanges;
+import platform.server.session.*;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -114,10 +111,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
-        PropertyChanges userChange = new PropertyChanges(property, new PropertyChange<PropertyInterface>(
-                new HashMap<PropertyInterface, KeyExpr>(), value.getExpr(), Where.TRUE));
+        StructChanges userChange = new StructChanges(property);
         for (DataSession session : sessions)
-            session.updateProperties(userChange);
+            session.updateProperties(userChange, true);
     }
 
     public void relogin(String login) throws RemoteException {
@@ -851,5 +847,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 form.killThreads();
             }
         }
+    }
+
+    public FormInstance getFormInstance() {
+        return null;
     }
 }

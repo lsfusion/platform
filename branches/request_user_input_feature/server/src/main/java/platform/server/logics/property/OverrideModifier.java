@@ -19,7 +19,13 @@ public class OverrideModifier extends MutableModifier {
     public OverrideModifier() {
     }
 
-    public OverrideModifier(Modifier... modifiers) {
+    public void clean() {
+        for(Modifier modifier : modifiers)
+            if(modifier instanceof MutableModifier)
+                ((MutableModifier)modifier).unregisterView(this);
+    }
+
+    public OverrideModifier(Modifier... modifiers) { // нужно clean вызывать после такого modifier'а
         lateInit(modifiers);
     }
 

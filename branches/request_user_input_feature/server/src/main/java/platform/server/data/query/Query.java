@@ -49,8 +49,12 @@ public class Query<K,V> extends IQuery<K,V> {
 
     private Map<K, DataObject> mapValues;
     public Query(Map<K,KeyExpr> mapKeys, Where where, Map<K, DataObject> mapValues) {
-        this(mapKeys, where.and(CompareWhere.compareValues(filterKeys(mapKeys, mapValues.keySet()), mapValues)));
-        
+        this(mapKeys, where, mapValues, new HashMap<V, Expr>());
+    }
+
+    public Query(Map<K,KeyExpr> mapKeys, Where where, Map<K, DataObject> mapValues, Map<V, Expr> properties) {
+        this(mapKeys, properties, where.and(CompareWhere.compareValues(filterKeys(mapKeys, mapValues.keySet()), mapValues)));
+
         this.mapValues = mapValues;
     }
 
@@ -364,6 +368,9 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, OrderedMap<? extends Expr, Boolean> orders) throws SQLException {
+        if(orders.isEmpty())
+            return executeClasses(session, env, baseClass);
+
         OrderedMap<Object, Boolean> orderProperties = new OrderedMap<Object, Boolean>();
         Query<K,Object> orderQuery = new Query<K,Object>((Query<K,Object>) this);
         for(Map.Entry<? extends Expr,Boolean> order : orders.entrySet()) {
@@ -389,6 +396,10 @@ public class Query<K,V> extends IQuery<K,V> {
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(ExecutionEnvironment env, OrderedMap<? extends V, Boolean> orders) throws SQLException {
         DataSession session = env.getSession();
         return executeClasses(session.sql, orders, 0, session.baseClass, env.getQueryEnv());
+    }
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(OrderedMap<? extends Expr, Boolean> orders, ExecutionEnvironment env) throws SQLException {
+        DataSession session = env.getSession();
+        return executeClasses(session.sql, env.getQueryEnv(), session.baseClass, orders);
     }
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(FormInstance formInstance, BaseClass baseClass) throws SQLException {
         return executeClasses(formInstance.session.sql, new OrderedMap<V, Boolean>(), 0, formInstance.session.baseClass, formInstance.getQueryEnv());

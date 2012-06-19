@@ -18,6 +18,11 @@ public abstract class MutableModifier extends MutableObject implements Modifier 
         modifier.addChanges(getPropertyChanges().getProperties());
     }
 
+    public void unregisterView(OverrideModifier modifier) { // protected
+        views.remove(modifier);
+    }
+
+
     private QuickSet<CalcProperty> changed = new QuickSet<CalcProperty>();
 
     protected void addChange(CalcProperty property) {
