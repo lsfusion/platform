@@ -1,4 +1,4 @@
-MODULE PriceDocument;
+MODULE WholesalePrice;
 
 REQUIRE System,
         //Document,
