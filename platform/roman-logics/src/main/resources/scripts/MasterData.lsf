@@ -25,14 +25,14 @@ syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sk
 //    SET dataBarcodeIdDate(barcode, date) IF barcode == barcode(sku AS RomanLogicsModule.sku) AND date == 2001_01_01 NOT NULL;
 
     LOCAL syncBarcode = barcode();
-    SET syncBarcode() <- [GROUP MAX barcode BY skuBarcode(barcode)](sku); //dataBarcodeIdDate(barcode(sku), 2001_01_01);
+    SET syncBarcode() <- [GROUP MAX barcode BY skuBarcode(barcode)](sku AS RomanLogicsModule.sku); //dataBarcodeIdDate(barcode(sku), 2001_01_01);
     IF TRUE AND NOT syncBarcode() IS barcode THEN {
         ADDOBJ barcode;
         SET syncBarcode() <- addedObject();
         SET skuBarcode(barcode) IF barcode == syncBarcode() <- sku AS RomanLogicsModule.sku;
     }
 
-    SET idBarcode(barcode) IF barcode == syncBarcode() <- barcode(sku);
+    SET idBarcode(barcode) IF barcode == syncBarcode() <- barcode(sku AS RomanLogicsModule.sku);
 } IN baseGroup;
 
 // todo : не срабатывает

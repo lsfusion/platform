@@ -529,28 +529,6 @@ FORM labelTypes 'Типы ценников'
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 ;
 
-//---------------------------- Этикетки в весы ----------------------------------------//
-
-CLASS labelFormat 'Формат этикетки' : named;
-
-idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
-idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;
-
-fileLabelFormat = DATA CUSTOMFILE (labelFormat);
-loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN baseGroup;
-
-fileMessageLabelFormat = DATA CUSTOMFILE (labelFormat);
-loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN baseGroup;
-
-scalesModelLabelFormat 'Модель весов'= DATA scalesModel (labelFormat);
-nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));
-
-FORM labelFormats 'Форматы этикеток весов'
-    OBJECTS c=labelFormat
-    PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
-
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP descriptionGroup 'Наименование' : publicGroup;
 GROUP rateGroup 'Нормы' : publicGroup;
@@ -9523,7 +9501,7 @@ fillMachineryModelDefaultValues 'Заполнить значения модел�
 fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, numCashReg) {
     ADDOBJ groupCashRegister;
     FOR gcr == addedObject() DO {
-        SET stockGroupMachinery(gcr) <- stock AS stock;
+        SET departmentStoreGroupCashRegister(gcr) <- stock AS stock;
         SET equipmentServerGroupMachinery(gcr) <- equipmentServer AS equipmentServer;
         SET nameGroupMachinery(gcr) <- 'Группа касс по умолчанию' AS STRING[110];
 
@@ -9532,7 +9510,7 @@ fillCashRegisterDefaultValues 'Заполнить значения касс по
         WHILE numCashRegister() < (numCashReg AS INTEGER) DO {
             ADDOBJ cashRegister;
             FOR c == addedObject() DO {
-                SET groupMachineryMachinery(c) <- gcr AS groupCashRegister;
+                SET groupCashRegisterCashRegister(c) <- gcr AS groupCashRegister;
                 SET numCashRegister() <- numCashRegister() + 1;
                 SET nppMachinery(c) <- numCashRegister();
             }

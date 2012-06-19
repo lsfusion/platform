@@ -541,8 +541,8 @@ DESIGN currentBalanceSkuStock FROM DEFAULT {
 
             NEW firstBottom {
                 type = SPLITV;
-                ADD stockTree.box {title = 'Магазины';};
-                ADD skuTree.box {title = 'Товарные группы';};
+                ADD stockTree.box {title = 'Склады';};
+                ADD skuTree.box {title = 'Группы';};
             }
 
             NEW secondCase {
@@ -612,8 +612,8 @@ DESIGN balanceSkuStock FROM DEFAULT {
                 ADD t.box;
                 NEW firstCaseTwo {
                     type = SPLITV;
-                    ADD stockTree.box {title = 'Магазины';};
-                    ADD skuTree.box {title = 'Товарные группы';};
+                    ADD stockTree.box {title = 'Склады';};
+                    ADD skuTree.box {title = 'Группы';};
                 }
             }
 
@@ -686,8 +686,8 @@ DESIGN currentBalanceBatchStock FROM DEFAULT {
                 type = SPLITV;
                 fillHorizontal = 1;
                 childConstraints = TO THE BOTTOM;
-                ADD stockTree.box {title = 'Магазины';};
-                ADD skuTree.box {title = 'Товарные группы';};
+                ADD stockTree.box {title = 'Склады';};
+                ADD skuTree.box {title = 'Группы';};
             }
 
             NEW secondCase {
@@ -755,8 +755,8 @@ DESIGN balanceBatchStock FROM DEFAULT {
                 ADD t.box;
                 NEW firstCaseTwo {
                     type = SPLITV;
-                    ADD stockTree.box {title = 'Магазины';};
-                    ADD skuTree.box {title = 'Товарные группы';};
+                    ADD stockTree.box {title = 'Склады';};
+                    ADD skuTree.box {title = 'Группы';};
                 }
             }
 
