@@ -68,7 +68,8 @@ public class GenerateZReport extends ScriptingActionProperty {
                         departmentStoreList.add(departmentStore);
                     Double currentRetailPriceLedger = (Double) rows.getValue().get("currentRetailPriceLedger");
                     String barcodeItem = (String) getLCP("idBarcodeSku").read(session, itemObject);
-                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, departmentStore));
+                    Boolean isWeightItem = (Boolean) getLCP("isWeightItem").read(session, itemObject);
+                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, isWeightItem != null, departmentStore));
                 }
             }
 
@@ -139,7 +140,11 @@ public class GenerateZReport extends ScriptingActionProperty {
                         for (ItemZReportInfo itemZReportInfo : itemZReportInfoList) {
                             Double currentBalanceSkuStock = itemZReportInfo.count;
                             if ((currentBalanceSkuStock > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
-                                Double quantityBillDetail = (double) r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
+                                Double quantityBillDetail;
+                                if (itemZReportInfo.isWeightItem)
+                                    quantityBillDetail = currentBalanceSkuStock <= 0.005 ? currentBalanceSkuStock : ((double)Math.round(r.nextDouble() * currentBalanceSkuStock / 5 * 1000) / 1000);
+                                else
+                                    quantityBillDetail = Math.ceil(currentBalanceSkuStock / 5) == 1 ? 1.0 : r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
                                 if ((quantityBillDetail > 0) && (currentBillDetailCount >= numberBillDetail)) {
                                     Double sumBillDetail = quantityBillDetail * (itemZReportInfo.price == null ? 0 : itemZReportInfo.price);
                                     numberBillDetail++;
@@ -183,12 +188,14 @@ public class GenerateZReport extends ScriptingActionProperty {
         String barcode;
         Double count;
         Double price;
+        Boolean isWeightItem;
         Integer departmentStore;
 
-        public ItemZReportInfo(String barcode, Double count, Double price, Integer departmentStore) {
+        public ItemZReportInfo(String barcode, Double count, Double price, Boolean isWeightItem, Integer departmentStore) {
             this.barcode = barcode;
             this.count = count;
             this.price = price;
+            this.isWeightItem = isWeightItem;
             this.departmentStore = departmentStore;
         }
     }
