@@ -9535,7 +9535,6 @@ fillCashRegisterDefaultValues 'Заполнить значения касс по
                 SET groupMachineryMachinery(c) <- gcr AS groupCashRegister;
                 SET numCashRegister() <- numCashRegister() + 1;
                 SET nppMachinery(c) <- numCashRegister();
-                SET numberCashRegister(c) <- castTwoObjectsToString150(stock AS stock, numCashRegister());
             }
         }
     }
