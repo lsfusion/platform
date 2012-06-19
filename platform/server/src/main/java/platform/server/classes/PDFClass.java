@@ -1,18 +1,31 @@
 package platform.server.classes;
 
 import platform.interop.Data;
-import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
 
-public class PDFClass extends FileClass {
+import java.io.DataInputStream;
+import java.io.IOException;
 
-    public final static PDFClass instance = new PDFClass();
-    private final static String sid = "PDFClass";
-    static {
-        DataClass.storeClass(sid, instance);
+public class PDFClass extends StaticFormatFileClass {
+
+    public final static PDFClass instance = new PDFClass(false);
+    public final static PDFClass multipleInstance = new PDFClass(true);
+
+    protected String getFileSID() {
+        return "PDFClass";
     }
 
-    protected PDFClass() {}
+    static {
+        DataClass.storeClass(instance, multipleInstance);
+    }
+
+    protected PDFClass(boolean multiple) {
+        super(multiple);
+    }
+
+    public PDFClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.pdf.file");
@@ -26,11 +39,7 @@ public class PDFClass extends FileClass {
         return Data.PDF;
     }
 
-    public String getSID() {
-        return sid;
-    }
-
-    public String getExtensions() {
+    public String getOpenExtension() {
         return "pdf";
     }
 }

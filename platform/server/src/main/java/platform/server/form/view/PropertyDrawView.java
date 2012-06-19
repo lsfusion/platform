@@ -1,6 +1,5 @@
 package platform.server.form.view;
 
-import platform.base.Result;
 import platform.interop.form.ReportConstants;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
@@ -12,7 +11,7 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
@@ -22,13 +21,12 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -70,8 +68,6 @@ public class PropertyDrawView extends ComponentView {
     public String caption;
     public boolean clearText;
 
-    public boolean askConfirm;
-
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -92,11 +88,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getChangeType() {
-        try {
-            return entity.propertyObject.property.getChangeImplement(new Result<Property>(), null, null, null).property.getEditorType(new HashMap());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return entity.propertyObject.property.getChangeType();
     }
 
     public String getSID() {
@@ -107,10 +99,9 @@ public class PropertyDrawView extends ComponentView {
         return entity.propertyObject.property.caption;
     }
 
-
     // предполагается, что для свойств, для которых заголовок динамический (например, группы в колонки),
     // getCaption должно возвращать null
-    private String getCaption() {
+    public String getCaption() {
         return caption != null
                 ? caption
                 : entity.propertyCaption == null
@@ -210,7 +201,12 @@ public class PropertyDrawView extends ComponentView {
 
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
-        TypeSerializer.serializeType(outStream, getChangeType());
+
+        Type changeType = getChangeType();
+        outStream.writeBoolean(changeType != null);
+        if (changeType != null) {
+            TypeSerializer.serializeType(outStream, changeType);
+        }
 
         pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, entity.propertyObject.property.toolTip);
@@ -223,13 +219,13 @@ public class PropertyDrawView extends ComponentView {
         }
 
         outStream.writeBoolean(entity.propertyObject.property.checkEquals());
-        outStream.writeBoolean(askConfirm);
         outStream.writeBoolean(clearText);
 
-        MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property.mapTable;
+        MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property instanceof CalcProperty ?
+                        ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        Iterator<ValueClass> classesIt = entity.propertyObject.property.getCommonClasses().interfaces.values().iterator();
+        Iterator<ValueClass> classesIt = entity.propertyObject.property.getInterfaceClasses(true).values().iterator();
         Collection<PropertyObjectInterfaceEntity> interfacesEntities = entity.propertyObject.mapping.values();
         outStream.writeInt(interfacesEntities.size());
         for (PropertyObjectInterfaceEntity interfaceEntity : interfacesEntities) {
@@ -240,10 +236,28 @@ public class PropertyDrawView extends ComponentView {
             valueClass.serialize(outStream);
         }
 
-        entity.propertyObject.property.getCommonClasses().value.serialize(outStream);
-        outStream.writeUTF(entity.eventSID);
+        entity.propertyObject.property.getValueClass().serialize(outStream);
+        pool.writeString(outStream, entity.eventSID);
 
         pool.writeString(outStream, entity.propertyObject.getCreationScript());
+
+        pool.writeString(outStream, entity.mouseBinding);
+
+        outStream.writeInt(entity.keyBindings == null ? 0 : entity.keyBindings.size());
+        if (entity.keyBindings != null) {
+            for (Map.Entry<KeyStroke, String> e : entity.keyBindings.entrySet()) {
+                pool.writeObject(outStream, e.getKey());
+                pool.writeString(outStream, e.getValue());
+            }
+        }
+
+        outStream.writeInt(entity.contextMenuBindings == null ? 0 : entity.contextMenuBindings.size());
+        if (entity.contextMenuBindings != null) {
+            for (Map.Entry<String, String> e : entity.contextMenuBindings.entrySet()) {
+                pool.writeString(outStream, e.getKey());
+                pool.writeString(outStream, e.getValue());
+            }
+        }
     }
 
     @Override

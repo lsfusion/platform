@@ -5,11 +5,10 @@ import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcPropertyValueImplement;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.session.ExecutionEnvironment;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -41,11 +40,11 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(Collection<Property> changedProps) {
+    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
         return op1.dataUpdated(changedProps) || op2.dataUpdated(changedProps);
     }
 
-    public void fillProperties(Set<Property> properties) {
+    public void fillProperties(Set<CalcProperty> properties) {
         op1.fillProperties(properties);
         op2.fillProperties(properties);
     }
@@ -60,13 +59,13 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
-        op1.resolveAdd(session, modifier, object, addObject);
-        op2.resolveAdd(session, modifier, object, addObject);
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
+        op1.resolveAdd(env, object, addObject);
+        op2.resolveAdd(env, object, addObject);
     }
 
     @Override
-    public <X extends PropertyInterface> Set<PropertyValueImplement<?>> getResolveChangeProperties(Property<X> toChange) {
+    public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
         return BaseUtils.mergeSet(op1.getResolveChangeProperties(toChange), op2.getResolveChangeProperties(toChange));
     }
 }

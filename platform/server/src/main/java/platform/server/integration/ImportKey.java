@@ -12,9 +12,7 @@ import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyImplement;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -28,14 +26,14 @@ import java.util.*;
 
 public class ImportKey <P extends PropertyInterface> implements ImportKeyInterface, ImportDeleteInterface {
     ConcreteCustomClass keyClass;
-    final PropertyImplement<P, ImportFieldInterface> implement;
+    final CalcPropertyImplement<P, ImportFieldInterface> implement;
 
     public ImportKey(ImportKey key) {
         this.keyClass = key.keyClass;
         this.implement = key.implement;
     }
 
-    public ImportKey(ConcreteCustomClass keyClass, PropertyImplement<P, ImportFieldInterface> implement) {
+    public ImportKey(ConcreteCustomClass keyClass, CalcPropertyImplement<P, ImportFieldInterface> implement) {
         this.keyClass = keyClass;
         this.implement = implement;
     }
@@ -48,7 +46,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return implement.mapping;
     }
 
-    public Property<P> getProperty() {
+    public CalcProperty<P> getProperty() {
         return implement.property;
     }
 
@@ -59,10 +57,6 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
             map.put(entry.getKey(), obj);
         }
         return map;
-    }
-
-    Object readValue(DataSession session, ImportTable.Row row) throws SQLException {
-        return getProperty().read(session, mapObjects(row));
     }
 
     public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Modifier modifier) {
@@ -104,7 +98,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
 
         for (Iterator<Map<P, DataObject>> iterator = noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet().iterator(); iterator.hasNext();) {
             Map<P, DataObject> noKeysRow = iterator.next();
-            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, session.modifier, false, !iterator.hasNext()), false, !iterator.hasNext());
+            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false, !iterator.hasNext()), false, !iterator.hasNext());
         }
 
         return propertyTable;

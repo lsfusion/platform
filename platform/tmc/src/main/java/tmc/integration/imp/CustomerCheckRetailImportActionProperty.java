@@ -6,6 +6,7 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.ListFormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import tmc.VEDBusinessLogics;
@@ -22,7 +23,7 @@ public class CustomerCheckRetailImportActionProperty extends CustomActionPropert
         this.BL = BL;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         context.emitExceptionIfNotInFormSession();
 
         DBF impFile = null;
@@ -41,13 +42,13 @@ public class CustomerCheckRetailImportActionProperty extends CustomActionPropert
 
                 impFile.read();
 
-                formInstance.addObject(BL.VEDLM.customerCheckRetail);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.LM.barcode), new String(impFile.getField("barcode").getBytes(), "Cp1251"), false);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.LM.name), new String(impFile.getField("name").getBytes(), "Cp1251"), false);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()), false);
+                DataObject dataObject = context.addObject(BL.VEDLM.customerCheckRetail);
+                BL.LM.barcode.change(new String(impFile.getField("barcode").getBytes(), "Cp1251"), context, dataObject);
+                BL.LM.name.change(new String(impFile.getField("name").getBytes(), "Cp1251"), context, dataObject);
+                BL.VEDLM.clientInitialSum.change(Double.parseDouble(impFile.getField("clientsum").get()), context, dataObject);
             }
 
-            formInstance.synchronizedApplyChanges(null, context.getActions());
+            context.apply(BL);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

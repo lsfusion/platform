@@ -7,9 +7,8 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
 import platform.base.Pair;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
+import platform.interop.form.ReportGenerationData;
 
 import java.awt.*;
 import java.io.*;
@@ -23,7 +22,8 @@ import java.util.List;
  */
 
 public class ReportGenerator {
-    private final RemoteFormInterface form;
+    private final ReportGenerationData generationData;
+
     private String rootID;
     private TimeZone reportTimeZone;
 
@@ -49,33 +49,27 @@ public class ReportGenerator {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator(RemoteFormInterface remoteForm, TimeZone timeZone) throws ClassNotFoundException, IOException {
-        form = remoteForm;
-        reportTimeZone = timeZone;
+    public  ReportGenerator(ReportGenerationData generationData, TimeZone timeZone) {
+        this.generationData = generationData;
+        this.reportTimeZone = timeZone;
     }
 
-    public JasperPrint createReport(boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files, FormUserPreferences userPreferences) throws JRException, ClassNotFoundException, IOException {
-        Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(form);
-        return createReport(null, hpair, toExcel, ignorePagination, files, userPreferences);
+    public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
+        Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(generationData.reportHierarchyData);
+        return createReport(hpair, ignorePagination, files);
     }
 
-    public JasperPrint createSingleGroupReport(Integer groupId, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException, JRException {
-        Pair<String, Map<String, List<String>>> hpair = retrieveSingleGroupReportHierarchy(form, groupId);
-        return createReport(groupId, hpair, toExcel, ignorePagination, files, userPreferences);
-    }
-
-    private JasperPrint createReport(Integer groupId, Pair<String, Map<String, List<String>>> hpair, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException, JRException {
+    private JasperPrint createReport(Pair<String, Map<String, List<String>>> hpair, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         rootID = hpair.first;
         hierarchy = hpair.second;
-        this.toExcel = toExcel;
 
-        return createJasperPrint(groupId, ignorePagination, files, userPreferences);
+        return createJasperPrint(ignorePagination, files);
     }
 
-    private JasperPrint createJasperPrint(Integer groupId, boolean ignorePagination, Map<ByteArray, String> files,FormUserPreferences userPreferences) throws ClassNotFoundException, IOException, JRException {
-        designs = retrieveReportDesigns(form, toExcel, groupId, userPreferences);
+    private JasperPrint createJasperPrint( boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
+        designs = retrieveReportDesigns(generationData);
 
-        SourcesGenerationOutput output = retrieveReportSources(form, groupId, files);
+        SourcesGenerationOutput output = retrieveReportSources(generationData, files);
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
@@ -130,43 +124,21 @@ public class ReportGenerator {
         return source;
     }
 
-    private static Pair<String, Map<String, java.util.List<String>>> retrieveSingleGroupReportHierarchy(RemoteFormInterface remoteForm, int groupId) throws ClassNotFoundException, IOException {
-        byte[] hierarchyArray = remoteForm.getSingleGroupReportHierarchyByteArray(groupId);
-        return retrieveReportHierarchy(remoteForm, hierarchyArray);
-    }
-
-    private static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-        byte[] hierarchyArray = remoteForm.getReportHierarchyByteArray();
-        return retrieveReportHierarchy(remoteForm, hierarchyArray);
-    }
-
-    private static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(RemoteFormInterface remoteForm, byte[] array) throws IOException, ClassNotFoundException {
+    private static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(byte[] array) throws IOException, ClassNotFoundException {
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(array));
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
         return new Pair<String, Map<String, java.util.List<String>>>(rootID, hierarchy);
     }
 
-    private static Map<String, JasperDesign> retrieveReportDesigns(RemoteFormInterface remoteForm, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        byte[] designsArray;
-        if (groupId == null) {
-            designsArray = remoteForm.getReportDesignsByteArray(toExcel, userPreferences);
-        } else {
-            designsArray = remoteForm.getSingleGroupReportDesignByteArray(toExcel, groupId, userPreferences);
-        }
-        ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(designsArray));
+    private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(generationData.reportDesignData));
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static SourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Integer groupId, Map<ByteArray,String> files) throws IOException, ClassNotFoundException {
+    private static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
-        byte[] sourcesArray;
-        if (groupId == null) {
-            sourcesArray = remoteForm.getReportSourcesByteArray();
-        } else {
-            sourcesArray = remoteForm.getSingleGroupReportSourcesByteArray(groupId);
-        }
-        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
         int size = dataStream.readInt();
         output.data = new HashMap<String, ClientReportData>();
         for (int i = 0; i < size; i++) {
@@ -369,20 +341,15 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportToExcel(RemoteFormInterface remoteForm, Integer groupId, TimeZone timeZone, FormUserPreferences userPreferences) {
+    public static void exportToExcelAndOpen(ReportGenerationData generationData, TimeZone timeZone) {
         try {
-
             File tempFile = File.createTempFile("lsf", ".xls");
 
             JExcelApiExporter xlsExporter = new JExcelApiExporter();
 
-            ReportGenerator report = new ReportGenerator(remoteForm, timeZone);
-            JasperPrint print;
-            if (groupId != null) {
-                print = report.createSingleGroupReport(groupId, true, true, null, userPreferences);
-            } else {
-                print = report.createReport(true, true, null, userPreferences);
-            }
+            ReportGenerator report = new ReportGenerator(generationData, timeZone);
+
+            JasperPrint print = report.createReport(true, null);
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
             xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
@@ -398,9 +365,5 @@ public class ReportGenerator {
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при экспорте в Excel", e);
         }
-    }
-
-    public static void exportToExcel(RemoteFormInterface remoteForm, TimeZone timeZone, FormUserPreferences userPreferences) {
-        exportToExcel(remoteForm, null, timeZone, userPreferences);
     }
 }

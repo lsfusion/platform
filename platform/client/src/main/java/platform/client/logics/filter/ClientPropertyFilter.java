@@ -1,8 +1,8 @@
 package platform.client.logics.filter;
 
+import platform.client.logics.ClientFilterValue;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
-import platform.client.logics.ClientValueLink;
 import platform.interop.Compare;
 import platform.interop.FilterType;
 
@@ -13,7 +13,7 @@ public class ClientPropertyFilter {
 
     public ClientGroupObject groupObject;
     public ClientPropertyDraw property;
-    public ClientValueLink value;
+    public ClientFilterValue value;
 
     public boolean negation;
     public Compare compare;

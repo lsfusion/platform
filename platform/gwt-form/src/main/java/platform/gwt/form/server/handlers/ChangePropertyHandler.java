@@ -21,10 +21,11 @@ public class ChangePropertyHandler extends FormChangesActionHandler<ChangeProper
     public FormChangesResult executeEx(ChangeProperty action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         //пока пустой columnKey
-        return getRemoteChanges(form, form.remoteForm.changePropertyDraw(action.propertyId,
+/*        return getRemoteChanges(form, form.remoteForm.changePropertyDraw(action.propertyId,
                                                                          new ClientGroupObjectValue().serialize(),
                                                                          serializeObject(action.value.getValue()),
                                                                          false,
-                                                                         false));
+                                                                         false));*/
+        return null;
     }
 }

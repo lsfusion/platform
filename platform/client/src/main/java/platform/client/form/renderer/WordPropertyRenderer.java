@@ -1,16 +1,9 @@
 package platform.client.form.renderer;
 
 import platform.client.SwingUtils;
-import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 
-import javax.swing.*;
-import java.text.Format;
-
-public class WordPropertyRenderer extends FilePropertyRenderer
-        implements PropertyRendererComponent {
-
+public class WordPropertyRenderer extends FilePropertyRenderer {
     public WordPropertyRenderer(ClientPropertyDraw property) {
         super(property);
     }
@@ -22,10 +15,5 @@ public class WordPropertyRenderer extends FilePropertyRenderer
             setIcon(null);
         }
         setSelected(isSelected, hasFocus);
-    }
-
-    @Override
-    public void rateSelected() {
-        super.paintSelected();
     }
 }

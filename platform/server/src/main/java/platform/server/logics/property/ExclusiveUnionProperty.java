@@ -14,34 +14,26 @@ import java.util.*;
 // чисто для оптимизации
 public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
-    private final Collection<PropertyMapImplement<?,Interface>> operands;
+    private final Collection<CalcPropertyInterfaceImplement<Interface>> operands;
 
     @IdentityLazy
     protected Iterable<Case> getCases() {
         assert finalized;
         Collection<Case> result = new ArrayList<Case>();
-        for(PropertyMapImplement<?, Interface> operand : operands)
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
             result.add(new Case(operand, operand));
         return result;
     }
 
     @Override
-    public Set<OldProperty> getOldDepends() {
+    public Set<SessionCalcProperty> getSessionCalcDepends() {
         if(isAbstract())
-            return new HashSet<OldProperty>();
+            return new HashSet<SessionCalcProperty>();
 
-        return super.getOldDepends();
+        return super.getSessionCalcDepends();
     }
 
-    @Override
-    public Set<ChangedProperty> getChangedDepends() {
-        if(isAbstract())
-            return new HashSet<ChangedProperty>();
-
-        return super.getChangedDepends();
-    }
-
-    public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<PropertyMapImplement<?, Interface>> operands) {
+    public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<CalcPropertyInterfaceImplement<Interface>> operands) {
         super(sID, caption, interfaces);
         this.operands = operands;
 
@@ -49,18 +41,18 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     }
 
     @Override
-    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         assert finalized;
 
         return propChanges.getUsedDataChanges(getDepends());
     }
 
     @Override
-    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         assert finalized;
 
-        MapDataChanges<Interface> result = new MapDataChanges<Interface>();
-        for(PropertyMapImplement<?, Interface> operand : operands)
+        DataChanges result = new DataChanges();
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
             result = result.add(operand.mapDataChanges(change, changedWhere, propChanges));
         return result;
     }
@@ -77,11 +69,11 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     private ClassWhere<Object> classValueWhere;
     public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, ValueClass valueClass, Map<Interface, ValueClass> interfaceClasses) {
         super(sID, caption, interfaces);
-        operands = new ArrayList<PropertyMapImplement<?, Interface>>();
+        operands = new ArrayList<CalcPropertyInterfaceImplement<Interface>>();
 
         classValueWhere = new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(interfaceClasses, "value", valueClass), true);
     }
-    public void addOperand(PropertyMapImplement<?,Interface> operand) {
+    public void addOperand(CalcPropertyMapImplement<?,Interface> operand) {
         assert isAbstract();
 
         operands.add(operand);
@@ -101,6 +93,14 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
         assert finalized;
         return super.calculateNewExpr(joinImplement, propClasses, propChanges, changedWhere);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(isAbstract())
+            return getInterfaceClasses();
+
+        return super.getInterfaceCommonClasses(commonValue);
     }
 
     @Override

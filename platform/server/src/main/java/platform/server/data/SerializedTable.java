@@ -1,7 +1,6 @@
 package platform.server.data;
 
 import platform.server.classes.BaseClass;
-import platform.server.data.expr.query.DistinctKeys;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
 
@@ -12,8 +11,8 @@ import java.util.Map;
 // предыдущая таблица в базе
 public class SerializedTable extends Table {
 
-    public SerializedTable(DataInputStream inStream, BaseClass baseClass) throws IOException {
-        super(inStream, baseClass);
+    public SerializedTable(DataInputStream inStream, BaseClass baseClass, int version) throws IOException {
+        super(inStream, baseClass, version);
     }
 
     private final static int prevStats = 100000;

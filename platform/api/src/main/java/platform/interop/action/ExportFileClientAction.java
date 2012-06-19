@@ -5,7 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExportFileClientAction extends AbstractClientAction {
+public class ExportFileClientAction extends ExecuteClientAction {
 
     public Map<String, byte[]> files;
 
@@ -32,7 +32,7 @@ public class ExportFileClientAction extends AbstractClientAction {
     }
 
     @Override
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
 }

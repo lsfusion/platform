@@ -36,7 +36,7 @@ public enum GroupType implements AggrType {
         throw new RuntimeException("can not be");
     }
 
-    public <T extends PropertyInterface> GroupProperty<T> createProperty(String sID, String caption, Collection<T> innerInterfaces, PropertyInterfaceImplement<T> property, Collection<? extends PropertyInterfaceImplement<T>> interfaces) {
+    public <T extends PropertyInterface> GroupProperty<T> createProperty(String sID, String caption, Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, Collection<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
         switch (this) {
             case MAX:
                 return new MaxGroupProperty<T>(sID, caption, innerInterfaces, interfaces, property, false);

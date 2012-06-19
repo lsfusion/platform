@@ -1,7 +1,7 @@
 package platform.client;
 
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -10,7 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Scanner;
 
 import static platform.client.ClientResourceBundle.getString;
 
@@ -94,13 +94,7 @@ public abstract class MainFrame extends JFrame {
         setTitle(Main.getMainTitle() + " - " + inputStream.readObject());
     }
 
-    public abstract void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException;
-
-    public abstract Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException;
-
-    public abstract void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException;
-
-    public abstract void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException;
+    public abstract void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
 
     public abstract void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
 }

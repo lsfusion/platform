@@ -4,66 +4,69 @@ import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OSUtils;
 import platform.client.ClientResourceBundle;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.SwingUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.text.ParseException;
-import java.util.EventObject;
 
-public class FilePropertyEditor extends JFileChooser
-        implements PropertyEditorComponent {
+public class FilePropertyEditor extends DialogBasedPropertyEditor {
 
+    protected final boolean multiple;
+    protected final boolean custom;
+    protected final String[] extensions;
+
+    protected final JFileChooser fileChooser = new JFileChooser();
     protected int returnValue;
-    protected String[] extensions;
 
-    public FilePropertyEditor(String description, String... extensions) {
+    public FilePropertyEditor(boolean multiple, String description, String... extensions) {
         super();
+
         setLatestCurrentDirectory();
 
         this.extensions = extensions;
+        this.custom = false;
+        this.multiple = multiple;
 
         if (description == null || description.isEmpty()) {
             description = ClientResourceBundle.getString("form.editor.allfiles");
         }
 
         if (BaseUtils.toList(extensions).contains("*.*")) {
-            setAcceptAllFileFilterUsed(true);
+            fileChooser.setAcceptAllFileFilterUsed(true);
             if (BaseUtils.toList(extensions).size() == 1) {
                 return;
             }
         }
-        addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
+        fileChooser.setMultiSelectionEnabled(multiple);
     }
 
-    public FilePropertyEditor(boolean allFiles) {
+    //custom constructor
+    public FilePropertyEditor(boolean multiple) {
         super();
+
         setLatestCurrentDirectory();
 
-        setAcceptAllFileFilterUsed(allFiles);
+        this.multiple = multiple;
+        this.custom = true;
+        this.extensions = null;
+
+        fileChooser.setAcceptAllFileFilterUsed(true);
+        fileChooser.setMultiSelectionEnabled(multiple);
     }
 
     private void setLatestCurrentDirectory() {
-        setCurrentDirectory(OSUtils.loadCurrentDirectory());
-
+        fileChooser.setCurrentDirectory(OSUtils.loadCurrentDirectory());
     }
 
     @Override
-    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
-        returnValue = this.showOpenDialog(null);
-        return null;
-    }
-
-    @Override
-    public Object getCellEditorValue() throws RemoteException {
-        try {
-            OSUtils.saveCurrentDirectory(this.getSelectedFile());
-            return returnValue == JFileChooser.APPROVE_OPTION ? IOUtils.getFileBytes(this.getSelectedFile()) : null;
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("form.editor.cant.read.file")+" " + this.getSelectedFile());
+    public void showDialog(Point desiredLocation) {
+        returnValue = fileChooser.showOpenDialog(SwingUtils.getActiveWindow());
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            OSUtils.saveCurrentDirectory(fileChooser.getSelectedFile());
         }
     }
 
@@ -73,7 +76,15 @@ public class FilePropertyEditor extends JFileChooser
     }
 
     @Override
-    public String checkValue(Object value) {
-        return null;
+    public Object getCellEditorValue() {
+        assert returnValue == JFileChooser.APPROVE_OPTION;
+
+        File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
+
+        try {
+            return BaseUtils.filesToBytes(multiple, custom, files);
+        } catch (IOException e) {
+            throw new RuntimeException(ClientResourceBundle.getString("form.editor.cant.read.file") + " " + fileChooser.getSelectedFile());
+        }
     }
 }

@@ -13,23 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class InnerJoins extends AddSet<InnerJoin, InnerJoins> implements Iterable<InnerJoin> {
-
-    @Override
-    public Iterator<InnerJoin> iterator() {
-        return new Iterator<InnerJoin>() {
-            int i=0;
-            public boolean hasNext() {
-                return i<wheres.length;
-            }
-            public InnerJoin next() {
-                return wheres[i++];
-            }
-            public void remove() {
-                throw new RuntimeException("not supported");
-            }
-        };
-    }
+public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 
     public InnerJoins() {
     }

@@ -3,6 +3,7 @@ package roman;
 import platform.interop.action.MessageClientAction;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField countryField = new ImportField(LM.baseLM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
@@ -52,7 +53,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 
@@ -62,7 +63,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
             ImportKey<?>[] keysArray = {articleKey, countryKey, seasonKey};
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
 
-            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

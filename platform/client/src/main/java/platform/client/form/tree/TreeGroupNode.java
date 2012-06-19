@@ -17,7 +17,7 @@ class TreeGroupNode extends DefaultMutableTreeTableNode {
     private final GroupTreeTableModel model;
 
     public TreeGroupNode(GroupTreeTableModel model) {
-        this(model, null, new ClientGroupObjectValue());
+        this(model, null, ClientGroupObjectValue.EMPTY);
     }
 
     public TreeGroupNode(GroupTreeTableModel model, ClientGroupObject group, ClientGroupObjectValue key) {

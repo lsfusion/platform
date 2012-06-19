@@ -1,5 +1,7 @@
 package platform.server.logics.property.derived;
 
+import platform.server.classes.ConcatenateValueClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.ConcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
@@ -7,10 +9,7 @@ import platform.server.logics.property.FormulaProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChanges;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Interface> {
 
@@ -45,5 +44,16 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
             exprs.add(joinImplement.get(getInterface(i)));
         return ConcatenateExpr.create(exprs);
+    }
+
+    @Override
+    public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null) {
+            Map<Interface, ValueClass> result = new HashMap<Interface, ValueClass>();
+            for(int i=0;i<interfaces.size();i++)
+                result.put(getInterface(i), ((ConcatenateValueClass)commonValue).get(i));
+            return result;
+        }            
+        return super.getInterfaceCommonClasses(commonValue);
     }
 }

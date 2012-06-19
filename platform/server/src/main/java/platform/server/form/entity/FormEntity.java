@@ -1,39 +1,40 @@
 package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.Subsets;
+import platform.base.*;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
-import platform.interop.action.ClientResultAction;
 import platform.interop.navigator.FormShowType;
+import platform.server.Context;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ComponentView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyClassImplement;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.ValueClassWrapper;
+import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
 import javax.swing.*;
@@ -44,11 +45,29 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.server.logics.ServerResourceBundle.getString;
+
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
-    public Map<Object, List<PropertyObjectEntity>> eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
+    public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
+    public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
+    public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
+    public static final SessionDataProperty isModal = new SessionDataProperty("isModal", "Is modal", LogicalClass.instance);
+    public static final SessionDataProperty isNewSession = new SessionDataProperty("isNewSession", "Is new session", LogicalClass.instance);
+
+    public PropertyDrawEntity printActionPropertyDraw;
+    public PropertyDrawEntity editActionPropertyDraw;
+    public PropertyDrawEntity xlsActionPropertyDraw;
+    public PropertyDrawEntity nullActionPropertyDraw;
+    public PropertyDrawEntity refreshActionPropertyDraw;
+    public PropertyDrawEntity applyActionPropertyDraw;
+    public PropertyDrawEntity cancelActionPropertyDraw;
+    public PropertyDrawEntity okActionPropertyDraw;
+    public PropertyDrawEntity closeActionPropertyDraw;
+
+    public HashMap<Object, List<ActionPropertyObjectEntity<?>>> eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
 
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
@@ -64,6 +83,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
+    @SuppressWarnings("UnusedDeclaration")
     public FormEntity() {
     }
 
@@ -84,10 +104,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         logger.info("Initializing form " + caption + "...");
 
         isPrintForm = iisPrintForm;
-    }
 
-    public boolean shouldProceedDefaultDraw() {
-        return true;
+        BaseLogicsModule baseLM = Context.context.get().getBL().LM;
+
+        printActionPropertyDraw = addPropertyDraw(baseLM.formPrint);
+        editActionPropertyDraw = addPropertyDraw(baseLM.formEdit);
+        xlsActionPropertyDraw = addPropertyDraw(baseLM.formXls);
+        nullActionPropertyDraw = addPropertyDraw(baseLM.formNull);
+        refreshActionPropertyDraw = addPropertyDraw(baseLM.formRefresh);
+        applyActionPropertyDraw = addPropertyDraw(baseLM.apply);
+        cancelActionPropertyDraw = addPropertyDraw(baseLM.formCancel);
+        okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
+        closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
     }
 
     public void addFixedFilter(FilterEntity filter) {
@@ -100,6 +128,24 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void addRegularFilterGroup(RegularFilterGroupEntity group) {
         regularFilterGroups.add(group);
+    }
+
+    // получает свойства, которые изменяют propChanges и соответственно hint'ить нельзя - временная затычка
+    @IdentityLazy
+    public Set<CalcProperty> getChangeModifierProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(PropertyDrawEntity propertyDraw : propertyDraws) {
+            Property property = propertyDraw.propertyObject.property;
+            if(property instanceof CalcProperty) {
+                QuickSet<CalcProperty> depends = ((CalcProperty<?>) property).getRecDepends();
+                for(int i=0;i<depends.size;i++) {
+                    CalcProperty depend = depends.get(i);
+                    if(depend instanceof SumGroupProperty && ((SumGroupProperty)depend).distribute!=null)
+                        result.add(((SumGroupProperty)depend).distribute.property);
+                }
+            }
+        }
+        return result;
     }
 
     protected RegularFilterGroupEntity addSingleRegularFilterGroup(FilterEntity ifilter, String iname, KeyStroke ikey) {
@@ -284,9 +330,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         for (GroupObjectEntity groupOld : groups) {
             assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
-            for (ObjectEntity obj : group.objects)
-                for (ObjectEntity objOld : groupOld.objects)
+            for (ObjectEntity obj : group.objects) {
+                for (ObjectEntity objOld : groupOld.objects) {
                     assert obj.getID() != objOld.getID() && !obj.getSID().equals(objOld.getSID());
+                }
+            }
         }
         groups.add(group);
 
@@ -341,8 +389,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                 addPropertyDraw((AbstractNode) group, upClasses, useObjSubsets, objects);
             } else if (group instanceof LP) {
                 this.addPropertyDraw((LP) group, objects);
-            } else if (group instanceof LP[])
-                this.addPropertyDraw((LP[])group, objects);
+            } else if (group instanceof LP[]) {
+                this.addPropertyDraw((LP[]) group, objects);
+            }
         }
     }
 
@@ -383,17 +432,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
 
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
-            List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
-            Map<ObjectEntity, PropertyInterface> objectToInterface =
-                    BaseUtils.<ObjectEntity, ValueClassWrapper, PropertyInterface>join(objectToClass, BaseUtils.reverse(implement.mapping));
+            List<ValueClassWrapper> interfaces = new ArrayList<ValueClassWrapper>();
             List<ObjectEntity> entities = new ArrayList<ObjectEntity>();
             for (ObjectEntity object : objects) {
-                if (objectToInterface.get(object) != null) {
-                    interfaces.add(objectToInterface.get(object));
-                    entities.add(object);
-                }
+                interfaces.add(objectToClass.get(object));
+                entities.add(object);
             }
-            propertyDraws.add(addPropertyDraw(new LP(implement.property, interfaces), groupObject, entities.toArray(new ObjectEntity[entities.size()])));
+            propertyDraws.add(addPropertyDraw(implement.createLP( interfaces), groupObject, entities.toArray(new ObjectEntity[entities.size()])));
         }
 
         return propertyDraws;
@@ -422,9 +467,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
 
-        return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(property, objects));
+        return addPropertyDraw(groupObject, property.createObjectEntity(objects));
     }
 
     public GroupObjectEntity getApplyObject(Collection<ObjectEntity> objects) {
@@ -440,15 +485,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return result;
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
-        return addPropertyDraw(null, new PropertyObjectEntity<P>(property, mapping));
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property) {
+        return addPropertyDraw(property, new HashMap<P, PropertyObjectInterfaceEntity>());
     }
 
-    private <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
+        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null));
+    }
+
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement) {
         PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
-        if (shouldProceedDefaultDraw()) {
-            propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
-        }
+
+        propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
 
         if (propertyImplement.property.getSID() != null) {
             String propertySID = BaseUtils.nvl(propertyImplement.property.getName(), propertyImplement.property.getSID());
@@ -494,7 +542,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyDraws.remove(property);
     }
 
-    protected <P extends PropertyInterface> void removePropertyDraw(LP<P> property) {
+    protected <P extends PropertyInterface> void removePropertyDraw(LP<P, ?> property) {
         removePropertyDraw(property.property);
     }
 
@@ -507,9 +555,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, PropertyObjectInterfaceEntity... objects) {
+        return new CalcPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
+    }
+    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, PropertyObjectInterfaceEntity... objects) {
+        return new ActionPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
+    }
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
-
-        return new PropertyObjectEntity(property, objects);
+        if (property instanceof LCP) {
+            return addPropertyObject((LCP<?>) property, objects);
+        } else {
+            return addPropertyObject((LAP<?>) property, objects);
+        }
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {
@@ -537,8 +594,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public List<PropertyDrawEntity> getPropertyDrawList(LP...properties) {
         List<PropertyDrawEntity> list = new ArrayList<PropertyDrawEntity>();
-        for(LP property : properties)
-           list.add(getPropertyDraw(property));
+        for (LP property : properties) {
+            list.add(getPropertyDraw(property));
+        }
         return list;
     }
 
@@ -560,31 +618,27 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return list;
     }
 
-    protected PropertyObjectEntity getPropertyObject(LP<?> lp) {
+    protected CalcPropertyObjectEntity getCalcPropertyObject(LCP<?> lp) {
+        return (CalcPropertyObjectEntity) getPropertyDraw(lp).propertyObject;
+    }
+
+    protected PropertyObjectEntity getPropertyObject(LP<?, ?> lp) {
         return getPropertyDraw(lp).propertyObject;
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(LP<?> lp) {
+    public PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp) {
         return getPropertyDraw(lp.property);
     }
 
-    public PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, int index) {
+    public PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp, int index) {
         return getPropertyDraw(lp.property, index);
     }
 
-    protected PropertyObjectEntity getPropertyObject(LP<?> lp, ObjectEntity object) {
-        return getPropertyDraw(lp, object).propertyObject;
-    }
-
-    protected PropertyObjectEntity getPropertyObject(LP<?> lp, GroupObjectEntity groupObject) {
-        return getPropertyDraw(lp, groupObject).propertyObject;
-    }
-
-    protected PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, ObjectEntity object) {
+    protected PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp, ObjectEntity object) {
         return getPropertyDraw(lp.property, object.groupTo);
     }
 
-    protected PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, GroupObjectEntity groupObject) {
+    protected PropertyDrawEntity<?> getPropertyDraw(LP<?, ?> lp, GroupObjectEntity groupObject) {
         return getPropertyDraw(lp.property, groupObject);
     }
 
@@ -613,10 +667,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         int cnt = 0;
         for (PropertyDrawEntity<?> propertyDraw : propertyDraws) {
             if (propertyDraw.propertyObject.property == property) {
-                if (cnt == index)
+                if (cnt == index) {
                     return propertyDraw;
-                else
+                } else {
                     cnt++;
+                }
             }
         }
 
@@ -666,44 +721,52 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return resultPropertyDraw;
     }
 
-    public Set<Property> hintsIncrementTable = new HashSet<Property>();
+    public Set<CalcProperty> hintsIncrementTable = new HashSet<CalcProperty>();
 
     public void addHintsIncrementTable(LP... props) {
-        for (LP prop : props)
-            hintsIncrementTable.add(prop.property);
+        for (LP prop : props) {
+            hintsIncrementTable.add((CalcProperty) prop.property);
+        }
     }
 
-    public void addHintsIncrementTable(Property... props) {
-        for (Property prop : props)
+    public void addHintsIncrementTable(CalcProperty... props) {
+        for (CalcProperty prop : props) {
             hintsIncrementTable.add(prop);
+        }
     }
 
-    public Set<Property> hintsNoUpdate = new HashSet<Property>();
+    public Set<CalcProperty> hintsNoUpdate = new HashSet<CalcProperty>();
 
     public void addHintsNoUpdate(GroupObjectEntity groupObject) {
         for (PropertyDrawEntity property : getProperties(groupObject)) {
-            addHintsNoUpdate(property.propertyObject.property);
+            if (property.propertyObject.property instanceof CalcProperty) {
+                addHintsNoUpdate((CalcProperty) property.propertyObject.property);
+            }
         }
     }
 
     public void addHintsNoUpdate(AbstractGroup group) {
         for (Property property : group.getProperties()) {
-            addHintsNoUpdate(property);
+            if (property instanceof CalcProperty) {
+                addHintsNoUpdate((CalcProperty) property);
+            }
         }
     }
 
-    public void addHintsNoUpdate(LP... props) {
-        for (LP prop : props)
+    public void addHintsNoUpdate(LCP... props) {
+        for (LCP prop : props) {
             addHintsNoUpdate(prop);
+        }
     }
 
-    protected void addHintsNoUpdate(LP<?> prop) {
-        addHintsNoUpdate(prop.property);
+    protected void addHintsNoUpdate(LCP prop) {
+        addHintsNoUpdate((CalcProperty) prop.property);
     }
 
-    public void addHintsNoUpdate(Property prop) {
-        if (!hintsNoUpdate.contains(prop))
+    public void addHintsNoUpdate(CalcProperty prop) {
+        if (!hintsNoUpdate.contains(prop)) {
             hintsNoUpdate.add(prop);
+        }
     }
 
     public FormView createDefaultRichDesign() {
@@ -770,7 +833,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         outStream.writeInt(eventActions.size());
-        for (Map.Entry<Object, List<PropertyObjectEntity>> entry : eventActions.entrySet()) {
+        for (Map.Entry<Object, List<ActionPropertyObjectEntity<?>>> entry : eventActions.entrySet()) {
             Object event = entry.getKey();
 
             //пока предполагаем, что евент либо String, либо CustomSerializable!
@@ -804,14 +867,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             defaultOrders.put(order, inStream.readBoolean());
         }
 
-        eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
+        eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
             Object event = inStream.readBoolean()
                     ? pool.readString(inStream)
                     : pool.deserializeObject(inStream);
 
-            List<PropertyObjectEntity> actions = pool.deserializeList(inStream);
+            List<ActionPropertyObjectEntity<?>> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);
         }
     }
@@ -823,56 +886,131 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         outStream.writeUTF(showType.name());
     }
 
-    public void addActionsOnObjectChange(ObjectEntity object, PropertyObjectEntity... actions) {
+    public void setAddOnTransaction(ObjectEntity entity, LogicsModule lm) {
+        setAddOnEvent(entity, lm, FormEventType.INIT, FormEventType.APPLY, FormEventType.CANCEL);
+    }
+
+    public void setAddOnEvent(ObjectEntity entity, LogicsModule lm, FormEventType... events) {
+        boolean needApplyConfirm = false;
+        boolean needOkConfirm = false;
+        for (FormEventType event : events) {
+            if (event == FormEventType.APPLY) {
+                needApplyConfirm = true;
+            } else if (event == FormEventType.APPLY) {
+                needOkConfirm = true;
+            }
+        }
+
+        if (needOkConfirm) {
+            okActionPropertyDraw.askConfirm = true;
+            okActionPropertyDraw.askConfirmMessage = (okActionPropertyDraw.askConfirmMessage == null ? "" : okActionPropertyDraw.askConfirmMessage)
+                    + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
+        }
+
+        if (needApplyConfirm) {
+            applyActionPropertyDraw.askConfirm = true;
+            applyActionPropertyDraw.askConfirmMessage = (applyActionPropertyDraw.askConfirmMessage == null ? "" : applyActionPropertyDraw.askConfirmMessage)
+                    + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
+        }
+
+        addActionsOnEvent(addPropertyObject(lm.getSimpleAddObjectAction((ConcreteCustomClass) entity.baseClass, true)), events);
+    }
+
+    public void addActionsOnObjectChange(ObjectEntity object, ActionPropertyObjectEntity... actions) {
         addActionsOnObjectChange(object, false, actions);
     }
 
-    public void addActionsOnObjectChange(ObjectEntity object, boolean drop, PropertyObjectEntity... actions) {
+    public void addActionsOnObjectChange(ObjectEntity object, boolean drop, ActionPropertyObjectEntity... actions) {
         addActionsOnEvent(object, drop, actions);
     }
 
-    public void addActionsOnApply(PropertyObjectEntity... actions) {
-        addActionsOnEvent(FormEventType.APPLY, false, actions);
+    public void addActionsOnEvent(ActionPropertyObjectEntity action, Object... events) {
+        for(Object event : events)
+            addActionsOnEvent(event, action);
     }
 
-    public void addActionsOnOk(PropertyObjectEntity... actions) {
-        addActionsOnEvent(FormEventType.OK, false, actions);
+    public void addActionsOnEvent(Object eventObject, ActionPropertyObjectEntity<?>... actions) {
+        addActionsOnEvent(eventObject, false, actions);
     }
 
-    public void addActionsOnEvent(Object eventObject, boolean drop, PropertyObjectEntity... actions) {
-        List<PropertyObjectEntity> thisEventActions = eventActions.get(eventObject);
+    public void addActionsOnEvent(Object eventObject, boolean drop, ActionPropertyObjectEntity<?>... actions) {
+        List<ActionPropertyObjectEntity<?>> thisEventActions = eventActions.get(eventObject);
         if (thisEventActions == null || drop) {
-            thisEventActions = new ArrayList<PropertyObjectEntity>();
+            thisEventActions = new ArrayList<ActionPropertyObjectEntity<?>>();
             eventActions.put(eventObject, thisEventActions);
         }
 
         thisEventActions.addAll(Arrays.asList(actions));
     }
 
-    public List<PropertyObjectEntity> getActionsOnEvent(Object eventObject) {
+    public List<ActionPropertyObjectEntity<?>> getActionsOnEvent(Object eventObject) {
         return eventActions.get(eventObject);
     }
 
-    public boolean hasClientApply() {
+    public boolean isActionOnChange(CalcProperty property) {
         return false;
     }
-
-    public ClientResultAction getClientActionOnApply(FormInstance<T> form) {
-        return null; // будем возвращать именно null, чтобы меньше данных передавалось        
-    }
-
-    public String checkClientApply(Object clientResult) {
-        return null;
-    }
-
-    public boolean isActionOnChange(Property property) {
-        return false;
-    }
-    public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier modifier) throws SQLException {
+    public <P extends PropertyInterface> void onChange(CalcProperty<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
     }
 
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
         return deserialize(BL, new DataInputStream(new ByteArrayInputStream(formState)));
+    }
+
+    public ComponentView getDrawTabContainer(PropertyDrawEntity<?> property, boolean grid) {
+        FormView formView = getRichDesign();
+        ComponentView drawComponent;
+        if(grid) {
+            drawComponent = formView.get(property.getToDraw(this)).grid;
+        } else
+            drawComponent = formView.get(property);
+        return drawComponent.getTabContainer();
+    }
+    public static class ComponentSet extends AddSet<ComponentView, ComponentSet> {
+
+        public ComponentSet() {
+        }
+
+        public ComponentSet(ComponentView where) {
+            super(where);
+        }
+
+        public ComponentSet(ComponentView[] wheres) {
+            super(wheres);
+        }
+
+        protected ComponentSet createThis(ComponentView[] wheres) {
+            return new ComponentSet(wheres);
+        }
+
+        protected ComponentView[] newArray(int size) {
+            return new ComponentView[size];
+        }
+
+        protected boolean containsAll(ComponentView who, ComponentView what) {
+            return who.isAncestorOf(what);
+        }
+
+        public ComponentSet addItem(ComponentView container) {
+            return add(new ComponentSet(container));
+        }
+    }
+    @IdentityLazy
+    public ComponentSet getDrawTabContainers(GroupObjectEntity group) {
+        ComponentSet result = new ComponentSet();
+        for(PropertyDrawEntity property : propertyDraws)
+            if(!Collections.disjoint(property.propertyObject.mapping.values(), group.objects)) { // для свойств "зависящих" от группы
+                ComponentView drawContainer = getDrawTabContainer(property, true);
+                if(drawContainer==null) // cheat \ оптимизация
+                    return null;
+                result = result.addItem(drawContainer);
+
+                drawContainer = getDrawTabContainer(property, false);
+                if(drawContainer==null) // cheat \ оптимизация
+                    return null;
+                result = result.addItem(drawContainer);
+            }
+        return result;
     }
 
     public static FormEntity<?> deserialize(BusinessLogics BL, DataInputStream inStream) {
@@ -962,26 +1100,28 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return result;
     }
 
-    public void setReadOnlyIf(PropertyObjectEntity condition) {
+    public void setReadOnlyIf(CalcPropertyObjectEntity condition) {
         for (PropertyDrawEntity propertyView : propertyDraws) {
-            if (propertyView != getPropertyDraw(condition))
+            if (propertyView != getPropertyDraw(condition)) {
                 setReadOnlyIf(propertyView, condition);
+            }
         }
     }
 
-    public void setReadOnlyIf(LP property, PropertyObjectEntity condition) {
+    public void setReadOnlyIf(LP property, CalcPropertyObjectEntity condition) {
         setReadOnlyIf(getPropertyDraw(property.property), condition);
     }
 
-    public void setReadOnlyIf(GroupObjectEntity groupObject, PropertyObjectEntity condition) {
+    public void setReadOnlyIf(GroupObjectEntity groupObject, CalcPropertyObjectEntity condition) {
         for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
-            if (propertyView != getPropertyDraw(condition))
+            if (propertyView != getPropertyDraw(condition)) {
                 setReadOnlyIf(propertyView, condition);
+            }
         }
     }
 
-    public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {
-            property.propertyReadOnly = condition;
+    public void setReadOnlyIf(PropertyDrawEntity property, CalcPropertyObjectEntity condition) {
+        property.propertyReadOnly = condition;
     }
 
     public void setEditType(AbstractGroup group, PropertyEditType editType, GroupObjectEntity groupObject) {
@@ -1041,8 +1181,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setPageSize(int pageSize) {
-        for (GroupObjectEntity group : groups)
+        for (GroupObjectEntity group : groups) {
             group.pageSize = pageSize;
+        }
     }
 
     public void setNeedVerticalScroll(boolean scroll) {

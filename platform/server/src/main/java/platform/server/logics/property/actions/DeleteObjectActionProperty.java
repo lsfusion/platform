@@ -29,7 +29,7 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
         return "delete";
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         // после удаления выбираем соседний объект
         DataObject nearObject = null;
         PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
@@ -46,11 +46,7 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
             }
         }
 
-        if (context.isInFormSession() && objectInstance != null) {
-            context.getFormInstance().changeClass((CustomObjectInstance) objectInstance, context.getSingleKeyValue(), -1);
-        } else {
-            context.getSession().changeClass(context.getSingleKeyValue(), null, context.isGroupLast());
-        }
+        context.changeClass(objectInstance, context.getSingleKeyValue(), -1);
 
         if (nearObject != null)
             ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);

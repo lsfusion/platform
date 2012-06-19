@@ -1,8 +1,8 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.base.BaseUtils;
-import platform.server.classes.DataClass;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
@@ -11,50 +11,54 @@ import platform.server.logics.property.derived.DerivedProperty;
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.mergeSet;
 import static platform.base.BaseUtils.reverse;
 
-public class JoinActionProperty extends KeepContextActionProperty {
+public class JoinActionProperty<T extends PropertyInterface> extends KeepContextActionProperty {
 
-    private final PropertyImplement<ClassPropertyInterface, PropertyInterfaceImplement<ClassPropertyInterface>> action; // action + mapping на calculate
+    private final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, PropertyImplement<ClassPropertyInterface, PropertyInterfaceImplement<I>> implement, ValueClass[] classes) {
-        super(sID, caption, classes != null ? classes : getClasses(listInterfaces, implement.mapping.values()));
+    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement, ValueClass[] classes) {
+        super(sID, caption, listInterfaces.size());
 
-        action = DerivedProperty.mapImplements(implement, reverse(getMapInterfaces(listInterfaces)));
+        action = DerivedProperty.mapActionImplements(implement, reverse(getMapInterfaces(listInterfaces)));
 
         finalizeInit();
     }
 
-    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
-        Map<ClassPropertyInterface, DataObject> readValues = new HashMap<ClassPropertyInterface, DataObject>();
-        for (Map.Entry<ClassPropertyInterface, PropertyInterfaceImplement<ClassPropertyInterface>> mapProp : action.mapping.entrySet()) {
-            ObjectValue value = mapProp.getValue().readClasses(context.getSession(), context.getKeys(), context.getModifier());
+    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+        Map<T, DataObject> readValues = new HashMap<T, DataObject>();
+        for (Map.Entry<T, CalcPropertyInterfaceImplement<PropertyInterface>> mapProp : action.mapping.entrySet()) {
+            ObjectValue value = mapProp.getValue().readClasses(context, context.getKeys());
             if (value instanceof DataObject) {
                 readValues.put(mapProp.getKey(), (DataObject) value);
             } else {
                 return FlowResult.FINISH;
             }
         }
-        ((ActionProperty) action.property).execute(context.override(readValues));
+        action.property.execute(context.override(readValues, action.mapping));
         return FlowResult.FINISH;
     }
 
     @Override
-    public Set<Property> getChangeProps() {
-        return ((ActionProperty)action.property).getChangeProps();
+    public Type getSimpleRequestInputType() {
+        return action.property.getSimpleRequestInputType();
+    }
+
+    public Set<ActionProperty> getDependActions() {
+        return Collections.singleton((ActionProperty)action.property);
     }
 
     @Override
-    public Set<Property> getUsedProps() {
-        Set<Property> result = new HashSet<Property>(((ActionProperty) action.property).getUsedProps());
-        for(PropertyInterfaceImplement<ClassPropertyInterface> value : action.mapping.values())
+    public Set<CalcProperty> getUsedProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.values())
             value.mapFillDepends(result);
+        result.addAll(super.getUsedProps());
         return result;
     }
 
-    @Override
-    public DataClass getValueClass() {
-        return ((ActionProperty) action.property).getValueClass();
+    @IdentityLazy
+    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+        return DerivedProperty.createJoin(action.property.getWhereProperty().mapImplement(action.mapping));
     }
 }

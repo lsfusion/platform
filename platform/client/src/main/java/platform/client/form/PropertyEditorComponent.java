@@ -1,19 +1,19 @@
 package platform.client.form;
 
+import platform.client.form.cell.PropertyTableCellEditor;
+
 import java.awt.*;
-import java.io.IOException;
-import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.util.EventObject;
 
 public interface PropertyEditorComponent {
 
-    Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException;
+    void setTableEditor(PropertyTableCellEditor tableEditor);
 
-    Object getCellEditorValue() throws RemoteException;
-    boolean valueChanged();
-    String checkValue(Object value);
+    Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent);
 
+    Object getCellEditorValue();
+
+    boolean stopCellEditing();
 }
 
 

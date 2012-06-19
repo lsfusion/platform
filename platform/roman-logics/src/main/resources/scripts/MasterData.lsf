@@ -35,7 +35,6 @@ syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sk
     SET idBarcode(barcode) IF barcode == syncBarcode() <- barcode(sku AS RomanLogicsModule.sku);
 } IN baseGroup;
 
-// todo : не срабатывает
 syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 
 //---------------------------------  -------------------------------------------//

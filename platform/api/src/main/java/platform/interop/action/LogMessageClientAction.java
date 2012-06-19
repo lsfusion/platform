@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class LogMessageClientAction extends AbstractClientAction {
+public class LogMessageClientAction extends ExecuteClientAction {
 
     public String message;
 
@@ -14,12 +14,7 @@ public class LogMessageClientAction extends AbstractClientAction {
     }
 
     @Override
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
-    }
-
-    @Override
-    public boolean isBeforeApply() {
-        return true;
     }
 }

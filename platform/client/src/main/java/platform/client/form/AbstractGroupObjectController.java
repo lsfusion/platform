@@ -9,6 +9,7 @@ import platform.client.logics.ClientPropertyDraw;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public abstract class AbstractGroupObjectController implements GroupObjectLogicsSupplier {
     protected final ClientFormController form;
@@ -36,7 +37,7 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
 
     // реализация LogicsSupplier
     @Override
-    public java.util.List<ClientObject> getObjects() {
+    public List<ClientObject> getObjects() {
         return logicsSupplier.getObjects();
     }
 

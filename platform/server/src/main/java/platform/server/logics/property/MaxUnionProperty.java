@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
 
-    private final Collection<PropertyMapImplement<?,Interface>> operands;
+    private final Collection<CalcPropertyInterfaceImplement<Interface>> operands;
 
     @Override
     protected boolean useSimpleIncrement() {
@@ -30,7 +30,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Expr result = null;
-        for(PropertyMapImplement<?, Interface> operand : operands) {
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands) {
             Expr operandExpr = operand.mapExpr(joinImplement, propClasses, propChanges, changedWhere);
             if(result==null)
                 result = operandExpr;
@@ -40,11 +40,11 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
+    protected Collection<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return operands;
     }
 
-    public MaxUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<PropertyMapImplement<?, Interface>> operands) {
+    public MaxUnionProperty(String sID, String caption, List<Interface> interfaces, Collection<CalcPropertyInterfaceImplement<Interface>> operands) {
         super(sID, caption, interfaces);
         this.operands = operands;
 

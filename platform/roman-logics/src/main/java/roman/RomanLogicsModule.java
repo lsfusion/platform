@@ -31,13 +31,14 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
 import javax.swing.*;
@@ -47,8 +48,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
-
-import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -60,47 +59,47 @@ import static platform.server.logics.property.actions.ExecutePropertiesActionPro
 
 public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
-    private LP equalsColorItemSupplier;
-    private LP equalsSizeItemSupplier;
-    private LP equalsSeasonSupplierArticleSupplier;
-    private LP equalsThemeItemSupplier;
-    private LP boxInvoiceAddFA;
-    private LP simpleInvoiceAddFA;
-    private LP orderEditFA;
-    private LP boxInvoiceEditFA;
-    private LP simpleInvoiceEditFA;
-    private LP freightCreateFA;
-    private LP freightEditFA;
-    private LP freightCompleteFA;
-    private LP addNEColorSupplierSIDSupplier;
-    private LP addNEColorSupplierSIDInvoice;
-    private LP executeAddColorDocument;
-    private LP seekColorSIDSupplier;
-    private LP seekColorSIDInvoice;
-    public LP itemArticleCompositeColorSize;
+    private LCP equalsColorItemSupplier;
+    private LCP equalsSizeItemSupplier;
+    private LCP equalsSeasonSupplierArticleSupplier;
+    private LCP equalsThemeItemSupplier;
+    private LCP boxInvoiceAddFA;
+    private LCP simpleInvoiceAddFA;
+    private LAP orderEditFA;
+    private LAP boxInvoiceEditFA;
+    private LAP simpleInvoiceEditFA;
+    private LAP freightCreateFA;
+    private LAP freightEditFA;
+    private LAP freightCompleteFA;
+    private LAP addNEColorSupplierSIDSupplier;
+    private LAP addNEColorSupplierSIDInvoice;
+    private LAP executeAddColorDocument;
+    private LAP seekColorSIDSupplier;
+    private LAP seekColorSIDInvoice;
+    public LCP itemArticleCompositeColorSize;
     private ConcreteCustomClass sizeGroupSupplier;
-    private LP supplierSizeGroup;
-    private LP groupSizeSupplier;
-    private LP orderSizeSupplier;
-    private LP equalsGroupSizeSupplier;
-    private LP sizeGroupSupplierArticle;
-    private LP nameSizeGroupSupplierArticle;
-    private LP nameSupplierSizeGroup;
-    private LP nameGroupSizeSupplier;
-    private LP freightChangedFA;
-    private LP freightPricedFA;
-    private LP skuEditFA;
-    private LP cloneItem;
-    private LP addItemArticleCompositeColorSizeBarcode;
-    private LP addItemSIDArticleSupplierColorSizeBarcode;
-    private LP quantitySimpleInvoiceSimpleShipmentStockSku;
-    private LP priceProxyImporterFreightSku;
-    public LP contractInProxyImporterStockSku, sidContractInProxyImporterStockSku, dateContractInProxyImporterStockSku;
-    private LP priceDirectImporterFreightSku;
-    private LP RRPDirectImporterFreightSku;
-    private LP RRPProxyImporterFreightSku;
-    private LP RRPImporterFreightSku;
-    private LP RRPFreightArticle;
+    private LCP supplierSizeGroup;
+    private LCP groupSizeSupplier;
+    private LCP orderSizeSupplier;
+    private LCP equalsGroupSizeSupplier;
+    private LCP sizeGroupSupplierArticle;
+    private LCP nameSizeGroupSupplierArticle;
+    private LCP nameSupplierSizeGroup;
+    private LCP nameGroupSizeSupplier;
+    private LAP freightChangedFA;
+    private LAP freightPricedFA;
+    private LAP skuEditFA;
+    private LAP cloneItem;
+    private LAP addItemArticleCompositeColorSizeBarcode;
+    private LAP addItemSIDArticleSupplierColorSizeBarcode;
+    private LCP quantitySimpleInvoiceSimpleShipmentStockSku;
+    private LCP priceProxyImporterFreightSku;
+    public LCP contractInProxyImporterStockSku, sidContractInProxyImporterStockSku, dateContractInProxyImporterStockSku;
+    private LCP priceDirectImporterFreightSku;
+    private LCP RRPDirectImporterFreightSku;
+    private LCP RRPProxyImporterFreightSku;
+    private LCP RRPImporterFreightSku;
+    private LCP RRPFreightArticle;
 
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
@@ -117,17 +116,17 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass item;
     protected AbstractCustomClass sku;
     private ConcreteCustomClass pallet;
-    LP sidArticle;
-    LP articleCompositeItem;
-    public LP itemSupplierArticleSIDColorSIDSizeSID;
-    public LP round2;
-    public LP multiplyNumeric2;
-    public LP multiplyNumeric3;
-    public LP sumNumeric2;
-    public LP divideNumeric2;
-    public LP divideNumeric3;
-    public LP percentNumeric2;
-    private LP articleSku;
+    LCP sidArticle;
+    LCP articleCompositeItem;
+    public LCP itemSupplierArticleSIDColorSIDSizeSID;
+    public LCP round2;
+    public LCP multiplyNumeric2;
+    public LCP multiplyNumeric3;
+    public LCP sumNumeric2;
+    public LCP divideNumeric2;
+    public LCP divideNumeric3;
+    public LCP percentNumeric2;
+    private LCP articleSku;
     public ConcreteCustomClass order;
     private ConcreteCustomClass typeInvoice;
     private AbstractCustomClass invoice;
@@ -144,17 +143,17 @@ public class RomanLogicsModule extends LogicsModule {
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
-    LP addressOriginSubject;
-    LP addressSubject;
-    LP supplierDocument;
-    private LP nameSupplierDocument;
-    LP sidDocument;
-    public LP dateFromOrder;
-    public LP dateToOrder;
-    LP documentSIDSupplier;
-    private LP sumSimpleInvoice;
-    private LP sumInvoicedDocument;
-    private LP sumDocument;
+    LCP addressOriginSubject;
+    LCP addressSubject;
+    LCP supplierDocument;
+    private LCP nameSupplierDocument;
+    LCP sidDocument;
+    public LCP dateFromOrder;
+    public LCP dateToOrder;
+    LCP documentSIDSupplier;
+    private LCP sumSimpleInvoice;
+    private LCP sumInvoicedDocument;
+    private LCP sumDocument;
     ConcreteCustomClass commonSize;
     ConcreteCustomClass colorSupplier;
     ConcreteCustomClass sizeSupplier;
@@ -164,171 +163,171 @@ public class RomanLogicsModule extends LogicsModule {
     public ConcreteCustomClass themeSupplier;
     public ConcreteCustomClass seasonSupplier;
     ConcreteCustomClass countrySupplier;
-    LP supplierArticle;
-    private LP nameSupplierArticle;
-    private LP dateFromDataOrderArticle;
-    private LP dateToDataOrderArticle;
-    private LP dateFromOrderOrderArticle;
-    private LP dateToOrderOrderArticle;
-    public LP dateFromOrderArticle;
-    public LP dateToOrderArticle;
-    private LP dateFromOrderArticleSku;
-    private LP dateToOrderArticleSku;
-    LP priceDocumentArticle;
-    LP RRPDocumentArticle;
-    LP RRPRateDocumentSku;
-    private LP sumDocumentArticle;
-    private LP sumSimpleInvoiceArticle;
-    LP colorSupplierItem;
-    private LP nameColorSupplierItem;
-    private LP inListArticleColorSupplier;
-    LP sizeSupplierItem;
-    public LP sidSizeSupplierItem;
-    public LP commonSizeItem;
-    public LP nameCommonSizeItem;
-    LP supplierColorSupplier;
-    LP genderSupplierArticle;
-    LP sidGenderSupplierArticle;
-    private LP quantityCreationStamp;
-    private LP seriesOfCreationStamp;
-    private LP dateOfCreationStamp;
-    private LP nameSupplierColorSupplier;
-    private LP nameSupplierThemeSupplier;
-    private LP nameSupplierGenderSupplier;
-    LP supplierSizeSupplier;
-    private LP nameSupplierSizeSupplier;
-    LP supplierGenderSupplier;
-    private LP sidBrandSupplier;
-    public LP sidTypeDuty;
-    public LP nameTypeDuty;
-    public LP sidToTypeDuty;
-    public LP typeDutyDuty;
-    private LP sidTypeDutyDuty;
-    private LP nameTypeDutyDuty;
-    private LP typeDutyNDS;
-    private LP sidTypeDutyNDS;
-    private LP nameTypeDutyNDS;
-    private LP typeDutyRegistration;
-    private LP sidTypeDutyRegistration;
-    private LP nameTypeDutyRegistration;
-    private LP supplierBrandSupplier;
-    private LP nameSupplierBrandSupplier;
-    private LP brandSupplierSupplier;
-    private LP nameBrandSupplierSupplier;
-    private LP brandSupplierArticle;
-    private LP sidBrandSupplierArticle;
-    private LP nameBrandSupplierArticle;
-    private LP supplierBrandSupplierArticle;
-    private LP countryBrandSupplier;
-    private LP nameCountryBrandSupplier;
-    private LP brandSupplierDataArticle;
-    private LP brandSupplierSupplierArticle;
-    private LP brandSupplierArticleSku;
-    private LP sidBrandSupplierArticleSku;
-    public LP nameBrandSupplierArticleSku;
-    private LP nameBrandSupplierArticleSkuShipmentDetail;
-    private LP supplierArticleSku;
-    private LP nameSupplierArticleSku;
-    public LP supplierThemeSupplier;
-    public LP supplierSeasonSupplier;
-    public LP sidDestinationSupplier;
-    private LP nameSupplierSeasonSupplier;
-    public LP seasonSupplierArticle;
-    public LP sidSeasonSupplierArticle;
-    public LP nameSeasonSupplierArticle;
-    public LP themeSupplierArticle;
-    public LP nameThemeSupplierArticle;
-    public LP themeSupplierArticleSku;
-    public LP sidThemeSupplierArticleSku;
-    public LP nameThemeSupplierArticleSku;
+    LCP supplierArticle;
+    private LCP nameSupplierArticle;
+    private LCP dateFromDataOrderArticle;
+    private LCP dateToDataOrderArticle;
+    private LCP dateFromOrderOrderArticle;
+    private LCP dateToOrderOrderArticle;
+    public LCP dateFromOrderArticle;
+    public LCP dateToOrderArticle;
+    private LCP dateFromOrderArticleSku;
+    private LCP dateToOrderArticleSku;
+    LCP priceDocumentArticle;
+    LCP RRPDocumentArticle;
+    LCP RRPRateDocumentSku;
+    private LCP sumDocumentArticle;
+    private LCP sumSimpleInvoiceArticle;
+    LCP colorSupplierItem;
+    private LCP nameColorSupplierItem;
+    private LCP inListArticleColorSupplier;
+    LCP sizeSupplierItem;
+    public LCP sidSizeSupplierItem;
+    public LCP commonSizeItem;
+    public LCP nameCommonSizeItem;
+    LCP supplierColorSupplier;
+    LCP genderSupplierArticle;
+    LCP sidGenderSupplierArticle;
+    private LCP quantityCreationStamp;
+    private LCP seriesOfCreationStamp;
+    private LCP dateOfCreationStamp;
+    private LCP nameSupplierColorSupplier;
+    private LCP nameSupplierThemeSupplier;
+    private LCP nameSupplierGenderSupplier;
+    LCP supplierSizeSupplier;
+    private LCP nameSupplierSizeSupplier;
+    LCP supplierGenderSupplier;
+    private LCP sidBrandSupplier;
+    public LCP sidTypeDuty;
+    public LCP nameTypeDuty;
+    public LCP sidToTypeDuty;
+    public LCP typeDutyDuty;
+    private LCP sidTypeDutyDuty;
+    private LCP nameTypeDutyDuty;
+    private LCP typeDutyNDS;
+    private LCP sidTypeDutyNDS;
+    private LCP nameTypeDutyNDS;
+    private LCP typeDutyRegistration;
+    private LCP sidTypeDutyRegistration;
+    private LCP nameTypeDutyRegistration;
+    private LCP supplierBrandSupplier;
+    private LCP nameSupplierBrandSupplier;
+    private LCP brandSupplierSupplier;
+    private LCP nameBrandSupplierSupplier;
+    private LCP brandSupplierArticle;
+    private LCP sidBrandSupplierArticle;
+    private LCP nameBrandSupplierArticle;
+    private LCP supplierBrandSupplierArticle;
+    private LCP countryBrandSupplier;
+    private LCP nameCountryBrandSupplier;
+    private LCP brandSupplierDataArticle;
+    private LCP brandSupplierSupplierArticle;
+    private LCP brandSupplierArticleSku;
+    private LCP sidBrandSupplierArticleSku;
+    public LCP nameBrandSupplierArticleSku;
+    private LCP nameBrandSupplierArticleSkuShipmentDetail;
+    private LCP supplierArticleSku;
+    private LCP nameSupplierArticleSku;
+    public LCP supplierThemeSupplier;
+    public LCP supplierSeasonSupplier;
+    public LCP sidDestinationSupplier;
+    private LCP nameSupplierSeasonSupplier;
+    public LCP seasonSupplierArticle;
+    public LCP sidSeasonSupplierArticle;
+    public LCP nameSeasonSupplierArticle;
+    public LCP themeSupplierArticle;
+    public LCP nameThemeSupplierArticle;
+    public LCP themeSupplierArticleSku;
+    public LCP sidThemeSupplierArticleSku;
+    public LCP nameThemeSupplierArticleSku;
 
     private ConcreteCustomClass typeExchange;
     public ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
-    public LP relationStoreSupplier;
-    private LP currencyTypeExchange;
-    private LP nameCurrencyTypeExchange;
-    private LP rateExchange;
-    private LP typeExchangeSTX;
-    private LP nameTypeExchangeSTX;
-    public LP typeExchangeCustom;
-    public LP nameTypeExchangeCustom;
-    public LP typeExchangePayCustom;
-    public LP nameTypeExchangePayCustom;
-    public LP typeExchangeRetail;
-    public LP nameTypeExchangeRetail;
-    private LP currencyCustom;
-    private LP nameCurrencyCustom;
-    public LP currencyPayCustom;
-    public LP nameCurrencyPayCustom;
-    private LP NDSPercentCustom;
-    private LP lessCmpDate;
-    private LP nearestPredDate;
-    public LP nearestRateExchange;
-    public LP sidImporterFreightTypeInvoice;
-    public LP sidImporterFreight;
-    public LP sidDestination;
-    private LP destinationSID;
-    private LP unitOfMeasureCategory;
-    private LP nameUnitOfMeasureCategory;
-    private LP unitOfMeasureArticle;
-    private LP nameOriginUnitOfMeasureArticle;
-    LP nameUnitOfMeasureArticle;
-    private LP unitOfMeasureArticleSku;
-    private LP nameUnitOfMeasureArticleSku;
-    LP supplierCountrySupplier;
-    private LP nameSupplierCountrySupplier;
-    private LP countryCountrySupplier;
-    private LP nameCountryCountrySupplier;
-    private LP currencySupplier;
-    private LP nameCurrencySupplier;
-    private LP currencyDocument;
-    private LP nameCurrencyDocument;
-    private LP destinationDestinationDocument;
-    private LP nameDestinationDestinationDocument;
-    private LP sidDestinationDestinationDocument;
-    private LP dateDepartureShipment;
-    private LP dateArrivalShipment;
-    private LP quantityPalletShipment;
-    private LP grossWeightPallet;
-    private LP grossWeightCurrentPalletRoute;
-    private LP grossWeightFreight;
-    private LP sumGrossWeightFreightSku;
-    private LP grossWeightFreightSkuAggr;
-    private LP netWeightShipment;
-    private LP grossWeightShipment;
-    LP sidColorSupplier;
-    public LP sidColorSupplierItem;
-    private LP sidThemeSupplierArticle;
-    private LP quantityDocumentSku;
-    private LP quantityDocumentBrandSupplier;
-    private LP quantityAllDocumentsBrandSupplier;
-    private LP quantitySimpleInvoiceArticle;
-    private LP quantitySimpleInvoice;
-    private LP quantityDocumentArticle;
-    private LP quantityInvoicedDocumentArticle;
-    private LP quantityListArticleCompositeColor;
-    private LP quantityListArticleCompositeSize;
-    private LP quantityListArticleCompositeColorSize;
-    private LP quantityDocument;
-    private LP netWeightDocumentArticle;
-    private LP netWeightDocument;
-    LP originalNameArticle;
-    private LP nameArticle;
-    private LP netWeightArticleSku;
-    LP netWeightDataSku;
-    private LP netWeightSku;
-    private LP sumNetWeightFreightSku;
-    LP netWeightArticle;
-    private LP netWeightArticleSize;
-    private LP netWeightArticleSizeSku;
-    private LP netWeightSkuShipmentDetail;
-    private LP mainCompositionOriginDataSku;
-    private LP additionalCompositionOriginDataSku;
-    private LP mainCompositionOriginSku;
-    private LP additionalCompositionOriginSku;
+    public LCP relationStoreSupplier;
+    private LCP currencyTypeExchange;
+    private LCP nameCurrencyTypeExchange;
+    private LCP rateExchange;
+    private LCP typeExchangeSTX;
+    private LCP nameTypeExchangeSTX;
+    public LCP typeExchangeCustom;
+    public LCP nameTypeExchangeCustom;
+    public LCP typeExchangePayCustom;
+    public LCP nameTypeExchangePayCustom;
+    public LCP typeExchangeRetail;
+    public LCP nameTypeExchangeRetail;
+    private LCP currencyCustom;
+    private LCP nameCurrencyCustom;
+    public LCP currencyPayCustom;
+    public LCP nameCurrencyPayCustom;
+    private LCP NDSPercentCustom;
+    private LCP lessCmpDate;
+    private LCP nearestPredDate;
+    public LCP nearestRateExchange;
+    public LCP sidImporterFreightTypeInvoice;
+    public LCP sidImporterFreight;
+    public LCP sidDestination;
+    private LCP destinationSID;
+    private LCP unitOfMeasureCategory;
+    private LCP nameUnitOfMeasureCategory;
+    private LCP unitOfMeasureArticle;
+    private LCP nameOriginUnitOfMeasureArticle;
+    LCP nameUnitOfMeasureArticle;
+    private LCP unitOfMeasureArticleSku;
+    private LCP nameUnitOfMeasureArticleSku;
+    LCP supplierCountrySupplier;
+    private LCP nameSupplierCountrySupplier;
+    private LCP countryCountrySupplier;
+    private LCP nameCountryCountrySupplier;
+    private LCP currencySupplier;
+    private LCP nameCurrencySupplier;
+    private LCP currencyDocument;
+    private LCP nameCurrencyDocument;
+    private LCP destinationDestinationDocument;
+    private LCP nameDestinationDestinationDocument;
+    private LCP sidDestinationDestinationDocument;
+    private LCP dateDepartureShipment;
+    private LCP dateArrivalShipment;
+    private LCP quantityPalletShipment;
+    private LCP grossWeightPallet;
+    private LCP grossWeightCurrentPalletRoute;
+    private LCP grossWeightFreight;
+    private LCP sumGrossWeightFreightSku;
+    private LCP grossWeightFreightSkuAggr;
+    private LCP netWeightShipment;
+    private LCP grossWeightShipment;
+    LCP sidColorSupplier;
+    public LCP sidColorSupplierItem;
+    private LCP sidThemeSupplierArticle;
+    private LCP quantityDocumentSku;
+    private LCP quantityDocumentBrandSupplier;
+    private LCP quantityAllDocumentsBrandSupplier;
+    private LCP quantitySimpleInvoiceArticle;
+    private LCP quantitySimpleInvoice;
+    private LCP quantityDocumentArticle;
+    private LCP quantityInvoicedDocumentArticle;
+    private LCP quantityListArticleCompositeColor;
+    private LCP quantityListArticleCompositeSize;
+    private LCP quantityListArticleCompositeColorSize;
+    private LCP quantityDocument;
+    private LCP netWeightDocumentArticle;
+    private LCP netWeightDocument;
+    LCP originalNameArticle;
+    private LCP nameArticle;
+    private LCP netWeightArticleSku;
+    LCP netWeightDataSku;
+    private LCP netWeightSku;
+    private LCP sumNetWeightFreightSku;
+    LCP netWeightArticle;
+    private LCP netWeightArticleSize;
+    private LCP netWeightArticleSizeSku;
+    private LCP netWeightSkuShipmentDetail;
+    private LCP mainCompositionOriginDataSku;
+    private LCP additionalCompositionOriginDataSku;
+    private LCP mainCompositionOriginSku;
+    private LCP additionalCompositionOriginSku;
     AbstractCustomClass secondNameClass;
-    private LP nameOrigin;
+    private LCP nameOrigin;
     private ConcreteCustomClass category;
     ConcreteCustomClass customCategory4;
     ConcreteCustomClass customCategory6;
@@ -339,816 +338,820 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass typeDuty;
     ConcreteCustomClass customStore;
 
-    private LP typeInvoiceCategory;
-    private LP nameTypeInvoiceCategory;
-    private LP categoryArticle;
-    private LP sidUnitOfMeasure;
-    private LP unitOfMeasureDataArticle;
-    private LP unitOfMeasureCategoryArticle;
-    private LP nameOriginUnitOfMeasureArticleSku;
-    private LP nameOriginCategoryArticle;
-    private LP nameCategoryArticle;
-    private LP categoryArticleSku;
-    public LP nameCategoryArticleSku;
-    private LP nameOriginCategoryArticleSku;
-    private LP typeInvoiceCategoryArticle;
-    private LP typeInvoiceCategoryArticleSku;
-    LP sidCustomCategory4;
-    LP sidCustomCategory6;
-    LP sidCustomCategory9;
-    LP sidCustomCategory10;
-    LP certificatedCustomCategory10;
-    LP sidCustomCategoryOrigin;
-    LP numberIdCustomCategory10;
-    LP numberIdCustomCategoryOrigin;
-    LP sidToCustomCategory4;
-    LP sidToCustomCategory6;
-    LP sidToCustomCategory9;
-    LP sidToCustomCategory10;
-    LP sidToCustomCategoryOrigin;
-    private LP importBelTnved;
-    private LP importEuTnved;
-    LP importTnvedCountryMinPrices;
-    LP importTnvedDuty;
-    LP customCategory4CustomCategory6;
-    LP customCategory6CustomCategory9;
-    LP customCategory9CustomCategory10;
-    LP customCategory6CustomCategory10;
-    LP customCategory4CustomCategory10;
-    LP customCategory6CustomCategoryOrigin;
-    LP customCategory4CustomCategoryOrigin;
-    LP customCategory10CustomCategoryOrigin;
-    LP sidCustomCategory10CustomCategoryOrigin;
-    LP nameSubCategory;
-    LP nameToSubCategory;
-    LP relationCustomCategory10SubCategory;
-    LP subCategoryCustomCategory10;
-    LP countRelationCustomCategory10;
-    LP diffCountRelationCustomCategory10Sku;
-    LP diffCountRelationCustomCategory10FreightSku;
-    LP minPriceCustomCategory10SubCategory;
-    LP minPriceCustomCategory10SubCategoryCountry;
-    public LP dutyPercentCustomCategory10TypeDuty;
-    public LP dutySumCustomCategory10TypeDuty;
-    private LP sidCustomCategory4CustomCategory6;
-    private LP sidCustomCategory6CustomCategory9;
-    private LP sidCustomCategory9CustomCategory10;
-    public LP sidCustomCategory6CustomCategoryOrigin;
-    private LP nameCustomCategory4CustomCategory6;
-    private LP nameCustomCategory6CustomCategory9;
-    private LP nameCustomCategory9CustomCategory10;
-    private LP nameCustomCategory6CustomCategory10;
-    private LP nameCustomCategory4CustomCategory10;
-    private LP nameCustomCategory6CustomCategoryOrigin;
-    private LP nameCustomCategory4CustomCategoryOrigin;
-    LP relationCustomCategory10CustomCategoryOrigin;
-    private LP customCategory10DataSku;
-    private LP customCategory10Sku;
-    private LP customCategory9Sku;
-    private LP customCategory6FreightSku;
-    private LP sidCustomCategory10Sku;
-    private LP subCategoryDataSku;
-    private LP subCategoryCustomCategory10Sku;
-    private LP subCategorySku;
-    private LP nameSubCategorySku;
-    private LP nameSubCategoryDataSku;
+    private LCP typeInvoiceCategory;
+    private LCP nameTypeInvoiceCategory;
+    private LCP categoryArticle;
+    private LCP sidUnitOfMeasure;
+    private LCP unitOfMeasureDataArticle;
+    private LCP unitOfMeasureCategoryArticle;
+    private LCP nameOriginUnitOfMeasureArticleSku;
+    private LCP nameOriginCategoryArticle;
+    private LCP nameCategoryArticle;
+    private LCP categoryArticleSku;
+    public LCP nameCategoryArticleSku;
+    private LCP nameOriginCategoryArticleSku;
+    private LCP typeInvoiceCategoryArticle;
+    private LCP typeInvoiceCategoryArticleSku;
+    LCP sidCustomCategory4;
+    LCP sidCustomCategory6;
+    LCP sidCustomCategory9;
+    LCP<PropertyInterface> sidCustomCategory10;
+    LCP certificatedCustomCategory10;
+    LCP sidCustomCategoryOrigin;
+    LCP numberIdCustomCategory10;
+    LCP numberIdCustomCategoryOrigin;
+    LCP sidToCustomCategory4;
+    LCP sidToCustomCategory6;
+    LCP sidToCustomCategory9;
+    LCP sidToCustomCategory10;
+    LCP sidToCustomCategoryOrigin;
+    private LAP importBelTnved;
+    private LAP importEuTnved;
+    LAP importTnvedCountryMinPrices;
+    LAP importTnvedDuty;
+    LCP customCategory4CustomCategory6;
+    LCP customCategory6CustomCategory9;
+    LCP customCategory9CustomCategory10;
+    LCP customCategory6CustomCategory10;
+    LCP customCategory4CustomCategory10;
+    LCP customCategory6CustomCategoryOrigin;
+    LCP customCategory4CustomCategoryOrigin;
+    LCP customCategory10CustomCategoryOrigin;
+    LCP sidCustomCategory10CustomCategoryOrigin;
+    LCP nameSubCategory;
+    LCP nameToSubCategory;
+    LCP relationCustomCategory10SubCategory;
+    LCP subCategoryCustomCategory10;
+    LCP countRelationCustomCategory10;
+    LCP diffCountRelationCustomCategory10Sku;
+    LCP diffCountRelationCustomCategory10FreightSku;
+    LCP minPriceCustomCategory10SubCategory;
+    LCP minPriceCustomCategory10SubCategoryCountry;
+    public LCP dutyPercentCustomCategory10TypeDuty;
+    public LCP dutySumCustomCategory10TypeDuty;
+    private LCP sidCustomCategory4CustomCategory6;
+    private LCP sidCustomCategory6CustomCategory9;
+    private LCP sidCustomCategory9CustomCategory10;
+    public LCP sidCustomCategory6CustomCategoryOrigin;
+    private LCP nameCustomCategory4CustomCategory6;
+    private LCP nameCustomCategory6CustomCategory9;
+    private LCP nameCustomCategory9CustomCategory10;
+    private LCP nameCustomCategory6CustomCategory10;
+    private LCP nameCustomCategory4CustomCategory10;
+    private LCP nameCustomCategory6CustomCategoryOrigin;
+    private LCP nameCustomCategory4CustomCategoryOrigin;
+    LCP relationCustomCategory10CustomCategoryOrigin;
+    private LCP customCategory10DataSku;
+    private LCP customCategory10Sku;
+    private LCP customCategory9Sku;
+    private LCP customCategory6FreightSku;
+    private LCP sidCustomCategory10Sku;
+    private LCP subCategoryDataSku;
+    private LCP subCategoryCustomCategory10Sku;
+    private LCP subCategorySku;
+    private LCP nameSubCategorySku;
+    private LCP nameSubCategoryDataSku;
 
-    private LP customCategory10CustomCategoryOriginArticle;
-    private LP customCategory10CustomCategoryOriginArticleSku;
-    private LP mainCompositionArticle;
-    private LP additionalCompositionArticle;
-    LP mainCompositionOriginArticle;
-    private LP additionalCompositionOriginArticle;
-    private LP mainCompositionOriginArticleColor;
-    private LP additionalCompositionOriginArticleColor;
-    private LP mainCompositionOriginArticleSku;
-    private LP additionalCompositionOriginArticleSku;
-    private LP mainCompositionOriginArticleColorSku;
-    private LP additionalCompositionOriginArticleColorSku;
-    private LP mainCompositionSku;
-    private LP additionalCompositionSku;
-    LP countrySupplierOfOriginArticle;
-    private LP countryOfOriginArticle;
-    private LP nameCountryOfOriginArticle;
-    private LP countryOfOriginArticleColor;
-    private LP countryOfOriginArticleColorSku;
-    private LP countryOfOriginArticleSku;
-    private LP nameCountryArticleColor;
+    private LCP customCategory10CustomCategoryOriginArticle;
+    private LCP customCategory10CustomCategoryOriginArticleSku;
+    private LCP mainCompositionArticle;
+    private LCP additionalCompositionArticle;
+    LCP mainCompositionOriginArticle;
+    private LCP additionalCompositionOriginArticle;
+    private LCP mainCompositionOriginArticleColor;
+    private LCP additionalCompositionOriginArticleColor;
+    private LCP mainCompositionOriginArticleSku;
+    private LCP additionalCompositionOriginArticleSku;
+    private LCP mainCompositionOriginArticleColorSku;
+    private LCP additionalCompositionOriginArticleColorSku;
+    private LCP mainCompositionSku;
+    private LCP additionalCompositionSku;
+    LCP countrySupplierOfOriginArticle;
+    private LCP countryOfOriginArticle;
+    private LCP nameCountryOfOriginArticle;
+    private LCP countryOfOriginArticleColor;
+    private LCP countryOfOriginArticleColorSku;
+    private LCP countryOfOriginArticleSku;
+    private LCP nameCountryArticleColor;
 
-    private LP genderGenderSupplier;
-    private LP sidGenderGenderSupplier;
-    private LP genderSupplierArticleSku;
-    private LP sidGenderSupplierArticleSku;
-    private LP countryOfOriginDataSku;
-    private LP countryOfOriginSku;
-    private LP nameCountryOfOriginSku;
-    private LP nameCountrySupplierOfOriginArticle;
-    private LP nameCountryOfOriginArticleSku;
+    private LCP genderGenderSupplier;
+    private LCP sidGenderGenderSupplier;
+    private LCP genderSupplierArticleSku;
+    private LCP sidGenderSupplierArticleSku;
+    private LCP countryOfOriginDataSku;
+    private LCP countryOfOriginSku;
+    private LCP nameCountryOfOriginSku;
+    private LCP nameCountrySupplierOfOriginArticle;
+    private LCP nameCountryOfOriginArticleSku;
 
-    private LP genderBrandSupplier;
-    private LP sidGenderBrandSupplier;
-    private LP genderBrandSupplierArticle;
-    private LP genderOriginArticle;
-    private LP genderDataArticle;
-    private LP genderArticle;
-    private LP sidGenderArticle;
-    private LP genderArticleSku;
-    public LP sidGenderArticleSku;
-    private LP quantitySizeSupplierGenderCategory;
-    private LP commonSizeSku;
-    public LP nameCommonSizeSku;
-    public LP typeFabricArticle;
-    public LP typeFabricArticleSku;
-    public LP nameTypeFabricArticle;
-    public LP nameTypeFabricArticleSku;
-    LP articleSIDSupplier;
-    private LP seekArticleSIDSupplier;
-    private LP seekArticleSIDInvoice;
-    LP numberListArticle;
-    LP notZeroListArticle;
-    private LP articleSIDList;
-    private LP incrementNumberListSID;
-    private LP addArticleSingleSIDSupplier;
-    private LP addNEArticleSingleSIDSupplier;
-     private LP addNEArticleSingleSIDInvoice;
-    private LP addArticleCompositeSIDSupplier;
-    private LP addNEArticleCompositeSIDSupplier;
-    private LP addNEArticleCompositeSIDInvoice;
-    private LP numberListSIDArticle;
-    private LP inOrderInvoice;
-    private LP quantityOrderInvoiceSku;
-    private LP orderedOrderInvoiceSku;
-    private LP orderedInvoiceSku;
-    private LP invoicedOrderSku;
-    private LP invoicedOrderArticle;
-    private LP numberListSku;
-    private LP quantityListSku;
-    private LP orderedOrderInvoiceArticle;
-    private LP orderedInvoiceArticle;
-    private LP priceOrderInvoiceArticle;
-    private LP priceOrderedInvoiceArticle;
+    private LCP genderBrandSupplier;
+    private LCP sidGenderBrandSupplier;
+    private LCP genderBrandSupplierArticle;
+    private LCP genderOriginArticle;
+    private LCP genderDataArticle;
+    private LCP genderArticle;
+    private LCP sidGenderArticle;
+    private LCP genderArticleSku;
+    public LCP sidGenderArticleSku;
+    private LCP quantitySizeSupplierGenderCategory;
+    private LCP commonSizeSku;
+    public LCP nameCommonSizeSku;
+    public LCP typeFabricArticle;
+    public LCP typeFabricArticleSku;
+    public LCP nameTypeFabricArticle;
+    public LCP nameTypeFabricArticleSku;
+    LCP articleSIDSupplier;
+    private LAP seekArticleSIDSupplier;
+    private LAP seekArticleSIDInvoice;
+    LCP numberListArticle;
+    LCP notZeroListArticle;
+    private LCP articleSIDList;
+    private LAP incrementNumberListSID;
+    private LAP addArticleSingleSIDSupplier;
+    private LAP addNEArticleSingleSIDSupplier;
+     private LAP addNEArticleSingleSIDInvoice;
+    private LAP addArticleCompositeSIDSupplier;
+    private LAP addNEArticleCompositeSIDSupplier;
+    private LAP addNEArticleCompositeSIDInvoice;
+    private LCP numberListSIDArticle;
+    private LCP inOrderInvoice;
+    private LCP quantityOrderInvoiceSku;
+    private LCP orderedOrderInvoiceSku;
+    private LCP orderedInvoiceSku;
+    private LCP invoicedOrderSku;
+    private LCP invoicedOrderArticle;
+    private LCP numberListSku;
+    private LCP quantityListSku;
+    private LCP orderedOrderInvoiceArticle;
+    private LCP orderedInvoiceArticle;
+    private LCP priceOrderInvoiceArticle;
+    private LCP priceOrderedInvoiceArticle;
     ConcreteCustomClass supplierBox;
     ConcreteCustomClass boxInvoice;
     public ConcreteCustomClass simpleInvoice;
-    LP sidSupplierBox;
+    LCP sidSupplierBox;
     private AbstractCustomClass list;
-    LP quantityDataListSku;
-    LP quantityDataList;
-    LP boxInvoiceSupplierBox;
-    private LP sidBoxInvoiceSupplierBox;
-    private LP supplierSupplierBox;
-    private LP supplierList;
-    private LP orderedSupplierBoxSku;
-    private LP quantityListArticle;
-    private LP orderedSimpleInvoiceSku;
-    LP priceDataDocumentItem;
-    private LP priceArticleDocumentSku;
-    private LP minPriceCustomCategoryFreightSku;
-    private LP minPriceCustomCategoryCountryFreightSku;
-    private LP minPriceRateCustomCategoryFreightSku;
-    private LP minPriceRateFreightSku;
-    private LP minPriceRateImporterFreightSku;
-    private LP minPriceRateImporterFreightArticle;
-    private LP minPriceRateWeightImporterFreightSku;
-    private LP diffPriceMinPriceImporterFreightArticle;
-    private LP diffPriceMinPriceImporterFreightSku;
-    private LP greaterPriceMinPriceImporterFreightArticle;
-    private LP greaterPriceMinPriceImporterFreightSku;
-    private LP dutyNetWeightFreightSku;
-    private LP dutyNetWeightImporterFreightSku;
-    private LP dutyPercentImporterFreightSku;
-    private LP dutyImporterFreightSku;
-    private LP sumDutyImporterFreightSku;
-    private LP sumDutyImporterFreight;
-    private LP priceDutyImporterFreightSku;
-    private LP NDSPercentOriginFreightSku;
-    private LP NDSPercentCustomFreightSku;
-    private LP NDSPercentFreightSku;
-    private LP NDSImporterFreightSku;
-    private LP priceFullDutyNDSImporterFreightSku;
-    private LP priceFullDutyNDSFreightSku;
-    private LP sumNDSImporterFreightSku;
-    private LP sumNDSImporterFreight;
-    private LP sumRegistrationFreightSku;
-    private LP sumRegistrationImporterFreightSku;
-    private LP sumRegistrationImporterFreight;
-    private LP sumCustomImporterFreight;
-    private LP minPriceRateCustomCategoryCountryFreightSku;
-    private LP priceImporterFreightSku;
-    private LP priceDocumentSku;
-    private LP priceRateDocumentArticle;
-    private LP priceRateDocumentSku;
-    private LP RRPRateDocumentArticle;
-    private LP sumDocumentSku;
-    private LP inOrderShipment;
-    private LP inInvoiceShipment;
-    private LP descriptionFreight;
-    private LP tonnageFreight;
-    private LP tonnageDataFreight;
-    private LP palletCountFreight;
-    private LP palletCountDataFreight;
-    private LP volumeFreight;
-    private LP volumeDataFreight;
-    private LP currencyFreight;
-    private LP nameCurrencyFreight;
-    private LP symbolCurrencyFreight;
-    private LP sumFreightFreight;
-    private LP insuranceFreight;
-    private LP insuranceFreightBrandSupplier;
-    private LP insuranceFreightBrandSupplierArticle;
-    private LP insuranceFreightBrandSupplierSku;
-    private LP routeFreight;
-    private LP nameRouteFreight;
-    private LP dateArrivalFreight;
-    private LP exporterFreight;
-    LP nameOriginExporterFreight;
-    LP nameExporterFreight;
-    LP addressOriginExporterFreight;
-    LP addressExporterFreight;
-    public LP customStoreFreight;
-    public LP nameCustomStoreFreight;
+    LCP quantityDataListSku;
+    LCP quantityDataList;
+    LCP boxInvoiceSupplierBox;
+    private LCP sidBoxInvoiceSupplierBox;
+    private LCP supplierSupplierBox;
+    private LCP supplierList;
+    private LCP orderedSupplierBoxSku;
+    private LCP quantityListArticle;
+    private LCP orderedSimpleInvoiceSku;
+    LCP priceDataDocumentItem;
+    private LCP priceArticleDocumentSku;
+    private LCP minPriceCustomCategoryFreightSku;
+    private LCP minPriceCustomCategoryCountryFreightSku;
+    private LCP minPriceRateCustomCategoryFreightSku;
+    private LCP minPriceRateFreightSku;
+    private LCP minPriceRateImporterFreightSku;
+    private LCP minPriceRateImporterFreightArticle;
+    private LCP minPriceRateWeightImporterFreightSku;
+    private LCP diffPriceMinPriceImporterFreightArticle;
+    private LCP diffPriceMinPriceImporterFreightSku;
+    private LCP greaterPriceMinPriceImporterFreightArticle;
+    private LCP greaterPriceMinPriceImporterFreightSku;
+    private LCP dutyNetWeightFreightSku;
+    private LCP dutyNetWeightImporterFreightSku;
+    private LCP dutyPercentImporterFreightSku;
+    private LCP dutyImporterFreightSku;
+    private LCP sumDutyImporterFreightSku;
+    private LCP sumDutyImporterFreight;
+    private LCP priceDutyImporterFreightSku;
+    private LCP NDSPercentOriginFreightSku;
+    private LCP NDSPercentCustomFreightSku;
+    private LCP NDSPercentFreightSku;
+    private LCP NDSImporterFreightSku;
+    private LCP priceFullDutyNDSImporterFreightSku;
+    private LCP priceFullDutyNDSFreightSku;
+    private LCP sumNDSImporterFreightSku;
+    private LCP sumNDSImporterFreight;
+    private LCP sumRegistrationFreightSku;
+    private LCP sumRegistrationImporterFreightSku;
+    private LCP sumRegistrationImporterFreight;
+    private LCP sumCustomImporterFreight;
+    private LCP minPriceRateCustomCategoryCountryFreightSku;
+    private LCP priceImporterFreightSku;
+    private LCP priceDocumentSku;
+    private LCP priceRateDocumentArticle;
+    private LCP priceRateDocumentSku;
+    private LCP RRPRateDocumentArticle;
+    private LCP sumDocumentSku;
+    private LCP inOrderShipment;
+    private LCP inInvoiceShipment;
+    private LCP descriptionFreight;
+    private LCP tonnageFreight;
+    private LCP tonnageDataFreight;
+    private LCP palletCountFreight;
+    private LCP palletCountDataFreight;
+    private LCP volumeFreight;
+    private LCP volumeDataFreight;
+    private LCP currencyFreight;
+    private LCP nameCurrencyFreight;
+    private LCP symbolCurrencyFreight;
+    private LCP sumFreightFreight;
+    private LCP insuranceFreight;
+    private LCP insuranceFreightBrandSupplier;
+    private LCP insuranceFreightBrandSupplierArticle;
+    private LCP insuranceFreightBrandSupplierSku;
+    private LCP routeFreight;
+    private LCP nameRouteFreight;
+    private LCP dateArrivalFreight;
+    private LCP exporterFreight;
+    LCP nameOriginExporterFreight;
+    LCP nameExporterFreight;
+    LCP addressOriginExporterFreight;
+    LCP addressExporterFreight;
+    public LCP customStoreFreight;
+    public LCP nameCustomStoreFreight;
 
-    private LP inInvoiceFreight;
-    private LP netWeightInvoicedFreight;
-    public LP contractImporterFreight;
-    //public LP nameContractImporterFreight;
-    public LP sidContractImporterFreight;
-    public LP dateContractImporterFreight;
-    private LP conditionShipmentContractImporterFreight;
-    private LP conditionPaymentContractImporterFreight;
-    public LP dateImporterFreightTypeInvoice;
-    public LP dateImporterFreight;
-    private LP dateShipmentImporterFreightTypeInvoice;
+    private LCP inInvoiceFreight;
+    private LCP netWeightInvoicedFreight;
+    public LCP contractImporterFreight;
+    //public LCP nameContractImporterFreight;
+    public LCP sidContractImporterFreight;
+    public LCP dateContractImporterFreight;
+    private LCP conditionShipmentContractImporterFreight;
+    private LCP conditionPaymentContractImporterFreight;
+    public LCP dateImporterFreightTypeInvoice;
+    public LCP dateImporterFreight;
+    private LCP dateShipmentImporterFreightTypeInvoice;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass warehouse;
     private ConcreteCustomClass freightBox;
     private ConcreteCustomClass typeFabric;
-    public LP sidArticleSku;
-    public LP originalNameArticleSku;
-    public LP coefficientArticle;
-    public LP coefficientArticleSku;
-    private LP inSupplierBoxShipment;
-    private LP quantityArticle;
-    private LP quantityShipSku;
-    private LP quantitySupplierBoxBoxShipmentStockSku;
-    private LP quantitySupplierBoxBoxShipmentSku;
-    private LP quantitySimpleShipmentStockSku;
-    private LP quantitySimpleShipmentStockItem;
-    private LP barcodeAction4;
-    LP supplierBoxSIDSupplier;
-    private LP seekSupplierBoxSIDSupplier;
-    private LP quantityPalletShipmentBetweenDate;
-    private LP quantityPalletFreightBetweenDate;
-    private LP quantityShipmentStockSku;
-    private LP quantityShipmentRouteSku;
-    private LP quantityShipDimensionShipmentSku;
-    private LP diffListShipSku;
-    private LP supplierPriceDocument;
-    private LP percentShipmentRoute;
-    private LP percentShipmentRouteSku;
-    private LP invoicedShipmentSku;
-    private LP invoicedBetweenDateSku;
-    private LP invoicedBetweenDateBrandSupplier;
-    private LP quantityShipmentedBetweenDateSku;
-    private LP quantityShipmentedBetweenDateBrandSupplier;
-    private LP quantityShipmentedSku;
-    private LP emptyBarcodeShipment;
-    private LP priceShipmentSku;
-    private LP invoicedShipment;
-    private LP invoicedShipmentRouteSku;
-    private LP zeroInvoicedShipmentRouteSku;
-    private LP zeroQuantityShipmentRouteSku;
-    private LP diffShipmentRouteSku;
-    private LP sumShipmentRouteSku;
-    private LP sumShipmentRoute;
-    private LP sumShipmentSku;
-    private LP sumShipmentArticleColor;
-    private LP sumShipment;
-    private LP invoicedShipmentRoute;
+    public LCP sidArticleSku;
+    public LCP originalNameArticleSku;
+    public LCP coefficientArticle;
+    public LCP coefficientArticleSku;
+    private LCP inSupplierBoxShipment;
+    private LCP quantityArticle;
+    private LCP quantityShipSku;
+    private LCP quantitySupplierBoxBoxShipmentStockSku;
+    private LCP quantitySupplierBoxBoxShipmentSku;
+    private LCP quantitySimpleShipmentStockSku;
+    private LCP quantitySimpleShipmentStockItem;
+    private LCP barcodeAction4;
+    LCP supplierBoxSIDSupplier;
+    private LAP seekSupplierBoxSIDSupplier;
+    private LCP quantityPalletShipmentBetweenDate;
+    private LCP quantityPalletFreightBetweenDate;
+    private LCP quantityShipmentStockSku;
+    private LCP quantityShipmentRouteSku;
+    private LCP quantityShipDimensionShipmentSku;
+    private LCP diffListShipSku;
+    private LCP supplierPriceDocument;
+    private LCP percentShipmentRoute;
+    private LCP percentShipmentRouteSku;
+    private LCP invoicedShipmentSku;
+    private LCP invoicedBetweenDateSku;
+    private LCP invoicedBetweenDateBrandSupplier;
+    private LCP quantityShipmentedBetweenDateSku;
+    private LCP quantityShipmentedBetweenDateBrandSupplier;
+    private LCP quantityShipmentedSku;
+    private LCP emptyBarcodeShipment;
+    private LCP priceShipmentSku;
+    private LCP invoicedShipment;
+    private LCP invoicedShipmentRouteSku;
+    private LCP zeroInvoicedShipmentRouteSku;
+    private LCP zeroQuantityShipmentRouteSku;
+    private LCP diffShipmentRouteSku;
+    private LCP sumShipmentRouteSku;
+    private LCP sumShipmentRoute;
+    private LCP sumShipmentSku;
+    private LCP sumShipmentArticleColor;
+    private LCP sumShipment;
+    private LCP invoicedShipmentRoute;
 
-    private LP documentList;
-    private LP numberDocumentArticle;
+    private LCP documentList;
+    private LCP numberDocumentArticle;
     private ConcreteCustomClass shipDimension;
-    private LP quantityShipDimensionShipmentStockSku;
-    private LP quantityShipmentSku;
-    private LP orderedOrderShipmentSku;
-    private LP quantityOrderShipmentSku;
-    private LP shipmentedOrderSku;
-    private LP shipmentedAtTermOrderSku;
-    private LP quantityShipment;
-    private LP barcodeCurrentPalletRoute;
-    private LP barcodeCurrentFreightBoxRoute;
-    private LP equalsPalletFreight;
-    private LP equalsPalletFreightBox;
+    private LCP quantityShipDimensionShipmentStockSku;
+    private LCP quantityShipmentSku;
+    private LCP orderedOrderShipmentSku;
+    private LCP quantityOrderShipmentSku;
+    private LCP shipmentedOrderSku;
+    private LCP shipmentedAtTermOrderSku;
+    private LCP quantityShipment;
+    private LCP barcodeCurrentPalletRoute;
+    private LCP barcodeCurrentFreightBoxRoute;
+    private LCP equalsPalletFreight;
+    private LCP equalsPalletFreightBox;
     private ConcreteCustomClass freightType;
     private ConcreteCustomClass creationSku;
     private ConcreteCustomClass creationFreightBox;
     private ConcreteCustomClass creationPallet;
-    private LP quantityCreationSku;
-    private LP quantityCreationPallet;
-    private LP routeCreationPallet;
-    private LP nameRouteCreationPallet;
-    private LP creationSkuSku;
-    private LP creationPalletPallet;
-    private LP routeCreationPalletPallet;
-    private LP nameRouteCreationPalletPallet;
-    private LP quantityCreationFreightBox;
-    private LP routeCreationFreightBox;
-    private LP nameRouteCreationFreightBox;
-    private LP creationFreightBoxFreightBox;
-    private LP routeCreationFreightBoxFreightBox;
-    private LP nameRouteCreationFreightBoxFreightBox;
-    private LP tonnageFreightType;
-    private LP palletCountFreightType;
-    private LP volumeFreightType;
-    private LP freightTypeFreight;
-    private LP nameFreightTypeFreight;
-    private LP palletNumberFreight;
-    private LP diffPalletFreight;
-    private LP barcodePalletFreightBox;
-    private LP freightBoxNumberPallet;
-    private LP freightBoxNumberFreight;
-    private LP notFilledShipmentRouteSku;
-    private LP routeToFillShipmentSku;
-    private LP seekRouteToFillShipmentBarcode;
-    private LP quantityShipmentArticle;
-    private LP oneShipmentArticle;
-    private LP oneShipmentArticleSku;
-    private LP oneShipmentArticleColorSku;
-    private LP oneShipmentArticleSizeSku;
-    private LP quantityShipmentArticleSize;
-    private LP quantityShipmentArticleColor;
-    private LP quantityShipmentArticleColorSize;
-    private LP quantityShipmentSize;
-    private LP oneShipmentArticleSize;
-    private LP oneShipmentArticleColor;
+    private LCP quantityCreationSku;
+    private LCP quantityCreationPallet;
+    private LCP routeCreationPallet;
+    private LCP nameRouteCreationPallet;
+    private LCP creationSkuSku;
+    private LCP creationPalletPallet;
+    private LCP routeCreationPalletPallet;
+    private LCP nameRouteCreationPalletPallet;
+    private LCP quantityCreationFreightBox;
+    private LCP routeCreationFreightBox;
+    private LCP nameRouteCreationFreightBox;
+    private LCP creationFreightBoxFreightBox;
+    private LCP routeCreationFreightBoxFreightBox;
+    private LCP nameRouteCreationFreightBoxFreightBox;
+    private LCP tonnageFreightType;
+    private LCP palletCountFreightType;
+    private LCP volumeFreightType;
+    private LCP freightTypeFreight;
+    private LCP nameFreightTypeFreight;
+    private LCP palletNumberFreight;
+    private LCP diffPalletFreight;
+    private LCP barcodePalletFreightBox;
+    private LCP freightBoxNumberPallet;
+    private LCP freightBoxNumberFreight;
+    private LCP notFilledShipmentRouteSku;
+    private LCP routeToFillShipmentSku;
+    private LCP seekRouteToFillShipmentBarcode;
+    private LCP quantityShipmentArticle;
+    private LCP oneShipmentArticle;
+    private LCP oneShipmentArticleSku;
+    private LCP oneShipmentArticleColorSku;
+    private LCP oneShipmentArticleSizeSku;
+    private LCP quantityShipmentArticleSize;
+    private LCP quantityShipmentArticleColor;
+    private LCP quantityShipmentArticleColorSize;
+    private LCP quantityShipmentSize;
+    private LCP oneShipmentArticleSize;
+    private LCP oneShipmentArticleColor;
 
-    private LP oneShipmentSku;
-    private LP quantityBoxShipment;
-    private LP quantityShipmentStock;
-    private LP quantityShipmentPallet;
-    private LP quantityShipmentFreight;
-    private LP quantityShipmentFreightSku;
-    private LP quantityShipmentedFreightArticle;
-    private LP quantityShipmentedFreightBrandSupplier;
-    private LP importerShipmentFreight;
-    private LP nameImporterShipmentFreight;
-    private LP balanceStockSku;
-    private LP quantityStockSku;
-    private LP quantityFreightUnitSku;
-    private LP quantityImporterFreightUnitSku;
-    private LP quantityStock;
-    private LP quantityFreightDestination;
-    private LP quantityStockArticle;
-    private LP quantityStockBrandSupplier;
-    private LP quantityFreightUnitBrandSupplier;
-    private LP stockNumberFreightBrandSupplier;
-    private LP quantityPalletSku;
-    private LP quantityPalletBrandSupplier;
-    private LP quantityAllPalletsBrandSupplier;
-    private LP quantityBrandSupplier;
-    private LP quantityRouteSku;
+    private LCP oneShipmentSku;
+    private LCP quantityBoxShipment;
+    private LCP quantityShipmentStock;
+    private LCP quantityShipmentPallet;
+    private LCP quantityShipmentFreight;
+    private LCP quantityShipmentFreightSku;
+    private LCP quantityShipmentedFreightArticle;
+    private LCP quantityShipmentedFreightBrandSupplier;
+    private LCP importerShipmentFreight;
+    private LCP nameImporterShipmentFreight;
+    private LCP balanceStockSku;
+    private LCP quantityStockSku;
+    private LCP quantityFreightUnitSku;
+    private LCP quantityImporterDirectSupplierBoxSku;
+    private LCP quantityStock;
+    private LCP quantityFreightDestination;
+    private LCP quantityStockArticle;
+    private LCP quantityStockBrandSupplier;
+    private LCP quantityFreightUnitBrandSupplier;
+    private LCP stockNumberFreightBrandSupplier;
+    private LCP quantityPalletSku;
+    private LCP quantityPalletBrandSupplier;
+    private LCP quantityAllPalletsBrandSupplier;
+    private LCP quantityBrandSupplier;
+    private LCP quantityRouteSku;
     private AbstractCustomClass destinationDocument;
-    private LP destinationInvoiceSupplierBox;
-    private LP destinationSupplierBox;
-    private LP destinationFreightBox;
-    private LP nameDestinationFreightBox;
-    private LP nameDestinationInvoiceSupplierBox;
-    private LP nameDestinationSupplierBox;
-    public LP destinationDataSupplierBox;
-    public LP sidDestinationDataSupplierBox;
-    public LP nameDestinationDataSupplierBox;
-    private LP destinationCurrentFreightBoxRoute;
-    private LP nameDestinationCurrentFreightBoxRoute;
-    private LP quantityShipDimensionStock;
-    private LP isStoreFreightBoxSupplierBox;
-    private LP barcodeActionSetStore;
+    private LCP destinationInvoiceSupplierBox;
+    private LCP destinationSupplierBox;
+    private LCP destinationFreightBox;
+    private LCP nameDestinationFreightBox;
+    private LCP nameDestinationInvoiceSupplierBox;
+    private LCP nameDestinationSupplierBox;
+    public LCP destinationDataSupplierBox;
+    public LCP sidDestinationDataSupplierBox;
+    public LCP nameDestinationDataSupplierBox;
+    private LCP destinationCurrentFreightBoxRoute;
+    private LCP nameDestinationCurrentFreightBoxRoute;
+    private LCP quantityShipDimensionStock;
+    private LCP isStoreFreightBoxSupplierBox;
+    private LAP barcodeActionSetStore;
     public AbstractCustomClass destination;
     private AbstractCustomClass shipmentDetail;
     private ConcreteCustomClass boxShipmentDetail;
     private ConcreteCustomClass simpleShipmentDetail;
-    private LP skuShipmentDetail;
-    private LP boxShipmentBoxShipmentDetail;
-    private LP simpleShipmentSimpleShipmentDetail;
-    private LP quantityShipmentDetail;
-    private LP stockShipmentDetail;
-    private LP supplierBoxShipmentDetail;
-    private LP barcodeSkuShipmentDetail;
-    private LP shipmentShipmentDetail;
-    private LP addBoxShipmentDetailBoxShipmentSupplierBoxStockSku;
-    private LP addSimpleShipmentDetailSimpleShipmentStockSku;
-    private LP addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode;
-    private LP addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku;
-    private LP addSimpleShipmentDetailSimpleShipmentRouteSku;
-    private LP addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode;
-    private LP articleShipmentDetail;
-    private LP sidArticleShipmentDetail;
-    private LP barcodeStockShipmentDetail;
-    private LP barcodeSupplierBoxShipmentDetail;
-    private LP sidSupplierBoxShipmentDetail;
-    private LP routeFreightBoxShipmentDetail;
-    private LP nameRouteFreightBoxShipmentDetail;
-    private LP addSimpleShipmentSimpleShipmentDetailStockBarcode;
-    private LP addSimpleShipmentDetailSimpleShipmentRouteBarcode;
+    private LCP skuShipmentDetail;
+    private LCP boxShipmentBoxShipmentDetail;
+    private LCP simpleShipmentSimpleShipmentDetail;
+    private LCP quantityShipmentDetail;
+    private LCP stockShipmentDetail;
+    private LCP supplierBoxShipmentDetail;
+    private LCP barcodeSkuShipmentDetail;
+    private LCP shipmentShipmentDetail;
+    private LAP addBoxShipmentDetailBoxShipmentSupplierBoxStockSku;
+    private LAP addSimpleShipmentDetailSimpleShipmentStockSku;
+    private LAP addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode;
+    private LAP addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku;
+    private LAP addSimpleShipmentDetailSimpleShipmentRouteSku;
+    private LAP addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode;
+    private LCP articleShipmentDetail;
+    private LCP sidArticleShipmentDetail;
+    private LCP barcodeStockShipmentDetail;
+    private LCP barcodeSupplierBoxShipmentDetail;
+    private LCP sidSupplierBoxShipmentDetail;
+    private LCP routeFreightBoxShipmentDetail;
+    private LCP nameRouteFreightBoxShipmentDetail;
+    private LAP addSimpleShipmentSimpleShipmentDetailStockBarcode;
+    private LAP addSimpleShipmentDetailSimpleShipmentRouteBarcode;
     private AbstractGroup skuAttributeGroup;
     private AbstractGroup supplierAttributeGroup;
     private AbstractGroup intraAttributeGroup;
-    private LP colorSupplierItemShipmentDetail;
-    private LP sidColorSupplierItemShipmentDetail;
-    private LP nameColorSupplierItemShipmentDetail;
-    private LP sizeSupplierItemShipmentDetail;
-    private LP sidSizeSupplierItemShipmentDetail;
+    private LCP colorSupplierItemShipmentDetail;
+    private LCP sidColorSupplierItemShipmentDetail;
+    private LCP nameColorSupplierItemShipmentDetail;
+    private LCP sizeSupplierItemShipmentDetail;
+    private LCP sidSizeSupplierItemShipmentDetail;
     private AbstractGroup itemAttributeGroup;
-    private LP originalNameArticleSkuShipmentDetail;
-    private LP categoryArticleSkuShipmentDetail;
-    private LP nameOriginCategoryArticleSkuShipmentDetail;
-    private LP nameCategoryArticleSkuShipmentDetail;
-    private LP coefficientArticleSkuShipmentDetail;
-    private LP customCategoryOriginArticleSkuShipmentDetail;
-    private LP sidCustomCategoryOriginArticleSkuShipmentDetail;
-    private LP netWeightArticleSkuShipmentDetail;
-    private LP countryOfOriginArticleSkuShipmentDetail;
-    private LP nameCountryOfOriginArticleSkuShipmentDetail;
-    private LP countryOfOriginSkuShipmentDetail;
-    private LP nameCountryOfOriginSkuShipmentDetail;
-    private LP genderArticleSkuShipmentDetail;
-    private LP sidGenderArticleSkuShipmentDetail;
-    private LP typeFabricArticleSkuShipmentDetail;
-    private LP nameTypeFabricArticleSkuShipmentDetail;
-    private LP mainCompositionOriginArticleSkuShipmentDetail;
-    private LP mainCompositionOriginSkuShipmentDetail;
-    private LP additionalCompositionOriginSkuShipmentDetail;
-    private LP unitOfMeasureArticleSkuShipmentDetail;
-    private LP nameOriginUnitOfMeasureArticleSkuShipmentDetail;
-    private LP nameUnitOfMeasureArticleSkuShipmentDetail;
-    private LP userShipmentDetail;
-    private LP nameUserShipmentDetail;
-    private LP timeShipmentDetail;
-    private LP createSku;
-    private LP createFreightBox;
-    private LP createPallet;
+    private LCP originalNameArticleSkuShipmentDetail;
+    private LCP categoryArticleSkuShipmentDetail;
+    private LCP nameOriginCategoryArticleSkuShipmentDetail;
+    private LCP nameCategoryArticleSkuShipmentDetail;
+    private LCP coefficientArticleSkuShipmentDetail;
+    private LCP customCategoryOriginArticleSkuShipmentDetail;
+    private LCP sidCustomCategoryOriginArticleSkuShipmentDetail;
+    private LCP netWeightArticleSkuShipmentDetail;
+    private LCP countryOfOriginArticleSkuShipmentDetail;
+    private LCP nameCountryOfOriginArticleSkuShipmentDetail;
+    private LCP countryOfOriginSkuShipmentDetail;
+    private LCP nameCountryOfOriginSkuShipmentDetail;
+    private LCP genderArticleSkuShipmentDetail;
+    private LCP sidGenderArticleSkuShipmentDetail;
+    private LCP typeFabricArticleSkuShipmentDetail;
+    private LCP nameTypeFabricArticleSkuShipmentDetail;
+    private LCP mainCompositionOriginArticleSkuShipmentDetail;
+    private LCP mainCompositionOriginSkuShipmentDetail;
+    private LCP additionalCompositionOriginSkuShipmentDetail;
+    private LCP unitOfMeasureArticleSkuShipmentDetail;
+    private LCP nameOriginUnitOfMeasureArticleSkuShipmentDetail;
+    private LCP nameUnitOfMeasureArticleSkuShipmentDetail;
+    private LCP userShipmentDetail;
+    private LCP nameUserShipmentDetail;
+    private LCP timeShipmentDetail;
+    private LAP createSku;
+    private LAP createFreightBox;
+    private LAP createPallet;
     private ConcreteCustomClass transfer;
-    private LP stockFromTransfer;
-    private LP barcodeStockFromTransfer;
-    private LP stockToTransfer;
-    private LP barcodeStockToTransfer;
-    private LP balanceStockFromTransferSku;
-    private LP balanceStockToTransferSku;
-    private LP quantityTransferSku;
-    private LP outcomeTransferStockSku;
-    private LP incomeTransferStockSku;
-    private LP incomeStockSku;
-    private LP outcomeStockSku;
+    private LCP stockFromTransfer;
+    private LCP barcodeStockFromTransfer;
+    private LCP stockToTransfer;
+    private LCP barcodeStockToTransfer;
+    private LCP balanceStockFromTransferSku;
+    private LCP balanceStockToTransferSku;
+    private LCP quantityTransferSku;
+    private LCP outcomeTransferStockSku;
+    private LCP incomeTransferStockSku;
+    private LCP incomeStockSku;
+    private LCP outcomeStockSku;
     private AbstractCustomClass customCategory;
-    LP nameCustomCategory;
-    LP customCategoryOriginArticle;
-    LP customCategory6Article;
-    private LP sidCustomCategory6Article;
-    private LP customCategoryOriginArticleSku;
-    private LP sidCustomCategoryOriginArticle;
-    private LP sidCustomCategoryOriginArticleSku;
-    private LP quantityBoxInvoiceBoxShipmentStockSku;
-    private LP quantityInvoiceShipmentStockSku;
-    private LP invoicedSimpleInvoiceSimpleShipmentStockSku;
-    private LP invoicedSimpleInvoiceSimpleShipmentStockArticleComposite;
-    private LP invoicedSimpleInvoiceSimpleShipmentStockItem;
-    private LP quantityDataSimpleInvoiceSimpleShipmentStockSku;
-    private LP quantitySimpleInvoiceSimpleShipmentStockItem;
-    private LP quantitySkuSimpleInvoiceSimpleShipmentStockSku;
-    private LP quantityArticleSimpleInvoiceSimpleShipmentStockItem;
-    private LP quantityInvoiceStockSku;
-    private LP quantityInvoiceSku;
-    private LP quantityInvoice;
-    private LP diffDocumentInvoiceSku;
-    private LP quantitySupplierBoxSku;
-    private LP quantityDirectSupplierBoxSku;
-    private LP quantityImporterDirectSupplierBoxSku;
-    private LP quantitySupplierBox;
-    private LP zeroQuantityListSku;
-    private LP zeroQuantityShipDimensionShipmentSku;
-    private LP diffListSupplierBoxSku;
-    private LP diffListSupplierBox;
-    private LP zeroQuantityShipmentSku;
-    private LP zeroInvoicedShipmentSku;
-    private LP diffShipmentSku;
+    LCP nameCustomCategory;
+    LCP customCategoryOriginArticle;
+    LCP customCategory6Article;
+    private LCP sidCustomCategory6Article;
+    private LCP customCategoryOriginArticleSku;
+    private LCP sidCustomCategoryOriginArticle;
+    private LCP sidCustomCategoryOriginArticleSku;
+    private LCP quantityBoxInvoiceBoxShipmentStockSku;
+    private LCP quantityInvoiceShipmentStockSku;
+    private LCP invoicedSimpleInvoiceSimpleShipmentStockSku;
+    private LCP invoicedSimpleInvoiceSimpleShipmentStockArticleComposite;
+    private LCP invoicedSimpleInvoiceSimpleShipmentStockItem;
+    private LCP quantityDataSimpleInvoiceSimpleShipmentStockSku;
+    private LCP quantitySimpleInvoiceSimpleShipmentStockItem;
+    private LCP quantitySkuSimpleInvoiceSimpleShipmentStockSku;
+    private LCP quantityArticleSimpleInvoiceSimpleShipmentStockItem;
+    private LCP quantityInvoiceStockSku;
+    private LCP quantityInvoiceSku;
+    private LCP quantityInvoice;
+    private LCP diffDocumentInvoiceSku;
+    private LCP quantitySupplierBoxSku;
+    private LCP quantityDirectSupplierBoxSku;
+    private LCP quantitySupplierBox;
+    private LCP zeroQuantityListSku;
+    private LCP zeroQuantityShipDimensionShipmentSku;
+    private LCP diffListSupplierBoxSku;
+    private LCP diffListSupplierBox;
+    private LCP zeroQuantityShipmentSku;
+    private LCP zeroInvoicedShipmentSku;
+    private LCP diffShipmentSku;
     private ConcreteCustomClass importer;
     private ConcreteCustomClass exporter;
-    private LP sidContract;
-    private LP dateContract;
-    private LP conditionShipmentContract;
-    private LP conditionPaymentContract;
-    //private LP buyerContract;
-    //private LP nameBuyerContract;
-    private LP sellerContract;
-    private LP nameSellerContract;
-    private LP subjectContract;
-    private LP nameSubjectContract;
+    private LCP sidContract;
+    private LCP dateContract;
+    private LCP conditionShipmentContract;
+    private LCP conditionPaymentContract;
+    //private LCP buyerContract;
+    //private LCP nameBuyerContract;
+    private LCP sellerContract;
+    private LCP nameSellerContract;
+    private LCP subjectContract;
+    private LCP nameSubjectContract;
 
-    private LP currencyContract;
-    private LP nameCurrencyContract;
-    private LP contractImporter;
-    public LP sidImporter;
-    private LP exporterInvoice, exporterProxyInvoice;
-    private LP nameExporterInvoice;
-    private LP importerDirectInvoice;
-    private LP nameImporterDirectInvoice;
-    private LP contractInvoice;
-    private LP sidContractInvoice;
-    private LP freightFreightBox;
-    private LP importerSupplierBox;
-    private LP routeFreightFreightBox;
-    private LP importerShipmentRoute;
-    private LP nameImporterShipmentRoute;
-    private LP importerShipmentFreightBox;
-    public LP quantityImporterStockSku;
-    private LP quantityDirectImporterFreightUnitSku;
-    private LP quantityImporterStock;
-    private LP quantityImporterStockArticle;
-    private LP quantityImporterStockTypeInvoice;
-    private LP quantityProxyImporterFreightSku;
-    private LP quantityDirectImporterFreightSku;
-    private LP quantityImporterFreightSku;
+    private LCP currencyContract;
+    private LCP nameCurrencyContract;
+    private LCP contractImporter;
+    public LCP sidImporter;
+    private LCP exporterInvoice, exporterProxyInvoice;
+    private LCP nameExporterInvoice;
+    private LCP importerDirectInvoice;
+    private LCP nameImporterDirectInvoice;
+    private LCP contractInvoice;
+    private LCP sidContractInvoice;
+    private LCP freightFreightBox;
+    private LCP importerSupplierBox;
+    private LCP routeFreightFreightBox;
+    private LCP importerShipmentRoute;
+    private LCP nameImporterShipmentRoute;
+    private LCP importerShipmentFreightBox;
+    public LCP quantityImporterStockSku;
+    private LCP quantityDirectImporterFreightUnitSku;
+    private LCP quantityImporterStock;
+    private LCP quantityImporterStockArticle;
+    private LCP quantityImporterStockTypeInvoice;
+    private LCP quantityProxyImporterFreightSku;
+    private LCP quantityDirectImporterFreightSku;
+    private LCP quantityImporterFreightSku;
 
-    private LP netWeightStockSku;
-    private LP netWeightStockArticle;
-    private LP netWeightStock;
-    private LP netWeightImporterFreightUnitSku;
-    private LP netWeightImporterFreightUnitArticle;
-    private LP netWeightImporterFreightUnitTypeInvoice;
-    private LP netWeightImporterFreightUnit;
-    private LP grossWeightImporterFreightUnitSku;
-    private LP grossWeightImporterFreightUnitArticle;
-    private LP grossWeightImporterFreightUnitTypeInvoice;
-    private LP grossWeightImporterFreightUnit;
-    private LP priceInInvoiceStockSku;
-    private LP RRPInInvoiceStockSku;
-    private LP contractInInvoiceStockSku;
-    private LP priceInInvoiceShipmentStockSku;
-    private LP RRPInInvoiceShipmentStockSku;
-    private LP contractInInvoiceShipmentStockSku;
-    private LP priceInShipmentStockSku;
-    private LP RRPInShipmentStockSku;
-    private LP priceInShipmentDetail;
-    private LP contractInShipmentStockSku;
-    public LP priceInImporterFreightSku;
-    public LP priceInFreightArticle;
-    public LP RRPInImporterFreightSku;
-    private LP netWeightImporterFreightSku;
-    private LP netWeightImporterFreightArticle;
-    private LP netWeightProxyImporterFreightSku;
-    private LP netWeightDirectImporterFreightSku;
-    private LP typeInvoiceDataFreightArticle;
-    private LP typeInvoiceCategoryFreightArticle;
-    private LP typeInvoiceFreightArticle;
-    private LP typeInvoiceFreightSku;
-    private LP nameTypeInvoiceFreightArticleSku;
-    private LP netWeightImporterFreightTypeInvoice;
-    private LP grossWeightImporterFreightSku;
-    private LP grossWeightProxyImporterFreightSku;
-    private LP grossWeightDirectImporterFreightSku;
-    private LP grossWeightImporterFreightTypeInvoice;
-    private LP netWeightImporterFreightCustomCategory6;
-    private LP netWeightImporterFreightCustomCategory6Category;
-    private LP netWeightImporterFreightSupplierCustomCategory6;
-    private LP netWeightImporterFreightSupplierCustomCategory6Category;
-    private LP grossWeightImporterFreightCustomCategory6;
-    private LP grossWeightImporterFreightCustomCategory6Category;
-    private LP grossWeightImporterFreightSupplierCustomCategory6;
-    private LP grossWeightImporterFreightSupplierCustomCategory6Category;
-    private LP netWeightImporterFreight;
-    private LP netWeightImporterFreightSupplier;
-    private LP grossWeightImporterFreightSupplier;
-    private LP grossWeightImporterFreight;
-    private LP priceFreightImporterFreightSku;
-    private LP priceInsuranceImporterFreightSku;
-    private LP priceFreightInsuranceImporterFreightSku;
-    private LP priceFreightInsuranceFreightSku;
-    private LP priceFullImporterFreightSku;
-    private LP priceInFullImporterFreightSku;
-    private LP priceFullKgImporterFreightSku;
-    private LP sumFullImporterFreightArticle;
-    private LP priceFullKgImporterFreightArticle;
-    private LP priceFullDutyImporterFreightSku;
-    private LP priceInFullDutyImporterFreightSku;
-    private LP priceInFullDutyNDSFreightSku;
-    private LP oneArticleSkuShipmentDetail;
-    private LP oneArticleColorShipmentDetail;
-    private LP oneArticleSizeShipmentDetail;
-    private LP oneSkuShipmentDetail;
-    private LP quantityImporterFreight;
-    private LP quantityFreight;
-    private LP quantityProxyImporterFreight;
-    private LP quantityImporterFreightTypeInvoice;
-    private LP quantityImporterFreightSupplier;
-    private LP quantityImporterFreightArticle;
-    private LP quantityImporterFreightBrandSupplier;
-    private LP markupPercentImporterFreightBrandSupplier;
-    private LP markupPercentImporterFreightBrandSupplierArticle;
-    private LP markupPercentImporterFreightDataArticle;
-    private LP markupPercentImporterFreightArticle;
-    private LP markupPercentImporterFreightArticleSku;
-    private LP markupPercentImporterFreightDataSku;
-    private LP markupPercentImporterFreightBrandSupplierSku;
-    private LP markupInImporterFreightSku;
-    private LP priceExpenseImporterFreightSku;
-    private LP markupPercentImporterFreightSku;
-    private LP sumPercentImporterFreightBrandSupplier;
-    private LP averagePercentImporterFreightBrandSupplier;
-    private LP markupImporterFreightSku;
-    private LP priceMarkupInImporterFreightSku;
-    private LP priceOutImporterFreightSku;
-    private LP priceInOutImporterFreightSku;
-    public LP sumInImporterStockSku, sumInImporterFreightSku;
-    private LP sumInProxyImporterFreightSku;
-    private LP sumMarkupImporterFreightSku;
-    private LP sumOutImporterFreightSku;
-    private LP sumInImporterFreight;
-    private LP sumMarkupImporterFreight;
-    private LP sumMarkupInImporterFreight;
-    private LP sumMarkupInImporterFreightSku;
-    private LP sumInOutImporterFreightSku;
-    private LP sumInOutProxyImporterFreightSku;
-    private LP sumInOutDirectImporterFreightSku;
-    private LP sumInOutImporterFreightTypeInvoice;
-    private LP sumImporterFreightUnitSku;
-    private LP sumImporterFreightUnitArticle;
-    private LP sumMarkupInFreight;
-    private LP sumImporterFreight;
-    private LP sumImporterFreightTypeInvoice;
-    private LP sumSbivkaImporterFreight;
-    private LP sumInImporterFreightArticle;
-    private LP sumInImporterFreightBrandSupplier;
-    private LP sumInOutImporterFreightArticle;
-    private LP sumInOutImporterFreightBrandSupplier;
-    private LP sumImporterFreightSupplier;
-    private LP sumInFreightArticle;
-    private LP sumInFreightBrandSupplier;
-    private LP sumInOutFreightArticle;
-    private LP sumInOutFreightBrandSupplier;
-    private LP sumInOutFreightBrandSupplierArticle;
-    private LP sumInOutFreightBrandSupplierSku;
-    private LP sumOutImporterFreight;
-    private LP sumInOutImporterFreight;
-    private LP sumInOutFreight;
-    private LP sumInFreight;
-    private LP sumMarkupFreight;
-    private LP sumOutFreight;
-    private LP sumFreightImporterFreightSku;
-    private LP insuranceImporterFreightSku;
-    private LP quantityProxyImporterFreightCustomCategory6Category;
-    private LP quantityProxyImporterFreightCustomCategory6;
-    private LP quantityDirectImporterFreightSupplierCustomCategory6;
-    private LP quantityDirectImporterFreightSupplierCustomCategory6Category;
-    private LP quantityFreightArticle;
-    private LP quantityDirectFreightSku;
-    private LP quantityDirectImporterFreightSupplier;
-    private LP quantityFreightBrandSupplier;
-    //private LP quantityFreightSupplier;
-    private LP quantityFreightSku;
-    private LP quantityFreightedBetweenDateSku;
-    private LP quantityFreightedSku;
-    private LP balanceSku;
-    private LP quantityFreightCategory;
-    private LP sumImporterFreightSku;
-    private LP sumProxyImporterFreightSku;
-    private LP sumDirectImporterFreightSku;
-    private LP sumImporterFreightCustomCategory6;
-    private LP sumImporterFreightCustomCategory6Category;
-    private LP sumImporterFreightSupplierCustomCategory6;
-    private LP sumImporterFreightSupplierCustomCategory6Category;
+    private LCP netWeightStockSku;
+    private LCP netWeightStockArticle;
+    private LCP netWeightStock;
+    private LCP netWeightImporterFreightUnitSku;
+    private LCP netWeightImporterFreightUnitArticle;
+    private LCP netWeightImporterFreightUnitTypeInvoice;
+    private LCP netWeightImporterFreightUnit;
+    private LCP grossWeightImporterFreightUnitSku;
+    private LCP grossWeightImporterFreightUnitArticle;
+    private LCP grossWeightImporterFreightUnitTypeInvoice;
+    private LCP grossWeightImporterFreightUnit;
+    private LCP priceInInvoiceStockSku;
+    private LCP RRPInInvoiceStockSku;
+    private LCP contractInInvoiceStockSku;
+    private LCP priceInInvoiceShipmentStockSku;
+    private LCP RRPInInvoiceShipmentStockSku;
+    private LCP contractInInvoiceShipmentStockSku;
+    private LCP priceInShipmentStockSku;
+    private LCP RRPInShipmentStockSku;
+    private LCP priceInShipmentDetail;
+    private LCP contractInShipmentStockSku;
+    public LCP priceInImporterFreightSku;
+    public LCP priceInFreightArticle;
+    public LCP RRPInImporterFreightSku;
+    private LCP netWeightImporterFreightSku;
+    private LCP netWeightImporterFreightArticle;
+    private LCP netWeightProxyImporterFreightSku;
+    private LCP netWeightDirectImporterFreightSku;
+    private LCP typeInvoiceDataFreightArticle;
+    private LCP typeInvoiceCategoryFreightArticle;
+    private LCP typeInvoiceFreightArticle;
+    private LCP typeInvoiceFreightSku;
+    private LCP nameTypeInvoiceFreightArticleSku;
+    private LCP netWeightImporterFreightTypeInvoice;
+    private LCP grossWeightImporterFreightSku;
+    private LCP grossWeightProxyImporterFreightSku;
+    private LCP grossWeightDirectImporterFreightSku;
+    private LCP grossWeightImporterFreightTypeInvoice;
+    private LCP netWeightImporterFreightCustomCategory6;
+    private LCP netWeightImporterFreightCustomCategory6Category;
+    private LCP netWeightImporterFreightSupplierCustomCategory6;
+    private LCP netWeightImporterFreightSupplierCustomCategory6Category;
+    private LCP grossWeightImporterFreightCustomCategory6;
+    private LCP grossWeightImporterFreightCustomCategory6Category;
+    private LCP grossWeightImporterFreightSupplierCustomCategory6;
+    private LCP grossWeightImporterFreightSupplierCustomCategory6Category;
+    private LCP netWeightImporterFreight;
+    private LCP netWeightImporterFreightSupplier;
+    private LCP grossWeightImporterFreightSupplier;
+    private LCP grossWeightImporterFreight;
+    private LCP priceFreightImporterFreightSku;
+    private LCP priceInsuranceImporterFreightSku;
+    private LCP priceFreightInsuranceImporterFreightSku;
+    private LCP priceFreightInsuranceFreightSku;
+    private LCP priceFullImporterFreightSku;
+    private LCP priceInFullImporterFreightSku;
+    private LCP priceFullKgImporterFreightSku;
+    private LCP sumFullImporterFreightArticle;
+    private LCP priceFullKgImporterFreightArticle;
+    private LCP priceFullDutyImporterFreightSku;
+    private LCP priceInFullDutyImporterFreightSku;
+    private LCP priceInFullDutyNDSFreightSku;
+    private LCP oneArticleSkuShipmentDetail;
+    private LCP oneArticleColorShipmentDetail;
+    private LCP oneArticleSizeShipmentDetail;
+    private LCP oneSkuShipmentDetail;
+    private LCP quantityImporterFreight;
+    private LCP quantityFreight;
+    private LCP quantityProxyImporterFreight;
+    private LCP quantityImporterFreightTypeInvoice;
+    private LCP quantityImporterFreightSupplier;
+    private LCP quantityImporterFreightArticle;
+    private LCP quantityImporterFreightBrandSupplier;
+    private LCP markupPercentImporterFreightBrandSupplier;
+    private LCP markupPercentImporterFreightBrandSupplierArticle;
+    private LCP markupPercentImporterFreightDataArticle;
+    private LCP markupPercentImporterFreightArticle;
+    private LCP markupPercentImporterFreightArticleSku;
+    private LCP markupPercentImporterFreightDataSku;
+    private LCP markupPercentImporterFreightBrandSupplierSku;
+    private LCP markupInImporterFreightSku;
+    private LCP priceExpenseImporterFreightSku;
+    private LCP markupPercentImporterFreightSku;
+    private LCP sumPercentImporterFreightBrandSupplier;
+    private LCP averagePercentImporterFreightBrandSupplier;
+    private LCP markupImporterFreightSku;
+    private LCP priceMarkupInImporterFreightSku;
+    private LCP priceOutImporterFreightSku;
+    private LCP priceInOutImporterFreightSku;
+    public LCP sumInImporterStockSku, sumInImporterFreightSku;
+    private LCP sumInProxyImporterFreightSku;
+    private LCP sumMarkupImporterFreightSku;
+    private LCP sumOutImporterFreightSku;
+    private LCP sumInImporterFreight;
+    private LCP sumMarkupImporterFreight;
+    private LCP sumMarkupInImporterFreight;
+    private LCP sumMarkupInImporterFreightSku;
+    private LCP sumInOutImporterFreightSku;
+    private LCP sumInOutProxyImporterFreightSku;
+    private LCP sumInOutDirectImporterFreightSku;
+    private LCP sumInOutImporterFreightTypeInvoice;
+    private LCP sumImporterFreightUnitSku;
+    private LCP sumImporterFreightUnitArticle;
+    private LCP sumMarkupInFreight;
+    private LCP sumImporterFreight;
+    private LCP sumImporterFreightTypeInvoice;
+    private LCP sumSbivkaImporterFreight;
+    private LCP sumInImporterFreightArticle;
+    private LCP sumInImporterFreightBrandSupplier;
+    private LCP sumInOutImporterFreightArticle;
+    private LCP sumInOutImporterFreightBrandSupplier;
+    private LCP sumImporterFreightSupplier;
+    private LCP sumInFreightArticle;
+    private LCP sumInFreightBrandSupplier;
+    private LCP sumInOutFreightArticle;
+    private LCP sumInOutFreightBrandSupplier;
+    private LCP sumInOutFreightBrandSupplierArticle;
+    private LCP sumInOutFreightBrandSupplierSku;
+    private LCP sumOutImporterFreight;
+    private LCP sumInOutImporterFreight;
+    private LCP sumInOutFreight;
+    private LCP sumInFreight;
+    private LCP sumMarkupFreight;
+    private LCP sumOutFreight;
+    private LCP sumFreightImporterFreightSku;
+    private LCP insuranceImporterFreightSku;
+    private LCP quantityProxyImporterFreightCustomCategory6Category;
+    private LCP quantityProxyImporterFreightCustomCategory6;
+    private LCP quantityDirectImporterFreightSupplierCustomCategory6;
+    private LCP quantityDirectImporterFreightSupplierCustomCategory6Category;
+    private LCP quantityFreightArticle;
+    private LCP quantityDirectFreightSku;
+    private LCP quantityDirectImporterFreightSupplier;
+    private LCP quantityFreightBrandSupplier;
+    //private LCP quantityFreightSupplier;
+    private LCP quantityFreightSku;
+    private LCP quantityFreightedBetweenDateSku;
+    private LCP quantityFreightedSku;
+    private LCP balanceSku;
+    private LCP quantityFreightCategory;
+    private LCP sumImporterFreightSku;
+    private LCP sumProxyImporterFreightSku;
+    private LCP sumDirectImporterFreightSku;
+    private LCP sumImporterFreightCustomCategory6;
+    private LCP sumImporterFreightCustomCategory6Category;
+    private LCP sumImporterFreightSupplierCustomCategory6;
+    private LCP sumImporterFreightSupplierCustomCategory6Category;
 
-    private LP quantityFreightCategoryGenderCompositionTypeFabric;
-    private LP customCategory10CategoryGenderCompositionTypeFabric;
-    private LP sidCustomCategory10CategoryGenderCompositionTypeFabric;
-    private LP customCategory10CategoryGenderCompositionTypeFabricSku;
+    private LCP quantityFreightCategoryGenderCompositionTypeFabric;
+    private LCP customCategory10CategoryGenderCompositionTypeFabric;
+    private LCP sidCustomCategory10CategoryGenderCompositionTypeFabric;
+    private LCP customCategory10CategoryGenderCompositionTypeFabricSku;
 
-    LP quantityImporterFreightArticleCompositionCountryCategory;
-    LP compositionFreightArticleCompositionCountryCategory;
-    LP netWeightImporterFreightArticleCompositionCountryCategory;
-    LP grossWeightImporterFreightArticleCompositionCountryCategory;
-    LP priceImporterFreightArticleCompositionCountryCategory;
-    public LP priceInvoiceImporterFreightSku;
-    LP markupInOutImporterFreightSku;
-    public LP sumInvoiceImporterStockSku;
-    LP sumImporterFreightArticleCompositionCountryCategory;
-    LP sumProxyInvoiceImporterFreightSku;
+    LCP quantityImporterFreightArticleCompositionCountryCategory;
+    LCP compositionFreightArticleCompositionCountryCategory;
+    LCP netWeightImporterFreightArticleCompositionCountryCategory;
+    LCP grossWeightImporterFreightArticleCompositionCountryCategory;
+    LCP priceImporterFreightArticleCompositionCountryCategory;
+    public LCP priceInvoiceImporterFreightSku;
+    LCP markupInOutImporterFreightSku;
+    public LCP sumInvoiceImporterStockSku;
+    LCP sumImporterFreightArticleCompositionCountryCategory;
+    LCP sumProxyInvoiceImporterFreightSku;
     private ConcreteCustomClass freightComplete;
     private ConcreteCustomClass freightPriced;
     private ConcreteCustomClass freightChanged;
     private ConcreteCustomClass freightShipped;
     private ConcreteCustomClass freightArrived;
-    private LP dictionaryComposition;
-    private LP nameDictionaryComposition;
-    private LP translationMainCompositionSku;
-    private LP translationAdditionalCompositionSku;
-    private LP translationAllMainComposition;
-    private LP translationMainCompositionFreightSku;
-    private LP translationAdditionalCompositionFreightSku;
-    private LP sidShipmentShipmentDetail;
-    private LP commonSizeSizeSupplier;
-    private LP nameCommonSizeSizeSupplier;
-    private LP commonSizeSizeSupplierGenderCategory;
-    private LP nameCommonSizeSizeSupplierGenderCategory;
-    LP colorSIDSupplier;
-    LP sidSizeSupplier;
-    LP sidThemeSupplier;
-    LP sidGender;
-    LP sidGenderSupplier;
-    LP sizeSIDSupplier;
-    LP themeSIDSupplier;
-    LP sidSeasonSupplier;
-    LP seasonSIDSupplier;
-    LP seasonSupplierArticleSku;
-    LP sidSeasonSupplierArticleSku;
-    LP genderSIDSupplier;
-    LP destinationSIDSupplier;
-    LP brandSIDSupplier;
-    LP countryNameSupplier;
-    LP numberDataListSku;
-    private LP numberArticleListSku;
-    private LP grossWeightFreightSku;
-    private LP netWeightFreightSku;
-    private LP customCategory10FreightSku;
-    private LP sidCustomCategory10FreightSku;
-    private LP subCategoryFreightSku;
-    private LP nameSubCategoryFreightSku;
-    private LP mainCompositionOriginFreightSku;
-    public LP mainCompositionFreightSku;
-    private LP additionalCompositionOriginFreightSku;
-    private LP additionalCompositionFreightSku;
-    private LP countryOfOriginFreightSku;
-    private LP sidCountryOfOriginFreightSku;
-    public LP nameCountryOfOriginFreightSku;
-    private LP equalsItemArticleComposite;
-    private LP executeArticleCompositeItemSIDSupplier;
-    private LP executeChangeFreightClass, executeChangeFreightClassApply, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
+    private LCP dictionaryComposition;
+    private LCP nameDictionaryComposition;
+    private LAP translationMainCompositionSku;
+    private LAP translationAdditionalCompositionSku;
+    private LCP translationAllMainComposition;
+    private LAP translationMainCompositionFreightSku;
+    private LAP translationAdditionalCompositionFreightSku;
+    private LCP sidShipmentShipmentDetail;
+    private LCP commonSizeSizeSupplier;
+    private LCP nameCommonSizeSizeSupplier;
+    private LCP commonSizeSizeSupplierGenderCategory;
+    private LCP nameCommonSizeSizeSupplierGenderCategory;
+    LCP colorSIDSupplier;
+    LCP sidSizeSupplier;
+    LCP sidThemeSupplier;
+    LCP sidGender;
+    LCP sidGenderSupplier;
+    LCP sizeSIDSupplier;
+    LCP themeSIDSupplier;
+    LCP sidSeasonSupplier;
+    LCP seasonSIDSupplier;
+    LCP seasonSupplierArticleSku;
+    LCP sidSeasonSupplierArticleSku;
+    LCP genderSIDSupplier;
+    LCP destinationSIDSupplier;
+    LCP brandSIDSupplier;
+    LCP countryNameSupplier;
+    LCP numberDataListSku;
+    private LCP numberArticleListSku;
+    private LCP grossWeightFreightSku;
+    private LCP netWeightFreightSku;
+    private LCP customCategory10FreightSku;
+    private LCP sidCustomCategory10FreightSku;
+    private LCP subCategoryFreightSku;
+    private LCP nameSubCategoryFreightSku;
+    private LCP mainCompositionOriginFreightSku;
+    public LCP mainCompositionFreightSku;
+    private LCP additionalCompositionOriginFreightSku;
+    private LCP additionalCompositionFreightSku;
+    private LCP countryOfOriginFreightSku;
+    private LCP sidCountryOfOriginFreightSku;
+    public LCP nameCountryOfOriginFreightSku;
+    private LCP equalsItemArticleComposite;
+    private LAP executeArticleCompositeItemSIDSupplier;
+    private LAP executeChangeFreightClass;
+    private LAP executeChangeFreightClassApply;
+    private LAP executeChangeFreightChangedClass;
+    private LAP executeChangeFreightShippedClass;
     private CreateItemFormEntity createItemForm;
     private EditItemFormEntity editItemForm;
     private FindItemFormEntity findItemFormBox, findItemFormBoxBarcode;
     private FindItemFormEntity findItemFormSimple, findItemFormSimpleBarcode;
     private LogFormEntity logFreightForm;
-    private LP formLogFreight;
+    private LAP formLogFreight;
 
-    private LP addItemBarcode;
-    private LP barcodeActionSeekFreightBox;
-    private LP currentPalletFreightBox;
-    private LP barcodeActionCheckPallet;
-    private LP barcodeActionCheckFreightBox;
-    private LP barcodeActionCheckChangedFreightBox;
-    private LP packingListFormFreightBox;
-    private LP packingListFormRoute;
-    LP quantitySupplierBoxBoxShipmentRouteSku;
-    LP quantitySimpleShipmentRouteSku;
-    LP routePallet, freightPallet, nameRoutePallet, palletFreightBox;
-    private LP currentPalletRouteUser;
-    LP currentPalletRoute;
-    private LP currentFreightBoxRouteUser;
-    LP currentFreightBoxRoute;
-    LP isCurrentFreightBox, isCurrentPalletFreightBox;
-    LP isCurrentPallet;
-    private LP changePallet;
-    LP seekRouteShipmentSkuRoute;
-    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeActionSetPalletFreightBox, barcodeActionSetFreight, barcodeAction3;
-    private LP invoiceOriginFormImporterFreight;
-    private LP invoiceFormImporterFreight;
-    private LP invoiceExportFormImporterFreight;
-    private LP proformOriginFormImporterFreight;
-    private LP proformFormImporterFreight;
-    private LP annexInvoiceOriginFormImporterFreight;
-    private LP annexInvoiceFormImporterFreight;
-    private LP packingListOriginFormImporterFreight;
-    private LP packingListFormImporterFreight;
-    private LP sbivkaFormImporterFreight;
-    private LP sbivkaFormImporterFreightSupplier;
-    private LP listFreightUnitFormImporterFreight;
+    private LAP addItemBarcode;
+    private LAP barcodeActionSeekFreightBox;
+    private LCP currentPalletFreightBox;
+    private LAP barcodeActionCheckFreightBox;
+    private LAP packingListFormFreightBox;
+    private LAP packingListFormRoute;
+    LCP quantitySupplierBoxBoxShipmentRouteSku;
+    LCP quantitySimpleShipmentRouteSku;
+    LCP routePallet, freightPallet, nameRoutePallet, palletFreightBox;
+    private LCP currentPalletRouteUser;
+    LCP currentPalletRoute;
+    private LCP currentFreightBoxRouteUser;
+    LCP currentFreightBoxRoute;
+    LCP isCurrentFreightBox, isCurrentPalletFreightBox;
+    LCP isCurrentPallet;
+    private LCP changePallet;
+    LAP seekRouteShipmentSkuRoute;
+    LAP barcodeActionSeekPallet;
+    LAP barcodeActionSetPallet;
+    LAP barcodeActionSetPalletFreightBox;
+    LAP barcodeActionSetFreight;
+    LCP barcodeAction3;
+    private LAP invoiceOriginFormImporterFreight;
+    private LAP invoiceFormImporterFreight;
+    private LAP invoiceExportFormImporterFreight;
+    private LAP proformOriginFormImporterFreight;
+    private LAP proformFormImporterFreight;
+    private LAP annexInvoiceOriginFormImporterFreight;
+    private LAP annexInvoiceFormImporterFreight;
+    private LAP packingListOriginFormImporterFreight;
+    private LAP packingListFormImporterFreight;
+    private LAP sbivkaFormImporterFreight;
+    private LAP sbivkaFormImporterFreightSupplier;
+    private LAP listFreightUnitFormImporterFreight;
 
-    private LP countrySupplierOfOriginArticleSku;
-    private LP nameCountrySupplierOfOriginArticleSku;
+    private LCP countrySupplierOfOriginArticleSku;
+    private LCP nameCountrySupplierOfOriginArticleSku;
     private AbstractCustomClass innerInvoice;
     private AbstractCustomClass directInvoice;
     private ConcreteCustomClass directBoxInvoice;
-    private LP freightDirectInvoice;
-    private LP equalsDirectInvoiceFreight;
-    private LP grossWeightDirectInvoice;
-    private LP palletNumberDirectInvoice;
-    //private LP nameOriginCountry;
-    //public LP sidOrigin2Country;
-    //private LP sidOrigin3Country;
-    private LP sid3Country;
-    public  LP sidOrigin2ToCountry;
-    private LP nameCountrySku;
-    public LP countryBrandSupplierSku;
-    public LP nameCountryBrandSupplierSku;
-    private LP sumInCurrentYear;
-    private LP sumInOutCurrentYear;
-    private LP balanceSumCurrentYear;
+    private LCP freightDirectInvoice;
+    private LCP equalsDirectInvoiceFreight;
+    private LCP grossWeightDirectInvoice;
+    private LCP palletNumberDirectInvoice;
+    private LCP nameOriginCountry;
+    public LCP sidOrigin2Country;
+    private LCP sidOrigin3Country;
+    private LCP sid3Country;
+    public  LCP sidOrigin2ToCountry;
+    private LCP nameCountrySku;
+    public LCP countryBrandSupplierSku;
+    public LCP nameCountryBrandSupplierSku;
+    private LCP sumInCurrentYear;
+    private LCP sumInOutCurrentYear;
+    private LCP balanceSumCurrentYear;
     private AbstractCustomClass freightUnit;
-    private LP quantityInvoiceFreightUnitSku;
-    private LP freightSupplierBox;
-    private LP freightFreightUnit;
-    private LP priceRateSupplierBoxSku;
-    private LP RRPRateSupplierBoxSku;
-    private LP priceInInvoiceFreightUnitSku;
+    private LCP quantityInvoiceFreightUnitSku;
+    private LCP freightSupplierBox;
+    private LCP freightFreightUnit;
+    private LCP priceRateSupplierBoxSku;
+    private LCP RRPRateSupplierBoxSku;
+    private LCP priceInInvoiceFreightUnitSku;
     ConcreteCustomClass boxSupplier;
     ConcreteCustomClass simpleSupplier;
     ConcreteCustomClass jennyferSupplier;
@@ -1164,121 +1167,121 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass sOliverSupplier;
     ConcreteCustomClass womenSecretSupplier;
     ConcreteCustomClass babyPhatSupplier;
-    private LP steilmannImportInvoice;
-    private LP dieselImportInvoice;
-    private LP jennyferImportInvoice;
-    private LP jennyferImportArticleWeightInvoice;
-    private LP tallyWeijlImportInvoice;
-    private LP hugoBossImportInvoice;
-    private LP gerryWeberImportInvoice;
-    public LP mexxImportInvoice;
-    public LP mexxImportPricesInvoice;
-    public LP mexxImportArticleInfoInvoice;
-    public LP mexxImportColorInvoice;
-    private LP mexxImportDelivery;
-    private LP bestsellerImportInvoice;
-    private LP hugoBossImportPricat;
-    private LP gerryWeberImportPricat;
-    private LP sOliverImportInvoice;
-    private LP womenSecretImportInvoice;
-    private LP topazImportInvoice;
-    private LP aprioriImportInvoice;
-    public LP mexxImportOrder;
-    public LP dieselImportOrder;
+    private LAP steilmannImportInvoice;
+    private LAP dieselImportInvoice;
+    private LAP jennyferImportInvoice;
+    private LCP jennyferImportArticleWeightInvoice;
+    private LAP tallyWeijlImportInvoice;
+    private LAP hugoBossImportInvoice;
+    private LAP gerryWeberImportInvoice;
+    public LAP<?> mexxImportInvoice;
+    public LAP<?> mexxImportPricesInvoice;
+    public LAP<?> mexxImportArticleInfoInvoice;
+    public LAP<?> mexxImportColorInvoice;
+    private LAP mexxImportDelivery;
+    private LAP bestsellerImportInvoice;
+    private LAP hugoBossImportPricat;
+    private LAP gerryWeberImportPricat;
+    private LAP sOliverImportInvoice;
+    private LAP womenSecretImportInvoice;
+    private LAP topazImportInvoice;
+    private LAP aprioriImportInvoice;
+    public LAP mexxImportOrder;
+    public LAP dieselImportOrder;
 
     private AbstractGroup importInvoiceActionGroup;
     private AbstractGroup importOrderActionGroup;
-    private LP skuPrintFA;
-    private LP printCreateSkuForm;
-    private LP printCreatePalletForm;
-    private LP printCreateFreightBoxForm;
-    private LP priceSupplierBoxSku;
-    private LP sumSupplierBoxSku;
-    private LP nameArticleSku;
-    private LP freightShippedFreightBox;
-    private LP freightShippedDirectInvoice;
-    private LP quantityDirectInvoicedSku;
-    private LP quantityStockedSku;
-    private LP quantitySku;
-    private LP quantityAllSku;
-    private LP sumInInvoiceStockSku;
-    private LP sumStockedSku;
-    private LP sumDirectInvoicedSku;
-    private LP sumSku;
-    private LP netWeightDocumentSku;
-    private LP barcode10;
-    private LP steilmannSupplierArticle;
-    private LP skuJennyferBarcode10;
-    private LP jennyferSupplierArticle;
-    private LP jennyferSupplierArticleSku;
-    private LP substring10;
-    private LP skuJennyferBarcode;
-    private LP substring10s13;
-    private LP skuBarcodeObject;
+    private LAP skuPrintFA;
+    private LAP printCreateSkuForm;
+    private LAP printCreatePalletForm;
+    private LAP printCreateFreightBoxForm;
+    private LCP priceSupplierBoxSku;
+    private LCP sumSupplierBoxSku;
+    private LCP nameArticleSku;
+    private LCP freightShippedFreightBox;
+    private LCP freightShippedDirectInvoice;
+    private LCP quantityDirectInvoicedSku;
+    private LCP quantityStockedSku;
+    private LCP quantitySku;
+    private LCP quantityAllSku;
+    private LCP sumInInvoiceStockSku;
+    private LCP sumStockedSku;
+    private LCP sumDirectInvoicedSku;
+    private LCP sumSku;
+    private LCP netWeightDocumentSku;
+    private LCP barcode10;
+    private LCP steilmannSupplierArticle;
+    private LCP skuJennyferBarcode10;
+    private LCP jennyferSupplierArticle;
+    private LCP jennyferSupplierArticleSku;
+    private LCP substring10;
+    private LCP skuJennyferBarcode;
+    private LCP substring10s13;
+    private LCP skuBarcodeObject;
 
-    private LP typeSupplier;
-    private LP noBarcodeSupplier;
-    private LP nameClassFreight;
-    private LP logFreight;
+    private LCP typeSupplier;
+    private LCP noBarcodeSupplier;
+    private LCP nameClassFreight;
+    private LCP logFreight;
 
     ConcreteCustomClass pricat;
-    LP barcodePricat;
-    LP articleNumberPricat;
-    LP customCategoryOriginalPricat;
-    LP themeCodePricat;
-    LP themeNamePricat;
-    LP colorCodePricat;
-    LP colorNamePricat;
-    LP sizePricat;
-    LP seasonPricat;
-    LP genderPricat;
-    LP originalNamePricat;
-    LP countryPricat;
-    LP netWeightPricat;
-    LP compositionPricat;
-    LP pricePricat;
-    LP rrpPricat;
-    LP supplierPricat;
-    LP barcodeToPricat;
-    LP importPricatSupplier;
-    LP destinationPricat;
+    LCP<PropertyInterface> barcodePricat;
+    LCP articleNumberPricat;
+    LCP customCategoryOriginalPricat;
+    LCP themeCodePricat;
+    LCP themeNamePricat;
+    LCP colorCodePricat;
+    LCP colorNamePricat;
+    LCP sizePricat;
+    LCP seasonPricat;
+    LCP genderPricat;
+    LCP originalNamePricat;
+    LCP countryPricat;
+    LCP netWeightPricat;
+    LCP compositionPricat;
+    LCP pricePricat;
+    LCP rrpPricat;
+    LCP supplierPricat;
+    LCP barcodeToPricat;
+    LAP importPricatSupplier;
+    LCP destinationPricat;
 
     private ConcreteCustomClass stamp;
     private ConcreteCustomClass creationStamp;
-    LP sidStamp;
-    LP dateOfStamp;
-    LP seriesOfStamp;
-    LP stampShipmentDetail;
-    LP sidStampShipmentDetail;
-    LP seriesOfStampShipmentDetail;
-    LP hideSidStampShipmentDetail;
-    LP hideSeriesOfStampShipmentDetail;
-    LP necessaryStampCategory;
-    LP necessaryStampSkuShipmentDetail;
-    LP shipmentDetailStamp;
-    LP firstNumberCreationStamp;
-    LP lastNumberCreationStamp;
-    LP dateOfStampCreationStamp;
-    LP seriesOfStampCreationStamp;
-    LP createStamp;
-    LP creationStampStamp;
+    LCP sidStamp;
+    LCP dateOfStamp;
+    LCP seriesOfStamp;
+    LCP stampShipmentDetail;
+    LCP sidStampShipmentDetail;
+    LCP seriesOfStampShipmentDetail;
+    LCP hideSidStampShipmentDetail;
+    LCP hideSeriesOfStampShipmentDetail;
+    LCP necessaryStampCategory;
+    LCP necessaryStampSkuShipmentDetail;
+    LCP shipmentDetailStamp;
+    LCP firstNumberCreationStamp;
+    LCP lastNumberCreationStamp;
+    LCP dateOfStampCreationStamp;
+    LCP seriesOfStampCreationStamp;
+    LAP createStamp;
+    LCP creationStampStamp;
     private ConcreteCustomClass transitDocument;
-    private LP sidTransitDocument;
-    private LP dateRepaymentTransitDocument;
-    private LP dateClosingTransitDocument;
-    private LP sellerTransitDocument;
-    private LP nameSellerTransitDocument;
-    private LP importerTransitDocument;
-    private LP freightTransitDocument;
-    private LP typeTransitTransitDocument;
-    private LP nameTypeTransitTransitDocument;
+    private LCP sidTransitDocument;
+    private LCP dateRepaymentTransitDocument;
+    private LCP dateClosingTransitDocument;
+    private LCP sellerTransitDocument;
+    private LCP nameSellerTransitDocument;
+    private LCP importerTransitDocument;
+    private LCP freightTransitDocument;
+    private LCP typeTransitTransitDocument;
+    private LCP nameTypeTransitTransitDocument;
 
-    LP scalesSpeed;
-    LP scalesComPort;
-    LP scannerComPort;
+    LCP scalesSpeed;
+    LCP scalesComPort;
+    LCP scannerComPort;
 
-    private LP declarationExport;
-    private LP invoiceExportDbf;
+    private LAP declarationExport;
+    private LAP invoiceExportDbf;
 
     public AnnexInvoiceFormEntity invoiceFromFormEntity;
     public InvoiceExportFormEntity invoiceExportForm;
@@ -1813,7 +1816,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         equalsGroupSizeSupplier = addJProp("equalsGroupSizeSupplier", "Вкл", baseLM.equals2, groupSizeSupplier, 1, 2);
 
-        LP supplierGroupSizeSupplier = addJProp(supplierSizeGroup, groupSizeSupplier, 1);
+        LCP supplierGroupSizeSupplier = addJProp(supplierSizeGroup, groupSizeSupplier, 1);
         addConstraint(addJProp("Поставщик размерной сетки должен соответствовать поставщику размера", baseLM.diff2,
                 supplierSizeSupplier, 1,
                 supplierGroupSizeSupplier, 1), true);
@@ -1927,7 +1930,7 @@ public class RomanLogicsModule extends LogicsModule {
 //        setNotNull(articleSku);
 //        addConstraint(addJProp("Для товара должен быть задан артикул", baseLM.andNot1, is(sku), 1, articleSku, 1), false);
 
-        addItemBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(item, baseLM.barcode), 1);
+        addItemBarcode = addJoinAProp("Ввод товара по штрих-коду", addAAProp(item, baseLM.barcode), 1);
 
         // Article
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
@@ -2054,43 +2057,39 @@ public class RomanLogicsModule extends LogicsModule {
 
         articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
 
-        seekArticleSIDSupplier = addJProp(true, "Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
-        seekArticleSIDInvoice = addJProp(true, "Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
+        seekArticleSIDSupplier = addJoinAProp("Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
+        seekArticleSIDInvoice = addJoinAProp("Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
 
         //???
-        addArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула", addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
-        addNEArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула (НС)", baseLM.andNot1, addArticleSingleSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
-        addNEArticleSingleSIDInvoice = addJProp(true, "Ввод простого артикула (НС)", addNEArticleSingleSIDSupplier, 1, supplierDocument, 2);
+        addArticleSingleSIDSupplier = addJoinAProp("Ввод простого артикула", addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
+        addNEArticleSingleSIDSupplier = addIfAProp("Ввод простого артикула (НС)", true, articleSIDSupplier, 1, 2, addArticleSingleSIDSupplier, 1, 2);
+        addNEArticleSingleSIDInvoice = addJoinAProp("Ввод простого артикула (НС)", addNEArticleSingleSIDSupplier, 1, supplierDocument, 2);
 
-        addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
-        addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", baseLM.andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
-        addNEArticleCompositeSIDInvoice = addJProp(true, "Ввод составного артикула (НС)", addNEArticleCompositeSIDSupplier, 1, supplierDocument, 2);
+        addArticleCompositeSIDSupplier = addJoinAProp("Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
+        addNEArticleCompositeSIDSupplier = addIfAProp("Ввод составного артикула (НС)", true, articleSIDSupplier, 1, 2, addArticleCompositeSIDSupplier, 1, 2);
+        addNEArticleCompositeSIDInvoice = addJoinAProp("Ввод составного артикула (НС)", addNEArticleCompositeSIDSupplier, 1, supplierDocument, 2);
 
-        addNEColorSupplierSIDSupplier = addJProp(true, "Ввод цвета (НС)", baseLM.andNot1, addAAProp(colorSupplier, sidColorSupplier, supplierColorSupplier), 1, 2, colorSIDSupplier, 1, 2);
-        addNEColorSupplierSIDInvoice = addJProp(true, "Ввод цвета (НС)", addNEColorSupplierSIDSupplier, 1, supplierDocument, 2);
+        addNEColorSupplierSIDSupplier = addIfAProp("Ввод цвета (НС)", true, colorSIDSupplier, 1, 2, addAAProp(colorSupplier, sidColorSupplier, supplierColorSupplier), 1, 2);
+        addNEColorSupplierSIDInvoice = addJoinAProp("Ввод цвета (НС)", addNEColorSupplierSIDSupplier, 1, supplierDocument, 2);
 
-        executeAddColorDocument = addJProp(true, "Наличие цвета", addEPAProp(EPA_INTERFACE, inListArticleColorSupplier), 1, 2, 3, baseLM.vtrue);
+        executeAddColorDocument = addSetPropertyAProp("Наличие цвета", inListArticleColorSupplier, 1, 2, 3, baseLM.vtrue);
 
-        seekColorSIDSupplier = addJProp(true, "Поиск цвета", addSAProp(null), colorSIDSupplier, 1, 2);
-        seekColorSIDInvoice = addJProp(true, "Поиск цвета", seekColorSIDSupplier, 1, supplierDocument, 2);
+        seekColorSIDSupplier = addJoinAProp("Поиск цвета", addSAProp(null), colorSIDSupplier, 1, 2);
+        seekColorSIDInvoice = addJoinAProp("Поиск цвета", seekColorSIDSupplier, 1, supplierDocument, 2);
 
-        executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), 1, articleSIDSupplier, 2, 3);
+        executeArticleCompositeItemSIDSupplier = addSetPropertyAProp("Замена артикула", articleCompositeItem, 1, articleSIDSupplier, 2, 3);
 
-        executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", baseLM.and1, addEPAProp(baseLM.objectClass), 1, 2, is(freight), 1);
+        executeChangeFreightClass = addIfAProp("Изменить класс фрахта", is(freight), 1, addChangeClassAProp(), 1, 2);
 
-        executeChangeFreightClassApply = addEPAProp(EPA_DEFAULT, executeChangeFreightClass, 1, 2, baseLM.apply, baseLM.cancel);
+        executeChangeFreightClassApply = addListAProp(executeChangeFreightClass, 1, 2, baseLM.apply, baseLM.cancel);
 
-        executeChangeFreightChangedClass = addJProp(true, "Пометить как обработанный", and(false, true),
-                                                addJProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightChanged")), 1,
-                                                is(freightComplete), 1,
-                                                is(freightChanged), 1);
+        executeChangeFreightChangedClass = addIfAProp("Пометить как обработанный", addJProp(baseLM.andNot1, is(freightComplete), 1, is(freightChanged), 1), 1,
+                addJoinAProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightChanged")), 1);
         executeChangeFreightChangedClass.property.askConfirm = true;
         executeChangeFreightChangedClass.setImage("sign_tick.png");
 
-        executeChangeFreightShippedClass = addJProp(true, "Пометить как отгруженный", and(false, true),
-                                                addJProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightShipped")), 1,
-                                                is(freightPriced), 1,
-                                                is(freightShipped), 1);
+        executeChangeFreightShippedClass = addIfAProp("Пометить как отгруженный", addJProp(baseLM.andNot1, is(freightPriced), 1, is(freightShipped), 1), 1,
+                                                addJoinAProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightShipped")), 1);
         executeChangeFreightShippedClass.property.askConfirm = true;
         executeChangeFreightShippedClass.setImage("sign_tick.png");
 
@@ -2113,12 +2112,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
 
-        LP supplierColorItem = addJProp(supplierColorSupplier, colorSupplierItem, 1);
+        LCP supplierColorItem = addJProp(supplierColorSupplier, colorSupplierItem, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
                 supplierColorItem, 1), true);
 
-        LP supplierSizeItem = addJProp(supplierSizeSupplier, sizeSupplierItem, 1);
+        LCP supplierSizeItem = addJProp(supplierSizeSupplier, sizeSupplierItem, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать размеру поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
                 supplierSizeItem, 1), true);
@@ -2126,12 +2125,12 @@ public class RomanLogicsModule extends LogicsModule {
         equalsColorItemSupplier = addJProp(baseLM.equals2, supplierColorItem, 1, 2); // временное решение
         equalsSizeItemSupplier = addJProp(baseLM.equals2, supplierSizeItem, 1, 2); // временное решение
 
-        LP supplierSeasonSupplierArticle = addJProp(supplierSeasonSupplier, seasonSupplierArticle, 1);
+        LCP supplierSeasonSupplierArticle = addJProp(supplierSeasonSupplier, seasonSupplierArticle, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать сезону поставщика", baseLM.diff2,
                 supplierArticle, 1,
                 supplierSeasonSupplierArticle, 1), true);
 
-        LP supplierThemeArticle = addJProp(supplierThemeSupplier, themeSupplierArticle, 1);
+        LCP supplierThemeArticle = addJProp(supplierThemeSupplier, themeSupplierArticle, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать теме поставщика", baseLM.diff2,
                 supplierArticle, 1,
                 supplierThemeArticle, 1), true);
@@ -2139,8 +2138,8 @@ public class RomanLogicsModule extends LogicsModule {
         equalsSeasonSupplierArticleSupplier = addJProp(baseLM.equals2, supplierSeasonSupplierArticle, 1, 2); // временное решение
         equalsThemeItemSupplier = addJProp(baseLM.equals2, supplierThemeArticle, 1, 2); // временное решение
 
-        addItemArticleCompositeColorSizeBarcode = addJProp(true, "Ввод товара", addAAProp(item, articleCompositeItem, colorSupplierItem, sizeSupplierItem, baseLM.barcode), 1, 2, 3, 4);
-        addItemSIDArticleSupplierColorSizeBarcode = addJProp(true, "Ввод товара", addItemArticleCompositeColorSizeBarcode, articleSIDSupplier, 1, 2, 3, 4, 5);
+        addItemArticleCompositeColorSizeBarcode = addJoinAProp("Ввод товара", addAAProp(item, articleCompositeItem, colorSupplierItem, sizeSupplierItem, baseLM.barcode), 1, 2, 3, 4);
+        addItemSIDArticleSupplierColorSizeBarcode = addJoinAProp("Ввод товара", addItemArticleCompositeColorSizeBarcode, articleSIDSupplier, 1, 2, 3, 4, 5);
 
         // Weight
         netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", NumericClass.get(14, 3), article);
@@ -2321,7 +2320,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         supplierBoxSIDSupplier = addAGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", sidSupplierBox, supplierSupplierBox);
 
-        seekSupplierBoxSIDSupplier = addJProp(true, "Поиск короба поставщика", addSAProp(null), supplierBoxSIDSupplier, 1, 2);
+        seekSupplierBoxSIDSupplier = addJoinAProp("Поиск короба поставщика", addSAProp(null), supplierBoxSIDSupplier, 1, 2);
 
         // заказ по артикулам
         documentList = addCUProp(idGroup, "documentList", "Документ (ИД)", object(order), object(simpleInvoice), boxInvoiceSupplierBox);
@@ -2341,10 +2340,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         numberDocumentArticle = addSGProp(baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
 
-        incrementNumberListSID = addJProp(true, "Добавить строку", baseLM.andNot1,
-                addJProp(true, addIAProp(numberListArticle, 1),
-                        1, articleSIDList, 2, 1), 1, 2,
-                numberListSIDArticle, 1, 2); // если еще не было добавлено такой строки
+        incrementNumberListSID = addIfAProp("Добавить строку", true, numberListSIDArticle, 1, 2,
+                addJoinAProp(addIAProp(numberListArticle, 1),
+                        1, articleSIDList, 2, 1), 1, 2); // если еще не было добавлено такой строки
 
         //price and catalog (pricat)
         barcodePricat = addDProp(baseGroup, "barcodePricat", "Штрих-код", StringClass.get(13), pricat);
@@ -2366,9 +2364,9 @@ public class RomanLogicsModule extends LogicsModule {
         destinationPricat = addDProp("destinationPricat", "Пункт назначения", destination, pricat);
         supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
         barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
-        importPricatSupplier = addProperty(null, new LP<ClassPropertyInterface>(new PricatEDIImportActionProperty(genSID(), this, supplier)));
-        hugoBossImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new HugoBossPricatCSVImportActionProperty(genSID(), this, hugoBossSupplier)));
-        gerryWeberImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new GerryWeberPricatCSVImportActionProperty(genSID(), this, gerryWeberSupplier)));
+        importPricatSupplier = addProperty(null, new LAP(new PricatEDIImportActionProperty(genSID(), this, supplier)));
+        hugoBossImportPricat = addProperty(null, new LAP(new HugoBossPricatCSVImportActionProperty(genSID(), this, hugoBossSupplier)));
+        gerryWeberImportPricat = addProperty(null, new LAP(new GerryWeberPricatCSVImportActionProperty(genSID(), this, gerryWeberSupplier)));
 
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", NumericClass.get(14, 2), list, sku);
@@ -2475,7 +2473,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceOrderInvoiceArticle = addJProp(baseLM.and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
         priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
         // todo : не работает
-        priceDocumentArticle.setEventSet(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
+        priceDocumentArticle.setEventChangePrevSet(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
         sumSupplierBoxSku = addJProp(baseGroup, "sumSupplierBoxSku", "Сумма", multiplyNumeric2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
         sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", multiplyNumeric2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
@@ -2656,19 +2654,19 @@ public class RomanLogicsModule extends LogicsModule {
 
         timeShipmentDetail = addTCProp(Time.DATETIME, "timeShipmentDetail", true, "Время ввода", quantityShipmentDetail);
 
-        addBoxShipmentDetailBoxShipmentSupplierBoxStockSku = addJProp(true, "Добавить строку поставки",
+        addBoxShipmentDetailBoxShipmentSupplierBoxStockSku = addJoinAProp("Добавить строку поставки",
                 addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
                 1, 2, 3, 4, addCProp(NumericClass.get(14, 2), 1));
 
-        addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
+        addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJoinAProp("Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockSku,
                 1, 2, 3, skuBarcodeObject, 4);
 
-        addSimpleShipmentDetailSimpleShipmentStockSku = addJProp(true, "Добавить строку поставки",
+        addSimpleShipmentDetailSimpleShipmentStockSku = addJoinAProp("Добавить строку поставки",
                 addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
                 1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
 
-        addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
+        addSimpleShipmentSimpleShipmentDetailStockBarcode = addJoinAProp("Добавить строку поставки",
                 addSimpleShipmentDetailSimpleShipmentStockSku,
                 1, 2, skuBarcodeObject, 3);
 
@@ -2925,7 +2923,7 @@ public class RomanLogicsModule extends LogicsModule {
 //        routeToFillShipmentSku = addMGProp(idGroup, "routeToFillShipmentSku", "Маршрут (ИД)",
 //                addJProp(baseLM.and1, object(route), 2, notFilledShipmentRouteSku, 1, 2, 3), 1, 3);
 //
-//        LP routeToFillShipmentBarcode = addJProp(routeToFillShipmentSku, 1, baseLM.barcodeToObject, 2);
+//        LCP routeToFillShipmentBarcode = addJProp(routeToFillShipmentSku, 1, baseLM.barcodeToObject, 2);
 //        seekRouteToFillShipmentBarcode = addJProp(actionGroup, true, "seekRouteToFillShipmentSku", "Поиск маршрута", addSAProp(null),
 //                routeToFillShipmentBarcode, 1, 2);
 
@@ -3078,12 +3076,12 @@ public class RomanLogicsModule extends LogicsModule {
         quantityFreightCategoryGenderCompositionTypeFabric = addSGProp(baseGroup, "quantityFreightCategoryGenderCompositionTypeFabric", "Кол-во", quantityFreightSku, 1, categoryArticleSku, 2, genderArticleSku, 2, mainCompositionOriginSku, 2, typeFabricArticleSku, 2);
 
         customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
-        customCategory10FreightSku.setEventChangedSet(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        customCategory10FreightSku.setEventChangeNewSet(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
         addConstraint(addJProp("Для SKU должен быть задан ТН ВЭД", and(true, false), is(freightChanged), 1, customCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         subCategoryFreightSku = addDProp(idGroup, "subCategoryFreightSku", "Дополнительное деление (ИД)", subCategory, freight, sku);
-        subCategoryFreightSku.setEventChangedSet(addJProp(baseLM.and1, subCategorySku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        subCategoryFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, subCategorySku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         nameSubCategoryFreightSku = addJProp(baseGroup, "nameSubCategoryFreightSku", "Дополнительное деление", nameSubCategory, subCategoryFreightSku, 1, 2);
         addConstraint(addJProp("Для SKU должно быть задано дополнительное деление", and(true, false, false), is(freightChanged), 1, subCategoryFreightSku, 1, 2, diffCountRelationCustomCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3095,31 +3093,31 @@ public class RomanLogicsModule extends LogicsModule {
         quantityDirectImporterFreightSupplierCustomCategory6 = addSGProp(baseGroup, "quantityDirectImporterFreightSupplierCustomCategory6", "Кол-во", quantityDirectImporterFreightSku, 1, 2, supplierArticleSku, 3, customCategory6FreightSku, 2, 3);
 
         mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", COMPOSITION_CLASS, freight, sku);
-        mainCompositionOriginFreightSku.setEventChangedSet(addJProp(baseLM.and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        mainCompositionOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", COMPOSITION_CLASS, freight, sku);
-        additionalCompositionOriginFreightSku.setEventChangedSet(addJProp(baseLM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        additionalCompositionOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         additionalCompositionOriginFreightSku.property.preferredCharWidth = 40;
         additionalCompositionOriginFreightSku.property.minimumCharWidth = 20;
 
-        translationMainCompositionSku = addJProp(actionGroup, true, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
-        translationAdditionalCompositionSku = addJProp(actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
+        translationMainCompositionSku = addJoinAProp(actionGroup, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
+        translationAdditionalCompositionSku = addJoinAProp(actionGroup, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
 
         mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
-        mainCompositionFreightSku.setEventChangedSet(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        mainCompositionFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан состав", and(true, false), is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
-        additionalCompositionFreightSku.setEventChangedSet(addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        additionalCompositionFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         additionalCompositionFreightSku.property.preferredCharWidth = 40;
         additionalCompositionFreightSku.property.minimumCharWidth = 20;
 
-        translationMainCompositionFreightSku = addJProp(actionGroup, true, "translationMainCompositionFreightSku", "Перевод состава", addTAProp(mainCompositionOriginFreightSku, mainCompositionFreightSku), dictionaryComposition, 1, 2);
-        translationAdditionalCompositionFreightSku = addJProp(actionGroup, true, "translationAdditionalCompositionFreightSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationMainCompositionFreightSku = addJoinAProp(actionGroup, "translationMainCompositionFreightSku", "Перевод состава", addTAProp(mainCompositionOriginFreightSku, mainCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationAdditionalCompositionFreightSku = addJoinAProp(actionGroup, "translationAdditionalCompositionFreightSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
 
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
-        countryOfOriginFreightSku.setEventChangedSet(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        countryOfOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должна быть задана страна", and(true, false), is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3139,7 +3137,7 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто короба", netWeightStockSku, 1);
 
         netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто (ед.)", NumericClass.get(14, 3), freight, sku);
-        netWeightFreightSku.setEventChangedSet(addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        netWeightFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес нетто", and(true, false), is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3197,7 +3195,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         grossWeightFreightSkuAggr = addJProp(baseGroup, "grossWeightFreightSkuAggr", "Вес брутто", divideNumeric3, sumGrossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2);
         grossWeightFreightSku = addDProp(baseGroup, "grossWeightFreightSku", "Вес брутто", NumericClass.get(14, 3), freight, sku);
-        grossWeightFreightSku.setEventChangedSet(addJProp(baseLM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        grossWeightFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес брутто", and(true, false), is(freightChanged), 1, grossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3266,7 +3264,7 @@ public class RomanLogicsModule extends LogicsModule {
         markupPercentImporterFreightBrandSupplierSku = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", baseLM.and1, addJProp(markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3), 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightArticleSku, markupPercentImporterFreightDataSku);
 
-        LP round0 = addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0));
+        LCP round0 = addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0));
 
         sumPercentImporterFreightBrandSupplier = addSGProp(baseGroup, "sumPercentImporterFreightBrandSupplier", true, "Сумма процентов надбавок", addJProp(multiplyNumeric2, markupPercentImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, brandSupplierArticleSku, 3);
         averagePercentImporterFreightBrandSupplier = addJProp(baseGroup, "averagePercentImporterFreightBrandSupplier", "Средний процент надбавки", round0, addJProp(divideNumeric2, sumPercentImporterFreightBrandSupplier, 1, 2, 3, quantityImporterFreightBrandSupplier, 1, 2, 3), 1, 2, 3);
@@ -3288,7 +3286,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceMarkupInImporterFreightSku = addJProp(baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", sumNumeric2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
         priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", NumericClass.get(14, 2), importer, freightPriced, sku);
-        priceInOutImporterFreightSku.setEventChanged(addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
+        priceInOutImporterFreightSku.setEventChangeNew(addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", false, "Цена", true, priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
@@ -3450,32 +3448,27 @@ public class RomanLogicsModule extends LogicsModule {
 
         seekRouteShipmentSkuRoute = addAProp(new SeekRouteActionProperty());
 
-        barcodeActionSeekPallet = addJProp(true, "Найти палету", isCurrentPallet, baseLM.barcodeToObject, 1);
-        barcodeActionCheckPallet = addJProp(true, "Проверка паллеты",
-                addJProp(true, and(false, true),
-                        addStopActionProp("Для маршрута выбранного короба не задана паллета", "Поиск по штрих-коду"),
-                        is(freightBox), 1,
-                        currentPalletFreightBox, 1), baseLM.barcodeToObject, 1);
-        barcodeActionSeekFreightBox = addJProp(true, "Найти короб для транспортировки", isCurrentFreightBox, baseLM.barcodeToObject, 1);
-        barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, baseLM.barcodeToObject, 1);
-        barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, baseLM.barcodeToObject, 1, 2);
+        barcodeActionSeekPallet = addSetPropertyAProp("Найти палету", addJProp(true, isCurrentPallet, baseLM.barcodeToObject, 1), 1, baseLM.vtrue);
+        barcodeActionSeekFreightBox = addSetPropertyAProp("Найти короб для транспортировки", addJProp(true, isCurrentFreightBox, baseLM.barcodeToObject, 1), 1, baseLM.vtrue);
+        barcodeActionSetPallet = addSetPropertyAProp("Установить паллету", addJProp(true, isCurrentPalletFreightBox, baseLM.barcodeToObject, 1), 1, baseLM.vtrue);
+        barcodeActionSetStore = addSetPropertyAProp("Установить магазин", addJProp(true, isStoreFreightBoxSupplierBox, baseLM.barcodeToObject, 1, 2), 1, 2, baseLM.vtrue);
 
         changePallet = addJProp(true, "Изменить паллету", isCurrentPalletFreightBox, currentFreightBoxRoute, 1);
 
-        barcodeActionSetPalletFreightBox = addJProp(true, "Установить паллету", equalsPalletFreightBox, baseLM.barcodeToObject, 1, 2);
+        barcodeActionSetPalletFreightBox = addSetPropertyAProp("Установить паллету", addJProp(true, equalsPalletFreightBox, baseLM.barcodeToObject, 1, 2), 1, 2, baseLM.vtrue);
 
-        barcodeActionSetFreight = addJProp(true, "Установить фрахт", equalsPalletFreight, baseLM.barcodeToObject, 1, 2);
+        barcodeActionSetFreight = addSetPropertyAProp("Установить фрахт", addJProp(true, equalsPalletFreight, baseLM.barcodeToObject, 1, 2), 1, 2, baseLM.vtrue);
 
-        addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku = addJProp(true, "Добавить строку поставки",
+        addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku = addJoinAProp("Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockSku, 1, 2, currentFreightBoxRoute, 3, 4);
 
-        addSimpleShipmentDetailSimpleShipmentRouteSku = addJProp(true, "Добавить строку поставки",
+        addSimpleShipmentDetailSimpleShipmentRouteSku = addJoinAProp("Добавить строку поставки",
                 addSimpleShipmentDetailSimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
-        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
+        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJoinAProp("Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
 
-        addSimpleShipmentDetailSimpleShipmentRouteBarcode = addJProp(true, "Добавить строку поставки",
+        addSimpleShipmentDetailSimpleShipmentRouteBarcode = addJoinAProp("Добавить строку поставки",
                 addSimpleShipmentSimpleShipmentDetailStockBarcode, 1, currentFreightBoxRoute, 2, 3);
 
         quantityRouteSku = addJProp(baseGroup, "quantityRouteSku", "Оприход. в короб для транспортировки", quantityStockSku, currentFreightBoxRoute, 1, 2);
@@ -3485,24 +3478,16 @@ public class RomanLogicsModule extends LogicsModule {
         quantitySimpleShipmentRouteSku = addJProp(baseGroup, true, "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                 quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
-        createSku = addJProp(true, "Сгенерировать товары", addAAProp(sku, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationSku, 1);
-        createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
-        createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
+        createSku = addJoinAProp("Сгенерировать товары", addAAProp(sku, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationSku, 1);
+        createFreightBox = addJoinAProp("Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
+        createPallet = addJoinAProp("Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
         createStamp = addAProp(actionGroup, new CreateStampActionProperty());
 
-        barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
-                addJProp(true, and(false, false, true),
-                        addStopActionProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"),
-                        is(sku), 2,
-                        is(route), 1,
-                        currentFreightBoxRoute, 1), 1, baseLM.barcodeToObject, 2);
-
-        barcodeActionCheckChangedFreightBox = addJProp(true, "Проверка короба для транспортировки (скомплектован)",
-                addJProp(true, and(false, false, false),
-                        addStopActionProp("Текущей короб находится в скомплектованном фрахте", "Поиск по штрих-коду"),
-                        is(sku), 2,
-                        is(route), 1,
-                        addJProp(freightFreightBox, currentFreightBoxRoute, 1), 1), 1, baseLM.barcodeToObject, 2);
+        LCP isSkuBarcode = addJProp(is(sku), baseLM.barcodeToObject, 1);
+        barcodeActionCheckFreightBox = addListAProp(addIfAProp("Проверка короба для транспортировки", addJProp(baseLM.andNot1, isSkuBarcode, 2, currentFreightBoxRoute, 1), 1, 2,
+                addListAProp(addMAProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"), baseLM.flowReturn)), 1, 2,
+                addIfAProp("Проверка короба для транспортировки (скомплектован)", addJProp(baseLM.and1, isSkuBarcode, 2, addJProp(freightFreightBox, currentFreightBoxRoute, 1), 1), 1, 2,
+                        addListAProp(addMAProp("Текущей короб находится в скомплектованном фрахте", "Поиск по штрих-коду"), baseLM.flowReturn)), 1, 2);
 
         cloneItem = addAProp(new CloneItemActionProperty());
 
@@ -3515,7 +3500,7 @@ public class RomanLogicsModule extends LogicsModule {
                         addSCProp(addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3))
                 ), 1, 2, baseLM.barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
-        invoiceExportDbf = addProperty(null, new LP<ClassPropertyInterface>(new InvoiceExportDbfActionProperty("invoiceExportDbf", "Экспорт в dbf", BL, importer, freight, typeInvoice)));
+        invoiceExportDbf = addProperty(null, new LAP(new InvoiceExportDbfActionProperty("invoiceExportDbf", "Экспорт в dbf", BL, importer, freight, typeInvoice)));
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
         scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
@@ -3523,8 +3508,8 @@ public class RomanLogicsModule extends LogicsModule {
         initNavigators();
     }
 
-    public LP addDEAProp(String sID) {
-        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty(sID, "Экспорт декларанта", BL, importer, freight)));
+    public LAP addDEAProp(String sID) {
+        return addProperty(null, new LAP(new DeclarationExportActionProperty(sID, "Экспорт декларанта", BL, importer, freight)));
     }
 
     @Override
@@ -4079,7 +4064,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockArticle, objBox, objArticle)));
 
             packingListFormFreightBox = addFAProp("Упаковочный лист", this, objBox);
-            packingListFormRoute = addJProp(true, "packingListFormRoute", "Упаковочный лист", packingListFormFreightBox, currentFreightBoxRoute, 1);
+            packingListFormRoute = addJoinAProp("packingListFormRoute", "Упаковочный лист", packingListFormFreightBox, currentFreightBoxRoute, 1);
         }
 
         @Override
@@ -4115,7 +4100,7 @@ public class RomanLogicsModule extends LogicsModule {
             objOrder = addSingleGroupObject(order, "Заказ");
             if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objOrder);
-                objOrder.setAddOnEvent(FormEventType.INIT);
+                setAddOnEvent(objOrder, RomanLogicsModule.this, FormEventType.INIT);
             }
 
             addPropertyDraw(objOrder, baseLM.date, sidDocument, nameDestinationDestinationDocument, dateFromOrder, dateToOrder, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument);
@@ -4160,7 +4145,7 @@ public class RomanLogicsModule extends LogicsModule {
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
-            addPropertyDraw(addGCAProp(actionGroup, "nullOrderListArticleCompositeColor" + (edit ? "Edit" : ""), "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4),
+            addPropertyDraw(addGCAProp(actionGroup, "nullOrderListArticleCompositeColor" + (edit ? "Edit" : ""), "Сбросить", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero), 1, 2, 3, 4, 4),
                     objOrder, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, objOrder, objItem);
@@ -4231,16 +4216,16 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public boolean isActionOnChange(Property property) {
+        public boolean isActionOnChange(CalcProperty property) {
             return property.equals(quantityListArticleCompositeColorSize.property);
         }
         @Override
-        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier modifier) throws SQLException {
+        public <P extends PropertyInterface> void onChange(CalcProperty<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
             if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
                 // смотрим изменения
-                itemArticleCompositeColorSize.property.setJoinNotNull(
+                ((CalcProperty)itemArticleCompositeColorSize.property).setJoinNotNull(
                         BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.getMapExprs()),
-                        change.expr.getWhere().and(change.where), session, modifier, true);
+                        change.expr.getWhere().and(change.where), env, true);
             }
         }
     }
@@ -4342,7 +4327,7 @@ public class RomanLogicsModule extends LogicsModule {
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objInvoice);
-                objInvoice.setAddOnEvent(FormEventType.INIT);
+                setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
             }
 
             addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -4406,13 +4391,13 @@ public class RomanLogicsModule extends LogicsModule {
 
             String formPostfix = (box ? "Box" : "") + (edit ? "Edit" : "");
 
-            nullArticle = addPropertyDraw(addEPAProp("nullListArticle" + formPostfix, "Сбросить", EPA_NULL,
-                    quantityListArticle,
-                    numberListArticle),
+            nullArticle = addPropertyDraw(addListAProp("nullListArticle" + formPostfix, "Сбросить",
+                    addSetPropertyAProp(quantityListArticle, 1, 2, baseLM.vnull), 1, 2,
+                    addSetPropertyAProp(numberListArticle, 1, 2, baseLM.vnull), 1, 2),
                     objList, objArticle);
-            nullArticleColor = addPropertyDraw(addEPAProp("nullInvoiceListArticleCompositeColor" + formPostfix, "Сбросить", EPA_NULL,
-                                                addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor" + formPostfix, "Сбросить (количество)", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4), 1, 2, 3, 4,
-                                                inListArticleColorSupplier, 1, 2, 3),
+            nullArticleColor = addPropertyDraw(addListAProp("nullInvoiceListArticleCompositeColor" + formPostfix, "Сбросить",
+                    addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor" + formPostfix, "Сбросить (количество)", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull), 1, 2, 3, 4, 4), 1, 2, 3, 4,
+                    addSetPropertyAProp(inListArticleColorSupplier, 1, 2, 3, baseLM.vnull), 1, 2, 3),
                                                 objList, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
@@ -4524,16 +4509,16 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public boolean isActionOnChange(Property property) {
+        public boolean isActionOnChange(CalcProperty property) {
             return property.equals(quantityListArticleCompositeColorSize.property);
         }
         @Override
-        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier modifier) throws SQLException {
+        public <P extends PropertyInterface> void onChange(CalcProperty<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
             if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
                 // смотрим изменения
                 Map mapKeys = BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.getMapExprs());
-                itemArticleCompositeColorSize.property.setJoinNotNull(
-                        mapKeys, change.expr.getWhere().and(change.where), session, modifier, true);
+                ((CalcProperty)itemArticleCompositeColorSize.property).setJoinNotNull(
+                        mapKeys, change.expr.getWhere().and(change.where), env, true);
             }
         }
     }
@@ -4796,17 +4781,17 @@ public class RomanLogicsModule extends LogicsModule {
 //            getPropertyDraw(oneShipmentSku).forceViewType = ClassViewType.PANEL;
 
             PropertyDrawEntity quantityColumn;
-            LP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
+            LCP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
             if (box) {
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
                 addPropertyDraw(quantityShipDimensionShipmentSku, objSupplierBox, objShipment, objSku);
                 quantityColumn = addPropertyDraw(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku);
 
-                PropertyObjectEntity diffListSupplierBoxProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListSupplierBox, 1), objSupplierBox);
+                CalcPropertyObjectEntity diffListSupplierBoxProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListSupplierBox, 1), objSupplierBox);
                 getPropertyDraw(quantityDataList).setPropertyBackground(diffListSupplierBoxProperty);
                 getPropertyDraw(quantitySupplierBox).setPropertyBackground(diffListSupplierBoxProperty);
 
-                PropertyObjectEntity diffListShipSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListShipSku, 1, 2, 3), objSupplierBox, objShipment, objSku);
+                CalcPropertyObjectEntity diffListShipSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffListShipSku, 1, 2, 3), objSupplierBox, objShipment, objSku);
                 getPropertyDraw(quantityDataListSku).setPropertyBackground(diffListShipSkuProperty);
                 getPropertyDraw(quantityShipDimensionShipmentSku).setPropertyBackground(diffListShipSkuProperty);
 
@@ -4823,7 +4808,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(invoicedShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
             addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
 
-            PropertyObjectEntity diffShipmentRouteSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffShipmentRouteSku, 1, 2, 3), objShipment, objRoute, objSku);
+            CalcPropertyObjectEntity diffShipmentRouteSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffShipmentRouteSku, 1, 2, 3), objShipment, objRoute, objSku);
             getPropertyDraw(invoicedShipmentRouteSku).setPropertyBackground(diffShipmentRouteSkuProperty);
             getPropertyDraw(quantityShipmentRouteSku).setPropertyBackground(diffShipmentRouteSkuProperty);
 
@@ -4842,7 +4827,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
 
-            LP skuShipmentDetailEditFA = addJProp(true, "Редактировать", skuEditFA, skuShipmentDetail, 1);
+            LAP skuShipmentDetailEditFA = addJoinAProp("Редактировать", skuEditFA, skuShipmentDetail, 1);
             skuShipmentDetailEditFA.setImage("edit.png");
             addPropertyDraw(skuShipmentDetailEditFA, objShipmentDetail);
 
@@ -4858,10 +4843,10 @@ public class RomanLogicsModule extends LogicsModule {
             //getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
             //getPropertyDraw(netWeightArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
 
-            PropertyObjectEntity oneArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSkuShipmentDetail, 1), objShipmentDetail);
-            PropertyObjectEntity oneSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneSkuShipmentDetail, 1), objShipmentDetail);
-            PropertyObjectEntity oneArticleColorProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleColorShipmentDetail, 1), objShipmentDetail);
-            PropertyObjectEntity oneArticleSizeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSizeShipmentDetail, 1), objShipmentDetail);
+            CalcPropertyObjectEntity oneArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSkuShipmentDetail, 1), objShipmentDetail);
+            CalcPropertyObjectEntity oneSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneSkuShipmentDetail, 1), objShipmentDetail);
+            CalcPropertyObjectEntity oneArticleColorProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleColorShipmentDetail, 1), objShipmentDetail);
+            CalcPropertyObjectEntity oneArticleSizeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, oneArticleSizeShipmentDetail, 1), objShipmentDetail);
 
             getPropertyDraw(nameCategoryArticleSkuShipmentDetail).setPropertyBackground(oneArticleProperty);
             getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail).setPropertyBackground(oneArticleProperty);
@@ -4981,21 +4966,19 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (box)
                 addActionsOnObjectChange(objBarcode, addPropertyObject(
-                        addJProp(and(true, false),
-                                    addMFAProp(null, "Поиск по артикулу",
-                                    findItemFormBoxBarcode,
-                                    new ObjectEntity[]{findItemFormBoxBarcode.objShipment, findItemFormBoxBarcode.objBarcode, findItemFormBoxBarcode.objSupplierBox},
-                                    false), 1, 2, 3,
-                                    skuBarcodeObject, 2, emptyBarcodeShipment, 1),
+                        addIfAProp(addJProp(baseLM.andNot1, emptyBarcodeShipment, 1, skuBarcodeObject, 2), 1, 2,
+                                addMFAProp(null, "Поиск по артикулу",
+                                        findItemFormBoxBarcode,
+                                        new ObjectEntity[]{findItemFormBoxBarcode.objShipment, findItemFormBoxBarcode.objBarcode, findItemFormBoxBarcode.objSupplierBox},
+                                        false), 1, 2, 3),
                                 objShipment, objBarcode, objSupplierBox));
             else
                 addActionsOnObjectChange(objBarcode, addPropertyObject(
-                        addJProp(and(true, false),
-                                    addMFAProp(null, "Поиск по артикулу",
-                                    findItemFormSimpleBarcode,
-                                    new ObjectEntity[]{findItemFormSimpleBarcode.objShipment, findItemFormSimpleBarcode.objBarcode},
-                                    false), 1, 2,
-                                    skuBarcodeObject, 2, emptyBarcodeShipment, 1),
+                        addIfAProp(addJProp(baseLM.andNot1, emptyBarcodeShipment, 1, skuBarcodeObject, 2), 1, 2,
+                                addMFAProp(null, "Поиск по артикулу",
+                                        findItemFormSimpleBarcode,
+                                        new ObjectEntity[]{findItemFormSimpleBarcode.objShipment, findItemFormSimpleBarcode.objBarcode},
+                                        false), 1, 2),
                                 objShipment, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
@@ -5019,35 +5002,32 @@ public class RomanLogicsModule extends LogicsModule {
 //            ));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
-                    addJProp(true, addSAProp(null), skuBarcodeObject, 1),
+                    addJoinAProp(addSAProp(null), skuBarcodeObject, 1),
                     objBarcode));
 
             addActionsOnObjectChange(objBarcode,
                     addPropertyObject(
-                            addJProp(true, baseLM.andNot1,
+                            addIfAProp(true, skuBarcodeObject, 2,
                                     addMFAProp(
                                             null,
                                             "Ввод нового товара",
                                             createItemForm,
                                             new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
                                             false),
-                                    1, 2,
-                                    skuBarcodeObject, 2
-                            ),
+                                    1, 2),
                             objSupplier, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
-                    addJProp(true, seekRouteShipmentSkuRoute,
+                    addJoinAProp(seekRouteShipmentSkuRoute,
                             1, skuBarcodeObject, 2, 3),
                     objShipment, objBarcode, objRoute));
 
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckChangedFreightBox, objRoute, objBarcode));
-
             if (box) {
-                addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addListAProp(barcodeActionCheckFreightBox, 3, 4,
+                        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, 1, 2, 3, 4), objShipment, objSupplierBox, objRoute, objBarcode));
             } else {
-                addActionsOnObjectChange(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addListAProp(barcodeActionCheckFreightBox, 2, 3,
+                        addSimpleShipmentDetailSimpleShipmentRouteBarcode, 1, 2, 3), objShipment, objRoute, objBarcode));
             }
 
 //            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
@@ -5265,8 +5245,8 @@ public class RomanLogicsModule extends LogicsModule {
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.SELECTOR);
 
-            LP highlightColor = addCProp(ColorClass.instance, new Color(128, 255, 128));
-            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffPalletFreight, 1), objFreight);
+            LCP highlightColor = addCProp(ColorClass.instance, new Color(128, 255, 128));
+            CalcPropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, diffPalletFreight, 1), objFreight);
             getPropertyDraw(palletCountDataFreight).setPropertyBackground(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyBackground(diffPalletFreightProperty);
 
@@ -5382,7 +5362,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(objFreight, PropertyEditType.READONLY);
 //            addObjectActions(this, objFreight);
 
-            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 128)), diffPalletFreight, 1), objFreight);
+            CalcPropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 128)), diffPalletFreight, 1), objFreight);
             getPropertyDraw(palletCountDataFreight).setPropertyBackground(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyBackground(diffPalletFreightProperty);
 
@@ -5441,7 +5421,7 @@ public class RomanLogicsModule extends LogicsModule {
             addRegularFilterGroup(filterGroupInvoice);
 
             freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this, new ObjectEntity[] {objFreight}, true,
-                    addPropertyObject(addJProp(true, executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightComplete")), objFreight));
+                    addPropertyObject(addJoinAProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightComplete")), objFreight));
             freightCompleteFA.setImage("arrow_right.png");
         }
 
@@ -5499,7 +5479,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objFreightBox = addSingleGroupObject(2, "freightBox", freightBox, "Короба для транспортировки", baseLM.barcode);
             setEditType(objFreightBox, PropertyEditType.READONLY);
@@ -5535,7 +5515,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objPallet = addSingleGroupObject(2, "pallet", pallet, "Паллеты для транспортировки", baseLM.barcode);
             setEditType(objPallet, PropertyEditType.READONLY);
@@ -5572,7 +5552,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objSku = addSingleGroupObject(sku, "Товары", baseLM.barcode);
             setEditType(objSku, PropertyEditType.READONLY);
@@ -5607,7 +5587,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(objCreate, baseLM.delete);
 
             if (type.equals(FormType.ADD))
-                objCreate.setAddOnTransaction();
+                setAddOnTransaction(objCreate, RomanLogicsModule.this);
 
             objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, baseLM.delete);
             setEditType(objStamp, PropertyEditType.READONLY);
@@ -6379,12 +6359,12 @@ public class RomanLogicsModule extends LogicsModule {
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
-            PropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
+            CalcPropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
             getPropertyDraw(nameSubCategoryDataSku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
 
             setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
             setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
@@ -6421,8 +6401,8 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
 
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
             
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
@@ -7458,8 +7438,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objImporter, objFreight, objArticle, quantityImporterFreightArticle, markupPercentImporterFreightArticle, priceFullKgImporterFreightArticle, minPriceRateImporterFreightArticle);
 
-            LP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
-            PropertyObjectEntity greaterPriceMinPriceImporterFreightArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightArticle, 1, 2, 3), objImporter, objFreight, objArticle);
+            LCP highlightColor = addCProp(ColorClass.instance, new Color(255, 128, 128));
+            CalcPropertyObjectEntity greaterPriceMinPriceImporterFreightArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightArticle, 1, 2, 3), objImporter, objFreight, objArticle);
             getPropertyDraw(minPriceRateImporterFreightArticle).setPropertyBackground(greaterPriceMinPriceImporterFreightArticleProperty);
             getPropertyDraw(priceFullKgImporterFreightArticle).setPropertyBackground(greaterPriceMinPriceImporterFreightArticleProperty);
 
@@ -7496,7 +7476,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(NDSImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(sumRegistrationImporterFreightSku, objImporter, objFreight, objSku);
 
-            PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightSku, 1, 2, 3), objImporter, objFreight, objSku);
+            CalcPropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightSku, 1, 2, 3), objImporter, objFreight, objSku);
             getPropertyDraw(minPriceRateFreightSku).setPropertyBackground(greaterPriceMinPriceImporterFreightSkuProperty);
             getPropertyDraw(priceFullKgImporterFreightSku).setPropertyBackground(greaterPriceMinPriceImporterFreightSkuProperty);
 
@@ -7533,7 +7513,7 @@ public class RomanLogicsModule extends LogicsModule {
             setPageSize(0);
 
             freightPricedFA = addMFAProp(actionGroup, "Расценить", this, new ObjectEntity[] {objFreight}, true,
-                    addPropertyObject(addJProp(true, executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightPriced")), objFreight));
+                    addPropertyObject(addJoinAProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightPriced")), objFreight));
             freightPricedFA.setImage("arrow_right.png");
         }
 
@@ -7821,8 +7801,7 @@ public class RomanLogicsModule extends LogicsModule {
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             freightCreateFA = addMFAProp(actionGroup, "Создать фрахт", this, new ObjectEntity[] {},
-                    new PropertyObjectEntity[] {addPropertyObject(getAddObjectAction(freight))},
-                    new OrderEntity[] {addPropertyObject(addCProp(baseClass.objectClass, "freight"))}, true);
+                    new ActionPropertyObjectEntity[] {addPropertyObject(addPushAProp(addCProp(baseClass.objectClass, "freight"), getAddObjectAction(freight)))}, true);
             ((FormActionProperty)freightCreateFA.property).seekOnOk.add(objFreight);
             freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
             freightEditFA.setImage("edit.png");
@@ -8084,7 +8063,7 @@ public class RomanLogicsModule extends LogicsModule {
 //            addActionsOnOk(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
 //            addActionsOnOk(addPropertyObject(addItemSIDArticleSupplierColorSizeBarcode, objSIDArticleComposite, objSupplier, objColorSupplier, objSizeSupplier, objBarcode));
 
-            addActionsOnOk(addPropertyObject(addItemArticleCompositeColorSizeBarcode, objArticleComposite, objColorSupplier, objSizeSupplier, objBarcode));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addItemArticleCompositeColorSizeBarcode, objArticleComposite, objColorSupplier, objSizeSupplier, objBarcode));
         }
 
         @Override
@@ -8193,13 +8172,13 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             if (barcode) {
-                addActionsOnOk(addPropertyObject(baseLM.equalsObjectBarcode, objSku, objBarcode));
+                addActionsOnEvent(FormEventType.OK, addPropertyObject(addSetPropertyAProp(baseLM.equalsObjectBarcode, 1, 2, baseLM.vtrue), objSku, objBarcode));
             } else {
-                addActionsOnOk(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
+                addActionsOnEvent(FormEventType.OK, addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
                 if (box)
-                    addActionsOnOk(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
+                    addActionsOnEvent(FormEventType.OK, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
                 else
-                    addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
+                    addActionsOnEvent(FormEventType.OK, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
             }
 
             setEditType(PropertyEditType.READONLY);
@@ -8268,7 +8247,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject sID = context.getKeyValue(sidInterface);
@@ -8276,7 +8255,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ObjectValue supplier = supplierDocument.readClasses(context, document);
             if (supplier.isNull()) {
-                context.addAction(new MessageClientAction("Не выбран поставщик", "Ввод товара"));
+                context.delayUserInterfaction(new MessageClientAction("Не выбран поставщик", "Ввод товара"));
                 return;
             }
 
@@ -8284,10 +8263,10 @@ public class RomanLogicsModule extends LogicsModule {
             if (articlePrev.isNull()) {
                 ObjectValue oldArticle = context.getObjectInstance(objArticle).getObjectValue();
                 DataObject article = context.addObject(articleComposite);
-                sidArticle.execute(sID.getValue(), context, article);
-                supplierArticle.execute(supplier.getValue(), context, article);
+                sidArticle.change(sID.getValue(), context, article);
+                supplierArticle.change(supplier.getValue(), context, article);
                 if (!oldArticle.isNull())
-                    sizeGroupSupplierArticle.execute(sizeGroupSupplierArticle.read(context, (DataObject)oldArticle), context, article);
+                    sizeGroupSupplierArticle.change(sizeGroupSupplierArticle.read(context, (DataObject) oldArticle), context, article);
             }
         }
     }
@@ -8302,10 +8281,10 @@ public class RomanLogicsModule extends LogicsModule {
             createStampInterface = i.next();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject objCreateStamp = context.getKeyValue(createStampInterface);
             if ((firstNumberCreationStamp.read(context, objCreateStamp) == null) || (lastNumberCreationStamp.read(context, objCreateStamp) == null)) {
-                context.addAction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
+                context.delayUserInterfaction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
                 return;
             }
 
@@ -8313,7 +8292,7 @@ public class RomanLogicsModule extends LogicsModule {
             String stringFinish = (String) lastNumberCreationStamp.read(context, objCreateStamp);
 
             if (stringStart.length() != stringFinish.length()) {
-                context.addAction(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
+                context.delayUserInterfaction(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
                 return;
             }
 
@@ -8321,14 +8300,14 @@ public class RomanLogicsModule extends LogicsModule {
             Integer finish = Integer.parseInt(stringFinish);
 
             if ((finish - start) > 3000) {
-                context.addAction(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
+                context.delayUserInterfaction(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
                 return;
             }
 
             for (int i = start; i <= finish; i++) {
                 DataObject stampObject = context.addObject(stamp);
-                creationStampStamp.execute(objCreateStamp.getValue(), context, stampObject);
-                sidStamp.execute(BaseUtils.padl(((Integer)i).toString(), stringStart.length(), '0'), context, stampObject);
+                creationStampStamp.change(objCreateStamp.getValue(), context, stampObject);
+                sidStamp.change(BaseUtils.padl(((Integer) i).toString(), stringStart.length(), '0'), context, stampObject);
             }
         }
     }
@@ -8344,12 +8323,12 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject cloneObject = context.getKeyValue(itemInterface);
             DataObject newObject = context.addObject(item);
 
-            for(LP lp : new LP[]{colorSupplierItem, sizeSupplierItem})
-                lp.execute(lp.read(context, cloneObject), context, newObject);
+            for(LCP lp : new LCP[]{colorSupplierItem, sizeSupplierItem})
+                lp.change(lp.read(context, cloneObject), context, newObject);
         }
     }
 
@@ -8370,7 +8349,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             context.emitExceptionIfNotInFormSession();
 
             DataObject objShipment = context.getKeyValue(shipmentInterface);
@@ -8406,7 +8385,7 @@ public class RomanLogicsModule extends LogicsModule {
             ObjectInstance objectInstance = (ObjectInstance) context.getObjectInstance(routeInterface);
             if (!objRouteResult.equals(objectInstance.getObjectValue())) {
                 try {
-                    context.addAction(new AudioClientAction(getClass().getResourceAsStream(
+                    context.delayUserInterfaction(new AudioClientAction(getClass().getResourceAsStream(
                             objRouteResult.equals(objRouteRB) ? "/audio/rb.wav" : "/audio/rf.wav"
                     )));
                 } catch (IOException e) {

@@ -6,21 +6,25 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.ImagePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.text.Format;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientImageClass extends ClientFileClass {
+public class ClientImageClass extends ClientStaticFormatFileClass {
 
     public final static ClientImageClass instance = new ClientImageClass();
 
-    private final String sID = "ImageClass";
+    public ClientImageClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientImageClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "ImageClass";
     }
 
     public byte getTypeId() {
@@ -47,8 +51,8 @@ public class ClientImageClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
     }
 
     @Override

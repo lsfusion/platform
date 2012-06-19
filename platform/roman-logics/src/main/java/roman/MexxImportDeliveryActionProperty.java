@@ -6,7 +6,9 @@ import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
+import platform.server.classes.ByteArrayClass;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.*;
@@ -23,12 +25,12 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
 
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         try {
 
             DataObject supplier = context.getSingleKeyValue();
 
-            List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+            List<byte[]> fileList = valueClass.getFiles(userValue);
             for (byte[] file : fileList) {
 
                 ByteArrayInputStream stream = new ByteArrayInputStream(file);
@@ -104,13 +106,14 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                             }
                         }
                     }
-                    LM.mexxImportInvoice.execute(outputListInOrder[0], context, supplier);
-                    LM.mexxImportArticleInfoInvoice.execute(outputListInOrder[1], context, supplier);
-                    LM.mexxImportColorInvoice.execute(outputListInOrder[2], context, supplier);
-                    LM.mexxImportPricesInvoice.execute(outputListInOrder[3], context, supplier);
+
+                    LM.mexxImportInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[0], ByteArrayClass.instance)), supplier);
+                    LM.mexxImportArticleInfoInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[1], ByteArrayClass.instance)), supplier);
+                    LM.mexxImportColorInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[2], ByteArrayClass.instance)), supplier);
+                    LM.mexxImportPricesInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[3], ByteArrayClass.instance)),supplier);
                 }
             }
-            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (IOException
                 e) {
             e.printStackTrace();

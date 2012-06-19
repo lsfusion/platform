@@ -4,7 +4,9 @@ import platform.server.classes.DataClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 import platform.server.session.Modifier;
 import platform.server.session.SinglePropertyTableUsage;
@@ -29,12 +31,12 @@ public class ImportField implements ImportFieldInterface, ImportKeyInterface {
         this.fieldClass = fieldClass;
     }
 
-    public ImportField(LP<?> property) {
-        this(property.property);
+    public ImportField(LCP property) {
+        this((CalcProperty<?>) property.property);
     }
 
-    public ImportField(Property<?> property) {
-        this.fieldClass = (DataClass) property.getCommonClasses().value;
+    public ImportField(CalcProperty<?> property) {
+        this.fieldClass = (DataClass) property.getValueClass();
     }
 
     public DataClass getFieldClass() {

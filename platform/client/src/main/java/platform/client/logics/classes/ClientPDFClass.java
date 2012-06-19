@@ -3,25 +3,28 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.DocumentPropertyEditor;
+import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.PDFPropertyRenderer;
-import platform.client.form.renderer.WordPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.text.Format;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientPDFClass extends ClientFileClass {
+public class ClientPDFClass extends ClientStaticFormatFileClass {
 
     public final static ClientPDFClass instance = new ClientPDFClass();
 
-    private final String sID = "PDFClass";
+    public ClientPDFClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientPDFClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "PDFClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
@@ -38,8 +41,8 @@ public class ClientPDFClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.pdf"), "pdf");
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.pdf"), "pdf");
     }
 
     @Override

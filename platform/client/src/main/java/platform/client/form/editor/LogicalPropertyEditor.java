@@ -1,54 +1,55 @@
 package platform.client.form.editor;
 
-import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.cell.PropertyTableCellEditor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.EventObject;
 
 public class LogicalPropertyEditor extends JCheckBox implements PropertyEditorComponent {
+    private boolean newValue;
+    private PropertyTableCellEditor tableEditor;
 
     public LogicalPropertyEditor(Object value) {
-
         setHorizontalAlignment(JCheckBox.CENTER);
-//        setVerticalAlignment(JCheckBox.CENTER);
 
         setOpaque(true);
         setBackground(Color.white);
 
-        setSelected(value != null);
+        //ставим новое значение, т.к. сразу закончим редактирование
+        newValue = value == null;
+        model.setSelected(newValue);
 
-        addActionListener(new ActionListener() {
+        addFocusListener(new FocusAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                SwingUtils.commitCurrentEditing();
+            public void focusGained(FocusEvent e) {
+                tableEditor.stopCellEditing();
             }
         });
     }
 
+    @Override
+    public void setSelected(boolean b) {
+        //будем менять модель сами, чтобы точно контролировать состояние чекбокса
+    }
+
+    public void setTableEditor(PropertyTableCellEditor tableEditor) {
+        this.tableEditor = tableEditor;
+    }
+
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        if (editEvent == null) { // программно вызвали editCellAt
-            setSelected(!isSelected());
-            return null;
-        } else {
-            return this;
-        }
+        return this;
     }
 
     public Object getCellEditorValue() {
-        return isSelected() ? true : null;
+        return newValue ? true : null;
     }
 
-    public boolean valueChanged() {
+    @Override
+    public boolean stopCellEditing(){
         return true;
-    }
-
-   @Override
-    public String checkValue(Object value){
-        return null;
     }
 }

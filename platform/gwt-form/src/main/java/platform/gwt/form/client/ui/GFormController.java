@@ -96,45 +96,14 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         mainPane.setMaxHeight(Window.getClientHeight());
 
         if (!dialogMode) {
-            mainPane.addMember(new ToolStripPanel(form.caption) {
-                @Override
-                protected void addButtonsAfterLocaleChooser() {
-                    addSeparator();
-
-                    ToolStripButton refreshBtn = new ToolStripButton("Обновить", "refresh.png");
-                    refreshBtn.addClickHandler(new ClickHandler() {
-                        @Override
-                        public void onClick(ClickEvent event) {
-                            refreshData();
-                        }
-                    });
-
-                    ToolStripButton applyBtn = new ToolStripButton("Применить", "apply.png");
-                    applyBtn.addClickHandler(new ClickHandler() {
-                        @Override
-                        public void onClick(ClickEvent event) {
-                            applyChanges();
-                        }
-                    });
-
-                    ToolStripButton cancelBtn = new ToolStripButton("Отменить", "cancel.png");
-                    cancelBtn.addClickHandler(new ClickHandler() {
-                        @Override
-                        public void onClick(ClickEvent event) {
-                            cancelChanges();
-                        }
-                    });
-
-                    addMember(refreshBtn);
-                    addMember(applyBtn);
-                    addMember(cancelBtn);
-                }
-            }, 0);
+            mainPane.addMember(new ToolStripPanel(form.caption), 0);
         }
 
         initializeControllers();
 
         initializeRegularFilters();
+
+        applyRemoteChanges();
     }
 
     private void initializeRegularFilters() {
@@ -145,8 +114,6 @@ public class GFormController extends HLayout implements FormLogicsProvider {
                 createMultipleFilterComponent(filterGroup);
             }
         }
-        
-        applyRemoteChanges(form.changes);
     }
 
     private void createSingleFilterComponent(final GRegularFilterGroup filterGroup, final GRegularFilter filter) {
@@ -236,7 +203,11 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
         addMember(mainPane);
 
-        applyRemoteChanges(form.changes);
+        applyRemoteChanges();
+    }
+
+    private void applyRemoteChanges() {
+        dispatcher.execute(new GetRemoteChanges(), new FormChangesBlockingCallback());
     }
 
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
@@ -267,6 +238,18 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
         dispatcher.executeChangeGroupObject(new ChangeGroupObject(group.ID, key.getValueDTO()), new FormChangesBlockingCallback());
+    }
+
+    public void executeEditAction(GPropertyDraw property, String actionSID) {
+        GGroupObjectValue key = controllers.get(property.groupObject).getCurrentKey();
+        key = key != null ? key : new GGroupObjectValue();
+        executeEditAction(property, key, actionSID);
+    }
+
+    public void executeEditAction(GPropertyDraw property, GGroupObjectValue key, String actionSID) {
+        if (isEditingEnabled()) {
+            dispatcher.execute(new ExecuteEditAction(property.ID, key.getValueDTO(), actionSID), new FormChangesBlockingCallback());
+        }
     }
 
     public void changePropertyDraw(GPropertyDraw property, Object value) {

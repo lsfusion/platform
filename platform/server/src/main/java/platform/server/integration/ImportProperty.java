@@ -8,7 +8,8 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.Where;
-import platform.server.logics.property.PropertyImplement;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcPropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
@@ -22,33 +23,33 @@ import java.util.*;
  */
 
 public class ImportProperty <P extends PropertyInterface> {
-    private PropertyImplement<P, ImportKeyInterface> implement;
+    private CalcPropertyImplement<P, ImportKeyInterface> implement;
     private ImportFieldInterface importField;
     private GroupType groupType;
 
-    private PropertyImplement<P, ImportKeyInterface> converter;
+    private CalcPropertyImplement<P, ImportKeyInterface> converter;
 
-    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement) {
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement) {
         this.importField = importField;
         this.implement = implement;
     }
 
-    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, GroupType groupType) {
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, GroupType groupType) {
         this(importField, implement);
         this.groupType = groupType;
     }
 
-    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter) {
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter) {
         this(importField, implement);
         this.converter = converter;
     }
 
-    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter, GroupType groupType) {
+    public ImportProperty(ImportFieldInterface importField, CalcPropertyImplement<P, ImportKeyInterface> implement, CalcPropertyImplement<P, ImportKeyInterface> converter, GroupType groupType) {
         this(importField, implement, converter);
         this.groupType = groupType;
     }
 
-    public PropertyImplement<P, ImportKeyInterface> getProperty() {
+    public CalcPropertyImplement<P, ImportKeyInterface> getProperty() {
         return implement;
     }
 
@@ -66,7 +67,7 @@ public class ImportProperty <P extends PropertyInterface> {
 
     @Message("message.synchronize.property")
     @ThisMessage
-    public MapDataChanges<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException {
+    public DataChanges synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException {
         Map<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
         Expr importExpr;
@@ -90,6 +91,6 @@ public class ImportProperty <P extends PropertyInterface> {
             changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
         }
 
-        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.modifier);
+        return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.modifier);
     }
 }

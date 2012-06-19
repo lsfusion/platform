@@ -2,6 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 
@@ -15,11 +16,11 @@ public class FormPropertyOptions {
     private Boolean hintTable;
     private List<GroupObjectEntity> columns;
     private MappedProperty showIf;
-    private PropertyObjectEntity readOnlyIf;
-    private PropertyObjectEntity background;
-    private PropertyObjectEntity foreground;
-    private PropertyObjectEntity header;
-    private PropertyObjectEntity footer;
+    private CalcPropertyObjectEntity readOnlyIf;
+    private CalcPropertyObjectEntity background;
+    private CalcPropertyObjectEntity foreground;
+    private CalcPropertyObjectEntity header;
+    private CalcPropertyObjectEntity footer;
     private ClassViewType forceViewType;
     private GroupObjectEntity toDraw;
 
@@ -47,44 +48,44 @@ public class FormPropertyOptions {
         return showIf;
     }
 
-    public PropertyObjectEntity getReadOnlyIf() {
+    public CalcPropertyObjectEntity getReadOnlyIf() {
         return readOnlyIf;
     }
 
     public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
-        this.readOnlyIf = readOnlyIf;
+        this.readOnlyIf = (CalcPropertyObjectEntity) readOnlyIf;
     }
 
-    public PropertyObjectEntity getBackground() {
+    public CalcPropertyObjectEntity getBackground() {
         return background;
     }
 
     public void setBackground(PropertyObjectEntity background) {
-        this.background = background;
+        this.background = (CalcPropertyObjectEntity) background;
     }
 
-    public PropertyObjectEntity getForeground() {
+    public CalcPropertyObjectEntity getForeground() {
         return foreground;
     }
 
     public void setForeground(PropertyObjectEntity foreground) {
-        this.foreground = foreground;
+        this.foreground = (CalcPropertyObjectEntity) foreground;
     }
 
-    public PropertyObjectEntity getHeader() {
+    public CalcPropertyObjectEntity getHeader() {
         return header;
     }
 
     public void setHeader(PropertyObjectEntity header) {
-        this.header = header;
+        this.header = (CalcPropertyObjectEntity) header;
     }
 
-    public PropertyObjectEntity getFooter() {
+    public CalcPropertyObjectEntity getFooter() {
         return footer;
     }
 
     public void setFooter(PropertyObjectEntity footer) {
-        this.footer = footer;
+        this.footer = (CalcPropertyObjectEntity) footer;
     }
 
     public void setForceViewType(ClassViewType forceViewType) {

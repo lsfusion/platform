@@ -11,7 +11,7 @@ import platform.client.form.SimplexLayout;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.navigator.ClientNavigatorWindow;
-import platform.client.remote.PendingExecutionAspect;
+import platform.client.remote.ImmutableProxyMethodsAspect;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
@@ -20,8 +20,7 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.ServerInfo;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -40,10 +39,9 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.*;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 
@@ -53,7 +51,7 @@ import static platform.client.StartupProperties.*;
 public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
-    private static PendingExecutionAspect pendingAspect = Aspects.aspectOf(PendingExecutionAspect.class);
+    private static ImmutableProxyMethodsAspect immutablesAspect = Aspects.aspectOf(ImmutableProxyMethodsAspect.class);
 
     public static final String PLATFORM_TITLE = "LS Fusion";
     private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
@@ -126,66 +124,71 @@ public class Main {
         mainThreadGroup = new ExceptionThreadGroup();
         mainThread = new Thread(mainThreadGroup, "Init thread") {
             public void run() {
-                try {
-                    //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
+                            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    LoginAction loginAction = LoginAction.getInstance();
-                    if (!loginAction.login()) {
-                        return;
-                    }
-
-                    remoteLogics = loginAction.getRemoteLogics();
-                    remoteNavigator = loginAction.getRemoteNavigator();
-                    computerId = loginAction.getComputerId();
-
-                    timeZone = remoteLogics.getTimeZone();
-
-                    startSplashScreen();
-
-                    logger.info("Before init frame");
-                    frame = module.initFrame(remoteNavigator);
-                    logger.info("After init frame");
-
-                    pingThread = new PingThread(remoteNavigator.getClientCallBack());
-                    pingThread.start();
-                    remoteNavigator.setUpdateTime(pingThread.updateTime);
-
-                    frame.addWindowListener(
-                            new WindowAdapter() {
-                                public void windowOpened(WindowEvent e) {
-                                    closeSplashScreen();
-                                }
-
-                                public void windowClosing(WindowEvent e) {
-                                    try {
-                                        remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
-                                    } catch (Exception ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                }
+                            LoginAction loginAction = LoginAction.getInstance();
+                            if (!loginAction.login()) {
+                                return;
                             }
-                    );
 
-                    frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-                    logger.info("After setExtendedState");
+                            remoteLogics = loginAction.getRemoteLogics();
+                            remoteNavigator = loginAction.getRemoteNavigator();
+                            computerId = loginAction.getComputerId();
 
-                    ConnectionLostManager.install(frame);
+                            timeZone = remoteLogics.getTimeZone();
 
-                    frame.setVisible(true);
+                            startSplashScreen();
 
-                    ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
-                    Timer timer = new Timer();
-                    for (IDaemonTask task : tasks) {
-                        task.setEventBus(eventBus);
-                        timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
+                            logger.info("Before init frame");
+                            frame = module.initFrame(remoteNavigator);
+                            logger.info("After init frame");
+
+                            pingThread = new PingThread(remoteNavigator.getClientCallBack());
+                            pingThread.start();
+                            remoteNavigator.setUpdateTime(pingThread.updateTime);
+
+                            frame.addWindowListener(
+                                    new WindowAdapter() {
+                                        public void windowOpened(WindowEvent e) {
+                                            closeSplashScreen();
+                                        }
+
+                                        public void windowClosing(WindowEvent e) {
+                                            try {
+                                                remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
+                                            } catch (Exception ex) {
+                                                throw new RuntimeException(ex);
+                                            }
+                                        }
+                                    }
+                            );
+
+                            frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+                            logger.info("After setExtendedState");
+
+                            ConnectionLostManager.install(frame);
+
+                            frame.setVisible(true);
+
+                            ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
+                            Timer timer = new Timer();
+                            for (IDaemonTask task : tasks) {
+                                task.setEventBus(eventBus);
+                                timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
+                            }
+                            // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
+                        } catch (Exception e) {
+                            closeSplashScreen();
+                            logger.error(getString("client.error.application.initialization"), e);
+                            throw new RuntimeException(getString("client.error.application.initialization"), e);
+                        }
                     }
-                    // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
-                } catch (Exception e) {
-                    closeSplashScreen();
-                    logger.error(getString("client.error.application.initialization"), e);
-                    throw new RuntimeException(getString("client.error.application.initialization"), e);
-                }
+                });
             }
         };
         mainThread.start();
@@ -258,13 +261,7 @@ public class Main {
     }
 
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
-        //хак для решения проблемы со сканированием...
-        KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultKeyboardFocusManager() {
-            @Override
-            protected void enqueueKeyEvents(long after, Component untilFocused) {
-                super.enqueueKeyEvents(0, untilFocused);
-            }
-        });
+//        FocusOwnerTracer.installFocusTracer();
 
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
@@ -375,7 +372,7 @@ public class Main {
     }
 
     public static String getMainTitle() {
-        return BaseUtils.nvl(getDisplayName(), PLATFORM_TITLE);
+        return "(NEW) " + BaseUtils.nvl(getDisplayName(), PLATFORM_TITLE);
     }
 
     public static String getDisplayName() {
@@ -448,7 +445,7 @@ public class Main {
     }
 
     private static void clean() {
-        pendingAspect.startRestarting();
+        immutablesAspect.startRestarting();
 
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -488,7 +485,7 @@ public class Main {
 
         System.gc();
 
-        pendingAspect.stopRestarting();
+        immutablesAspect.stopRestarting();
     }
 
     static class DaemonTask extends TimerTask {
@@ -507,7 +504,7 @@ public class Main {
     public interface ModuleFactory {
         MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
 
-        void runExcel(RemoteFormInterface remoteForm, FormUserPreferences userPreferences);
+        void openInExcel(ReportGenerationData generationData);
 
         boolean isFull();
 
@@ -533,7 +530,7 @@ public class Main {
                 return new SimpleMainFrame(remoteNavigator, forms);
             }
 
-            public void runExcel(RemoteFormInterface remoteForm, FormUserPreferences preferences) {
+            public void openInExcel(ReportGenerationData generationData) {
                 // not supported
             }
 

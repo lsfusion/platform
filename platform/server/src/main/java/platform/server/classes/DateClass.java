@@ -19,9 +19,9 @@ import java.util.Calendar;
 public class DateClass extends DataClass<Date> {
 
     public final static DateClass instance = new DateClass();
-    private final static String sid = "DateClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected DateClass() { super(ServerResourceBundle.getString("classes.date")); }
@@ -113,7 +113,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public String getSID() {
-        return sid;
+        return "DateClass";
     }
 
     @Override

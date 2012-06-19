@@ -6,10 +6,8 @@ import platform.client.form.editor.IntegerPropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GIntegerType;
 import platform.gwt.view.classes.GType;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
-import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -22,10 +20,6 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
     @Override
     public String getSID() {
         return sID;
-    }
-
-    public Class getJavaClass() {
-        return Integer.class;
     }
 
     public byte getTypeId() {
@@ -47,8 +41,8 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
         return obj.toString();
     }
 
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, getJavaClass());
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, Integer.class);
     }
 
     @Override

@@ -3,9 +3,9 @@ package platform.server.logics.property.actions.flow;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -16,8 +16,8 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     private boolean notNull;
     private boolean check;
 
-    public SetActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, PropertyMapImplement<W, I> where, PropertyMapImplement<P, I> writeTo, boolean notNull, boolean check) {
-        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where, new ArrayList<PropertyInterfaceImplement<I>>());
+    public SetActionProperty(String sID, String caption, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<W, I> where, CalcPropertyMapImplement<P, I> writeTo, boolean notNull, boolean check) {
+        super(sID, caption, innerInterfaces, mapInterfaces, writeTo, where);
 
         this.notNull = notNull;
 
@@ -29,19 +29,27 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     }
 
     @Override
-    protected void write(ExecutionContext context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, PropertyObjectInterfaceInstance> innerObjects, Map<I, Expr> innerExprs) throws SQLException {
+    protected void write(ExecutionContext<PropertyInterface> context, Map<P, DataObject> toValues, Map<P, KeyExpr> toKeys, Where changeWhere, Map<I, Expr> innerExprs) throws SQLException {
         if(!isWhereFull())
             changeWhere = changeWhere.and(writeTo.property.getExpr(PropertyChange.getMapExprs(toKeys, toValues), context.getModifier()).getWhere());
-        writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getSession(), context.getModifier(), notNull, check);
+        writeTo.property.setNotNull(toValues, toKeys, changeWhere, context.getEnv(), notNull, check);
     }
 
-    protected Collection<Property> getWriteProps() {
+    @Override
+    public Set<CalcProperty> getChangeProps() {
         return writeTo.property.getSetChangeProps(notNull, false);
     }
 
-    public Set<Property> getUsedProps() {
-        Set<Property> result = new HashSet<Property>();
+    @Override
+    public Set<CalcProperty> getUsedProps() {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         where.mapFillDepends(result);
         return result;
+    }
+
+    protected CalcPropertyMapImplement<?, I> getSetWhereProperty() {
+        if(notNull)
+            return DerivedProperty.createNot(innerInterfaces, writeTo);
+        return writeTo;
     }
 }

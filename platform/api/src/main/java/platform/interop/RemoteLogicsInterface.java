@@ -23,7 +23,7 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     byte[] findClass(String name) throws RemoteException;
 
-    RemoteNavigatorInterface createNavigator(String login, String password, int computer, boolean forceCreateNew) throws RemoteException;
+    RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
 

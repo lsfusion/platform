@@ -8,24 +8,24 @@ import java.util.List;
 public abstract class PullChangeProperty<T extends PropertyInterface, P extends PropertyInterface, I extends PropertyInterface> extends ChangeProperty<I> {
 
     // assert что constraint.isFalse
-    protected final Property<T> onChange;
-    protected final Property<P> toChange;
+    protected final CalcProperty<T> onChange;
+    protected final CalcProperty<P> toChange;
 
-    public PullChangeProperty(String SID, String caption, List<I> interfaces, Property<T> onChange, Property<P> toChange) {
+    public PullChangeProperty(String SID, String caption, List<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
         super(SID, caption, interfaces);
         this.onChange = onChange;
         this.toChange = toChange;
     }
 
-    public boolean isChangeBetween(Property property) {
+    public boolean isChangeBetween(CalcProperty property) {
         return equals(property) || (depends(onChange, property) && depends(property, toChange));
     }
 
-    public static QuickSet<Property> getUsedChanges(Property<?> onChange, Property<?> toChange, StructChanges propChanges) {
+    public static QuickSet<CalcProperty> getUsedChanges(CalcProperty<?> onChange, CalcProperty<?> toChange, StructChanges propChanges) {
         return QuickSet.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
     }
 
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return getUsedChanges(onChange,toChange, propChanges);
     }
 

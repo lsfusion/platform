@@ -161,15 +161,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         return updated;
     }
 
-    private void addActions(FormNode formNode) {
-        formNode.addSubTreeAction(
-                new ClassFilteredAction(ClientResourceBundle.getString("descriptor.view.edit"), EditableTreeNode.class, true) {
-                    public void actionPerformed(ClientTreeActionEvent e) {
-                        form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, e.getNode().getUserObject());
-                    }
-                });
-    }
-
     class VisualSetupTreeCellRenderer extends ClientTree.ClientTreeCellRenderer {
         private Color backgroundSelectionColor;
         private Color backgroundNonSelectionColor;
@@ -204,19 +195,19 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
                 GroupObjectFolder groupObjectFolder = ((FormNode) model.getRoot()).groupObjectFolder;
                 tree.expandPath((new TreePath(groupObjectFolder.getPath())));
 
-                String name;
-                String lastActive = "";
-                if (form.client.lastActiveGroupObject != null)
-                    lastActive = form.client.lastActiveGroupObject.toString();
-                for (int i = 0; i < groupObjectFolder.getChildCount(); i++) {
-                    name = groupObjectFolder.getChildAt(i).toString();
-                    if (name.equals(lastActive)) {
-                        TreePath path = new TreePath(
-                                ((DefaultTreeModel)tree.getModel()).getPathToRoot(groupObjectFolder.getChildAt(i)));
-                        tree.setSelectionPath(path);
-                        EditableTreeNode node = (EditableTreeNode) groupObjectFolder.getChildAt(i);
+                if (form.client.lastActiveGroupObject != null) {
+                    String lastActive = form.client.lastActiveGroupObject.toString();
+                    for (int i = 0; i < groupObjectFolder.getChildCount(); i++) {
+                        String name = groupObjectFolder.getChildAt(i).toString();
+                        if (name.equals(lastActive)) {
+                            tree.setSelectionPath(
+                                    new TreePath(tree.getModel().getPathToRoot(groupObjectFolder.getChildAt(i)))
+                            );
+                            EditableTreeNode node = (EditableTreeNode) groupObjectFolder.getChildAt(i);
 
-                        view.setEditor(node.createEditor(form));
+                            view.setEditor(node.createEditor(form));
+                            break;
+                        }
                     }
                 }
             }
@@ -227,7 +218,13 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
             TreeNode refreshNode;
             if (form != null) {
                 FormNode rootNode = new FormNode(form);
-                addActions(rootNode);
+
+                rootNode.addSubTreeAction(
+                        new ClassFilteredAction(ClientResourceBundle.getString("descriptor.view.edit"), EditableTreeNode.class, true) {
+                            public void actionPerformed(ClientTreeActionEvent e) {
+                                form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, e.getNode().getUserObject());
+                            }
+                        });
 
                 refreshNode = rootNode;
             } else {

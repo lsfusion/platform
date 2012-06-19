@@ -3,16 +3,15 @@ package platform.server.mail;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
-import platform.base.Result;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyMapImplement;
+import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.actions.CustomActionProperty;
 
 import javax.mail.Message;
@@ -24,7 +23,7 @@ import java.util.regex.Pattern;
 public class NotificationActionProperty extends CustomActionProperty {
     private final static Logger logger = Logger.getLogger(NotificationActionProperty.class);
 
-    private final LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
+    private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
 
     private final String subjectNotification;
     private final String textNotification;
@@ -35,7 +34,7 @@ public class NotificationActionProperty extends CustomActionProperty {
 
     private final BusinessLogics<?> BL;
 
-    public NotificationActionProperty(String sID, String caption, LP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
+    public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
         super(sID, caption, getValueClasses(targetProperty));
 
         this.subjectNotification = subjectNotification;
@@ -50,12 +49,11 @@ public class NotificationActionProperty extends CustomActionProperty {
         setImage("email.png");
     }
 
-    private static ValueClass[] getValueClasses(LP sourceProperty) {
-        return sourceProperty.getCommonClasses(new Result<ValueClass>() {
-        });
+    private static ValueClass[] getValueClasses(LCP sourceProperty) {
+        return sourceProperty.getInterfaceClasses();
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         if (BL.LM.disableEmail.read(context) != null) {
             logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
@@ -86,7 +84,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         while (m.find()) {
             String propertySID = m.group(1);
             int interfacesCount = m.group(2).split(",").length;
-            LP replaceProperty = BL.LM.getLP(propertySID.trim());
+            LCP replaceProperty = (LCP) BL.LM.getLP(propertySID.trim());
             Object replacePropertyValue;
             if (!"".equals(m.group(2))) {
                 DataObject[] objects = new DataObject[interfacesCount];
@@ -117,7 +115,7 @@ public class NotificationActionProperty extends CustomActionProperty {
         if (smtpHost == null || emailFromNotification == null) {
             String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
             logger.error(errorMessage);
-            context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+            context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
         } else {
             EmailSender sender = new EmailSender(smtpHost.trim(),BaseUtils.nullTrim(smtpPort), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
             try {
@@ -125,7 +123,7 @@ public class NotificationActionProperty extends CustomActionProperty {
             } catch (Exception e) {
                 String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
                 logger.error(errorMessage);
-                context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+                context.delayUserInterfaction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
                 e.printStackTrace();
             }
         }

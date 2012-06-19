@@ -1,7 +1,5 @@
 package platform.client;
 
-import platform.client.form.PropertyEditorComponent;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -35,12 +33,12 @@ public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
         list.remove(c);
     }
 
-    @Override
-    public Component getComponentAfter(Container aContainer, Component aComponent) {
-        do {
-            aComponent = super.getComponentAfter(aContainer, aComponent);
-        } while (aComponent != null && (aComponent instanceof PropertyEditorComponent || !aComponent.isFocusable()));
-
-        return aComponent;
-    }
+//    @Override
+//    public Component getComponentAfter(Container aContainer, Component aComponent) {
+//        do {
+//            aComponent = super.getComponentAfter(aContainer, aComponent);
+//        } while (aComponent != null && (aComponent instanceof PropertyEditorComponent || !aComponent.isFocusable()));
+//
+//        return aComponent;
+//    }
 }

@@ -10,9 +10,9 @@ import java.util.Calendar;
 public class YearClass extends IntegerClass {
 
     public final static YearClass instance = new YearClass();
-    private final static String sid = "YearClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected YearClass() { caption = ServerResourceBundle.getString("classes.year"); }
@@ -38,6 +38,6 @@ public class YearClass extends IntegerClass {
     }
 
     public String getSID() {
-        return sid;
+        return "YearClass";
     }
 }

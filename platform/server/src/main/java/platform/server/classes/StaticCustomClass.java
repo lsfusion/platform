@@ -11,6 +11,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.session.DataSession;
 
@@ -61,7 +62,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         throw new RuntimeException("id not found");
     }
 
-    public Map<Object, String> fillIDs(DataSession session, LP name, LP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds) throws SQLException {
+    public Map<Object, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds) throws SQLException {
         StaticCustomClass usedClass;
         ids = new Integer[sids.length];
         Map<Object, String> modifiedNames = new HashMap<Object, String>();
@@ -77,9 +78,9 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
             findClass.properties.put("name", name.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)));
             OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session.sql, session.env);
             if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
-                DataObject classObject = session.addObject(this, session.modifier);
-                name.execute(names[i], session, session.modifier, classObject);
-                classSID.execute(sidObject, session, session.modifier, classObject);
+                DataObject classObject = session.addObject(this);
+                name.change(names[i], session, classObject);
+                classSID.change(sidObject, session, classObject);
                 ids[i] = (Integer) classObject.object;
             } else { // assert'ся что класс 1
                 if (names[i] != null && !names[i].equals(((String) BaseUtils.singleValue(result).get("name")).trim())) {

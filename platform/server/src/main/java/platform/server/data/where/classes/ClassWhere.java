@@ -6,6 +6,7 @@ import platform.server.data.Field;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.awt.event.KeyListener;
@@ -108,6 +109,13 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return result;
     }
 
+    public <T extends K> ClassWhere<T> keep(Collection<T> keys) {
+        ClassWhere<T> result = ClassWhere.STATIC(false);
+        for(And<K> andWhere : wheres)
+            result = result.or(new ClassWhere<T>(andWhere.keep(keys)));
+        return result;
+    }
+
     public Where getWhere(Map<K, ? extends Expr> mapExprs) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
@@ -116,7 +124,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
     }
     
-    public <T> ClassWhere<T> remap(Map<K, T> map) {
+    public <T> ClassWhere<T> remap(Map<K, ? extends T> map) {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)
             remapWheres[i] = wheres[i].remap(map);

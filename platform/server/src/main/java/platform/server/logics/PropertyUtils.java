@@ -1,13 +1,11 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
-import platform.base.Result;
 import platform.server.classes.ValueClass;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.PropertyImplement;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyInterfaceImplement;
-import platform.server.logics.property.PropertyMapImplement;
+import platform.server.logics.property.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,28 +13,24 @@ import java.util.List;
 import java.util.Map;
 
 public class PropertyUtils {
-    public static ValueClass[] getValueClasses(boolean mapReturns, LP[] dataProperties, int[][] mapInterfaces) {
-        return getValueClasses(mapReturns, dataProperties, mapInterfaces, true);
+    public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces) {
+        return getValueClasses(dataProperties, mapInterfaces, true);
     }
 
-    public static ValueClass[] getValueClasses(boolean mapReturns, LP[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
+    public static ValueClass[] getValueClasses(LAP<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
         Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>();
         for (int i = 0; i < dataProperties.length; ++i) {
-            LP dataProperty = dataProperties[i];
+            LAP<?> dataProperty = dataProperties[i];
 
-            if (!mapReturns && dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
+            if (dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
                 continue;
 
             int[] mapPropInterfaces = mapInterfaces[i];
             if (mapPropInterfaces == null) {
-                mapPropInterfaces = BaseUtils.consecutiveInts(dataProperty.listInterfaces.size() + (mapReturns ? 1 : 0));
+                mapPropInterfaces = BaseUtils.consecutiveInts(dataProperty.listInterfaces.size());
             }
 
-            Result<ValueClass> result = new Result<ValueClass>();
-            ValueClass[] propClasses = dataProperty.getCommonClasses(result);
-            if (mapReturns) {
-                propClasses = BaseUtils.addElement(propClasses, result.result, ValueClass.class);
-            }
+            ValueClass[] propClasses = dataProperty.getInterfaceClasses();
 
             assert propClasses.length == mapPropInterfaces.length;
 
@@ -74,25 +68,26 @@ public class PropertyUtils {
         return params;
     }
 
-    public static Object[] getUParams(LP[] props, int exoff) {
-        int intNum = props[0].listInterfaces.size();
-        Object[] params = new Object[props.length * (1 + intNum + exoff)];
-        for (int i = 0; i < props.length; i++) {
-            if (exoff > 0)
-                params[i * (1 + intNum + exoff)] = 1;
-            params[i * (1 + intNum + exoff) + exoff] = props[i];
-            for (int j = 1; j <= intNum; j++)
-                params[i * (1 + intNum + exoff) + exoff + j] = j;
-        }
+    public static Integer[] getIntParams(LP prop) {
+        Integer[] params  = new Integer[prop.listInterfaces.size()];
+        for(int i=0;i<prop.listInterfaces.size();i++)
+            params[i] = (i+1);
         return params;
     }
 
+    public static Object[] getUParams(LP[] props) {
+        Object[] result = new Object[0];
+        for (LP prop : props)
+            result = BaseUtils.add(result, directLI(prop));
+        return result;
+    }
+
     public static Object[] directLI(LP prop) {
-        return getUParams(new LP[]{prop}, 0);
+        return BaseUtils.add(prop, getParams(prop));
     }
 
     // считывает "линейные" имплементации
-    public static List<LI> readLI(Object[] params) {
+    private static List<LI> readLI(Object[] params) {
         List<LI> result = new ArrayList<LI>();
         for (int i = 0; i < params.length; i++)
             if (params[i] instanceof Integer)
@@ -107,22 +102,7 @@ public class PropertyUtils {
         return result;
     }
 
-    public static Object[] writeLI(List<LI> linearImpl) {
-        Object[][] objectLI = new Object[linearImpl.size()][];
-        for (int i = 0; i < linearImpl.size(); i++)
-            objectLI[i] = linearImpl.get(i).write();
-        int size = 0;
-        for (Object[] li : objectLI)
-            size += li.length;
-        Object[] result = new Object[size];
-        int i = 0;
-        for (Object[] li : objectLI)
-            for (Object param : li)
-                result[i++] = param;
-        return result;
-    }
-
-    public static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> mapLI(List<LI> linearImpl, List<T> interfaces) {
+    private static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> mapLI(List<LI> linearImpl, List<T> interfaces) {
         List<PropertyInterfaceImplement<T>> result = new ArrayList<PropertyInterfaceImplement<T>>();
         for (LI impl : linearImpl)
             result.add(impl.map(interfaces));
@@ -133,11 +113,12 @@ public class PropertyUtils {
         return mapLI(readLI(params), listInterfaces);
     }
 
-    public static <T extends PropertyInterface> List<T> readInterfaces(List<T> listInterfaces, int... params) {
-        List<T> result = new ArrayList<T>();
-        for(int param : params)
-            result.add(listInterfaces.get(param));
-        return result;
+    public static <T extends PropertyInterface> List<CalcPropertyInterfaceImplement<T>> readCalcImplements(List<T> listInterfaces, Object... params) {
+        return BaseUtils.immutableCast(readImplements(listInterfaces, params));
+    }
+
+    public static <T extends PropertyInterface> List<ActionPropertyMapImplement<?, T>> readActionImplements(List<T> listInterfaces, Object... params) {
+        return BaseUtils.immutableCast(readImplements(listInterfaces, params));
     }
 
     public static int getIntNum(Object[] params) {
@@ -148,14 +129,22 @@ public class PropertyUtils {
         return intNum;
     }
 
-    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, PropertyInterfaceImplement<P>> mapImplement(LP<T> property, List<PropertyInterfaceImplement<P>> propImpl) {
+    public static <P extends PropertyInterface> ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>> mapActionImplement(LAP<P> property, List<CalcPropertyInterfaceImplement<P>> propImpl) {
+        return new ActionPropertyImplement<P, CalcPropertyInterfaceImplement<P>>(property.property, getMapping(property, propImpl));
+    }
+
+    public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyImplement<T, CalcPropertyInterfaceImplement<P>> mapCalcImplement(LCP<T> property, List<CalcPropertyInterfaceImplement<P>> propImpl) {
+        return new CalcPropertyImplement<T, CalcPropertyInterfaceImplement<P>>(property.property, getMapping(property, propImpl));
+    }
+
+    private static <T extends PropertyInterface, P extends PropertyInterface> Map<T, CalcPropertyInterfaceImplement<P>> getMapping(LP<T, ?> property, List<CalcPropertyInterfaceImplement<P>> propImpl) {
         int mainInt = 0;
-        Map<T, PropertyInterfaceImplement<P>> mapping = new HashMap<T, PropertyInterfaceImplement<P>>();
-        for (PropertyInterfaceImplement<P> implement : propImpl) {
+        Map<T, CalcPropertyInterfaceImplement<P>> mapping = new HashMap<T, CalcPropertyInterfaceImplement<P>>();
+        for (CalcPropertyInterfaceImplement<P> implement : propImpl) {
             mapping.put(property.listInterfaces.get(mainInt), implement);
             mainInt++;
         }
-        return new PropertyImplement<T, PropertyInterfaceImplement<P>>(property.property, mapping);
+        return mapping;
     }
 
     static ValueClass[] overrideClasses(ValueClass[] commonClasses, ValueClass[] overrideClasses) {
@@ -178,7 +167,6 @@ public class PropertyUtils {
 
         abstract Object[] write();
 
-        abstract Object[] compare(LP compare, BusinessLogics BL, int intOff);
     }
 
     static class LII extends LI {
@@ -188,7 +176,7 @@ public class PropertyUtils {
             this.intNum = intNum;
         }
 
-        <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces) {
+        <T extends PropertyInterface<T>> CalcPropertyInterfaceImplement<T> map(List<T> interfaces) {
             return interfaces.get(intNum - 1);
         }
 
@@ -196,25 +184,26 @@ public class PropertyUtils {
             return new Object[]{intNum};
         }
 
-        Object[] compare(LP compare, BusinessLogics BL, int intOff) {
-            return new Object[]{compare, intNum, intNum + intOff};
-        }
     }
 
     static class LMI<P extends PropertyInterface> extends LI {
-        LP<P> lp;
+        LP<P, ?> lp;
         int[] mapInt;
 
-        LMI(LP<P> lp) {
+        LMI(LP<P, ?> lp) {
             this.lp = lp;
             this.mapInt = new int[lp.listInterfaces.size()];
         }
 
         <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces) {
-            PropertyMapImplement<P, T> mapRead = new PropertyMapImplement<P, T>(lp.property);
+            Map<P, T> mapping = new HashMap<P, T>();
             for (int i = 0; i < lp.listInterfaces.size(); i++)
-                mapRead.mapping.put(lp.listInterfaces.get(i), interfaces.get(mapInt[i] - 1));
-            return mapRead;
+                mapping.put(lp.listInterfaces.get(i), interfaces.get(mapInt[i] - 1));
+
+            if(lp.property instanceof ActionProperty)
+                return new ActionPropertyMapImplement<P, T>((ActionProperty<P>) lp.property, mapping);
+            else
+                return new CalcPropertyMapImplement<P, T>((CalcProperty<P>) lp.property, mapping);
         }
 
         Object[] write() {
@@ -225,18 +214,5 @@ public class PropertyUtils {
             return result;
         }
 
-        Object[] compare(LP compare, BusinessLogics BL, int intOff) {
-            int lmiLen = mapInt.length;
-            Object[] common = new Object[lmiLen * 2 + 1];
-            Object[] shift = new Object[lmiLen + 1];
-            shift[0] = lp;
-            for (int j = 1; j <= lmiLen; j++) {
-                shift[j] = j + lmiLen;
-                common[j] = mapInt[j - 1];
-                common[j + lmiLen] = mapInt[j - 1] + intOff;
-            }
-            common[0] = BL.LM.addJProp(compare, BaseUtils.add(directLI(lp), shift));
-            return common;
-        }
     }
 }

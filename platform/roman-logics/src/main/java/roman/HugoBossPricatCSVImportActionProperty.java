@@ -1,37 +1,35 @@
 package roman;
 
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.*;
 
-public class HugoBossPricatCSVImportActionProperty extends CustomActionProperty {
+public class HugoBossPricatCSVImportActionProperty extends CustomReadValueActionProperty {
     private RomanLogicsModule LM;
 
-    private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.csv)", "csv");
+    private final CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы данных (*.csv)", "csv");
 
     public HugoBossPricatCSVImportActionProperty(String sID, RomanLogicsModule LM, ValueClass supplier) {
         super(sID, "Импортировать прайс (CSV)", new ValueClass[]{supplier});
         this.LM = LM;
     }
 
-    @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         ClassPropertyInterface supplierInterface = i.next();
         DataObject supplier = context.getKeyValue(supplierInterface);
 
-        List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+        List<byte[]> fileList = valueClass.getFiles(userValue);
 
         ImportField barcodeField = new ImportField(LM.barcodePricat);
         ImportField articleField = new ImportField(LM.articleNumberPricat);
@@ -75,8 +73,7 @@ public class HugoBossPricatCSVImportActionProperty extends CustomActionProperty 
         }
     }
 
-    @Override
-    public DataClass getValueClass() {
+    protected DataClass getReadType() {
         return valueClass;
     }
 }

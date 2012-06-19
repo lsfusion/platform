@@ -25,8 +25,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     public static class Query extends AggrExpr.Query<PartitionType, Query> {
         public Set<Expr> partitions;
 
-        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, PartitionType type) {
-            super(exprs, orders, type);
+        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, Set<Expr> partitions, PartitionType type) {
+            super(exprs, orders, ordersNotNull, type);
             this.partitions = partitions;
         }
 
@@ -64,11 +64,11 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
         @Override
         public Query calculatePack() {
-            return new Query(Expr.pack(exprs), Expr.pack(orders), Expr.pack(partitions), type);
+            return new Query(Expr.pack(exprs), Expr.pack(orders), ordersNotNull, Expr.pack(partitions), type);
         }
 
-        public Set<Expr> getExprs() {
-            return PartitionType.getSet(exprs, orders, partitions);
+        public Collection<Expr> getAggrExprs() {
+            return BaseUtils.merge(exprs, partitions);
         }
     }
 
@@ -89,8 +89,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return new QueryInnerContext(this);
     }
 
-    private PartitionExpr(PartitionType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
-        this(new Query(exprs, orders, partitions, partitionType), group);
+    private PartitionExpr(PartitionType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, Set<Expr> partitions) {
+        this(new Query(exprs, orders, ordersNotNull, partitions, partitionType), group);
     }
 
     // трансляция
@@ -127,7 +127,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        return create(query.type, query.exprs, query.orders, query.partitions, translator.translate(group));
+        return create(query.type, query.exprs, query.orders, query.ordersNotNull, query.partitions, translator.translate(group));
     }
 
     @Override
@@ -140,12 +140,12 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         Map<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
         Query packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
-            return create(query.type, packedQuery.exprs, packedQuery.orders, packedQuery.partitions, packedGroup);
+            return create(query.type, packedQuery.exprs, packedQuery.orders, packedQuery.ordersNotNull, packedQuery.partitions, packedGroup);
         else
             return this;
     }
 
-    protected static Expr createBase(PartitionType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+    protected static Expr createBase(PartitionType partitionType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, Set<Expr> partitions) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
         Set<Expr> restPartitions = new HashSet<Expr>(partitions);
@@ -162,13 +162,22 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             restPartitions = translator.translate(restPartitions);
         }
 
-        return BaseExpr.create(new PartitionExpr(partitionType, restGroup, exprs, orders, restPartitions));
+        return BaseExpr.create(new PartitionExpr(partitionType, restGroup, exprs, orders, ordersNotNull, restPartitions));
     }
 
-    public static Expr create(final PartitionType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
+    public static Expr create(final PartitionType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group, PullExpr noPull) {
+        Map<KeyExpr, Expr> pullGroup = new HashMap<KeyExpr, Expr>(group);
+        for(KeyExpr key : getOuterKeys(exprs).merge(getOuterKeys(orders.keySet())).merge(getOuterKeys(partitions)))
+            if(key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull))
+                pullGroup.put(key, key);
+
+        return create(partitionType, exprs, orders, ordersNotNull, partitions, pullGroup);
+    }
+
+    public static Expr create(final PartitionType partitionType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final boolean ordersNotNull, final Set<? extends Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
-                return createBase(partitionType, map, exprs, orders, (Set<Expr>) partitions);
+                return createBase(partitionType, map, exprs, orders, ordersNotNull, (Set<Expr>) partitions);
             }
         }.proceed(group);
     }
@@ -181,8 +190,11 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
                 return (AndClassSet) type;
             else {
                 QuickMap<KeyExpr, AndClassSet> keyClasses = new SimpleMap<KeyExpr, AndClassSet>();
-                for(Map.Entry<KeyExpr, BaseExpr> groupEntry : group.entrySet())
-                    keyClasses.add(groupEntry.getKey(), groupEntry.getValue().getAndClassSet(and));
+                for(Map.Entry<KeyExpr, BaseExpr> groupEntry : group.entrySet()) {
+                    AndClassSet classSet = groupEntry.getValue().getAndClassSet(and);
+                    if(classSet!=null)
+                        keyClasses.add(groupEntry.getKey(), classSet);
+                }
                 final ClassExprWhere keyWhere = new ClassExprWhere(keyClasses);
 
                 return new ExclExprPullWheres<AndClassSet>() {

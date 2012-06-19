@@ -6,6 +6,7 @@ import platform.interop.form.layout.ContainerType;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -24,6 +25,10 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
                 formLayout.dropCaches();
             }
         });
+
+        // вырезаем стандартные шорткаты
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), "none");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), "none");
 
         ((BasicSplitPaneUI) getUI()).getDivider().setBorder(BorderFactory.createEtchedBorder());
     }

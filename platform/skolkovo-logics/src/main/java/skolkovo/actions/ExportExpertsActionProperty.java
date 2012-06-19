@@ -3,16 +3,14 @@ package skolkovo.actions;
 import org.apache.commons.lang.StringEscapeUtils;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
-import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.linear.LCP;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import skolkovo.SkolkovoLogicsModule;
@@ -33,9 +31,9 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        LP isExpert = LM.is(LM.expert);
+        LCP isExpert = LM.is(LM.expert);
         Map<Object, KeyExpr> keys = isExpert.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -63,7 +61,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
         query.and(isExpert.getExpr(key).getWhere());
         
         String xml = "<experts>";
-        OrderedMap<Map<Object,DataObject>, Map<Object,ObjectValue>> result = query.executeClasses(context.getSession());
+        OrderedMap<Map<Object,DataObject>, Map<Object,ObjectValue>> result = query.executeClasses(context);
         for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
             Map<Object, ObjectValue> values = entry.getValue();
             
@@ -88,7 +86,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
             queryCluster.properties.put("nameShort", LM.nameNativeShort.getExpr(context.getModifier(), clusterKey));
             queryCluster.and(LM.inClusterExpert.getExpr(context.getModifier(), clusterKey, expertObj.getExpr()).getWhere());
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultCluster = queryCluster.execute(context.getSession());
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultCluster = queryCluster.execute(context);
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entryCluster : resultCluster.entrySet()) {
                 xml += "    <cluster>" + ((String)BaseUtils.singleValue(entryCluster.getValue())).trim() + "</cluster>\n";
             }
@@ -100,7 +98,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
             queryForesight.properties.put("comment", LM.commentExpertForesight.getExpr(context.getModifier(), expertObj.getExpr(), foresightKey));
             queryForesight.and(LM.inExpertForesight.getExpr(context.getModifier(), expertObj.getExpr(), foresightKey).getWhere());
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultForesight = queryForesight.execute(context.getSession());
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> resultForesight = queryForesight.execute(context);
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entryForesight : resultForesight.entrySet()) {
                 xml += "    <foresight>\n";
                 xml += "        <id>" + ((String)entryForesight.getValue().get("id")).trim() + "</id>\n";
@@ -115,6 +113,6 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
 
         xml += "</experts>\n";
 
-        context.addAction(new ExportFileClientAction("experts.xml", xml, "utf-8"));
+        context.delayUserInterfaction(new ExportFileClientAction("experts.xml", xml, "utf-8"));
     }
 }

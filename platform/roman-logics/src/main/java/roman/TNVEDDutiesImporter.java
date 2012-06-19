@@ -4,6 +4,7 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.ObjectValue;
@@ -21,7 +22,7 @@ public class TNVEDDutiesImporter extends TNVEDImporter {
     private ImportField dutyPercentField = new ImportField(LM.dutyPercentCustomCategory10TypeDuty);
     private ImportField dutyEuroField = new ImportField(LM.dutySumCustomCategory10TypeDuty);
 
-    public TNVEDDutiesImporter(RemoteForm executeForm, ObjectValue value, RomanLogicsModule LM) {
+    public TNVEDDutiesImporter(FormInstance executeForm, ObjectValue value, RomanLogicsModule LM) {
         super(executeForm, value, LM);
     }
 

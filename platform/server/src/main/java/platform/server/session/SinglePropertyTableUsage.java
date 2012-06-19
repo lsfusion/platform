@@ -13,7 +13,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.util.List;
@@ -33,10 +33,6 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
     public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update, boolean groupLast) throws SQLException {
         insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update, groupLast);
-    }
-
-    public void writeRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        writeRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, env);
     }
 
     public void addRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException {

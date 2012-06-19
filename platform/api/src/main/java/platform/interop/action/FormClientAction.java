@@ -4,22 +4,18 @@ import platform.interop.form.RemoteFormInterface;
 
 import java.io.IOException;
 
-public class FormClientAction extends AbstractClientAction {
+public class FormClientAction extends ExecuteClientAction {
 
-    public boolean newSession;
     public boolean isModal;
-    public boolean isPrintForm;
     public RemoteFormInterface remoteForm;
 
-    public FormClientAction(boolean isPrintForm, boolean newSession, boolean isModal, RemoteFormInterface remoteForm) {
-        this.isPrintForm = isPrintForm;
-        this.newSession = newSession;
+    public FormClientAction(boolean isModal, RemoteFormInterface remoteForm) {
         this.isModal = isModal;
         this.remoteForm = remoteForm;
     }
 
     @Override
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
 }

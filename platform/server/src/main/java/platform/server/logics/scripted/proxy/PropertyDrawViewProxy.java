@@ -3,7 +3,6 @@ package platform.server.logics.scripted.proxy;
 import platform.server.form.view.PropertyDrawView;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -76,6 +75,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setAskConfirm(boolean askConfirm) {
-        target.askConfirm = askConfirm;
+        target.entity.askConfirm = askConfirm;
+    }
+
+    public void setAskConfirmMessage(String askConfirmMessage) {
+        target.entity.askConfirmMessage = askConfirmMessage;
     }
 }

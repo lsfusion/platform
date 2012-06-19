@@ -12,8 +12,8 @@ import platform.server.data.query.IQuery;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyQueryType;
+import platform.server.logics.property.*;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 
@@ -27,7 +27,7 @@ public class AutoHintsAspect {
 
     public static ThreadLocal<FormInstance> catchAutoHint = new ThreadLocal<FormInstance>();
     
-    public Object callAutoHint(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
+    public Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Modifier modifier) throws Throwable {
         if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             FormInstance formInstance = (FormInstance) modifier;
             catchAutoHint.set(formInstance);
@@ -50,21 +50,24 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
     }
 
-    @Around("execution(* platform.server.logics.property.Property.getExpr(java.util.Map, platform.server.session.Modifier)) && target(property) && args(map, modifier)")
-    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map map, Modifier modifier) throws Throwable {
+    @Around("execution(* platform.server.logics.property.CalcProperty.getExpr(java.util.Map, platform.server.session.Modifier)) && target(property) && args(map, modifier)")
+    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Map map, Modifier modifier) throws Throwable {
         return callAutoHint(thisJoinPoint, property, modifier);
     }
-    @Around("execution(* platform.server.logics.property.Property.getIncrementChange(platform.server.session.Modifier)) && target(property) && args(modifier)")
-    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
+    @Around("execution(* platform.server.logics.property.CalcProperty.getIncrementChange(platform.server.session.Modifier)) && target(property) && args(modifier)")
+    public Object callGetIncrementChange(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Modifier modifier) throws Throwable {
         return callAutoHint(thisJoinPoint, property, modifier);
     }
 
-    private static boolean allowHint(Property property) {
+    private static boolean allowHint(CalcProperty property) {
         FormInstance catchHint = catchAutoHint.get();
-        return catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
-    } 
-    @Around("execution(* platform.server.logics.property.Property.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
-    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
+        boolean allow = catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
+        if(allow && catchHint.forceHintIncrement(property)) // сразу кидаем exception
+            throw new AutoHintException(property, true);
+        return allow;
+    }
+    @Around("execution(* platform.server.logics.property.CalcProperty.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
+    public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
         assert property.isFull();
 
         IQuery<?, String> result = (IQuery) thisJoinPoint.proceed();
@@ -102,14 +105,14 @@ public class AutoHintsAspect {
 
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("execution(* platform.server.logics.property.Property.getJoinExpr(java.util.Map,boolean,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
+    @Around("execution(* platform.server.logics.property.CalcProperty.getJoinExpr(java.util.Map,boolean,platform.server.session.PropertyChanges,platform.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, boolean propClasses,  Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses,  Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
         if(!property.isFull() || !allowHint(property))
             return thisJoinPoint.proceed();
 
-        WhereBuilder cascadeWhere = Property.cascadeWhere(changedWhere);
+        WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
         Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, propClasses, joinExprs, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
@@ -122,9 +125,9 @@ public class AutoHintsAspect {
 
     public static class AutoHintException extends RuntimeException {
 
-        public final Property property;
+        public final CalcProperty property;
         public final boolean lowstat; 
-        public AutoHintException(Property property, boolean lowstat) {
+        public AutoHintException(CalcProperty property, boolean lowstat) {
             this.property = property;
             this.lowstat = lowstat;
         }

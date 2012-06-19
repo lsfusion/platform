@@ -3,14 +3,19 @@ package platform.server.form.entity;
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
 import platform.interop.FormEventType;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.actions.ChangeReadObjectActionProperty;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,22 +28,14 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public GroupObjectEntity groupTo;
 
     public String caption;
+
     public String getCaption() {
-        return !BaseUtils.isRedundantString(caption)?caption:baseClass.toString();
+        return !BaseUtils.isRedundantString(caption)
+               ? caption
+               : !BaseUtils.isRedundantString(baseClass.toString())
+                 ? baseClass.toString()
+                 : ServerResourceBundle.getString("logics.undefined.object");
     }
-
-    public Set<FormEventType> addOnEvent = new HashSet<FormEventType>();
-
-    public void setAddOnTransaction() {
-        setAddOnEvent(FormEventType.INIT, FormEventType.APPLY, FormEventType.CANCEL);
-    }
-
-    public void setAddOnEvent(FormEventType... events) {
-        for (FormEventType event : events)
-            addOnEvent.add(event);
-    }
-
-    public boolean resetOnApply = false;
 
     public ValueClass baseClass;
 
@@ -65,11 +62,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         objects.add(this);
     }
 
-    @Override
-    public Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) {
-        return factory.getInstance(this).getDataObject().getValue();
-    }
-
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
     }
@@ -89,5 +81,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @Override
     public String toString() {
         return getCaption();
+    }
+
+    @IdentityLazy
+    public CustomActionProperty getChangeAction(Property filterProperty) {
+        assert baseClass instanceof CustomClass;
+        return new ChangeReadObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());
     }
 }

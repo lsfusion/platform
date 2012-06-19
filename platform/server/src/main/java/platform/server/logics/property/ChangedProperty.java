@@ -1,32 +1,34 @@
 package platform.server.logics.property;
 
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
 import java.util.*;
 
-public class ChangedProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
+public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
-    private final Property<T> property;
     private final IncrementType type;
 
-    public ChangedProperty(Property<T> property, IncrementType type) {
-        super("CHANGED_" + type + "_" + property.getSID(), property.caption + " (" + type + ")", (List<T>)property.interfaces);
-        this.property = property;
+    public ChangedProperty(CalcProperty<T> property, IncrementType type) {
+        super("CHANGED_" + type + "_" + property.getSID(), property.caption + " (" + type + ")", property);
         this.type = type;
 
         property.getOld();// чтобы зарегить old
     }
 
+    public OldProperty<T> getOldProperty() {
+        return property.getOld();
+    }
+
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
         depends.add(property);
         depends.add(property.getOld());
     }
@@ -38,13 +40,8 @@ public class ChangedProperty<T extends PropertyInterface> extends SimpleIncremen
         return ValueExpr.get(changedIncrementWhere.toWhere());
     }
 
-    @Override
-    public Set<ChangedProperty> getChangedDepends() {
-        return Collections.<ChangedProperty>singleton(this);
-    }
-
     // для resolve'а следствий в частности
-    protected PropertyChange<T> getFullChange(Modifier modifier) {
+    public PropertyChange<T> getFullChange(Modifier modifier) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         Expr expr = property.getExpr(mapKeys, modifier);
         Where where;

@@ -1,5 +1,6 @@
 package platform.client.form.tree;
 
+import com.google.common.base.Preconditions;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import platform.base.BaseUtils;
@@ -11,7 +12,6 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.tree.TreePath;
-import java.io.IOException;
 import java.util.*;
 
 class GroupTreeTableModel extends DefaultTreeTableModel {
@@ -69,20 +69,10 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         return node.toString();
     }
 
-    public void changeProperty(Object value, Object node, int column, boolean aggValue) {
-        ClientPropertyDraw property = getProperty(node, column);
-        if (property != null) {
-            try {
-                form.changePropertyDraw(property, ((TreeGroupNode) node).key, value, false, aggValue);
-            } catch (IOException e) {
-                throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), e);
-            }
-        }
-    }
-
     @Override
     public void setValueAt(Object value, Object node, int column) {
-        changeProperty(value, node, column, true);
+        Preconditions.checkState(false, "setValueAt shouldn't be called");
+//        changeProperty(value, node, column, true);
     }
 
     @Override
@@ -123,7 +113,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     public ClientPropertyDraw getProperty(Object node, int column) {
         if (node instanceof TreeGroupNode) {
             List<ClientPropertyDraw> groupProperties = groupPropsMap.get(((TreeGroupNode) node).group);
-            if (groupProperties == null || column == 0 || column > groupProperties.size()) {
+            if (groupProperties == null || column <= 0 || column > groupProperties.size()) {
                 return null;
             }
 

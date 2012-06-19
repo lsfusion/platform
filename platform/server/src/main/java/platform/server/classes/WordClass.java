@@ -1,18 +1,31 @@
 package platform.server.classes;
 
 import platform.interop.Data;
-import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
 
-public class WordClass extends FileClass {
+import java.io.DataInputStream;
+import java.io.IOException;
 
-    public final static WordClass instance = new WordClass();
-    private final static String sid = "WordClass";
-    static {
-        DataClass.storeClass(sid, instance);
+public class WordClass extends StaticFormatFileClass {
+
+    public final static WordClass instance = new WordClass(false);
+    public final static WordClass multipleInstance = new WordClass(true);
+
+    protected String getFileSID() {
+        return "WordClass";
     }
 
-    protected WordClass() {}
+    static {
+        DataClass.storeClass(instance, multipleInstance);
+    }
+
+    protected WordClass(boolean multiple) {
+        super(multiple);
+    }
+
+    public WordClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.word.file");
@@ -26,11 +39,7 @@ public class WordClass extends FileClass {
         return Data.WORD;
     }
 
-    public String getSID() {
-        return sid;
-    }
-
-    public String getExtensions() {
-        return "doc,docx";
+    public String getOpenExtension() {
+        return "doc"; //,docx";
     }
 }

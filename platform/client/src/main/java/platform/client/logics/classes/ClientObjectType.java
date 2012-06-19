@@ -1,23 +1,20 @@
 package platform.client.logics.classes;
 
-import platform.client.Main;
 import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
-import platform.client.form.cell.TableCellView;
+import platform.client.form.cell.DataCellView;
 import platform.client.form.editor.IntegerPropertyEditor;
-import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GObjectType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
-import platform.interop.form.RemoteDialogInterface;
 
 import java.awt.*;
 import java.io.IOException;
@@ -71,23 +68,21 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new TableCellView(key, columnKey, form);
+        return new DataCellView(form, key, columnKey);
     }
 
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(ownerComponent, property.createEditorForm(form.remoteForm), true);
+    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+        assert false:"shouldn't be used anymore";
+        return null;
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        RemoteDialogInterface remoteDialog = form.remoteForm.createObjectEditorDialog(property.ID);
-        return remoteDialog == null
-               ? null
-               : new ObjectPropertyEditor(ownerComponent, remoteDialog, false);
+        assert false:"shouldn't be used anymore";
+        return null;
     }
 
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new IntegerPropertyEditor(value, (NumberFormat) ClientIntegerClass.instance.getDefaultFormat(), null, Integer.class);
-//        return new ObjectPropertyEditor(form.getComponent(), property.createClassForm(form.remoteForm, (Integer) value));
     }
 
     public boolean shouldBeDrawn(ClientFormController form) {
@@ -103,7 +98,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return obj.toString();
     }
 
-    public String getConformedMessage() {
+    public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }
 
@@ -117,7 +112,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     @Override
-    public Compare[] getFilerCompares() {
+    public Compare[] getFilterCompares() {
         return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
     }
 

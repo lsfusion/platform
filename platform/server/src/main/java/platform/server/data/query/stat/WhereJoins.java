@@ -422,7 +422,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     }
 
     public long getComplexity(boolean outer) {
-        return AbstractOuterContext.getComplexity(this, outer);
+        return AbstractOuterContext.getComplexity((OuterContext)this, outer);
     }
 
     public WhereJoins pack() {

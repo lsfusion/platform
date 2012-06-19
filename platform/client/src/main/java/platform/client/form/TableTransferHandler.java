@@ -1,7 +1,6 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
-import platform.client.form.cell.CellTableInterface;
 import platform.client.form.grid.GridTable;
 import platform.client.logics.ClientPropertyDraw;
 
@@ -14,38 +13,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public abstract class TableTransferHandler extends TransferHandler {
+public class TableTransferHandler extends TransferHandler {
+
+    private final TableInterface table;
 
     public interface TableInterface {
-        int getRowCount();
-
-        int getColumnCount();
-
-        void writeSelectedValue(String value); // записать значение в текущую ячейку
-
+        ClientPropertyDraw getProperty(int row, int column);
         void pasteTable(List<List<String>> table);
     }
 
-    protected abstract TableInterface getTable();
-
-    // ghgfdffddf
+    public TableTransferHandler(TableInterface table) {
+        this.table = table;
+    }
 
     protected Transferable createTransferable(JComponent c) {
-        if (c instanceof CellTableInterface) {
-            if (c instanceof GridTable) {
-                try {
-                    return new StringSelection(((GridTable) c).getSelectedTable());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+        if (c instanceof GridTable) {
+            try {
+                return new StringSelection(((GridTable) c).getSelectedTable());
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-
+        } else if (c instanceof TableInterface) {
             JTable table = (JTable) c;
             int row = table.getSelectionModel().getLeadSelectionIndex();
             int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-            if (row < 0 || row >= getTable().getRowCount() || column < 0 || column >= getTable().getColumnCount())
+            if (row < 0 || row >= table.getRowCount() || column < 0 || column >= table.getColumnCount()) {
                 return null;
+            }
 
             Object value = table.getValueAt(row, column);
             if (value == null) {
@@ -54,12 +49,15 @@ public abstract class TableTransferHandler extends TransferHandler {
             if (value instanceof String) {
                 value = BaseUtils.rtrim((String) value);
             }
-            CellTableInterface cellTable = (CellTableInterface) table;
-            ClientPropertyDraw property = cellTable.getProperty(row, column);
-            try {
-                return new StringSelection(property.formatString(value));
-            } catch (ParseException e) {
-                e.printStackTrace();
+
+            TableInterface transferTable = (TableInterface) table;
+            ClientPropertyDraw property = transferTable.getProperty(row, column);
+            if (property != null) {
+                try {
+                    return new StringSelection(property.formatString(value));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -93,9 +91,11 @@ public abstract class TableTransferHandler extends TransferHandler {
             List<String> row = new ArrayList<String>();
             if (table.isEmpty()) {
                 row.add(null);
-            } else
-                for (int i = 0; i < table.get(0).size(); i++)
+            } else {
+                for (int i = 0; i < table.get(0).size(); i++) {
                     row.add(null);
+                }
+            }
             table.add(row);
         }
         return table;
@@ -103,7 +103,6 @@ public abstract class TableTransferHandler extends TransferHandler {
 
     @Override
     public boolean importData(JComponent c, Transferable t) {
-        TableInterface table = getTable();
         if (c == table) {
             for (DataFlavor flavor : t.getTransferDataFlavors()) {
                 if (String.class.isAssignableFrom(flavor.getRepresentationClass()) && checkFlavor(flavor)) {

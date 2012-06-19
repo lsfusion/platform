@@ -37,7 +37,7 @@ public class InsensitiveStringClass extends StringClass {
         }
         InsensitiveStringClass string = new InsensitiveStringClass(length);
         strings.add(string);
-        DataClass.storeClass(string.getSID(), string);
+        DataClass.storeClass(string);
         return string;
     }
 

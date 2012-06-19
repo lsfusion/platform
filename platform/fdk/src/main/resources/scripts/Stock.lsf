@@ -779,7 +779,7 @@ META defineDialogSku (form)
     form###nameStock 'Склад' () = name(form###stock()) PREFCHARWIDTH 30;
 
     form###balance 'Остаток' (sku) = currentBalanceSkuStock(sku, form###stock());
-    form###balanceFilter (sku) = form###balance(sku) OR (sku IS sku AND NOT form###stock());
+    form###balanceFilter (sku) = (TRUE AND form###balance(sku)) OR (sku IS sku AND NOT form###stock());
 
     form###all 'Весь остаток' = SESSION DATA BOOLEAN (sku);
     form###quantity(sku) <- form###balance(sku) WHEN ASSIGNED(form###all(sku));

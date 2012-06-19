@@ -69,16 +69,16 @@ public abstract class DataTable extends GlobalTable {
             Map<Object, Object> result = BaseUtils.singleValue(query.execute(session));
 
             DataObject tableObject = session.getDataObject(LM.sidToTable.read(session, new DataObject(name)), LM.table.getType());
-            LM.rowsTable.execute(BaseUtils.nvl(result.get(0), 0), session, tableObject);
+            LM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, tableObject);
 
             for (KeyField key : keys) {
                 DataObject keyObject = session.getDataObject(LM.sidToTableKey.read(session, new DataObject(name + "." + key.name)), LM.tableKey.getType());
-                LM.quantityTableKey.execute(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+                LM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
             }
 
             for (PropertyField property : properties) {
                 DataObject propertyObject = session.getDataObject(LM.sidToTableColumn.read(session, new DataObject(property.name)), LM.tableColumn.getType());
-                LM.quantityTableColumn.execute(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+                LM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
             }
 
             // не null значения и разреженность колонок
@@ -88,7 +88,7 @@ public abstract class DataTable extends GlobalTable {
                 notNullQuery.getWhere().or(exprQuant.getWhere());
                 notNullQuery.properties.put(property, exprQuant);
             }
-            Map<Map<Object, Object>, Map<Object, Object>> notNullResult = notNullQuery.execute(session.sql, session.env);
+            Map<Map<Object, Object>, Map<Object, Object>> notNullResult = notNullQuery.execute(session);
             if (notNullResult.size() != 0){
                 Map<Object, Object> notNulls = BaseUtils.singleValue(notNullResult);
                 int sparseColumns = 0;
@@ -97,13 +97,13 @@ public abstract class DataTable extends GlobalTable {
                     int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
                     int total = (Integer) BaseUtils.nvl(result.get(0), 0);
                     double perCent = total != 0 ? 100 * (double) notNull / total : 100;
-                    LM.notNullQuantityTableColumn.execute(notNull, session, propertyObject);
-                    LM.perCentNotNullTableColumn.execute(perCent, session, propertyObject);
+                    LM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
+                    LM.perCentNotNullTableColumn.change(perCent, session, propertyObject);
                     if (perCent < 50) {
                         sparseColumns++;
                     }
                 }
-                LM.sparseColumnsTable.execute(sparseColumns, session, tableObject);
+                LM.sparseColumnsTable.change(sparseColumns, session, tableObject);
             }
         }
     }

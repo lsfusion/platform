@@ -2,22 +2,19 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
-import platform.base.Result;
-import platform.server.logics.DataObject;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.caches.IdentityLazy;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.StructChanges;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
 
     public static class Case {
-        PropertyMapImplement<?, Interface> where;
-        PropertyMapImplement<?, Interface> property;
+        CalcPropertyInterfaceImplement<Interface> where;
+        CalcPropertyInterfaceImplement<Interface> property;
 
-        public Case(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
+        public Case(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property) {
             this.where = where;
             this.property = property;
         }
@@ -28,43 +25,60 @@ public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
+    protected Collection<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return BaseUtils.mergeSet(getWheres(), getProps());
     }
 
     protected abstract Iterable<Case> getCases();
 
-    protected Set<PropertyMapImplement<?, Interface>> getWheres() {
-        Set<PropertyMapImplement<?, Interface>> operands = new HashSet<PropertyMapImplement<?,Interface>>();
+    protected Set<CalcPropertyInterfaceImplement<Interface>> getWheres() {
+        Set<CalcPropertyInterfaceImplement<Interface>> operands = new HashSet<CalcPropertyInterfaceImplement<Interface>>();
         for(Case propCase : getCases())
             operands.add(propCase.where);
         return operands;
     }
-    protected Set<PropertyMapImplement<?, Interface>> getProps() {
-        Set<PropertyMapImplement<?, Interface>> operands = new HashSet<PropertyMapImplement<?,Interface>>();
+    protected Set<CalcPropertyInterfaceImplement<Interface>> getProps() {
+        Set<CalcPropertyInterfaceImplement<Interface>> operands = new HashSet<CalcPropertyInterfaceImplement<Interface>>();
         for(Case propCase : getCases())
             operands.add(propCase.property);
         return operands;
     }
 
-    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
-        Set<Property> propValues = new HashSet<Property>(); fillDepends(propValues, getProps());
-        Set<Property> propWheres = new HashSet<Property>(); fillDepends(propWheres, getWheres());
+    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+        Set<CalcProperty> propValues = new HashSet<CalcProperty>(); fillDepends(propValues, getProps());
+        Set<CalcProperty> propWheres = new HashSet<CalcProperty>(); fillDepends(propWheres, getWheres());
         return QuickSet.add(propChanges.getUsedDataChanges(propValues),propChanges.getUsedChanges(propValues));
     }
 
     protected boolean checkWhere() {
         return true;
     }
+
     @Override
-    public PropertyMapImplement<?, Interface> modifyChangeImplement(Result<Property> aggProp, Map<Interface, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
-        for(Case propCase : getCases()) {
-            if(!checkWhere() || propCase.where.read(session, interfaceValues, modifier)!=null) {
-                PropertyMapImplement<?, Interface> operandImplement = propCase.property.mapChangeImplement(interfaceValues, session, modifier);
-                if(operandImplement!=null)
-                    return operandImplement;
+    @IdentityLazy
+    public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+        // нужно создать List - if(where[classes]) {getEditAction(); return;}
+        boolean ifClasses = !checkWhere();
+        ActionPropertyMapImplement<?, Interface> result = null;
+        for(Case propCase : BaseUtils.reverse(getCases())) {
+            ActionPropertyMapImplement<?, Interface> editAction = propCase.property.mapEditAction(editActionSID, filterProperty);
+            if (editAction != null) {
+                if (result == null && ifClasses) {
+                    result = editAction;
+                } else {
+                    result = DerivedProperty.createIfAction(interfaces, propCase.where, editAction, result, ifClasses);
+                }
             }
         }
-        return super.modifyChangeImplement(aggProp, interfaceValues, session, modifier);
+        return result;
+    }
+
+    @Override
+    @IdentityLazy
+    public Collection<DataProperty> getChangeProps() {
+        Set<DataProperty> result = new HashSet<DataProperty>();
+        for(Case operand : getCases())
+            result.addAll(operand.property.mapChangeProps());
+        return result;
     }
 }

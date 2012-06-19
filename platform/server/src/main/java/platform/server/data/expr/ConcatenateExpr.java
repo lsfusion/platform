@@ -57,23 +57,33 @@ public class ConcatenateExpr extends BaseExpr {
             param.fillJoinWheres(joins, andWhere);
     }
 
+    protected AndClassSet getPartClass(AndClassSet classes, int i) {
+        return ((ConcatenateClassSet)classes).get(i);
+    }
+    protected AndClassSet getConcatenateClass(AndClassSet[] classes) {
+        return new ConcatenateClassSet(classes);
+    }
     public ClassExprWhere getClassWhere(AndClassSet classes) {
         ClassExprWhere result = ClassExprWhere.TRUE;
         for(int i=0;i<exprs.size();i++)
-            result.and(exprs.get(i).getClassWhere(((ConcatenateClassSet)classes).get(i)));
+            result = result.and(exprs.get(i).getClassWhere(getPartClass(classes, i)));
         return result;
     }
 
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
         AndClassSet[] andClasses = new AndClassSet[exprs.size()];
-        for(int i=0;i<exprs.size();i++)
-            andClasses[i] = exprs.get(i).getAndClassSet(and);
-        return new ConcatenateClassSet(andClasses);
+        for(int i=0;i<exprs.size();i++) {
+            AndClassSet classSet = exprs.get(i).getAndClassSet(and);
+            if(classSet==null)
+                return null;
+            andClasses[i] = classSet;
+        }
+        return getConcatenateClass(andClasses);
     }
 
     public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         for(int i=0;i<exprs.size();i++)
-            if(!(exprs.get(i).addAndClassSet(and,((ConcatenateClassSet)add).get(i))))
+            if(!(exprs.get(i).addAndClassSet(and,getPartClass(add, i))))
                 return false;
         return true;
     }
@@ -85,7 +95,7 @@ public class ConcatenateExpr extends BaseExpr {
     public Where isClass(AndClassSet set) {
         Where where = Where.TRUE;
         for(int i=0;i<exprs.size();i++)
-            where = where.and(exprs.get(i).isClass(((ConcatenateClassSet)set).get(i)));
+            where = where.and(exprs.get(i).isClass(getPartClass(set, i)));
         return where;
     }
 

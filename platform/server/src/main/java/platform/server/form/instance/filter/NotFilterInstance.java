@@ -5,7 +5,7 @@ import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -36,11 +36,11 @@ public class NotFilterInstance extends FilterInstance {
         return filter.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(Collection<Property> changedProps) {
+    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
         return filter.dataUpdated(changedProps);
     }
 
-    public void fillProperties(Set<Property> properties) {
+    public void fillProperties(Set<CalcProperty> properties) {
         filter.fillProperties(properties);
     }
 

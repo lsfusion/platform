@@ -30,9 +30,13 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.IsClassProperty;
 import platform.server.logics.property.Property;
-import platform.server.session.*;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.NoPropertyTableUsage;
+import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -42,18 +46,14 @@ import static platform.interop.ClassViewType.HIDE;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
-    public final PropertyObjectInstance propertyBackground;
-    public final PropertyObjectInstance propertyForeground;
+    public final CalcPropertyObjectInstance propertyBackground;
+    public final CalcPropertyObjectInstance propertyForeground;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
 
     RowBackgroundReaderInstance rowBackgroundReader = new RowBackgroundReaderInstance();
     RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
-
-    public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-        return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
-    }
 
     GroupObjectEntity entity;
 
@@ -91,7 +91,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, Map<ObjectInstance, PropertyObjectInstance> parent) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, CalcPropertyObjectInstance propertyBackground, CalcPropertyObjectInstance propertyForeground, Map<ObjectInstance, CalcPropertyObjectInstance> parent) {
 
         this.entity = entity;
 
@@ -260,7 +260,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     // с активным интерфейсом, assertion что содержит все ObjectInstance
     OrderedMap<OrderInstance,Boolean> orders = new OrderedMap<OrderInstance, Boolean>();
 
-    public void fillUpdateProperties(Set<Property> properties) {
+    public void fillUpdateProperties(Set<CalcProperty> properties) {
         for(FilterInstance filter : filters)
             filter.fillProperties(properties);
         for(OrderInstance order : orders.keySet())
@@ -392,7 +392,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return result;
     }
 
-    public final Map<ObjectInstance, PropertyObjectInstance> parent;
+    public final Map<ObjectInstance, CalcPropertyObjectInstance> parent;
 
     // поиски по свойствам\объектам
     public SeekObjects userSeeks = null;
@@ -455,7 +455,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             expandWhere = Where.TRUE;
 
         if(parent!=null) {
-            for(Map.Entry<ObjectInstance, PropertyObjectInstance> parentEntry : parent.entrySet())
+            for(Map.Entry<ObjectInstance, CalcPropertyObjectInstance> parentEntry : parent.entrySet())
                 expandExprs.put(parentEntry.getKey(), parentEntry.getValue().getExpr(mapKeys, modifier));
 
             Where nullWhere = Where.FALSE;
@@ -482,19 +482,21 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public void update(SessionChanges session, FormChanges changes, Map<ObjectInstance, DataObject> value) throws SQLException {
-        if(value.isEmpty())
-            changes.objects.put(this, NullValue.getMap(getObjects(getUpTreeGroups())));
-        else
-            changes.objects.put(this, value);
+        changes.objects.put(this, value.isEmpty() ? NullValue.getMap(getObjects(getUpTreeGroups())) : value);
         change(session, value);
     }
 
+    private boolean pendingHidden;
+    
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps) throws SQLException {
-        if ((updated & UPDATED_CLASSVIEW) != 0) {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean hidden, boolean refresh, FormChanges result, Collection<CalcProperty> changedProps) throws SQLException {
+        if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }
+
+        if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
+            keyTable = createKeyTable();
 
         if (curClassView == HIDE) return null;
 
@@ -574,6 +576,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     updateKeys = true;
                     break;
                 }
+
+        if(hidden) {
+            pendingHidden |= updateKeys;
+            return null;
+        } else {
+            updateKeys |= pendingHidden;
+            pendingHidden = false;
+        }
 
         Map<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
         SeekObjects orderSeeks = null;
@@ -679,8 +689,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
 
                 // параллельно будем обновлять ключи чтобы JoinSelect'ить
-                if (keyTable == null)
-                    keyTable = createKeyTable();
                 keyTable.writeKeys(sql, keys.keyList());
                 result.gridObjects.put(this, keys.keyList());
 
@@ -702,8 +710,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true);
     }
 
-    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException {
-        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> resultMap = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
+    public List<Map<ObjectInstance, DataObject>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException {
+        List<Map<ObjectInstance, DataObject>> resultMap = new ArrayList<Map<ObjectInstance, DataObject>>();
         if (objects.size() > 1) {
             return resultMap;
         }
@@ -715,7 +723,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     objectKeys.put(objectInstance, object);
                 }
             }
-            resultMap.put(objectKeys, null);
+            resultMap.add(objectKeys);
         }
         return resultMap;
     }
@@ -830,7 +838,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyBackground;
         }
 
@@ -842,10 +850,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             return GroupObjectInstance.this.getID();
         }
 
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            return GroupObjectInstance.this.getKeysObjectsList(panelProperties);
-        }
-
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.background") + " (" + GroupObjectInstance.this.toString() + ")";
@@ -853,7 +857,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public class RowForegroundReaderInstance implements PropertyReaderInstance {
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
             return propertyForeground;
         }
 
@@ -863,10 +867,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         public int getID() {
             return GroupObjectInstance.this.getID();
-        }
-
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
-            return GroupObjectInstance.this.getKeysObjectsList(panelProperties);
         }
 
         @Override

@@ -3,24 +3,28 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.DocumentPropertyEditor;
+import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.ExcelPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.text.Format;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientExcelClass extends ClientFileClass {
+public class ClientExcelClass extends ClientStaticFormatFileClass {
 
     public final static ClientExcelClass instance = new ClientExcelClass();
 
-    private final String sID = "ExcelClass";
+    public ClientExcelClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientExcelClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "ExcelClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
@@ -37,8 +41,8 @@ public class ClientExcelClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw design) {
-        return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.excel.documents"), "xls", "xlsx");
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.excel.documents"), "xls", "xlsx");
     }
 
     @Override

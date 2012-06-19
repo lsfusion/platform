@@ -1,5 +1,6 @@
 package platform.server.form.entity.filter;
 
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
@@ -14,15 +15,15 @@ public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFi
     public NotNullFilterEntity() {
     }
 
-    public NotNullFilterEntity(PropertyObjectEntity<P> property) {
+    public NotNullFilterEntity(CalcPropertyObjectEntity<P> property) {
         this(property, false, false);
     }
 
-    public NotNullFilterEntity(PropertyObjectEntity<P> property, boolean resolveAdd) {
+    public NotNullFilterEntity(CalcPropertyObjectEntity<P> property, boolean resolveAdd) {
         this(property, false, resolveAdd);
     }
 
-    public NotNullFilterEntity(PropertyObjectEntity<P> property, boolean checkChange, boolean resolveAdd) {
+    public NotNullFilterEntity(CalcPropertyObjectEntity<P> property, boolean checkChange, boolean resolveAdd) {
         super(property, resolveAdd);
         this.checkChange = checkChange;
     }

@@ -12,6 +12,7 @@ import platform.client.Main;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,41 +21,27 @@ import java.io.File;
 import java.io.IOException;
 
 public class ReportDockable extends FormDockable {
-
     private String reportCaption;
-    private Integer groupId = null;
+    private final ReportGenerationData generationData;
 
-    public ReportDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        super(formSID, navigator, currentSession, factory, false, userPreferences);
-    }
-
-    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        super(navigator, remoteForm, factory, userPreferences);
-    }
-
-    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId, MultipleCDockableFactory<FormDockable,?> factory, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        super("SingleGroupReport_" + remoteForm.getSID(), factory);
-        this.groupId = groupId;
-        setActiveComponent(getActiveComponent(navigator, remoteForm, userPreferences), getCaption());
+    public ReportDockable(String formSID, ReportGenerationData generationData, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
+        super(formSID, factory);
+        this.generationData = generationData;
+        setActiveComponent(getActiveComponent(null, null, null), getCaption());
     }
 
     // из файла
     ReportDockable(File file, MultipleCDockableFactory<FormDockable,?> factory) throws JRException {
         super("", factory);
-
+        this.generationData = null;
         setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(file))), file.getName());
     }
 
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
         try {
-            ReportGenerator report = new ReportGenerator(remoteForm, Main.timeZone);
-            JasperPrint print;
-            if (groupId != null) {
-                print = report.createSingleGroupReport(groupId, false, false, null, userPreferences);
-            } else {
-                print = report.createReport(false, false, null, userPreferences);
-            }
+            ReportGenerator report = new ReportGenerator(generationData, Main.timeZone);
+            JasperPrint print = report.createReport(false, null);
             reportCaption = print.getName();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
             return prepareViewer(new RViewer(print));

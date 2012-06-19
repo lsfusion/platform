@@ -38,6 +38,7 @@
       <keyword name="BOTTOM" />
       <keyword name="BREAK" />
       <keyword name="BY" />
+      <keyword name="CAPTION" />
       <keyword name="CASCADE" />
       <keyword name="CASE" />
       <keyword name="CC" />
@@ -119,6 +120,7 @@
       <keyword name="INDEXED" />
       <keyword name="INIT" />
       <keyword name="INLINE" />
+      <keyword name="INPUT" />
       <keyword name="INTEGER" />
       <keyword name="INTERSECT" />
       <keyword name="IS" />
@@ -177,6 +179,7 @@
       <keyword name="REGEXP" />
       <keyword name="REMOVE" />
       <keyword name="REPORTFILE" />
+      <keyword name="REQUEST" />
       <keyword name="REQUIRE" />
       <keyword name="RESOLVE" />
       <keyword name="RETURN" />
@@ -244,4 +247,3 @@
     <mapping ext="lsf" />
   </extensionMap>
 </filetype>
-

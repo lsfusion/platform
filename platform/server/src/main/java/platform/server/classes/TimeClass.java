@@ -15,10 +15,9 @@ import java.text.SimpleDateFormat;
 
 public class TimeClass extends DataClass<Time> {
     public final static TimeClass instance = new TimeClass();
-    private final static String sid = "TimeClass";
 
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     public TimeClass() {
@@ -84,7 +83,7 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public String getSID() {
-        return sid;
+        return "TimeClass";
     }
 
     public Object getDefaultValue() {

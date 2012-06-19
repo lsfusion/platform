@@ -5,6 +5,7 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -16,10 +17,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.EventObject;
 
-public class DatePropertyEditor extends JDateChooser
-                           implements PropertyEditorComponent {
+public class DatePropertyEditor extends JDateChooser implements PropertyEditorComponent {
     SimpleDateFormat format;
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
@@ -27,34 +29,36 @@ public class DatePropertyEditor extends JDateChooser
         this.format = format;
 
         if (value != null) {
-            setDate(DateConverter.sqlToDate((java.sql.Date)value));
+            setDate(DateConverter.sqlToDate((java.sql.Date) value));
             ((JFormattedTextField) dateEditor).selectAll();
         }
 
-        if (design != null)
+        if (design != null) {
             design.designCell(this);
+        }
     }
 
     @Override
-    public void requestFocus() {
+    public boolean requestFocusInWindow() {
         // пересылаем фокус в нужный объект
-        ((JFormattedTextField)dateEditor).requestFocusInWindow();
+        return ((JFormattedTextField) dateEditor).requestFocusInWindow();
     }
 
     @Override
     public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
 
         // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
-        if (condition == WHEN_FOCUSED)
-            return ((DatePropertyEditorComponent)dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
-        else
+        if (condition == WHEN_FOCUSED) {
+            return ((DatePropertyEditorComponent) dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
+        } else {
             return super.processKeyBinding(ks, ke, condition, pressed);
+        }
     }
 
     @Override
     public void setNextFocusableComponent(Component comp) {
         super.setNextFocusableComponent(comp);
-        ((JComponent)dateEditor).setNextFocusableComponent(comp);
+        ((JComponent) dateEditor).setNextFocusableComponent(comp);
 //        jcalendar.setNextFocusableComponent(dateEditor.getUiComponent());
 
 
@@ -69,7 +73,7 @@ public class DatePropertyEditor extends JDateChooser
                 Boolean oldValue;
 
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    oldValue = (Boolean)table.getClientProperty("terminateEditOnFocusLost");
+                    oldValue = (Boolean) table.getClientProperty("terminateEditOnFocusLost");
                     table.putClientProperty("terminateEditOnFocusLost", Boolean.FALSE);
                 }
 
@@ -90,6 +94,10 @@ public class DatePropertyEditor extends JDateChooser
         // к слову все равно это все дело очень хриво работает и все из-за долбанных popup'ов
     }
 
+    public void setTableEditor(PropertyTableCellEditor tableEditor) {
+        //пока не нужен
+    }
+
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
@@ -99,62 +107,57 @@ public class DatePropertyEditor extends JDateChooser
         return DateConverter.dateToSql(getDate());
     }
 
-    public boolean valueChanged() {
+    @Override
+    public boolean stopCellEditing() {
         return true;
     }
 
     @Override
-    public String checkValue(Object value) {
-        return null;
-    }
-
-    @Override
     public void actionPerformed(ActionEvent e) {
-		int x = calendarButton.getWidth()
-				- (int) popup.getPreferredSize().getWidth();
-		int y = calendarButton.getY() + calendarButton.getHeight();
+        int x = calendarButton.getWidth()
+                - (int) popup.getPreferredSize().getWidth();
+        int y = calendarButton.getY() + calendarButton.getHeight();
 
-		Calendar calendar = format.getCalendar();
-		Date date = dateEditor.getDate();
+        Calendar calendar = format.getCalendar();
+        Date date = dateEditor.getDate();
         calendar.setTime(date != null ? date : new Date());
-		jcalendar.setCalendar(calendar);
-		popup.show(calendarButton, x, y);
-		dateSelected = false;
-	}
-
-}
-
-class DatePropertyEditorComponent extends JTextFieldDateEditor {
-
-    public DatePropertyEditorComponent(SimpleDateFormat format, String maskPattern, char placeholder) {
-        super(format.toPattern(), maskPattern, placeholder);
-        this.dateFormatter = format;
-        setBorder(new EmptyBorder(0, 1, 0, 0));
+        jcalendar.setCalendar(calendar);
+        popup.show(calendarButton, x, y);
+        dateSelected = false;
     }
 
-    @Override
-    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+    private static class DatePropertyEditorComponent extends JTextFieldDateEditor {
 
-        // не ловим ввод, чтобы его словил сам JTable и обработал
-        return ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
-    }
-
-    //а вот так будем дурить их protected метод
-    public boolean publicProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        return processKeyBinding(ks, ke, condition, pressed);
-    }
-
-    public Date getDate() {
-        try {
-            return dateFormatter.parse(getText());
-        } catch (ParseException e) {
-            return null;
+        public DatePropertyEditorComponent(SimpleDateFormat format, String maskPattern, char placeholder) {
+            super(format.toPattern(), maskPattern, placeholder);
+            this.dateFormatter = format;
+            setBorder(new EmptyBorder(0, 1, 0, 0));
         }
-    }
+
+        @Override
+        public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+
+            // не ловим ввод, чтобы его словил сам JTable и обработал
+            return ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
+        }
+
+        //а вот так будем дурить их protected метод
+        public boolean publicProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+            return processKeyBinding(ks, ke, condition, pressed);
+        }
+
+        public Date getDate() {
+            try {
+                return dateFormatter.parse(getText());
+            } catch (ParseException e) {
+                return null;
+            }
+        }
 
 /*    @Override
     public void focusLost(FocusEvent focusEvent) {
         super.focusLost(focusEvent);
     }*/
 
+    }
 }

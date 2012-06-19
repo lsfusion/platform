@@ -73,6 +73,10 @@ public class BaseUtils {
         return BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
     }
 
+    public static <K, VA, VB> Map<VA, VB> rightNullCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
+        return joinMap==null? null : BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
+    }
+
     public static <K, E, V> List<Map<K, V>> joinCol(Map<K, ? extends E> map, Collection<Map<E, V>> list) {
         List<Map<K, V>> result = new ArrayList<Map<K, V>>();
         for (Map<E, V> joinMap : list)
@@ -108,13 +112,17 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, E, V> Map<K, V> innerJoin(Map<K, E> map, Map<E, V> joinMap) {
+    public static <K, E, V> Map<K, V> innerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
         Map<K, V> result = new HashMap<K, V>();
-        for (Map.Entry<K, E> entry : map.entrySet()) {
+        for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
             V joinValue = joinMap.get(entry.getValue());
             if (joinValue != null) result.put(entry.getKey(), joinValue);
         }
         return result;
+    }
+
+    public static <K, E, V> Map<K, V> nullInnerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
+        return joinMap==null ? null : innerJoin(map, joinMap);
     }
 
     public static <K, E, V> OrderedMap<K, V> innerJoin(OrderedMap<K, E> map, Map<E, V> joinMap) {
@@ -149,6 +157,15 @@ public class BaseUtils {
         for (K key : keys) {
             V value = map.get(key);
             if (value != null) result.put(key, value);
+        }
+        return result;
+    }
+
+    public static <BK, K extends BK, V> Map<K, V> filterKeys(Iterable<BK> keys, Map<K, V> map) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (BK key : keys) {
+            V value = map.get(key);
+            if (value != null) result.put((K) key, value);
         }
         return result;
     }
@@ -221,7 +238,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> Collection<K> filterNot(Collection<K> col, Collection<K> filter) {
+    public static <BK,K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : col)
             if (!filter.contains(element))
@@ -301,6 +318,14 @@ public class BaseUtils {
 
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo) {
         return crossValues(map, mapTo, false);
+    }
+
+    public static <KA, KB, V> Map<KA, KB> rightCrossValues(Map<KA, V> map, Map<KB, V> mapTo) {
+        return rightJoin(map, reverse(mapTo));
+    }
+
+    public static <KA, KB, V> Map<KA, KB> crossInnerValues(Map<KA, V> map, Map<KB, V> mapTo) {
+        return innerJoin(map, reverse(mapTo));
     }
 
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo, boolean ignoreUnique) {
@@ -895,11 +920,11 @@ public class BaseUtils {
         return result;
     }
 
-    public static <T> List<T> orderList(Set<T> map, Iterable<T> list) {
+    public static <BT, T extends BT> List<T> orderList(Set<T> map, Iterable<BT> list) {
         List<T> result = new ArrayList<T>();
-        for (T element : list)
+        for (BT element : list)
             if(map.contains(element))
-                result.add(element);
+                result.add((T) element);
         return result;
     }
 
@@ -1260,6 +1285,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <T> T[] add(List<T> list1, T[] array2, ArrayInstancer<T> instancer) {
+        T[] result = instancer.newArray(list1.size() + array2.length);
+        for(int i=0;i<list1.size();i++)
+            result[i] = list1.get(i);
+        System.arraycopy(array2, 0, result, list1.size(), array2.length);
+        return result;
+    }
+
     public static class GenericTypeInstancer<T> implements ArrayInstancer<T> {
         private final Class arrayType;
         public GenericTypeInstancer(Class<T> arrayType) {
@@ -1328,6 +1361,13 @@ public class BaseUtils {
         return genArray(element, length, stringInstancer);
     }
 
+    public static int[] genArray(int element, int length) {
+        int[] ints = new int[length];
+        for(int i=0;i<length;i++)
+            ints[i] = element;
+        return ints;
+    }
+
     public static boolean isData(Object object) {
         return object instanceof Number || object instanceof String || object instanceof Boolean || object instanceof byte[];
     }
@@ -1375,6 +1415,17 @@ public class BaseUtils {
 
     public static <K> List<K> reverse(List<K> col) {
         return reverseThis(new ArrayList<K>(col));
+    }
+
+    public static <K> List<K> toList(Iterable<K> col) {
+        List<K> result = new ArrayList<K>();
+        for(K element : col)
+            result.add(element);
+        return result;
+    }
+
+    public static <K> List<K> reverse(Iterable<K> col) {
+        return reverse(toList(col));
     }
 
     public static <K> List<K> reverseThis(List<K> col) {
@@ -1437,6 +1488,21 @@ public class BaseUtils {
     public static <K> List<K> toList(K... elements) {
         List<K> list = new ArrayList<K>();
         Collections.addAll(list, elements);
+        return list;
+    }
+
+    public static <K> List<Boolean> toBooleanList(boolean... elements) {
+        List<Boolean> list = new ArrayList<Boolean>();
+        for(boolean element : elements)
+            list.add(element);
+        return list;
+    }
+
+    public static <K> List<K> toListNoNull(K... elements) {
+        List<K> list = new ArrayList<K>();
+        for(K element : elements)
+            if(element!=null)
+                list.add(element);
         return list;
     }
 
@@ -1850,7 +1916,7 @@ public class BaseUtils {
         return extension;
     }
 
-    public static byte[] filesToBytes(boolean multiple, boolean custom, File... files) {
+    public static byte[] filesToBytes(boolean multiple, boolean custom, File... files) throws IOException {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
@@ -1872,6 +1938,9 @@ public class BaseUtils {
                 if (multiple)
                     outStream.writeInt(union.length);
                 outStream.write(union);
+
+                if(!multiple) // just in case
+                    break;
             }
 
             result = byteOutStream.toByteArray();

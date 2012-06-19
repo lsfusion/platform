@@ -2,24 +2,30 @@ package platform.client.logics.classes;
 
 import platform.interop.Data;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientTypeSerializer {
 
+    public static ClientType deserialize(byte[] typeData) throws IOException {
+        return deserialize(new DataInputStream(new ByteArrayInputStream(typeData)));
+    }
+
     public static ClientType deserialize(DataInputStream inStream) throws IOException {
-        if(inStream.readBoolean())
+        if (inStream.readBoolean()) {
             return ClientObjectClass.type;
-        else
-            return (ClientType)(deserializeClientClass(inStream));
+        } else {
+            return (ClientType) (deserializeClientClass(inStream));
+        }
     }
 
     public static void serialize(DataOutputStream outStream, ClientType type) throws IOException {
         boolean objectClass = type instanceof ClientObjectType;
         outStream.writeBoolean(objectClass);
         if (!objectClass) {
-            ((ClientClass)type).serialize(outStream);
+            ((ClientClass) type).serialize(outStream);
         }
     }
 
@@ -42,20 +48,20 @@ public class ClientTypeSerializer {
         if (type == Data.DATE) return ClientDateClass.instance;
         if (type == Data.STRING) return new ClientStringClass(inStream);
         if (type == Data.INSENSITIVESTRING) return new ClientInsensitiveStringClass(inStream);
-        if (type == Data.IMAGE) return ClientImageClass.instance;
-        if (type == Data.WORD) return ClientWordClass.instance;
-        if (type == Data.EXCEL) return ClientExcelClass.instance;
         if (type == Data.TEXT) return ClientTextClass.instance;
         if (type == Data.YEAR) return ClientIntegerClass.instance;
-        if (type == Data.PDF) return ClientPDFClass.instance;
         if (type == Data.DATETIME) return ClientDateTimeClass.instance;
-        if (type == Data.CUSTOMFILECLASS) return ClientCustomFileClass.instance;
         if (type == Data.TIME) return ClientTimeClass.instance;
         if (type == Data.COLOR) return ClientColorClass.instance;
 
+        if (type == Data.PDF) return new ClientPDFClass(inStream);
+        if (type == Data.IMAGE) return new ClientImageClass(inStream);
+        if (type == Data.WORD) return new ClientWordClass(inStream);
+        if (type == Data.EXCEL) return new ClientExcelClass(inStream);
+        if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream);
+        if (type == Data.CUSTOMSTATICFORMATFILE) return new ClientCustomStaticFormatFileClass(inStream);
+
         if (type == Data.ACTION) return new ClientActionClass(inStream);
-        if (type == Data.CLASSACTION) return new ClientClassActionClass(inStream);
-        if (type == Data.FILEACTION) return new ClientFileActionClass(inStream);
 
         throw new IOException();
     }

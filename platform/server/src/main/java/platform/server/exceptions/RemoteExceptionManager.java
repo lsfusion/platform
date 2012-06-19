@@ -1,5 +1,6 @@
 package platform.server.exceptions;
 
+import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -9,16 +10,11 @@ import platform.interop.exceptions.LoginException;
 import platform.interop.exceptions.RemoteServerException;
 import platform.server.Context;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.session.DataSession;
 
-import javax.mail.Session;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 @Aspect
 public class RemoteExceptionManager {
@@ -50,7 +46,7 @@ public class RemoteExceptionManager {
             try {
                 OutputStream os = new ByteArrayOutputStream();
                 e.printStackTrace(new PrintStream(os));
-                BL.logException(e.getMessage(), e.getClass().getName(), os.toString(), null, null, false);
+                BL.logException(Throwables.getRootCause(e).getMessage(), e.getClass().getName(), os.toString(), null, null, false);
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }

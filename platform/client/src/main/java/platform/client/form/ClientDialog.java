@@ -1,14 +1,17 @@
 package platform.client.form;
 
-import platform.client.ClientResourceBundle;
+import com.google.common.base.Throwables;
 import platform.interop.form.RemoteDialogInterface;
-import platform.interop.remote.SelectedObject;
 
+import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
+import java.awt.event.KeyEvent;
 import java.rmi.RemoteException;
+import java.util.EventObject;
 
 public class ClientDialog extends ClientModalForm {
+
+    // todo: удалить все эти поля вмест с ObjectPropertyEditor
     public final static int NOT_CHOSEN = 0;
     public final static int VALUE_CHOSEN = 1;
 
@@ -16,22 +19,33 @@ public class ClientDialog extends ClientModalForm {
     public Object dialogValue;
     public Object displayValue;
 
-    public boolean showQuickFilterOnStartup = true;
+    public KeyEvent initFilterKeyEvent = null;
 
     private RemoteDialogInterface remoteDialog;
 
-    public ClientDialog(Component owner, final RemoteDialogInterface dialog, boolean showQuickFilterOnStartup, boolean isDailog) throws IOException, ClassNotFoundException {
-        super(owner, dialog, false, isDailog); // обозначаем parent'а и модальность
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent, boolean isDialog) {
+        super(owner, dialog, isDialog);
 
-        this.showQuickFilterOnStartup = showQuickFilterOnStartup;
+        remoteDialog = dialog;
+
+        this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        Boolean undecorated = dialog.isUndecorated();
-        if (undecorated == null || undecorated) {
-            setResizable(false);
-            // делаем, чтобы не выглядел как диалог
-            setUndecorated(true);
+        setupUndecorated();
+    }
+
+    protected void setupUndecorated() {
+        try {
+            Boolean undecorated = remoteDialog.isUndecorated();
+            if (undecorated == null || undecorated) {
+                setResizable(false);
+                // делаем, чтобы не выглядел как диалог
+                setUndecorated(true);
+                ((JPanel)getContentPane()).setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+            }
+        } catch (RemoteException e) {
+            Throwables.propagate(e);
         }
     }
 
@@ -50,43 +64,10 @@ public class ClientDialog extends ClientModalForm {
             form.selectProperty(initialFilterPropertyDrawID);
         }
 
-        if (showQuickFilterOnStartup && initialFilterPropertyDrawID > 0) {
-            form.quickEditFilter(initialFilterPropertyDrawID);
+        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0) {
+            form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
         } else {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
         }
-    }
-
-    // необходим чтобы в диалоге менять формы (панели)
-    protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
-        remoteDialog = (RemoteDialogInterface) remoteForm;
-
-        return new ClientFormController(remoteDialog, null, isDialog, true, false) {
-            @Override
-            void nullPressed() {
-                result = VALUE_CHOSEN;
-                dialogValue = null;
-                displayValue = null;
-                hideDialog();
-            }
-
-            @Override
-            public void okPressed() {
-                result = VALUE_CHOSEN;
-                try {
-                    SelectedObject selectedObject = remoteDialog.getSelectedObject();
-                    dialogValue = selectedObject.value;
-                    displayValue = selectedObject.displayValue;
-                } catch (RemoteException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
-                }
-                hideDialog();
-            }
-
-            @Override
-            void closePressed() {
-                hideDialog();
-            }
-        };
     }
 }

@@ -20,8 +20,6 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
     public GroupWhere(KeyEqual keyEqual, Where where) {
         this.keyEqual = keyEqual;
         this.where = where;
-
-        assert where.isFalse() || where.getKeyEquals().getSingleKey().isEmpty();
     }
 
     public long getComplexity(boolean outer) {

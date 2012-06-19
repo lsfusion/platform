@@ -5,7 +5,6 @@ import platform.base.QuickSet;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
@@ -31,10 +30,10 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     }
 
     // map этого свойства на переданное
-    final Property<P> property;
-    final PropertyMapImplement<R,P> reverse;
+    final CalcProperty<P> property;
+    final CalcPropertyMapImplement<R,P> reverse;
 
-    private static <P extends PropertyInterface> List<Interface<P>> getInterfaces(Property<P> property) {
+    private static <P extends PropertyInterface> List<Interface<P>> getInterfaces(CalcProperty<P> property) {
         List<Interface<P>> result = new ArrayList<Interface<P>>();
         for(P propertyInterface : property.interfaces)
             result.add(new Interface<P>(result.size(),propertyInterface));
@@ -42,7 +41,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     }
 
     // дебилизм из-за конструкторов
-    public ShiftChangeProperty(String sID, String caption, Property<P> property, PropertyMapImplement<R,P> reverse) {
+    public ShiftChangeProperty(String sID, String caption, CalcProperty<P> property, CalcPropertyMapImplement<R,P> reverse) {
         super(sID, caption, getInterfaces(property));
 
         this.property = property;
@@ -59,20 +58,15 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     }
 
     @IdentityLazy
-    private Map<Interface<P>, ValueClass> getInterfaceClasses() {
-        return BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses());
+    private CalcPropertyImplement<?, Interface<P>> getIsClassProperty() {
+        return IsClassProperty.getProperty(BaseUtils.crossJoin(getMapInterfaces(), property.getInterfaceClasses()));
     }
 
-    @IdentityLazy
-    private PropertyImplement<?, Interface<P>> getIsClassProperty() {
-        return IsClassProperty.getProperty(getInterfaceClasses());
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
+        depends.add((CalcProperty) getIsClassProperty().property);
     }
 
-    protected void fillDepends(Set<Property> depends, boolean derived) {
-        depends.add(getIsClassProperty().property);
-    }
-
-    protected QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return propChanges.getUsedChanges(getDepends());
     }
 
@@ -90,18 +84,23 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return resultExpr;*/
     }
 
-    public Set<Property> getDataChangeProps() {
-        return BaseUtils.toSet((Property)property, (Property)reverse.property);
+    public Set<CalcProperty> getDataChangeProps() {
+        return BaseUtils.toSet((CalcProperty)property, (CalcProperty)reverse.property);
     }
 
     // без решения reverse'а и timeChanges не включишь этот механизм
     @Override
-    public QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
-        return QuickSet.add(property.getUsedDataChanges(propChanges), reverse.property.getUsedDataChanges(propChanges), property.getUsedChanges(propChanges), reverse.property.getUsedChanges(propChanges));
+    public QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+        return QuickSet.add(property.getUsedDataChanges(propChanges), ((CalcProperty<R>)reverse.property).getUsedDataChanges(propChanges), property.getUsedChanges(propChanges), reverse.property.getUsedChanges(propChanges));
     }
 
     @Override
-    protected MapDataChanges<Interface<P>> calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public Collection<DataProperty> getChangeProps() {
+        return property.getChangeProps();
+    }
+
+    @Override
+    protected DataChanges calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         Map<P, Interface<P>> mapInterfaces = getMapInterfaces();
         PropertyChange<P> mapChange = change.map(mapInterfaces);
         Map<P, Expr> mapExprs = mapChange.getMapExprs();
@@ -111,7 +110,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         ValueExpr shiftExpr = new ValueExpr(1, (IntegralClass) property.getType());
 
         return property.getDataChanges(new PropertyChange<P>(mapChange, propertyExpr.diff(shiftExpr).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).
-            ifElse(reverseWhere,propertyExpr.sum(shiftExpr))), propChanges, changedWhere).
-                add(reverse.mapJoinDataChanges(mapExprs, CaseExpr.NULL, reverseWhere, null, propChanges)).map(mapInterfaces); // reverse'им
+                ifElse(reverseWhere, propertyExpr.sum(shiftExpr))), propChanges, changedWhere).
+                add(reverse.mapJoinDataChanges(mapExprs, CaseExpr.NULL, reverseWhere, null, propChanges)); // reverse'им // .map(mapInterfaces)
     }
 }

@@ -15,6 +15,8 @@
 
         <commons.lang.version>2.5</commons.lang.version>
         <commons.io.version>2.0.1</commons.io.version>
+        <commons.codec.version>1.4</commons.codec.version>
+        <google.guava.version>11.0.2</google.guava.version>
 
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
@@ -244,6 +246,7 @@
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
@@ -254,6 +257,17 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons.codec.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${google.guava.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.gwt</groupId>
                 <artifactId>gwt-servlet</artifactId>

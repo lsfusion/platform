@@ -8,7 +8,9 @@ import platform.interop.exceptions.InternalServerException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
-import java.rmi.*;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.UnknownHostException;
 import java.util.concurrent.CancellationException;
 
 import static platform.client.ClientResourceBundle.getString;
@@ -48,7 +50,7 @@ public final class LoginAction {
     private LoginAction() {
         serverHost = System.getProperty(PLATFORM_CLIENT_HOSTNAME);
         serverPort = System.getProperty(PLATFORM_CLIENT_HOSTPORT);
-        serverDB = System.getProperty(PLATFORM_CLIENT_DB)!=null ? System.getProperty(PLATFORM_CLIENT_DB) : "default";
+        serverDB = System.getProperty(PLATFORM_CLIENT_DB, "default");
         user = System.getProperty(PLATFORM_CLIENT_USER);
         password = System.getProperty(PLATFORM_CLIENT_PASSWORD);
         autoLogin = Boolean.getBoolean(PLATFORM_CLIENT_AUTOLOGIN);
@@ -125,7 +127,7 @@ public final class LoginAction {
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
-            remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId, false);
+            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId, false);
             if (remoteNavigator == null) {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;

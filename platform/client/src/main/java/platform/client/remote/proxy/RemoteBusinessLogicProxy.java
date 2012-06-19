@@ -18,8 +18,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer, boolean forceCreateNew) throws RemoteException {
-        RemoteNavigatorInterface remote = target.createNavigator(login, password, computer, forceCreateNew);
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) throws RemoteException {
+        RemoteNavigatorInterface remote = target.createNavigator(isFullClient, login, password, computer, forceCreateNew);
         if (remote == null) {
             return null;
         }

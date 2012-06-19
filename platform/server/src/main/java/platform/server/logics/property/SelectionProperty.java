@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.interop.KeyStrokes;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -52,7 +53,7 @@ public class SelectionProperty extends SessionDataProperty {
         super.proceedDefaultDraw(entity, form);
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID());
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
-                new NotNullFilterEntity(entity.propertyObject),
+                new NotNullFilterEntity((CalcPropertyObjectEntity) entity.propertyObject),
                 ServerResourceBundle.getString("logics.property.selected"),
                 KeyStrokes.getSelectionFilterKeyStroke()), false);
         form.addRegularFilterGroup(filterGroup);

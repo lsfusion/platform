@@ -43,8 +43,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
         if (!treeGroup.plainTreeMode) {
             FilterController filterController = new FilterController(this) {
 
-                protected boolean queryChanged() {
-
+                protected void queryChanged() {
                     try {
                         form.changeFilter(treeGroup, getConditions());
                     } catch (IOException e) {
@@ -52,7 +51,6 @@ public class TreeGroupController extends AbstractGroupObjectController {
                     }
 
                     tree.requestFocusInWindow();
-                    return true;
                 }
 
                 @Override
@@ -85,7 +83,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
                         //пока не поддерживаем группы в колонках в дереве, поэтому делаем
                         if (panelProperties.contains(property)) {
-                            panel.updateColumnKeys(property, Collections.singletonList(new ClientGroupObjectValue()));
+                            panel.updateColumnKeys(property, Collections.singletonList(ClientGroupObjectValue.EMPTY));
                         }
                     }
                 }
@@ -117,12 +115,16 @@ public class TreeGroupController extends AbstractGroupObjectController {
             }
 
             if (fc.objects.containsKey(group)) {
-                view.setCurrentObjects(fc.objects.get(group));
+                view.setCurrentPath(fc.objects.get(group));
             }
         }
 
         panel.update();
         tree.restoreVisualState();
+    }
+
+    public ClientGroupObjectValue getCurrentPath() {
+        return view.getCurrentPath();
     }
 
     public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {
@@ -204,11 +206,11 @@ public class TreeGroupController extends AbstractGroupObjectController {
     }
 
     public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
-        panel.updateRowBackgroundValue(BaseUtils.singleValue(rowBackground));
+        panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
     }
 
     public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
-        panel.updateRowForegroundValue(BaseUtils.singleValue(rowForeground));
+        panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {

@@ -17,7 +17,7 @@ public interface PropertyRendererComponent {
 
     void setValue(Object value, boolean isSelected, boolean hasFocus);
 
-    void rateSelected();
+    void paintAsSelected();
 }
 
 

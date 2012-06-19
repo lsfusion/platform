@@ -4,17 +4,12 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -39,12 +34,8 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
         projectInterface = i.next();
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        throw new RuntimeException("no need");
-    }
-
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         this.session = context.getSession();
 
         Map<String, byte[]> files = new HashMap<String, byte[]>();
@@ -79,7 +70,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                 putFileIfNotNull(files, LM.fileNativeTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания" ,true);
                 putFileIfNotNull(files, LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)" ,true);
 
-                LP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
+                LCP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
                 Map<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
                 KeyExpr key = BaseUtils.singleValue(keys);
                 Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -100,7 +91,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                     putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), fullName + " statement" ,true);
                 }
 
-                LP isAcademic = LM.is(LM.academic);
+                LCP isAcademic = LM.is(LM.academic);
                 keys = isAcademic.getMapKeys();
                 key = BaseUtils.singleValue(keys);
                 query = new Query<Object, Object>(keys);
@@ -117,7 +108,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
                 }
             } else {
 
-                LP isSpecialist = LM.is(LM.specialist);
+                LCP isSpecialist = LM.is(LM.specialist);
                 Map<Object, KeyExpr> keys = isSpecialist.getMapKeys();
                 KeyExpr key = BaseUtils.singleValue(keys);
                 Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -142,7 +133,7 @@ public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
             putFileIfNotNull(files, LM.fileMinutesOfMeetingExpertCollegiumProject.read(context, projectObject), "Протокол заседания экспертной коллегии", true);
             putFileIfNotNull(files, LM.fileWrittenConsentClaimerProject.read(context, projectObject), "Письменное согласие заявителя", true);
 
-            context.addAction(new ExportFileClientAction(files));
+            context.delayUserInterfaction(new ExportFileClientAction(files));
 
             System.gc();
 

@@ -15,7 +15,7 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.UserProperty;
+import platform.server.logics.property.DataProperty;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -23,12 +23,12 @@ import java.util.*;
 // вообще должен содержать только DataProperty и ActionProperty но так как мн-вого наследования нету приходится извращаться
 public class DataChanges extends AbstractValuesContext<DataChanges> {
 
-    protected static class Changes extends QuickMap<UserProperty, PropertyChange<ClassPropertyInterface>> {
+    protected static class Changes extends QuickMap<DataProperty, PropertyChange<ClassPropertyInterface>> {
 
         private Changes() {
         }
 
-        public Changes(UserProperty key, PropertyChange<ClassPropertyInterface> value) {
+        public Changes(DataProperty key, PropertyChange<ClassPropertyInterface> value) {
             super(key, value);
         }
 
@@ -37,11 +37,11 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
                 add(changes.getKey(i), changes.getValue(i).pack());
         }
 
-        private Changes(QuickMap<? extends UserProperty, ? extends PropertyChange<ClassPropertyInterface>> set) {
+        private Changes(QuickMap<? extends DataProperty, ? extends PropertyChange<ClassPropertyInterface>> set) {
             super(set);
         }
 
-        protected PropertyChange<ClassPropertyInterface> addValue(UserProperty key, PropertyChange<ClassPropertyInterface> prevValue, PropertyChange<ClassPropertyInterface> newValue) {
+        protected PropertyChange<ClassPropertyInterface> addValue(DataProperty key, PropertyChange<ClassPropertyInterface> prevValue, PropertyChange<ClassPropertyInterface> newValue) {
             return prevValue.add(newValue);
         }
 
@@ -62,7 +62,7 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
         changes = new Changes();
     }
 
-    public DataChanges(UserProperty property, PropertyChange<ClassPropertyInterface> change) {
+    public DataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) {
         if(change.isEmpty()) // в общем-то почти никогда не срабатывает, на всякий случай
             changes = new Changes();
         else
@@ -90,14 +90,14 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
         return getPropertyChanges().add(add);
     }
 
-    public Collection<UserProperty> getProperties() {
+    public Collection<DataProperty> getProperties() {
         return changes.keys();
     }
 
-    public Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> read(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
-        Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> result = new HashMap<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>>();
+    public Map<DataProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> read(ExecutionEnvironment env) throws SQLException {
+        Map<DataProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> result = new HashMap<DataProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>>();
         for(int i=0;i<changes.size;i++)
-            result.put(changes.getKey(i), changes.getValue(i).executeClasses(session, env, baseClass));
+            result.put(changes.getKey(i), changes.getValue(i).executeClasses(env));
         return result;
     }
 
@@ -105,7 +105,7 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
         return changes.isEmpty();
     }
 
-    public PropertyChange<ClassPropertyInterface> get(UserProperty property) {
+    public PropertyChange<ClassPropertyInterface> get(DataProperty property) {
         return changes.get(property);
     }
 

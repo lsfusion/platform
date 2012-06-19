@@ -187,6 +187,10 @@ public class BusinessLogicsBootstrap {
         }
     }
 
+    public static boolean isDebug() {
+        return "true".equals(System.getProperty(PLATFORM_SERVER_ISDEBUG));
+    }
+
     // -------------------------------
     // интерфейс для старта через jsvc
     // -------------------------------

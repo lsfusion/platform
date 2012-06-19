@@ -12,9 +12,9 @@ import java.sql.SQLException;
 public class DoubleClass extends IntegralClass<Double> {
 
     public final static DoubleClass instance = new DoubleClass();
-    private final static String sid = "DoubleClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected DoubleClass() { super(ServerResourceBundle.getString("classes.real")); }
@@ -69,7 +69,7 @@ public class DoubleClass extends IntegralClass<Double> {
     }
 
     public String getSID() {
-        return sid;
+        return "DoubleClass";
     }
 
     @Override

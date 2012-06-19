@@ -1,12 +1,14 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
-import platform.interop.action.ClientAction;
+import platform.base.QuickMap;
+import platform.base.SimpleMap;
+import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -14,17 +16,18 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.*;
 import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.ComputerController;
 import platform.server.form.navigator.IsServerRestartingController;
 import platform.server.form.navigator.UserController;
-import platform.server.logics.*;
-import platform.server.logics.linear.LP;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.IDTable;
@@ -33,7 +36,7 @@ import platform.server.logics.table.ImplementTable;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DataSession extends BaseMutableModifier implements SessionChanges {
+public class DataSession extends BaseMutableModifier implements SessionChanges, ExecutionEnvironmentInterface {
 
     private Map<CustomClass, SingleKeyNoPropertyUsage> add = new HashMap<CustomClass, SingleKeyNoPropertyUsage>();
     private Map<CustomClass, SingleKeyNoPropertyUsage> remove = new HashMap<CustomClass, SingleKeyNoPropertyUsage>();
@@ -51,6 +54,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         private final Map<DataObject, ConcreteObjectClass> newClasses;
         
         private Transaction() {
+            assert sessionEventOldDepends.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
+
             add = SessionTableUsage.saveData(DataSession.this.add);
             remove = SessionTableUsage.saveData(DataSession.this.remove);
             data = SessionTableUsage.saveData(DataSession.this.data);
@@ -88,7 +93,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         if(sql.isInTransaction() && applyTransaction==null)
             applyTransaction = new Transaction();
     }
-    private void rollbackTransaction() throws SQLException {
+    public void rollbackTransaction() throws SQLException {
         if(applyTransaction!=null) {
             applyTransaction.rollback();
             applyTransaction = null;
@@ -126,20 +131,20 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         return CustomClass.getProperties(BaseUtils.mergeSet(addClasses, removeClasses));
     }
 
-    protected Collection<Property> calculateProperties() {
-        Collection<Property> result = BaseUtils.immutableCast(BaseUtils.mergeSet(getProperties(add.keySet(), remove.keySet()), data.keySet()));
+    protected Collection<CalcProperty> calculateProperties() {
+        Collection<CalcProperty> result = BaseUtils.immutableCast(BaseUtils.mergeSet(getProperties(add.keySet(), remove.keySet()), data.keySet()));
         if(news!=null)
             return BaseUtils.add(result, baseClass.getObjectClassProperty());
         else
             return result;
     }
 
-    public PropertyChanges getFilterChanges(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
-        return getPropertyChanges().filter(BaseUtils.add(getProperties(addClasses, removeClasses), baseClass.getObjectClassProperty()));
+    public StructChanges getFilterChanges(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
+        return new StructChanges(BaseUtils.add(getProperties(addClasses, removeClasses), baseClass.getObjectClassProperty()));
     }
 
-    public PropertyChanges getFilterChanges(DataProperty property) {
-        return getPropertyChanges().filter(Collections.singleton(property));
+    public StructChanges getFilterChanges(DataProperty property) {
+        return new StructChanges(Collections.singleton(property));
     }
 
     public boolean hasChanges() {
@@ -200,7 +205,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         return null;
     }
 
-    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
+    public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
         if(property instanceof ObjectClassProperty)
             return (PropertyChange<P>) getObjectClassChange((ObjectClassProperty) property);
 
@@ -228,15 +233,15 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
     public static class UpdateChanges {
 
-        public final Set<Property> properties;
+        public final Set<CalcProperty> properties;
 
         public UpdateChanges() {
-            properties = new HashSet<Property>();
+            properties = new HashSet<CalcProperty>();
         }
 
         public UpdateChanges(DataSession session, FormInstance<?> form) {
             assert form.session == session;
-            properties = new HashSet<Property>(form.getUpdateProperties());
+            properties = new HashSet<CalcProperty>(form.getUpdateProperties());
         }
 
         public void add(UpdateChanges changes) {
@@ -255,13 +260,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
     public final BaseClass baseClass;
     public final CustomClass namedObject;
-    public final LP<?> name;
+    public final LCP<?> name;
     public final AbstractGroup recognizeGroup;
     public final CustomClass transaction;
-    public final LP<?> date;
+    public final LCP<?> date;
     public final ConcreteCustomClass sessionClass;
-    public final LP<?> currentDate;
-    public final LP<?> currentSession;
+    public final LCP<?> currentDate;
+    public final LCP<?> currentSession;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -271,8 +276,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     public final ComputerController computer;
 
     public DataObject applyObject = null;
+    
+    private final List<ActionProperty> sessionEvents;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, LP<?> currentSession, SQLSession idSession) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LCP name, AbstractGroup recognizeGroup, CustomClass transaction, LCP date, LCP currentDate, LCP currentSession, SQLSession idSession, List<ActionProperty> sessionEvents) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -289,11 +296,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         this.user = user;
         this.computer = computer;
 
+        this.sessionEvents = sessionEvents;
+
         this.idSession = idSession;
     }
 
     public DataSession createSession() throws SQLException {
-        return new DataSession(sql, user, computer, isServerRestarting, baseClass, namedObject, sessionClass, name, recognizeGroup, transaction, date, currentDate, currentSession, idSession);
+        return new DataSession(sql, user, computer, isServerRestarting, baseClass, namedObject, sessionClass, name, recognizeGroup, transaction, date, currentDate, currentSession, idSession, sessionEvents);
     }
 
     public void restart(boolean cancel) throws SQLException {
@@ -321,20 +330,28 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         remove.clear();
         data.clear();
         news = null;
+        
+        if(cancel) {
+            for(SinglePropertyTableUsage table : sessionEventOldDepends.values())
+                table.drop(sql);
+            sessionEventOldDepends = new HashMap<OldProperty, SinglePropertyTableUsage>();
+        } else
+            assert sessionEventOldDepends.isEmpty();
 
         applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
-    }
-
-    public DataObject addObject(ConcreteCustomClass customClass, Modifier modifier) throws SQLException {
-        return addObject(customClass, modifier, true, true);
     }
 
     public DataObject addObject() throws SQLException {
         return new DataObject(IDTable.instance.generateID(idSession, IDTable.OBJECT),baseClass.unknown);
     }
 
-    public DataObject addObject(ConcreteCustomClass customClass, Modifier modifier, boolean fillDefault, boolean groupLast) throws SQLException {
+    // с fill'ами addObject'ы
 
+    public DataObject addObject(ConcreteCustomClass customClass) throws SQLException {
+        return addObject(customClass, true, true);
+    }
+
+    public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault, boolean groupLast) throws SQLException {
         DataObject object = addObject();
 
         // запишем объекты, которые надо будет сохранять
@@ -342,10 +359,10 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         if(fillDefault) {
             if(customClass.isChild(namedObject))
-                name.execute(customClass.caption+" "+object.object, this, modifier, object);
+                name.change(customClass.caption + " " + object.object, new ExecutionEnvironment(this), object);
 
             if(customClass.isChild(transaction))
-                date.execute(currentDate.read(sql, modifier, env), DataSession.this, modifier, object);
+                date.change(currentDate.read(this), new ExecutionEnvironment(this), object);
         }
 
         return object;
@@ -355,7 +372,13 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         changeClass(change, toClass, true);
     }
 
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException {
+        changeClass(object, cls, groupLast);
+    }
+
     public void changeClass(DataObject change, ConcreteObjectClass toClass, boolean groupLast) throws SQLException {
+        boolean hadStoredChanges = hasStoredChanges();
+
         if(toClass==null) toClass = baseClass.unknown;
 
         Set<CustomClass> addClasses = new HashSet<CustomClass>();
@@ -365,66 +388,148 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
         assert Collections.disjoint(addClasses,removeClasses);
 
+        StructChanges updateChanges = getFilterChanges(addClasses, removeClasses);
+
+        updateSessionEvents(updateChanges, groupLast);
+
         changeClass(addClasses, removeClasses, toClass, change, sql, groupLast);
 
         newClasses.put(change, toClass);
 
-        if(groupLast) // по тем по кому не было restart'а new -> to
-            updateProperties(getFilterChanges(addClasses, removeClasses));
+        // по тем по кому не было restart'а new -> to
+        updateProperties(updateChanges, groupLast);
+
+        aspectChange(hadStoredChanges);
     }
 
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException {
+        boolean hadStoredChanges = hasStoredChanges();
+
+        StructChanges updateChanges = getFilterChanges(property);
+
+        updateSessionEvents(updateChanges, groupLast);
+
         changeProperty(property, keys, newValue, sql, groupLast);
 
-        if(groupLast) // по тем по кому не было restart'а new -> to
-            updateProperties(getFilterChanges(property));
+        updateProperties(updateChanges, groupLast);
+
+        aspectChange(hadStoredChanges);
     }
 
-    public void updateProperties(PropertyChanges changes) throws SQLException {
-        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
-            FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
-            incrementChange.getValue().properties.addAll(formInstance.getUpdateProperties(changes));
-            formInstance.dropIncrement(changes);
+    public static final SessionDataProperty isDataChanged = new SessionDataProperty("isDataChanged", "Is data changed", LogicalClass.instance);
+    private void aspectChange(boolean hadStoredChanges) throws SQLException {
+        if(!hadStoredChanges) {
+            StructChanges updateChanges = getFilterChanges(isDataChanged);
+            updateSessionEvents(updateChanges, true);
+
+            changeProperty(isDataChanged, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(true, LogicalClass.instance), sql, true);
+
+            updateProperties(updateChanges, true);
+        }
+    }
+
+    public void updateProperties(StructChanges changes, boolean groupLast) throws SQLException {
+        if(groupLast) {
+            for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
+                FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
+                incrementChange.getValue().properties.addAll(formInstance.getUpdateProperties(changes));
+                formInstance.dropIncrement(changes);
+                formInstance.dataChanged = true;
+            }
+        }
+    }
+
+    // для OldProperty хранит изменения с предыдущего execute'а
+    private Map<OldProperty, SinglePropertyTableUsage> sessionEventOldDepends = new HashMap<OldProperty, SinglePropertyTableUsage>();
+
+    @IdentityLazy
+    private Set<OldProperty> getSessionEventOldDepends() {
+        Set<OldProperty> result = new HashSet<OldProperty>();
+        for(ActionProperty action : sessionEvents)
+            result.addAll(action.event.getOldDepends());
+        return result;
+    }
+
+    @IdentityLazy
+    private Set<SessionCalcProperty> getSessionEventCalcDepends() {
+        Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
+        for(ActionProperty action : sessionEvents)
+            result.addAll(action.event.getSessionCalcDepends());
+        return result;
+    }
+
+    // для hint'ов
+    private Modifier getSessionEventModifier() {
+        FormInstance form = Context.context.get().getFormInstance();
+        if(form!=null)
+            return form;
+        return this;
+    }
+
+    public <P extends PropertyInterface> void updateSessionEvents(StructChanges changes, boolean groupLast) throws SQLException {
+        updateSessionEvents(changes, groupLast, getSessionEventModifier());
+    }
+    
+    public <P extends PropertyInterface> void updateSessionEvents(StructChanges changes, boolean groupLast, Modifier modifier) throws SQLException {
+        if(groupLast) {
+            for(OldProperty<P> old : getSessionEventOldDepends())
+                if(!sessionEventOldDepends.containsKey(old) && old.property.hasChanges(changes, true)) // если влияет на old из сессионного event'а и еще не читалось
+                    sessionEventOldDepends.put(old, old.property.readChangeTable(sql, modifier, baseClass, getQueryEnv()));
+        }
+    }
+
+    public <T extends PropertyInterface> void executeSessionEvents() throws SQLException {
+        executeSessionEvents(getSessionEventModifier());
+    }
+
+    public <T extends PropertyInterface> void executeSessionEvents(Modifier modifier) throws SQLException {
+
+        // можно было бы IncrementProps, NoUpdate еще заюзать, но здесь не нужны mutable
+        QuickMap<CalcProperty, PropertyChange> changes = new SimpleMap<CalcProperty, PropertyChange>();
+
+        if(sessionEventOldDepends.size() > 0) {
+            for(SessionCalcProperty<T> changed : getSessionEventCalcDepends()) {// проставим changed'ы
+                OldProperty<T> oldProperty = changed.getOldProperty();
+                SinglePropertyTableUsage<T> table = sessionEventOldDepends.get(oldProperty);
+                if(table!=null) { // если есть изменение используем его
+                    if(changes.get(oldProperty)==null) // еще не обработано
+                        changes.add(oldProperty, SinglePropertyTableUsage.getChange(table));
+                } else {
+                    PropertyChange<T> change;
+                    if(changed instanceof ChangedProperty) // остальные не менялись
+                        change = changed.getNoChange();
+                    else // для old придется incrementChange использовать
+                        change = ((OldProperty<T>)changed).property.getIncrementChange(modifier);
+                    changes.add(changed, change);
+                }
+            }
+
+            OverrideModifier overrideModifier = new OverrideModifier(new ImmutableModifier(changes), modifier);
+
+            ExecutionEnvironment env = new ExecutionEnvironment(this);
+            for(ActionProperty<?> action : sessionEvents)
+                executeEventAction(action, overrideModifier, env, null);
+
+            for(SinglePropertyTableUsage table : sessionEventOldDepends.values())
+                table.drop(sql);
+            sessionEventOldDepends = new HashMap<OldProperty, SinglePropertyTableUsage>();
+
+            overrideModifier.clean();
         }
     }
 
     
     // для оптимизации
-    private MapDataChanges<ClassPropertyInterface> getUserDataChanges(UserProperty property, PropertyChange<ClassPropertyInterface> change) {
+    public DataChanges getUserDataChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) {
         Pair<Map<ClassPropertyInterface, DataObject>, ObjectValue> simple;
         if((simple = change.getSimple())!=null) {
-            if(property.fitClasses(getCurrentClasses(simple.first),
+            if(IsClassProperty.fitClasses(getCurrentClasses(simple.first), property.value,
                     simple.second instanceof DataObject ? getCurrentClass((DataObject) simple.second) : null))
-                return property.newDataChanges(change);
+                return new DataChanges(property, change);
             else
-                return new MapDataChanges<ClassPropertyInterface>();
+                return new DataChanges();
         }
         return null;
-    }
-    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        if(executeForm!=null) // assert что сама форма modifier и session ее же
-            executeForm.form.fireChange(property, change);
-
-        MapDataChanges<P> userDataChanges = null;
-        if(property instanceof UserProperty && property.timeChanges.isEmpty()) { // оптимизация
-            userDataChanges = (MapDataChanges<P>) getUserDataChanges((UserProperty)property, (PropertyChange<ClassPropertyInterface>) change);
-//            assert userDataChanges == null || BaseUtils.hashEquals(userDataChanges,property.getDataChanges(change, modifier));
-//            из-за того что DataSession знает конкретные значения, а в модифайере все прячется в таблицы, верхний assertion не работает
-        }
-        return execute(userDataChanges!=null?userDataChanges:property.getDataChanges(change, modifier), executeForm, mapObjects);
-    }
-
-    public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>(); // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов, потом изменяем
-        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.changes.read(sql, env, baseClass).entrySet()) {
-            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
-                UserProperty property = propRow.getKey();
-                Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
-                property.execute(new ExecutionContext(row.getKey(), row.getValue().get("value"), this, (executeForm == null ? modifier : executeForm.form), actions, executeForm, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext()));
-            }
-        }
-        return actions;
     }
 
     public ConcreteClass getCurrentClass(DataObject value) {
@@ -467,7 +572,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
     }
 
     // узнает список изменений произошедших без него
-    public Collection<Property> update(FormInstance<?> form) throws SQLException {
+    public Collection<CalcProperty> update(FormInstance<?> form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         UpdateChanges incrementChange = incrementChanges.get(form);
@@ -490,35 +595,39 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         return incrementChange.properties;
     }
 
-    public String apply(BusinessLogics<?> BL) throws SQLException {
-        return apply(BL, new ArrayList<ClientAction>());
+    public String applyMessage(BusinessLogics<?> BL) throws SQLException {
+        if(apply(BL))
+            return null;
+        else
+            return Context.context.get().getLogMessage();
+//            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public String apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
-        return apply(BL, actions, false);
+    public boolean apply(BusinessLogics<?> BL) throws SQLException {
+        return apply(BL, false);
     }
 
-    public String check(BusinessLogics BL) throws SQLException {
-        return apply(BL, new ArrayList<ClientAction>(), true);
+    public boolean check(BusinessLogics BL) throws SQLException {
+        return apply(BL, true);
     }
 
-    public static <T extends PropertyInterface> boolean fitKeyClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
+    public static <T extends PropertyInterface> boolean fitKeyClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys).means(property.mapTable.table.getClasses());
     }
 
-    public static <T extends PropertyInterface> boolean fitClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
+    public static <T extends PropertyInterface> boolean fitClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys, property.field).means(property.fieldClassWhere);
     }
 
-    public static <T extends PropertyInterface> boolean notFitKeyClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
+    public static <T extends PropertyInterface> boolean notFitKeyClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys).and(property.mapTable.table.getClasses()).isFalse();
     }
 
-    public static <T extends PropertyInterface> boolean notFitClasses(Property<T> property, SinglePropertyTableUsage<T> change) {
+    public static <T extends PropertyInterface> boolean notFitClasses(CalcProperty<T> property, SinglePropertyTableUsage<T> change) {
         return change.getClassWhere(property.mapTable.mapKeys, property.field).and(property.fieldClassWhere).isFalse();
     }
 
-    private <T extends PropertyInterface, D extends PropertyInterface> void applySingleStored(Property<T> property, SinglePropertyTableUsage<T> change, BusinessLogics<?> BL, IncrementApply incrementApply) throws SQLException {
+    private <T extends PropertyInterface, D extends PropertyInterface> void applySingleStored(CalcProperty<T> property, SinglePropertyTableUsage<T> change, BusinessLogics<?> BL, IncrementApply incrementApply) throws SQLException {
         // assert что у change классы совпадают с property
         assert property.isStored();
         assert fitClasses(property, change); // проверяет гипотезу
@@ -528,74 +637,71 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             return;
 
         NoUpdate noUpdate = new NoUpdate(); IncrementProps increment = new IncrementProps(property, change);
-        Modifier modifier = new OverrideModifier(noUpdate, increment);
+        OverrideModifier modifier = new OverrideModifier(noUpdate, increment, BL.getNoEventModifier());
 
         // true нужно предыдущее значение сохранить
-        for(Property<D> depend : BL.getAppliedDependFrom(property)) { // !!! важно в лексикографическом порядке должно быть
+        for(CalcProperty<D> depend : BL.getAppliedDependFrom(property)) { // !!! важно в лексикографическом порядке должно быть
             assert depend.isStored() || depend instanceof OldProperty;
             if(depend.isStored()) { // читаем новое значение, запускаем рекурсию
-               assert !(depend instanceof OldProperty);
                 SinglePropertyTableUsage<D> dependChange = depend.readChangeTable(sql, modifier, baseClass, env);
-                applySingleStored((Property)depend, (SinglePropertyTableUsage)dependChange, BL, incrementApply);
+                applySingleStored((CalcProperty)depend, (SinglePropertyTableUsage)dependChange, BL, incrementApply);
                 noUpdate.add(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать
             } else {
                 SinglePropertyTableUsage<D> dependChange = ((OldProperty<D>) depend).property.readChangeTable(sql, modifier, baseClass, env);
                 incrementApply.updateApplyStart((OldProperty<D>)depend, dependChange, baseClass);
             }
         }
-        savePropertyChanges(property.mapTable.table, Collections.singletonMap("value", (Property) property), property.mapTable.mapKeys, change);
+        savePropertyChanges(property.mapTable.table, Collections.singletonMap("value", (CalcProperty) property), property.mapTable.mapKeys, change);
+        modifier.clean();
     }
 
-    private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, Property> changeTable) throws SQLException {
+    private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, CalcProperty> changeTable) throws SQLException {
         savePropertyChanges(implementTable, BaseUtils.toMap(changeTable.getValues()), BaseUtils.toMap(changeTable.getKeys()), changeTable);
     }
 
-    private <K,V> void savePropertyChanges(Table implementTable, Map<V, Property> props, Map<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable) throws SQLException {
+    private <K,V> void savePropertyChanges(Table implementTable, Map<V, CalcProperty> props, Map<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable) throws SQLException {
         Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(implementTable);
         Join<V> join = changeTable.join(BaseUtils.join(mapKeys, modifyQuery.mapKeys));
-        for (Map.Entry<V, Property> property : props.entrySet())
+        for (Map.Entry<V, CalcProperty> property : props.entrySet())
             modifyQuery.properties.put(property.getValue().field, join.getExpr(property.getKey()));
         modifyQuery.and(join.getWhere());
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery, env));
         changeTable.drop(sql);
     }
 
-    public String apply(final BusinessLogics<?> BL, List<ClientAction> actions, boolean onlyCheck) throws SQLException {
+    public boolean apply(final BusinessLogics<?> BL, boolean onlyCheck) throws SQLException {
+        if(!hasChanges())
+            return true;
+
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
-            applyObject = addObject(sessionClass, modifier);
-            currentSession.execute(applyObject.object, DataSession.this, modifier);
+            applyObject = addObject(sessionClass);
+            currentSession.change(applyObject.object, DataSession.this);
         }
+
+        executeSessionEvents();
 
         startTransaction();
 
-        Map<ExecuteProperty, List<ExecutionContext>> pendingExecutes = new HashMap<ExecuteProperty, List<ExecutionContext>>();
+        Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecutes = new HashMap<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>>();
         IncrementApply incrementApply = new IncrementApply(this);
 
-        String constraintResult = null;
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
-            if(property.isFalse) { // ограничения
-                constraintResult = check(property, incrementApply);
-                if (constraintResult != null) {
-                    break;
-                }
-            }
-            if(property instanceof ExecuteProperty && property.hasEvent())
-                executeEventAction((ExecuteProperty) property, incrementApply, actions, pendingExecutes); // действия
-            if(property.isStored()) // постоянно-хранимые свойства
-                readStored(property, incrementApply, BL);
+            if(property instanceof ActionProperty)
+                if(!executeEventAction((ActionProperty) property, incrementApply, pendingExecutes)) // действия
+                    return false;
+            if(property instanceof CalcProperty) // постоянно-хранимые свойства
+                readStored((CalcProperty<PropertyInterface>) property, incrementApply, BL);
         }
 
-        if (onlyCheck || constraintResult != null) {
-            // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
-            incrementApply.cleanIncrementTables();
-            rollbackTransaction();
-            return constraintResult;
+        if (onlyCheck) {
+            incrementApply.cancel();
+            return true;
         }
 
         // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
-        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : incrementApply.groupPropertiesByTables().entrySet())
+        for (Map.Entry<ImplementTable, Collection<CalcProperty>> groupTable : incrementApply.groupPropertiesByTables().entrySet())
             savePropertyChanges(groupTable.getKey(), incrementApply.readSave(groupTable.getKey(), groupTable.getValue()));
 
         for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
@@ -610,15 +716,18 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         commitTransaction();
         restart(false);
 
-        for(Map.Entry<ExecuteProperty, List<ExecutionContext>> pendingExecute : pendingExecutes.entrySet())
-            for(ExecutionContext context : pendingExecute.getValue())
-                executePending(pendingExecute.getKey(), context);
+        for(Map.Entry<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute : pendingExecutes.entrySet())
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = pendingExecute.getValue().iterator(); iterator.hasNext(); ) {
+                Map<ClassPropertyInterface, DataObject> context = iterator.next();
+                executePending(pendingExecute.getKey(), context, !iterator.hasNext());
+            }
 
-        return null;
+        return true;
     }
 
     @Message("message.session.apply.write")
-    private <P extends PropertyInterface> void readStored(@ParamMessage Property<P> property, IncrementApply incrementApply, BusinessLogics<?> BL) throws SQLException {
+    private <P extends PropertyInterface> void readStored(@ParamMessage CalcProperty<P> property, IncrementApply incrementApply, BusinessLogics<?> BL) throws SQLException {
+        assert property.isStored();
         if(property.hasChanges(incrementApply)) {
             SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, incrementApply, baseClass, env);
 
@@ -629,31 +738,42 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         }
     }
 
-    public void executeEventAction(@ParamMessage ExecuteProperty property, IncrementApply incrementApply, List<ClientAction> actions, Map<ExecuteProperty, List<ExecutionContext>> pendingExecute) throws SQLException {
-        PropertyChange<ClassPropertyInterface> propertyChange = property.getEventAction(incrementApply);
+    public boolean executeEventAction(ActionProperty property, IncrementApply incrementApply,
+                                      Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute) throws SQLException {
+        ExecutionEnvironment transactEnv = new ExecutionEnvironment(incrementApply);
+        assert transactEnv.isInTransaction();
+
+        assert !property.event.session;
+        executeEventAction(property, incrementApply, transactEnv, pendingExecute);
+
+        return transactEnv.isInTransaction();
+    }
+
+    public void executeEventAction(ActionProperty property, Modifier modifier, ExecutionEnvironment transactEnv,
+                                      Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute) throws SQLException {
+        PropertySet<ClassPropertyInterface> propertyChange = property.getEventAction(modifier);
         if(propertyChange!=null && !propertyChange.isEmpty()) {
-            List<ExecutionContext> pendingPropExecute = null;
-            if(property.pendingEventExecute()) {
-                pendingPropExecute = new ArrayList<ExecutionContext>();
+            List<Map<ClassPropertyInterface, DataObject>> pendingPropExecute = null;
+            if(pendingExecute!=null && property.pendingEventExecute()) {
+                pendingPropExecute = new ArrayList<Map<ClassPropertyInterface, DataObject>>();
                 pendingExecute.put(property, pendingPropExecute);
             }
 
-            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
-                Map<ClassPropertyInterface, DataObject> executeKeys = executeRow.getKey();
-                ObjectValue executeValue = executeRow.getValue().get("value");
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = propertyChange.executeClasses(transactEnv).iterator(); iterator.hasNext();) {
+                Map<ClassPropertyInterface, DataObject> executeRow = iterator.next();
 
                 if(pendingPropExecute!=null)
                     // иначе "pend'им" выполнение, но уже с новыми классами
-                    pendingPropExecute.add(new ExecutionContext(getCurrentObjects(executeKeys), getCurrentValue(executeValue), this, modifier, actions, null, null, !iterator.hasNext()));
+                    pendingPropExecute.add(getCurrentObjects(executeRow));
                 else
-                    property.execute(new ExecutionContext(executeKeys, executeValue, this, incrementApply, actions, null, null, !iterator.hasNext()));
+                    property.execute(new ExecutionContext(executeRow, null, transactEnv, null, !iterator.hasNext()));
             }
         }
     }
 
+/*
     @Message("message.session.apply.check")
-    public <T extends PropertyInterface> String check(@ParamMessage Property<T> property, IncrementApply incrementApply) throws SQLException {
+    public <T extends PropertyInterface> boolean check(@ParamMessage CalcProperty<T> property, IncrementApply incrementApply, List<ClientAction> actions) throws SQLException {
         assert property.noDB();
         if(property.hasChanges(incrementApply)) {
             Query<T,String> changed = new Query<T,String>(property);
@@ -661,15 +781,11 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> result = changed.executeClasses(sql, new OrderedMap<String, Boolean>(), 30, baseClass, env);
             if (result.size() > 0) {
                 // для constraint'ов
-                final Map<T, ValueClass> classes = property.getCommonClasses().interfaces;
+                assert property.isFull();
 
-                NoPropertyTableUsage keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), new Type.Getter<T>() {
-                    public Type getType(T key) {
-                        return classes.get(key).getType();
-                    }
-                });
+                NoPropertyTableUsage<T> keysTable = new NoPropertyTableUsage<T>(new ArrayList<T>(property.interfaces), property.interfaceTypeGetter);
                 keysTable.writeKeys(sql, result.keyList());
-                Map keysMap = keysTable.getMapKeys();
+                Map<T, KeyExpr> keysMap = keysTable.getMapKeys();
 
                 // сюда надо name'ы вставить
                 List<List<String>> propCaptions = new ArrayList<List<String>>();
@@ -682,7 +798,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
 
                 int interfaceIndex = 0;
                 for(T propertyInterface : property.interfaces) {
-                    ValueClass valueClass = classes.get(propertyInterface);
+                    ValueClass valueClass = property.getInterfaceClasses().get(propertyInterface);
                     for (Property nameProp : recognizeGroup.getProperties()) {
                         List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
                         if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
@@ -693,7 +809,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                     }
                     interfaceIndex++;
                 }
-                OrderedMap<Map<T, Object>, Map<String, Object>> detailedResult = detailed.execute(sql, env);
+                OrderedMap<Map<T, Object>, Map<String, Object>> detailedResult = detailed.execute(this);
 
                 String resultString = property.toString() + '\n';
                 for (Map.Entry<Map<T,Object>, Map<String,Object>> row : detailedResult.entrySet()) {
@@ -717,17 +833,22 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
                     resultString += "    " + infoStr + '\n';
                 }
 
+                actions.add(new LogMessageClientAction(resultString, true));
                 keysTable.drop(sql);
-                return resultString;
+                return false;
             }
         }
 
-        return null;
+        return true;
+    }
+  */
+    @Message("message.session.apply.auto.execute")
+    public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, boolean groupLast) throws SQLException {
+        property.execute(new ExecutionContext(context, null, new ExecutionEnvironment(this), null, groupLast));
     }
 
-    @Message("message.session.apply.auto.execute")
-    public void executePending(@ParamMessage ExecuteProperty property, ExecutionContext context) throws SQLException {
-        property.execute(context);
+    public QueryEnvironment getQueryEnv() {
+        return env;
     }
 
     public final QueryEnvironment env = new QueryEnvironment() {
@@ -735,22 +856,28 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
             return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
         }
 
+        public ParseInterface getIsFullClient() {
+            return new LogicalParseInterface() {
+                public boolean isTrue() {
+                    return computer.isFullClient();
+                }
+            };
+        }
+
         public ParseInterface getSQLComputer() {
             return new TypeObject(computer.getCurrentComputer().object, ObjectType.instance);
         }
 
         public ParseInterface getIsServerRestarting() {
-            return new StringParseInterface() {
-                public String getString(SQLSyntax syntax) {
-                    return isServerRestarting.isServerRestarting()
-                           ? LogicalClass.instance.getString(true, syntax)
-                           : SQLSyntax.NULL;
+            return new LogicalParseInterface() {
+                public boolean isTrue() {
+                    return isServerRestarting.isServerRestarting();
                 }
             };
         }
     };
 
-    public void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session, boolean groupLast) throws SQLException {
+    private void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session, boolean groupLast) throws SQLException {
         checkTransaction(); // важно что, вначале
 
         for(CustomClass addClass : addClasses) {
@@ -799,7 +926,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         addChange(baseClass.getObjectClassProperty());
     }
 
-    public void changeProperty(final DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, SQLSession session, boolean groupLast) throws SQLException {
+    private void changeProperty(final DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, SQLSession session, boolean groupLast) throws SQLException {
         checkTransaction();
 
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.get(property);
@@ -826,5 +953,29 @@ public class DataSession extends BaseMutableModifier implements SessionChanges {
         addChanges(data.keySet());
         if(news!=null)
             addChange(baseClass.getObjectClassProperty());
+    }
+
+    public DataSession getSession() {
+        return this;
+    }
+
+    public Modifier getModifier() {
+        return modifier;
+    }
+
+    public FormInstance getFormInstance() {
+        return null;
+    }
+
+    public boolean isInTransaction() {
+        return false;
+    }
+
+    public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
+    }
+
+    public ExecutionEnvironmentInterface cancel() throws SQLException {
+        restart(true);
+        return this;
     }
 }

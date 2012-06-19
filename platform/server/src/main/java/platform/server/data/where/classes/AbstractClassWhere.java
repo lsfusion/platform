@@ -24,6 +24,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     public static class And<K> extends QuickMap<K, AndClassSet> {
 
+        @Override
+        public boolean add(K key, AndClassSet value) {
+            assert value!=null; // не зачем null'ы лучше вообще не добавлять
+            return super.add(key, value);
+        }
+
         public boolean compatible(And<K> and) {
             for(int i=0;i<size;i++)
                 if(!getValue(i).getType().isCompatible(and.get(getKey(i)).getType()))
@@ -31,7 +37,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return true;
         }
         
-        public <T> And<T> remap(Map<K, T> remap) {
+        public <T> And<T> remap(Map<K, ? extends T> remap) {
             And<T> result = new And<T>();
             for(int i=0;i<size;i++)
                 result.add(remap.get(getKey(i)), getValue(i));
@@ -48,12 +54,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return result;
         }
 
-        public And<K> keep(Collection<? extends K> keys) {
-            And<K> result = new And<K>();
+        public <T extends K> And<T> keep(Collection<T> keys) {
+            And<T> result = new And<T>();
             for(int i=0;i<size;i++) {
                 K key = getKey(i);
                 if(keys.contains(key))
-                    result.add(key, getValue(i));
+                    result.add((T) key, getValue(i));
             }
             return result;
         }
@@ -71,6 +77,14 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         public And() {
+        }
+
+        public <V> And(And<V> andWhere, Map<V, K> map) {
+            for(int j=0;j< andWhere.size;j++) {
+                K mapValue = map.get(andWhere.getKey(j));
+                if(mapValue!=null)
+                    add(mapValue, andWhere.getValue(j));
+            }
         }
 
         public And(QuickMap<? extends K, AndClassSet> set) {
@@ -430,11 +444,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     private static <K,V,VThis extends AbstractClassWhere<V,VThis>> And<K>[] initMapKeys(VThis classes,Map<V,K> map) {
         And<K>[] mapWheres = new And[classes.wheres.length];
-        for(int i=0;i<classes.wheres.length;i++) {
-            mapWheres[i] = new And<K>();
-            for(int j=0;j<classes.wheres[i].size;j++)
-                mapWheres[i].add(map.get(classes.wheres[i].getKey(j)),classes.wheres[i].getValue(j));
-        }
+        for(int i=0;i<classes.wheres.length;i++)
+            mapWheres[i] = new And<K>(classes.wheres[i], map);
         return mapWheres;
     }
     protected <V, VThis extends AbstractClassWhere<V,VThis>> AbstractClassWhere(VThis classes,Map<V,K> map) {
@@ -453,16 +464,25 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         super(where);
     }
 
-    public Map<K, ValueClass> getCommonParent(Collection<K> keys) {
+    // с проверкой на null, по аналогии с Action'ом, см. CalcProperty.getCommonClasses
+    private static OrClassSet or(OrClassSet or1, OrClassSet or2) {
+        if(or1==null)
+            return or2;
+        if(or2==null)
+            return or1;
+        return or1.or(or2);
+    }
+    public <T extends K> Map<T, ValueClass> getCommonParent(Collection<T> keys) {
 
-        assert !isFalse();
-
-        Map<K, ValueClass> result = new HashMap<K, ValueClass>();
-        for(K key : keys) {
-            OrClassSet orSet = wheres[0].get(key).getOr();
-            for(int i=1;i<wheres.length;i++)
-                orSet = orSet.or(wheres[i].get(key).getOr());
-            result.put(key,orSet.getCommonClass());
+        Map<T, ValueClass> result = new HashMap<T, ValueClass>();
+        for(T key : keys) {
+            OrClassSet orSet = null;
+            for (And<K> where : wheres) {
+                AndClassSet and = where.get(key);
+                orSet = or(orSet, and == null ? null : and.getOr());
+            }
+            if(orSet!=null)
+                result.put(key,orSet==null ? null : orSet.getCommonClass());
         }
         return result;
     }

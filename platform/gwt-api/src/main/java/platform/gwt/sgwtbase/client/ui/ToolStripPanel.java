@@ -82,8 +82,6 @@ public class ToolStripPanel extends ToolStrip {
 
         addMember(createLocaleChooser());
 
-        addButtonsAfterLocaleChooser();
-
         if (showLogoutButton) {
             addSeparator();
 
@@ -101,12 +99,6 @@ public class ToolStripPanel extends ToolStrip {
         }
 
         addSpacer(6);
-    }
-
-    /**
-     * <b>Note: для перегрузки</b>
-     */
-    protected void addButtonsAfterLocaleChooser() {
     }
 
     private static final String locales[] = {"ru", "en"};

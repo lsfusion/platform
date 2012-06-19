@@ -1,6 +1,5 @@
 package platform.client.form;
 
-import platform.client.ClientResourceBundle;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
@@ -9,7 +8,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 
 import static platform.client.SwingUtils.*;
 
@@ -17,17 +15,15 @@ public class ClientModalForm extends JDialog {
 
     protected ClientFormController form;
     protected final RemoteFormInterface remoteForm;
-    private final boolean newSession;
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession) throws IOException, ClassNotFoundException {
-        this(owner, remoteForm, newSession, false);
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm) {
+        this(owner, remoteForm, false);
     }
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession, boolean isDialog) throws IOException, ClassNotFoundException {
-        super(getWindow(owner), ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean isDialog) {
+        super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
 
         this.remoteForm = remoteForm;
-        this.newSession = newSession;
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
@@ -37,11 +33,21 @@ public class ClientModalForm extends JDialog {
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
         form = createFormController(isDialog);
+
         setTitle(form.getCaption());
 
         add(form.getComponent(), BorderLayout.CENTER);
 
         createUIHandlers();
+    }
+
+    protected ClientFormController createFormController(boolean isDialog) {
+        return new ClientFormController(remoteForm, null, isDialog) {
+            @Override
+            public void hideForm() {
+                hideDialog();
+            }
+        };
     }
 
     private void createUIHandlers() {
@@ -77,34 +83,6 @@ public class ClientModalForm extends JDialog {
 
     protected void windowActivatedFirstTime() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
-    }
-
-    protected ClientFormController createFormController(boolean isDialog) throws IOException, ClassNotFoundException {
-        return new ClientFormController(remoteForm, null, false, true, newSession) {
-            @Override
-            public void okPressed() {
-                setCanClose(true);
-                super.okPressed();
-                if (isCanClose()) {
-                    hideDialog();
-                }
-            }
-
-            @Override
-            void closePressed() {
-                if (newSession && dataChanged
-                        && JOptionPane.YES_OPTION != showConfirmDialog(getComponent(),
-                                                                       ClientResourceBundle.getString("form.do.you.really.want.to.close.form"),
-                                                                       null,
-                                                                       JOptionPane.WARNING_MESSAGE)) {
-                    return;
-                }
-
-                super.closePressed();
-
-                hideDialog();
-            }
-        };
     }
 
     public final void hideDialog() {

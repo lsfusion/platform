@@ -15,9 +15,9 @@ import java.text.Format;
 public class LogicalClass extends DataClass<Boolean> {
 
     public static final LogicalClass instance = new LogicalClass();
-    private final static String sid = "LogicalClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected LogicalClass() { super(ServerResourceBundle.getString("classes.logical"));}
@@ -111,7 +111,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public String getSID() {
-        return sid;
+        return "LogicalClass";
     }
 
     public Stat getTypeStat() {

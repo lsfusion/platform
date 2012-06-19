@@ -6,7 +6,12 @@ public class ContextAwareDaemonThreadFactory extends DaemonThreadFactory {
     private final Context context;
 
     public ContextAwareDaemonThreadFactory(Context context) {
-        super("-context-aware-daemon-");
+        this(context, "-context-aware-daemon-");
+
+    }
+
+    public ContextAwareDaemonThreadFactory(Context context, String threadNamePrefix) {
+        super(threadNamePrefix);
         this.context = context;
     }
 

@@ -3,6 +3,7 @@ package roman;
 import platform.interop.action.MessageClientAction;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField invoiceSIDField = new ImportField(LM.sidDocument);
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField dateInvoiceField = new ImportField(LM.baseLM.date);
@@ -59,7 +60,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
         properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 1, '|');
 
             ImportTable table = new MexxPricesInvoiceImporter(inputTable, null, invoiceSIDField, dateInvoiceField, null, null, null, sidField, null, null,
@@ -68,7 +69,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
             ImportKey<?>[] keysArray = {invoiceKey, articleKey, itemKey, customCategoryKey, customCategory6Key};
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
 
-            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

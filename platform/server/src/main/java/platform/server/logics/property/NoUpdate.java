@@ -8,15 +8,15 @@ import java.util.Set;
 
 public class NoUpdate extends BaseMutableModifier {
 
-    private Set<Property> props = new HashSet<Property>();
+    private Set<CalcProperty> props = new HashSet<CalcProperty>();
 
-    public void add(Property property) {
+    public void add(CalcProperty property) {
         props.add(property);
 
         addChange(property);
     }
-    public void addAll(Collection<Property> props) {
-        for(Property prop :  props)
+    public void addAll(Collection<CalcProperty> props) {
+        for(CalcProperty prop :  props)
             add(prop);
     }
     public void clear() {
@@ -32,14 +32,14 @@ public class NoUpdate extends BaseMutableModifier {
         return true;
     }
 
-    protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(Property<P> property) {
+    protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
         if(props.contains(property))
             return property.getNoChange();
         else
             return null;
     }
 
-    protected Collection<Property> calculateProperties() {
+    protected Collection<CalcProperty> calculateProperties() {
         return props;
     }
 }

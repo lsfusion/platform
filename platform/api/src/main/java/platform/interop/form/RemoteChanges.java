@@ -3,20 +3,18 @@ package platform.interop.form;
 import platform.interop.action.ClientAction;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class RemoteChanges implements Serializable {
 
-    public final byte[] form;
-    public final List<ClientAction> actions;
-    public final int classID;
-
+    public final byte[] formChanges;
+    public final ClientAction[] actions;
+    public final int currentClassId;
     public final boolean resumeInvocation;
 
-    public RemoteChanges(byte[] form, List<ClientAction> actions, int classID, boolean resumeInvocation) {
-        this.form = form;
+    public RemoteChanges(byte[] formChanges, ClientAction[] actions, int currentClassId, boolean resumeInvocation) {
+        this.formChanges = formChanges;
         this.actions = actions;
-        this.classID = classID;
+        this.currentClassId = currentClassId;
         this.resumeInvocation = resumeInvocation;
     }
 }

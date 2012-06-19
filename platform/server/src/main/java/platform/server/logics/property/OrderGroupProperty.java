@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.query.AggrExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.Where;
@@ -15,8 +16,8 @@ import java.util.Map;
 
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
-    private final List<PropertyInterfaceImplement<I>> props;
-    protected List<PropertyInterfaceImplement<I>> getProps() {
+    private final List<CalcPropertyInterfaceImplement<I>> props;
+    protected List<CalcPropertyInterfaceImplement<I>> getProps() {
         return props;
     }
 
@@ -25,24 +26,21 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return groupType;
     }
 
-    private final OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders;
-    protected OrderedMap<PropertyInterfaceImplement<I>, Boolean> getOrders() {
+    private final OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders;
+    private final boolean ordersNotNull;
+    protected OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
         return orders;
     }
 
-    public OrderGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, List<PropertyInterfaceImplement<I>> props, GroupType groupType, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders) {
+    public OrderGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, List<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         super(sID, caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;
         this.orders = orders;
+        this.ordersNotNull = ordersNotNull;
 
         finalizeInit();
     }
-
-    public OrderGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, List<PropertyInterfaceImplement<I>> extras, GroupType groupType, OrderedMap<PropertyInterfaceImplement<I>, Boolean> orders) {
-        this(sID, caption, property.interfaces, interfaces, BaseUtils.addList(property.getImplement(), extras), groupType, orders);
-    }
-
 
     protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // если нужна инкрементность
@@ -60,7 +58,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
             changedWhere.add(getPartitionWhere(changedGroupWhere.toWhere(), getGroupImplements(mapKeys, PropertyChanges.EMPTY),
                     getExprImplements(mapKeys, PropertyChanges.EMPTY), getOrderImplements(mapKeys, PropertyChanges.EMPTY), joinImplement));
         }
-        return GroupExpr.create(groups, exprs, orders, getGroupType(), joinImplement);
+        return GroupExpr.create(groups, exprs, orders, ordersNotNull, getGroupType(), joinImplement);
     }
 
     protected boolean useSimpleIncrement() {
@@ -68,6 +66,6 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     }
 
     protected Where getPartitionWhere(Where where, Map<Interface<I>, Expr> groups, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Map<Interface<I>, ? extends Expr> joinImplement) {
-        return GroupExpr.create(groups, where.and(Expr.getWhere(exprs).and(Expr.getWhere(orders.keySet()))), joinImplement).getWhere();
+        return GroupExpr.create(groups, where.and(Expr.getWhere(exprs).and(AggrExpr.getOrderWhere(orders, ordersNotNull))), joinImplement).getWhere();
     }
 }

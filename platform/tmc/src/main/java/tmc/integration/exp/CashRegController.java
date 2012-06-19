@@ -2,9 +2,6 @@ package tmc.integration.exp;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientResultAction;
-import platform.interop.action.ListClientAction;
-import platform.interop.action.ListClientResultAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
@@ -14,8 +11,10 @@ import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import tmc.VEDLogicsModule;
 import tmc.integration.exp.FiscalRegister.*;
 
@@ -23,10 +22,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CashRegController {
 
@@ -44,7 +40,7 @@ public class CashRegController {
 
     public int getCashRegComPort(FormInstance formInstance) {
         try {
-            Integer result = (Integer) LM.cashRegComPort.read(formInstance.session.sql, formInstance, formInstance.session.env, formInstance.instanceFactory.computer.getDataObject());
+            Integer result = (Integer) LM.cashRegComPort.read(formInstance, formInstance.instanceFactory.computer.getDataObject());
             if (result == null)
                 return 0;
             else
@@ -54,7 +50,7 @@ public class CashRegController {
         }
     }
 
-    public ClientResultAction getCashRegApplyActions(FormInstance formInstance, int payType,
+    public ClientAction getCashRegApplyActions(FormInstance formInstance, int payType,
                                                      Set<GroupObjectInstance> classGroups,
                                                      PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                                      PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
@@ -65,18 +61,16 @@ public class CashRegController {
                                                      PropertyDrawEntity<?> clientSumProp, PropertyDrawEntity<?> discountProp, Set<GroupObjectInstance> obligationGrObj,
                                                      PropertyDrawEntity<?> obligationName, PropertyDrawEntity<?> obligationSum, PropertyDrawEntity<?> obligationBarcode) {
 
-        List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
-
         cashRegComPort = getCashRegComPort(formInstance);
         if (cashRegComPort > 0) {
-            actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
+            return new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
                     classGroups, priceProp, quantityProp, nameProp,
                     sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp,
                     orderArticleSaleDiscount, orderArticleSaleDiscountSum, cashierProp, clientNameProp,
-                    clientSumProp, discountProp, obligationGrObj, obligationName, obligationSum, obligationBarcode)));
+                    clientSumProp, discountProp, obligationGrObj, obligationName, obligationSum, obligationBarcode));
 
         }
-        return new ListClientResultAction(actions);
+        return null;
     }
 
 
@@ -168,7 +162,7 @@ public class CashRegController {
             obligationProperties.add(obligationBarcodeDraw);
         }
 
-        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
+        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) quantityDraw.propertyObject));
 
         try {
             data = formInstance.getFormData(formProperties, classGroups);
@@ -257,14 +251,13 @@ public class CashRegController {
                                             PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                             PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp) {
 
-        List<ClientAction> actions = new ArrayList<ClientAction>();
         int comPort = getCashRegComPort(formInstance);
         if (comPort > 0) {
-            actions.add(new NonFiscalPrintAction(createOrderTxt(formInstance,
+            return new NonFiscalPrintAction(createOrderTxt(formInstance,
                     classGroups, priceProp, quantityProp,
-                    nameProp, sumProp, toPayProp, barcodeProp), comPort));
+                    nameProp, sumProp, toPayProp, barcodeProp), comPort);
         }
-        return new ListClientAction(actions);
+        return null;
     }
 
 
@@ -286,7 +279,7 @@ public class CashRegController {
         PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
         formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, barcodeDraw));
 
-        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
+        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) quantityDraw.propertyObject));
 
         try {
             data = formInstance.getFormData(formProperties, classGroups);
@@ -331,29 +324,6 @@ public class CashRegController {
         return result;
     }
 
-    public String checkCashRegApplyActions(Object result) {
-        /*
-        List<Object> listActions = (List<Object>) result;
-
-        if (!noBillTxt) {
-            ImportFileClientActionResult keyImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size() - 3));
-            ImportFileClientActionResult keyExImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size() - 2));
-
-            if (keyImpFileResult.fileExists && !keyExImpFileResult.fileExists) {
-                return "Произошла ошибка при записи в ФР : программа взаимодействия с регистратором не загружена.\n" +
-                        "Для ее загрузки нужно запустить на рабочем столе ярлык 'Гепард'.";
-            }
-
-            ImportFileClientActionResult errorImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size() - 1));
-
-            if (errorImpFileResult.fileExists) {
-                return (errorImpFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + errorImpFileResult.fileContent);
-            }
-        }
-        */
-        return null;
-    }
-
     public void addCashRegProperties() {
         // todo [dale]: надо бы переделать это на LogicsModule
 //       пока не поддерживается
@@ -380,12 +350,12 @@ public class CashRegController {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
             }
-            context.addAction(new ReportAction(type, comPort));
+            context.delayUserInterfaction(new ReportAction(type, comPort));
         }
     }
 
@@ -398,12 +368,12 @@ public class CashRegController {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
             }
-            context.addAction(new MessageAction(type, comPort));
+            context.delayUserInterfaction(new MessageAction(type, comPort));
         }
     }
 
@@ -433,7 +403,7 @@ public class CashRegController {
             this.mask = mask;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             //пока отключен, чтобы не вылетал exception
 
             /*
@@ -448,7 +418,7 @@ public class CashRegController {
         }
     }
 
-    private class IntegerCashRegActionProperty extends CustomActionProperty {
+    private class IntegerCashRegActionProperty extends CustomReadValueActionProperty {
 
         int type;
 
@@ -457,20 +427,18 @@ public class CashRegController {
             this.type = command;
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
-            Object countValue = context.getValueObject();
+        protected DataClass getReadType() {
+            return DoubleClass.instance;
+        }
+
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object countValue) throws SQLException {
             if (countValue instanceof Double) {
                 int comPort = getCashRegComPort(context.getFormInstance());
                 if (comPort == 0) {
                     return;
                 }
-                context.addAction(new MoneyOperationAction(type, comPort, (Double) countValue));
+                context.delayUserInterfaction(new MoneyOperationAction(type, comPort, (Double) countValue));
             }
-        }
-
-        @Override
-        public DataClass getValueClass() {
-            return DoubleClass.instance;
         }
     }
 

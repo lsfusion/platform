@@ -3,40 +3,23 @@ package platform.server.logics.scripted;
 import javax.swing.*;
 
 public enum VAlign {
-    TOP {
-        @Override
-        public float asToolbarAlign() {
-            return JToolBar.TOP_ALIGNMENT;
-        }
+    TOP, CENTER, BOTTOM;
 
-        @Override
-        public int asTextPosition() {
-            return SwingUtilities.TOP;
+    public float asToolbarAlign() {
+        switch (this) {
+            case TOP: return JToolBar.TOP_ALIGNMENT;
+            case CENTER: return JToolBar.CENTER_ALIGNMENT;
+            case BOTTOM: return JToolBar.BOTTOM_ALIGNMENT;
         }
-    },
-    CENTER {
-        @Override
-        public float asToolbarAlign() {
-            return JToolBar.CENTER_ALIGNMENT;
-        }
+        throw new IllegalStateException("wrong enum value");
+    }
 
-        @Override
-        public int asTextPosition() {
-            return SwingUtilities.CENTER;
+    public int asTextPosition() {
+        switch (this) {
+            case TOP: return SwingConstants.TOP;
+            case CENTER: return SwingConstants.CENTER;
+            case BOTTOM: return SwingConstants.BOTTOM;
         }
-    },
-    BOTTOM {
-        @Override
-        public float asToolbarAlign() {
-            return JToolBar.BOTTOM_ALIGNMENT;
-        }
-
-        @Override
-        public int asTextPosition() {
-            return SwingUtilities.BOTTOM;
-        }
-    };
-
-    public abstract float asToolbarAlign();
-    public abstract int asTextPosition();
+        throw new IllegalStateException("wrong enum value");
+    }
 }

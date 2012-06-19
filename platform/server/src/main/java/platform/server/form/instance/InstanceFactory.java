@@ -40,10 +40,10 @@ public class InstanceFactory {
                 objects.add(getInstance(object));
             }
 
-            Map<ObjectInstance, PropertyObjectInstance> parentInstances = null;
+            Map<ObjectInstance, CalcPropertyObjectInstance> parentInstances = null;
             if(entity.isParent !=null) {
-                parentInstances = new HashMap<ObjectInstance, PropertyObjectInstance>();
-                for(Map.Entry<ObjectEntity,PropertyObjectEntity> parentObject : entity.isParent.entrySet())
+                parentInstances = new HashMap<ObjectInstance, CalcPropertyObjectInstance>();
+                for(Map.Entry<ObjectEntity,CalcPropertyObjectEntity> parentObject : entity.isParent.entrySet())
                     parentInstances.put(getInstance(parentObject.getKey()), getInstance(parentObject.getValue()));
             }
 
@@ -73,17 +73,36 @@ public class InstanceFactory {
         return treeInstances.get(entity);
     }
 
-    public <P extends PropertyInterface> PropertyObjectInstance getInstance(PropertyObjectEntity<P> entity) {
-
-        if (!propertyObjectInstances.containsKey(entity)) {
-            Map<P, PropertyObjectInterfaceInstance> propertyMap = new HashMap<P, PropertyObjectInterfaceInstance>();
-            for (Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet()) {
-                propertyMap.put(propertyImplement.getKey(), propertyImplement.getValue().getInstance(this));
-            }
-            propertyObjectInstances.put(entity, new PropertyObjectInstance<P>(entity.property, propertyMap));
+    private <P extends PropertyInterface> Map<P, PropertyObjectInterfaceInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
+        Map<P, PropertyObjectInterfaceInstance> propertyMap = new HashMap<P, PropertyObjectInterfaceInstance>();
+        for (Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet()) {
+            propertyMap.put(propertyImplement.getKey(), propertyImplement.getValue().getInstance(this));
         }
+        return propertyMap;
+    }
 
-        return propertyObjectInstances.get(entity);
+    public <P extends PropertyInterface> CalcPropertyObjectInstance<P> getInstance(CalcPropertyObjectEntity<P> entity) {
+
+        if (!propertyObjectInstances.containsKey(entity))
+            propertyObjectInstances.put(entity, new CalcPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+
+        return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
+    }
+
+    // временно
+    public <P extends PropertyInterface> PropertyObjectInstance<P, ?> getInstance(PropertyObjectEntity<P, ?> entity) {
+        if(entity instanceof CalcPropertyObjectEntity)
+            return getInstance((CalcPropertyObjectEntity<P>)entity);
+        else
+            return getInstance((ActionPropertyObjectEntity<P>)entity);
+    }
+
+    public <P extends PropertyInterface> ActionPropertyObjectInstance<P> getInstance(ActionPropertyObjectEntity<P> entity) {
+
+        if (!propertyObjectInstances.containsKey(entity))
+            propertyObjectInstances.put(entity, new ActionPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+
+        return (ActionPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
 
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
@@ -94,7 +113,11 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects,
+            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(
+                    entity,
+                    getInstance(entity.propertyObject),
+                    getInstance(entity.toDraw),
+                    columnGroupObjects,
                     entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
                     entity.propertyReadOnly == null ? null : getInstance(entity.propertyReadOnly),
                     entity.propertyFooter == null ? null : getInstance(entity.propertyFooter),

@@ -57,15 +57,15 @@ public class ScriptingFormView extends DefaultFormView {
             addComponentToMapping(obj.classChooser);
         }
 
-        setupFunctionView(printFunction, "print");
-        setupFunctionView(editFunction, "edit");
-        setupFunctionView(xlsFunction, "xls");
-        setupFunctionView(nullFunction, "null");
-        setupFunctionView(refreshFunction, "refresh");
-        setupFunctionView(applyFunction, "apply");
-        setupFunctionView(cancelFunction, "cancel");
-        setupFunctionView(okFunction, "ok");
-        setupFunctionView(closeFunction, "close");
+        setupFormButton(printButton, "print");
+        setupFormButton(editButton, "edit");
+        setupFormButton(xlsButton, "xls");
+        setupFormButton(nullButton, "null");
+        setupFormButton(refreshButton, "refresh");
+        setupFormButton(applyButton, "apply");
+        setupFormButton(cancelButton, "cancel");
+        setupFormButton(okButton, "ok");
+        setupFormButton(closeButton, "close");
 
         if (applyDefault) {
             formButtonContainer.setSID(getFormButtonContainerSID());
@@ -109,7 +109,7 @@ public class ScriptingFormView extends DefaultFormView {
         return view;
     }
 
-    private void setupFunctionView(FunctionView function, String type) {
+    private void setupFormButton(PropertyDrawView function, String type) {
         setClientFunctionSID(function, type);
         addComponentToMapping(function);
     }
@@ -196,7 +196,7 @@ public class ScriptingFormView extends DefaultFormView {
         return "functions.box";
     }
 
-    private static void setClientFunctionSID(FunctionView function, String type) {
+    private static void setClientFunctionSID(PropertyDrawView function, String type) {
         function.setSID("functions." + type);
     }
 

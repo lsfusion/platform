@@ -8,9 +8,9 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
@@ -27,12 +27,12 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     public Compare compare;
     public CompareValue value;
 
-    public CompareFilterInstance(PropertyObjectInstance<P> property,Compare compare, CompareValue value) {
+    public CompareFilterInstance(CalcPropertyObjectInstance<P> property,Compare compare, CompareValue value) {
         this(property, compare, value, false);
     }
 
     // не можем хранить ссылку на Entity, так как этот Instance может создаваться на стороне клиента и не иметь Entity
-    public CompareFilterInstance(PropertyObjectInstance<P> property,Compare compare, CompareValue value, boolean resolve) {
+    public CompareFilterInstance(CalcPropertyObjectInstance<P> property,Compare compare, CompareValue value, boolean resolve) {
         super(property, resolve);
         this.compare = compare;
         this.value = value;
@@ -54,14 +54,14 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
             case 1:
                 return form.getObjectInstance(inStream.readInt());
             case 2:
-                return ((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).propertyObject;
+                return (CalcPropertyObjectInstance)((PropertyDrawInstance<?>)form.getPropertyDraw(inStream.readInt())).propertyObject;
         }
 
         throw new IOException();
     }
 
     @Override
-    public boolean dataUpdated(Collection<Property> changedProps) {
+    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
         return super.dataUpdated(changedProps) || value.dataUpdated(changedProps);
     }
 
@@ -81,7 +81,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void fillProperties(Set<Property> properties) {
+    public void fillProperties(Set<CalcProperty> properties) {
         super.fillProperties(properties);
         value.fillProperties(properties);
     }
@@ -92,7 +92,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void resolveAdd(DataSession session, Modifier modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
 
         if(!resolveAdd)
             return;
@@ -105,10 +105,9 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
-        session.execute(property.property, new PropertyChange<P>(mapKeys,
-                            value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), modifier),
-                            getChangedWhere(object, mapObjects, addObject)),
-                            modifier, null, null);
+        env.change((CalcProperty<P>) property.property, new PropertyChange<P>(mapKeys,
+                value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), env.getModifier()),
+                getChangedWhere(object, mapObjects, addObject)));
     }
 
     @Override

@@ -2,7 +2,6 @@ package platform.interop.form;
 
 import platform.interop.ClassViewType;
 import platform.interop.RemoteContextInterface;
-import platform.interop.action.ClientResultAction;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
@@ -11,99 +10,93 @@ import java.util.Map;
 
 public interface RemoteFormInterface extends PendingRemote, RemoteContextInterface {
 
-    // операции с ответом
+    // структура формы
+
     byte[] getRichDesignByteArray() throws RemoteException;
-
-    byte[] getReportHierarchyByteArray() throws RemoteException;
-    byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException;
-
-    byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
-    byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId, FormUserPreferences userPreferences) throws RemoteException;
-    byte[] getReportSourcesByteArray() throws RemoteException;
-    byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
-    Map<String, String> getReportPath(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
-
-    public RemoteChanges getRemoteChanges() throws RemoteException;
 
     String getSID() throws RemoteException;
 
-    // синхронная проверка на то можно ли менять свойство
-    byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) throws RemoteException;
+    // синхронное общение с сервером
 
-    boolean canChangeClass(int objectID) throws RemoteException;
+    public ServerResponse getRemoteChanges(long requestIndex) throws RemoteException;
 
-    boolean hasClientActionOnApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
+    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException;
 
-    RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException;
+    public ServerResponse throwInServerInvocation(Exception clientException) throws RemoteException;
 
-    RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException;
+    // события формы
 
-    RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException;
+    void gainedFocus(long requestIndex) throws RemoteException;
 
-    // операции без ответа, можно pendiть до первой операции с ответом
+    ServerResponse setTabVisible(long requestIndex, int tabPaneID, int tabIndex) throws RemoteException;
 
-    void changePageSize(int groupID, Integer pageSize) throws RemoteException;
-    void gainedFocus() throws RemoteException;
+    ServerResponse closedPressed(long requestIndex) throws RemoteException;
 
-    void changeGroupObject(int groupID, byte[] value) throws RemoteException;
+    ServerResponse okPressed(long requestIndex) throws RemoteException;
 
-    void changeGroupObject(int groupID, byte changeType) throws RemoteException;
+    // события групп объектов
 
-    RemoteChanges changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
+    ServerResponse changeGroupObject(long requestIndex, int groupID, byte[] value) throws RemoteException;
 
-    RemoteChanges resumePausedInvocation() throws RemoteException;
+    ServerResponse changePageSize(long requestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
 
-    RemoteChanges groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
+    ServerResponse changeGroupObject(long requestIndex, int groupID, byte changeType) throws RemoteException; // скроллинг
 
-    RemoteChanges pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
+    ServerResponse pasteExternalTable(long requestIndex, List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException; // paste подряд
 
-    RemoteChanges pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
+    ServerResponse pasteMulticellValue(long requestIndex, Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException; // paste выборочно
 
-    boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
+    ServerResponse changeClassView(long requestIndex, int groupID, ClassViewType classView) throws RemoteException;
 
-    Object getPropertyChangeValue(int propertyID) throws RemoteException;
+    // деревья
 
-    void switchClassView(int groupID) throws RemoteException;
+    ServerResponse expandGroupObject(long requestIndex, int groupId, byte[] bytes) throws RemoteException;
 
-    void changeClassView(int groupID, ClassViewType classView) throws RemoteException;
+    ServerResponse collapseGroupObject(long requestIndex, int groupId, byte[] bytes) throws RemoteException;
 
-    void changeClassView(int groupID, String classViewName) throws RemoteException;
+    ServerResponse moveGroupObject(long requestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
-    void changeGridClass(int objectID,int idClass) throws RemoteException;
+    // свойства
+    ServerResponse executeEditAction(long requestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
 
-    void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
+    ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] value) throws RemoteException;
 
-    void clearUserFilters() throws RemoteException;
+    // фильтры / порядки
 
-    void addFilter(byte[] state) throws RemoteException;
+    ServerResponse changeGridClass(long requestIndex, int objectID, int idClass) throws RemoteException;
 
-    void setRegularFilter(int groupID, int filterID) throws RemoteException;
+    ServerResponse changePropertyOrder(long requestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 
-    int countRecords(int groupObjectID) throws RemoteException;
+    ServerResponse setUserFilters(long requestIndex, byte[][] filters) throws RemoteException;
 
-    Object calculateSum(int propertyID, byte[] columnKeys) throws RemoteException;
+    ServerResponse setRegularFilter(long requestIndex, int groupID, int filterID) throws RemoteException;
 
-    Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+    // отчеты
+
+//    byte[] getReportHierarchyByteArray() throws RemoteException;
+//    byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException;
+//
+//    byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
+//    byte[] getSingleGroupReportDesignByteArray(int groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
+//    byte[] getReportSourcesByteArray() throws RemoteException;
+//    byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
+
+    ReportGenerationData getReportData(long requestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
+
+    Map<String, String> getReportPath(long requestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException;
+
+    // быстрая информация
+
+    int countRecords(long requestIndex, int groupObjectID) throws RemoteException;
+
+    Object calculateSum(long requestIndex, int propertyID, byte[] columnKeys) throws RemoteException;
+
+    Map<List<Object>, List<Object>> groupData(long requestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                               Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException;
 
-    void refreshData() throws RemoteException;
+    // пользовательские настройки
 
-    void cancelChanges() throws RemoteException;
+    void saveUserPreferences(long requestIndex, FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
 
-    void expandGroupObject(int groupId, byte[] bytes) throws RemoteException;
-
-    void collapseGroupObject(int groupId, byte[] bytes) throws RemoteException;
-
-    void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
-
-    ClientResultAction getClientActionOnApply() throws RemoteException;
-
-    RemoteChanges okPressed() throws RemoteException;
-    RemoteChanges closedPressed() throws RemoteException;
-
-    RemoteChanges applyChanges(Object clientResult) throws RemoteException;
-
-    void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) throws RemoteException;
-
-    FormUserPreferences loadUserPreferences() throws RemoteException;
+    FormUserPreferences getUserPreferences() throws RemoteException;
 }

@@ -2,6 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -30,8 +31,12 @@ public abstract class ScriptingActionProperty extends CustomActionProperty {
         this.LM = LM;
     }
 
-    protected LP<?> getLP(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected LP<?, ?> getLP(String name) throws ScriptingErrorLog.SemanticErrorException {
         return LM.findLPByCompoundName(name);
+    }
+
+    protected LCP<?> getLCP(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LCP<?>) getLP(name);
     }
 
     protected ValueClass getClass(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -50,7 +55,7 @@ public abstract class ScriptingActionProperty extends CustomActionProperty {
         return LM.getBL().createSession();
     }
 
-    protected String applySession(DataSession session) throws SQLException {
+    protected boolean applySession(DataSession session) throws SQLException {
         return session.apply(LM.getBL());
     }
 }

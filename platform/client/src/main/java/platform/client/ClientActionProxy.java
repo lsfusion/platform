@@ -1,14 +1,18 @@
 package platform.client;
 
+import platform.client.form.ClientFormController;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
 public class ClientActionProxy implements Action {
 
-    Action a;
+    private final Action a;
+    private final ClientFormController form;
 
-    public ClientActionProxy(Action a) {
+    public ClientActionProxy(ClientFormController form, Action a) {
+        this.form = form;
         this.a = a;
     }
 
@@ -37,7 +41,8 @@ public class ClientActionProxy implements Action {
     }
 
     public void actionPerformed(ActionEvent e) {
-        SwingUtils.commitCurrentEditing();
-        a.actionPerformed(e);
+        if (form.commitCurrentEditing()) {
+            a.actionPerformed(e);
+        }
     }
 }

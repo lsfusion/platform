@@ -13,7 +13,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.group.AbstractGroup;
 
 /**
@@ -131,35 +131,35 @@ public class BudgetLogicsModule extends LogicsModule {
         baseCurGroup = addAbstractGroup("baseCurGroup", "Сумма в базовой валюте");
     }
 
-    LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth;
-    LP operationDepartment, nameOperationDepartment;
-    LP personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
-    LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity, roundSalarySum, payTotalSum;
+    LCP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth;
+    LCP operationDepartment, nameOperationDepartment;
+    LCP personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
+    LCP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity, roundSalarySum, payTotalSum;
 
-    LP isWorkingMonthForPerson;
+    LCP isWorkingMonthForPerson;
 
-    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate, exchangeBaseRateCurrencyDate, nearestExchangeRateOp;
-    LP exchangeRateCurrencyTransaction;
-    LP baseCurrency, baseCurrencyName;
-    LP rateDate, userRateDay, dateByMY, rateDay, incomeOutcome;
+    LCP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate, exchangeBaseRateCurrencyDate, nearestExchangeRateOp;
+    LCP exchangeRateCurrencyTransaction;
+    LCP baseCurrency, baseCurrencyName;
+    LCP rateDate, userRateDay, dateByMY, rateDay, incomeOutcome;
 
-    LP investorInvestment, nameInvestorInvestment;
+    LCP investorInvestment, nameInvestorInvestment;
 
-    LP sumInvestmentCash, sumInvestmentNotCash, sumInvestmentMoney;
-    LP curInvestmentCash, curInvestmentNotCash, curInvestmentMoney;
+    LCP sumInvestmentCash, sumInvestmentNotCash, sumInvestmentMoney;
+    LCP curInvestmentCash, curInvestmentNotCash, curInvestmentMoney;
 
-    LP sumInvestment, curInvestment, nameCurInvestment;
+    LCP sumInvestment, curInvestment, nameCurInvestment;
 
-    LP sumInvestmentNotMoney;
-    LP curInvestmentNotMoney;
-    LP exchangeBaseRateInvestment;
-    LP sumBaseInvestment;
+    LCP sumInvestmentNotMoney;
+    LCP curInvestmentNotMoney;
+    LCP exchangeBaseRateInvestment;
+    LCP sumBaseInvestment;
 
-    LP sumInvestmentInvestor;
-    LP investmentTotal;
-    LP shareInvestor;
+    LCP sumInvestmentInvestor;
+    LCP investmentTotal;
+    LCP shareInvestor;
     
-    LP inactiveAbsOutPerson;
+    LCP inactiveAbsOutPerson;
 
     @Override
     public void initProperties() {
@@ -176,77 +176,77 @@ public class BudgetLogicsModule extends LogicsModule {
         userRateDay = addDProp("userRateDay", "День месяца для курса", IntegerClass.instance, absMonth, YearClass.instance);
         rateDay = addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 1, absMonth, YearClass.instance), userRateDay);
 
-        LP daysInMonth = addDProp(baseGroup, "daysInMonth", "Дней в месяце", IntegerClass.instance, absMonth);
+        LCP daysInMonth = addDProp(baseGroup, "daysInMonth", "Дней в месяце", IntegerClass.instance, absMonth);
 
-        LP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", YearClass.instance, person);
-        LP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
+        LCP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", YearClass.instance, person);
+        LCP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
         addJProp(baseGroup, "Месяц начала раб.", baseLM.name, personStartWorkMonth, 1);
-        LP personStartWorkDay = addDProp(baseGroup, "personStartWorkDay", "День начала раб.", IntegerClass.instance, person);
-        LP personEndWorkYear = addDProp(baseGroup, "personEndWorkYear", "Год окончания раб.", YearClass.instance, person);
-        LP personEndWorkMonth = addDProp("personEndWorkMonth", "Месяц окончания раб.", absMonth, person);
+        LCP personStartWorkDay = addDProp(baseGroup, "personStartWorkDay", "День начала раб.", IntegerClass.instance, person);
+        LCP personEndWorkYear = addDProp(baseGroup, "personEndWorkYear", "Год окончания раб.", YearClass.instance, person);
+        LCP personEndWorkMonth = addDProp("personEndWorkMonth", "Месяц окончания раб.", absMonth, person);
         addJProp(baseGroup, "Месяц окончания раб.", baseLM.name, personEndWorkMonth, 1);
-        LP personEndWorkDay = addDProp(baseGroup, "personEndWorkDay", "День окончания раб.", IntegerClass.instance, person);
+        LCP personEndWorkDay = addDProp(baseGroup, "personEndWorkDay", "День окончания раб.", IntegerClass.instance, person);
 
         addJProp(payerGroup, "Плательщик", baseLM.name, operationPayer, 1);
-        LP multiplyDouble2 = addMFProp(2);
-        LP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
-        LP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
-        LP calcExtraCoef = addSFProp("(round((0.0+(prm1)*(prm2))/(prm3)))", DoubleClass.instance, 3);
-        LP roundMult = addSFProp("(round((prm1)*(prm2)))", IntegerClass.instance, 2);
-        LP hourInDay = addSFProp("((prm1)*8)", IntegerClass.instance, 1);
-        LP dayInYear = addSFProp("(extract(day from prm1))", IntegerClass.instance, 1);
-        LP yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
-        LP extMonthInDate = addSFProp("(extract(month from prm1))", IntegerClass.instance, 1);
-        LP dateBy = addSFProp("(to_date(cast(prm1 as varchar) || ' ' || cast(prm2 as varchar) || ' ' || cast(prm3 as varchar) || ' ', 'DD MM YYYY'))", DateClass.instance, 3);
-        LP daysBetweenDates = addSFProp("(prm1-prm2)", IntegerClass.instance, 2);
-        LP sumByRate = addSFProp("(prm1*prm2)", DoubleClass.instance, 2);
-        LP calcPerCent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
+        LCP multiplyDouble2 = addMFProp(2);
+        LCP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
+        LCP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
+        LCP calcExtraCoef = addSFProp("(round((0.0+(prm1)*(prm2))/(prm3)))", DoubleClass.instance, 3);
+        LCP roundMult = addSFProp("(round((prm1)*(prm2)))", IntegerClass.instance, 2);
+        LCP hourInDay = addSFProp("((prm1)*8)", IntegerClass.instance, 1);
+        LCP dayInYear = addSFProp("(extract(day from prm1))", IntegerClass.instance, 1);
+        LCP yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
+        LCP extMonthInDate = addSFProp("(extract(month from prm1))", IntegerClass.instance, 1);
+        LCP dateBy = addSFProp("(to_date(cast(prm1 as varchar) || ' ' || cast(prm2 as varchar) || ' ' || cast(prm3 as varchar) || ' ', 'DD MM YYYY'))", DateClass.instance, 3);
+        LCP daysBetweenDates = addSFProp("(prm1-prm2)", IntegerClass.instance, 2);
+        LCP sumByRate = addSFProp("(prm1*prm2)", DoubleClass.instance, 2);
+        LCP calcPerCent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
 
         monthNum = addOProp("Номер месяца", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(absMonth), 1), true, true, 0, 1);
-        LP internalNum = addAGProp("extNumToIntNum", "Внутренний номер", monthNum);
-        LP monthInDate = addJProp("Реальный месяц", internalNum, extMonthInDate, 1);
+        LCP internalNum = addAGProp("extNumToIntNum", "Внутренний номер", monthNum);
+        LCP monthInDate = addJProp("Реальный месяц", internalNum, extMonthInDate, 1);
         dateByMY = addJProp("Дата курса для года/месяца", dateBy, rateDay, 1, 2, monthNum, 1, 2);
 
-        LP personEndDate = addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1);
-        LP totalDaysWorkedTillDate = addJProp(baseGroup, "daysWorkedTillDate", "Дней отработано", daysBetweenDates,
+        LCP personEndDate = addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1);
+        LCP totalDaysWorkedTillDate = addJProp(baseGroup, "daysWorkedTillDate", "Дней отработано", daysBetweenDates,
                 addSUProp(Union.OVERRIDE, addJProp(baseLM.and1, baseLM.currentDate, is(person), 1), personEndDate), 1,
                 addJProp(dateBy, personStartWorkDay, 1, addJProp(monthNum, personStartWorkMonth, 1), 1, personStartWorkYear, 1), 1);
 
         vacationPerson = addDProp("vacationPerson", "Сотрудник", person, vacation);
-        LP vacationPersonName = addJProp(baseGroup, "vacationPersonName", "Имя сотрудника", baseLM.name, vacationPerson, 1);
-        LP vacationStartDate = addDProp(baseGroup, "vacationStartDate", "Начало отпуска", DateClass.instance, vacation);
-        LP vacationEndDate = addDProp(baseGroup, "vacationEndDate", "Окончание отпуска", DateClass.instance, vacation);
-        LP vacationDaysQuantity = addJProp(baseGroup, "vacationDaysQuantity", "Длина отпуска, дней", daysBetweenDates, vacationEndDate, 1, vacationStartDate, 1);
-        LP vacationWorkDays = addDProp(baseGroup, "vacationWorkDays", "Рабочих дней за период отпуска", IntegerClass.instance, vacation);
-        LP totalVacationDays = addSGProp(baseGroup, "totalVacationDays", "Отпуск, календарных дней", vacationDaysQuantity, vacationPerson, 1);
-        LP totalVacationWorkDays = addSGProp(baseGroup, "totalVacationWorkDays", "Отпуск, рабочих дней", vacationWorkDays, vacationPerson, 1);
+        LCP vacationPersonName = addJProp(baseGroup, "vacationPersonName", "Имя сотрудника", baseLM.name, vacationPerson, 1);
+        LCP vacationStartDate = addDProp(baseGroup, "vacationStartDate", "Начало отпуска", DateClass.instance, vacation);
+        LCP vacationEndDate = addDProp(baseGroup, "vacationEndDate", "Окончание отпуска", DateClass.instance, vacation);
+        LCP vacationDaysQuantity = addJProp(baseGroup, "vacationDaysQuantity", "Длина отпуска, дней", daysBetweenDates, vacationEndDate, 1, vacationStartDate, 1);
+        LCP vacationWorkDays = addDProp(baseGroup, "vacationWorkDays", "Рабочих дней за период отпуска", IntegerClass.instance, vacation);
+        LCP totalVacationDays = addSGProp(baseGroup, "totalVacationDays", "Отпуск, календарных дней", vacationDaysQuantity, vacationPerson, 1);
+        LCP totalVacationWorkDays = addSGProp(baseGroup, "totalVacationWorkDays", "Отпуск, рабочих дней", vacationWorkDays, vacationPerson, 1);
 
-        LP transactionMonth = addJProp("Месяц", monthInDate, baseLM.date, 1);
-        LP transactionYear = addJProp("Год", yearInDate, baseLM.date, 1);
+        LCP transactionMonth = addJProp("Месяц", monthInDate, baseLM.date, 1);
+        LCP transactionYear = addJProp("Год", yearInDate, baseLM.date, 1);
 
-        LP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
-        LP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
-        LP extraCurrency = addDProp("curExtra", "Валюта затрат", baseLM.currency, extraCost);
+        LCP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
+        LCP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
+        LCP extraCurrency = addDProp("curExtra", "Валюта затрат", baseLM.currency, extraCost);
         addJProp(baseGroup, "Валюта затрат", baseLM.name, extraCurrency, 1);
 
         exchangeRate = addDProp("exchangeRate", "Курс обмена", DoubleClass.instance, baseLM.currency, baseLM.currency, DateClass.instance);
 
-        LP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, baseLM.greater2, 3, 4, is(DateClass.instance), 4);
+        LCP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, baseLM.greater2, 3, 4, is(DateClass.instance), 4);
         nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
         nearestExchangeRate = addJProp("Ближайший курс обмена", exchangeRate, 1, 2, nearestPredDate, 1, 2, 3);
         exchangeBaseRateCurrencyDate = addJProp("Ближайший курс обмена к БВ", nearestExchangeRate, 1, 2, baseCurrency);
 
         // чисто проталкивание ключей внутрь
 
-        LP lessCmpDateOp = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, baseLM.date, 2), 3, 4, baseLM.date, 4);
-        LP nearestPredDateOp = addMGProp((AbstractGroup) null, "nearestPredDateOp", "Ближайшая меньшая дата операции", lessCmpDateOp, 1, 2, 4);
+        LCP lessCmpDateOp = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, baseLM.date, 2), 3, 4, baseLM.date, 4);
+        LCP nearestPredDateOp = addMGProp((AbstractGroup) null, "nearestPredDateOp", "Ближайшая меньшая дата операции", lessCmpDateOp, 1, 2, 4);
         nearestExchangeRateOp = addJProp("nearestExchangeRateOp","Ближайший курс обмена операции", exchangeRate, 1, 2, nearestPredDateOp, 1, 2, 3);
 
         exchangeRateCurrencyTransaction = addJProp("exchangeRateCurrencyTransaction", "Ближайший курс", nearestExchangeRateOp, 1, baseCurrency, 2);
 
-        LP lessCmpDateMY = addJProp(and(false, true, false, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, dateByMY, 2, 3), 3, 4, 5, is(absMonth), 4, is(YearClass.instance), 5);
-        LP nearestPredDateMY = addMGProp((AbstractGroup) null, "nearestPredDateMY", "Ближайшая меньшая дата курса месяца/года", lessCmpDateMY, 1, 2, 4, 5);
-        LP nearestExchangeRateMY = addJProp("Ближайший курс обмена месяца/года", exchangeRate, 1, 2, nearestPredDateMY, 1, 2, 3, 4);
+        LCP lessCmpDateMY = addJProp(and(false, true, false, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, dateByMY, 2, 3), 3, 4, 5, is(absMonth), 4, is(YearClass.instance), 5);
+        LCP nearestPredDateMY = addMGProp((AbstractGroup) null, "nearestPredDateMY", "Ближайшая меньшая дата курса месяца/года", lessCmpDateMY, 1, 2, 4, 5);
+        LCP nearestExchangeRateMY = addJProp("Ближайший курс обмена месяца/года", exchangeRate, 1, 2, nearestPredDateMY, 1, 2, 3, 4);
 
         outPerson = addDProp("personP", "Сотрудник", person, absOutPerson);
         outMonth = addDProp("outM", "Месяц", absMonth, absOutTime);
@@ -255,87 +255,87 @@ public class BudgetLogicsModule extends LogicsModule {
         inactiveAbsOutPerson = addJProp(baseLM.greater2, baseLM.currentDate, personEndDate, 1);
 
         reimbursementPayer = addDProp("reimbPayer", "Плательщик", payer, reimbursement);
-        LP reimbursementSum = addDProp(baseGroup, "reimbSum", "Сумма", IntegerClass.instance, reimbursement);
-        LP reimbursementRate = addDProp(baseGroup, "reimbRate", "Курс", DoubleClass.instance, reimbursement);
+        LCP reimbursementSum = addDProp(baseGroup, "reimbSum", "Сумма", IntegerClass.instance, reimbursement);
+        LCP reimbursementRate = addDProp(baseGroup, "reimbRate", "Курс", DoubleClass.instance, reimbursement);
         reimbursementCurrencyIn = addDProp("reimbCurIn", "Валюта расх.", baseLM.currency, reimbursement);
-        LP reimbursementCurrencyOut = addDProp("reimbCurOut", "Валюта выплаты", baseLM.currency, reimbursement);
+        LCP reimbursementCurrencyOut = addDProp("reimbCurOut", "Валюта выплаты", baseLM.currency, reimbursement);
         reimbursementDepartment = addDProp("reimbDep", "Отдел", department, reimbursement);
         addJProp(baseGroup, "Валюта", baseLM.name, reimbursementCurrencyOut, 1);
 
-        LP missionCity = addDProp("misCity", "Город", city, mission);
-        LP departDate = addDProp(baseGroup, "depDate", "Отъезд", DateClass.instance, mission);
-        LP arrivalDate = addDProp(baseGroup, "arrDate", "Приезд", DateClass.instance, mission);
-        LP comment = addDProp(baseGroup, "misComm", "Коментарий", StringClass.get(50), mission);
-        LP isPersonMission = addDProp(baseGroup, "isPM", "Наличие", LogicalClass.instance, person, mission);
-        LP payOperationDepartment = addJProp(personDepartment, outPerson, 1);
+        LCP missionCity = addDProp("misCity", "Город", city, mission);
+        LCP departDate = addDProp(baseGroup, "depDate", "Отъезд", DateClass.instance, mission);
+        LCP arrivalDate = addDProp(baseGroup, "arrDate", "Приезд", DateClass.instance, mission);
+        LCP comment = addDProp(baseGroup, "misComm", "Коментарий", StringClass.get(50), mission);
+        LCP isPersonMission = addDProp(baseGroup, "isPM", "Наличие", LogicalClass.instance, person, mission);
+        LCP payOperationDepartment = addJProp(personDepartment, outPerson, 1);
 
         missionOperation = addDProp("misOp", "Командировка", mission, misOperation);
 
         inCur = addDProp("inCurrency", "Валюта пр.", baseLM.currency, inAbsOperation);
         outCur = addDProp("outCurrency", "Валюта расх.", baseLM.currency, outAbsOperation);
 
-        LP inCurName = addJProp(baseGroup, "Валюта прих.", baseLM.name, inCur, 1);
+        LCP inCurName = addJProp(baseGroup, "Валюта прих.", baseLM.name, inCur, 1);
         addJProp(baseGroup, "Город", baseLM.name, missionCity, 1);
 
         inSum = addDProp(baseGroup, "inSum", "Сумма прихода", DoubleClass.instance, inAbsOperation);
         outSum = addDProp(baseGroup, "outSum", "Сумма расхода", DoubleClass.instance, outAbsOperation);
         addJProp(baseGroup, "Курс", divDouble, inSum, 1, outSum, 1);
-        LP outCurName = addJProp(baseGroup, "Валюта расх.", baseLM.name, outCur, 1);
+        LCP outCurName = addJProp(baseGroup, "Валюта расх.", baseLM.name, outCur, 1);
 
 
-        LP misSection = addDProp("section", "Статья ком.", section, misOperation);
-        LP misSectionName = addJProp(baseGroup, "Статья ком.", baseLM.name, misSection, 1);
+        LCP misSection = addDProp("section", "Статья ком.", section, misOperation);
+        LCP misSectionName = addJProp(baseGroup, "Статья ком.", baseLM.name, misSection, 1);
 
-        LP outSection = addDProp("outSection", "Статья расх.", sectionOut, outOperation);
-        LP outSectionName = addJProp(baseGroup, "Статья расх.", baseLM.name, outSection, 1);
+        LCP outSection = addDProp("outSection", "Статья расх.", sectionOut, outOperation);
+        LCP outSectionName = addJProp(baseGroup, "Статья расх.", baseLM.name, outSection, 1);
 
-        LP decVal = addJProp("Расход", baseLM.and1, outSum, 1, is(outAbsOperation), 1);
+        LCP decVal = addJProp("Расход", baseLM.and1, outSum, 1, is(outAbsOperation), 1);
 
         //department
 
 
         opDep = addCUProp(operationDepartment, payOperationDepartment);
 
-        LP currencyTransfer = addDProp("currencyTransfer", "Валюта перем.", baseLM.currency, transfer);
-        LP nameCurrencyTransfer = addJProp(baseGroup, "nameCurrencyTransfer", "Валюта перемещения", baseLM.name, currencyTransfer, 1);
-        LP depFrom = addDProp("depFrom", "Отдел отправитель", department, transfer);
-        LP depFromName = addJProp(baseGroup, "depFromName", "Отдел отправитель", baseLM.name, depFrom, 1);
-        LP depTo = addDProp("depTo", "Отдель получатель", department, transfer);
-        LP depToName = addJProp(baseGroup, "depToName", "Отдел получатель", baseLM.name, depTo, 1);
-        LP valueTransfer = addDProp(baseGroup, "valueTransfer", "Сумма перемещения", DoubleClass.instance, transfer);
-        LP incSumTransfer = addSGProp("incSumTransfer", "Перемещение в отдел", valueTransfer, currencyTransfer, 1, depTo, 1);
-        LP outSumTransfer = addSGProp("outSumTransfer", "Перемещение от отдела", valueTransfer, currencyTransfer, 1, depFrom, 1);
+        LCP currencyTransfer = addDProp("currencyTransfer", "Валюта перем.", baseLM.currency, transfer);
+        LCP nameCurrencyTransfer = addJProp(baseGroup, "nameCurrencyTransfer", "Валюта перемещения", baseLM.name, currencyTransfer, 1);
+        LCP depFrom = addDProp("depFrom", "Отдел отправитель", department, transfer);
+        LCP depFromName = addJProp(baseGroup, "depFromName", "Отдел отправитель", baseLM.name, depFrom, 1);
+        LCP depTo = addDProp("depTo", "Отдель получатель", department, transfer);
+        LCP depToName = addJProp(baseGroup, "depToName", "Отдел получатель", baseLM.name, depTo, 1);
+        LCP valueTransfer = addDProp(baseGroup, "valueTransfer", "Сумма перемещения", DoubleClass.instance, transfer);
+        LCP incSumTransfer = addSGProp("incSumTransfer", "Перемещение в отдел", valueTransfer, currencyTransfer, 1, depTo, 1);
+        LCP outSumTransfer = addSGProp("outSumTransfer", "Перемещение от отдела", valueTransfer, currencyTransfer, 1, depFrom, 1);
 
-        LP currencyIncomeProfit = addDProp("currencyIncomeProfit", "Валюта выр.", baseLM.currency, incomeProfit);
-        LP nameCurrencyIncomeProfit = addJProp(baseGroup, "nameCurrencyIncomeProfit", "Валюта выручки", baseLM.name, currencyIncomeProfit, 1);
-        LP depProfit = addDProp("depProfit", "Отдел", department, incomeProfit);
-        LP nameDepProfit = addJProp(baseGroup, "nameDepProfit", "Отдел." ,baseLM.name, depProfit, 1);
-        LP valueProfit = addDProp(baseGroup, "valueProfit","Доход", DoubleClass.instance, incomeProfit);
-        LP sumProfit =addSGProp("sumProfit", "Сумма дохода", valueProfit, currencyIncomeProfit, 1, depProfit, 1);
+        LCP currencyIncomeProfit = addDProp("currencyIncomeProfit", "Валюта выр.", baseLM.currency, incomeProfit);
+        LCP nameCurrencyIncomeProfit = addJProp(baseGroup, "nameCurrencyIncomeProfit", "Валюта выручки", baseLM.name, currencyIncomeProfit, 1);
+        LCP depProfit = addDProp("depProfit", "Отдел", department, incomeProfit);
+        LCP nameDepProfit = addJProp(baseGroup, "nameDepProfit", "Отдел." ,baseLM.name, depProfit, 1);
+        LCP valueProfit = addDProp(baseGroup, "valueProfit","Доход", DoubleClass.instance, incomeProfit);
+        LCP sumProfit =addSGProp("sumProfit", "Сумма дохода", valueProfit, currencyIncomeProfit, 1, depProfit, 1);
 
-        LP incDepSumOut = addSGProp("Приход по отделу внешний", inSum, inCur, 1, opDep, 1);
-        LP decDepSumOut = addSGProp("Расход по отделу внешний", decVal, outCur, 1, opDep, 1);
+        LCP incDepSumOut = addSGProp("Приход по отделу внешний", inSum, inCur, 1, opDep, 1);
+        LCP decDepSumOut = addSGProp("Расход по отделу внешний", decVal, outCur, 1, opDep, 1);
 
-        LP incDepSumTr = addSUProp("incDepSum", "Приход по отделу c перемещением", Union.SUM,incDepSumOut, incSumTransfer);
-        LP decDepSum = addSUProp(baseGroup, "decDepSum", "Расход по отделу", Union.SUM, decDepSumOut, outSumTransfer);
+        LCP incDepSumTr = addSUProp("incDepSum", "Приход по отделу c перемещением", Union.SUM,incDepSumOut, incSumTransfer);
+        LCP decDepSum = addSUProp(baseGroup, "decDepSum", "Расход по отделу", Union.SUM, decDepSumOut, outSumTransfer);
 
-        LP incDepSum = addSUProp(baseGroup, "incDepSum", "Приход по отделу", Union.SUM,incDepSumTr, sumProfit);
+        LCP incDepSum = addSUProp(baseGroup, "incDepSum", "Приход по отделу", Union.SUM,incDepSumTr, sumProfit);
 
         depBalanceQuantity = addDUProp(baseGroup, "Ост. по отделу", incDepSum, decDepSum);
 
-        LP perCent = addDProp(baseGroup, "perCent", "Процент", DoubleClass.instance, department);
+        LCP perCent = addDProp(baseGroup, "perCent", "Процент", DoubleClass.instance, department);
 
         incomeOutcome = addDProp("incomeOutcome", "Расход по приходу", incomeNotCash, outcomeCost);
 
-        LP inCost = addJProp(baseGroup, "inCost", "Стоимость оборотов", calcPerCent, addJProp(baseLM.and1, inSum, 1, is(incomeNotCash), 1), 1, addJProp(perCent, operationDepartment, 1), 1);
-        LP payRevenueRate = addDProp(baseGroup, "payRevenueRate", "Курс", DoubleClass.instance, outcomeCost);
-        LP paySumInCur = addJProp("paySumInCur", "Приведенная сумма расхода", sumByRate, outSum, 1, payRevenueRate, 1);
-        LP totalOutcome = addSGProp(baseGroup, "totalOutcome", "Всего выплачено", paySumInCur, incomeOutcome, 1);
+        LCP inCost = addJProp(baseGroup, "inCost", "Стоимость оборотов", calcPerCent, addJProp(baseLM.and1, inSum, 1, is(incomeNotCash), 1), 1, addJProp(perCent, operationDepartment, 1), 1);
+        LCP payRevenueRate = addDProp(baseGroup, "payRevenueRate", "Курс", DoubleClass.instance, outcomeCost);
+        LCP paySumInCur = addJProp("paySumInCur", "Приведенная сумма расхода", sumByRate, outSum, 1, payRevenueRate, 1);
+        LCP totalOutcome = addSGProp(baseGroup, "totalOutcome", "Всего выплачено", paySumInCur, incomeOutcome, 1);
 
-        LP outComment = addDProp(baseGroup, "comment", "Коментарий", StringClass.get(40), operation);
+        LCP outComment = addDProp(baseGroup, "comment", "Коментарий", StringClass.get(40), operation);
 
-        LP incSum = addSGProp("Приход по валюте", inSum, inCur, 1);
-        LP decSum = addSGProp("Расход по валюте", decVal, outCur, 1);
+        LCP incSum = addSGProp("Приход по валюте", inSum, inCur, 1);
+        LCP decSum = addSGProp("Расход по валюте", decVal, outCur, 1);
 
         balanceQuantity = addDUProp("Ост. по валюте", incSum, decSum);
 
@@ -370,70 +370,70 @@ public class BudgetLogicsModule extends LogicsModule {
         addConstraint(addJProp("Расходы превышают доходы", baseLM.greater2, totalOutcome, 1, inCost, 1), false);
 
 
-        LP extraSum = addJProp(baseLM.and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
+        LCP extraSum = addJProp(baseLM.and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
 
         salaryInMonth = addDProp(salaryGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, absMonth, YearClass.instance);
-        LP currencyInMonth = addDProp("currencyInM", "Валюта (зарплата)", baseLM.currency, person, absMonth, YearClass.instance);
-        LP workDays = addDProp(dateTimeGroup, "workD", "Раб. дни", IntegerClass.instance, absMonth, YearClass.instance);
-        LP dayInMonth = addDProp("dayWorkInM", "Дней отраб.", IntegerClass.instance, person, absMonth, YearClass.instance);
+        LCP currencyInMonth = addDProp("currencyInM", "Валюта (зарплата)", baseLM.currency, person, absMonth, YearClass.instance);
+        LCP workDays = addDProp(dateTimeGroup, "workD", "Раб. дни", IntegerClass.instance, absMonth, YearClass.instance);
+        LCP dayInMonth = addDProp("dayWorkInM", "Дней отраб.", IntegerClass.instance, person, absMonth, YearClass.instance);
         dayInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Дней отраб.", Union.OVERRIDE, addJProp(baseLM.and1, workDays, 2, 3, isWorkingMonthForPerson, 1, 2, 3), dayInMonth);
-        LP hourInMonth = addDProp("hourInM", "Часов отраб.", DoubleClass.instance, person, absMonth, YearClass.instance);
-        LP hourInMonthOv = addSUProp(dateTimeGroup, "hourInMonthOv", "Часов отраб.",
+        LCP hourInMonth = addDProp("hourInM", "Часов отраб.", DoubleClass.instance, person, absMonth, YearClass.instance);
+        LCP hourInMonthOv = addSUProp(dateTimeGroup, "hourInMonthOv", "Часов отраб.",
                 Union.OVERRIDE, addJProp(baseLM.and1, addJProp(hourInDay, dayInMonthOv, 1, 2, 3), 1, 2, 3, isWorkingMonthForPerson, 1, 2, 3), hourInMonth);
-        LP extraInMonth = addDProp(baseGroup, "extraInM", "Затраты", DoubleClass.instance, extraSection, absMonth, YearClass.instance, department);
-        // LP extraAdminInMonth = addDProp(baseGroup, "extraAdminInM", "Админ. затраты",DoubleClass.instance, department, absMonth, YearClass.instance);
-        LP currencyExtraInMonth = addDProp("currencyExtraInM", "Валюта (доп. затрат)", baseLM.currency, extraSection, absMonth, YearClass.instance, department);
+        LCP extraInMonth = addDProp(baseGroup, "extraInM", "Затраты", DoubleClass.instance, extraSection, absMonth, YearClass.instance, department);
+        // LCP extraAdminInMonth = addDProp(baseGroup, "extraAdminInM", "Админ. затраты",DoubleClass.instance, department, absMonth, YearClass.instance);
+        LCP currencyExtraInMonth = addDProp("currencyExtraInM", "Валюта (доп. затрат)", baseLM.currency, extraSection, absMonth, YearClass.instance, department);
 
         addJProp(salaryGroup, "Валюта", baseLM.name, currencyInMonth, 1, 2, 3);
         addJProp(baseGroup, "Валюта", baseLM.name, currencyExtraInMonth, 1, 2, 3, 4);
 
-        LP extraAdd = addDProp(baseGroup, "isAdd", "Не учитывать", LogicalClass.instance, person, extraPersonSection, absMonth, YearClass.instance);
-        //LP isReimbursed = addDProp(payerGroup, "isReimbersed", "Возмещено", LogicalClass.instance, payerAbs);
+        LCP extraAdd = addDProp(baseGroup, "isAdd", "Не учитывать", LogicalClass.instance, person, extraPersonSection, absMonth, YearClass.instance);
+        //LCP isReimbursed = addDProp(payerGroup, "isReimbersed", "Возмещено", LogicalClass.instance, payerAbs);
 
-        LP[] maxDateSal = addMGProp((AbstractGroup) null, false, new String[]{"maxYear", "maxMonth"}, new String[]{"год", "месяц"}, 1,
+        LCP[] maxDateSal = addMGProp((AbstractGroup) null, false, new String[]{"maxYear", "maxMonth"}, new String[]{"год", "месяц"}, 1,
                 addJProp(and(false, false, true, false), 4, is(absMonth), 1, is(YearClass.instance), 2, baseLM.less22, 2, 1, 4, 3, salaryInMonth, 5, 3, 4), 3, 1, 2, 5);
-        LP curSalary = addJProp(salaryGroup, "Тек. зарплата", salaryInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
-        LP curCurrency = addJProp(currencyInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
+        LCP curSalary = addJProp(salaryGroup, "Тек. зарплата", salaryInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
+        LCP curCurrency = addJProp(currencyInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
         addJProp(salaryGroup, "Тек. валюта", baseLM.name, curCurrency, 1, 2, 3);
 
-        LP[] maxDateExtra = addMGProp((AbstractGroup) null, false, new String[]{"maxExtraYear", "maxExtraMonth"}, new String[]{"год", "месяц1"}, 1,
+        LCP[] maxDateExtra = addMGProp((AbstractGroup) null, false, new String[]{"maxExtraYear", "maxExtraMonth"}, new String[]{"год", "месяц1"}, 1,
                 addJProp(and(false, false, true, false), 4, is(absMonth), 1, is(YearClass.instance), 2, baseLM.less22, 2, 1, 4, 3, extraInMonth, 5, 3, 4, 6), 3, 1, 2, 5, 6);
-        LP curExtra = addJProp(baseGroup, "Тек. затраты", extraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
+        LCP curExtra = addJProp(baseGroup, "Тек. затраты", extraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
         // 3 - extraSection, 4 - department
-        LP curExtraCurrency = addJProp(currencyExtraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
+        LCP curExtraCurrency = addJProp(currencyExtraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
         addJProp(baseGroup, "Тек. валюта", baseLM.name, curExtraCurrency, 1, 2, 3, 4);
 
-        LP workCoeff = addJProp(calcCoef, hourInMonthOv, 1, 2, 3, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
+        LCP workCoeff = addJProp(calcCoef, hourInMonthOv, 1, 2, 3, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
         roundSalary = addJProp(baseGroup, "К оплате", roundMult, workCoeff, 3, 1, 2, curSalary, 1, 2, 3);
 
-        LP paySum = addJProp("Выплачено", roundMult, payRate, 1, outSum, 1);
-        LP payTotal = addSGProp(baseGroup, "Всего заплачено", paySum, outPerson, 1, outMonth, 1, outYear, 1);
+        LCP paySum = addJProp("Выплачено", roundMult, payRate, 1, outSum, 1);
+        LCP payTotal = addSGProp(baseGroup, "Всего заплачено", paySum, outPerson, 1, outMonth, 1, outYear, 1);
         
         roundSalarySum = addSGProp("roundSalarySum", "Сумарно к выплате", roundSalary, 3, curCurrency, 1, 2, 3);
         payTotalSum = addSGProp("payTotalSum", "Сумарно выплачено", payTotal, 1, curCurrency, 2, 3, 1);
 
 
 
-        //LP extraTotalPerson = addSGProp(addJProp(andNot1, addJProp(and(false,false), curExtra, 3, 4, 2, personDepartment, 1, is(person), 1, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4), 1, 3, 4);
-        LP extraTotal = addJProp(baseLM.andNot1, addJProp(baseLM.and1, addJProp(curExtra, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4);
-        LP extraTotalSum = addSGProp(extraTotal, 1, 3, 4, addJProp(curExtraCurrency, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4);
+        //LCP extraTotalPerson = addSGProp(addJProp(andNot1, addJProp(and(false,false), curExtra, 3, 4, 2, personDepartment, 1, is(person), 1, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4), 1, 3, 4);
+        LCP extraTotal = addJProp(baseLM.andNot1, addJProp(baseLM.and1, addJProp(curExtra, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4);
+        LCP extraTotalSum = addSGProp(extraTotal, 1, 3, 4, addJProp(curExtraCurrency, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4);
         // 1 - person, 2- month, 3 - year, 4 - currency
-        LP roundExtraCur = addJProp(baseGroup, "Доп. затраты", calcExtraCoef, dayInMonthOv, 1, 2, 3, extraTotalSum, 1, 2, 3, 4, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
+        LCP roundExtraCur = addJProp(baseGroup, "Доп. затраты", calcExtraCoef, dayInMonthOv, 1, 2, 3, extraTotalSum, 1, 2, 3, 4, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
 
-        LP extraTotalPerson = addSGProp(addJProp(baseLM.andNot1, addJProp(baseLM.and1, addJProp(curExtra, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4), 1, 3, 4);
-        LP roundExtraPerson = addJProp(calcExtraCoef, dayInMonthOv, 1, 2, 3, extraTotalPerson, 1, 2, 3, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
+        LCP extraTotalPerson = addSGProp(addJProp(baseLM.andNot1, addJProp(baseLM.and1, addJProp(curExtra, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4), 1, 3, 4);
+        LCP roundExtraPerson = addJProp(calcExtraCoef, dayInMonthOv, 1, 2, 3, extraTotalPerson, 1, 2, 3, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
 
-        LP extraComPerson = addSGProp(roundExtraCur, personDepartment, 1, 2, 3, 4);
-        LP extraComAdm = addSGProp(addJProp(baseLM.and1, curExtra, 1, 2, 3, 4, is(extraAdmSection), 3), 4, 1, 2, curExtraCurrency, 1, 2, 3, 4);
+        LCP extraComPerson = addSGProp(roundExtraCur, personDepartment, 1, 2, 3, 4);
+        LCP extraComAdm = addSGProp(addJProp(baseLM.and1, curExtra, 1, 2, 3, 4, is(extraAdmSection), 3), 4, 1, 2, curExtraCurrency, 1, 2, 3, 4);
 
         // компенсации
 
-        LP totalDebt = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1);
-        LP totalReimbursement = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1);
+        LCP totalDebt = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1);
+        LCP totalReimbursement = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1);
         addDUProp(baseGroup, "Осталось", totalDebt, totalReimbursement);
 
-        LP totalDebtDep = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1, opDep, 1);
-        LP totalReimbursementDep = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1, reimbursementDepartment, 1);
+        LCP totalDebtDep = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1, opDep, 1);
+        LCP totalReimbursementDep = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1, reimbursementDepartment, 1);
         addDUProp(baseGroup, "Осталось", totalDebtDep, totalReimbursementDep);
 
         // обороты
@@ -441,33 +441,33 @@ public class BudgetLogicsModule extends LogicsModule {
         personDepartSum = addSGProp(personGroup, "Всего к выплате", roundSalary, personDepartment, 3, 1, 2, curCurrency, 1, 2, 3);
         payMonthTotal = addSGProp(personGroup, "Всего выплачено", payTotal, personDepartment, 1, 2, 3, curCurrency, 2, 3, 1);
 
-        LP extraDepartmentSum = addSUProp(extraGroup, "Всего доп. затрат", Union.SUM, extraComPerson, extraComAdm);
-        LP extraMonthTotal = addSGProp(extraGroup, "Выплачено доп. затрат", extraSum, outMonth, 1, outYear, 1, operationDepartment, 1, extraCurrency, 1);
+        LCP extraDepartmentSum = addSUProp(extraGroup, "Всего доп. затрат", Union.SUM, extraComPerson, extraComAdm);
+        LCP extraMonthTotal = addSGProp(extraGroup, "Выплачено доп. затрат", extraSum, outMonth, 1, outYear, 1, operationDepartment, 1, extraCurrency, 1);
 
-        LP outOperVal = addJProp("Опер. расход", baseLM.and1, outSum, 1, is(outOperation), 1);
+        LCP outOperVal = addJProp("Опер. расход", baseLM.and1, outSum, 1, is(outOperation), 1);
         totalOutOper = addSGProp(outGroup, "Всего по опер. расходу", outOperVal, opDep, 1, transactionMonth, 1, transactionYear, 1, outCur, 1);
 
-        LP misOperVal = addJProp("Опер. расход ком.", baseLM.and1, outSum, 1, is(misOperation), 1);
+        LCP misOperVal = addJProp("Опер. расход ком.", baseLM.and1, outSum, 1, is(misOperation), 1);
         totalMisOper = addSGProp(outGroup, "Всего по опер. расходу ком.", misOperVal, opDep, 1, transactionMonth, 1, transactionYear, 1, outCur, 1);
 
-        //LP rateBC = addJProp(nearestExchangeRate, curCurrency, 1, 2, 3, baseCurrency, addJProp(dateByMY, 1, 2), 1, 2);
-        //LP salaryInBC = addJProp("К выплате в БВ", multiply, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
+        //LCP rateBC = addJProp(nearestExchangeRate, curCurrency, 1, 2, 3, baseCurrency, addJProp(dateByMY, 1, 2), 1, 2);
+        //LCP salaryInBC = addJProp("К выплате в БВ", multiply, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
         //personDepartSumInBC = addSGProp("Всего к выплате в БВ", salaryInBC, personDepartment, 3, 1, 2);
 
         // Обороты в базовой валюте
 
-        LP personDepartSumInBC = addJProp("К выплате в БВ", multiplyDouble2, personDepartSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
-        LP totalPersonDepartSumInBC = addSGProp(baseCurGroup, "Всего к выплате в БВ", personDepartSumInBC, 1, 2, 3);
+        LCP personDepartSumInBC = addJProp("К выплате в БВ", multiplyDouble2, personDepartSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
+        LCP totalPersonDepartSumInBC = addSGProp(baseCurGroup, "Всего к выплате в БВ", personDepartSumInBC, 1, 2, 3);
 
-        LP extraDepartmentSumInBC = addJProp("Доп. затрат в БВ", multiplyDouble2, extraDepartmentSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
-        LP totalExtraDepartmentSumInBC = addSGProp(baseCurGroup, "Всего доп. затрат в БВ", extraDepartmentSumInBC, 1, 2, 3);
+        LCP extraDepartmentSumInBC = addJProp("Доп. затрат в БВ", multiplyDouble2, extraDepartmentSum, 1, 2, 3, 4, addJProp("Курс выплаты к БВ", nearestExchangeRateMY, 1, baseCurrency, 2, 3), 4, 2, 3);
+        LCP totalExtraDepartmentSumInBC = addSGProp(baseCurGroup, "Всего доп. затрат в БВ", extraDepartmentSumInBC, 1, 2, 3);
 
-        LP outRateBC = addJProp(nearestExchangeRateOp, outCur, 1, baseCurrency, 1);
-        LP outOperValInBC = addJProp("Опер. расход в БВ", multiplyDouble2, outOperVal, 1, outRateBC, 1);
+        LCP outRateBC = addJProp(nearestExchangeRateOp, outCur, 1, baseCurrency, 1);
+        LCP outOperValInBC = addJProp("Опер. расход в БВ", multiplyDouble2, outOperVal, 1, outRateBC, 1);
         departmentOutOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу в БВ", outOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
 
-        LP misOperValInBC = addJProp("Опер. расход ком. в БВ", multiplyDouble2, misOperVal, 1, outRateBC, 1);
-        LP departmentMisOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу ком. в БВ", misOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
+        LCP misOperValInBC = addJProp("Опер. расход ком. в БВ", multiplyDouble2, misOperVal, 1, outRateBC, 1);
+        LCP departmentMisOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу ком. в БВ", misOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
 
         investorInvestment = addDProp(idGroup, "investorInvestment", "Инвестор (ИД)", investor, investment);
         nameInvestorInvestment = addJProp(baseGroup, "nameInvestorInvestment", "Инвестор", baseLM.name, investorInvestment, 1);

@@ -1,23 +1,35 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
+import platform.server.logics.linear.LP;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * User: DAle
- * Date: 16.11.2010
- * Time: 14:36:18
- */
+public abstract class PropertyClassImplement<P extends PropertyInterface, T extends Property<P>> {
 
-public class PropertyClassImplement<P extends PropertyInterface> extends PropertyImplement<P, ValueClassWrapper> {
+    public T property;
+    public Map<P, ValueClassWrapper> mapping;
 
-    public PropertyClassImplement(Property<P> property, List<ValueClassWrapper> classes, List<P> interfaces) {
-        super(property, BaseUtils.toMap(interfaces, classes));
+    public String toString() {
+        return property.toString();
     }
 
-    public PropertyClassImplement(Property<P> property, ValueClassWrapper vClass, P iFace) {
-        super(property, Collections.singletonMap(iFace, vClass));
+    public PropertyClassImplement(T property, List<ValueClassWrapper> classes, List<P> interfaces) {
+        this.property = property;
+        this.mapping = BaseUtils.toMap(interfaces, classes);
     }
+
+    public boolean twins(TwinImmutableInterface o) {
+        return property.equals(((PropertyClassImplement) o).property) && mapping.equals(((PropertyClassImplement) o).mapping);
+    }
+
+    public int immutableHashCode() {
+        return property.hashCode() * 31 + mapping.hashCode();
+    }
+    
+    public abstract LP<P, ?> createLP(List<ValueClassWrapper> listInterfaces);
 }

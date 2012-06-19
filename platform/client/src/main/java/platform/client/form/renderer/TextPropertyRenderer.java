@@ -23,8 +23,9 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
         setWrapStyleWord(true);
         setFont(new Font("Tahoma", Font.PLAIN, 10));
 
-        if (property.design != null)
+        if (property.design != null) {
             property.design.designCell(this);
+        }
         defaultBackground = getBackground();
         setEditable(false);
     }
@@ -58,7 +59,7 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
     }
 
     @Override
-    public void rateSelected() {
+    public void paintAsSelected() {
         setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

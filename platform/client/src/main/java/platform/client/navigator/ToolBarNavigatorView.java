@@ -9,11 +9,11 @@ import java.util.Set;
 
 public class ToolBarNavigatorView extends NavigatorView {
 
-    public static final int X_ALLIGN = 15;
-    public static final int BUTTON_WIDTH = 400;
+    private static final int X_ALLIGN = 15;
+
     private JToolBar toolBar;
-    ClientNavigatorElement selected;
-    ClientToolBarNavigatorWindow window;
+    private ClientNavigatorElement selected;
+    private ClientToolBarNavigatorWindow window;
 
     public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
         super(iWindow, new JToolBar("Toolbar", iWindow.type), controller);
@@ -66,12 +66,12 @@ public class ToolBarNavigatorView extends NavigatorView {
         selected = element;
     }
 
-    private JComponent addNavigationButton(ClientNavigatorElement element, final int allign) {
+    private JComponent addNavigationButton(ClientNavigatorElement element, final int align) {
 
         JButton button = new JButton(element.toString()) {
             @Override
             public Insets getInsets() {
-                return new Insets(4, 4 + X_ALLIGN * allign, 4, 4);
+                return new Insets(4, 4 + X_ALLIGN * align, 4, 4);
             }
         };
 

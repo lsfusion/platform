@@ -9,7 +9,9 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class PanelController {
     private ClientFormController form;
@@ -83,18 +85,18 @@ public class PanelController {
         }
     }
 
-    public void setRowBackground(Object value) {
+    public void setRowBackground(Color value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
-                controller.setBackground(value);
+                controller.setBackgroundColor(value);
             }
         }
     }
 
-    public void setRowForeground(Object value) {
+    public void setRowForeground(Color value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
-                controller.setForeground(value);
+                controller.setForegroundColor(value);
             }
         }
     }
@@ -192,7 +194,7 @@ public class PanelController {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
                 // так как может быть autoHide'ута
                 if (propController != null && rowBackground == null) {
-                    propController.setBackground(updateKeys.getValue());
+                    propController.setBackgroundColor((Color) updateKeys.getValue());
                 }
             }
         }
@@ -203,7 +205,7 @@ public class PanelController {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
                 // так как может быть autoHide'ута
                 if (propController != null && rowForeground == null) {
-                    propController.setForeground(updateKeys.getValue());
+                    propController.setForegroundColor((Color) updateKeys.getValue());
                 }
             }
         }
@@ -238,14 +240,14 @@ public class PanelController {
         this.cellForegroundValues.put(property, cellForegroundValues);
     }
 
-    private Object rowBackground;
-    private Object rowForeground;
+    private Color rowBackground;
+    private Color rowForeground;
 
-    public void updateRowBackgroundValue(Object rowBackground) {
+    public void updateRowBackgroundValue(Color rowBackground) {
         this.rowBackground = rowBackground;
     }
 
-    public void updateRowForegroundValue(Object rowForeground) {
+    public void updateRowForegroundValue(Color rowForeground) {
         this.rowForeground = rowForeground;
     }
 }

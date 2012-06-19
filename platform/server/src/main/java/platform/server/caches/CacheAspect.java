@@ -64,7 +64,7 @@ public class CacheAspect {
         Invocation invoke = new Invocation(thisJoinPoint,args);
         Map caches = object.getCaches();
         Object result = caches.get(invoke);
-        if(result==null) {
+        if(result == null && !caches.containsKey(invoke)) {
             result = execute(object, thisJoinPoint, args, changedArgs);
             caches.put(invoke,result);
         }
@@ -116,6 +116,11 @@ public class CacheAspect {
         public Object get(IdentityInvocation key) {
             expunge();
             return map.get(key);
+        }
+
+        public boolean containsKey(IdentityInvocation key) {
+            expunge();
+            return map.containsKey(key);
         }
 
         public Object put(IdentityInvocation key, Object value) {
@@ -175,7 +180,7 @@ public class CacheAspect {
 
         IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
         Object result = lazyIdentityExecute.get(invocation);
-        if (result == null) {
+        if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
             result = execute(target, thisJoinPoint, args, changedArgs);
             lazyIdentityExecute.put(invocation, result);
         }

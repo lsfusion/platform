@@ -4,11 +4,12 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.PropertyChanges;
@@ -50,9 +51,9 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
     public static class ValueInterface<P extends PropertyInterface> extends Interface<P> {
 
-        Property<P> toChange;
+        CalcProperty<P> toChange;
 
-        public ValueInterface(Property<P> toChange) {
+        public ValueInterface(CalcProperty<P> toChange) {
             super(1000);
 
             this.toChange = toChange;  
@@ -67,7 +68,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }
     }
 
-    public static <P extends PropertyInterface> List<Interface<P>> getInterfaces(Property<P> property) {
+    public static <P extends PropertyInterface> List<Interface<P>> getInterfaces(CalcProperty<P> property) {
         List<Interface<P>> result = new ArrayList<Interface<P>>();
         for(P propertyInterface : property.interfaces)
             result.add(new KeyInterface<P>(propertyInterface));
@@ -75,13 +76,13 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         return result;
     }
 
-    public MaxChangeProperty(Property<T> onChange, Property<P> toChange) {
+    public MaxChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
         super(onChange.getSID() +"_CH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange), onChange, toChange);
 
         finalizeInit();
     }
 
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
         depends.add(onChange);
         depends.add(toChange);
     }
@@ -101,10 +102,10 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         return resultExpr;
     }
 
-    public PropertyObjectEntity<Interface<P>> getPropertyObjectEntity(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
+    public CalcPropertyObjectEntity<Interface<P>> getPropertyObjectEntity(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
         Map<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = new HashMap<Interface<P>, PropertyObjectInterfaceEntity>();
         for(Interface<P> propertyInterface : interfaces)
             interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapValues, valueObject));
-        return new PropertyObjectEntity<Interface<P>>(this,interfaceImplement);
+        return new CalcPropertyObjectEntity<Interface<P>>(this,interfaceImplement, null);
     }
 }

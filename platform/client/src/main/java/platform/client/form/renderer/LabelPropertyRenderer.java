@@ -8,13 +8,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.Format;
 
-class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
-
-    Format format;
+public abstract class LabelPropertyRenderer extends JLabel implements PropertyRendererComponent {
+    protected Format format;
 
     private Color defaultBackground = Color.WHITE;
 
-    LabelPropertyRenderer(ClientPropertyDraw property) {
+    protected LabelPropertyRenderer(ClientPropertyDraw property) {
         super();
         if (property != null) {
             format = property.getFormat();
@@ -29,7 +28,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
         drawBorder(isSelected, hasFocus);
     }
 
-    public void drawBorder(boolean isSelected, boolean hasFocus) {
+    protected void drawBorder(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
                 setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(0, 1, 0, 1)));
@@ -42,7 +41,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
         }
     }
 
-    public void drawBackground(boolean isSelected, boolean hasFocus) {
+    protected void drawBackground(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
                 setBackground(PropertyRendererComponent.FOCUSED_CELL_BACKGROUND);
@@ -54,7 +53,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
         }
     }
 
-    public void paintSelected() {
+    public void paintAsSelected() {
         setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

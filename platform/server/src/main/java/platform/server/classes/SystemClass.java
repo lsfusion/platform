@@ -11,10 +11,10 @@ import java.text.Format;
 
 public class SystemClass extends DataClass<Integer> {
 
-    public final static SystemClass instance = new SystemClass(); 
-    private final static String sid = "SystemClass";
+    public final static SystemClass instance = new SystemClass();
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected SystemClass() { super(ServerResourceBundle.getString("classes.system")); }
@@ -76,7 +76,7 @@ public class SystemClass extends DataClass<Integer> {
     }
 
     public String getSID() {
-        return sid;
+        return "SystemClass";
     }
 
     public Stat getTypeStat() {

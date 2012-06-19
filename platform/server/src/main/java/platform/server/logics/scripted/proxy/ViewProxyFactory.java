@@ -21,7 +21,6 @@ public class ViewProxyFactory {
         proxyClasses.put(ClassChooserView.class, ClassChooserViewProxy.class);
         proxyClasses.put(ContainerView.class, ContainerViewProxy.class);
         proxyClasses.put(FormView.class, FormViewProxy.class);
-        proxyClasses.put(FunctionView.class, FunctionViewProxy.class);
         proxyClasses.put(GridView.class, GridViewProxy.class);
         proxyClasses.put(GroupObjectView.class, GroupObjectViewProxy.class);
         proxyClasses.put(PropertyDrawView.class, PropertyDrawViewProxy.class);

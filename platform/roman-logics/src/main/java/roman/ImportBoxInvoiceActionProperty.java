@@ -8,6 +8,7 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.query.GroupType;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
@@ -82,12 +83,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
     }
 
 
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
 
         initFields();
 
-        List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+        List<byte[]> fileList = valueClass.getFiles(userValue);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -226,6 +227,6 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
         }
 
-        context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
     }
 }

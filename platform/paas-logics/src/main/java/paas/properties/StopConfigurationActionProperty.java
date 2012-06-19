@@ -7,7 +7,7 @@ import platform.server.classes.ValueClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 
@@ -24,12 +24,12 @@ public class StopConfigurationActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         DataObject confObj = context.getSingleKeyValue();
 
-        Integer port = (Integer) paas.paasLM.configurationPort.read(context.getSession(), confObj);
+        Integer port = (Integer) paas.paasLM.configurationPort.read(context, confObj);
         if (port == null) {
-            context.getActions().add(new MessageClientAction("Порт не задан.", "Ошибка!"));
+            context.delayUserInterfaction(new MessageClientAction("Порт не задан.", "Ошибка!"));
             return;
         }
 

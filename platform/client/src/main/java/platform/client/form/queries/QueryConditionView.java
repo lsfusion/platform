@@ -10,16 +10,19 @@ import platform.interop.Compare;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-abstract class QueryConditionView extends JPanel implements ValueLinkListener {
+public class QueryConditionView extends JPanel implements FilterValueListener {
+    public interface UIHandlers {
+        void conditionChanged();
+        void conditionRemoved(ClientPropertyFilter condition);
+    }
+
+    private final UIHandlers uiHandlers;
 
     public static final int PREFERRED_HEIGHT = 18;
 
@@ -28,12 +31,12 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     private final ClientPropertyFilter filter;
 
-    private final JComboBox classValueLinkView;
+    private final JComboBox cbFilterValues;
 
     private JPanel centerPanel;
 
-    private ValueLinkView valueView;
-    private final Map<ClientValueLink, ValueLinkView> valueViews;
+    private FilterValueView valueView;
+    private final Map<ClientFilterValue, FilterValueView> valueViews;
 
     private final JButton delButton;
     private JComboBox propertyView;
@@ -41,8 +44,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     private JCheckBox negationView;
     private JComboBox junctionView;
 
-    public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
+    public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier, UIHandlers iuiHandlers) {
+
         filter = ifilter;
+        uiHandlers = iuiHandlers;
 
         centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.X_AXIS));
@@ -77,7 +82,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         negationView.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 filter.negation = ((JCheckBox) e.getSource()).isSelected();
-                conditionChanged();
+                uiHandlers.conditionChanged();
             }
         });
 
@@ -85,36 +90,33 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 filter.compare = (Compare) e.getItem();
-                conditionChanged();
+                uiHandlers.conditionChanged();
             }
         });
 
-        valueViews = new HashMap<ClientValueLink, ValueLinkView>();
+        valueViews = new HashMap<ClientFilterValue, FilterValueView>();
 
-        ClientUserValueLink userValue = new ClientUserValueLink();
-        UserValueLinkView userView = new UserValueLinkView(userValue, filter.property, logicsSupplier);
-        userView.setListener(this);
-        valueViews.put(userValue, userView);
+        ClientDataFilterValue dataValue = new ClientDataFilterValue();
+        DataFilterValueView dataView = new DataFilterValueView(this, dataValue, filter.property, logicsSupplier);
+        valueViews.put(dataValue, dataView);
 
-        ClientObjectValueLink objectValue = new ClientObjectValueLink();
-        ObjectValueLinkView objectView = new ObjectValueLinkView(objectValue, logicsSupplier);
-        objectView.setListener(this);
+        ClientObjectFilterValue objectValue = new ClientObjectFilterValue();
+        ObjectFilterValueView objectView = new ObjectFilterValueView(this, objectValue, logicsSupplier);
         valueViews.put(objectValue, objectView);
 
-        ClientPropertyValueLink propertyValue = new ClientPropertyValueLink();
-        PropertyValueLinkView propertyValueView = new PropertyValueLinkView(propertyValue, logicsSupplier);
-        propertyValueView.setListener(this);
+        ClientPropertyFilterValue propertyValue = new ClientPropertyFilterValue();
+        PropertyFilterValueView propertyValueView = new PropertyFilterValueView(this, propertyValue, logicsSupplier);
         valueViews.put(propertyValue, propertyValueView);
 
-        ClientValueLink[] classes = new ClientValueLink[]{userValue, objectValue, propertyValue};
-        classValueLinkView = new QueryConditionComboBox(classes);
-        centerPanel.add(classValueLinkView);
+        ClientFilterValue[] filterValues = new ClientFilterValue[]{dataValue, objectValue, propertyValue};
+        cbFilterValues = new QueryConditionComboBox(filterValues);
+        centerPanel.add(cbFilterValues);
 
-        filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
+        filter.value = (ClientFilterValue) cbFilterValues.getSelectedItem();
 
-        classValueLinkView.addItemListener(new ItemAdapter() {
+        cbFilterValues.addItemListener(new ItemAdapter() {
             public void itemSelected(ItemEvent e) {
-                filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
+                filter.value = (ClientFilterValue) cbFilterValues.getSelectedItem();
                 filterChanged();
             }
         });
@@ -122,12 +124,8 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         junctionView = new JComboBox(new String[] {ClientResourceBundle.getString("form.queries.and"), ClientResourceBundle.getString("form.queries.or")});
         junctionView.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                int index = junctionView.getSelectedIndex();
-                if (index == 0)
-                    filter.junction = true;
-                else
-                    filter.junction = false;
-                conditionChanged();
+                filter.junction = junctionView.getSelectedIndex() == 0;
+                uiHandlers.conditionChanged();
             }
         });
         centerPanel.add(junctionView);
@@ -139,7 +137,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                conditionRemoved(filter);
+                uiHandlers.conditionRemoved(filter);
             }
         });
 
@@ -161,7 +159,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             centerPanel.add(valueView, Arrays.asList(centerPanel.getComponents()).indexOf(junctionView));
             valueView.propertyChanged(filter.property);
         }
-        compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilerCompares()));
+        compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilterCompares()));
         compareView.setSelectedItem(null); //чтобы сработал itemStateChanged при автоматическом выборе '='
         compareView.setSelectedItem(filter.property.baseType.getDefaultCompare());
 
@@ -169,28 +167,20 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
         validate();
 
-        conditionChanged();
-    }
-
-    protected abstract void conditionChanged();
-
-    protected abstract void conditionRemoved(ClientPropertyFilter condition);
-
-    void stopEditing() {
-        valueView.stopEditing();
+        uiHandlers.conditionChanged();
     }
 
     // Реализация интерфейса QueryListener
     public void valueChanged() {
-        conditionChanged();
+        uiHandlers.conditionChanged();
     }
 
     void requestValueFocus() {
         valueView.requestFocusInWindow();
     }
 
-    public void startEditing() {
-        valueView.startEditing();
+    public void startEditing(KeyEvent initFilterKeyEvent) {
+        valueView.startEditing(initFilterKeyEvent);
     }
 
     public void setSelectedPropertyDraw(ClientPropertyDraw propertyDraw) {

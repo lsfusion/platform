@@ -22,5 +22,4 @@ public class PropertyDescriptorImplement<T> {
         property = implement.property;
         mapping = implement.mapping;
     }
-
 }

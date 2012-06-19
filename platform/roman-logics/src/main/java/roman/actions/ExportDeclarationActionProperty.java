@@ -10,7 +10,7 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -33,7 +33,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
         declarationInterface = i.next();
     }
 
-    public void execute(ExecutionContext context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             List<String> exportProperties = BaseUtils.toList("numberGroupDeclaration", "nameBrandGroupDeclaration",
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration",
@@ -115,14 +115,14 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 writerTSDocs44.println("");
             }
 
-            LP isGroupDeclaration = LM.is(getClass("groupDeclaration"));
+            LCP isGroupDeclaration = LM.is(getClass("groupDeclaration"));
             Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<Object, Object> query = new Query<Object, Object>(keys);
             for (String propertySID : exportProperties)
-                query.properties.put(propertySID, getLP(propertySID).getExpr(context.getModifier(), key));
+                query.properties.put(propertySID, getLCP(propertySID).getExpr(context.getModifier(), key));
             query.and(isGroupDeclaration.getExpr(key).getWhere());
-            query.and(getLP("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
+            query.and(getLCP("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
 
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
@@ -144,10 +144,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 innerInvoiceKeys.put("innerInvoice", innerInvoiceExpr);
 
                 Query<Object, Object> innerInvoiceQuery = new Query<Object, Object>(innerInvoiceKeys);
-                innerInvoiceQuery.properties.put("sidInnerInvoice", getLP("sidInnerInvoice").getExpr(innerInvoiceExpr));
-                innerInvoiceQuery.properties.put("dateInnerInvoice", getLP("dateInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("sidInnerInvoice", getLCP("sidInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.properties.put("dateInnerInvoice", getLCP("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
-                innerInvoiceQuery.and(getLP("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+                innerInvoiceQuery.and(getLCP("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 
@@ -270,7 +270,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             files.put("TSware.csv", IOUtils.getFileBytes(fileTSware));
             files.put("TSmarkings.csv", IOUtils.getFileBytes(fileTSMarkings));
             files.put("TSDocs44.csv", IOUtils.getFileBytes(fileTSDocs44));
-            context.addAction(new ExportFileClientAction(files));
+            context.delayUserInterfaction(new ExportFileClientAction(files));
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

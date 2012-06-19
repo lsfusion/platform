@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.identity.IdentityObject;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
@@ -9,21 +10,15 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.MapDataChanges;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChanges;
+import platform.server.session.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements PropertyInterfaceImplement<P>, Comparable<P>, ServerIdentitySerializable {
+public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements CalcPropertyInterfaceImplement<P>, Comparable<P>, ServerIdentitySerializable {
 
     public PropertyInterface() {
         this(-1);
@@ -61,18 +56,14 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     public Object read(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException {
-        return read(context.getSession(), interfaceValues, context.getModifier());
-    }
-
-    public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) {
         return interfaceValues.get((P) this).object;
     }
 
-    public ObjectValue readClasses(DataSession session, Map<P, DataObject> interfaceValues, Modifier modifier) {
+    public ObjectValue readClasses(ExecutionContext context, Map<P, DataObject> interfaceValues) throws SQLException {
         return interfaceValues.get((P) this);
     }
 
-    public void mapFillDepends(Collection<Property> depends) {
+    public void mapFillDepends(Set<CalcProperty> depends) {
     }
 
     public Set<OldProperty> mapOldDepends() {
@@ -86,19 +77,19 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
     public Expr changeExpr;
 
-    public MapDataChanges<P> mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        return new MapDataChanges<P>();
+    public DataChanges mapJoinDataChanges(Map<P, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        return new DataChanges();
     }
 
-    public void fill(Set<P> interfaces, Set<PropertyMapImplement<?, P>> properties) {
+    public void fill(Set<P> interfaces, Set<CalcPropertyMapImplement<?, P>> properties) {
         interfaces.add((P) this);
     }
 
-    public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(Map<P, K> remap) {
+    public <K extends PropertyInterface> CalcPropertyInterfaceImplement<K> map(Map<P, K> remap) {
         return remap.get((P)this);
     }
 
-    public PropertyMapImplement<?, P> mapChangeImplement(Map<P, DataObject> interfaceValues, DataSession session, Modifier modifier) throws SQLException {
+    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty) {
         return null;
     }
 
@@ -107,5 +98,19 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         changeExpr = new PullExpr("interface " + ID);
+    }
+
+    public Map<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null)
+            return Collections.singletonMap((P)this, commonValue);
+        return new HashMap<P, ValueClass>();
+    }
+
+    public Collection<DataProperty> mapChangeProps() {
+        return new HashSet<DataProperty>();
+    }
+
+    public DataChanges mapDataChanges(PropertyChange<P> pPropertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        return new DataChanges();
     }
 }

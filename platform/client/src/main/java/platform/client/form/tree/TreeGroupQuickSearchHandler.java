@@ -39,7 +39,7 @@ public class TreeGroupQuickSearchHandler extends KeyAdapter {
         if (treeTable.getRowCount() > 0
             && treeTable.hasFocus()
             && treeTable.isEnabled()
-            && treeTable.getSelectedColumn() == treeTable.getHierarchicalColumn()
+            && treeTable.isHierarchical(treeTable.getSelectedColumn())
             && !e.isAltDown()
             && !isMenuShortcutKeyDown(e)
             && !isNavigationKey(e)) {

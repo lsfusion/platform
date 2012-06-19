@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import com.google.common.base.Throwables;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
@@ -9,7 +10,6 @@ import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -38,12 +38,14 @@ import platform.server.form.entity.LogFormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
 import platform.server.integration.*;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -54,8 +56,7 @@ import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.DataSession;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -149,10 +150,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
 
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer, boolean forceCreateNew) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) {
         if (getRestartController().isPendingRestart()) {
             return null;
         }
+
+        //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
+        forceCreateNew = true;
 
         removeExpiredNavigators();
 
@@ -160,7 +164,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             session = createSession();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
 
         try {
@@ -177,26 +181,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
             RemoteNavigator navigator = forceCreateNew ? null : navigators.get(key);
 
-            if (navigator != null && navigator.isBusy()) {
-                navigator = null;
-                removeNavigator(key);
+            if (navigator != null) {
+                if (navigator.isFullClient() != isFullClient) {
+                    //создаём новый навигатор, если поменялся тип клиента
+                    navigator = null;
+                } else {
+                    navigator.invalidate();
+                    if (navigator.isBusy()) {
+                        navigator = null;
+                        removeNavigator(key);
+                    }
+                }
             }
 
-            if (navigator != null) {
-                navigator.invalidate();
-            } else {
-                navigator = new RemoteNavigator(this, user, computer, exportPort);
+            if (navigator == null) {
+                navigator = new RemoteNavigator(this, isFullClient, user, computer, exportPort);
                 addNavigator(key, navigator, universalPassword);
             }
 
             return navigator;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         } finally {
             try {
                 session.close();
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
     }
@@ -207,11 +217,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (!skipLogging) {
                 DataSession session = createSession();
 
-                DataObject newConnection = session.addObject(LM.connection, session.modifier);
-                LM.connectionUser.execute(navigator.getUser().object, session, newConnection);
-                LM.connectionComputer.execute(navigator.getComputer().object, session, newConnection);
-                LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
-                LM.connectionConnectTime.execute(LM.currentDateTime.read(session), session, newConnection);
+                DataObject newConnection = session.addObject(LM.connection);
+                LM.connectionUser.change(navigator.getUser().object, session, newConnection);
+                LM.connectionComputer.change(navigator.getComputer().object, session, newConnection);
+                LM.connectionCurrentStatus.change(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
+                LM.connectionConnectTime.change(LM.currentDateTime.read(session), session, newConnection);
 
                 session.apply(this);
                 session.close();
@@ -239,7 +249,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
         if (navigator != null && navigator.getConnection() != null) {
-            LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+            LM.connectionCurrentStatus.change(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
         }
     }
 
@@ -317,10 +327,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     ).compare(new DataObject(strHostName), Compare.EQUALS)
             );
 
-            Set<Map<String, Object>> keys = q.execute(session.sql, session.env).keySet();
+            Set<Map<String, Object>> keys = q.execute(session).keySet();
             if (keys.size() == 0) {
-                DataObject addObject = session.addObject(LM.computer, session.modifier);
-                LM.hostname.execute(strHostName, session, session.modifier, addObject);
+                DataObject addObject = session.addObject(LM.computer);
+                LM.hostname.change(strHostName, session, addObject);
 
                 result = (Integer) addObject.object;
                 session.apply(this);
@@ -386,9 +396,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         User user = readUser(login, session);
         if (user == null) {
-            DataObject addObject = session.addObject(LM.customUser, session.modifier);
-            LM.userLogin.execute(login, session, session.modifier, addObject);
-            LM.userPassword.execute(defaultPassword, session, session.modifier, addObject);
+            DataObject addObject = session.addObject(LM.customUser);
+            LM.userLogin.change(login, session, addObject);
+            LM.userPassword.change(defaultPassword, session, addObject);
             Integer userID = (Integer) addObject.object;
             session.apply(this);
             user = new User(userID);
@@ -440,7 +450,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             q.and(q.mapKeys.get("userId").compare(new DataObject(userId, LM.customUser), Compare.EQUALS));
 
             OrderedMap<Object, Boolean> orderBy = new OrderedMap(BaseUtils.toList("pOrder"), false);
-            Set<Map<String, Object>> keys = q.execute(session.sql, orderBy, 0, session.env).keySet();
+            Set<Map<String, Object>> keys = q.execute(session, orderBy, 0).keySet();
             if (keys.size() != 0) {
                 for (Map<String, Object> keyMap : keys) {
                     result.add((Integer) keyMap.get("policyId"));
@@ -635,9 +645,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Integer policyID = readPolicy(policyName, session);
         if (policyID == null) {
-            DataObject addObject = session.addObject(LM.policy, session.modifier);
-            LM.name.execute(policyName, session, session.modifier, addObject);
-            LM.policyDescription.execute(description, session, session.modifier, addObject);
+            DataObject addObject = session.addObject(LM.policy);
+            LM.name.change(policyName, session, addObject);
+            LM.policyDescription.change(description, session, addObject);
             policyID = (Integer) addObject.object;
             session.apply(this);
         }
@@ -838,7 +848,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             synchronizeDB();
 
-            if (!"true".equals(System.getProperty(BusinessLogicsBootstrap.PLATFORM_SERVER_ISDEBUG))) {
+            if (!BusinessLogicsBootstrap.isDebug()) {
                 prereadCaches();
             }
 
@@ -924,7 +934,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         createModules();
         initModules();
 
-        if (!"true".equals(System.getProperty(BusinessLogicsBootstrap.PLATFORM_SERVER_ISDEBUG))) {
+        if (!BusinessLogicsBootstrap.isDebug()) {
             synchronizeForms();
             synchronizeGroupProperties();
             synchronizeProperties();
@@ -952,24 +962,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 public DataObject getCurrentComputer() {
                     return new DataObject(0, LM.computer);
                 }
+                public boolean isFullClient() {
+                    return false;
+                }
             });
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
             query.and(BaseUtils.singleValue(query.mapKeys).isClass(LM.systemUser));
-            Set<Map<String, Object>> rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
+            Set<Map<String, Object>> rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
             if (rows.size() == 0) { // если нету добавим
-                systemUserObject = (Integer) session.addObject(LM.systemUser, session.modifier).object;
+                systemUserObject = (Integer) session.addObject(LM.systemUser).object;
                 session.apply(this);
             } else
                 systemUserObject = (Integer) BaseUtils.single(rows).get("key");
 
             query = new Query<String, Object>(Collections.singleton("key"));
             query.and(LM.hostname.getExpr(session.modifier, BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
-            rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
+            rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
             if (rows.size() == 0) { // если нету добавим
-                DataObject computerObject = session.addObject(LM.computer, session.modifier);
+                DataObject computerObject = session.addObject(LM.computer);
                 systemComputer = (Integer) computerObject.object;
-                LM.hostname.execute("systemhost", session, session.modifier, computerObject);
+                LM.hostname.change("systemhost", session, computerObject);
                 session.apply(this);
             } else
                 systemComputer = (Integer) BaseUtils.single(rows).get("key");
@@ -1044,10 +1057,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        DataObject newLaunch = session.addObject(LM.launch, session.modifier);
-        LM.launchComputer.execute(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
-        LM.launchTime.execute(LM.currentDateTime.read(session), session, newLaunch);
-        LM.launchRevision.execute(getRevision(), session, newLaunch);
+        DataObject newLaunch = session.addObject(LM.launch);
+        LM.launchComputer.change(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
+        LM.launchTime.change(LM.currentDateTime.read(session), session, newLaunch);
+        LM.launchRevision.change(getRevision(), session, newLaunch);
 
         session.apply(this);
         session.close();
@@ -1086,7 +1099,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         synchronizePropertyDraws();
     }
 
-    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LP deleteLP) {
+    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
         ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
 
@@ -1112,9 +1125,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
             service.synchronize(true, false);
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1138,8 +1149,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
             service.synchronize(true, false);
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1181,8 +1191,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw), propsPropertyDraw, deletes);
             service.synchronize(true, false);
 
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1190,7 +1199,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return !LM.isGeneratedSID(property.getSID()) && !(property instanceof NullValueProperty) && property.isFull();
+        return !LM.isGeneratedSID(property.getSID()) && property.isFull();
     }
 
     private void synchronizeProperties(){
@@ -1218,8 +1227,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 String classProperty = "";
                 try {
                     classProperty = property.getClass().getSimpleName();
-                    returnClass = property.getCommonClasses().value.getSID();
-                    for (Object cc : property.getCommonClasses().interfaces.values()) {
+                    returnClass = property.getValueClass().getSID();
+                    for (Object cc : property.getInterfaceClasses().values()) {
                         if (cc instanceof CustomClass)
                             commonClasses += ((CustomClass) cc).getSID() + ", ";
                         else if (cc instanceof DataClass)
@@ -1232,7 +1241,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 } catch (ArrayIndexOutOfBoundsException e) {
                     commonClasses = "";
                 }
-                dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null, property.setNotNull ? true : null, commonClasses, returnClass, classProperty));
+                dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null,
+                        property instanceof CalcProperty && ((CalcProperty)property).isStored() ? true : null, property instanceof CalcProperty && ((CalcProperty)property).setNotNull ? true : null, commonClasses, returnClass, classProperty));
             }
         }
 
@@ -1256,9 +1266,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1289,9 +1297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1343,8 +1349,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             service = new IntegrationService(session, table2, asList(key, key2), props2);
             service.synchronize(true, false);
 
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1381,10 +1386,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     LM.connectionCurrentStatus.property.getExpr(LM.connectionCurrentStatus.getMapKeys())
                             .compare(LM.connectionStatus.getDataObject("connectedConnection").getExpr(), Compare.EQUALS));
 
-            session.execute(LM.connectionCurrentStatus.property, statusChanges, session.modifier, null, null);
+            new ExecutionEnvironment(session).change((CalcProperty) LM.connectionCurrentStatus.property, statusChanges);
 
-            if (session.hasChanges())
-                session.apply(this);
+            session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1407,17 +1411,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void fillDaysOff() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        LP generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
+        LCP<PropertyInterface> generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
 
-        Map<Object, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
+        OrderedMap<PropertyInterface, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
 
-        Query<Object, Object> query = new Query<Object, Object>(keys);
+        Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
         query.properties.put("id", generateOrDefaultCountry.property.getExpr(keys));
 
         query.and(generateOrDefaultCountry.property.getExpr(keys).getWhere());
 
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
-        for (Map<Object, Object> key : result.keyList()) {
+        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        for (Map<PropertyInterface, Object> key : result.keyList()) {
             Integer id = (Integer) BaseUtils.singleValue(key);
             generateDates(id);
         }
@@ -1458,7 +1462,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void addDayOff(DataSession session, int countryId, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataObject countryObject = new DataObject(countryId, LM.country);
-        LM.isDayOffCountryDate.execute(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
+        LM.isDayOffCountryDate.change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {
@@ -1586,7 +1590,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         java.sql.Date currentDate = (java.sql.Date)LM.currentDate.read(session);
         java.sql.Date newDate = DateConverter.dateToSql(new Date());
         if (currentDate == null || currentDate.getDay() != newDate.getDay() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
-            LM.currentDate.execute(newDate, session, session.modifier);
+            LM.currentDate.change(newDate, session);
             session.apply(this);
         }
 
@@ -1618,9 +1622,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 return new DataObject(systemUserObject, LM.systemUser);
             }
         }, new ComputerController() {
-
             public DataObject getCurrentComputer() {
                 return new DataObject(systemComputer, LM.computer);
+            }
+            public boolean isFullClient() {
+                return false;
             }
         });
     }
@@ -1632,7 +1638,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getIDSql());
+                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getIDSql(), getSessionEvents());
     }
 
     public List<Property> getProperties() {
@@ -1647,134 +1653,131 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return getPropertyList(false);
     }
 
+    // находит свойство входящее в "верхнюю" сильносвязную компоненту
+    private static QuickSet<Link> goDown(Property<?> property, QuickMap<Property, QuickSet<Link>> linksMap, List<Property> order, QuickSet<Link> removedLinks, boolean include, QuickSet<Property> component) {
+        QuickSet<Link> linksIn = linksMap.get(property);
+        if(linksIn==null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
+            linksIn = new QuickSet<Link>();
+            linksMap.add(property, linksIn);
 
-    private static class LinksIn implements Comparable<LinksIn> {
-//        private final QuickMap<LinkType, List<Property>> countLinks = new SimpleMap<LinkType, List<Property>>();
-        private final QuickMap<LinkType, Integer> countLinks = new SimpleMap<LinkType, Integer>();
-        private final boolean usedByConstraints;
-        private final Property<?> property;
-
-        public int compareTo(LinksIn o) {
-            if(usedByConstraints && !o.usedByConstraints)
-                return 1;
-            if(!usedByConstraints && o.usedByConstraints)
-                return -1;
-
-            for(LinkType linkType : LinkType.order) {
-//                int thisCount = countLinks.get(linkType).size();
-//                int thatCount = o.countLinks.get(linkType).size();
-                int thisCount = countLinks.get(linkType);
-                int thatCount = o.countLinks.get(linkType);
-                if(thisCount>thatCount)
-                    return 1;
-                if(thisCount<thatCount)
-                    return -1;
+            QuickSet<Link> links = property.getLinks();
+            for(int i=0;i<links.size;i++) {
+                Link link = links.get(i);
+                if(!removedLinks.contains(link) && component.contains(link.to)==include)
+                    goDown(link.to, linksMap, order, removedLinks, include, component).add(link);
             }
-            assert (property.getSID().equals(o.property.getSID())==property.equals(o.property));
-            return property.getSID().compareTo(o.property.getSID());
+            order.add(property);
         }
-
-        private LinksIn(Property property, boolean usedByConstraints) {
-            for(LinkType linkType : LinkType.order)
-//                countLinks.add(linkType, new ArrayList<Property>());
-                countLinks.add(linkType, 0);
-            this.property = property;
-            this.usedByConstraints = usedByConstraints;
-        }
-
-        public void reduce(Property property, LinkType link) {
-//            boolean remove = countLinks.get(link).remove(property);
-//            assert remove;
-            countLinks.add(link, countLinks.get(link) - 1);
-        }
-
-        public void add(Property property, LinkType link) {
-//            countLinks.get(link).add(property);
-            countLinks.add(link, countLinks.get(link) + 1);
-        }
+        return linksIn;
     }
-
-    private static void fillLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByConstraints, QuickSet<Property> checked) {
-        if(linksMap.get(property)==null)
-            linksMap.add(property, new LinksIn(property, usedByConstraints));
-        fillRecLinks(property, linksMap, usedByConstraints, checked);
-    }
-    private static void fillRecLinks(Property<?> property, QuickMap<Property, LinksIn> linksMap, boolean usedByConstraints, QuickSet<Property> checked) {
-        if(checked.add(property)) // было, уходим
+    
+    // бежим вниз отсекая выбирая ребро с минимальным приоритетом из этой компоненты
+    private static void goUp(Property<?> property, QuickMap<Property, QuickSet<Link>> linksMap, QuickSet<Property> proceeded, Result<Link> minLink, QuickSet<Property> component) {
+        if(component.add(property))
             return;
 
-        // сначала строим orderMap, затем
-        for(Pair<Property<?>, LinkType> link : property.getLinks()) {
-            Property<?> linkProperty = link.first;
-            LinksIn linksIn = linksMap.get(linkProperty);
-            if(linksIn==null) {
-                linksIn = new LinksIn(linkProperty, usedByConstraints);
-                linksMap.add(linkProperty, linksIn);
+        QuickSet<Link> linksIn = linksMap.get(property);
+        for(int i=0;i<linksIn.size;i++) {
+            Link link = linksIn.get(i);
+            if(!proceeded.contains(link.from)) { // если не в верхней компоненте
+                goUp(link.from, linksMap, proceeded, minLink, component);
+                if(minLink.result==null || link.type.getNum() > minLink.result.type.getNum()) // сразу же ищем минимум из ребер
+                    minLink.set(link);
             }
-            linksIn.add(property, link.second);
-
-            fillLinks(linkProperty, linksMap, usedByConstraints, checked);
         }
     }
 
-    private static List<Property> buildList(SortedSet<LinksIn> sortedSet, QuickMap<Property, LinksIn> linksMap) {
-        List<Property> list = new ArrayList<Property>();
-        while(!sortedSet.isEmpty()) {
-            LinksIn firstKey = sortedSet.first();
-//            assert firstKey.countLinks.get(LinkType.DEPEND).isEmpty();
-            assert firstKey.countLinks.get(LinkType.DEPEND).equals(0);
-            sortedSet.remove(firstKey);
+    // upComponent нужен так как изначально неизвестны все элементы
+    private static QuickSet<Property> buildList(QuickSet<Property> props, QuickSet<Property> exclude, QuickSet<Link> removedLinks, List<Property> result) {
+        QuickSet<Property> proceeded;
 
-            for(Pair<Property<?>, LinkType> link : firstKey.property.getLinks()) {
-                LinksIn linkOrder = linksMap.get(link.first);
-                assert linkOrder.property.equals(link.first);
-                if(sortedSet.remove(linkOrder)) { // проверяем что еще не было
-                    linkOrder.reduce(firstKey.property, link.second);
-                    sortedSet.add(linkOrder);
+        List<Property> order = new ArrayList<Property>();
+        QuickMap<Property, QuickSet<Link>> linksMap = new SimpleMap<Property, QuickSet<Link>>();
+        for(int i=0;i<props.size;i++) {
+            Property property = props.get(i);
+            if(linksMap.get(property)==null) // проверка что не было
+                goDown(property, linksMap, order, removedLinks, exclude==null, exclude!=null ? exclude : props);
+        }
+
+        Result<Link> minLink = new Result<Link>();
+        proceeded = new QuickSet<Property>();
+        for(int i=0;i<order.size();i++) { // тут нужн
+            Property orderProperty = order.get(order.size()-1-i);
+            if(!proceeded.contains(orderProperty)) {
+                minLink.set(null);
+                QuickSet<Property> innerComponent = new QuickSet<Property>();
+                goUp(orderProperty, linksMap, proceeded, minLink, innerComponent);
+                assert innerComponent.size > 0;
+                if(innerComponent.size==1) // если цикла нет все ОК
+                    result.add(innerComponent.getSingle());
+                else {
+                    boolean was = removedLinks.add(minLink.result);
+                    assert !was;
+
+                    if(minLink.result.type.equals(LinkType.DEPEND)) { // нашли цикл
+                        List<Property> cycle = new ArrayList<Property>();
+                        buildList(innerComponent, null, removedLinks, cycle);
+                        String print = "";
+                        for(Property property : cycle)
+                            print = (print.length()==0 ? "" : print + " -> ") + property.toString();
+                        throw new RuntimeException(ServerResourceBundle.getString("message.cycle.detected") + " : " + print + " -> " + minLink.result.to);
+                    }
+                    buildList(innerComponent, null, removedLinks, result);
                 }
+                proceeded.addAll(innerComponent);
             }
-
-            list.add(firstKey.property);
         }
-        return BaseUtils.reverseThis(list);
+
+        return proceeded;
     }
 
     @IdentityLazy
-    public Iterable<Property> getPropertyList(boolean onlyCheck) {
-        QuickMap<Property, LinksIn> linksMap = new SimpleMap<Property, LinksIn>();
-        QuickSet<Property> checked = new QuickSet<Property>();
+    public List<Property> getPropertyList(boolean onlyCheck) {
+        // жестковато тут конечно написано, но пока не сильно времени жрет
+
+        // сначала бежим по Action'ам с cancel'ами
+        QuickSet<Property> cancelActions = new QuickSet<Property>();
+        QuickSet<Property> rest = new QuickSet<Property>();
         for (Property property : getProperties())
-            if(property.isFalse)
-                fillLinks(property, linksMap, true, checked);
-        if(!onlyCheck) { // именно так чтобы правильные пометки usedByConstraints проставились
-            for (Property property : getProperties())
-                if(!property.isFalse)
-                    fillLinks(property, linksMap, false, checked);
-        }
+            if(property instanceof ActionProperty && ((ActionProperty)property).hasCancel())
+                cancelActions.add(property);
+            else
+                rest.add(property);
 
-        SortedSet<LinksIn> sortedLinks = new TreeSet<LinksIn>();
-        for(int i=0;i<linksMap.size;i++)
-            sortedLinks.add(linksMap.getValue(i));
-        return buildList(sortedLinks, linksMap);
+        List<Property> cancelResult = new ArrayList<Property>();
+        QuickSet<Property> proceeded = buildList(cancelActions, new QuickSet<Property>(), new QuickSet<Link>(), cancelResult);
+        if(onlyCheck)
+            return BaseUtils.reverse(cancelResult);
+
+        // потом бежим по всем остальным, за исключением proceeded
+        List<Property> restResult = new ArrayList<Property>();
+        buildList(rest.remove(proceeded), proceeded, new QuickSet<Link>(), restResult);
+
+        // затем по всем кроме proceeded на прошлом шаге
+        assert Collections.disjoint(cancelResult, restResult);
+        return BaseUtils.mergeList(BaseUtils.reverse(cancelResult), BaseUtils.reverse(restResult));
     }
 
     @IdentityLazy
-    public List<Property> getStoredProperties() {
-        List<Property> result = new ArrayList<Property>();
+    public List<CalcProperty> getStoredProperties() {
+        List<CalcProperty> result = new ArrayList<CalcProperty>();
         for (Property property : getPropertyList())
-            if (property.isStored())
-                result.add(property);
+            if (property instanceof CalcProperty && ((CalcProperty)property).isStored())
+                result.add((CalcProperty) property);
         return result;
     }
 
     @IdentityLazy
-    public LinkedHashSet<OldProperty> getEventDependProperties() {
+    public LinkedHashSet<OldProperty> getApplyEventDependProps() {
         LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
         for (Property property : getPropertyList()) {
-            if (property.isFalse)
-                result.addAll(property.getOldDepends());
-            if (property.hasEvent())
-                result.addAll(((UserProperty)property).event.getOldDepends());
+            if (property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event!=null && !event.session)
+                    result.addAll(event.getOldDepends());
+            }
+            if (property instanceof DataProperty && ((DataProperty) property).event!=null)
+                result.addAll(((DataProperty)property).event.getOldDepends());
         }
         return result;
     }
@@ -1783,35 +1786,65 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<Property> getAppliedProperties(boolean onlyCheck) {
         // здесь нужно вернуть список stored или тех кто
         List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList(onlyCheck))
-            if (property.isStored() || property.hasEvent() || property.isFalse)
+        for (Property property : getPropertyList(onlyCheck)) {
+            if (property instanceof CalcProperty && ((CalcProperty)property).isStored())
                 result.add(property);
+            if (property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event!=null && !event.session)
+                    result.add(property);
+            }
+        }
         return result;
     }
 
-    private void fillAppliedDependFrom(Property<?> fill, Property<?> applied, Map<Property, Set<Property>> mapDepends) {
+    @IdentityLazy
+    public Modifier getNoEventModifier() {
+        SimpleMap<CalcProperty, PropertyChange> changes = new SimpleMap<CalcProperty, PropertyChange>();
+        for(Property property : getPropertyList())
+            if(property instanceof DataProperty && ((DataProperty)property).event!=null) {
+                CalcProperty<?> where = (((DataProperty) property).event).getWhere();
+                changes.add(where, where.getNoChange());
+            }
+
+        return new ImmutableModifier(changes);
+    }
+
+    private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, Set<CalcProperty>> mapDepends) {
         if(!fill.equals(applied) && fill.isStored())
             mapDepends.get(fill).add(applied);
         else
-            for(Property depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
+            for(CalcProperty depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
                 fillAppliedDependFrom(depend, applied, mapDepends);
+    }
+
+    @IdentityLazy
+    public List<ActionProperty> getSessionEvents() {
+        List<ActionProperty> result = new ArrayList<ActionProperty>();
+        for(Property property : getPropertyList())
+            if(property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event !=null && event.session)
+                    result.add((ActionProperty)property);
+            }
+        return result;
     }
 
     // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityLazy
-    private Map<Property, List<Property>>  getMapAppliedDepends() {
-        Map<Property, Set<Property>> mapDepends = new HashMap<Property, Set<Property>>();
-        for(Property property : getStoredProperties()) {
-            mapDepends.put(property, new HashSet<Property>());
+    private Map<CalcProperty, List<CalcProperty>> getMapAppliedDepends() {
+        Map<CalcProperty, Set<CalcProperty>> mapDepends = new HashMap<CalcProperty, Set<CalcProperty>>();
+        for(CalcProperty property : getStoredProperties()) {
+            mapDepends.put(property, new HashSet<CalcProperty>());
             fillAppliedDependFrom(property, property, mapDepends);
         }
-        for(OldProperty old : getEventDependProperties())
+        for(OldProperty old : getApplyEventDependProps())
             fillAppliedDependFrom(old.property, old, mapDepends);
 
         Iterable<Property> propertyList = getPropertyList();
-        Map<Property, List<Property>> orderedMapDepends = new HashMap<Property, List<Property>>();
-        for(Map.Entry<Property, Set<Property>> mapDepend : mapDepends.entrySet()) {
-            List<Property> dependList = BaseUtils.orderList(mapDepend.getValue(), propertyList);
+        Map<CalcProperty, List<CalcProperty>> orderedMapDepends = new HashMap<CalcProperty, List<CalcProperty>>();
+        for(Map.Entry<CalcProperty, Set<CalcProperty>> mapDepend : mapDepends.entrySet()) {
+            List<CalcProperty> dependList = BaseUtils.orderList(mapDepend.getValue(), propertyList);
             assert dependList.size()==mapDepend.getValue().size();
             orderedMapDepends.put(mapDepend.getKey(), dependList);
         }
@@ -1819,7 +1852,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public List<Property> getAppliedDependFrom(Property property) {
+    public List<CalcProperty> getAppliedDependFrom(CalcProperty property) {
         assert property.isStored();
         return getMapAppliedDepends().get(property);
     }
@@ -1833,32 +1866,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public List<Property> getConstrainedProperties() {
-        List<Property> result = new ArrayList<Property>();
+    public List<CalcProperty> getCheckConstrainedProperties() {
+        List<CalcProperty> result = new ArrayList<CalcProperty>();
         for (Property property : getPropertyList()) {
-            if (property.isFalse) {
-                result.add(property);
-            }
-        }
-        return result;
-    }
-
-    @IdentityLazy
-    public List<Property> getCheckConstrainedProperties() {
-        List<Property> result = new ArrayList<Property>();
-        for (Property property : getConstrainedProperties()) {
-            if (property.checkChange != Property.CheckType.CHECK_NO) {
-                result.add(property);
+            if (property instanceof CalcProperty && ((CalcProperty)property).checkChange != CalcProperty.CheckType.CHECK_NO) {
+                result.add((CalcProperty) property);
             }
         }
         return result;
     }
     
-    public List<Property> getCheckConstrainedProperties(PropertyObjectInstance<?> changingProp) {
-        List<Property> result = new ArrayList<Property>();
-        for (Property property : getCheckConstrainedProperties()) {
-            if (property.checkChange == Property.CheckType.CHECK_ALL ||
-                property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp.property)) {
+    public List<CalcProperty> getCheckConstrainedProperties(CalcProperty<?> changingProp) {
+        List<CalcProperty> result = new ArrayList<CalcProperty>();
+        for (CalcProperty property : getCheckConstrainedProperties()) {
+            if (property.checkChange == CalcProperty.CheckType.CHECK_ALL ||
+                property.checkChange == CalcProperty.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)) {
                 result.add(property);
             }
         }
@@ -1870,8 +1892,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LM.baseClass.fillIDs(session, LM.name, LM.classSID);
 
-        if (session.hasChanges())
-            session.apply(this);
+        session.apply(this);
 
         session.close();
     }
@@ -1906,11 +1927,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             mapIndexes.put(table, new HashMap<List<String>, Boolean>());
 
         // привяжем индексы
-        for (Map.Entry<List<? extends Property>, Boolean> index : LM.indexes.entrySet()) {
-            Iterator<? extends Property> i = index.getKey().iterator();
+        for (Map.Entry<List<? extends CalcProperty>, Boolean> index : LM.indexes.entrySet()) {
+            Iterator<? extends CalcProperty> i = index.getKey().iterator();
             if (!i.hasNext())
                 throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
-            Property baseProperty = i.next();
+            CalcProperty baseProperty = i.next();
             if (!baseProperty.isStored())
                 throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties")+" (" + baseProperty + ")");
             ImplementTable indexTable = baseProperty.mapTable.table;
@@ -1919,7 +1940,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             tableIndex.add(baseProperty.field.name);
 
             while (i.hasNext()) {
-                Property property = i.next();
+                CalcProperty property = i.next();
                 if (!property.isStored())
                     throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
                 if (indexTable.findProperty(property.field.name) == null)
@@ -1930,7 +1951,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-        outDB.write('v'+1);  //для поддержки обратной совместимости
+        outDB.write('v'+2);  //для поддержки обратной совместимости
 
         outDB.writeInt(mapIndexes.size());
         for (Map.Entry<ImplementTable, Map<List<String>, Boolean>> mapIndex : mapIndexes.entrySet()) {
@@ -1944,10 +1965,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        List<Property> storedProperties = new ArrayList<Property>(getStoredProperties());
+        List<CalcProperty> storedProperties = new ArrayList<CalcProperty>(getStoredProperties());
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
         outDB.writeInt(storedProperties.size());
-        for (Property<?> property : storedProperties) {
+        for (CalcProperty<?> property : storedProperties) {
             outDB.writeUTF(property.getSID());
             outDB.writeBoolean(property instanceof DataProperty);
             outDB.writeUTF(property.mapTable.table.name);
@@ -1971,7 +1992,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
-            SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
+            SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass, version);
             prevTables.put(prevTable.name, prevTable);
 
             ImplementTable implementTable = implementTables.get(prevTable.name);
@@ -2019,8 +2040,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 mapKeys.put(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
 
             boolean keep = false, moved = false;
-            for (Iterator<Property> is = storedProperties.iterator(); is.hasNext();) {
-                Property<?> property = is.next();
+            for (Iterator<CalcProperty> is = storedProperties.iterator(); is.hasNext();) {
+                CalcProperty<?> property = is.next();
                 if (property.getSID().equals(sID)) {
                     Map<KeyField, PropertyInterface> foundInterfaces = new HashMap<KeyField, PropertyInterface>();
                     for (PropertyInterface propertyInterface : property.interfaces) {
@@ -2068,7 +2089,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
-        for (Property property : storedProperties) { // добавляем оставшиеся
+        for (CalcProperty property : storedProperties) { // добавляем оставшиеся
             sql.addColumn(property.mapTable.table.name, property.field);
             if (struct != null && property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
                 recalculateProperties.add((AggregateProperty) property);
@@ -2106,11 +2127,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
         for (String sid : columnsToDrop.keySet()) {
-            DataObject object = session.addObject(LM.dropColumn, session);
-            LM.sidDropColumn.execute(sid, session, object);
-            LM.sidTableDropColumn.execute(columnsToDrop.get(sid), session, object);
-            LM.timeDropColumn.execute(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
-            LM.revisionDropColumn.execute(getRevision(), session, object);
+            DataObject object = session.addObject(LM.dropColumn);
+            LM.sidDropColumn.change(sid, session, object);
+            LM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
+            LM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
+            LM.revisionDropColumn.change(getRevision(), session, object);
         }
         session.apply(this);
         session.close();
@@ -2175,9 +2196,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             service = new IntegrationService(session, table2, asList(tableKey, tableColumnKey), properties2, deletes2);
             service.synchronize(true, false);
 
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
+            session.apply(this);
 
             session.close();
         } catch (Exception e) {
@@ -2193,8 +2212,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void recalculateFollows(DataSession session) throws SQLException {
         for(Property property : getPropertyList())
-            if(property.hasEvent())
-                ((UserProperty)property).event.resolve(session);
+            if(property instanceof ActionProperty) {
+                ActionEvent event = ((ActionProperty) property).event;
+                if(event!=null)
+                    event.resolve(session);
+            }
     }
 
     public void updateStats() throws SQLException {
@@ -2224,10 +2246,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.getLP(sID);
     }
 
-    private boolean intersect(LP[] props) {
+    protected LCP getLCP(String sID) {
+        return (LCP)LM.getLP(sID);
+    }
+
+    private boolean intersect(LCP[] props) {
         for (int i = 0; i < props.length; i++)
             for (int j = i + 1; j < props.length; j++)
-                if (((LP<?>) props[i]).intersect((LP<?>) props[j]))
+                if (((LCP<?>) props[i]).intersect((LCP<?>) props[j]))
                     return true;
         return false;
     }
@@ -2251,11 +2277,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 logger.debug("Checking property : " + prop + "...");
                 assert prop.check();
             }
-        for (LP[] props : LM.checkCUProps) {
+        for (LCP[] props : LM.checkCUProps) {
             logger.debug("Checking class properties : " + props + "...");
             assert !intersect(props);
         }
-        for (LP[] props : LM.checkSUProps) {
+        for (LCP[] props : LM.checkSUProps) {
             logger.debug("Checking union properties : " + props + "...");
 //            assert intersect(props);
         }
@@ -2278,7 +2304,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void recalculateAggregationTableColumn(SQLSession session, String propertySID) throws SQLException {
-        for (Property property : getAggregateStoredProperties())
+        for (CalcProperty property : getAggregateStoredProperties())
             if (property.getSID().equals(propertySID)) {
                 AggregateProperty aggregateProperty = (AggregateProperty) property;
                 aggregateProperty.recalculateAggregation(session);
@@ -2300,19 +2326,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         this.scheduler.start();
     }
 
-    protected LP addRestartActionProp() {
-        return LM.addProperty(null, new LP<ClassPropertyInterface>(new RestartActionProperty(LM.genSID(), "")));
+    protected LAP addRestartActionProp() {
+        return LM.addProperty(null, new LAP(new RestartActionProperty(LM.genSID(), "")));
     }
 
-    protected LP addCancelRestartActionProp() {
-        return LM.addProperty(null, new LP<ClassPropertyInterface>(new CancelRestartActionProperty(LM.genSID(), "")));
+    protected LAP addCancelRestartActionProp() {
+        return LM.addProperty(null, new LAP(new CancelRestartActionProperty(LM.genSID(), "")));
     }
 
-    protected LP addGarbageCollectorActionProp() {
-        return LM.addProperty(null, new LP<ClassPropertyInterface>(new GarbageCollectorActionProperty(LM.genSID(), getString("logics.garbage.collector"))));
+    protected LAP addGarbageCollectorActionProp() {
+        return LM.addProperty(null, new LAP(new GarbageCollectorActionProperty(LM.genSID(), getString("logics.garbage.collector"))));
     }
 
-    public void updateEnvironmentProperty(Property property, ObjectValue value) throws SQLException {
+    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         synchronized (navigators) {
             for (RemoteNavigator remoteNavigator : navigators.values()) {
                 remoteNavigator.updateEnvironmentProperty(property, value);
@@ -2322,7 +2348,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void updateRestartProperty() throws SQLException {
         Boolean isRestarting = getRestartController().isPendingRestart() ? Boolean.TRUE : null;
-        updateEnvironmentProperty(LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
+        updateEnvironmentProperty((CalcProperty) LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
     }
 
     public int getNumberOfClients() {
@@ -2336,7 +2362,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             getRestartController().initRestart();
             updateRestartProperty();
         }
@@ -2347,7 +2373,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
         }
@@ -2358,7 +2384,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sid, caption, new ValueClass[]{});
         }
 
-        public void execute(ExecutionContext context) {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
             System.runFinalization();
             System.gc();
         }
@@ -2416,17 +2442,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         String result = "";
 
         result += '\n' + getString("logics.info.by.tables") + '\n' + '\n';
-        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
-            public ImplementTable group(Property key) {
+        for (Map.Entry<ImplementTable, Collection<CalcProperty>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, CalcProperty>() {
+            public ImplementTable group(CalcProperty key) {
                 return key.mapTable.table;
             }
         }, getStoredProperties()).entrySet()) {
             result += groupTable.getKey().outputKeys() + '\n';
-            for (Property property : groupTable.getValue())
+            for (CalcProperty property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
         result += '\n' + getString("logics.info.by.properties") + '\n' + '\n';
-        for (Property property : getStoredProperties())
+        for (CalcProperty property : getStoredProperties())
             result += property.outputStored(true) + '\n';
         System.out.println(result);
     }
@@ -2443,7 +2469,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LP isProperty = LM.is(LM.property);
+        LCP isProperty = LM.is(LM.property);
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2455,7 +2481,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (Map<Object, Object> values : result.values()) {
             Object userLoggable = values.get("userLoggableProperty");
             if (userLoggable != null) {
-                LM.makeUserLoggable(getLP(values.get("SIDProperty").toString().trim()));
+                LM.makeUserLoggable((LCP)getLP(values.get("SIDProperty").toString().trim()));
             }
         }
 
@@ -2465,7 +2491,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LP isNotification = LM.is(LM.notification);
+        LCP isNotification = LM.is(LM.notification);
         Map<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2492,12 +2518,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             query2.and(LM.inNotificationProperty.getExpr(session.modifier, notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
-            List<LP> listInNotificationProperty = new ArrayList();
+            List<LCP> listInNotificationProperty = new ArrayList();
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows2 : result2.entrySet()) {
-                listInNotificationProperty.add(getLP(rows2.getValue().get("SIDProperty").toString().trim()));
+                listInNotificationProperty.add((LCP) getLP(rows2.getValue().get("SIDProperty").toString().trim()));
             }
 
-            for (LP prop : listInNotificationProperty) {
+            for (LCP prop : listInNotificationProperty) {
                 Map<Object, Object> rowValue = rows.getValue();
                 boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
                 String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
@@ -2506,16 +2532,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
                 String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
                 String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
-                LP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LP<ClassPropertyInterface>(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, LM.BL)));
+                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, LM.BL)));
 
-                Object[] params = new Object[prop.listInterfaces.size() + 1];
-                params[0] = prop;
-                for (int i = 1; i <= prop.listInterfaces.size(); i++)
-                    params[i] = i;
+                Integer[] params = new Integer[prop.listInterfaces.size()];
+                for (int i = 0; i < prop.listInterfaces.size(); i++)
+                    params[i] = i+1;
                 if (isDerivedChange)
-                    emailNotificationProperty.setEventAction(params);
+                    emailNotificationProperty.setEventAction(prop, params);
                 else
-                    emailNotificationProperty.setEventSetAction(params);
+                    emailNotificationProperty.setEventSetAction(prop, params);
             }
         }
     }
@@ -2524,7 +2549,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LP isProperty = LM.is(LM.property);
+        LCP isProperty = LM.is(LM.property);
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2536,7 +2561,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (Map<Object, Object> values : result.values()) {
             Object isSetNotNull = values.get("isSetNotNullProperty");
             if (isSetNotNull != null) {
-                LP prop = getLP(values.get("SIDProperty").toString().trim());
+                LCP<?> prop = (LCP) getLP(values.get("SIDProperty").toString().trim());
                 prop.property.setNotNull = true;
                 LM.setNotNull(prop);
             }
@@ -2631,13 +2656,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    // создает форму не интерактивную (не для чтения)
-    public RemoteFormInterface createForm(DataSession session, FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
+    @Override
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, isModal, newSession, checkOnOk, interactive, null);
+    }
+
+    @Override
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
         try {
-            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T) this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, false);
-            if(!formInstance.areObjectsFound())
-                return null;
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, null);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, exportPort, null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -2738,17 +2765,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         DataSession session = createSession();
         DataObject exceptionObject;
         if (client) {
-            exceptionObject = session.addObject(LM.clientException, session.modifier);
-            LM.clientClientException.execute(clientName, session, exceptionObject);
+            exceptionObject = session.addObject(LM.clientException);
+            LM.clientClientException.change(clientName, session, exceptionObject);
             String userLogin = (String) LM.userLogin.read(session, user);
-            LM.loginClientException.execute(userLogin, session, exceptionObject);
+            LM.loginClientException.change(userLogin, session, exceptionObject);
         } else {
-            exceptionObject = session.addObject(LM.serverException, session.modifier);
+            exceptionObject = session.addObject(LM.serverException);
         }
-        LM.messageException.execute(message, session, exceptionObject);
-        LM.typeException.execute(errorType, session, exceptionObject);
-        LM.erTraceException.execute(erTrace, session, exceptionObject);
-        LM.dateException.execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
+        LM.messageException.change(message, session, exceptionObject);
+        LM.typeException.change(errorType, session, exceptionObject);
+        LM.erTraceException.change(erTrace, session, exceptionObject);
+        LM.dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 
         session.apply(this);
         session.close();
@@ -2775,7 +2802,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     throw new RuntimeException(ServerResourceBundle.getString("mail.user.not.found") + ": " + email);
                 }
 
-                LM.emailUserPassUser.execute(true, session, new DataObject(userId, LM.customUser));
+                LM.emailUserPassUser.execute(session, new DataObject(userId, LM.customUser));
             } finally {
                 session.close();
             }
@@ -2815,7 +2842,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @Override
     public byte[] readFile(String sid, String... params) throws RemoteException {
-        LP property = getLP(sid);
+        LCP property = (LCP) getLP(sid);
         List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>(property.listInterfaces);
         DataObject[] objects = new DataObject[interfaces.size()];
         byte[] fileBytes;
@@ -2846,12 +2873,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 return ServerResourceBundle.getString("logics.error.email.duplicate");
             }
 
-            DataObject userObject = session.addObject(LM.customUser, session.modifier);
-            LM.userLogin.execute(username, session, userObject);
-            LM.email.execute(email, session, userObject);
-            LM.userPassword.execute(password, session, userObject);
-            LM.userFirstName.execute(firstName, session, userObject);
-            LM.userLastName.execute(lastName, session, userObject);
+            DataObject userObject = session.addObject(LM.customUser);
+            LM.userLogin.change(username, session, userObject);
+            LM.email.change(email, session, userObject);
+            LM.userPassword.change(password, session, userObject);
+            LM.userFirstName.change(firstName, session, userObject);
+            LM.userLastName.change(lastName, session, userObject);
             session.apply(this);
         } catch (SQLException e) {
             return ServerResourceBundle.getString("logics.error.registration");
@@ -2862,5 +2889,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @Override
     public BusinessLogics getBL() {
         return this;
+    }
+
+    public FormInstance getFormInstance() {
+        return null;
     }
 }

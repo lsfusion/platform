@@ -168,7 +168,6 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             And<K> andTrans = new And<K>();
             for(Map.Entry<K, ? extends BaseExpr> mapEntry : map.entrySet()) {
                 AndClassSet classSet = mapEntry.getValue().getAndClassSet(andWhere);
-//                assert classSet!=null;  для outputClasses и других элементов настройки БЛ, где могут быть висячие ключи
                 if(classSet!=null && !andTrans.add(mapEntry.getKey(), classSet)) {
                     isFalse = true;
                     break;
@@ -197,10 +196,12 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         AndClassSet result = null;
         for(And<VariableClassExpr> andWhere : wheres) {
             AndClassSet classSet = expr.getAndClassSet(andWhere);
-            if(result == null)
-                result = classSet;
-            else
-                result = result.or(classSet);
+            if(classSet!=null) {
+                if(result == null)
+                    result = classSet;
+                else
+                    result = result.or(classSet);
+            }
         }
         return result;
     }
@@ -341,7 +342,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     public ClassExprWhere keep(Collection<? extends VariableClassExpr> keys) {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(And<VariableClassExpr> andWhere : wheres)
-            result = result.or(new ClassExprWhere(andWhere.keep(keys)));
+            result = result.or(new ClassExprWhere((And<VariableClassExpr>) andWhere.keep(keys)));
         return result;
     }
 

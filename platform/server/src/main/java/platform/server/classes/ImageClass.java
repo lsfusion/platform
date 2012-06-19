@@ -3,15 +3,29 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.logics.ServerResourceBundle;
 
-public class ImageClass extends FileClass {
+import java.io.DataInputStream;
+import java.io.IOException;
 
-    public final static ImageClass instance = new ImageClass();
-    private final static String sid = "ImageClass";
-    static {
-        DataClass.storeClass(sid, instance);
+public class ImageClass extends StaticFormatFileClass {
+
+    public final static ImageClass instance = new ImageClass(false);
+    public final static ImageClass multipleInstance = new ImageClass(true);
+
+    protected String getFileSID() {
+        return "ImageClass";
     }
 
-    protected ImageClass() {}
+    static {
+        DataClass.storeClass(instance, multipleInstance);
+    }
+
+    protected ImageClass(boolean multiple) {
+        super(multiple);
+    }
+
+    public ImageClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
 
     public String toString() {
         return ServerResourceBundle.getString("classes.image");
@@ -25,11 +39,7 @@ public class ImageClass extends FileClass {
         return Data.IMAGE;
     }
 
-    public String getSID() {
-        return sid;
-    }
-
-    public String getExtensions() {
-        return "jpg, jpeg, bmp, png";
+    public String getOpenExtension() {
+        return "jpg"; //, jpeg, bmp, png";
     }
 }

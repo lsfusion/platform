@@ -9,11 +9,9 @@ import platform.client.form.renderer.TextPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GTextType;
 import platform.gwt.view.classes.GType;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
@@ -63,13 +61,12 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
         return new TextPropertyRenderer(property);
     }
 
-
     @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
         return new TextPropertyEditor(ownerComponent, value, property.design);
     }
 
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new TextPropertyEditor(value, property.design);
     }
 

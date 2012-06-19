@@ -1,6 +1,7 @@
 package platform.server.form.entity.filter;
 
 import platform.server.classes.CustomClass;
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
@@ -16,8 +17,8 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public CustomClass isClass;
 
-    public IsClassFilterEntity(PropertyObjectEntity<P> iProperty, CustomClass isClass, boolean resolveAdd) {
-        super(iProperty, resolveAdd);
+    public IsClassFilterEntity(CalcPropertyObjectEntity<P> property, CustomClass isClass, boolean resolveAdd) {
+        super(property, resolveAdd);
         this.isClass = isClass;
     }
 

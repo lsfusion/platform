@@ -43,7 +43,20 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         return SimplexConstraints.getContainerDefaultConstraints(super.getDefaultConstraints());
     }
 
-    List<ComponentView> children = new ArrayList<ComponentView>();
+    public List<ComponentView> children = new ArrayList<ComponentView>();
+
+    @Override
+    public ComponentView findById(int id) {
+        ComponentView result = super.findById(id);
+        if(result!=null) return result;
+        
+        for(ComponentView child : children) {
+            result = child.findById(id);
+            if(result!=null) return result;
+        }
+
+        return null;
+    }
 
     private void changeContainer(ComponentView comp) {
         if (comp.getContainer() != null)
@@ -92,8 +105,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         }
     }
 
-    public boolean isAncestorOf(ContainerView container) {
-        return container != null && (equals(container) || isAncestorOf(container.container));
+    public boolean isAncestorOf(ComponentView container) {
+        return container != null && (super.isAncestorOf(container) || isAncestorOf(container.container));
     }
 
     public void fillOrderList(List<ContainerView> containers) {

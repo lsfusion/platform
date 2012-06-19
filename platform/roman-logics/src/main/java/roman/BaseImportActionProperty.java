@@ -1,13 +1,13 @@
 package roman;
 
 import platform.interop.ClassViewType;
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
 import java.util.Iterator;
 
@@ -17,10 +17,10 @@ import java.util.Iterator;
  * Time: 15:40
  */
 
-public abstract class BaseImportActionProperty extends CustomActionProperty {
+public abstract class BaseImportActionProperty extends CustomReadValueActionProperty {
     protected final ClassPropertyInterface supplierInterface;
     protected RomanLogicsModule LM;
-    protected FileActionClass valueClass;
+    protected CustomStaticFormatFileClass valueClass;
 
     public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass) {
         this(LM, caption, supplierClass, "xls xlsx");
@@ -41,7 +41,7 @@ public abstract class BaseImportActionProperty extends CustomActionProperty {
             }
             extString = extString + "*." + ext;
         }
-        valueClass = FileActionClass.getDefinedInstance(true, "Файлы c данными (" + extString + ")", extensions);
+        valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными (" + extString + ")", extensions);
     }
 
     @Override
@@ -51,8 +51,7 @@ public abstract class BaseImportActionProperty extends CustomActionProperty {
         entity.forceViewType = ClassViewType.PANEL;
     }
 
-    @Override
-    public DataClass getValueClass() {
+    protected DataClass getReadType() {
         return valueClass;
     }
 }

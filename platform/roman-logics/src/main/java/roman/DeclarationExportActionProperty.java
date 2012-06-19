@@ -11,7 +11,6 @@ import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
@@ -32,7 +31,7 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
         this.BL = BL;
     }
 
-    public void execute(ExecutionContext context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DeclarationExporter exporter = new DeclarationExporter(context.getKeys());
             exporter.extractData();
@@ -49,7 +48,7 @@ public class DeclarationExportActionProperty extends CustomActionProperty {
             files.put("G316.DBF", IOUtils.getFileBytes(dbfG316.getFFile()));
             files.put("G40.DBF", IOUtils.getFileBytes(dbfG40.getFFile()));
             files.put("GB.DBF", IOUtils.getFileBytes(dbfGB.getFFile()));
-            context.addAction(new ExportFileClientAction(files));
+            context.delayUserInterfaction(new ExportFileClientAction(files));
 
             tempDecl02.delete();
             tempDobl.delete();

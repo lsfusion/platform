@@ -3,6 +3,7 @@ package roman;
 import platform.interop.action.MessageClientAction;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         ImportField colorCodeField = new ImportField(LM.sidColorSupplier);
         ImportField colorNameField = new ImportField(LM.baseLM.name);
 
@@ -38,7 +39,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
         properties.add(new ImportProperty(colorNameField, LM.baseLM.name.getMapping(colorKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 
@@ -51,7 +52,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
             }.getTable();
 
             new IntegrationService(context.getSession(), table, Arrays.asList(colorKey), properties).synchronize();
-            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

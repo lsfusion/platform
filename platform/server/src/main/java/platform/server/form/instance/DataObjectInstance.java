@@ -8,7 +8,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
@@ -48,7 +48,7 @@ public class DataObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public boolean classChanged(Collection<Property> changedProps) {
+    public boolean classChanged(Collection<CalcProperty> changedProps) {
         return false;
     }
 

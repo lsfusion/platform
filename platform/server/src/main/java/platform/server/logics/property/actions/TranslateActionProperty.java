@@ -5,8 +5,7 @@ import platform.base.Result;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -16,11 +15,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 public class TranslateActionProperty extends CustomActionProperty {
-    private LP sourceProperty;
-    private LP targetProperty;
-    private LP translationDictionaryTerm;
+    private LCP sourceProperty;
+    private LCP targetProperty;
+    private LCP translationDictionaryTerm;
 
-    public TranslateActionProperty(String sID, String caption, LP translationDictionaryTerm, LP sourceProperty, LP targetProperty, ValueClass dictionary) {
+    public TranslateActionProperty(String sID, String caption, LCP translationDictionaryTerm, LCP sourceProperty, LCP targetProperty, ValueClass dictionary) {
         super(sID, caption, getValueClasses(sourceProperty, dictionary));
 
         this.translationDictionaryTerm = translationDictionaryTerm;
@@ -28,14 +27,14 @@ public class TranslateActionProperty extends CustomActionProperty {
         this.targetProperty = targetProperty;
     }
 
-    private static ValueClass[] getValueClasses(LP sourceProperty, ValueClass dictionary) {
+    private static ValueClass[] getValueClasses(LCP sourceProperty, ValueClass dictionary) {
         List<ValueClass> result = new ArrayList<ValueClass>();
         result.add(dictionary);
-        result.addAll(BaseUtils.toList(sourceProperty.getCommonClasses(new Result<ValueClass>(){})));
+        result.addAll(BaseUtils.toList(sourceProperty.getInterfaceClasses()));
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject dictionary = context.getKeyValue(interfacesList.remove(0));
         List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, context.getKeys());
@@ -61,7 +60,7 @@ public class TranslateActionProperty extends CustomActionProperty {
                     result += token;
                 }
             }
-            targetProperty.execute(result, context, inputObjects.toArray(new DataObject[inputObjects.size()]));
+            targetProperty.change(result, context, inputObjects.toArray(new DataObject[inputObjects.size()]));
         }
     }
 }

@@ -11,11 +11,21 @@ import static platform.interop.Compare.*;
 
 public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
 
+    protected boolean multiple;
+
+    public abstract String getFileSID();
+
+    public String getSID() {
+        return getFileSID() + (multiple?"_Multiple":"");
+    }
+
     protected ClientFileClass() {
     }
     
     public ClientFileClass(DataInputStream inStream) throws IOException {
         super(inStream);
+
+        multiple = inStream.readBoolean();
     }
 
     public String getPreferredMask() {
@@ -30,9 +40,8 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         throw new RuntimeException("not supported");
     }
 
-
     @Override
-    public Compare[] getFilerCompares() {
+    public Compare[] getFilterCompares() {
         return new Compare[] {EQUALS, NOT_EQUALS};
     }
 

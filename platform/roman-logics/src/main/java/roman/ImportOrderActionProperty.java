@@ -8,10 +8,10 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.query.GroupType;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -71,12 +71,12 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         return true;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         DataObject supplier = context.getKeyValue(supplierInterface);
 
         initFields();
 
-        List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+        List<byte[]> fileList = valueClass.getFiles(userValue);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -235,9 +235,9 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, false);
         }
 
-        context.addAction(new
+        context.delayUserInterfaction(new
 
-                MessageClientAction("Данные были успешно приняты", "Импорт")
+                                      MessageClientAction("Данные были успешно приняты", "Импорт")
 
         );
     }

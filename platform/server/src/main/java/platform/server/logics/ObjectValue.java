@@ -9,7 +9,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.filter.CompareValue;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 
@@ -58,8 +58,8 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     
     public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
     public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
-    public boolean dataUpdated(Collection<Property> changedProps) {return false;}
-    public void fillProperties(Set<Property> properties) {}
+    public boolean dataUpdated(Collection<CalcProperty> changedProps) {return false;}
+    public void fillProperties(Set<CalcProperty> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);

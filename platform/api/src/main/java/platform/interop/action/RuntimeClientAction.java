@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class RuntimeClientAction extends AbstractClientAction {
+public class RuntimeClientAction implements ClientAction {
 
     public String command;
     public String[] environment;
@@ -20,7 +20,7 @@ public class RuntimeClientAction extends AbstractClientAction {
     }
 
     @Override
-    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

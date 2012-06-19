@@ -12,11 +12,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class QueryView extends JPanel {
+public abstract class QueryView extends JPanel implements QueryConditionView.UIHandlers {
+    // сворачивание/разворачивание отбора
+    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/images/collapse.gif"));
+    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/images/expand.gif"));
+
     public static final String REMOVE_ALL_ACTION = "removeAll";
 
     private final static Dimension iconButtonDimension = new Dimension(20, 20);
@@ -27,15 +32,14 @@ public abstract class QueryView extends JPanel {
     private final JButton addCondition;
     private final JButton collapseButton;
 
+    private boolean collapsed = false;
+
     // при помощи listener идет общение с контроллером
     // выделен в отдельный интерфейс, а не внутренним классом, поскольку от QueryView идет наследование
-    private QueryListener listener;
+    private final QueryController controller;
 
-    void setListener(QueryListener listener) {
-        this.listener = listener;
-    }
-
-    QueryView() {
+    QueryView(QueryController ilistener) {
+        this.controller = ilistener;
 
         setAlignmentY(Component.TOP_ALIGNMENT);
 
@@ -57,8 +61,7 @@ public abstract class QueryView extends JPanel {
         applyButton.setVisible(false);
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                if (listener != null)
-                    listener.applyPressed();
+                controller.applyPressed();
             }
         });
         buttons.add(applyButton);
@@ -73,10 +76,8 @@ public abstract class QueryView extends JPanel {
         addCondition.setMaximumSize(iconButtonDimension);
         addCondition.setIcon(getAddConditionIcon());
         addCondition.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent ae) {
-                if (listener != null)
-                    listener.addConditionPressed(false);
+                controller.addConditionPressed(false);
             }
         });
 
@@ -103,14 +104,8 @@ public abstract class QueryView extends JPanel {
 
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
         getActionMap().put("applyQuery", new AbstractAction() {
-
             public void actionPerformed(ActionEvent ae) {
-
-                // останавливаем ввод, чтобы записалось правильное значение в ClientPropertyFilter
-                for (ClientPropertyFilter filter : condViews.keySet()) {
-                    condViews.get(filter).stopEditing();
-                }
-                listener.applyPressed();
+                controller.applyPressed();
             }
         });
 
@@ -123,28 +118,29 @@ public abstract class QueryView extends JPanel {
     public void addActions(JComponent comp) {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(0), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
-
             public void actionPerformed(ActionEvent ae) {
-                if (listener != null)
-                    listener.addConditionPressed(true);
+                controller.addConditionPressed(true);
             }
         });
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.ALT_DOWN_MASK), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
-
             public void actionPerformed(ActionEvent ae) {
-                if (listener != null)
-                    listener.addConditionPressed(false);
+                controller.addConditionPressed(false);
             }
         });
 
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), REMOVE_ALL_ACTION);
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), REMOVE_ALL_ACTION);
         comp.getActionMap().put(REMOVE_ALL_ACTION, new AbstractAction() {
+            @Override
+            public boolean isEnabled() {
+                return controller.hasActiveFilter();
+            }
 
             public void actionPerformed(ActionEvent ae) {
-                listener.allConditionsRemoved();
-                listener.applyPressed();
+                controller.allConditionsRemoved();
+                controller.applyPressed();
             }
         });
     }
@@ -154,7 +150,6 @@ public abstract class QueryView extends JPanel {
     }
 
     public void updateUI() {
-
         if (condContainer != null)
             condContainer.updateUI();
 
@@ -170,9 +165,7 @@ public abstract class QueryView extends JPanel {
 
     // действия, вызываемые контроллером
     void queryApplied() {
-
         applyButton.setVisible(false);
-
         validate();
     }
 
@@ -180,55 +173,20 @@ public abstract class QueryView extends JPanel {
     private final Map<ClientPropertyFilter, QueryConditionView> condViews = new LinkedHashMap<ClientPropertyFilter, QueryConditionView>();
 
     void addConditionView(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
-
-        QueryConditionView condView = new QueryConditionView(condition, logicsSupplier) {
-
-            protected void conditionChanged() {
-                conditionsChanged();
-            }
-
-            protected void conditionRemoved(ClientPropertyFilter condition) {
-                if (listener != null)
-                    listener.conditionRemoved(condition);
-            }
-        };
+        QueryConditionView condView = new QueryConditionView(condition, logicsSupplier, this);
         condContainer.add(condView);
 
         condViews.put(condition, condView);
 
         setCollapsed(false);
-        conditionsChanged();
+        conditionChanged();
 
         // сразу становимся на ввод значения
         condView.requestValueFocus();
     }
 
-    void removeCondition(ClientPropertyFilter condition) {
-
-        condContainer.remove(condViews.get(condition));
-        condViews.remove(condition);
-
-        if (condViews.isEmpty()) {
-           listener.conditionsUpdated();
-        }
-        conditionsChanged();
-    }
-
-    void removeAllConditions() {
-
-        condContainer.removeAll();
-        condViews.clear();
-
-        listener.conditionsUpdated();
-        conditionsChanged();
-    }
-
-    public int getVisibleConditionsCount() {
-        return condContainer.isVisible() ? condViews.size() : 0;
-    }
-
-    void conditionsChanged() {
-
+    @Override
+    public void conditionChanged() {
         applyButton.setVisible(true);
 
         collapseButton.setVisible(condViews.size() > 0);
@@ -241,11 +199,32 @@ public abstract class QueryView extends JPanel {
         revalidate();
     }
 
-    // сворачивание/разворачивание отбора
-    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/images/collapse.gif"));
-    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/images/expand.gif"));
+    @Override
+    public void conditionRemoved(ClientPropertyFilter condition) {
+        controller.conditionRemoved(condition);
+    }
 
-    private boolean collapsed = false;
+    void removeCondition(ClientPropertyFilter condition) {
+        condContainer.remove(condViews.get(condition));
+        condViews.remove(condition);
+
+        if (condViews.isEmpty()) {
+           controller.conditionsUpdated();
+        }
+        conditionChanged();
+    }
+
+    void removeAllConditions() {
+        condContainer.removeAll();
+        condViews.clear();
+
+        controller.conditionsUpdated();
+        conditionChanged();
+    }
+
+    public int getVisibleConditionsCount() {
+        return condContainer.isVisible() ? condViews.size() : 0;
+    }
 
     void setCollapsed(boolean collapsed) {
 
@@ -253,11 +232,11 @@ public abstract class QueryView extends JPanel {
         if (!collapsed) {
             collapseButton.setIcon(collapseIcon);
             condContainer.setVisible(true);
-            listener.conditionsUpdated();
+            controller.conditionsUpdated();
         } else {
             collapseButton.setIcon(expandIcon);
             condContainer.setVisible(false);
-            listener.conditionsUpdated();
+            controller.conditionsUpdated();
         }
     }
 
@@ -267,17 +246,11 @@ public abstract class QueryView extends JPanel {
 
     protected abstract KeyStroke getKeyStroke(int modifier);
 
-    public void startEditing(ClientPropertyDraw propertyDraw) {
+    public void startEditing(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
         if (condViews.size() > 0) {
             QueryConditionView view = condViews.values().iterator().next();
             view.setSelectedPropertyDraw(propertyDraw);
-            view.startEditing();
-        }
-    }
-
-    public void stopEditing() {
-        for (QueryConditionView view : condViews.values()) {
-            view.stopEditing();
+            view.startEditing(initFilterKeyEvent);
         }
     }
 }

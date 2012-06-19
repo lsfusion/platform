@@ -1,10 +1,7 @@
 package platform.server.form.instance;
 
 import platform.interop.FormEventType;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.CustomClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -13,7 +10,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
@@ -36,10 +33,6 @@ public class CustomObjectInstance extends ObjectInstance {
 
     public void setClassListener(CustomClassListener classListener) {
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
-    }
-
-    public boolean isAddOnEvent(FormEventType event) {
-        return entity.addOnEvent.contains(event);
     }
 
     public CustomObjectInstance(ObjectEntity entity, CustomClass baseClass) {
@@ -111,7 +104,7 @@ public class CustomObjectInstance extends ObjectInstance {
         }
     }
 
-    public boolean classChanged(Collection<Property> changedProps) {
+    public boolean classChanged(Collection<CalcProperty> changedProps) {
         return changedProps.contains(gridClass.getProperty());
     }
 
@@ -130,16 +123,15 @@ public class CustomObjectInstance extends ObjectInstance {
         return value;
     }
 
-    public void changeClass(SessionChanges session, DataObject change, int classID) throws SQLException {
+    public void changeClass(SessionChanges session, DataObject change, ConcreteObjectClass cls) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
-        if(classID==-1) {
-            session.changeClass(change,null);
+        session.changeClass(change,cls);
+
+        if(cls instanceof UnknownClass)
             groupTo.dropSeek(this);
-        } else {
-            session.changeClass(change, baseClass.findConcreteClassID(classID));
+        else
             updateCurrentClass(session);
-        }
     }
 
     public void changeGridClass(int classID) {

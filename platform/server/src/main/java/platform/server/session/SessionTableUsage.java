@@ -13,6 +13,7 @@ import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -121,13 +122,13 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> read(DataSession session) throws SQLException {
-        return read(session, new OrderedMap<V, Boolean>());
+        return read(session.sql, session.env, new OrderedMap<V, Boolean>());
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> read(DataSession session, OrderedMap<V, Boolean> orders) throws SQLException {
-        return read(session.sql, session.env, orders);
+    public OrderedMap<Map<K, Object>, Map<V, Object>> read(FormInstance formInstance, OrderedMap<V, Boolean> orders) throws SQLException {
+        return read(formInstance.session.sql, formInstance.getQueryEnv(), orders);
     }
-    
+
     public OrderedMap<Map<K, Object>, Map<V, Object>> read(SQLSession session, QueryEnvironment env, OrderedMap<V, Boolean> orders) throws SQLException {
         Query<K, V> query = new Query<K,V>(mapKeys.values());
         Join<V> tableJoin = join(query.mapKeys);

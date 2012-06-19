@@ -43,7 +43,7 @@ public class NavigatorProviderImpl<T extends RemoteLogicsInterface> implements N
                     try {
                         cleanSessionForms();
                         bl = blProvider.getLogics();
-                        navigator = bl.createNavigator(username, password, bl.getComputer(OSUtils.getLocalHostName()), true);
+                        navigator = bl.createNavigator(true, username, password, bl.getComputer(OSUtils.getLocalHostName()), true);
                         if (navigator == null) {
                             throw new IllegalStateException("Не могу создать навигатор.");
                         }

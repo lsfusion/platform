@@ -467,4 +467,57 @@ public class Settings {
     public void setApplyVolatileStats(boolean applyVolatileStats) {
         this.applyVolatileStats = applyVolatileStats;
     }
+
+    // если prev идет в value, то использовать то значение которое есть сейчас после singleapply,
+    // а не высчитывать на начало транзакции потому как все равно "временнОй" целостности не будет
+    private boolean useEventValuePrevHeuristic = true;
+
+    public void setUseEventValuePrevHeuristic(boolean useEventValuePrevHeuristic) {
+        this.useEventValuePrevHeuristic = useEventValuePrevHeuristic;
+    }
+
+    public boolean isUseEventValuePrevHeuristic() {
+        return useEventValuePrevHeuristic;
+    }
+
+    // отключает оптимизацию с вкладками
+    private boolean disableTabbedOptimization = false;
+
+    public boolean isDisableTabbedOptimization() {
+        return disableTabbedOptimization;
+    }
+
+    public void setDisableTabbedOptimization(boolean disableTabbedOptimization) {
+        this.disableTabbedOptimization = disableTabbedOptimization;
+    }
+
+    private boolean checkUniqueEvent = false; // проверять на то что для одного свойства один event
+
+    public void setCheckUniqueEvent(boolean checkUniqueEvent) {
+        this.checkUniqueEvent = checkUniqueEvent;
+    }
+
+    public boolean isCheckUniqueEvent() {
+        return checkUniqueEvent;
+    }
+
+    private boolean disableChangeModifierAllHints = true; // если есть change modifier то disable'ить hint'ы - временное решение
+
+    public boolean isDisableChangeModifierAllHints() {
+        return disableChangeModifierAllHints;
+    }
+
+    public void setDisableChangeModifierAllHints(boolean disableChangeModifierAllHints) {
+        this.disableChangeModifierAllHints = disableChangeModifierAllHints;
+    }
+
+    public boolean defaultOrdersNotNull = true; // временно
+
+    public boolean isDefaultOrdersNotNull() {
+        return defaultOrdersNotNull;
+    }
+
+    public void setDefaultOrdersNotNull(boolean defaultOrdersNotNull) {
+        this.defaultOrdersNotNull = defaultOrdersNotNull;
+    }
 }

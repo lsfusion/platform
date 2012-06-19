@@ -4,19 +4,18 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.client.form.cell.PropertyController;
 import platform.client.form.grid.GridController;
-import platform.client.form.grid.GridView;
 import platform.client.form.panel.PanelController;
 import platform.client.form.panel.PanelShortcut;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
-import platform.interop.FormEventType;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +31,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
     public ShowTypeController showType;
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
-
-    private ClientGroupObjectValue currentObject;
 
     public ClassViewType classView = ClassViewType.HIDE;
 
@@ -52,8 +49,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
         if (groupObject != null) {
 
             // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
-            grid = new GridController(groupObject.grid, this, form);
-            addGroupObjectActions(grid.getView());
+            grid = new GridController(this, form);
+            addGroupObjectActions(grid.getGridView());
 
             for (ClientObject object : groupObject.objects) {
 
@@ -125,7 +122,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         if (fc.objects.containsKey(groupObject)) {
-            setCurrentGroupObject(fc.objects.get(groupObject));
+            setCurrentObject(fc.objects.get(groupObject));
         }
 
         // Затем их свойства
@@ -244,22 +241,21 @@ public class GroupObjectController extends AbstractGroupObjectController {
         panelProperties.remove(property);
     }
 
-    public ClientGroupObjectValue getCurrentObject() {
-        return currentObject;
-    }
-
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
         grid.setGridObjects(gridObjects);
 
-        if (grid.getKey().autoHide) {
+        if (groupObject.grid.autoHide) {
             setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
             grid.update();
         }
     }
 
-    public void setCurrentGroupObject(ClientGroupObjectValue value) {
-        currentObject = value;
-        grid.selectObject(currentObject);
+    public void setCurrentObject(ClientGroupObjectValue value) {
+        grid.setCurrentObject(value);
+    }
+
+    public ClientGroupObjectValue getCurrentObject() {
+        return grid != null && grid.getCurrentObject() != null ? grid.getCurrentObject() : ClientGroupObjectValue.EMPTY;
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
@@ -306,7 +302,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         if (classView == ClassViewType.GRID) {
             grid.updateRowBackgroundValues(rowBackground);
         } else {
-            panel.updateRowBackgroundValue(BaseUtils.singleValue(rowBackground));
+            panel.updateRowBackgroundValue((Color)BaseUtils.singleValue(rowBackground));
         }
     }
 
@@ -314,7 +310,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         if (classView == ClassViewType.GRID) {
             grid.updateRowForegroundValues(rowForeground);
         } else {
-            panel.updateRowForegroundValue(BaseUtils.singleValue(rowForeground));
+            panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
         }
     }
 
@@ -381,35 +377,16 @@ public class GroupObjectController extends AbstractGroupObjectController {
         return grid.getSelectedValue(cell, columnKey);
     }
 
-    public String getConfirmApplyMessage() {
-        String message = "";
-        for (ClientObject object : groupObject.objects) {
-            if (object.addOnEvent.contains(FormEventType.APPLY) || object.addOnEvent.contains(FormEventType.OK)) {
-                message += getString("form.create.new") + " " + object.getCaption() + " ?";
-            }
-        }
-
-        return message;
+    public void quickEditFilter(KeyEvent initFilterKeyEvent) {
+        quickEditFilter(initFilterKeyEvent, null);
     }
 
-    public GridView getGridView() {
-        return grid.getView();
-    }
-
-    public void quickEditFilter() {
-        quickEditFilter(null);
-    }
-
-    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
-        grid.quickEditFilter(propertyDraw);
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
+        grid.quickEditFilter(initFilterKeyEvent, propertyDraw);
     }
 
     public void selectProperty(ClientPropertyDraw propertyDraw) {
         grid.selectProperty(propertyDraw);
-    }
-
-    public boolean hasActiveFilter() {
-        return grid.hasActiveFilter();
     }
 
     public void moveComponent(Component component, int destination) {

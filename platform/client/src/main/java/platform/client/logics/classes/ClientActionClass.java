@@ -4,7 +4,7 @@ import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.cell.ButtonCellView;
+import platform.client.form.cell.ActionCellView;
 import platform.client.form.cell.CellView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
@@ -12,7 +12,6 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GActionType;
 import platform.gwt.view.classes.GType;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -52,26 +51,15 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
-        ActionPropertyRenderer renderer = new ActionPropertyRenderer();
-        property.design.designComponent(renderer);
-        return renderer;
+        return new ActionPropertyRenderer(property);
     }
 
     public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new ButtonCellView(key, columnKey, form);
+        return new ActionCellView(key, columnKey, form);
     }
 
-    @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return new ActionPropertyEditor();
-    }
-
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return null;
-    }
-
-    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return null;
+    protected PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new ActionPropertyEditor(property);
     }
 
     public Object parseString(String s) throws ParseException {
@@ -84,7 +72,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     @Override
-    public String getConformedMessage() {
+    public String getConfirmMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.take.action");
     }
 

@@ -10,29 +10,29 @@ import java.util.Map;
 
 public class SumUnionProperty extends IncrementUnionProperty {
 
-    public SumUnionProperty(String sID, String caption, List<Interface> interfaces, Map<PropertyMapImplement<?, Interface>, Integer> operands) {
+    public SumUnionProperty(String sID, String caption, List<Interface> interfaces, Map<CalcPropertyInterfaceImplement<Interface>, Integer> operands) {
         super(sID, caption, interfaces);
         this.operands = operands;
 
         finalizeInit();
     }
 
-    private final Map<PropertyMapImplement<?,Interface>,Integer> operands;
+    private final Map<CalcPropertyInterfaceImplement<Interface>,Integer> operands;
 
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
+    protected Collection<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return operands.keySet();
     }
 
     protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Expr result = Expr.NULL;
-        for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet())
+        for(Map.Entry<CalcPropertyInterfaceImplement<Interface>,Integer> operandCoeff : operands.entrySet())
             result = result.sum(operandCoeff.getKey().mapExpr(joinImplement, propClasses, propChanges, changedWhere).scale(operandCoeff.getValue()));
         return result;
     }
 
     protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         Expr result = prevExpr;
-        for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet()) {
+        for(Map.Entry<CalcPropertyInterfaceImplement<Interface>,Integer> operandCoeff : operands.entrySet()) {
             WhereBuilder changedOperandWhere = new WhereBuilder();
             Expr newOperandExpr = operandCoeff.getKey().mapExpr(joinImplement, propChanges, changedOperandWhere);
             Expr prevOperandExpr = operandCoeff.getKey().mapExpr(joinImplement);

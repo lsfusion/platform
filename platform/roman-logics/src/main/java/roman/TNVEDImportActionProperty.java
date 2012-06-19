@@ -1,13 +1,16 @@
 package roman;
 
+import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 
-public class TNVEDImportActionProperty extends CustomActionProperty {
+import java.sql.SQLException;
+
+public class TNVEDImportActionProperty extends CustomReadValueActionProperty {
     public static final int CLASSIFIER_IMPORT = 1;
     public static final int MIN_PRICES_IMPORT = 2;
     public static final int DUTIES_IMPORT = 3;
@@ -27,28 +30,33 @@ public class TNVEDImportActionProperty extends CustomActionProperty {
         this(sID, caption, LM, importType, "");
     }
 
-    public void execute(ExecutionContext context) {
+    private DataClass getFileClass() {
+        return CustomStaticFormatFileClass.getDefinedInstance(false, "Файл базы данных \"DBF\"", "dbf");
+    }
+
+    protected DataClass getReadType() {
+        return getFileClass();
+    }
+
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         try {
+            ObjectValue userObjectValue = context.getSession().getObjectValue(userValue, getFileClass());
+            
             TNVEDImporter importer = null;
             switch (importType) {
                 case CLASSIFIER_IMPORT:
-                    importer = new TNVEDClassifierImporter(context.getRemoteForm(), context.getValue(), LM, classifierType);
+                    importer = new TNVEDClassifierImporter(context.getFormInstance(), userObjectValue, LM, classifierType);
                     break;
                 case MIN_PRICES_IMPORT:
-                    importer = new TNVEDMinPricesImporter(context.getRemoteForm(), context.getValue(), LM);
+                    importer = new TNVEDMinPricesImporter(context.getFormInstance(), userObjectValue, LM);
                     break;
                 case DUTIES_IMPORT:
-                    importer = new TNVEDDutiesImporter(context.getRemoteForm(), context.getValue(), LM);
+                    importer = new TNVEDDutiesImporter(context.getFormInstance(), userObjectValue, LM);
                     break;
             }
             importer.doImport();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public DataClass getValueClass() {
-        return FileActionClass.getDefinedInstance(false, "Файл базы данных \"DBF\"", "dbf");
     }
 }

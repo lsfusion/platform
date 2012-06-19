@@ -5,7 +5,7 @@ import platform.base.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class AudioClientAction extends AbstractClientAction {
+public class AudioClientAction extends ExecuteClientAction {
 
     public byte[] audio;
 
@@ -17,7 +17,7 @@ public class AudioClientAction extends AbstractClientAction {
         this.audio = audio;
     }
 
-    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
 }

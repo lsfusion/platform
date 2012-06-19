@@ -11,7 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class PropertyObjectDescriptor extends PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implements OrderDescriptor, ClientCustomSerializable {
+public abstract class PropertyObjectDescriptor extends PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implements OrderDescriptor, ClientCustomSerializable {
 
     public PropertyObjectDescriptor() {
     }

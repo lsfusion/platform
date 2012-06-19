@@ -41,8 +41,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
 
     protected final Map<Interface, T> mapInterfaces;
     protected final Map<T, T> mapIterate; // старый на новый
-    protected final PropertyMapImplement<?, T> initial;
-    protected final PropertyMapImplement<?, T> step;
+    protected final CalcPropertyMapImplement<?, T> initial;
+    protected final CalcPropertyMapImplement<?, T> step;
     
     protected final Cycle cycle;
     
@@ -57,19 +57,19 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @IdentityLazy
-    public Property getConstrainedProperty() {
+    public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
         assert cycle == Cycle.NO;
         assert !isLogical();
 
         IntegralClass integralClass = (IntegralClass)getType();
-        Property constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
+        CalcProperty constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
         constraint.caption = ServerResourceBundle.getString("logics.property.cycle.detected", caption);
         return constraint;
     }
 
-    public RecursiveProperty(String sID, String caption, List<Interface> interfaces, Cycle cycle, Map<Interface, T> mapInterfaces, Map<T, T> mapIterate, PropertyMapImplement<?, T> initial, PropertyMapImplement<?, T> step) {
+    public RecursiveProperty(String sID, String caption, List<Interface> interfaces, Cycle cycle, Map<Interface, T> mapInterfaces, Map<T, T> mapIterate, CalcPropertyMapImplement<?, T> initial, CalcPropertyMapImplement<?, T> step) {
         super(sID, caption, interfaces);
         this.mapInterfaces = mapInterfaces;
         this.mapIterate = mapIterate;
@@ -78,7 +78,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         Collection<T> innerInterfaces = getInnerInterfaces();
 
         // в initial докинем недостающие ключи
-        Collection<PropertyInterfaceImplement<T>> and = new ArrayList<PropertyInterfaceImplement<T>>();
+        Collection<CalcPropertyInterfaceImplement<T>> and = new ArrayList<CalcPropertyInterfaceImplement<T>>();
         for(Map.Entry<T, T> mapIt : mapIterate.entrySet())
             and.add(DerivedProperty.createCompare(Compare.EQUALS, mapIt.getKey(), mapIt.getValue()));
         initial = DerivedProperty.createAnd(innerInterfaces, initial, and);
@@ -159,7 +159,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
         initial.mapFillDepends(depends);
         step.mapFillDepends(depends);
     }

@@ -2,20 +2,26 @@ package platform.server.logics.property.actions;
 
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.Context;
+import platform.interop.action.ReportClientAction;
+import platform.server.classes.ActionClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.*;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.AnyValuePropertyHolder;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -23,13 +29,12 @@ import java.util.*;
 import static platform.base.BaseUtils.join;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
-public class FormActionProperty extends CustomActionProperty {
+public class FormActionProperty extends CustomReadValueActionProperty {
 
     public final FormEntity<?> form;
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
-    private final PropertyObjectEntity[] setProperties;
-    private final OrderEntity[] getProperties;
-    public List<PropertyObjectEntity> closeProperties = new ArrayList<PropertyObjectEntity>();
+    private final ActionPropertyObjectEntity<?>[] startProperties;
+    public List<ActionPropertyObjectEntity<?>> closeProperties = new ArrayList<ActionPropertyObjectEntity<?>>();
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
     private DataClass valueClass;
     private final boolean checkOnOk;
@@ -37,7 +42,7 @@ public class FormActionProperty extends CustomActionProperty {
     private final boolean isModal;
 
     private final StaticCustomClass formResultClass;
-    private final LP formResultProperty;
+    private final LCP formResultProperty;
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
@@ -49,11 +54,11 @@ public class FormActionProperty extends CustomActionProperty {
         return valueClasses;
     }
 
-    //assert objects и setProperties из form
-    //assert getProperties и setProperties одинаковой длины
-    //setProperties привязаны к созадаваемой форме
+    //assert objects и startProperties из form
+    //assert getProperties и startProperties одинаковой длины
+    //startProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk, StaticCustomClass formResultClass, LP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] setProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.valueClass = valueClass;
@@ -61,13 +66,11 @@ public class FormActionProperty extends CustomActionProperty {
         this.formResultProperty = formResultProperty;
         this.chosenValueProperty = chosenValueProperty;
 
-        assert setProperties.length == getProperties.length;
 
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
         this.newSession = newSession;
-        this.setProperties = setProperties;
-        this.getProperties = getProperties;
+        this.startProperties = setProperties;
 
         int i = 0; // такой же дебилизм и в SessionDataProperty
         mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
@@ -77,58 +80,59 @@ public class FormActionProperty extends CustomActionProperty {
         this.form = form;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
-        final FormInstance thisFormInstance = context.getFormInstance();
+    protected DataClass getReadType() {
+        if(valueClass == null || valueClass.equals(ActionClass.instance))
+            return null;
+        return valueClass;
+    }
 
-        final Context currentContext = Context.context.get();
+    public void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
 
-        final FormInstance newFormInstance = currentContext.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), newSession, !form.isPrintForm);
+        final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), isModal, newSession, checkOnOk, !form.isPrintForm);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
-            currentContext.requestUserInteraction(
+            context.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
             for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
                 newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), context.getKeyValue(entry.getValue()));
             }
 
-            if (form instanceof SelfInstancePostProcessor) {
-                ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), context.getRemoteForm(), newFormInstance);
+            final FormInstance thisFormInstance = context.getFormInstance();
+            if(thisFormInstance!=null) {
+                if (form instanceof SelfInstancePostProcessor) {
+                    ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), thisFormInstance, newFormInstance);
+                }
             }
 
-            final RemoteForm newRemoteForm = currentContext.createRemoteForm(newFormInstance, checkOnOk);
+            for (ActionPropertyObjectEntity<?> startProperty : startProperties)
+                newFormInstance.instanceFactory.getInstance(startProperty).execute(new ExecutionEnvironment(newFormInstance));
 
-            for (int i = 0; i < setProperties.length; i++) {
-                Object setValue = getProperties[i] != null && context.isInFormSession()
-                                  ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier())
-                                  : context.getValueObject();
-                newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
-                                               setValue,
-                                               newRemoteForm,
-                                               null);
+
+            RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
+            if (form.isPrintForm) {
+                context.requestUserInteraction(new ReportClientAction(form.getSID(), isModal, newRemoteForm.reportManager.getReportData()));
+            } else {
+                context.requestUserInteraction(new FormClientAction(isModal, newRemoteForm));
             }
 
-            currentContext.requestUserInteraction(
-                    new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm)
-            );
-
-            String formResult = newFormInstance.getFormResult();
+            FormCloseType formResult = newFormInstance.getFormResult();
 
             if (formResultProperty != null) {
-                formResultProperty.execute(formResultClass.getID(formResult), context);
+                formResultProperty.change(formResultClass.getID(formResult.asString()), context);
             }
 
             if (chosenValueProperty != null) {
                 for (GroupObjectEntity group : form.groups) {
                     for (ObjectEntity object : group.objects) {
                         chosenValueProperty.write(
-                                object.baseClass, newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
+                                object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
                         );
                     }
                 }
             }
 
-            if (!seekOnOk.isEmpty() && "ok".equals(formResult)) {
+            if (formResult == FormCloseType.OK) {
                 for (ObjectEntity object : seekOnOk) {
                     try {
                         ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
@@ -142,12 +146,10 @@ public class FormActionProperty extends CustomActionProperty {
                     }
                 }
             }
-            if (!closeProperties.isEmpty() && "close".equals(formResult)) {
-                for (PropertyObjectEntity property : closeProperties) {
+            if (formResult == FormCloseType.CLOSE) {
+                for (ActionPropertyObjectEntity<?> property : closeProperties) {
                     try {
-                        newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(property),
-                                                       true,
-                                                       newRemoteForm, null);
+                        newFormInstance.instanceFactory.getInstance(property).execute(new ExecutionEnvironment(newFormInstance));
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -162,15 +164,6 @@ public class FormActionProperty extends CustomActionProperty {
     }
 
     public static interface SelfInstancePostProcessor {
-        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, RemoteForm executeForm, FormInstance selfFormInstance);
-    }
-
-    @Override
-    public DataClass getValueClass() {
-        if (valueClass != null) {
-            return valueClass;
-        } else {
-            return super.getValueClass();
-        }
+        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance);
     }
 }

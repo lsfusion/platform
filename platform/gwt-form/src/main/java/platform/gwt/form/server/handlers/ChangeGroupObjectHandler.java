@@ -33,8 +33,6 @@ public class ChangeGroupObjectHandler extends FormChangesActionHandler<ChangeGro
             serializeObject(outStream, entry.getValue().getValue());
         }
 
-        form.remoteForm.changeGroupObject(action.groupId, byteStream.toByteArray());
-
-        return getRemoteChanges(form);
+        return getRemoteChanges(form, form.remoteForm.changeGroupObject(-1, action.groupId, byteStream.toByteArray()));
     }
 }

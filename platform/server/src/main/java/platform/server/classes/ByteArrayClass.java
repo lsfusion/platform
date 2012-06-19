@@ -13,9 +13,9 @@ import java.text.Format;
 public class ByteArrayClass extends DataClass<byte[]> {
 
     public final static ByteArrayClass instance = new ByteArrayClass();
-    private final static String sid = "ByteArrayClass";
+
     static {
-        DataClass.storeClass(sid, instance);
+        DataClass.storeClass(instance);
     }
 
     protected ByteArrayClass() { super(ServerResourceBundle.getString("classes.byte.array")); }
@@ -77,7 +77,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     public String getSID() {
-        return sid;
+        return "ByteArrayClass";
     }
 
     public Stat getTypeStat() {

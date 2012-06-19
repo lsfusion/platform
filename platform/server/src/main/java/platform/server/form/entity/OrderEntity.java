@@ -13,8 +13,6 @@ import java.util.Set;
 public interface OrderEntity<T extends OrderInstance> extends Instantiable<T>, ServerCustomSerializable {
     void fillObjects(Set<ObjectEntity> objects);
 
-    Object getValue(InstanceFactory factory, DataSession session, Modifier modifier) throws SQLException;
-
     /**
      * Возвращает OrderEntity, которая заменяет все старые ObjectEntities, на их текущие значения, взятые из instanceFactory,
      * кроме oldObject, который заменяется на newObject.

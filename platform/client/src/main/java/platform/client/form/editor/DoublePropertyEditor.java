@@ -9,7 +9,7 @@ import java.text.*;
 
 public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
-    public DoublePropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
+    public DoublePropertyEditor(Object value, NumberFormat format, ComponentDesign design) {
         super(design);
         final DecimalFormat df = (DecimalFormat) format;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
@@ -51,7 +51,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             }
         };
 
-        formatter.setValueClass(valueClass);
+        formatter.setValueClass(Double.class);
         formatter.setAllowsInvalid(false);
 
         this.setHorizontalAlignment(JTextField.RIGHT);
@@ -64,22 +64,5 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 e.printStackTrace();
             }
         }
-    }
-
-
-    public Object getCellEditorValue() {
-
-        try {
-            commitEdit();
-        } catch (ParseException e) {
-            return null;
-        }
-
-        return this.getValue();
-    }
-
-    @Override
-    public String checkValue(Object value) {
-        return null;
     }
 }

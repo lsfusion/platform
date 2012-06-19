@@ -8,8 +8,10 @@ import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -28,18 +30,18 @@ public class GenerateZReport extends ScriptingActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         DataSession session = context.getSession();
         List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
         try {
             Random r = new Random();
-            Integer zReportCount = addDeviation((Integer) getLP("averageZReportCountGenerateZReport").read(session, session.modifier), 0.25, r);
-            Integer billCount = (Integer) getLP("averageBillCountGenerateZReport").read(session, session.modifier);
-            Integer billDetailCount = (Integer) getLP("averageBillDetailCountGenerateZReport").read(session, session.modifier);
-            Date dateFrom = (Date) getLP("dateFromGenerateZReport").read(session, session.modifier);
+            Integer zReportCount = addDeviation((Integer) getLCP("averageZReportCountGenerateZReport").read(context), 0.25, r);
+            Integer billCount = (Integer) getLCP("averageBillCountGenerateZReport").read(context);
+            Integer billDetailCount = (Integer) getLCP("averageBillDetailCountGenerateZReport").read(context);
+            Date dateFrom = (Date) getLCP("dateFromGenerateZReport").read(context);
             dateFrom = dateFrom == null ? new Date(System.currentTimeMillis()) : dateFrom;
-            Date dateTo = (Date) getLP("dateToGenerateZReport").read(session, session.modifier);
+            Date dateTo = (Date) getLCP("dateToGenerateZReport").read(context);
             dateTo = dateTo == null ? new Date(System.currentTimeMillis()) : dateTo;
 
             KeyExpr departmentStoreExpr = new KeyExpr("departmentStore");
@@ -49,9 +51,9 @@ public class GenerateZReport extends ScriptingActionProperty {
             newKeys.put("item", itemExpr);
 
             Query<Object, Object> query = new Query<Object, Object>(newKeys);
-            query.properties.put("currentBalanceSkuStock", getLP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
-            query.properties.put("currentRetailPriceLedger", getLP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
-            query.and(getLP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr).getWhere());
+            query.properties.put("currentBalanceSkuStock", getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
+            query.properties.put("currentRetailPriceLedger", getLCP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
+            query.and(getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr).getWhere());
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -65,7 +67,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                     if ((departmentStore != null) && (!departmentStoreList.contains(departmentStore)))
                         departmentStoreList.add(departmentStore);
                     Double currentRetailPriceLedger = (Double) rows.getValue().get("currentRetailPriceLedger");
-                    String barcodeItem = (String) getLP("idBarcodeSku").read(session, session.modifier, itemObject);
+                    String barcodeItem = (String) getLCP("idBarcodeSku").read(session, itemObject);
                     itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, departmentStore));
                 }
             }
@@ -73,17 +75,17 @@ public class GenerateZReport extends ScriptingActionProperty {
             Map<Integer, Integer> groupCashRegisterDepartmentStoreMap = new HashMap<Integer, Integer>();
             for (Integer departmentStore : departmentStoreList) {
 
-                LP isGroupCashRegister = LM.is(getClass("groupCashRegister"));
+                LCP<PropertyInterface> isGroupCashRegister = LM.is(getClass("groupCashRegister"));
 
-                Map<Object, KeyExpr> groupCashRegisterKeys = isGroupCashRegister.getMapKeys();
+                Map<PropertyInterface, KeyExpr> groupCashRegisterKeys = isGroupCashRegister.getMapKeys();
                 KeyExpr groupCashRegisterKey = BaseUtils.singleValue(groupCashRegisterKeys);
-                Query<Object, Object> groupCashRegisterQuery = new Query<Object, Object>(groupCashRegisterKeys);
+                Query<PropertyInterface, Object> groupCashRegisterQuery = new Query<PropertyInterface, Object>(groupCashRegisterKeys);
                 groupCashRegisterQuery.and(isGroupCashRegister.property.getExpr(groupCashRegisterKeys).getWhere());
-                groupCashRegisterQuery.and(getLP("departmentStoreGroupCashRegister").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
+                groupCashRegisterQuery.and(getLCP("departmentStoreGroupCashRegister").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> groupCashRegisterResult = groupCashRegisterQuery.execute(session.sql);
+                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> groupCashRegisterResult = groupCashRegisterQuery.execute(session.sql);
 
-                for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : groupCashRegisterResult.entrySet()) {
+                for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> rows : groupCashRegisterResult.entrySet()) {
                     Integer groupCashRegister = (Integer) rows.getKey().entrySet().iterator().next().getValue();
                     if ((groupCashRegister != null) && (!groupCashRegisterDepartmentStoreMap.containsKey(groupCashRegister)))
                         groupCashRegisterDepartmentStoreMap.put(groupCashRegister, departmentStore);
@@ -93,16 +95,16 @@ public class GenerateZReport extends ScriptingActionProperty {
             Map<String, Integer> numberCashRegisterDepartmentStoreMap = new HashMap<String, Integer>();
             for (Map.Entry<Integer, Integer> groupCashRegisterDepartmentStore : groupCashRegisterDepartmentStoreMap.entrySet()) {
 
-                LP isCashRegister = LM.is(getClass("cashRegister"));
+                LCP<PropertyInterface> isCashRegister = LM.is(getClass("cashRegister"));
 
-                Map<Object, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
+                Map<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
                 KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
-                Query<Object, Object> cashRegisterQuery = new Query<Object, Object>(cashRegisterKeys);
-                cashRegisterQuery.properties.put("numberCashRegister", getLP("numberCashRegister").getExpr(cashRegisterKey));
+                Query<PropertyInterface, Object> cashRegisterQuery = new Query<PropertyInterface, Object>(cashRegisterKeys);
+                cashRegisterQuery.properties.put("numberCashRegister", getLCP("numberCashRegister").getExpr(cashRegisterKey));
                 cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
-                cashRegisterQuery.and(getLP("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((new DataObject(groupCashRegisterDepartmentStore.getKey(), (ConcreteClass) getClass("groupCashRegister"))).getExpr(), Compare.EQUALS));
+                cashRegisterQuery.and(getLCP("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((new DataObject(groupCashRegisterDepartmentStore.getKey(), (ConcreteClass) getClass("groupCashRegister"))).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
+                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
                 for (Map<Object, Object> values : cashRegisterResult.values()) {
                     String numberCashRegister = (String) values.get("numberCashRegister");
@@ -119,7 +121,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                     Map.Entry<String, Integer> numberCashRegisterDepartmentStore = (Map.Entry<String, Integer>) (numberCashRegisterDepartmentStoreMap.entrySet().toArray()[r.nextInt(numberCashRegisterDepartmentStoreMap.size())/*1*/]);
                     String numberCashRegister = numberCashRegisterDepartmentStore.getKey();
                     Integer departmentStore = numberCashRegisterDepartmentStore.getValue();
-                    Integer maxNumberZReport = (Integer) getLP("maxNumberZReport").read(session, session.modifier, new DataObject(getLP("cashRegisterNumber").read(session, session.modifier, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
+                    Integer maxNumberZReport = (Integer) getLCP("maxNumberZReport").read(session, new DataObject(getLCP("cashRegisterNumber").read(session, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
                     Integer numberZReport = null;
                     while (numberZReport == null || (numberZReportCashRegisterMap.containsKey(numberZReport) && numberZReportCashRegisterMap.containsValue(numberCashRegister)))
                         numberZReport = (maxNumberZReport == null ? 0 : maxNumberZReport) + (zReportCount < 1 ? 0 : r.nextInt(zReportCount)) + 1;

@@ -3,6 +3,7 @@ package retail.actions;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
@@ -26,21 +27,21 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         Connection conn = null;
 
         try {
             // Get a connection to the database
-            conn = DriverManager.getConnection(((String) getLP("importUrl").read(context)).trim(),
-                    ((String) getLP("importLogin").read(context)).trim(),
-                    ((String) getLP("importPassword").read(context)).trim());
+            conn = DriverManager.getConnection(((String) getLCP("importUrl").read(context)).trim(),
+                    ((String) getLCP("importLogin").read(context)).trim(),
+                    ((String) getLCP("importPassword").read(context)).trim());
 
             importItemGroup(context, conn);
 
             // Close the result set, statement and the connection
         } catch (SQLException e) {
-            context.addAction(new MessageClientAction("Ошибка при подключении к базе данных : " + e.getLocalizedMessage(), "Импорт данных"));
+            context.delayUserInterfaction(new MessageClientAction("Ошибка при подключении к базе данных : " + e.getLocalizedMessage(), "Импорт данных"));
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         } finally {
@@ -54,19 +55,19 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
         ResultSet rs = conn.createStatement().executeQuery(
                 "SELECT num_class AS ext_id, name_u AS name, par AS par_id FROM klass");
 
-        ImportField itemGroupID = new ImportField(getLP("extSID"));
-        ImportField itemGroupName = new ImportField(getLP("name"));
-        ImportField parentGroupID = new ImportField(getLP("extSID"));
+        ImportField itemGroupID = new ImportField(getLCP("extSID"));
+        ImportField itemGroupName = new ImportField(getLCP("name"));
+        ImportField parentGroupID = new ImportField(getLCP("extSID"));
 
         ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                getLP("extSIDToObject").getMapping(itemGroupID));
-        ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, getLP("extSID").getMapping(itemGroupKey));
-        ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, getLP("name").getMapping(itemGroupKey));
+                getLCP("extSIDToObject").getMapping(itemGroupID));
+        ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, getLCP("extSID").getMapping(itemGroupKey));
+        ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, getLCP("name").getMapping(itemGroupKey));
 
         ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                getLP("extSIDToObject").getMapping(parentGroupID));
+                getLCP("extSIDToObject").getMapping(parentGroupID));
 
-        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, getLP("parentItemGroup").getMapping(itemGroupKey),
+        ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, getLCP("parentItemGroup").getMapping(itemGroupKey),
                 LM.object((ConcreteCustomClass) getClass("itemGroup")).getMapping(parentGroupKey));
 
         Collection<? extends ImportKey<?>> keys = Arrays.asList(itemGroupKey, parentGroupKey);

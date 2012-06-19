@@ -31,12 +31,12 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     public static class Query extends AggrExpr.Query<GroupType, Query> implements AndContext<Query> {
 
         public Query(Expr expr, GroupType type) {
-            this(Collections.singletonList(expr), new OrderedMap<Expr, Boolean>(), type);
+            this(Collections.singletonList(expr), new OrderedMap<Expr, Boolean>(), false, type);
             assert type.hasAdd();
         }
 
-        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, GroupType type) {
-            super(exprs, orders, type);
+        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type) {
+            super(exprs, orders, ordersNotNull, type);
         }
 
         public Query(Query query, MapTranslate translate) {
@@ -48,7 +48,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         public Query translateQuery(QueryTranslator translator) {
-            return new Query(translator.translate(exprs), translator.translate(orders), type);
+            return new Query(translator.translate(exprs), translator.translate(orders), ordersNotNull, type);
         }
 
         public Type getType(Where groupWhere) {
@@ -60,7 +60,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         public Query followFalse(Where falseWhere, boolean pack) {
-            return new Query(falseWhere.followFalse(exprs, pack), falseWhere.followFalse(orders, pack), type);
+            return new Query(falseWhere.followFalse(exprs, pack), falseWhere.followFalse(orders, pack), ordersNotNull, type);
         }
 
         public String toString() {
@@ -73,20 +73,19 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             andExprs.add(it.next().and(where));
             while(it.hasNext())
                 andExprs.add(it.next());
-            return new Query(andExprs, orders, type);
+            return new Query(andExprs, orders, ordersNotNull, type);
         }
 
-        public Set<Expr> getExprs() {
-            Set<Expr> result = new HashSet<Expr>();
-            result.addAll(exprs);
-            result.addAll(orders.keySet());
-            return result;
+        public Collection<Expr> getAggrExprs() {
+            return exprs;
         }
 
         public String getSource(Map<Expr, String> fromPropertySelect, SQLSyntax syntax, Type resultType) {
-            Set<Expr> ordersNotNull = new HashSet<Expr>();
-            OrderedMap<Expr, Boolean> packOrders = CompiledQuery.getOrdersNotNull(orders, BaseUtils.toMap(orders.keySet()), ordersNotNull);
-            return type.getSource(BaseUtils.mapList(exprs, fromPropertySelect), BaseUtils.mapOrder(packOrders, fromPropertySelect), BaseUtils.mapSet(ordersNotNull,fromPropertySelect), resultType, syntax);
+            Set<Expr> orderExprsNotNull = new HashSet<Expr>();
+            OrderedMap<Expr, Boolean> packOrders = CompiledQuery.getOrdersNotNull(orders, BaseUtils.toMap(orders.keySet()), orderExprsNotNull);
+            if(ordersNotNull) // если notNull, то все пометим
+                orderExprsNotNull = new HashSet<Expr>(packOrders.keySet());
+            return type.getSource(BaseUtils.mapList(exprs, fromPropertySelect), BaseUtils.mapOrder(packOrders, fromPropertySelect), BaseUtils.mapSet(orderExprsNotNull,fromPropertySelect), resultType, syntax);
         }
     }
 
@@ -199,11 +198,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
     public String getExprSource(CompileSource source, SubQueryContext subcontext) {
 
-        Set<Expr> queryExprs = BaseUtils.mergeSet(group.keySet(), query.getExprs()); // так как может одновременно и SUM и MAX нужен
-
         Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
         Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
-        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getInnerKeys().toMap(),BaseUtils.toMap(queryExprs), Expr.getWhere(queryExprs))
+        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getInnerKeys().toMap(),
+                BaseUtils.toMap(BaseUtils.mergeSet(group.keySet(), query.getExprs())), query.getWhere().and(Expr.getWhere(group.keySet())))
             .compile(source.syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params, null);
         for(Map.Entry<Expr, BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
@@ -327,8 +325,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         return createTypeAdjust(inner, new Query(expr, type), outer);
     }
 
-    public static <K> Expr create(Map<K, ? extends Expr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, GroupType type, Map<K, ? extends Expr> implement) {
-        return createTypeAdjust(group, new Query(exprs, orders, type), implement);
+    public static <K> Expr create(Map<K, ? extends Expr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, GroupType type, Map<K, ? extends Expr> implement) {
+        return createTypeAdjust(group, new Query(exprs, orders, ordersNotNull, type), implement);
     }
 
     // вытаскивает из outer Case'ы
@@ -336,7 +334,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         assert group.keySet().equals(implement.keySet());
 
         if(query.type.isSelect() && query.getType(getWhere(group)) instanceof LogicalClass)
-            query = new Query(query.exprs, query.orders, GroupType.ANY);
+            query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.ANY);
         return createOuterCases(group, query, implement);
     }
 

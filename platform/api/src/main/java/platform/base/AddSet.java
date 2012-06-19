@@ -1,6 +1,24 @@
 package platform.base;
 
-public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutableObject {
+import java.util.Iterator;
+
+public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutableObject implements Iterable<T> {
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            int i=0;
+            public boolean hasNext() {
+                return i<wheres.length;
+            }
+            public T next() {
+                return wheres[i++];
+            }
+            public void remove() {
+                throw new RuntimeException("not supported");
+            }
+        };
+    }
 
     protected final T[] wheres;
 

@@ -5,9 +5,14 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EventObject;
 
+@SuppressWarnings("MagicConstant")
 public class KeyStrokes {
     public static KeyStroke getEnter() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+    }
+
+    public static KeyStroke getEnter(int modifiers) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, modifiers);
     }
 
     public static KeyStroke getAltEnter() {
@@ -18,12 +23,24 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
     }
 
+    public static KeyStroke getBackspace() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+    }
+
     public static KeyStroke getTab() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     }
 
     public static KeyStroke getShiftTab() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK);
+    }
+
+    public static KeyStroke getCtrlTab() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK);
+    }
+
+    public static KeyStroke getCtrlShiftTab() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
     }
 
     public static KeyStroke getCtrlHome() {
@@ -38,32 +55,46 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
     }
 
-    public static KeyStroke getPrintKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK);
+    //---- form buttons keystrokes
+    public static KeyStroke getApplyKeyStroke() {
+        return getEnter(InputEvent.ALT_DOWN_MASK);
+    }
+
+    public static KeyStroke getCancelKeyStroke() {
+        return getEscape(0);
+    }
+
+    public static KeyStroke getCloseKeyStroke() {
+        return getEscape(InputEvent.SHIFT_DOWN_MASK);
     }
 
     public static KeyStroke getEditKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getXlsKeyStroke() {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
-    }
-
     public static KeyStroke getNullKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
+    }
+
+    public static KeyStroke getOkKeyStroke() {
+        return getEnter(InputEvent.CTRL_DOWN_MASK);
+    }
+
+    public static KeyStroke getPrintKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK);
     }
 
     public static KeyStroke getRefreshKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getApplyKeyStroke(int modifiers) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, modifiers);
+    public static KeyStroke getXlsKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
     }
+    //----
 
-    public static KeyStroke getCancelKeyStroke(boolean single) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, single ? 0 : InputEvent.ALT_DOWN_MASK);
+    public static KeyStroke getEscape(int modifier) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, modifier);
     }
 
     public static KeyStroke getFilterKeyStroke(int modifier) {
@@ -76,14 +107,6 @@ public class KeyStrokes {
 
     public static KeyStroke getSwitchClassViewKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK);
-    }
-
-    public static KeyStroke getForwardTraversalKeyStroke() {
-        return getTab();
-    }
-
-    public static KeyStroke getBackwardTraversalKeyStroke() {
-        return getShiftTab();
     }
 
     public static KeyStroke getRemoveFiltersKeyStroke() {
@@ -114,8 +137,16 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
     }
 
-    public static KeyStroke getGroupCorrectionKeyStroke() {
+    public static KeyStroke getGroupCorrectionDialogKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F12, InputEvent.CTRL_MASK);
+    }
+
+    public static KeyStroke getGroupCorrectionKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0);
+    }
+
+    public static KeyStroke getObjectEditorDialogEvent() {
+        return getBackspace();
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {
@@ -138,19 +169,41 @@ public class KeyStrokes {
         return isKeyEvent(event, KeyEvent.CHAR_UNDEFINED);
     }
 
-    public static boolean isEnterEvent(EventObject event) {
-        return isKeyEvent(event, KeyEvent.VK_ENTER);
-    }
-
     public static boolean isEscapeEvent(EventObject event) {
         return isKeyEvent(event, KeyEvent.VK_ESCAPE);
     }
 
-    public static boolean isGroupCorrectionEvent(EventObject event) {
-        return isKeyEvent(event, KeyEvent.VK_F12);
+    public static boolean isObjectEditorDialogEvent(EventObject event) {
+        return event instanceof KeyEvent && getKeyStrokeForEvent((KeyEvent) event).equals(getObjectEditorDialogEvent());
     }
 
-    public static boolean isObjectEditorDialogEvent(EventObject event) {
-        return isBackSpaceEvent(event);
+    public static boolean isSuitableStartFilteringEvent(EventObject event) {
+        if (event instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent) event;
+            return isSuitableEditKeyEvent(event) &&
+                    !isBackSpaceEvent(keyEvent) &&
+                    !isDeleteEvent(keyEvent);
+        }
+        return false;
+    }
+
+    public static boolean isSuitableEditKeyEvent(EventObject event) {
+        if (event instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent) event;
+            //будем считать, что если нажата кнопка ALT или CTRL, то явно пользователь не хочет вводить текст
+            return !keyEvent.isActionKey() &&
+                    !keyEvent.isAltDown() &&
+                    !keyEvent.isControlDown() &&
+                    !KeyStrokes.isCharUndefinedEvent(keyEvent) &&
+                    !KeyStrokes.isEscapeEvent(keyEvent);
+        }
+        return true;
+    }
+
+
+    public static KeyStroke getKeyStrokeForEvent(KeyEvent e) {
+        return e.getID() == KeyEvent.KEY_TYPED
+               ? KeyStroke.getKeyStroke(e.getKeyChar())
+               : KeyStroke.getKeyStroke(e.getKeyCode(), e.getModifiers(), e.getID() == KeyEvent.KEY_RELEASED);
     }
 }

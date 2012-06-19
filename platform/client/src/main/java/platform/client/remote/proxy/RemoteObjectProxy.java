@@ -1,20 +1,23 @@
 package platform.client.remote.proxy;
 
+import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
-import platform.client.Main;
-import platform.client.SwingUtils;
-import platform.client.form.BlockingTask;
+import platform.base.EProvider;
+import platform.client.form.BusyDisplayer;
+import platform.interop.RemoteContextInterface;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 public abstract class RemoteObjectProxy<T extends PendingRemote> implements PendingRemote {
     private static Logger logger = Logger.getLogger(RemoteFormProxy.class);
@@ -33,36 +36,18 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     public Object execute(final MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("execute");
 
-        boolean screenBlock = false;
         if (logger.isDebugEnabled()) {
             for (MethodInvocation invocation : invocations) {
                 logger.debug("  Invocation in execute: " + invocation.toString());
             }
         }
 
-        for (MethodInvocation invocation : invocations) {
-            screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
-        }
-
-        Window window = SwingUtils.getActiveVisibleWindow();
-        if (window != null) {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        }
-
-        TimerTask task = new BlockingTask(target, 1000);
-        Timer timer = new Timer();
-        timer.schedule(task, screenBlock ? 0 : 2500, 200);
-        Object result;
-        try {
-            result = target.execute(invocations);
-        } finally {
-            timer.cancel();
-        }
-
-        if (window != null) {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            window.repaint();
-        }
+        Object result = executeBlocked(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return target.execute(invocations);
+            }
+        });
 
         logRemoteMethodEndCall("execute", result);
         return result;
@@ -72,7 +57,6 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     public Object[] createAndExecute(final MethodInvocation creator, final MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("createAndExecute");
 
-        boolean screenBlock = false;
         if (logger.isDebugEnabled()) {
             logger.debug("  Creator   in  createAndExecute: " + creator.toString());
             for (MethodInvocation invocation : invocations) {
@@ -80,31 +64,34 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        for (MethodInvocation invocation : invocations) {
-            screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
-        }
+        Object[] result = executeBlocked(new Callable<Object[]>() {
+            @Override
+            public Object[] call() throws Exception {
+                return target.createAndExecute(creator, invocations);
+            }
+        });
 
-        Window window = SwingUtils.getActiveVisibleWindow();
-        if (window != null) {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        }
-
-        TimerTask task = new BlockingTask(target, 1000);
-        Timer timer = new Timer();
-        timer.schedule(task, screenBlock ? 0 : 2500, 200);
-        Object[] result;
-        try {
-            result = target.createAndExecute(creator, invocations);
-        } finally {
-            timer.cancel();
-        }
-
-        if (window != null) {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            window.repaint();
-        }
         logRemoteMethodEndCall("createAndExecute", result);
         return result;
+    }
+
+    @NonFlushRemoteMethod
+    private <R> R executeBlocked(Callable<R> remoteExecute) {
+        BusyDisplayer busyDisplayer = new BusyDisplayer(new EProvider<String>() {
+            @Override
+            public String getExceptionally() throws RemoteException {
+                return ((RemoteContextInterface) target).getRemoteActionMessage();
+            }
+        });
+        busyDisplayer.start();
+
+        try {
+            return remoteExecute.call();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        } finally {
+            busyDisplayer.stop();
+        }
     }
 
     @NonFlushRemoteMethod

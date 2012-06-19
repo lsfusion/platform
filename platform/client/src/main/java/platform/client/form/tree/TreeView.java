@@ -42,7 +42,11 @@ public class TreeView extends JPanel {
         groupTree.removeProperty(group, property);
     }
 
-    public void setCurrentObjects(ClientGroupObjectValue objects) {
-        groupTree.setCurrentObjects(objects);
+    public void setCurrentPath(ClientGroupObjectValue objects) {
+        groupTree.setCurrentPath(objects);
+    }
+
+    public ClientGroupObjectValue getCurrentPath() {
+        return groupTree.getCurrentPath();
     }
 }

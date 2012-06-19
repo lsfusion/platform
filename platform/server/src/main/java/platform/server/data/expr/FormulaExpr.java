@@ -90,7 +90,10 @@ public class FormulaExpr extends StaticClassExpr {
      }
 
     public Type getType(KeyType keyType) {
-        return getStaticClass().getType();
+        ConcreteValueClass staticClass = getStaticClass();
+        if(staticClass==null)
+            return null;
+        return staticClass.getType();
     }
     public Stat getTypeStat(KeyStat keyStat) {
         return getStaticClass().getTypeStat();
@@ -128,14 +131,14 @@ public class FormulaExpr extends StaticClassExpr {
     public static Type getCompatibleType(Collection<? extends Expr> exprs) {
         assert exprs.size()>0;
 
-        IntegralClass type = null;
+        DataClass type = null;
         for(Expr expr : exprs)
             if(!(expr instanceof KeyExpr)) {
-                IntegralClass exprType = (IntegralClass) expr.getSelfType();
+                DataClass exprType = (DataClass) expr.getSelfType();
                 if(type==null)
                     type = exprType;
                 else
-                    type = (IntegralClass)type.getCompatible(exprType);
+                    type = type.getCompatible(exprType);
             }
         return type;
     }

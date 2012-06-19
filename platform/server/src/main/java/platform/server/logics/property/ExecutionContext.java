@@ -1,63 +1,71 @@
 package platform.server.logics.property;
 
+import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.JRAbstractExporter;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
+import platform.interop.form.ReportGenerationData;
+import platform.server.Context;
+import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.DataClass;
+import platform.server.data.QueryEnvironment;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.*;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 import platform.server.session.Modifier;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static platform.base.BaseUtils.join;
-import static platform.base.BaseUtils.nullJoin;
 
-public class ExecutionContext {
-    private final Map<ClassPropertyInterface, DataObject> keys;
-    private final ObjectValue value;
-    private final DataSession session;
-    private final Modifier modifier;
-    private final List<ClientAction> actions;
-    private final RemoteForm form;
-    private final Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects;
+public class ExecutionContext<P extends PropertyInterface> {
+    private final Map<P, DataObject> keys;
+    private final ObjectValue pushedUserInput;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
-    private final boolean inFormSession;
-    private final FormInstance formInstance;
+    private final ExecutionEnvironment env;
+    private final FormEnvironment<P> form;
 
-    public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier modifier, List<ClientAction> actions, RemoteForm form, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
+    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, FormEnvironment<P> form, boolean groupLast) {
         this.keys = keys;
-        this.value = value;
-        this.session = session;
-        this.modifier = modifier;
-        this.actions = actions;
+        this.pushedUserInput = pushedUserInput;
+        this.env = env;
         this.form = form;
-        this.mapObjects = mapObjects;
         this.groupLast = groupLast;
-
-        this.formInstance = form != null ? form.form : null;
-        this.inFormSession = form != null && formInstance.session == session;
     }
 
-    public Map<ClassPropertyInterface, DataObject> getKeys() {
+    public ExecutionEnvironment getEnv() {
+        return env;
+    }
+
+    public Map<P, DataObject> getKeys() {
         return keys;
     }
 
-    public DataObject getKeyValue(ClassPropertyInterface key) {
+    public DataObject getKeyValue(P key) {
         return keys.get(key);
     }
 
-    public Object getKeyObject(ClassPropertyInterface key) {
+    public Object getKeyObject(P key) {
         return keys.get(key).object;
     }
 
@@ -73,51 +81,38 @@ public class ExecutionContext {
         return keys.size();
     }
 
-    public ObjectValue getValue() {
-        return value;
-    }
-
-    public Object getValueObject() {
-        return value.getValue();
-    }
-
     public DataSession getSession() {
-        return session;
+        return env.getSession();
     }
 
-    public List<ClientAction> getActions() {
-        return actions;
-    }
-
-    public void addAction(ClientAction action) {
-        actions.add(action);
-    }
-
-    public void addActions(List<ClientAction> actions) {
-        this.actions.addAll(actions);
-    }
-
-    public RemoteForm getRemoteForm() {
-        return form;
+    public void delayUserInterfaction(ClientAction action) {
+        Context.context.get().delayUserInteraction(action);
     }
 
     public FormInstance<?> getFormInstance() {
-        return formInstance;
+        return env.getFormInstance();
     }
 
-    public Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> getObjectInstances() {
-        return mapObjects;
+    public GroupObjectInstance getGroupObjectInstance() {
+        PropertyDrawInstance drawInstance = form.getDrawInstance();
+        if(drawInstance==null)
+            return null;
+        return drawInstance.toDraw;
+    }
+    public Map<P, PropertyObjectInterfaceInstance> getObjectInstances() {
+        return form!=null ? form.getMapObjects() : null;
     }
 
     public ObjectInstance getObjectInstance(ObjectEntity object) {
-        return formInstance.instanceFactory.getInstance(object);
+        return getFormInstance().instanceFactory.getInstance(object);
     }
 
-    public PropertyObjectInterfaceInstance getObjectInstance(ClassPropertyInterface cls) {
-        return mapObjects.get(cls);
+    public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
+        return getObjectInstances().get(cls);
     }
 
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
+        Map<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
         return mapObjects != null ? BaseUtils.singleValue(mapObjects) : null;
     }
 
@@ -125,62 +120,152 @@ public class ExecutionContext {
         return groupLast;
     }
 
-    public boolean isInFormSession() {
-        return inFormSession;
-    }
-
     public Modifier getModifier() {
-        if (inFormSession) {
-            return formInstance;
-        } else {
-            return modifier;
-        }
+        return getEnv().getModifier();
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        if (inFormSession) {
-            return formInstance.addObject(cls);
-        } else {
-            return getSession().addObject(cls, modifier);
-        }
+        return getEnv().addObject(cls);
     }
 
-    public String applyChanges(BusinessLogics BL) throws SQLException {
-        if (inFormSession) {
-            form.applyChanges(null, actions);
-            return null;
-        } else {
-            return getSession().apply(BL, actions);
-        }
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException {
+        getEnv().changeClass(objectInstance, object, changeClass, isGroupLast());
     }
 
-    public void cancelChanges() throws SQLException {
-        if (inFormSession) {
-            form.cancelChanges();
-        } else {
-            session.restart(true);
-        }
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, int clsID) throws SQLException {
+        changeClass(objectInstance, object, getSession().baseClass.findConcreteClassID(clsID < 0 ? null : clsID));
+    }
+
+    public boolean checkApply(BusinessLogics BL) throws SQLException {
+        return getSession().check(BL);
+    }
+
+    public void apply(BusinessLogics BL) throws SQLException {
+        getEnv().apply(BL);
+    }
+
+    public void cancel() throws SQLException {
+        getEnv().cancel();
     }
 
     public void emitExceptionIfNotInFormSession() {
-        if (!inFormSession) {
+        if (getFormInstance()==null) {
             throw new IllegalStateException("Property should only be used in form's session!");
         }
     }
 
-    public ExecutionContext override(DataSession newSession) {
-        return new ExecutionContext(keys, value, newSession, newSession.modifier, new ArrayList<ClientAction>(), form, mapObjects, groupLast);
+    public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
+        return new ExecutionContext<P>(keys, pushedUserInput, newEnv, form, groupLast);
     }
 
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys) {
-        return override(keys, mapObjects, value);
+    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, Map<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
+        return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
     }
 
-    public ExecutionContext map(Map<ClassPropertyInterface, ClassPropertyInterface> mapping, ObjectValue value) {
-        return override(join(mapping, keys), nullJoin(mapping, mapObjects), value);
+    public <T extends PropertyInterface> ExecutionContext<T> map(Map<T, P> mapping) {
+        return override(join(mapping, keys), form!=null ? form.map(mapping) : null, pushedUserInput);
     }
 
-    public ExecutionContext override(Map<ClassPropertyInterface, DataObject> keys, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, ObjectValue value) {
-        return new ExecutionContext(keys, value, session, modifier, actions, form, mapObjects, groupLast);
+    public ExecutionContext<P> override(Map<P, DataObject> keys) {
+        return override(keys, form, pushedUserInput);
+    }
+
+    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
+        return new ExecutionContext<T>(keys, pushedUserInput, env, form, groupLast);
+    }
+
+    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive)  throws SQLException {
+        return Context.context.get().createFormInstance(formEntity, mapObjects, session, isModal, newSession, checkOnOk, interactive);
+    }
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
+        return Context.context.get().createRemoteForm(formInstance);
+    }
+    public RemoteForm createReportForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, false, false, false));
+    }
+
+    public QueryEnvironment getQueryEnv() {
+        return env.getQueryEnv();
+    }
+
+    public interface RequestDialog {
+        DialogInstance createDialog() throws SQLException;
+    }
+
+    public void delayUserInteraction(ClientAction action) {
+        Context.context.get().delayUserInteraction(action);
+    }
+
+    public Object requestUserInteraction(ClientAction action) {
+        return Context.context.get().requestUserInteraction(action);
+    }
+
+    public ExecutionContext<P> pushUserInput(ObjectValue overridenUserInput) {
+        return override(keys, form, overridenUserInput);
+    }
+
+    public ObjectValue getPushedUserInput() {
+        return pushedUserInput;
+    }
+
+    // чтение пользователя
+    public ObjectValue requestUserObject(RequestDialog dialog) throws SQLException { // null если canceled
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserObject(dialog);
+        env.setLastUserInput(userInput);
+        return userInput;
+    }
+
+    public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserData(dataClass, oldValue);
+        env.setLastUserInput(userInput);
+        return userInput;
+    }
+
+    public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserClass(baseClass, defaultValue, concrete);
+        env.setLastUserInput(userInput);
+        return userInput;
+    }
+
+    // для подмены ввода и обеспечания WYSIWYG механизмов
+    public ObjectValue getLastUserInput() {
+        return env.getLastUserInput();
+    }
+    public boolean getWasUserInput() {
+        return env.getWasUserInput();
+    }
+
+    public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {
+
+        RemoteForm remoteForm = createReportForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
+        try {
+            ReportGenerationData generationData = remoteForm.reportManager.getReportData();
+            ReportGenerator report = new ReportGenerator(generationData, BL.getTimeZone());
+            JasperPrint print = report.createReport(false, new HashMap());
+            File tempFile = File.createTempFile("lsfReport", ".pdf");
+
+            JRAbstractExporter exporter = new JRPdfExporter();
+            exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+            exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+            exporter.exportReport();
+
+            return tempFile;
+
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public FormEnvironment<P> getForm() {
+        return form;
+    }
+
+    public SecurityPolicy getSecurityPolicy() {
+        return getFormInstance().securityPolicy;
     }
 }

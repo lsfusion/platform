@@ -19,7 +19,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return min?GroupType.MIN:GroupType.MAX;
     }
 
-    public MaxGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property, boolean min) {
+    public MaxGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, boolean min) {
         super(sID, caption, innerInterfaces, groupInterfaces, property);
 
         this.min = min;
@@ -27,7 +27,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         finalizeInit();
     }
 
-    public MaxGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, boolean min) {
+    public MaxGroupProperty(String sID, String caption, Collection<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, boolean min) {
         super(sID, caption, interfaces, property);
 
         this.min = min;

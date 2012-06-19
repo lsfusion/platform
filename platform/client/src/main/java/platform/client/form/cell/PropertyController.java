@@ -1,6 +1,5 @@
 package platform.client.form.cell;
 
-import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientGroupObjectValue;
@@ -8,9 +7,9 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 
 public class PropertyController implements CellViewListener {
 
@@ -43,22 +42,23 @@ public class PropertyController implements CellViewListener {
         this.columnKey = columnKey;
 
         view = key.getPanelComponent(form, columnKey);
-        view.setCaption(key.getFullCaption());
 
-        if (key.focusable != null)
+        if (key.focusable != null) {
             view.getComponent().setFocusable(key.focusable);
-        else if (key.editKey != null)
+        } else if (key.editKey != null) {
             view.getComponent().setFocusable(false);
+        }
 
-        view.addListener(this);
+        view.setListener(this);
 
-        if (key.editKey != null)
+        if (key.editKey != null) {
             form.getComponent().addKeyBinding(key.editKey, key.groupObject, new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    startEditing(e);
+                    forceEdit();
                 }
             });
+        }
 
         if (key.externalScreen != null) {
             extView = new ExternalScreenComponent();
@@ -67,14 +67,16 @@ public class PropertyController implements CellViewListener {
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(key, getView());
-        if (key.externalScreen != null)
+        if (key.externalScreen != null) {
             key.externalScreen.add(form.getID(), extView, key.externalScreenConstraints);
+        }
     }
 
     public void removeView(ClientFormLayout formLayout) {
         formLayout.remove(key, getView());
-        if (key.externalScreen != null)
+        if (key.externalScreen != null) {
             key.externalScreen.remove(form.getID(), extView);
+        }
     }
 
     public void setValue(Object ivalue) {
@@ -82,7 +84,7 @@ public class PropertyController implements CellViewListener {
         if (extView != null) {
             String oldValue = (extView.getValue() == null) ? "" : extView.getValue();
             String newValue = (ivalue == null) ? "" : ivalue.toString();
-            if (oldValue.equals(newValue)){
+            if (oldValue.equals(newValue)) {
                 return;
             }
             extView.setValue((ivalue == null) ? "" : ivalue.toString());
@@ -90,19 +92,19 @@ public class PropertyController implements CellViewListener {
         }
     }
 
-    public void startEditing(KeyEvent e) {
-        view.startEditing(e);
+    public void forceEdit() {
+        view.forceEdit();
     }
 
-    public boolean cellValueChanged(Object ivalue, boolean aggValue) {
+    public void changeValue(Object ivalue, boolean aggValue) {
+//        try {
+//            form.executeEditAction(getKey(), columnKey, EditActionResult.CHANGE);
+//            form.changePropertyDraw(getKey(), columnKey, ivalue, false, aggValue);
+//        } catch (IOException e) {
+//            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), e);
+//        }
 
-        try {
-            form.changePropertyDraw(getKey(), columnKey, ivalue, false, aggValue);
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), e);
-        }
-
-        return true;
+        //todo: remove... along with interface
     }
 
     public void hideViews() {
@@ -118,11 +120,11 @@ public class PropertyController implements CellViewListener {
         view.setToolTip(caption);
     }
 
-    public void setBackground(Object color) {
-        view.setBackground(color);
+    public void setBackgroundColor(Color color) {
+        view.setBackgroundColor(color);
     }
 
-    public void setForeground(Object color) {
-        view.setForeground(color);
+    public void setForegroundColor(Color color) {
+        view.setForegroundColor(color);
     }
 }

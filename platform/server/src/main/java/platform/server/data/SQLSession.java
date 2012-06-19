@@ -47,6 +47,8 @@ public class SQLSession extends MutableObject {
     public final static String userParam = "adsadaweewuser";
     public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
     public final static String computerParam = "fjruwidskldsor";
+    public final static String isDebugParam = "dsiljdsiowee";
+    public final static String isFullClientParam = "fdfdijir";
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         this(adapter, -1);

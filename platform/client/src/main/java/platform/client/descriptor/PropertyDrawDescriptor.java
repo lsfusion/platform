@@ -24,11 +24,11 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
-    private PropertyObjectDescriptor propertyCaption;
-    private PropertyObjectDescriptor propertyReadOnly;
-    private PropertyObjectDescriptor propertyFooter;
-    private PropertyObjectDescriptor propertyBackground;
-    private PropertyObjectDescriptor propertyForeground;
+    private CalcPropertyObjectDescriptor propertyCaption;
+    private CalcPropertyObjectDescriptor propertyReadOnly;
+    private CalcPropertyObjectDescriptor propertyFooter;
+    private CalcPropertyObjectDescriptor propertyBackground;
+    private CalcPropertyObjectDescriptor propertyForeground;
 
     private PropertyEditType editType;
 
@@ -142,29 +142,29 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "columnGroupObjects");
     }
 
-    public PropertyObjectDescriptor getPropertyCaption() { // usage через reflection
+    public CalcPropertyObjectDescriptor getPropertyCaption() { // usage через reflection
         return propertyCaption;
     }
 
-    public void setPropertyCaption(PropertyObjectDescriptor propertyCaption) {
+    public void setPropertyCaption(CalcPropertyObjectDescriptor propertyCaption) {
         this.propertyCaption = propertyCaption;
         updateDependency(this, "propertyCaption");
     }
 
-    public PropertyObjectDescriptor getPropertyBackground() { // usage через reflection
+    public CalcPropertyObjectDescriptor getPropertyBackground() { // usage через reflection
         return propertyBackground;
     }
 
-    public void setPropertyBackground(PropertyObjectDescriptor propertyBackground) {
+    public void setPropertyBackground(CalcPropertyObjectDescriptor propertyBackground) {
         this.propertyBackground = propertyBackground;
         updateDependency(this, "propertyBackground");
     }
 
-    public PropertyObjectDescriptor getPropertyForeground() { // usage через reflection
+    public CalcPropertyObjectDescriptor getPropertyForeground() { // usage через reflection
         return propertyForeground;
     }
 
-    public void setPropertyForeground(PropertyObjectDescriptor propertyForeground) {
+    public void setPropertyForeground(CalcPropertyObjectDescriptor propertyForeground) {
         this.propertyForeground = propertyForeground;
         updateDependency(this, "propertyForeground");
     }
@@ -224,14 +224,14 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        propertyObject = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
-        toDraw = (GroupObjectDescriptor) pool.deserializeObject(inStream);
+        propertyObject = pool.deserializeObject(inStream);
+        toDraw = pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
-        propertyCaption = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
-        propertyReadOnly = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
-        propertyFooter = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
-        propertyBackground = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
-        propertyForeground = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        propertyCaption = pool.deserializeObject(inStream);
+        propertyReadOnly = pool.deserializeObject(inStream);
+        propertyFooter = pool.deserializeObject(inStream);
+        propertyBackground = pool.deserializeObject(inStream);
+        propertyForeground = pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         if (inStream.readBoolean())

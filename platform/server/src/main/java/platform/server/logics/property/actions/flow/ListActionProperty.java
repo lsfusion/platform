@@ -1,10 +1,12 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.server.logics.BusinessLogics;
+import platform.server.caches.IdentityLazy;
+import platform.server.data.type.Type;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,65 +15,62 @@ import static platform.base.BaseUtils.reverse;
 
 public class ListActionProperty extends KeepContextActionProperty {
 
-    private final boolean newSession;
-    private final BusinessLogics BL;
-
-    private final List<PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>> actions;
+    private final List<ActionPropertyMapImplement<?, PropertyInterface>> actions;
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, List<I> innerInterfaces, List<PropertyMapImplement<ClassPropertyInterface, I>> actions, boolean newSession, boolean doApply, BusinessLogics BL) {
-        super(sID, caption, innerInterfaces, (List) actions);
+    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions)  {
+        super(sID, caption, innerInterfaces.size());
 
-        this.BL = BL;
-        this.newSession = newSession;
-
-        if (newSession && doApply) {
-            actions.add(new PropertyMapImplement<ClassPropertyInterface, I>(BL.LM.flowApply.property));
-        }
-
-        this.actions = DerivedProperty.mapImplements(reverse(getMapInterfaces(innerInterfaces)), actions);
+        this.actions = DerivedProperty.mapActionImplements(reverse(getMapInterfaces(innerInterfaces)), actions);
 
         finalizeInit();
     }
 
-    public Set<Property> getChangeProps() {
-        Set<Property> result = new HashSet<Property>();
-        for(PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> action : actions)
-            result.addAll(((ActionProperty)action.property).getChangeProps());
-        return result;
+    @IdentityLazy
+    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+        List<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = new ArrayList<CalcPropertyInterfaceImplement<PropertyInterface>>();
+        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
+            listWheres.add(action.mapWhereProperty());
+        return DerivedProperty.createUnion(interfaces, listWheres);
     }
 
-    public Set<Property> getUsedProps() {
-        Set<Property> result = new HashSet<Property>();
-        for(PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> action : actions)
-            result.addAll(((ActionProperty)action.property).getUsedProps());
-        return result;
+    public Set<ActionProperty> getDependActions() {
+        Set<ActionProperty> depends = new HashSet<ActionProperty>();
+        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
+            depends.add(action.property);
+        return depends;
     }
 
     @Override
-    public FlowResult flowExecute(ExecutionContext context) throws SQLException {
-        ExecutionContext innerContext = newSession
-                                        ? context.override(context.getSession().createSession())
-                                        : context;
-
+    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
-        for (PropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> action : actions) {
-            FlowResult actionResult = execute(innerContext, action);
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+            FlowResult actionResult = execute(context, action);
             if (actionResult != FlowResult.FINISH) {
                 result =  actionResult;
                 break;
             }
         }
 
-        if (newSession) {
-            innerContext.getSession().close();
+        return result;
+    }
 
-            context.addActions(innerContext.getActions());
-            if (context.getFormInstance() != null) {
-                context.getFormInstance().refreshData();
+    @Override
+    public Type getSimpleRequestInputType() {
+        Type type = null;
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+            Type actionRequestType = action.property.getSimpleRequestInputType();
+            if (actionRequestType != null) {
+                if (type == null) {
+                    type = actionRequestType;
+                } else {
+                    if (type != null && type != actionRequestType) {
+                        return null;
+                    }
+                }
             }
         }
-        return result;
+        return type;
     }
 }

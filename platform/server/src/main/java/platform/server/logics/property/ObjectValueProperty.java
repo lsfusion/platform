@@ -1,35 +1,26 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.CustomClass;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
-import platform.server.form.instance.CustomObjectInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.actions.ChangeReadObjectActionProperty;
+import platform.server.session.PropertyChanges;
 
-import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-public class ObjectValueProperty extends ExecuteClassProperty {
-
-    private final ValueClass typeClass;
-    public final ClassPropertyInterface objectInterface;
+public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
 
     public ObjectValueProperty(String SID, ValueClass valueClass) {
-        super(SID, ServerResourceBundle.getString("logics.object"), new ValueClass[]{valueClass});
-
-        this.typeClass = valueClass;
-        objectInterface = BaseUtils.single(interfaces);
+        super(SID, ServerResourceBundle.getString("logics.object"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
 
         finalizeInit();
     }
@@ -39,34 +30,28 @@ public class ObjectValueProperty extends ExecuteClassProperty {
         return "objectValue.getLP(baseClass.named)";
     }
 
-    public ValueClass getValueClass() {
-        return typeClass;
+    private CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+        return IsClassProperty.getProperty(interfaces);
     }
 
     @Override
-    public CustomClass getDialogClass(Map<ClassPropertyInterface, DataObject> mapValues, Map<ClassPropertyInterface, ConcreteClass> mapClasses, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
-        if (mapObjects.size() > 0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
-            return ((CustomObjectInstance) BaseUtils.singleValue(mapObjects)).getBaseClass();
-        else
-            return super.getDialogClass(mapValues, mapClasses, mapObjects);
+    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
+        depends.add((CalcProperty) getInterfaceClassProperty().property);
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
-        if (context.isInFormSession()) {
-            if (context.getSingleObjectInstance() instanceof ObjectInstance) {
-                context.addActions(
-                        context.getFormInstance().changeObject(
-                                (ObjectInstance) context.getSingleObjectInstance(),
-                                context.getValue(),
-                                context.getRemoteForm()));
-            }
-        } else {
-            context.emitExceptionIfNotInFormSession();
-        }
+    @Override
+    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return joinImplement.get(getInterface()).and(getInterfaceClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere()); // на тип особого смысла
     }
 
-    protected Expr getValueExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement) {
-        return BaseUtils.singleValue(joinImplement);
+    @Override
+    @IdentityLazy
+    public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+        return new ChangeReadObjectActionProperty(null, getInterface().interfaceClass).getImplement(Collections.singletonList(getInterface()));
+    }
+
+    private ClassPropertyInterface getInterface() {
+        return BaseUtils.single(interfaces);
     }
 
     @Override
@@ -77,11 +62,10 @@ public class ObjectValueProperty extends ExecuteClassProperty {
             propertyView.caption = ((ObjectEntity) mapObject).getCaption();
     }
 
-    public Set<Property> getChangeProps() {
-        return new HashSet<Property>();
-    }
-
-    public Set<Property> getUsedProps() {
-        return new HashSet<Property>();
+    @Override
+    public Map<ClassPropertyInterface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        if(commonValue!=null)
+            return Collections.singletonMap(getInterface(), commonValue);
+        return super.getInterfaceCommonClasses(commonValue); 
     }
 }

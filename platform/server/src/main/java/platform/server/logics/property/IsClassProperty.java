@@ -3,10 +3,7 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.LogicalClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
@@ -21,7 +18,7 @@ import java.util.*;
 public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public IsClassProperty(String sID, String caption, ValueClass valueClass) {
-        super(sID, caption, DataProperty.getInterfaces(new ValueClass[]{valueClass}));
+        super(sID, caption, getInterfaces(new ValueClass[]{valueClass}));
 
         finalizeInit();
     }
@@ -33,26 +30,30 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return result;
     }
 
-    public final static Map<Map<ValueClass, Integer>, PropertyImplement<?, ValueClass>> cacheClasses = new HashMap<Map<ValueClass, Integer>, PropertyImplement<?, ValueClass>>();
+    public final static Map<Map<ValueClass, Integer>, CalcPropertyImplement<?, ValueClass>> cacheClasses = new HashMap<Map<ValueClass, Integer>, CalcPropertyImplement<?, ValueClass>>();
     @ManualLazy
-    public static <T, P extends PropertyInterface> PropertyImplement<?, T> getProperty(Map<T, ValueClass> classes) {
+    public static <T, P extends PropertyInterface> CalcPropertyImplement<?, T> getProperty(Map<T, ValueClass> classes) {
         Map<ValueClass, Integer> multiClasses = BaseUtils.multiSet(classes.values());
-        PropertyImplement<P, ValueClass> implement = (PropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
+        CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
         if(implement==null) {
-            PropertyImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
+            CalcPropertyImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
             cacheClasses.put(multiClasses, classImplement.mapImplement(classes));
             return classImplement;
         } else
-            return new PropertyImplement<P, T>(implement.property, BaseUtils.mapValues(implement.mapping, classes));
+            return new CalcPropertyImplement<P, T>(implement.property, BaseUtils.mapValues(implement.mapping, classes));
     }
 
-    public static <T> PropertyImplement<?, T> getProperty(ValueClass valueClass, T map) {
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> getMapProperty(Map<T, ValueClass> classes) {
+        return CalcPropertyMapImplement.mapPropertyImplement(getProperty(classes));
+    }
+
+    public static <T> CalcPropertyImplement<?, T> getProperty(ValueClass valueClass, T map) {
         IsClassProperty classProperty = valueClass.getProperty();
-        return new PropertyImplement<ClassPropertyInterface, T>(classProperty, Collections.singletonMap(BaseUtils.single(classProperty.interfaces), map));
+        return new CalcPropertyImplement<ClassPropertyInterface, T>(classProperty, Collections.singletonMap(BaseUtils.single(classProperty.interfaces), map));
     }
 
-    public static PropertyImplement<?, ClassPropertyInterface> getProperty(Collection<ClassPropertyInterface> interfaces) {
-         return getProperty(getMapClasses(interfaces));
+    public static CalcPropertyMapImplement<?, ClassPropertyInterface> getProperty(Collection<ClassPropertyInterface> interfaces) {
+        return getMapProperty(getMapClasses(interfaces));
      }
 
     public static <T> Where getWhere(Map<T, ValueClass> joinClasses, Map<T, ? extends Expr> joinImplement, Modifier modifier) {
@@ -62,7 +63,35 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return getProperty(valueClass, "value").mapExpr(Collections.singletonMap("value", valueExpr), modifier.getPropertyChanges(), null).getWhere();
     }
 
-    public QuickSet<Property> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public static List<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
+        List<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
+        for(ValueClass interfaceClass : classes)
+            interfaces.add(new ClassPropertyInterface(interfaces.size(),interfaceClass));
+        return interfaces;
+    }
+
+    public static boolean fitClass(ConcreteClass concreteClass, ValueClass valueClass) {
+        // unknown, custom, concatenateClassSet
+        if(concreteClass instanceof ValueClass)
+            return valueClass.getUpSet().containsAll(concreteClass);
+        else {
+            assert concreteClass instanceof UnknownClass; // с concatenate'ами надо будет разбираться
+            return false;
+        }
+    }
+
+    public static boolean fitInterfaceClasses(Map<ClassPropertyInterface, ConcreteClass> mapValues) {
+        for(Map.Entry<ClassPropertyInterface, ConcreteClass> interfaceValue : mapValues.entrySet())
+            if(!fitClass(interfaceValue.getValue(), interfaceValue.getKey().interfaceClass))
+                return false;
+        return true;
+    }
+
+    public static boolean fitClasses(Map<ClassPropertyInterface, ConcreteClass> mapValues, ValueClass valueClass, ConcreteClass value) { // оптимизация
+        return !(value != null && !fitClass(value, valueClass)) && fitInterfaceClasses(mapValues);
+    }
+
+    public QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return QuickSet.EMPTY();
     }
 
@@ -78,15 +107,16 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, DataSession session, Modifier modifier, boolean notNull) throws SQLException {
+    protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         ValueClass valueClass = getInterfaceClass();
-        if(valueClass instanceof ConcreteObjectClass)
-            for(Map<ClassPropertyInterface, DataObject> row : set.executeClasses(session.sql, session.env, session.baseClass))
-                session.changeClass(BaseUtils.singleValue(row), notNull ? (ConcreteObjectClass) valueClass : session.baseClass.unknown);
+        if(valueClass instanceof ConcreteObjectClass) {
+            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = set.executeClasses(env).iterator(); iterator.hasNext(); )
+                env.changeClass(null, BaseUtils.singleValue(iterator.next()), notNull ? (ConcreteObjectClass) valueClass : env.getSession().baseClass.unknown, !iterator.hasNext());
+        }
     }
 
-    public static Set<Property> getParentProps(CustomClass customClass) {
-        Set<Property> result = new HashSet<Property>();
+    public static Set<CalcProperty> getParentProps(CustomClass customClass) {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
         Collection<CustomClass> parents = new HashSet<CustomClass>();
         customClass.fillParents(parents);
         for(CustomClass parent : parents)
@@ -95,10 +125,10 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    public Set<Property> getSetChangeProps(boolean notNull, boolean add) {
+    public Set<CalcProperty> getSetChangeProps(boolean notNull, boolean add) {
         // предыдущий класс может быть любым кроме child's
         CustomClass customClass = ((CustomClass) getInterfaceClass());
-        Set<Property> childProps = customClass.getChildProps();
+        Set<CalcProperty> childProps = customClass.getChildProps();
         if(add) {
             assert notNull;
             return getParentProps(customClass);

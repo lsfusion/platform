@@ -4,7 +4,9 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.QuickSet;
-import platform.server.caches.*;
+import platform.server.caches.AbstractInnerContext;
+import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
@@ -14,18 +16,16 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.query.Stat;
-import platform.server.data.query.Query;
 import platform.server.data.query.Join;
+import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.KeyEquals;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -75,6 +75,14 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getMapExprs(mapKeys, mapValues, where);
     }
 
+    public Map<T, KeyExpr> getMapKeys() {
+        return mapKeys;
+    }
+
+    public Map<T, DataObject> getMapValues() {
+        return mapValues;
+    }
+
     public PropertyChange(Expr expr, Map<T, DataObject> mapValues) {
         this(mapValues, new HashMap<T, KeyExpr>(), expr, Where.TRUE);
     }
@@ -106,6 +114,9 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(new HashMap<T, DataObject>(), mapKeys, expr, where);
     }
 
+    public static <P extends PropertyInterface> PropertyChange<P> TRUE() {
+        return new PropertyChange<P>(new HashMap<P, KeyExpr>(), ValueExpr.TRUE, Where.TRUE);
+    }
     public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr) {
         this(mapKeys, expr, expr.getWhere());
     }
@@ -175,12 +186,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return null;
     }
 
-    public OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
+    public OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             return new OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>>(mapValues, Collections.singletonMap("value", exprValue));
 
-        return getQuery().executeClasses(session, env, baseClass);
+        return getQuery().executeClasses(env);
     }
 
     @IdentityLazy

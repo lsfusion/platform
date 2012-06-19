@@ -12,22 +12,14 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
-import java.io.*;
-import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 public class CopyProjectActionProperty extends CustomActionProperty {
 
@@ -42,17 +34,13 @@ public class CopyProjectActionProperty extends CustomActionProperty {
         projectInterface = i.next();
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        throw new RuntimeException("no need");
-    }
-
     @Override
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         DataObject projectObject = context.getKeyValue(projectInterface);
         DataObject projectCopy = context.addObject(LM.project);
 
-        List<LP> propertiesToCopy = BaseUtils.toList(
+        List<LCP> propertiesToCopy = BaseUtils.toList(
                 LM.nameNativeProject, LM.nameNativeManagerProject, LM.nameNativeGenitiveManagerProject,
                 LM.nameNativeDativusManagerProject, LM.nameNativeAblateManagerProject, LM.nativeProblemProject,
                 LM.nativeInnovativeProject, LM.nativeSubstantiationProjectType, LM.fileNativeSummaryProject,
@@ -77,7 +65,7 @@ public class CopyProjectActionProperty extends CustomActionProperty {
                 LM.extractClaimerProject, LM.isOtherClusterProject, LM.nativeSubstantiationOtherClusterProject,
                 LM.foreignSubstantiationOtherClusterProject, LM.claimerProject//, LM.nameStatusProject
         );
-        for (LP prop : propertiesToCopy)
+        for (LCP prop : propertiesToCopy)
             copyProperty(prop, context, projectObject, projectCopy);
 
         propertiesToCopy = BaseUtils.toList(
@@ -102,9 +90,9 @@ public class CopyProjectActionProperty extends CustomActionProperty {
         copyObject(LM.nonRussianSpecialist, propertiesToCopy, context, LM.projectNonRussianSpecialist, projectObject, projectCopy);
 
 
-        List<LP> propertiesClusterProjectToCopy = BaseUtils.toList(
+        List<LCP> propertiesClusterProjectToCopy = BaseUtils.toList(
                 LM.nativeSubstantiationProjectCluster, LM.foreignSubstantiationProjectCluster, LM.inProjectCluster);
-        List<LP> propertiesClusterToCopy = BaseUtils.toList(
+        List<LCP> propertiesClusterToCopy = BaseUtils.toList(
                 LM.nameNativeCluster, LM.nameForeign);
 
         KeyExpr clusterExpr = new KeyExpr("cluster");
@@ -114,9 +102,9 @@ public class CopyProjectActionProperty extends CustomActionProperty {
         newKeys.put("project", projectExpr);
 
         Query<Object, Object> query = new Query<Object, Object>(newKeys);
-        for (LP prop : propertiesClusterProjectToCopy)
+        for (LCP prop : propertiesClusterProjectToCopy)
             query.properties.put(prop.toString(), prop.getExpr(context.getModifier(), projectExpr, clusterExpr));
-        for (LP prop : propertiesClusterToCopy)
+        for (LCP prop : propertiesClusterToCopy)
             query.properties.put(prop.toString(), prop.getExpr(context.getModifier(), clusterExpr));
         query.and(LM.inProjectCluster.getExpr(context.getModifier(), projectExpr, clusterExpr).getWhere());
         query.and(projectExpr.compare(projectObject, Compare.EQUALS));
@@ -124,23 +112,23 @@ public class CopyProjectActionProperty extends CustomActionProperty {
 
         for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
             DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), LM.cluster);
-            for (LP prop : propertiesClusterProjectToCopy)
-                prop.execute(rows.getValue().get(prop.toString()), context, projectCopy, clusterObject);
-            for (LP prop : propertiesClusterToCopy)
-                prop.execute(rows.getValue().get(prop.toString()), context, clusterObject);
+            for (LCP prop : propertiesClusterProjectToCopy)
+                prop.change(rows.getValue().get(prop.toString()), context, projectCopy, clusterObject);
+            for (LCP prop : propertiesClusterToCopy)
+                prop.change(rows.getValue().get(prop.toString()), context, clusterObject);
         }
     }
 
-    private void copyProperty(LP prop, ExecutionContext context, DataObject projectObject, DataObject objectCopy) throws SQLException {
-        prop.execute(prop.read(context, projectObject), context, objectCopy);
+    private void copyProperty(LCP prop, ExecutionContext context, DataObject projectObject, DataObject objectCopy) throws SQLException {
+        prop.change(prop.read(context, projectObject), context, objectCopy);
     }
 
-    private void copyObject(ConcreteCustomClass copyingCustomClass, List<LP> propertiesToCopy, ExecutionContext context, LP projectCopyingCustomClass, DataObject projectObject, DataObject projectCopy) throws SQLException {
-        LP isCopyingCustomClass = LM.is(copyingCustomClass);
+    private void copyObject(ConcreteCustomClass copyingCustomClass, List<LCP> propertiesToCopy, ExecutionContext context, LCP projectCopyingCustomClass, DataObject projectObject, DataObject projectCopy) throws SQLException {
+        LCP isCopyingCustomClass = LM.is(copyingCustomClass);
         Map<Object, KeyExpr> keys = isCopyingCustomClass.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        for (LP prop : propertiesToCopy)
+        for (LCP prop : propertiesToCopy)
             query.properties.put(prop.toString(), prop.getExpr(context.getModifier(), key));
         query.and(isCopyingCustomClass.getExpr(key).getWhere());
         query.and(projectCopyingCustomClass.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
@@ -148,9 +136,9 @@ public class CopyProjectActionProperty extends CustomActionProperty {
 
         for (Map<Object, Object> values : result.values()) {
             DataObject copy = context.addObject(copyingCustomClass);
-            projectCopyingCustomClass.execute(projectCopy.getValue(), context, copy);
-            for (LP prop : propertiesToCopy)
-                prop.execute(values.get(prop.toString()), context, copy);
+            projectCopyingCustomClass.change(projectCopy.getValue(), context, copy);
+            for (LCP prop : propertiesToCopy)
+                prop.change(values.get(prop.toString()), context, copy);
         }
     }
 }

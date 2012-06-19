@@ -6,6 +6,7 @@ import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
 import platform.gwt.form.shared.actions.form.ChangeClassView;
 import platform.gwt.form.shared.actions.form.FormChangesResult;
+import platform.interop.ClassViewType;
 
 import java.io.IOException;
 
@@ -18,8 +19,9 @@ public class ChangeClassViewHandler extends FormChangesActionHandler<ChangeClass
     public FormChangesResult executeEx(ChangeClassView action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        form.remoteForm.changeClassView(action.groupObjectId, (String) action.value.getValue());
-
-        return getRemoteChanges(form);
+        return getRemoteChanges(
+                form,
+                form.remoteForm.changeClassView(-1, action.groupObjectId, ClassViewType.valueOf((String) action.value.getValue()))
+        );
     }
 }

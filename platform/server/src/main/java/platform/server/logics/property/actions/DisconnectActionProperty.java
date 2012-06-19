@@ -2,13 +2,11 @@ package platform.server.logics.property.actions;
 
 import platform.base.Pair;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -28,7 +26,7 @@ public class DisconnectActionProperty extends CustomActionProperty {
         this.LM = LM;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject connection = context.getKeyValue(interfacesList.remove(0));
 

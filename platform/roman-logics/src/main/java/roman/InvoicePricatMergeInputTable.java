@@ -12,8 +12,8 @@ import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.PropertyImplement;
+import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcPropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.SingleKeyTableUsage;
 
@@ -48,7 +48,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         assert invoiceFieldsPos.containsKey(ResultField.BARCODE) && invoiceFieldsPos.containsKey(ResultField.INVOICE) &&
                invoiceFieldsPos.containsKey(ResultField.BOXNUMBER);
 
-        Map<ResultField, LP<?>> propertyMap = createPricatFieldsMap();
+        Map<ResultField, LCP> propertyMap = createPricatFieldsMap();
 
         try {
             Map<String, Map<ResultField, Object>> pricatData = getDataFromPricat(invoiceFieldsList, propertyMap);
@@ -79,8 +79,8 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         }
     }
 
-    private Map<ResultField, LP<?>> createPricatFieldsMap() {
-        Map<ResultField, LP<?>> propertyMap = new OrderedMap<ResultField, LP<?>>();
+    private Map<ResultField, LCP> createPricatFieldsMap() {
+        Map<ResultField, LCP> propertyMap = new OrderedMap<ResultField, LCP>();
 
         propertyMap.put(ResultField.BARCODE, BL.RomanLM.barcodePricat);
         propertyMap.put(ResultField.ARTICLE, BL.RomanLM.articleNumberPricat);
@@ -111,14 +111,12 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
     }
 
     private Map<String, Map<ResultField, Object>> getDataFromPricat(List<ResultField> invoiceFields,
-                                                                     Map<ResultField, LP<?>> propertyMap) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+                                                                     Map<ResultField, LCP> propertyMap) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         SQLSession sqlSession = BL.createSQL();
 
         //читаем данные из прайса по импортированным из инвойса штрихкодам
-        Result<ValueClass> resultClass = new Result<ValueClass>();
-        BL.RomanLM.baseLM.barcode.getCommonClasses(resultClass);
-        Type keyType = resultClass.result.getType();
+        Type keyType = BL.RomanLM.baseLM.barcode.property.getType();
         SingleKeyTableUsage<ResultField> table = new SingleKeyTableUsage<ResultField>(keyType, new ArrayList<ResultField>(), null);
 
         for (int i = 0; i < invoiceTable.rowsCnt(); i++) {
@@ -131,8 +129,8 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         query.and(table.join(BL.RomanLM.barcodePricat.property.getExpr(mapKeys)).getWhere());
 
         for (ResultField propertyName : propertyMap.keySet()) {
-            PropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));
-            query.properties.put(propertyName, propertyMap.get(propertyName).property.getExpr(propertyImplement.mapping));
+            CalcPropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));
+            query.properties.put(propertyName, ((LCP<PropertyInterface>)propertyMap.get(propertyName)).property.getExpr(propertyImplement.mapping));
         }
 
         OrderedMap<Map<PropertyInterface, Object>, Map<ResultField, Object>> result = query.execute(sqlSession);

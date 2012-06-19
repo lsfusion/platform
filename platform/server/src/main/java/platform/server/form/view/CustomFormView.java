@@ -43,66 +43,6 @@ public class CustomFormView extends FormView {
         return null;
     }
     */
-    public FunctionView createPrintFunction(String caption) {
-        FunctionView function = printFunction;
-        function.setCaption(caption);
-        function.setType("Print");
-        return function;
-    }
-
-    public FunctionView createXlsFunction(String caption) {
-        FunctionView function = xlsFunction;
-        function.setCaption(caption);
-        function.setType("Xls");
-        return function;
-    }
-
-    public FunctionView createNullFunction(String caption) {
-        FunctionView function = nullFunction;
-        function.setCaption(caption);
-        function.setType("Null");
-        return function;
-    }
-
-    public FunctionView createRefreshFunction(String caption) {
-        FunctionView function = refreshFunction;
-        function.setCaption(caption);
-        function.setType("Refresh");
-        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        return function;
-    }
-
-    public FunctionView createApplyFunction(String caption) {
-        FunctionView function = applyFunction;
-        function.setCaption(caption);
-        function.setType("Apply");
-        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        return function;
-    }
-
-    public FunctionView createCancelFunction(String caption) {
-        FunctionView function = cancelFunction;
-        function.setCaption(caption);
-        function.setType("Cancel");
-        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        return function;
-    }
-
-     public FunctionView createOkFunction(String caption) {
-        FunctionView function = okFunction;
-        function.setCaption(caption);
-        function.setType("Ok");
-        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        return function;
-    }
-
-     public FunctionView createCloseFunction(String caption) {
-        FunctionView function = closeFunction;
-        function.setCaption(caption);
-        function.setType("Close");
-        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        return function;
-    }
 
     public PropertyDrawView createPropertyDraw(LP lp) {
         PropertyDrawEntity property = form.getPropertyDraw(lp);

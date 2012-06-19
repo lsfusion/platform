@@ -8,14 +8,13 @@ import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
-import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.ExceptionUtils;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
 import platform.client.descriptor.view.LogicsDescriptorView;
-import platform.client.form.ClientFormActionDispatcher;
+import platform.client.form.dispatch.ClientNavigatorActionDispatcher;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientAbstractWindow;
 import platform.client.navigator.ClientNavigator;
@@ -24,9 +23,8 @@ import platform.client.navigator.ClientNavigatorForm;
 import platform.fullclient.navigator.NavigatorController;
 import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.navigator.NavigatorActionResult;
+import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -43,7 +41,7 @@ import static platform.base.BaseUtils.mergeLinked;
 import static platform.client.ClientResourceBundle.getString;
 
 public class DockableMainFrame extends MainFrame {
-    private final ClientFormActionDispatcher dispatcher = new ClientFormActionDispatcher();
+    private final ClientNavigatorActionDispatcher actionDispatcher;
 
     private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
     private final CControl mainControl;
@@ -76,6 +74,8 @@ public class DockableMainFrame extends MainFrame {
             }
         };
 
+        actionDispatcher = new ClientNavigatorActionDispatcher(mainNavigator);
+
         navigatorController = new NavigatorController(mainNavigator);
 
         mainControl = new CControl(this);
@@ -95,16 +95,7 @@ public class DockableMainFrame extends MainFrame {
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
         try {
-            NavigatorActionResult result = remoteNavigator.executeNavigatorAction(action.getSID());
-            do {
-                dispatcher.dispatchActions(result.actions);
-
-                if (result.resumeInvocation) {
-                    result = remoteNavigator.continueNavigatorAction();
-                } else {
-                    result = null;
-                }
-            } while (result != null);
+            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(action.getSID()));
         } catch (IOException e) {
             throw new RuntimeException(getString("errors.error.executing.action"), e);
         }
@@ -230,32 +221,12 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(RemoteFormInterface remoteForm, boolean isModal, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
+    public void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         if (isModal) {
-            try {
-                ReportDialog dlg = new ReportDialog(Main.frame, remoteForm);
-                dlg.setVisible(true);
-            } catch (JRException e) {
-                throw new RuntimeException(e);
-            }
+            ReportDialog.showReportDialog(generationData);
         } else {
-            viewManager.openReport(mainNavigator, remoteForm, userPreferences);
+            viewManager.openReport(reportSID, generationData);
         }
-    }
-
-    @Override
-    public Map<String, String> getReportPath(RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws ClassNotFoundException, IOException {
-        return remoteForm.getReportPath(false, null, userPreferences);
-    }
-
-    @Override
-    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        viewManager.openSingleGroupReport(mainNavigator, remoteForm, groupId, userPreferences);
-    }
-
-    @Override
-    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone, userPreferences);
     }
 
     @Override

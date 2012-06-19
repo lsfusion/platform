@@ -2,69 +2,62 @@ package platform.server.logics.property.actions;
 
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.DataClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.IsClassProperty;
 
 import java.sql.SQLException;
+import java.util.Set;
 
-public class SimpleAddObjectActionProperty extends CustomActionProperty {
+public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty {
     // обозначает класс объекта, который нужно добавить
     private CustomClass valueClass;
+    private boolean noDialog;
 
-    private LP storeNewObjectProperty;
+    private LCP storeNewObjectProperty;
 
-    public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, LP storeNewObjectProperty) {
+    public SimpleAddObjectActionProperty(String sID, CustomClass valueClass, boolean noDialog, LCP storeNewObjectProperty) {
         super(sID, ServerResourceBundle.getString("logics.add"), new ValueClass[0]);
+        
+        assert !noDialog || valueClass instanceof ConcreteCustomClass;
+        this.noDialog = noDialog;
         this.valueClass = valueClass;
 
         this.storeNewObjectProperty = storeNewObjectProperty;
     }
 
-    public void execute(ExecutionContext context) throws SQLException {
-        DataObject object;
-        if (valueClass.hasChildren()) {
-            // нужен такой чит, поскольку в FlowAction может вызываться ADDOBJ с конкретным классом, у которого есть потомки, но при этом не будет передан context.getValueObject()
-            boolean valueProvided = !getValueClass().getDefaultValue().equals(context.getValueObject());
-            if (context.isInFormSession()) {
-                FormInstance<?> formInstance = context.getFormInstance();
-                object = formInstance.addObject((ConcreteCustomClass) (valueProvided ? formInstance.getCustomClass((Integer) context.getValueObject()) : valueClass));
-            } else {
-                object = context.getSession().addObject(
-                        (ConcreteCustomClass) (valueProvided ? valueClass.findClassID((Integer) context.getValueObject()) : valueClass),
-                        context.getModifier());
-            }
-        } else {
-            object = context.addObject((ConcreteCustomClass) valueClass);
-        }
+    @Override
+    public Set<CalcProperty> getChangeProps() {
+        return IsClassProperty.getParentProps(valueClass);
+    }
+
+    protected Read getReadClass(ExecutionContext context) {
+        if(noDialog)
+            return null;
+
+        return new Read(valueClass, true);
+    }
+
+    protected void executeRead(ExecutionContext<ClassPropertyInterface> context, ObjectClass readClass) throws SQLException {
+        if(noDialog)
+            readClass = valueClass;
+        
+        DataObject object = context.addObject((ConcreteCustomClass) readClass);
 
         if (storeNewObjectProperty != null && object != null) {
-            context.addActions(
-                    storeNewObjectProperty.execute(object.getValue(), context)
-            );
+            storeNewObjectProperty.change(object.getValue(), context);
         }
     }
-
-    @Override
-    public DataClass getValueClass() {
-        if (valueClass.hasChildren())
-            return valueClass.getActionClass(valueClass);
-        else
-            return super.getValueClass();
-    }
-
 
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {

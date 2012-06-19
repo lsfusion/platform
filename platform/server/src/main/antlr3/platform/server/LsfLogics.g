@@ -601,7 +601,7 @@ formPropertyName returns [String name]
 
 formFiltersList
 @init {
-	List<LP<?>> properties = new ArrayList<LP<?>>();
+	List<LP> properties = new ArrayList<LP>();
 	List<List<String>> propertyMappings = new ArrayList<List<String>>();
 }
 @after {
@@ -632,7 +632,7 @@ filterGroupDeclaration
 	String filterGroupSID = null;
 	List<String> captions = new ArrayList<String>();
 	List<String> keystrokes = new ArrayList<String>();
-	List<LP<?>> properties = new ArrayList<LP<?>>();
+	List<LP> properties = new ArrayList<LP>();
 	List<List<String>> mappings = new ArrayList<List<String>>();
 	List<Boolean> defaults = new ArrayList<Boolean>();
 }
@@ -699,7 +699,7 @@ formPropertyWithOrder returns [String id, boolean order = true]
 
 propertyStatement
 @init {
-	LP<?> property = null;
+	LP property = null;
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
 }
@@ -778,7 +778,7 @@ equalityPE[List<String> context, boolean dynamic] returns [LPWithParams property
 relationalPE[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
-	LP<?> mainProp = null;
+	LP mainProp = null;
 	String op = null;
 }
 @after {
@@ -975,7 +975,7 @@ groupingType returns [GroupingType type]
 partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<LPWithParams> paramProps = new ArrayList<LPWithParams>();
-	LP<?> ungroupProp = null;
+	LP ungroupProp = null;
 	PartitionType type = null;
 	int groupExprCnt;
 	boolean strict = false;
@@ -1428,6 +1428,7 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 	
 keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
+	|	reqeustInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $reqeustInputPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
@@ -1459,6 +1460,7 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
+	|   confirmPDB=confirmActionPropertyDefinitionBody[context, dynamic] { $property = $confirmPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	|	classPDB=changeClassActionPropertyDefinitionBody[context, dynamic] { $property = $classPDB.property; }
@@ -1565,7 +1567,19 @@ emailActionFormObjects[List<String> context, boolean dynamic] returns [OrderedMa
 			(',' obj=ID '=' objValueExpr=propertyExpression[context, dynamic] { $mapObjects.put($obj.text, $objValueExpr.property); })*
 		)?
 	;
-	
+
+confirmActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	int length = 2000;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedConfirmProp(length, $pe.property);
+	}
+}
+	:	'CONFIRM' pe=propertyExpression[context, dynamic] ('LENGTH' len=uintLiteral { length = $len.val; } )? 
+	;
+		
 messageActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	int length = 2000;
@@ -1599,6 +1613,25 @@ changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 }
 	:	'CHANGECLASS' param=singleParameter[context, dynamic] 'TO' className=classId 
 	;  
+
+
+requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<String> localPropNames = new ArrayList<String>();
+	boolean newSession = false;
+	boolean doApply = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedRequestUserInputAProp($tid.sid, $objID.text, $PDB.property);
+	}
+}
+	:	'REQUEST' tid=typeId
+		(	'INPUT'
+		|	(objID=ID)? PDB=actionPropertyDefinitionBody[context, dynamic]
+		)
+	;
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -1795,10 +1828,13 @@ writeWhenStatement
 @init {
 	List<String> context;
 	LPWithParams value = null;
+	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
+	boolean session = false;
+	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property);
+		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, !ascending, session);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
@@ -1808,6 +1844,9 @@ writeWhenStatement
 		)?
 		'WHEN'
 		whenExpr=propertyExpression[context, false]
+		('ORDER' ('DESC' { ascending = false; } )?
+		orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); })?
+		('SESSION' { session = true; })?
 		';'
 	;
 
@@ -2364,6 +2403,11 @@ classId returns [String sid]
 	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
 	;
 
+typeId returns [String sid]
+	:	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
+	|	obj='OBJECT' { $sid = $obj.text; }
+	;
+	
 compoundID returns [String sid]
 	:	firstPart=ID { $sid = $firstPart.text; } ('.' secondPart=ID { $sid = $sid + '.' + $secondPart.text; })?
 	;

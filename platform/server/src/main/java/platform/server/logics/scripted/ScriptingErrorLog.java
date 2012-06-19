@@ -219,7 +219,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("static сlass '%s' should have instances", className));
     }
 
-    public void emitParamCountError(LsfLogicsParser parser, LP<?> property, int paramCount) throws SemanticErrorException {
+    public void emitParamCountError(LsfLogicsParser parser, LP property, int paramCount) throws SemanticErrorException {
         int interfacesCount = property.property.interfaces.size();
         emitParamCountError(parser, interfacesCount, paramCount);
     }
@@ -374,6 +374,10 @@ public class ScriptingErrorLog {
 
     public void emitNotAbstractPropertyError(LsfLogicsParser parser, String propName) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' is not ABSTRACT", propName));
+    }
+
+    public void emitNotDataTypeError(LsfLogicsParser parser, String typeName) throws SemanticErrorException {
+        emitSimpleError(parser, "");
     }
 
     public void emitOwnNamespacePriorityError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {

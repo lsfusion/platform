@@ -12,8 +12,8 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
 import platform.interop.form.layout.ContainerType;
@@ -29,22 +29,21 @@ import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.*;
 import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
+import platform.server.logics.*;
+import platform.server.logics.linear.LAP;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.AttachmentFormat;
 import platform.server.session.DataSession;
@@ -65,8 +64,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static platform.base.BaseUtils.nvl;
-import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_DEFAULT;
-import static platform.server.logics.property.actions.ExecutePropertiesActionProperty.EPA_INTERFACE;
 
 /**
  * User: DAle
@@ -77,7 +74,7 @@ import static platform.server.logics.property.actions.ExecutePropertiesActionPro
 
 public class SkolkovoLogicsModule extends LogicsModule {
     private final SkolkovoBusinessLogics BL;
-    private LP incrementVote;
+    private LCP incrementVote;
 
     public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM, SkolkovoBusinessLogics BL) {
         super("SkolkovoLogicsModule");
@@ -85,61 +82,61 @@ public class SkolkovoLogicsModule extends LogicsModule {
         this.BL = BL;
     }
 
-    private LP dateResultForesightCheckProject;
-    private LP userResultForesightCheckProject;
-    private LP nameResultForesightCheckProject;
-    private LP sidResultForesightCheckProject;
-    private LP nameUserResultForesightCheckProject;
-    private LP useAllClusterExpertsProject, useAllClusterExperts, useAllClusterExpertsUnionProject;
-    private LP inExpertVoteDateFromDateTo;
-    private LP quantityInExpertDateFromDateTo;
-    private LP doneClusterExpertVoteDateFromDateTo;
-    private LP quantityDoneClusterExpertDateFromDateTo;
-    private LP inClusterExpertVoteDateFromDateTo;
-    private LP quantityInClusterExpertDateFromDateTo;
+    private LCP dateResultForesightCheckProject;
+    private LCP userResultForesightCheckProject;
+    private LCP nameResultForesightCheckProject;
+    private LCP sidResultForesightCheckProject;
+    private LCP nameUserResultForesightCheckProject;
+    private LCP useAllClusterExpertsProject, useAllClusterExperts, useAllClusterExpertsUnionProject;
+    private LCP inExpertVoteDateFromDateTo;
+    private LCP quantityInExpertDateFromDateTo;
+    private LCP doneClusterExpertVoteDateFromDateTo;
+    private LCP quantityDoneClusterExpertDateFromDateTo;
+    private LCP inClusterExpertVoteDateFromDateTo;
+    private LCP quantityInClusterExpertDateFromDateTo;
 
-    private LP emailClaimerAcceptedHeaderVote;
-    private LP emailClaimerNameVote;
-    private LP emailClaimerRejectedHeaderVote;
-    private LP emailClaimerAcceptedHeaderProject;
-    private LP emailAcceptedProjectEA;
-    private LP emailAcceptedProject;
-    public LP sidProject;
-    public LP sidToProject;
-    public LP nameNativeToCluster;
-    public LP nameNativeCluster;
-    public LP dateProject;
-    public LP dateJoinProject;
-    public LP dateDataProject;
-    public LP dateStatusProject;
-    public LP statusDateProject;
-    public LP dateStatusDataProject;
-    public LP updateDateProject;
-    public LP nativeNumberToPatent;
-    public LP nativeNumberSIDToPatent;
+    private LCP emailClaimerAcceptedHeaderVote;
+    private LCP emailClaimerNameVote;
+    private LCP emailClaimerRejectedHeaderVote;
+    private LCP emailClaimerAcceptedHeaderProject;
+    private LAP emailAcceptedProjectEA;
+    private LAP emailAcceptedProject;
+    public LCP sidProject;
+    public LCP sidToProject;
+    public LCP nameNativeToCluster;
+    public LCP nameNativeCluster;
+    public LCP dateProject;
+    public LCP dateJoinProject;
+    public LCP dateDataProject;
+    public LCP dateStatusProject;
+    public LCP statusDateProject;
+    public LCP dateStatusDataProject;
+    public LCP updateDateProject;
+    public LCP nativeNumberToPatent;
+    public LCP nativeNumberSIDToPatent;
 
-    private LP resultConferenceExpert, nameResultConferenceExpert;
-    public LP confirmedConferenceExpert;
-    public LP rejectedConferenceExpert;
-    private LP confirmedConference;
-    private LP rejectedConference;
-    private LP totalExperts;
-    private LP textConference;
-    private LP emailConferenceExpertEA;
-    private LP emailConferenceExpert;
-    private LP inConferenceExpert;
-    private LP nameNativeShortAggregateClusterExpert;
+    private LCP resultConferenceExpert, nameResultConferenceExpert;
+    public LCP confirmedConferenceExpert;
+    public LCP rejectedConferenceExpert;
+    private LCP confirmedConference;
+    private LCP rejectedConference;
+    private LCP totalExperts;
+    private LCP textConference;
+    private LAP emailConferenceExpertEA;
+    private LAP emailConferenceExpert;
+    private LCP inConferenceExpert;
+    private LCP nameNativeShortAggregateClusterExpert;
 
-    private LP setCurrentDateDecisionNoticedVote;
+    private LAP setCurrentDateDecisionNoticedVote;
 
-    private LP emailNoticeRejectedVoteEA;
-    private LP emailNoticeRejectedVote;
+    private LAP emailNoticeRejectedVoteEA;
+    private LAP emailNoticeRejectedVote;
 
-    private LP emailNoticeAcceptedStatusVoteEA;
-    private LP emailNoticeAcceptedStatusVote;
+    private LAP emailNoticeAcceptedStatusVoteEA;
+    private LAP emailNoticeAcceptedStatusVote;
 
-    private LP emailNoticeAcceptedPreliminaryVoteEA;
-    private LP emailNoticeAcceptedPreliminaryVote;
+    private LAP emailNoticeAcceptedPreliminaryVoteEA;
+    private LAP emailNoticeAcceptedPreliminaryVote;
 
     AbstractCustomClass multiLanguageNamed;
 
@@ -505,1070 +502,1125 @@ public class SkolkovoLogicsModule extends LogicsModule {
         changeLegalCheckGroup = addAbstractGroup("changeLegalCheckGroup", "Изменение типа заявки", publicGroup); 
     }
 
-    public LP nameNative;
-    public LP nameForeign;
-    public LP nameNativeShort;
-    public LP nameNativeShortAggregateClusterProject;
-    public LP firmNameNativeClaimer;
-    public LP firmNameForeignClaimer;
-    public LP phoneClaimer;
-    public LP addressClaimer;
-    public LP postAddressClaimer;
-    public LP siteClaimer;
-    public LP emailClaimer;
-    public LP emailFirmClaimer;
-    public LP emailClaimerProject;
-    public LP statementClaimer;
-    public LP constituentClaimerProject;
-    public LP extractClaimerProject;
-    public LP statementClaimerProject;
-    LP loadStatementClaimer, openStatementClaimer;
-    public LP constituentClaimer;
-    LP loadConstituentClaimer, openConstituentClaimer;
-    public LP extractClaimer;
-    LP loadExtractClaimer, openExtractClaimer;
-    public LP OGRNClaimer;
-    public LP INNClaimer;
-    public LP projectScheduleProject;
-    LP regulationsProject;
-    public LP nameRegulationsProject;
-    LP isR2Project, isR1Project;
-    LP revisionVote;
-    LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
-    LP quantityVoteProject;
-    LP quantityDefaultVoteProject;
-    LP quantitySubDefaultVoteProject;
-    LP quantityVoteProjectCluster;
-    LP quantityClusterVotedProject;
-    public LP dataDocumentNameExpert, documentNameExpert;
-    public LP emailExpert;
-    public LP generateSIDExpert;
-    public LP clusterClusterUser, nameClusterClusterUser, clusterCurrentUser;
-    public LP inClusterCurrentUserProject;
-    LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
-    public LP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
-    public LP inProjectForesightExpert, quantityForesightProjectExpert;
-    public LP clusterInExpertForesight;
-    public LP isScientificExpert, isTechnicalExpert, isBusinessExpert;
-    public LP commentScientificExpert, commentTechnicalExpert, commentBusinessExpert;
-    public LP expertiseExpert, grantExpert;
-    LP profileUpdateDateExpert;
-    LP profileBlockedExpert;
-    public LP primClusterExpert, extraClusterExpert, inClusterExpert;
-    LP quantityInClusterExpert;
-    LP clusterInExpertVote;
-    public LP inProjectCluster;
-    public LP inClaimerProjectCluster;
-    public LP inProjectForesight;
-    public LP isRootForesight;
-    public LP isRootInProjectForesight;
-    LP isInClusterProjectForesight;
-    LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
-    LP projectCluster;
-    LP inTestCluster;
-    LP quantityClusterProject;
-    public LP clusterForesight, sidForesight;
-    LP foresightSID;
-    LP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
-    LP quantityForesightProject;
-    LP maxForesightProjectCluster, nameMaxForesightVote, maxForesightVote, nMaxForesightVote;
-    LP maxForesightProject, nameMaxForesightLegalChek, maxForesightLegalChek;
-    LP isPrevVoteVote;
-    LP countPrevVote;
-    public LP claimerProject;
-    LP nameNativeUnionManagerProject, nameForeignUnionManagerProject;
-    LP nameNativeJoinClaimerProject, nameForeignJoinClaimerProject;
-    LP nameNativeCorrectManagerProject, nameForeignCorrectManagerProject;
-    LP nameNativeCorrectHighlightClaimerProject, nameForeignCorrectHighlightClaimerProject;
-    //LP nameNativeJoinClaimerProject;
-    LP nameNativeCorrectClaimer, nameForeignCorrectClaimer;
-    LP nameNativeClaimer;
-    LP nameNativeCorrectClaimerProject, nameForeignCorrectClaimerProject;
-    public LP nameNativeClaimerProject, nameForeignClaimerProject;
-    //LP nameForeignClaimerProject;
-    //LP nameForeignJoinClaimerProject;
-    LP emailDocuments, emailIO, emailExperts, emailPresident;
-    LP isR1ProjectVote;
-    LP isR2ProjectVote;
-    LP emailFondFC;
-    LP emailForesightLC;
-    LP emailFondTransferred;
-    public LP emailToExpert;
-    public LP sidExpert, sidCluster, sidToExpert;
-
-    LP nameNativeJoinClaimerVote, nameForeignJoinClaimerVote;
-    LP nameNativeClaimerVote, nameForeignClaimerVote;
-    public LP nameNativeGenitiveManagerProject;
-    LP nameGenitiveManagerProject;
-    public LP nameNativeDativusManagerProject;
-    LP nameDativusManagerProject;
-    public LP nameNativeAblateManagerProject;
-    LP nameAblateManagerProject;
-
-    public LP nameNativeJoinClaimer, nameForeignJoinClaimer;
-    public LP nameForeignClaimer;
-    LP nameGenitiveClaimerProject;
-    LP nameDativusClaimerProject;
-    LP nameAblateClaimerProject;
-    LP nameGenitiveClaimerVote;
-    LP nameDativusClaimerVote;
-    LP nameAblateClaimerVote;
-    LP firmNameNativeClaimerProject, firmNameForeignClaimerProject, phoneClaimerProject, OGRNClaimerProject;
-    LP addressClaimerProject, postAddressClaimerProject, siteClaimerProject, emailFirmClaimerProject, INNClaimerProject;
-
-    LP documentTemplateDocumentTemplateDetail;
-
-    LP projectDocument, nameNativeProjectDocument;
-    LP fileDocument;
-    LP loadFileDocument;
-    LP openFileDocument;
-
-    LP fileDecisionVote;
-    LP attachProtocolDecisionVote;
-    LP loadFileDecisionVote;
-    LP openFileDecisionVote;
-
-    LP fileDecisionProject;
-    LP acceptedDecisionProject, rejectedDecisionProject;
-
-    private LP decisionNoticedVote, dateDecisionNoticedVote;
-    private LP decisionNoticedProject, dateDecisionNoticedProject;
-    private LP acceptedNoticedProject;
-    private LP rejectedNoticedProject;
-    private LP acceptedNoticedStatusProject;
-    private LP acceptedNoticedPreliminaryProject;
-
-    private LP prevOriginalDocsCheck;
-    private LP datePrevOriginalDocsCheck;
-
-    LP add2Strings;
-    LP overdueOriginalDocsCheckProject;
-    LP projectOriginalDocsCheck;
-    LP resultOriginalDocsCheck;
-    LP commentOriginalDocsCheck;
-    LP nameResultOriginalDocsCheck;
-    LP dateSubmitOriginalDocsCheck;
-    LP dateTimeOriginalDocsCheck;
-    LP dateFirstSubmitOriginalDocsProject;
-    LP dateOriginalDocsCheck;
-    LP overdueDateOriginalDocsCheck;
-    LP [] maxOriginalDocsCheckProjectProps;
-    LP currentOriginalDocsCheckProject;
-    LP executeOriginalDocsCheckProject;
-    LP dateExecuteOriginalDocsCheckProject;
-    LP resultExecuteOriginalDocsCheckProject;
-    LP setNegativeResultOriginalDocsCheck;
-    LP setPositiveResultOriginalDocsCheck;
-    LP negativeOriginalDocsCheckProject;
-    LP positiveOriginalDocsCheckProject;
-    LP sentForSignatureProject;
-    LP signedProject;
-    LP sentToFinDepProject;
-    LP submittedToRegisterProject;
-    LP preparedCertificateProject;
-    LP certifiedProject;
-    LP dateAppliedOriginalDocsProject;
-    LP dateSentForSignatureProject;
-    LP dateSignedProject;
-    LP dateSentToFinDepProject;
-    LP dateSubmittedToRegisterProject;
-    LP datePreparedCertificateProject;
-    LP dateCertifiedProject;
-    LP withdrawnProject;
-    LP dateWithdrawnProject;
-
-    LP inDefaultDocumentLanguage;
-    LP inDefaultDocumentExpert;
-    LP inDocumentLanguage;
-    LP inDocumentExpert;
-
-    LP inExpertVote, oldExpertVote, inNewExpertVote, inOldExpertVote;
-    LP exclExpertVote;
-    LP businessExpertVote;
-    LP dateStartVote, dateEndVote;
-    LP aggrDateEndVote;
-    public LP quantityPreliminaryVoteProject;
-
-    LP weekStartVote, quantityNewExpertWeek;
-    LP quantityNewWeek;
-
-    LP openedVote;
-    LP closedVote;
-    LP voteInProgressProject;
-    LP voteInProgressRepeatProject;
-    LP requiredPeriod;
-    LP overduePeriod;
-    LP requiredQuantity;
-    LP requiredBusinessQuantity;
-    LP requiredQuantityVote;
-    LP limitExperts;
-    public LP projectsImportLimit;
-    public LP importOnlyR2Projects;
-    LP voteStartFormVote;
-    LP voteProtocolFormVote;
-
-    LP dateExpertVote;
-    LP voteResultExpertVote, voteResultCorExpertVote, nameVoteResultExpertVote;
-    LP voteResultNewExpertVote;
-    LP inProjectExpert;
-    LP voteProjectExpert;
-    LP clusterVotedProjectExpert;
-    LP voteResultProjectExpert;
-    LP doneProjectExpert;
-    LP doneExpertVote, doneCorExpertVote, doneNewExpertVote, doneOldExpertVote;
-    LP refusedExpertVote;
-    LP connectedExpertVote;
-    LP expertVoteConnected;
-    LP ipExpertVote;
-
-    LP inClusterExpertVote, inClusterNewExpertVote;
-    LP innovativeExpertVote, innovativeNewExpertVote;
-    LP innovativeCommentExpertVote;
-    LP foreignExpertVote, foreignNewExpertVote;
-    LP competentExpertVote;
-    LP completeExpertVote;
-    LP completeCommentExpertVote;
-
-    private LP percentNeeded;
-    private LP percentNeededVote;
-    private LP quantityNeededVote;
-
-    public LP competitiveAdvantagesExpertVote, competitiveAdvantagesCorExpertVote;
-    public LP commercePotentialExpertVote, commercePotentialCorExpertVote;
-    public LP canBeImplementedExpertVote, canBeImplementedCorExpertVote;
-    public LP haveExpertiseExpertVote, haveExpertiseCorExpertVote;
-    public LP internationalExperienceExpertVote, internationalExperienceCorExpertVote;
-    public LP enoughDocumentsExpertVote, enoughDocumentsCorExpertVote;
-    public LP commentCompetitiveAdvantagesExpertVote, lengthCommentCompetitiveAdvantagesExpertVote;
-    public LP commentCommercePotentialExpertVote, lengthCommentCommercePotentialExpertVote;
-    public LP commentCanBeImplementedExpertVote, lengthCommentCanBeImplementedExpertVote;
-    public LP commentHaveExpertiseExpertVote, lengthCommentHaveExpertiseExpertVote;
-    public LP commentInternationalExperienceExpertVote, lengthCommentInternationalExperienceExpertVote;
-    public LP commentEnoughDocumentsExpertVote, lengthCommentEnoughDocumentsExpertVote;
-
-    LP quantityInVote;
-    LP quantityInOldVote;
-    LP quantityRepliedVote;
-    LP quantityDoneVote;
-    LP quantityExclVote;
-    LP quantityDoneNewVote;
-    LP quantityDoneOldVote;
-    LP quantityRefusedVote;
-    LP quantityConnectedVote;
-    LP quantityInClusterVote;
-    LP quantityInnovativeVote;
-    LP quantityForeignVote;
-    LP quantityCompetitiveAdvantagesVote;
-    LP quantityCommercePotentialVote;
-    LP quantityCanBeImplementedVote;
-    LP quantityHaveExpertiseVote;
-    LP quantityInternationalExperienceVote;
-    LP quantityEnoughDocumentsVote;
-    LP acceptedInClusterVote;
-    LP acceptedInnovativeVote;
-    LP acceptedForeignVote;
-    LP acceptedCompetitiveAdvantagesVote;
-    LP acceptedCommercePotentialVote;
-    LP acceptedCanBeImplementedVote;
-    LP acceptedHaveExpertiseVote;
-    LP acceptedInternationalExperienceVote;
-    LP acceptedEnoughDocumentsVote;
-
-    LP acceptedVote;
-    LP acceptedVoteR1;
-    LP acceptedVoteR2;
-    LP succeededVote;
-    LP openedSucceededVote, closedSucceededVote;
-    LP closedAcceptedVote;
-    LP closedRejectedVote;
-    LP closedAcceptedStatusVote, closedAcceptedPreliminaryVote;
-    LP doneExpertVoteDateFromDateTo;
-    LP doneExpertVoteMonthYear;
-    LP quantityDoneExpertDateFromDateTo;
-    LP quantityDoneExpertMonthYear;
-    LP voteSucceededProjectCluster;
-    LP voteOpenedSucceededProject;
-    LP noCurrentVoteProject;
-    LP valuedProjectCluster;
-    LP voteValuedProjectCluster;
-    LP voteLastProject;
-    LP dateStartVoteLastProject, dateEndVoteLastProject;
-    LP acceptedProjectCluster;
-    LP rejectedProjectCluster;
-    LP clusterAcceptedProject;
-    LP acceptedProject;
-    LP rejectedProject;
-    LP valuedProject;
-    LP voteRejectedProject;
-    LP needExtraVoteProject;
-    LP needExtraVoteRepeatProject;
-
-    LP nameNativeShortFinalClusterApplication;
-    LP emailLetterExpertVoteEA, emailLetterExpertVote;
-    LP allowedEmailLetterExpertVote;
-
-    LP emailClaimerFromAddress;
-    LP emailClaimerVoteEA;
-    LP claimerEmailVote;
-    LP emailClaimerHeaderVote;
-    LP emailClaimerVote;
-    LP emailFondVoteEA, emailFondHeaderVote, emailFondVote;
-    LP emailFondStartVote;
-
-    LP emailStartVoteEA, emailStartHeaderVote, emailStartVote;
-    LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
-    LP emailClosedVoteEA, emailClosedHeaderVote, emailClosedVote;
-    LP emailForesightCheckProjectEA;
-    LP emailNotificationProjectEA;
-    LP emailNotificationHeaderProject;
-    LP emailNotificationProject;
-    LP emailAuthExpertEA, emailAuthExpert;
-    LP emailAuthProfileExpertEA, emailAuthProfileExpert;
-    LP emailReminderProfileExpertEA, emailReminderProfileExpert;
-    LP reminderProfileExpertSubjectLanguage;
-    LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
-    LP authProfileExpertSubjectLanguage;
-    LP emailClaimerFormalControlEA, claimerFormalControl, claimerEmailFormalControl, nameNativeJoinClaimerFormalControl, nameForeignJoinClaimerFormalControl, nameNativeClaimerFormalControl, nameNativeUnionManagerFormalControl;
-    LP needEmailClaimerFormalControl;
-    LP resultNoticedFormalControl, dateResultNoticedFormalControl, setCurrentDateResultNoticedFormalControl, emailClaimerHeaderFormalControl, emailClaimerFormalControl;
-    LP emailClaimerLegalCheckEA, claimerLegalCheck, claimerEmailLegalCheck, nameNativeJoinClaimerLegalCheck, nameForeignJoinClaimerLegalCheck, nameNativeClaimerLegalCheck;
-    LP resultNoticedLegalCheck, dateResultNoticedLegalCheck, setCurrentDateResultNoticedLegalCheck, emailClaimerHeaderLegalCheck, emailClaimerLegalCheck, emailClaimerLegalCheckProject;
-    LP needNoticeNegativeLegalCheck, needNoticeChangeLegalCheck, needNoticeLegalCheck;
-    LP emailFondFormalControlEA, emailFondHeaderFormalControl, emailFondFormalControl;
-    LP emailTransferredProjectEA, emailTransferredHeaderProject, emailTransferredProject;
-    LP emailForesightClaimerProjectEA, emailForesightClaimerHeaderProject, emailForesightClaimerProject;
-    LP emailBureauTranslation, emailBureauTrProjectEA, emailBureauTrProject;
-    LP emailNeedVoteProjectEA, emailNeedVoteProject;
-    LP resultNeedVoteProject, dateResultNeedVoteProject, setCurrentDateResultNeedVoteProject, dateOverdueResultNeedVoteProject;
-    LP emailClaimerChangeLegalCheckEA, setCurrentDateChangeLegalCheck, emailClaimerChangeLegalCheck;
-
-    LP generateDocumentsProjectDocumentType;
-    LP includeDocumentsProject, hideIncludeDocumentsProject;
-    LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
-    LP openApplicationProjectAction, openCompleteApplicationProjectAction;
-    LP exportExpertsAction, exportExpertsEscapeAction, exportProjectDocumentsAction;
-    LP copyProjectAction;
-    LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
-    LP copyResultsVote;
-    LP includeProjectClusterForesight;
-    LP importIPsExpertVoteAction;
-
-    LP expertLogin;
-
-    LP projectStatusProject, nameProjectStatusProject;
-    LP logStatusProject, logNameStatusProject;
-
-    LP valuedStatusProject;
-    LP certifiedStatusProject;
-    LP foresightCheckStatusProject;
-    LP legalCheckStatusProject;
-    LP formalCheckStatusProject;
-    LP voteStatusProject;
-    LP statusProject;
-    public LP nameStatusProject;
-    LP oficialNameProjectStatus;
-    LP numberProjectStatus;
-    LP statusDataProject;
-    LP statusProjectVote, nameStatusProjectVote;
-
-    LP projectSucceededClaimer;
-
-    LP quantityTotalExpert;
-    LP quantityDoneExpert;
-    LP percentDoneExpert;
-    LP percentInClusterExpert;
-    LP percentInnovativeExpert;
-    LP percentForeignExpert;
-    LP percentCompetitiveAdvantagesExpert;
-    LP percentCommercePotentialExpert;
-    LP percentCanBeImplementedExpert;
-    LP percentHaveExpertiseExpert;
-    LP percentInternationalExperienceExpert;
-    LP percentEnoughDocumentsExpert;
-
-    LP prevDateStartVote, prevDateVote;
-    LP prevClusterVote, nameNativePrevClusterVote;
-    LP dateProjectVote;
-    LP numberNewExpertVote;
-    LP numberOldExpertVote;
-
-    public LP numberCluster;
-    LP clusterNumber;
-    LP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
-    LP lastClusterProjectVote, isLastClusterVote;
-    public LP nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameNativeShortFinalClusterProject, emailFinalClusterProject;
-
-    LP finalClusterProjectVote, nameNativeFinalClusterProjectVote;
-
-    LP nativeSubstantiationFinalClusterProject, foreignSubstantiationFinalClusterProject;
-
-    LP languageExpert;
-    public LP nameLanguageExpert;
-    LP languageDocument;
-    LP nameLanguageDocument;
-    LP englishDocument;
-    LP defaultEnglishDocumentType;
-    LP defaultEnglishDocument;
-    LP typeDocument;
-    LP nameTypeDocument;
-    LP postfixDocument;
-    LP hidePostfixDocument;
-
-    LP localeLanguage;
-
-    LP quantityMinLanguageDocumentType;
-    LP quantityMaxLanguageDocumentType;
-    LP quantityProjectLanguageDocumentType;
-    LP translateLanguageDocumentType;
-    LP notEnoughProject;
-    public LP inactiveProject;
-    public LP autoGenerateProject;
-
-    LP nameDocument;
-
-    public LP nameNativeProject, nameNativeDataProject, nameNativeJoinProject;
-    public LP nameForeignProject, nameForeignDataProject, nameForeignJoinProject;
-    public LP nameNativeManagerProject;
-    public LP nameForeignManagerProject;
-    public LP nativeProblemProject;
-    public LP foreignProblemProject;
-    public LP nativeInnovativeProject;
-    public LP foreignInnovativeProject;
-    public LP nameForeignProjectType;
-    public LP projectTypeProject;
-    LP nameNativeProjectTypeProject;
-    LP nameForeignProjectTypeProject;
-    public LP projectActionProject;
-    public LP nameProjectActionProject;
-    LP projectActionVote;
-    LP nameProjectActionVote;
-    LP isStatusVote;
-    LP isPreliminaryVote;
-    LP isStatusProject;
-    LP isPreliminaryProject;
-    public LP nativeSubstantiationProjectType;
-    public LP foreignSubstantiationProjectType;
-    public LP nativeSubstantiationProjectCluster;
-    public LP foreignSubstantiationProjectCluster;
-    public LP isOtherClusterProject;
-    LP hideIsOtherClusterProject;
-    public LP nativeSubstantiationOtherClusterProject;
-    LP hideNativeSubstantiationOtherClusterProject;
-    public LP foreignSubstantiationOtherClusterProject;
-    public LP fileNativeSummaryProject;
-    LP hideForeignSubstantiationOtherClusterProject;
-    LP currentCluster;
-    LP nameNativeShortCurrentCluster;
-    LP inProjectCurrentCluster;
-    LP loadFileNativeSummaryProject;
-    LP openFileNativeSummaryProject;
-    public LP fileForeignSummaryProject;
-    LP loadFileForeignSummaryProject;
-    LP openFileForeignSummaryProject;
-    public LP fileNativeApplicationFormProject;
-    LP loadFileNativeApplicationFormProject;
-    LP openFileNativeApplicationFormProject;
-    public LP fileForeignApplicationFormProject;
-    LP loadFileForeignApplicationFormProject;
-    LP openFileForeignApplicationFormProject;
-    public LP fileNativeRoadMapProject;
-    LP loadNativeFileRoadMapProject;
-    LP openNativeFileRoadMapProject;
-    public LP fileForeignRoadMapProject;
-    LP loadForeignFileRoadMapProject;
-    LP openForeignFileRoadMapProject;
-    public LP fileResolutionIPProject;
-    LP loadFileResolutionIPProject;
-    LP hideLoadFileResolutionIPProject;
-    LP openFileResolutionIPProject;
-    public LP fileNativeTechnicalDescriptionProject;
-    public LP loadFileNativeTechnicalDescriptionProject;
-    LP openFileNativeTechnicalDescriptionProject;
-    public LP fileForeignTechnicalDescriptionProject;
-    LP loadFileForeignTechnicalDescriptionProject;
-    LP openFileForeignTechnicalDescriptionProject;
-
-    public LP isReturnInvestmentsProject;
-    public LP nameReturnInvestorProject;
-    public LP amountReturnFundsProject;
-    public LP isNonReturnInvestmentsProject;
-    public LP nameNonReturnInvestorProject;
-    public LP amountNonReturnFundsProject;
-    public LP isCapitalInvestmentProject;
-    public LP isPropertyInvestmentProject;
-    public LP isGrantsProject;
-    public LP isOtherNonReturnInvestmentsProject;
-    public LP commentOtherNonReturnInvestmentsProject;
-    public LP isOwnFundsProject;
-    public LP amountOwnFundsProject;
-    public LP isPlanningSearchSourceProject;
-    public LP amountFundsProject;
-    public LP isOtherSoursesProject;
-    public LP commentOtherSoursesProject;
-    public LP needsToBeTranslatedToRussianProject;
-    public LP needsToBeTranslatedToEnglishProject;
-    public LP translatedToRussianProject;
-    public LP hideTranslatedToRussianProject;
-    public LP translatedToEnglishProject;
-    public LP hideTranslatedToEnglishProject;
-    public LP fillNativeProject;
-    public LP fillForeignProject;
-    public LP langProject;
-    public LP isConsultingCenterQuestionProject;
-    public LP isConsultingCenterCommentProject;
-    public LP consultingCenterCommentProject;
-    public LP sumPositiveConsultingCenterCommentProject;
-    public LP sumNegativeConsultingCenterCommentProject;
-    public LP sumTotalConsultingCenterCommentProject;
-    public LP betweenDateProject;
-
-    LP hideNameReturnInvestorProject;
-    LP hideAmountReturnFundsProject;
-    LP hideNameNonReturnInvestorProject;
-    LP hideAmountNonReturnFundsProject;
-    LP hideCommentOtherNonReturnInvestmentsProject;
-    LP hideAmountOwnFundsProject;
-    LP hideAmountFundsProject;
-    LP hideCommentOtherSoursesProject;
-    LP hideIsCapitalInvestmentProject;
-    LP hideIsPropertyInvestmentProject;
-    LP hideIsGrantsProject;
-    LP hideIsOtherNonReturnInvestmentsProject;
-
-    public LP isOwnedEquipmentProject;
-    public LP isAvailableEquipmentProject;
-    public LP isTransferEquipmentProject;
-    public LP descriptionTransferEquipmentProject;
-    public LP ownerEquipmentProject;
-    public LP isPlanningEquipmentProject;
-    public LP specificationEquipmentProject;
-    public LP isSeekEquipmentProject;
-    public LP descriptionEquipmentProject;
-    public LP isOtherEquipmentProject;
-    public LP commentEquipmentProject;
-    LP hideDescriptionTransferEquipmentProject;
-    LP hideOwnerEquipmentProject;
-    LP hideSpecificationEquipmentProject;
-    LP hideDescriptionEquipmentProject;
-    LP hideCommentEquipmentProject;
-
-    public LP projectPatent, equalsPatentProject;
-    public LP sidProjectPatent;
-    public LP nativeTypePatent;
-    public LP foreignTypePatent;
-    public LP nativeNumberPatent;
-    public LP foreignNumberPatent;
-    public LP priorityDatePatent;
-    public LP isOwned;
-    public LP ownerPatent;
-    public LP nameForeignOwnerType;
-    public LP ownerTypePatent;
-    LP ownerTypeToPatent;
-    LP nameNativeOwnerTypePatent;
-    LP nameForeignOwnerTypePatent;
-    public LP ownerTypeToSID;
-    public LP projectTypeToSID;
-    public LP projectActionToSID;
-    public LP projectMissionToSID;
-    public LP projectScheduleToSID;
-    public LP fileIntentionOwnerPatent;
-    LP loadFileIntentionOwnerPatent;
-    LP openFileIntentionOwnerPatent;
-    public LP isValuated;
-    public LP valuatorPatent;
-    public LP fileActValuationPatent;
-    LP loadFileActValuationPatent;
-    LP openFileActValuationPatent;
-    LP hideOwnerPatent;
-    LP hideFileIntentionOwnerPatent;
-    LP hideLoadFileIntentionOwnerPatent;
-    LP hideOpenFileIntentionOwnerPatent;
-    LP hideValuatorPatent;
-    LP hideFileActValuationPatent;
-    LP hideLoadFileActValuationPatent;
-    LP hideOpenFileActValuationPatent;
-    LP hideNameNativeOwnerTypePatent;
-    LP hideNameForeignOwnerTypePatent;
-
-    public LP projectAcademic;
-    public LP sidProjectAcademic;
-    public LP fullNameAcademic;
-    public LP fullNameToAcademic;
-    public LP fullNameSIDToAcademic;
-    public LP institutionAcademic;
-    public LP titleAcademic;
-    public LP fileDocumentConfirmingAcademic;
-    LP loadFileDocumentConfirmingAcademic;
-    LP openFileDocumentConfirmingAcademic;
-    public LP fileDocumentEmploymentAcademic;
-    LP loadFileDocumentEmploymentAcademic;
-    LP openFileDocumentEmploymentAcademic;
-
-    public LP projectNonRussianSpecialist;
-    public LP sidProjectNonRussianSpecialist;
-    public LP fullNameNonRussianSpecialist;
-    public LP fullNameToNonRussianSpecialist;
-    public LP fullNameSIDToNonRussianSpecialist;
-    public LP organizationNonRussianSpecialist;
-    public LP titleNonRussianSpecialist;
-    public LP fileNativeResumeNonRussianSpecialist;
-    LP loadFileForeignResumeNonRussianSpecialist;
-    LP openFileForeignResumeNonRussianSpecialist;
-    public LP fileForeignResumeNonRussianSpecialist;
-    LP loadFileNativeResumeNonRussianSpecialist;
-    LP openFileNativeResumeNonRussianSpecialist;
-    public LP filePassportNonRussianSpecialist;
-    LP loadFilePassportNonRussianSpecialist;
-    LP openFilePassportNonRussianSpecialist;
-    public LP fileStatementNonRussianSpecialist;
-    LP loadFileStatementNonRussianSpecialist;
-    LP openFileStatementNonRussianSpecialist;
-
-    public LP fileMinutesOfMeetingExpertCollegiumProject;
-    LP loadFileMinutesOfMeetingExpertCollegiumProject;
-    LP openFileMinutesOfMeetingExpertCollegiumProject;
-    public LP fileWrittenConsentClaimerProject;
-    LP loadFileWrittenConsentClaimerProject;
-    LP openFileWrittenConsentClaimerProject;
-
-
-    LP isForeignExpert;
-    LP localeExpert;
-    public LP disableExpert;
-
-    LP editClaimer;
-    public LP addProject;
-    LP editR1Project;
-    LP editClaimerProject;
-    LP translateToRussianProject, translateToEnglishProject;
-    LP hideTranslateToRussianProject, hideTranslateToEnglishProject;
-    LP needTranslationProject, needTranslationLegalChek, needsToBeTranslatedToRussianLegalChek;
-    LP needNeedTranslationProject;
-
-    LP projectFormalControl, dateProjectFormalControl, clusterProjectFormalControl, nameNativeClusterProjectFormalControl;
-    LP resultFormalControl;
-    LP sidResultFormalControl, nameResultFormalControl;
-    LP addNotEnoughDocumentsFCResult;
-    LP addNoListOfExpertsFCResult;
-    LP addNotSuitableClusterFCResult;
-    LP addRepeatedFCResult;
-    LP addPositiveFCResult;
-
-    LP updateDateFormalControl;
-    LP dateTimeSubmitFormalControl, dateSubmitFormalControl;
-    LP dateTimeFormalControl, dateFormalControl;
-
-    LP prevFormalControl, datePrevFormalControl;
-
-    LP overdueDateFormalControl;
-    LP overdueFormalControlProject;
-
-    LP projectActionLegalCheck;
-    LP nameProjectActionLegalCheck;
-    LP LCMinDateProjectActionProject;
-    LP minDateLegalCheck;
-    LP isR1LegalCheck;
-
-    LP isPreliminaryLegalCheck, isStatusLegalCheck;
-    LP prevLegalCheck, datePrevLegalCheck;
-
-    LP commentFormalControl;
-    LP[] maxFormalControlProjectProps;
-    LP currentFormalControlProject;
-    LP executeFormalControlProject;
-    LP dateExecuteFormalControlProject;
-    LP resultExecuteFormalControlProject;
-    LP nameResultExecuteFormalControlProject;
-    LP notEnoughDocumentsProject;
-    LP isPreliminaryNotEnoughDocumentProject;
-    LP isStatusNotEnoughDocumentProject;
-    LP noListOfExpertsProject;
-    LP notSuitableClusterProject;
-    LP repeatedProject;
-    LP positiveFormalResultProject;
-    LP negativeFormalResultProject;
-
-    LP projectActionFormalControl;
-    LP nameProjectActionFormalControl;
-
-    LP isPreliminaryFormalControl, isStatusFormalControl;
-    LP datePreliminaryProjectFormalControl, dateStatusProjectFormalControl;
-    LP updateDateLegalCheck;
-    LP dateTimeSubmitLegalCheck, dateSubmitLegalCheck;
-
-    LP dateTimeLegalCheck, dateLegalCheck;
-    LP overdueDateLegalCheck;
-
-    LP userLegalCheck, nameUserLegalCheck;
-
-    LP overdueLegalCheckProject;
-    LP projectLegalCheck;
-    LP resultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject;
-    LP setNegativeResultForesightCheckProject, setPositiveResultForesightCheckProject;
-    LP commentForesightCheckProject;
-    LP setNegativeResultForesightCheckProjectApply;
-    LP applyForesightCheckProjectCluster, rejectForesightCheckProject;
-    LP applyForesightCheckProject;
-    LP needForesightCheckProject;
-    LP resultLegalCheck, positiveResultLegalCheck, negativeResultLegalCheck;
-    LP nameResultLegalCheck;
-    LP dateProjectLegalCheck, sidResultLegalCheck, clusterProjectLegalCheck, nameNativeClusterProjectLegalCheck, isPreliminaryAndStatusProjectLegalCheck;
-    LP statusProjectFormalControl, sidStatusProjectFormalControl;
-    LP statusProjectLegalCheck, sidStatusProjectLegalCheck;
-    LP addNegativeLCResult;
-    LP addPositiveLCResult;
-    LP commentLegalCheck;
-    LP[] maxLegalCheckProjectProps;
-    LP currentLegalCheckProject;
-    LP executeLegalCheckProject;
-    LP dateExecuteLegalCheckProject;
-    LP resultExecuteLegalCheckProject;
-    LP resultNoticedLegalCheckProject;
-    LP negativeLegalResultProject;
-    LP negativeLegalResultStatusProject;
-    LP negativeLegalResultPreliminaryProject;
-    LP positiveLegalResultProject;
-    LP needNoticeLegalResultProject;
-    LP sentForTranslationProject, dateSentForTranslationProject, dateToSentForTranslationProject;
-    LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
-    LP transferredProject, dateTransferredProject;
-    LP needVoteProject;
-    LP changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck;
-
-    public LP dateAgreementExpert;
-    LP vone;
-    LP claimerProjectVote;
-    LP nameNativeJoinClaimerProjectVote;
-    LP countryExpert;
-    public LP nameCountryExpert;
-    LP caseCountry;
-    LP caseCountryExpert;
-    LP currencyExpert;
-    public LP nameCurrencyExpert;
-    LP residency;
-    LP residencyCountryExpert;
-    LP rateExpert;
-    LP executiveLD, phoneExecutiveLD, mobileExecutiveLD;
-    LP executiveIS;
-    LP emailForCertificates;
-    LP readInformation;
-    LP moneyQuantityDoneExpertMonthYear;
-    LP baseCurrency;
-    LP baseCurrencyExpert;
-    LP englCountry;
-    LP englCountryExpert;
-    LP englCurrency;
-    LP englCurrencyExpert;
-    LP pluralCurrency;
-    LP pluralCurrencyExpert;
-    LP emailLetterExpertMonthYearEA;
-    LP emailLetterCertificatesExpertMonthYear;
-    LP previousDate;
-    LP monthInPreviousDate, yearInPreviousDate;
-    LP isNewMonth;
-    LP quantityIsR1DoneExpert;
-    LP quantityIsR2DoneExpert;
-
-    LP hasPreliminaryVoteProject;
-    LP isPreliminaryStatusProject;
-    LP isPreliminaryAndStatusProject, isPreliminaryAndStatusProjectFormalControl;
-
-    LP projectActionApplication, nameProjectActionApplication;
-
-    LP projectApplication;
-    LP projectApplicationPreliminary, projectApplicationStatus;
-    LP isPreliminaryApplication, isStatusApplication;
-    LP isPreliminaryAndStatusApplication;
-    LP preliminaryApplicationProject;
-    LP statusApplicationProject;
-    LP inActTestApplication;
-    LP inActTestApplicationDate;
-    LP inApplicationCluster;
-    LP nativeSubstantiationApplicationCluster;
-    LP foreignSubstantiationApplicationCluster;
-    LP inApplicationForesight;
-    LP isR2Application, isR1Application;
-    LP openApplicationProjectActionApplication, openCompleteApplicationProjectActionApplication;
-    LP exportProjectDocumentsActionApplication;
-    LP nameRegulationsApplication;
-
-    LP inactiveApplication;
-
-    LP dateApplicationPreliminary, dateApplicationStatus;
-    LP dateApplication;
-
-    LP nameNativeProjectApplication;
-    LP nameNativeClaimerApplicationPreliminary, nameNativeClaimerApplicationStatus;
-    LP nameNativeClaimerApplication;
-
-    private LP emailClaimerApplication;
-
-    private LP langApplication;
-    private LP nameNativeShortAggregateClusterApplication;
-
-    private LP finalClusterApplication, nameFinalClusterApplication;
-
-    LP quantityClusterApplication;
-    LP nonClusterApplication;
-    LP nonClusterApplicationsSubmitDateDate;
-    LP nonClusterApplicationsIsSatusSubmitDateDate;
-
-    LP statusJoinApplication;
-    LP isPreliminaryAfterStatusApplication;
-    LP statusApplication;
-    LP nameStatusApplication;
-    LP officialNameStatusApplication;
-    LP needFormalCheckStatusProject;
-    LP needLegalCheckStatusProject;
-    LP hideAddPositiveLCResult;
-    LP hideAddNegativeLCResult;
-    public LP projectMissionProject;
-    LP nameProjectMissionProject;
-    public LP nativeResumeProject;
-    public LP foreignResumeProject;
-    public LP nameNativeContactProject;
-    public LP nameForeignContactProject;
-    public LP phoneContactProject;
-    public LP emailContactProject;
-    public LP nativeMarketTrendsProject;
-    public LP foreignMarketTrendsProject;
-    public LP linksMarketTrendsProject;
-    public LP linksAnalogProject;
-    public LP nativeRelevanceProject;
-    public LP foreignRelevanceProject;
-    public LP nativeBasicTechnologyProject;
-    public LP foreignBasicTechnologyProject;
-    public LP nativeCaseStudiesProject;
-    public LP foreignCaseStudiesProject;
-    public LP nativeCharacteristicsAnaloguesProject;
-    public LP foreignCharacteristicsAnaloguesProject;
-    public LP nativeCompaniesAnaloguesProject;
-    public LP foreignCompaniesAnaloguesProject;
-    public LP nativeMarketIntroductionProject;
-    public LP foreignMarketIntroductionProject;
-    public LP linksMarketIntroductionProject;
-    public LP linksForeignMarketIntroductionProject;
-    public LP nativeHistoryProject;
-    public LP foreignHistoryProject;
-    public LP nativeDynamicsProject;
-    public LP foreignDynamicsProject;
-    public LP nativeGrantsProject;
-    public LP foreignGrantsProject;
-    public LP nativeLaboratoryProject;
-    public LP foreignLaboratoryProject;
-    public LP nativeInvestmentProject;
-    public LP foreignInvestmentProject;
-    public LP nativeResultsProject;
-    public LP foreignResultsProject;
-    public LP nativeGeneralizedPlanProject;
-    public LP foreignGeneralizedPlanProject;
-    public LP projectSpecialist, equalsSpecialistProject;
-    public LP nativePostSpecialist;
-    public LP foreignPostSpecialist;
-    public LP nativeFunctionSpecialist;
-    public LP foreignFunctionSpecialist;
-    public LP nativeScopeSpecialist;
-    public LP foreignScopeSpecialist;
-    public LP nativeExperienceSpecialist;
-    public LP foreignExperienceSpecialist;
-    public LP nativeTitleSpecialist;
-    public LP foreignTitleSpecialist;
-    public LP nativeWorkSpecialist;
-    public LP foreignWorkSpecialist;
-    public LP nativePublicationsSpecialist;
-    public LP foreignPublicationsSpecialist;
-    public LP nativeCitationSpecialist;
-    public LP foreignCitationSpecialist;
-    public LP nativeIntellectualPropertySpecialist;
-    public LP foreignIntellectualPropertySpecialist;
-    public LP fileStatementSpecialist;
-    public LP loadFileStatementSpecialist;
-    public LP openFileStatementSpecialist;
-    public LP filePassportSpecialist;
-    public LP loadFilePassportSpecialist;
-    public LP openFilePassportSpecialist;
-    public LP projectResearch;
-    public LP equalsResearchProject;
-    public LP foreignCommentResearch;
-    public LP nativeCommentResearch;
-    public LP dataResearch;
-    public LP nativeCommentToResearch;
-    public LP nativeCommentSIDToResearch;
-    public LP foreignCommentToResearch;
-    public LP foreignCommentSIDToResearch;
-    public LP linksPatent;
-    public LP nativeCommentMissionProject;
-    public LP foreignCommentMissionProject;
-    public LP projectPublications, equalsPublicationsProject;
-    public LP nativeToPublications, nativeSIDToPublications;
-    public LP foreignToPublications, foreignSIDToPublications;
-    public LP foreignPublications;
-    public LP nativeAuthorPublications;
-    public LP foreignAuthorPublications;
-    public LP datePublications;
-    public LP nativeLinksPublications;
-    public LP projectCommercialization, equalsCommercializationProject;
-    public LP nativeProjectCommercialization;
-    public LP nativeProjectToCommercialization, nativeProjectSIDToCommercialization;
-    public LP foreignProjectToCommercialization, foreignProjectSIDToCommercialization;
-    public LP foreignProjectCommercialization;
-    public LP nativeCommentProjectCommercialization;
-    public LP foreignCommentProjectCommercialization;
-    public LP projectAnalogues, equalsAnaloguesProject;
-    public LP nativeProjectAnalogues;
-    public LP nativeProjectToAnalogues, nativeProjectSIDToAnalogues;
-    public LP foreignProjectToAnalogues, foreignProjectSIDToAnalogues;
-    public LP foreignProjectAnalogues;
-    public LP nativeDescriptionProjectAnalogues;
-    public LP foreignDescriptionProjectAnalogues;
-    public LP nativeCharacteristicsProjectAnalogues;
-    public LP foreignCharacteristicsProjectAnalogues;
-    public LP projectObjectives, equalsObjectivesProject;
-    public LP nativeProjectObjectives;
-    public LP nativeProjectToObjectives, nativeProjectSIDToObjectives;
-    public LP foreignProjectToObjectives, foreignProjectSIDToObjectives;
-    public LP foreignProjectObjectives;
-    public LP nameNativeSpecialist;
-    public LP nameNativeToSpecialist, nameNativeSIDToSpecialist;
-    public LP nameForeignToSpecialist, nameForeignSIDToSpecialist;
-    public LP nameForeignSpecialist;
-    public LP nativePublications;
-    public LP nativeEditionPublications;
-    public LP foreignEditionPublications;
-    LP editR2Project;
-    LP foreignProjectMissionProject;
-    LP descriptionProjectMission;
-
-    private LP daysSubmitApplicationDate;
-    private LP weekSubmitApplicationDate;
-    private LP applicationsSubmitDateWeek;
-    private LP oneApplicationDateDate;
-    private LP applicationsSubmitDateDate;
-    private LP applicationsSubmitProjectActionClusterDateDate;
-    private LP averageWeekApplSubmitDateDate;
-
-    private LP daysClaimerFirstOriginalDocsProject, isClaimerFirstOriginalDocsProjectDate;
-    private LP daysClaimerExtraOriginalDocsProject, isClaimerExtraOriginalDocsProjectDate;
-    private LP daysClaimerOriginalDocsProject, isClaimerOriginalDocsProjectDate;
-
-    private LP daysClaimerPreliminaryFormalControlProject, isClaimerPreliminaryFormalControlProjectDate;
-    private LP daysClaimerStatusFormalControlProject, isClaimerStatusFormalControlProjectDate;
-
-    private LP daysClaimerPreliminaryLegalCheckProject, isClaimerPreliminaryLegalCheckProjectDate;
-    private LP daysClaimerStatusLegalCheckProject, isClaimerStatusLegalCheckProjectDate;
-
-    private LP daysClaimerPreliminaryProject, isClaimerPreliminaryProjectDate;
-    private LP daysClaimerStatusProject, isClaimerStatusProjectDate;
-
-    private LP daysClaimerApplicationPreliminary, daysClaimerApplicationStatus, daysClaimerApplication;
-    private LP isClaimerApplicationPreliminaryDate, isClaimerApplicationStatusDate, isClaimerApplicationDate;
-
-    LP nonClusterApplicationsProjectActionSubmitDateDate;
-    LP applicationsSubmitClusterDateDate;
-    LP applicationsSubmitProjectActionDateDate;
-    LP applicationsSubmitStatusApplicationClusterDateDate;
-    LP applicationsSubmitStatusApplicationDateDate;
-    LP nonClusterApplicationsStatusAplicationSubmitDateDate;
-    LP oneApplications;
-    LP sumApplicationsStatusApplication;
-    LP sumApplicationsStatusApplicationCluster;
-    LP typeProjectStatusApplication;
-    LP sumApplicationsTypeProjectStatus;
-    LP sumApplicationsTypeProjectStatusCluster;
-    LP sumSubmitApplications;
-    LP nonClusterApplicationsStatusApplicationCluster;
-    LP nonClusterApplicationsStatusApplication;
-    LP nonClusterApplicationsTypeProjectStatusCluster;
-    LP nonClusterApplicationsTypeProjectStatus;
-    LP nonClusterApplicationsSubmit;
-    LP sumApplicationsCluster;
-    LP percentSumApplicationsTypeProjectStatusCluster;
-    LP percentNonClusterApplicationsTypeProjectStatus;
-    LP percentApplicationsTypeProjectStatus;
-    LP inTestApplication;
-    public LP projectMileStone, equalsMileStoneProject;
-    public LP nativeMileStone, nativeToMileStone;;
-    public LP nativeSIDToMileStone;
-    public LP orderNumberMileStone;
-    public LP projectMileStoneYear, equalsMileStoneYearProject;
-    public LP nativeMileStoneYear;
-    public LP nativeToMileStoneYear, nativeSIDToMileStoneYear;
-    public LP nativeTypeMileStone, foreignTypeMileStone;
-    public LP nativeDescriptionTypeMileStoneMileStoneMileStoneYear;
-    public LP foreignDescriptionTypeMileStoneMileStoneMileStoneYear;
-    public LP nativeResearchDescriptionTypeMileStoneMileStoneYear;
-    public LP nativeProductCreationDescriptionTypeMileStoneMileStoneYear;
-    public LP nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear;
-    public LP nativeLicensingDescriptionTypeMileStoneMileStoneYear;
-    public LP nativePromotionDescriptionTypeMileStoneMileStoneYear;
-    public LP nativeSellingDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignResearchDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignProductCreationDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignLicensingDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignPromotionDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignSellingDescriptionTypeMileStoneMileStoneYear;
-
-    LP dateRegisteredStatusProject;
-    LP dateNoClusterStatusProject;
-    LP dateNoExpertsStatusProject;
-    LP dateNotEnoughDocsForStatusStatusProject;
-    LP dateNotEnoughDocsForPreliminaryStatusProject;
-    LP dateRepeatedStatusProject;
-    LP datePositiveFCResultStatusProject;
-    LP dateOverdueFCStatusProject;
-    LP dateNegativeLCPreliminaryResultStatusProject;
-    LP dateNegativeLCStatusResultStatusProject;
-    LP datePositiveLCResultStatusProject;
-    LP dateOverdueLCStatusProject;
-    LP datePositiveFSResultProject;
-    LP dateNeedTranslationStatusProject;
-    LP dateInProgressStatusProject, dateInProgressRepeatStatusProject, dateIssuedVoteDocsStatusProject, dateNeedExtraVoteStatusProject, dateRejectedStatusProject, dateAcceptedStatusProject;
-    LP dateAppliedOriginalDocsStatusProject, dateNotEnoughOriginalDocsStatusProject, dateOverdueOriginalDocsStatusProject;
-    LP dateApplyStatusStatusProject;
-    LP dateSentPreliminaryAcceptedStatusProject, dateSentStatusAcceptedStatusProject, dateSentRejectedStatusProject, dateWithdrawnStatusProject;
-    LP dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject;
-    LP dateInStatusProject;
-    LP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusProject, normalPeriodStatusApplication, isWorkDaysNormalPeriodStatus, quantityDaysToOverdueDateStatusProject;
-    LP isFinalProjectStatus;
-    LP typeProjectStatusProjectStatus, nameTypeProjectStatusProjectStatus;
-    LP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
-    LP dateSubmittedToRegisterApplication;
-    LP quantityStatusVoteProject;
-    LP quantityStatusVoteApplication;
-    LP daysCommonApplication;
-    LP daysStatusApplication;
-    LP registerApplicationDateTo;
-    LP daysRegisterApplicationDateTo;
-    LP oneRegisterApplicationDateTo;
-    LP submitRegisterApplicationsDateTo;
-    LP submitDaysRegisterApplicationDateTo;
-    LP averageDaysRegisterApplicationsDateTo;
-    LP qSubmitRegisterApplicationsDateTo;
-    LP daysSubmitRegisterApplicationDate;
-    LP weekSubmitRegisterApplicationDate;
-    LP registerApplicationDate;
-    LP submitDaysRegisterApplicationDateWeek;
-    LP submitRegisterApplicationsDateWeek;
-    LP risingDaysRegisterApplicationDateWeek;
-    LP risingRegisterApplicationsDateWeek;
-    LP averageDaysRegisterApplicationsDateWeek;
-    LP registerApplication;
-    LP oneStatusApplicationDateDate;
-    LP statusApplicationsSubmitDateDate;
-    LP averageDaysRegisterApplicationsDateWeekWeek;
-    LP averageDaysStatusApplicationsSubmitDateDate;
-    LP daysStatusApplicationsSubmitDateDate;
-    LP statusApplicationDateDate;
-    LP notificationPeriodProject;
-    LP dateNotificationPeriodProject;
-    LP datePositiveLegalResultProject;
-    LP isFileNativeTechnicalDescriptionProject;
-    LP isFileForeignTechnicalDescriptionProject;
-    LP nameNativeProjectFormalControl;
-    LP commentLegalCheckProject, setNegativeLegalResultProject, setNegativeLegalResultProjectApply, acceptPreliminaryLegalCheckProject, rejectLegalCheckProject;
-    LP setPositiveLegalResultProject, setPositiveLegalResultProjectApply, applyLegalCheckProject;
-    LP addPositiveLCResultProject, setPositiveLCResultApplyProject;
+    public LCP nameNative;
+    public LCP nameForeign;
+    public LCP nameNativeShort;
+    public LCP nameNativeShortAggregateClusterProject;
+    public LCP firmNameNativeClaimer;
+    public LCP firmNameForeignClaimer;
+    public LCP phoneClaimer;
+    public LCP addressClaimer;
+    public LCP postAddressClaimer;
+    public LCP siteClaimer;
+    public LCP emailClaimer;
+    public LCP emailFirmClaimer;
+    public LCP emailClaimerProject;
+    public LCP statementClaimer;
+    public LCP constituentClaimerProject;
+    public LCP extractClaimerProject;
+    public LCP statementClaimerProject;
+    LAP loadStatementClaimer;
+    LAP openStatementClaimer;
+    public LCP constituentClaimer;
+    LAP loadConstituentClaimer;
+    LAP openConstituentClaimer;
+    public LCP extractClaimer;
+    LAP loadExtractClaimer;
+    LAP openExtractClaimer;
+    public LCP OGRNClaimer;
+    public LCP INNClaimer;
+    public LCP projectScheduleProject;
+    LCP regulationsProject;
+    public LCP nameRegulationsProject;
+    LCP isR2Project, isR1Project;
+    LCP revisionVote;
+    LCP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
+    LCP quantityVoteProject;
+    LCP quantityDefaultVoteProject;
+    LCP quantitySubDefaultVoteProject;
+    LCP quantityVoteProjectCluster;
+    LCP quantityClusterVotedProject;
+    public LCP dataDocumentNameExpert, documentNameExpert;
+    public LCP emailExpert;
+    public LAP generateSIDExpert;
+    public LCP clusterClusterUser, nameClusterClusterUser, clusterCurrentUser;
+    public LCP inClusterCurrentUserProject;
+    LCP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
+    public LCP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
+    public LCP inProjectForesightExpert, quantityForesightProjectExpert;
+    public LCP clusterInExpertForesight;
+    public LCP isScientificExpert, isTechnicalExpert, isBusinessExpert;
+    public LCP commentScientificExpert, commentTechnicalExpert, commentBusinessExpert;
+    public LCP expertiseExpert, grantExpert;
+    LCP profileUpdateDateExpert;
+    LCP profileBlockedExpert;
+    public LCP primClusterExpert, extraClusterExpert, inClusterExpert;
+    LCP quantityInClusterExpert;
+    LCP clusterInExpertVote;
+    public LCP inProjectCluster;
+    public LCP inClaimerProjectCluster;
+    public LCP inProjectForesight;
+    public LCP isRootForesight;
+    public LCP isRootInProjectForesight;
+    LCP isInClusterProjectForesight;
+    LCP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
+    LCP projectCluster;
+    LCP inTestCluster;
+    LCP quantityClusterProject;
+    public LCP clusterForesight, sidForesight;
+    LCP foresightSID;
+    LCP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
+    LCP quantityForesightProject;
+    LCP maxForesightProjectCluster, nameMaxForesightVote, maxForesightVote, nMaxForesightVote;
+    LCP maxForesightProject, nameMaxForesightLegalChek, maxForesightLegalChek;
+    LCP isPrevVoteVote;
+    LCP countPrevVote;
+    public LCP claimerProject;
+    LCP nameNativeUnionManagerProject, nameForeignUnionManagerProject;
+    LCP nameNativeJoinClaimerProject, nameForeignJoinClaimerProject;
+    LCP nameNativeCorrectManagerProject, nameForeignCorrectManagerProject;
+    LCP nameNativeCorrectHighlightClaimerProject, nameForeignCorrectHighlightClaimerProject;
+    //LCP nameNativeJoinClaimerProject;
+    LCP nameNativeCorrectClaimer, nameForeignCorrectClaimer;
+    LCP nameNativeClaimer;
+    LCP nameNativeCorrectClaimerProject, nameForeignCorrectClaimerProject;
+    public LCP nameNativeClaimerProject, nameForeignClaimerProject;
+    //LCP nameForeignClaimerProject;
+    //LCP nameForeignJoinClaimerProject;
+    LCP emailDocuments, emailIO, emailExperts, emailPresident;
+    LCP isR1ProjectVote;
+    LCP isR2ProjectVote;
+    LCP emailFondFC;
+    LCP emailForesightLC;
+    LCP emailFondTransferred;
+    public LCP emailToExpert;
+    public LCP sidExpert, sidCluster, sidToExpert;
+
+    LCP nameNativeJoinClaimerVote, nameForeignJoinClaimerVote;
+    LCP nameNativeClaimerVote, nameForeignClaimerVote;
+    public LCP nameNativeGenitiveManagerProject;
+    LCP nameGenitiveManagerProject;
+    public LCP nameNativeDativusManagerProject;
+    LCP nameDativusManagerProject;
+    public LCP nameNativeAblateManagerProject;
+    LCP nameAblateManagerProject;
+
+    public LCP nameNativeJoinClaimer, nameForeignJoinClaimer;
+    public LCP nameForeignClaimer;
+    LCP nameGenitiveClaimerProject;
+    LCP nameDativusClaimerProject;
+    LCP nameAblateClaimerProject;
+    LCP nameGenitiveClaimerVote;
+    LCP nameDativusClaimerVote;
+    LCP nameAblateClaimerVote;
+    LCP firmNameNativeClaimerProject, firmNameForeignClaimerProject, phoneClaimerProject, OGRNClaimerProject;
+    LCP addressClaimerProject, postAddressClaimerProject, siteClaimerProject, emailFirmClaimerProject, INNClaimerProject;
+
+    LCP documentTemplateDocumentTemplateDetail;
+
+    LCP projectDocument, nameNativeProjectDocument;
+    LCP fileDocument;
+    LAP loadFileDocument;
+    LAP openFileDocument;
+
+    LCP fileDecisionVote;
+    LAP attachProtocolDecisionVote;
+    LAP loadFileDecisionVote;
+    LAP openFileDecisionVote;
+
+    LCP fileDecisionProject;
+    LCP acceptedDecisionProject, rejectedDecisionProject;
+
+    private LCP decisionNoticedVote, dateDecisionNoticedVote;
+    private LCP decisionNoticedProject, dateDecisionNoticedProject;
+    private LCP acceptedNoticedProject;
+    private LCP rejectedNoticedProject;
+    private LCP acceptedNoticedStatusProject;
+    private LCP acceptedNoticedPreliminaryProject;
+
+    private LCP prevOriginalDocsCheck;
+    private LCP datePrevOriginalDocsCheck;
+
+    LCP add2Strings;
+    LCP overdueOriginalDocsCheckProject;
+    LCP projectOriginalDocsCheck;
+    LCP resultOriginalDocsCheck;
+    LCP commentOriginalDocsCheck;
+    LCP nameResultOriginalDocsCheck;
+    LCP dateSubmitOriginalDocsCheck;
+    LCP dateTimeOriginalDocsCheck;
+    LCP dateFirstSubmitOriginalDocsProject;
+    LCP dateOriginalDocsCheck;
+    LCP overdueDateOriginalDocsCheck;
+    LCP [] maxOriginalDocsCheckProjectProps;
+    LCP currentOriginalDocsCheckProject;
+    LCP executeOriginalDocsCheckProject;
+    LCP dateExecuteOriginalDocsCheckProject;
+    LCP resultExecuteOriginalDocsCheckProject;
+    LAP setNegativeResultOriginalDocsCheck;
+    LAP setPositiveResultOriginalDocsCheck;
+    LCP negativeOriginalDocsCheckProject;
+    LCP positiveOriginalDocsCheckProject;
+    LCP sentForSignatureProject;
+    LCP signedProject;
+    LCP sentToFinDepProject;
+    LCP submittedToRegisterProject;
+    LCP preparedCertificateProject;
+    LCP certifiedProject;
+    LCP dateAppliedOriginalDocsProject;
+    LCP dateSentForSignatureProject;
+    LCP dateSignedProject;
+    LCP dateSentToFinDepProject;
+    LCP dateSubmittedToRegisterProject;
+    LCP datePreparedCertificateProject;
+    LCP dateCertifiedProject;
+    LCP withdrawnProject;
+    LCP dateWithdrawnProject;
+
+    LCP inDefaultDocumentLanguage;
+    LCP inDefaultDocumentExpert;
+    LCP inDocumentLanguage;
+    LCP inDocumentExpert;
+
+    LCP inExpertVote, oldExpertVote, inNewExpertVote, inOldExpertVote;
+    LCP exclExpertVote;
+    LCP businessExpertVote;
+    LCP dateStartVote, dateEndVote;
+    LCP aggrDateEndVote;
+    public LCP quantityPreliminaryVoteProject;
+
+    LCP weekStartVote, quantityNewExpertWeek;
+    LCP quantityNewWeek;
+
+    LCP openedVote;
+    LCP closedVote;
+    LCP voteInProgressProject;
+    LCP voteInProgressRepeatProject;
+    LCP requiredPeriod;
+    LCP overduePeriod;
+    LCP requiredQuantity;
+    LCP requiredBusinessQuantity;
+    LCP requiredQuantityVote;
+    LCP limitExperts;
+    public LCP projectsImportLimit;
+    public LCP importOnlyR2Projects;
+    LAP voteStartFormVote;
+    LAP voteProtocolFormVote;
+
+    LCP dateExpertVote;
+    LCP voteResultExpertVote, voteResultCorExpertVote, nameVoteResultExpertVote;
+    LCP voteResultNewExpertVote;
+    LCP inProjectExpert;
+    LCP voteProjectExpert;
+    LCP clusterVotedProjectExpert;
+    LCP voteResultProjectExpert;
+    LCP doneProjectExpert;
+    LCP doneExpertVote, doneCorExpertVote, doneNewExpertVote, doneOldExpertVote;
+    LCP refusedExpertVote;
+    LCP connectedExpertVote;
+    LCP expertVoteConnected;
+    LCP ipExpertVote;
+
+    LCP inClusterExpertVote, inClusterNewExpertVote;
+    LCP innovativeExpertVote, innovativeNewExpertVote;
+    LCP innovativeCommentExpertVote;
+    LCP foreignExpertVote, foreignNewExpertVote;
+    LCP competentExpertVote;
+    LCP completeExpertVote;
+    LCP completeCommentExpertVote;
+
+    private LCP percentNeeded;
+    private LCP percentNeededVote;
+    private LCP quantityNeededVote;
+
+    public LCP competitiveAdvantagesExpertVote, competitiveAdvantagesCorExpertVote;
+    public LCP commercePotentialExpertVote, commercePotentialCorExpertVote;
+    public LCP canBeImplementedExpertVote, canBeImplementedCorExpertVote;
+    public LCP haveExpertiseExpertVote, haveExpertiseCorExpertVote;
+    public LCP internationalExperienceExpertVote, internationalExperienceCorExpertVote;
+    public LCP enoughDocumentsExpertVote, enoughDocumentsCorExpertVote;
+    public LCP commentCompetitiveAdvantagesExpertVote, lengthCommentCompetitiveAdvantagesExpertVote;
+    public LCP commentCommercePotentialExpertVote, lengthCommentCommercePotentialExpertVote;
+    public LCP commentCanBeImplementedExpertVote, lengthCommentCanBeImplementedExpertVote;
+    public LCP commentHaveExpertiseExpertVote, lengthCommentHaveExpertiseExpertVote;
+    public LCP commentInternationalExperienceExpertVote, lengthCommentInternationalExperienceExpertVote;
+    public LCP commentEnoughDocumentsExpertVote, lengthCommentEnoughDocumentsExpertVote;
+
+    LCP quantityInVote;
+    LCP quantityInOldVote;
+    LCP quantityRepliedVote;
+    LCP quantityDoneVote;
+    LCP quantityExclVote;
+    LCP quantityDoneNewVote;
+    LCP quantityDoneOldVote;
+    LCP quantityRefusedVote;
+    LCP quantityConnectedVote;
+    LCP quantityInClusterVote;
+    LCP quantityInnovativeVote;
+    LCP quantityForeignVote;
+    LCP quantityCompetitiveAdvantagesVote;
+    LCP quantityCommercePotentialVote;
+    LCP quantityCanBeImplementedVote;
+    LCP quantityHaveExpertiseVote;
+    LCP quantityInternationalExperienceVote;
+    LCP quantityEnoughDocumentsVote;
+    LCP acceptedInClusterVote;
+    LCP acceptedInnovativeVote;
+    LCP acceptedForeignVote;
+    LCP acceptedCompetitiveAdvantagesVote;
+    LCP acceptedCommercePotentialVote;
+    LCP acceptedCanBeImplementedVote;
+    LCP acceptedHaveExpertiseVote;
+    LCP acceptedInternationalExperienceVote;
+    LCP acceptedEnoughDocumentsVote;
+
+    LCP acceptedVote;
+    LCP acceptedVoteR1;
+    LCP acceptedVoteR2;
+    LCP succeededVote;
+    LCP openedSucceededVote, closedSucceededVote;
+    LCP closedAcceptedVote;
+    LCP closedRejectedVote;
+    LCP closedAcceptedStatusVote, closedAcceptedPreliminaryVote;
+    LCP doneExpertVoteDateFromDateTo;
+    LCP doneExpertVoteMonthYear;
+    LCP quantityDoneExpertDateFromDateTo;
+    LCP quantityDoneExpertMonthYear;
+    LCP voteSucceededProjectCluster;
+    LCP voteOpenedSucceededProject;
+    LCP noCurrentVoteProject;
+    LCP valuedProjectCluster;
+    LCP voteValuedProjectCluster;
+    LCP voteLastProject;
+    LCP dateStartVoteLastProject, dateEndVoteLastProject;
+    LCP acceptedProjectCluster;
+    LCP rejectedProjectCluster;
+    LCP clusterAcceptedProject;
+    LCP acceptedProject;
+    LCP rejectedProject;
+    LCP valuedProject;
+    LCP voteRejectedProject;
+    LCP needExtraVoteProject;
+    LCP needExtraVoteRepeatProject;
+
+    LCP nameNativeShortFinalClusterApplication;
+    LAP emailLetterExpertVoteEA;
+    LAP emailLetterExpertVote;
+    LAP allowedEmailLetterExpertVote;
+
+    LCP emailClaimerFromAddress;
+    LAP emailClaimerVoteEA;
+    LCP claimerEmailVote;
+    LCP emailClaimerHeaderVote;
+    LAP emailClaimerVote;
+    LAP emailFondVoteEA;
+    LCP emailFondHeaderVote;
+    LAP emailFondVote;
+    LCP emailFondStartVote;
+
+    LAP emailStartVoteEA;
+    LCP emailStartHeaderVote;
+    LAP emailStartVote;
+    LAP emailProtocolVoteEA;
+    LCP emailProtocolHeaderVote;
+    LAP emailProtocolVote;
+    LAP emailClosedVoteEA;
+    LCP emailClosedHeaderVote;
+    LAP emailClosedVote;
+    LAP emailForesightCheckProjectEA;
+    LAP emailNotificationProjectEA;
+    LCP emailNotificationHeaderProject;
+    LAP emailNotificationProject;
+    LAP emailAuthExpertEA;
+    LAP emailAuthExpert;
+    LAP emailAuthProfileExpertEA;
+    LAP emailAuthProfileExpert;
+    LAP emailReminderProfileExpertEA;
+    LAP emailReminderProfileExpert;
+    LCP reminderProfileExpertSubjectLanguage;
+    LCP authExpertSubjectLanguage, letterExpertSubjectLanguage;
+    LCP authProfileExpertSubjectLanguage;
+    LAP emailClaimerFormalControlEA;
+    LCP claimerFormalControl, claimerEmailFormalControl, nameNativeJoinClaimerFormalControl, nameForeignJoinClaimerFormalControl, nameNativeClaimerFormalControl, nameNativeUnionManagerFormalControl;
+    LCP needEmailClaimerFormalControl;
+    LCP resultNoticedFormalControl;
+    LCP dateResultNoticedFormalControl;
+    LAP setCurrentDateResultNoticedFormalControl;
+    LCP emailClaimerHeaderFormalControl;
+    LAP emailClaimerFormalControl;
+    LAP emailClaimerLegalCheckEA;
+    LCP claimerLegalCheck, claimerEmailLegalCheck, nameNativeJoinClaimerLegalCheck, nameForeignJoinClaimerLegalCheck, nameNativeClaimerLegalCheck;
+    LCP resultNoticedLegalCheck;
+    LCP dateResultNoticedLegalCheck;
+    LAP setCurrentDateResultNoticedLegalCheck;
+    LCP emailClaimerHeaderLegalCheck;
+    LAP emailClaimerLegalCheck;
+    LAP emailClaimerLegalCheckProject;
+    LCP needNoticeNegativeLegalCheck, needNoticeChangeLegalCheck, needNoticeLegalCheck;
+    LAP emailFondFormalControlEA;
+    LCP emailFondHeaderFormalControl;
+    LAP emailFondFormalControl;
+    LAP emailTransferredProjectEA;
+    LCP emailTransferredHeaderProject;
+    LAP emailTransferredProject;
+    LAP emailForesightClaimerProjectEA;
+    LCP emailForesightClaimerHeaderProject;
+    LAP emailForesightClaimerProject;
+    LCP emailBureauTranslation;
+    LAP emailBureauTrProjectEA;
+    LAP emailBureauTrProject;
+    LAP emailNeedVoteProjectEA, emailNeedVoteProject;
+    LCP resultNeedVoteProject, dateResultNeedVoteProject, dateOverdueResultNeedVoteProject;
+    LAP setCurrentDateResultNeedVoteProject;
+    LAP emailClaimerChangeLegalCheckEA;
+    LAP setCurrentDateChangeLegalCheck;
+    LAP emailClaimerChangeLegalCheck;
+
+    LAP generateDocumentsProjectDocumentType;
+    LAP includeDocumentsProject;
+    LCP hideIncludeDocumentsProject;
+    LAP importProjectSidsAction;
+    LAP showProjectsToImportAction;
+    LAP showProjectsReplaceToImportAction;
+    LAP importProjectsAction;
+    LAP openApplicationProjectAction;
+    LAP openCompleteApplicationProjectAction;
+    LAP exportExpertsAction;
+    LAP exportExpertsEscapeAction;
+    LAP exportProjectDocumentsAction;
+    LAP copyProjectAction;
+    LAP generateVoteProject;
+    LCP needNameExtraVoteProject;
+    LCP hideGenerateVoteProject;
+    LAP copyResultsVote;
+    LAP includeProjectClusterForesight;
+    LAP importIPsExpertVoteAction;
+
+    LCP expertLogin;
+
+    LCP projectStatusProject, nameProjectStatusProject;
+    LCP logStatusProject, logNameStatusProject;
+
+    LCP valuedStatusProject;
+    LCP certifiedStatusProject;
+    LCP foresightCheckStatusProject;
+    LCP legalCheckStatusProject;
+    LCP formalCheckStatusProject;
+    LCP voteStatusProject;
+    LCP statusProject;
+    public LCP nameStatusProject;
+    LCP oficialNameProjectStatus;
+    LCP numberProjectStatus;
+    LCP statusDataProject;
+    LCP statusProjectVote, nameStatusProjectVote;
+
+    LCP projectSucceededClaimer;
+
+    LCP quantityTotalExpert;
+    LCP quantityDoneExpert;
+    LCP percentDoneExpert;
+    LCP percentInClusterExpert;
+    LCP percentInnovativeExpert;
+    LCP percentForeignExpert;
+    LCP percentCompetitiveAdvantagesExpert;
+    LCP percentCommercePotentialExpert;
+    LCP percentCanBeImplementedExpert;
+    LCP percentHaveExpertiseExpert;
+    LCP percentInternationalExperienceExpert;
+    LCP percentEnoughDocumentsExpert;
+
+    LCP prevDateStartVote, prevDateVote;
+    LCP prevClusterVote, nameNativePrevClusterVote;
+    LCP dateProjectVote;
+    LCP numberNewExpertVote;
+    LCP numberOldExpertVote;
+
+    public LCP numberCluster;
+    LCP clusterNumber;
+    LCP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
+    LCP lastClusterProjectVote, isLastClusterVote;
+    public LCP nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameNativeShortFinalClusterProject, emailFinalClusterProject;
+
+    LCP finalClusterProjectVote, nameNativeFinalClusterProjectVote;
+
+    LCP nativeSubstantiationFinalClusterProject, foreignSubstantiationFinalClusterProject;
+
+    LCP languageExpert;
+    public LCP nameLanguageExpert;
+    LCP languageDocument;
+    LCP nameLanguageDocument;
+    LCP englishDocument;
+    LCP defaultEnglishDocumentType;
+    LCP defaultEnglishDocument;
+    LCP typeDocument;
+    LCP nameTypeDocument;
+    LCP postfixDocument;
+    LCP hidePostfixDocument;
+
+    LCP localeLanguage;
+
+    LCP quantityMinLanguageDocumentType;
+    LCP quantityMaxLanguageDocumentType;
+    LCP quantityProjectLanguageDocumentType;
+    LCP translateLanguageDocumentType;
+    LCP notEnoughProject;
+    public LCP inactiveProject;
+    public LCP autoGenerateProject;
+
+    LCP nameDocument;
+
+    public LCP nameNativeProject, nameNativeDataProject, nameNativeJoinProject;
+    public LCP nameForeignProject, nameForeignDataProject, nameForeignJoinProject;
+    public LCP nameNativeManagerProject;
+    public LCP nameForeignManagerProject;
+    public LCP nativeProblemProject;
+    public LCP foreignProblemProject;
+    public LCP nativeInnovativeProject;
+    public LCP foreignInnovativeProject;
+    public LCP nameForeignProjectType;
+    public LCP projectTypeProject;
+    LCP nameNativeProjectTypeProject;
+    LCP nameForeignProjectTypeProject;
+    public LCP projectActionProject;
+    public LCP nameProjectActionProject;
+    LCP projectActionVote;
+    LCP nameProjectActionVote;
+    LCP isStatusVote;
+    LCP isPreliminaryVote;
+    LCP isStatusProject;
+    LCP isPreliminaryProject;
+    public LCP nativeSubstantiationProjectType;
+    public LCP foreignSubstantiationProjectType;
+    public LCP nativeSubstantiationProjectCluster;
+    public LCP foreignSubstantiationProjectCluster;
+    public LCP isOtherClusterProject;
+    LCP hideIsOtherClusterProject;
+    public LCP nativeSubstantiationOtherClusterProject;
+    LCP hideNativeSubstantiationOtherClusterProject;
+    public LCP foreignSubstantiationOtherClusterProject;
+    public LCP fileNativeSummaryProject;
+    LCP hideForeignSubstantiationOtherClusterProject;
+    LCP currentCluster;
+    LCP nameNativeShortCurrentCluster;
+    LCP inProjectCurrentCluster;
+    LAP loadFileNativeSummaryProject;
+    LAP openFileNativeSummaryProject;
+    public LCP fileForeignSummaryProject;
+    LAP loadFileForeignSummaryProject;
+    LAP openFileForeignSummaryProject;
+    public LCP fileNativeApplicationFormProject;
+    LAP loadFileNativeApplicationFormProject;
+    LAP openFileNativeApplicationFormProject;
+    public LCP fileForeignApplicationFormProject;
+    LAP loadFileForeignApplicationFormProject;
+    LAP openFileForeignApplicationFormProject;
+    public LCP fileNativeRoadMapProject;
+    LAP loadNativeFileRoadMapProject;
+    LAP openNativeFileRoadMapProject;
+    public LCP fileForeignRoadMapProject;
+    LAP loadForeignFileRoadMapProject;
+    LAP openForeignFileRoadMapProject;
+    public LCP fileResolutionIPProject;
+    LAP loadFileResolutionIPProject;
+    LCP hideLoadFileResolutionIPProject;
+    LAP openFileResolutionIPProject;
+    public LCP fileNativeTechnicalDescriptionProject;
+    public LAP loadFileNativeTechnicalDescriptionProject;
+    LAP openFileNativeTechnicalDescriptionProject;
+    public LCP fileForeignTechnicalDescriptionProject;
+    LAP loadFileForeignTechnicalDescriptionProject;
+    LAP openFileForeignTechnicalDescriptionProject;
+
+    public LCP isReturnInvestmentsProject;
+    public LCP nameReturnInvestorProject;
+    public LCP amountReturnFundsProject;
+    public LCP isNonReturnInvestmentsProject;
+    public LCP nameNonReturnInvestorProject;
+    public LCP amountNonReturnFundsProject;
+    public LCP isCapitalInvestmentProject;
+    public LCP isPropertyInvestmentProject;
+    public LCP isGrantsProject;
+    public LCP isOtherNonReturnInvestmentsProject;
+    public LCP commentOtherNonReturnInvestmentsProject;
+    public LCP isOwnFundsProject;
+    public LCP amountOwnFundsProject;
+    public LCP isPlanningSearchSourceProject;
+    public LCP amountFundsProject;
+    public LCP isOtherSoursesProject;
+    public LCP commentOtherSoursesProject;
+    public LCP needsToBeTranslatedToRussianProject;
+    public LCP needsToBeTranslatedToEnglishProject;
+    public LCP translatedToRussianProject;
+    public LCP hideTranslatedToRussianProject;
+    public LCP translatedToEnglishProject;
+    public LCP hideTranslatedToEnglishProject;
+    public LCP fillNativeProject;
+    public LCP fillForeignProject;
+    public LCP langProject;
+    public LCP isConsultingCenterQuestionProject;
+    public LCP isConsultingCenterCommentProject;
+    public LCP consultingCenterCommentProject;
+    public LCP sumPositiveConsultingCenterCommentProject;
+    public LCP sumNegativeConsultingCenterCommentProject;
+    public LCP sumTotalConsultingCenterCommentProject;
+    public LCP betweenDateProject;
+
+    LCP hideNameReturnInvestorProject;
+    LCP hideAmountReturnFundsProject;
+    LCP hideNameNonReturnInvestorProject;
+    LCP hideAmountNonReturnFundsProject;
+    LCP hideCommentOtherNonReturnInvestmentsProject;
+    LCP hideAmountOwnFundsProject;
+    LCP hideAmountFundsProject;
+    LCP hideCommentOtherSoursesProject;
+    LCP hideIsCapitalInvestmentProject;
+    LCP hideIsPropertyInvestmentProject;
+    LCP hideIsGrantsProject;
+    LCP hideIsOtherNonReturnInvestmentsProject;
+
+    public LCP isOwnedEquipmentProject;
+    public LCP isAvailableEquipmentProject;
+    public LCP isTransferEquipmentProject;
+    public LCP descriptionTransferEquipmentProject;
+    public LCP ownerEquipmentProject;
+    public LCP isPlanningEquipmentProject;
+    public LCP specificationEquipmentProject;
+    public LCP isSeekEquipmentProject;
+    public LCP descriptionEquipmentProject;
+    public LCP isOtherEquipmentProject;
+    public LCP commentEquipmentProject;
+    LCP hideDescriptionTransferEquipmentProject;
+    LCP hideOwnerEquipmentProject;
+    LCP hideSpecificationEquipmentProject;
+    LCP hideDescriptionEquipmentProject;
+    LCP hideCommentEquipmentProject;
+
+    public LCP projectPatent, equalsPatentProject;
+    public LCP sidProjectPatent;
+    public LCP nativeTypePatent;
+    public LCP foreignTypePatent;
+    public LCP nativeNumberPatent;
+    public LCP foreignNumberPatent;
+    public LCP priorityDatePatent;
+    public LCP isOwned;
+    public LCP ownerPatent;
+    public LCP nameForeignOwnerType;
+    public LCP ownerTypePatent;
+    LCP ownerTypeToPatent;
+    LCP nameNativeOwnerTypePatent;
+    LCP nameForeignOwnerTypePatent;
+    public LCP ownerTypeToSID;
+    public LCP projectTypeToSID;
+    public LCP projectActionToSID;
+    public LCP projectMissionToSID;
+    public LCP projectScheduleToSID;
+    public LCP fileIntentionOwnerPatent;
+    LAP loadFileIntentionOwnerPatent;
+    LAP openFileIntentionOwnerPatent;
+    public LCP isValuated;
+    public LCP valuatorPatent;
+    public LCP fileActValuationPatent;
+    LAP loadFileActValuationPatent;
+    LAP openFileActValuationPatent;
+    LCP hideOwnerPatent;
+    LCP hideFileIntentionOwnerPatent;
+    LCP hideLoadFileIntentionOwnerPatent;
+    LCP hideOpenFileIntentionOwnerPatent;
+    LCP hideValuatorPatent;
+    LCP hideFileActValuationPatent;
+    LCP hideLoadFileActValuationPatent;
+    LCP hideOpenFileActValuationPatent;
+    LCP hideNameNativeOwnerTypePatent;
+    LCP hideNameForeignOwnerTypePatent;
+
+    public LCP projectAcademic;
+    public LCP sidProjectAcademic;
+    public LCP fullNameAcademic;
+    public LCP fullNameToAcademic;
+    public LCP fullNameSIDToAcademic;
+    public LCP institutionAcademic;
+    public LCP titleAcademic;
+    public LCP fileDocumentConfirmingAcademic;
+    LAP loadFileDocumentConfirmingAcademic;
+    LAP openFileDocumentConfirmingAcademic;
+    public LCP fileDocumentEmploymentAcademic;
+    LAP loadFileDocumentEmploymentAcademic;
+    LAP openFileDocumentEmploymentAcademic;
+
+    public LCP projectNonRussianSpecialist;
+    public LCP sidProjectNonRussianSpecialist;
+    public LCP fullNameNonRussianSpecialist;
+    public LCP fullNameToNonRussianSpecialist;
+    public LCP fullNameSIDToNonRussianSpecialist;
+    public LCP organizationNonRussianSpecialist;
+    public LCP titleNonRussianSpecialist;
+    public LCP fileNativeResumeNonRussianSpecialist;
+    LAP loadFileForeignResumeNonRussianSpecialist;
+    LAP openFileForeignResumeNonRussianSpecialist;
+    public LCP fileForeignResumeNonRussianSpecialist;
+    LAP loadFileNativeResumeNonRussianSpecialist;
+    LAP openFileNativeResumeNonRussianSpecialist;
+    public LCP filePassportNonRussianSpecialist;
+    LAP loadFilePassportNonRussianSpecialist;
+    LAP openFilePassportNonRussianSpecialist;
+    public LCP fileStatementNonRussianSpecialist;
+    LAP loadFileStatementNonRussianSpecialist;
+    LAP openFileStatementNonRussianSpecialist;
+
+    public LCP fileMinutesOfMeetingExpertCollegiumProject;
+    LAP loadFileMinutesOfMeetingExpertCollegiumProject;
+    LAP openFileMinutesOfMeetingExpertCollegiumProject;
+    public LCP fileWrittenConsentClaimerProject;
+    LAP loadFileWrittenConsentClaimerProject;
+    LAP openFileWrittenConsentClaimerProject;
+
+
+    LCP isForeignExpert;
+    LCP localeExpert;
+    public LCP disableExpert;
+
+    LAP editClaimer;
+    public LAP addProject;
+    LAP editR1Project;
+    LAP editClaimerProject;
+    LAP translateToRussianProject;
+    LAP translateToEnglishProject;
+    LCP hideTranslateToRussianProject, hideTranslateToEnglishProject;
+    LCP needTranslationProject, needTranslationLegalChek, needsToBeTranslatedToRussianLegalChek;
+    LCP needNeedTranslationProject;
+
+    LCP projectFormalControl, dateProjectFormalControl, clusterProjectFormalControl, nameNativeClusterProjectFormalControl;
+    LCP resultFormalControl;
+    LCP sidResultFormalControl, nameResultFormalControl;
+    LAP addNotEnoughDocumentsFCResult;
+    LAP addNoListOfExpertsFCResult;
+    LAP addNotSuitableClusterFCResult;
+    LAP addRepeatedFCResult;
+    LAP addPositiveFCResult;
+
+    LCP updateDateFormalControl;
+    LCP dateTimeSubmitFormalControl, dateSubmitFormalControl;
+    LCP dateTimeFormalControl, dateFormalControl;
+
+    LCP prevFormalControl, datePrevFormalControl;
+
+    LCP overdueDateFormalControl;
+    LCP overdueFormalControlProject;
+
+    LCP projectActionLegalCheck;
+    LCP nameProjectActionLegalCheck;
+    LCP LCMinDateProjectActionProject;
+    LCP minDateLegalCheck;
+    LCP isR1LegalCheck;
+
+    LCP isPreliminaryLegalCheck, isStatusLegalCheck;
+    LCP prevLegalCheck, datePrevLegalCheck;
+
+    LCP commentFormalControl;
+    LCP[] maxFormalControlProjectProps;
+    LCP currentFormalControlProject;
+    LCP executeFormalControlProject;
+    LCP dateExecuteFormalControlProject;
+    LCP resultExecuteFormalControlProject;
+    LCP nameResultExecuteFormalControlProject;
+    LCP notEnoughDocumentsProject;
+    LCP isPreliminaryNotEnoughDocumentProject;
+    LCP isStatusNotEnoughDocumentProject;
+    LCP noListOfExpertsProject;
+    LCP notSuitableClusterProject;
+    LCP repeatedProject;
+    LCP positiveFormalResultProject;
+    LCP negativeFormalResultProject;
+
+    LCP projectActionFormalControl;
+    LCP nameProjectActionFormalControl;
+
+    LCP isPreliminaryFormalControl, isStatusFormalControl;
+    LCP datePreliminaryProjectFormalControl, dateStatusProjectFormalControl;
+    LCP updateDateLegalCheck;
+    LCP dateTimeSubmitLegalCheck, dateSubmitLegalCheck;
+
+    LCP dateTimeLegalCheck, dateLegalCheck;
+    LCP overdueDateLegalCheck;
+
+    LCP userLegalCheck, nameUserLegalCheck;
+
+    LCP overdueLegalCheckProject;
+    LCP projectLegalCheck;
+    LCP resultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject;
+    LAP setNegativeResultForesightCheckProject;
+    LAP setPositiveResultForesightCheckProject;
+    LCP commentForesightCheckProject;
+    LAP setNegativeResultForesightCheckProjectApply;
+    LAP applyForesightCheckProjectCluster;
+    LAP rejectForesightCheckProject;
+    LAP applyForesightCheckProject;
+    LCP needForesightCheckProject;
+    LCP resultLegalCheck, positiveResultLegalCheck, negativeResultLegalCheck;
+    LCP nameResultLegalCheck;
+    LCP dateProjectLegalCheck, sidResultLegalCheck, clusterProjectLegalCheck, nameNativeClusterProjectLegalCheck, isPreliminaryAndStatusProjectLegalCheck;
+    LCP statusProjectFormalControl, sidStatusProjectFormalControl;
+    LCP statusProjectLegalCheck, sidStatusProjectLegalCheck;
+    LAP addNegativeLCResult;
+    LAP addPositiveLCResult;
+    LCP commentLegalCheck;
+    LCP[] maxLegalCheckProjectProps;
+    LCP currentLegalCheckProject;
+    LCP executeLegalCheckProject;
+    LCP dateExecuteLegalCheckProject;
+    LCP resultExecuteLegalCheckProject;
+    LCP resultNoticedLegalCheckProject;
+    LCP negativeLegalResultProject;
+    LCP negativeLegalResultStatusProject;
+    LCP negativeLegalResultPreliminaryProject;
+    LCP positiveLegalResultProject;
+    LCP needNoticeLegalResultProject;
+    LCP sentForTranslationProject, dateSentForTranslationProject, dateToSentForTranslationProject;
+    LCP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
+    LCP transferredProject, dateTransferredProject;
+    LCP needVoteProject;
+    LCP changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck;
+
+    public LCP dateAgreementExpert;
+    LCP vone;
+    LCP claimerProjectVote;
+    LCP nameNativeJoinClaimerProjectVote;
+    LCP countryExpert;
+    public LCP nameCountryExpert;
+    LCP caseCountry;
+    LCP caseCountryExpert;
+    LCP currencyExpert;
+    public LCP nameCurrencyExpert;
+    LCP residency;
+    LCP residencyCountryExpert;
+    LCP rateExpert;
+    LCP executiveLD, phoneExecutiveLD, mobileExecutiveLD;
+    LCP executiveIS;
+    LCP emailForCertificates;
+    LCP readInformation;
+    LCP moneyQuantityDoneExpertMonthYear;
+    LCP baseCurrency;
+    LCP baseCurrencyExpert;
+    LCP englCountry;
+    LCP englCountryExpert;
+    LCP englCurrency;
+    LCP englCurrencyExpert;
+    LCP pluralCurrency;
+    LCP pluralCurrencyExpert;
+    LAP emailLetterExpertMonthYearEA;
+    LAP emailLetterCertificatesExpertMonthYear;
+    LCP previousDate;
+    LCP monthInPreviousDate, yearInPreviousDate;
+    LCP isNewMonth;
+    LCP quantityIsR1DoneExpert;
+    LCP quantityIsR2DoneExpert;
+
+    LCP hasPreliminaryVoteProject;
+    LCP isPreliminaryStatusProject;
+    LCP isPreliminaryAndStatusProject, isPreliminaryAndStatusProjectFormalControl;
+
+    LCP projectActionApplication, nameProjectActionApplication;
+
+    LCP projectApplication;
+    LCP projectApplicationPreliminary, projectApplicationStatus;
+    LCP isPreliminaryApplication, isStatusApplication;
+    LCP isPreliminaryAndStatusApplication;
+    LCP preliminaryApplicationProject;
+    LCP statusApplicationProject;
+    LCP inActTestApplication;
+    LCP inActTestApplicationDate;
+    LCP inApplicationCluster;
+    LCP nativeSubstantiationApplicationCluster;
+    LCP foreignSubstantiationApplicationCluster;
+    LCP inApplicationForesight;
+    LCP isR2Application, isR1Application;
+    LAP openApplicationProjectActionApplication;
+    LAP openCompleteApplicationProjectActionApplication;
+    LAP exportProjectDocumentsActionApplication;
+    LCP nameRegulationsApplication;
+
+    LCP inactiveApplication;
+
+    LCP dateApplicationPreliminary, dateApplicationStatus;
+    LCP dateApplication;
+
+    LCP nameNativeProjectApplication;
+    LCP nameNativeClaimerApplicationPreliminary, nameNativeClaimerApplicationStatus;
+    LCP nameNativeClaimerApplication;
+
+    private LCP emailClaimerApplication;
+
+    private LCP langApplication;
+    private LCP nameNativeShortAggregateClusterApplication;
+
+    private LCP finalClusterApplication, nameFinalClusterApplication;
+
+    LCP quantityClusterApplication;
+    LCP nonClusterApplication;
+    LCP nonClusterApplicationsSubmitDateDate;
+    LCP nonClusterApplicationsIsSatusSubmitDateDate;
+
+    LCP statusJoinApplication;
+    LCP isPreliminaryAfterStatusApplication;
+    LCP statusApplication;
+    LCP nameStatusApplication;
+    LCP officialNameStatusApplication;
+    LCP needFormalCheckStatusProject;
+    LCP needLegalCheckStatusProject;
+    LCP hideAddPositiveLCResult;
+    LCP hideAddNegativeLCResult;
+    public LCP projectMissionProject;
+    LCP nameProjectMissionProject;
+    public LCP nativeResumeProject;
+    public LCP foreignResumeProject;
+    public LCP nameNativeContactProject;
+    public LCP nameForeignContactProject;
+    public LCP phoneContactProject;
+    public LCP emailContactProject;
+    public LCP nativeMarketTrendsProject;
+    public LCP foreignMarketTrendsProject;
+    public LCP linksMarketTrendsProject;
+    public LCP linksAnalogProject;
+    public LCP nativeRelevanceProject;
+    public LCP foreignRelevanceProject;
+    public LCP nativeBasicTechnologyProject;
+    public LCP foreignBasicTechnologyProject;
+    public LCP nativeCaseStudiesProject;
+    public LCP foreignCaseStudiesProject;
+    public LCP nativeCharacteristicsAnaloguesProject;
+    public LCP foreignCharacteristicsAnaloguesProject;
+    public LCP nativeCompaniesAnaloguesProject;
+    public LCP foreignCompaniesAnaloguesProject;
+    public LCP nativeMarketIntroductionProject;
+    public LCP foreignMarketIntroductionProject;
+    public LCP linksMarketIntroductionProject;
+    public LCP linksForeignMarketIntroductionProject;
+    public LCP nativeHistoryProject;
+    public LCP foreignHistoryProject;
+    public LCP nativeDynamicsProject;
+    public LCP foreignDynamicsProject;
+    public LCP nativeGrantsProject;
+    public LCP foreignGrantsProject;
+    public LCP nativeLaboratoryProject;
+    public LCP foreignLaboratoryProject;
+    public LCP nativeInvestmentProject;
+    public LCP foreignInvestmentProject;
+    public LCP nativeResultsProject;
+    public LCP foreignResultsProject;
+    public LCP nativeGeneralizedPlanProject;
+    public LCP foreignGeneralizedPlanProject;
+    public LCP projectSpecialist, equalsSpecialistProject;
+    public LCP nativePostSpecialist;
+    public LCP foreignPostSpecialist;
+    public LCP nativeFunctionSpecialist;
+    public LCP foreignFunctionSpecialist;
+    public LCP nativeScopeSpecialist;
+    public LCP foreignScopeSpecialist;
+    public LCP nativeExperienceSpecialist;
+    public LCP foreignExperienceSpecialist;
+    public LCP nativeTitleSpecialist;
+    public LCP foreignTitleSpecialist;
+    public LCP nativeWorkSpecialist;
+    public LCP foreignWorkSpecialist;
+    public LCP nativePublicationsSpecialist;
+    public LCP foreignPublicationsSpecialist;
+    public LCP nativeCitationSpecialist;
+    public LCP foreignCitationSpecialist;
+    public LCP nativeIntellectualPropertySpecialist;
+    public LCP foreignIntellectualPropertySpecialist;
+    public LCP fileStatementSpecialist;
+    public LAP loadFileStatementSpecialist;
+    public LAP openFileStatementSpecialist;
+    public LCP filePassportSpecialist;
+    public LAP loadFilePassportSpecialist;
+    public LAP openFilePassportSpecialist;
+    public LCP projectResearch;
+    public LCP equalsResearchProject;
+    public LCP foreignCommentResearch;
+    public LCP nativeCommentResearch;
+    public LCP dataResearch;
+    public LCP nativeCommentToResearch;
+    public LCP nativeCommentSIDToResearch;
+    public LCP foreignCommentToResearch;
+    public LCP foreignCommentSIDToResearch;
+    public LCP linksPatent;
+    public LCP nativeCommentMissionProject;
+    public LCP foreignCommentMissionProject;
+    public LCP projectPublications, equalsPublicationsProject;
+    public LCP nativeToPublications, nativeSIDToPublications;
+    public LCP foreignToPublications, foreignSIDToPublications;
+    public LCP foreignPublications;
+    public LCP nativeAuthorPublications;
+    public LCP foreignAuthorPublications;
+    public LCP datePublications;
+    public LCP nativeLinksPublications;
+    public LCP projectCommercialization, equalsCommercializationProject;
+    public LCP nativeProjectCommercialization;
+    public LCP nativeProjectToCommercialization, nativeProjectSIDToCommercialization;
+    public LCP foreignProjectToCommercialization, foreignProjectSIDToCommercialization;
+    public LCP foreignProjectCommercialization;
+    public LCP nativeCommentProjectCommercialization;
+    public LCP foreignCommentProjectCommercialization;
+    public LCP projectAnalogues, equalsAnaloguesProject;
+    public LCP nativeProjectAnalogues;
+    public LCP nativeProjectToAnalogues, nativeProjectSIDToAnalogues;
+    public LCP foreignProjectToAnalogues, foreignProjectSIDToAnalogues;
+    public LCP foreignProjectAnalogues;
+    public LCP nativeDescriptionProjectAnalogues;
+    public LCP foreignDescriptionProjectAnalogues;
+    public LCP nativeCharacteristicsProjectAnalogues;
+    public LCP foreignCharacteristicsProjectAnalogues;
+    public LCP projectObjectives, equalsObjectivesProject;
+    public LCP nativeProjectObjectives;
+    public LCP nativeProjectToObjectives, nativeProjectSIDToObjectives;
+    public LCP foreignProjectToObjectives, foreignProjectSIDToObjectives;
+    public LCP foreignProjectObjectives;
+    public LCP nameNativeSpecialist;
+    public LCP nameNativeToSpecialist, nameNativeSIDToSpecialist;
+    public LCP nameForeignToSpecialist, nameForeignSIDToSpecialist;
+    public LCP nameForeignSpecialist;
+    public LCP nativePublications;
+    public LCP nativeEditionPublications;
+    public LCP foreignEditionPublications;
+    LAP editR2Project;
+    LCP foreignProjectMissionProject;
+    LCP descriptionProjectMission;
+
+    private LCP daysSubmitApplicationDate;
+    private LCP weekSubmitApplicationDate;
+    private LCP applicationsSubmitDateWeek;
+    private LCP oneApplicationDateDate;
+    private LCP applicationsSubmitDateDate;
+    private LCP applicationsSubmitProjectActionClusterDateDate;
+    private LCP averageWeekApplSubmitDateDate;
+
+    private LCP daysClaimerFirstOriginalDocsProject, isClaimerFirstOriginalDocsProjectDate;
+    private LCP daysClaimerExtraOriginalDocsProject, isClaimerExtraOriginalDocsProjectDate;
+    private LCP daysClaimerOriginalDocsProject, isClaimerOriginalDocsProjectDate;
+
+    private LCP daysClaimerPreliminaryFormalControlProject, isClaimerPreliminaryFormalControlProjectDate;
+    private LCP daysClaimerStatusFormalControlProject, isClaimerStatusFormalControlProjectDate;
+
+    private LCP daysClaimerPreliminaryLegalCheckProject, isClaimerPreliminaryLegalCheckProjectDate;
+    private LCP daysClaimerStatusLegalCheckProject, isClaimerStatusLegalCheckProjectDate;
+
+    private LCP daysClaimerPreliminaryProject, isClaimerPreliminaryProjectDate;
+    private LCP daysClaimerStatusProject, isClaimerStatusProjectDate;
+
+    private LCP daysClaimerApplicationPreliminary, daysClaimerApplicationStatus, daysClaimerApplication;
+    private LCP isClaimerApplicationPreliminaryDate, isClaimerApplicationStatusDate, isClaimerApplicationDate;
+
+    LCP nonClusterApplicationsProjectActionSubmitDateDate;
+    LCP applicationsSubmitClusterDateDate;
+    LCP applicationsSubmitProjectActionDateDate;
+    LCP applicationsSubmitStatusApplicationClusterDateDate;
+    LCP applicationsSubmitStatusApplicationDateDate;
+    LCP nonClusterApplicationsStatusAplicationSubmitDateDate;
+    LCP oneApplications;
+    LCP sumApplicationsStatusApplication;
+    LCP sumApplicationsStatusApplicationCluster;
+    LCP typeProjectStatusApplication;
+    LCP sumApplicationsTypeProjectStatus;
+    LCP sumApplicationsTypeProjectStatusCluster;
+    LCP sumSubmitApplications;
+    LCP nonClusterApplicationsStatusApplicationCluster;
+    LCP nonClusterApplicationsStatusApplication;
+    LCP nonClusterApplicationsTypeProjectStatusCluster;
+    LCP nonClusterApplicationsTypeProjectStatus;
+    LCP nonClusterApplicationsSubmit;
+    LCP sumApplicationsCluster;
+    LCP percentSumApplicationsTypeProjectStatusCluster;
+    LCP percentNonClusterApplicationsTypeProjectStatus;
+    LCP percentApplicationsTypeProjectStatus;
+    LCP inTestApplication;
+    public LCP projectMileStone, equalsMileStoneProject;
+    public LCP nativeMileStone, nativeToMileStone;;
+    public LCP nativeSIDToMileStone;
+    public LCP orderNumberMileStone;
+    public LCP projectMileStoneYear, equalsMileStoneYearProject;
+    public LCP nativeMileStoneYear;
+    public LCP nativeToMileStoneYear, nativeSIDToMileStoneYear;
+    public LCP nativeTypeMileStone, foreignTypeMileStone;
+    public LCP nativeDescriptionTypeMileStoneMileStoneMileStoneYear;
+    public LCP foreignDescriptionTypeMileStoneMileStoneMileStoneYear;
+    public LCP nativeResearchDescriptionTypeMileStoneMileStoneYear;
+    public LCP nativeProductCreationDescriptionTypeMileStoneMileStoneYear;
+    public LCP nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear;
+    public LCP nativeLicensingDescriptionTypeMileStoneMileStoneYear;
+    public LCP nativePromotionDescriptionTypeMileStoneMileStoneYear;
+    public LCP nativeSellingDescriptionTypeMileStoneMileStoneYear;
+    public LCP foreignResearchDescriptionTypeMileStoneMileStoneYear;
+    public LCP foreignProductCreationDescriptionTypeMileStoneMileStoneYear;
+    public LCP foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear;
+    public LCP foreignLicensingDescriptionTypeMileStoneMileStoneYear;
+    public LCP foreignPromotionDescriptionTypeMileStoneMileStoneYear;
+    public LCP foreignSellingDescriptionTypeMileStoneMileStoneYear;
+
+    LCP dateRegisteredStatusProject;
+    LCP dateNoClusterStatusProject;
+    LCP dateNoExpertsStatusProject;
+    LCP dateNotEnoughDocsForStatusStatusProject;
+    LCP dateNotEnoughDocsForPreliminaryStatusProject;
+    LCP dateRepeatedStatusProject;
+    LCP datePositiveFCResultStatusProject;
+    LCP dateOverdueFCStatusProject;
+    LCP dateNegativeLCPreliminaryResultStatusProject;
+    LCP dateNegativeLCStatusResultStatusProject;
+    LCP datePositiveLCResultStatusProject;
+    LCP dateOverdueLCStatusProject;
+    LCP datePositiveFSResultProject;
+    LCP dateNeedTranslationStatusProject;
+    LCP dateInProgressStatusProject, dateInProgressRepeatStatusProject, dateIssuedVoteDocsStatusProject, dateNeedExtraVoteStatusProject, dateRejectedStatusProject, dateAcceptedStatusProject;
+    LCP dateAppliedOriginalDocsStatusProject, dateNotEnoughOriginalDocsStatusProject, dateOverdueOriginalDocsStatusProject;
+    LCP dateApplyStatusStatusProject;
+    LCP dateSentPreliminaryAcceptedStatusProject, dateSentStatusAcceptedStatusProject, dateSentRejectedStatusProject, dateWithdrawnStatusProject;
+    LCP dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject;
+    LCP dateInStatusProject;
+    LCP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusProject, normalPeriodStatusApplication, isWorkDaysNormalPeriodStatus, quantityDaysToOverdueDateStatusProject;
+    LCP isFinalProjectStatus;
+    LCP typeProjectStatusProjectStatus, nameTypeProjectStatusProjectStatus;
+    LCP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
+    LCP dateSubmittedToRegisterApplication;
+    LCP quantityStatusVoteProject;
+    LCP quantityStatusVoteApplication;
+    LCP daysCommonApplication;
+    LCP daysStatusApplication;
+    LCP registerApplicationDateTo;
+    LCP daysRegisterApplicationDateTo;
+    LCP oneRegisterApplicationDateTo;
+    LCP submitRegisterApplicationsDateTo;
+    LCP submitDaysRegisterApplicationDateTo;
+    LCP averageDaysRegisterApplicationsDateTo;
+    LCP qSubmitRegisterApplicationsDateTo;
+    LCP daysSubmitRegisterApplicationDate;
+    LCP weekSubmitRegisterApplicationDate;
+    LCP registerApplicationDate;
+    LCP submitDaysRegisterApplicationDateWeek;
+    LCP submitRegisterApplicationsDateWeek;
+    LCP risingDaysRegisterApplicationDateWeek;
+    LCP risingRegisterApplicationsDateWeek;
+    LCP averageDaysRegisterApplicationsDateWeek;
+    LCP registerApplication;
+    LCP oneStatusApplicationDateDate;
+    LCP statusApplicationsSubmitDateDate;
+    LCP averageDaysRegisterApplicationsDateWeekWeek;
+    LCP averageDaysStatusApplicationsSubmitDateDate;
+    LCP daysStatusApplicationsSubmitDateDate;
+    LCP statusApplicationDateDate;
+    LCP notificationPeriodProject;
+    LCP dateNotificationPeriodProject;
+    LCP datePositiveLegalResultProject;
+    LCP isFileNativeTechnicalDescriptionProject;
+    LCP isFileForeignTechnicalDescriptionProject;
+    LCP nameNativeProjectFormalControl;
+    LCP commentLegalCheckProject;
+    LCP setNegativeLegalResultProject;
+    LCP setNegativeLegalResultProjectApply;
+    LAP acceptPreliminaryLegalCheckProject;
+    LAP rejectLegalCheckProject;
+    LCP setPositiveLegalResultProject, setPositiveLegalResultProjectApply, applyLegalCheckProject;
+    LAP addPositiveLCResultProject;
+    LAP setPositiveLCResultApplyProject;
 
     @Override
     public void initProperties() {
@@ -1588,11 +1640,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, baseLM.currentMonth, monthInPreviousDate);
 
         nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
-        nameNative.property.aggProp = true;
+        ((CalcProperty)nameNative.property).aggProp = true;
         nameNative.setMinimumWidth(10);
         nameNative.setPreferredWidth(50);
         nameForeign = addDProp(recognizeGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
-        nameForeign.property.aggProp = true;
+        ((CalcProperty)nameForeign.property).aggProp = true;
         nameForeign.setMinimumWidth(10);
         nameForeign.setPreferredWidth(50);
 
@@ -1654,15 +1706,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         withdrawnProject = addDProp(withdrawnGroup, "withdrawnProject", "Отозвана заявителем", LogicalClass.instance, project);
         dateWithdrawnProject = addDCProp(withdrawnGroup, "dateWithdrawnProject", "Дата отзыва заявителем", true, baseLM.currentDate, withdrawnProject, 1);
 
-        statementClaimer = addDProp("statementClaimer", "Заявление", CustomFileClass.instance, claimer);
+        statementClaimer = addDProp("statementClaimer", "Заявление", DynamicFormatFileClass.instance, claimer);
         loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
         openStatementClaimer = addOFAProp(documentGroup, "Открыть заявление", statementClaimer);
 
-        constituentClaimer = addDProp("constituentClaimer", "Учредительные документы", CustomFileClass.instance, claimer);
+        constituentClaimer = addDProp("constituentClaimer", "Учредительные документы", DynamicFormatFileClass.instance, claimer);
         loadConstituentClaimer = addLFAProp(documentGroup, "Загрузить учредительные документы", constituentClaimer);
         openConstituentClaimer = addOFAProp(documentGroup, "Открыть учредительные документы", constituentClaimer);
 
-        extractClaimer = addDProp("extractClaimer", "Выписка из реестра", CustomFileClass.instance, claimer);
+        extractClaimer = addDProp("extractClaimer", "Выписка из реестра", DynamicFormatFileClass.instance, claimer);
         loadExtractClaimer = addLFAProp(documentGroup, "Загрузить выписку из реестра", extractClaimer);
         openExtractClaimer = addOFAProp(documentGroup, "Открыть Выписку из реестра", extractClaimer);
 
@@ -2308,11 +2360,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignTypeMileStone.setMinimumWidth(10);
         foreignTypeMileStone.setPreferredWidth(50);
 
-        fileStatementSpecialist = addDProp("fileStatementSpecialist", "Файл заявления", CustomFileClass.instance, specialist);
+        fileStatementSpecialist = addDProp("fileStatementSpecialist", "Файл заявления", DynamicFormatFileClass.instance, specialist);
         loadFileStatementSpecialist = addLFAProp(teamGroup, "Загрузить файл заявления", fileStatementSpecialist);
         openFileStatementSpecialist = addOFAProp(teamGroup, "Открыть файл заявления", fileStatementSpecialist);
 
-        filePassportSpecialist = addDProp("filePassportSpecialist", "Файл документа, удостоверяющего личность", CustomFileClass.instance, specialist);
+        filePassportSpecialist = addDProp("filePassportSpecialist", "Файл документа, удостоверяющего личность", DynamicFormatFileClass.instance, specialist);
         loadFilePassportSpecialist = addLFAProp(teamGroup, "Загрузить файл документа, удостоверяющего личность", filePassportSpecialist);
         openFilePassportSpecialist = addOFAProp(teamGroup, "Открыть файл документа, удостоверяющего личность", filePassportSpecialist);
 
@@ -2413,18 +2465,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignSubstantiationOtherClusterProject.setMinimumWidth(10);
         foreignSubstantiationOtherClusterProject.setPreferredWidth(50);
         hideForeignSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите", foreignSubstantiationOtherClusterProject, isOtherClusterProject);
-        fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", CustomFileClass.instance, project);
+        fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", DynamicFormatFileClass.instance, project);
         loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
         openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
 
-        fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", CustomFileClass.instance, project);
+        fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", DynamicFormatFileClass.instance, project);
         loadFileForeignSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта (иностр.)", fileForeignSummaryProject);
         openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
 
-        fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", CustomFileClass.instance, project);
+        fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", DynamicFormatFileClass.instance, project);
         loadFileNativeApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить файл анкеты", fileNativeApplicationFormProject);
         openFileNativeApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть файл анкеты", fileNativeApplicationFormProject);
-        fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", CustomFileClass.instance, project);
+        fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", DynamicFormatFileClass.instance, project);
         loadFileForeignApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить файл анкеты (иностр.)", fileForeignApplicationFormProject);
         openFileForeignApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть файл анкеты (иностр.)", fileForeignApplicationFormProject);
 
@@ -2511,24 +2563,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
 
         // документы
-        fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", CustomFileClass.instance, project);
+        fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", DynamicFormatFileClass.instance, project);
         loadNativeFileRoadMapProject = addLFAProp(roadMapGroup, "Загрузить файл дорожной карты", fileNativeRoadMapProject);
         openNativeFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты", fileNativeRoadMapProject);
 
-        fileForeignRoadMapProject = addDProp("fileForeignRoadMapProject", "Файл дорожной карты (иностр.)", CustomFileClass.instance, project);
+        fileForeignRoadMapProject = addDProp("fileForeignRoadMapProject", "Файл дорожной карты (иностр.)", DynamicFormatFileClass.instance, project);
         loadForeignFileRoadMapProject = addLFAProp(roadMapGroup, "Загрузить файл дорожной карты (иностр.)", fileForeignRoadMapProject);
         openForeignFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты (иностр.)", fileForeignRoadMapProject);
 
-        fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", CustomFileClass.instance, project);
+        fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", DynamicFormatFileClass.instance, project);
         loadFileResolutionIPProject = addLFAProp(resolutionIPGroup, "Загрузить файл заявление IP", fileResolutionIPProject);
         openFileResolutionIPProject = addOFAProp(resolutionIPGroup, "Открыть файл заявление IP", fileResolutionIPProject);
 
-        fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", CustomFileClass.instance, project);
+        fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", DynamicFormatFileClass.instance, project);
         loadFileNativeTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
         openFileNativeTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
         isFileNativeTechnicalDescriptionProject = addJProp(techDescrGroup, "isFileNativeTechnicalDescriptionProject", "Файл", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, fileNativeTechnicalDescriptionProject, 1);
 
-        fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", CustomFileClass.instance, project);
+        fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", DynamicFormatFileClass.instance, project);
         loadFileForeignTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         openFileForeignTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         isFileForeignTechnicalDescriptionProject = addJProp(techDescrGroup, "isFileForeignTechnicalDescriptionProject", "Файл (ин.)", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, fileForeignTechnicalDescriptionProject, 1);
@@ -2574,7 +2626,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectAction), 1));
         projectMissionToSID = addAGProp("projectMissionToSID", "SID назначения", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectMission), 1));
         projectScheduleToSID = addAGProp("projectScheduleToSID", "SID регламента", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectSchedule), 1));
-        fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", CustomFileClass.instance, patent);
+        fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", DynamicFormatFileClass.instance, patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
@@ -2589,7 +2641,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         valuatorPatent = addDProp(baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         valuatorPatent.setMinimumWidth(10);
         valuatorPatent.setPreferredWidth(50);
-        fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", CustomFileClass.instance, patent);
+        fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", DynamicFormatFileClass.instance, patent);
         loadFileActValuationPatent = addLFAProp(baseGroup, "Загрузить файл акта оценки", fileActValuationPatent);
         openFileActValuationPatent = addOFAProp(baseGroup, "Открыть файл акта оценки", fileActValuationPatent);
         hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", valuatorPatent, isValuated);
@@ -2612,11 +2664,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         titleAcademic.setMinimumWidth(10);
         titleAcademic.setPreferredWidth(50);
 
-        fileDocumentConfirmingAcademic = addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", CustomFileClass.instance, academic);
+        fileDocumentConfirmingAcademic = addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", DynamicFormatFileClass.instance, academic);
         loadFileDocumentConfirmingAcademic = addLFAProp(baseGroup, "Загрузить файл трудового договора", fileDocumentConfirmingAcademic);
         openFileDocumentConfirmingAcademic = addOFAProp(baseGroup, "Открыть файл трудового договора", fileDocumentConfirmingAcademic);
 
-        fileDocumentEmploymentAcademic = addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", CustomFileClass.instance, academic);
+        fileDocumentEmploymentAcademic = addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", DynamicFormatFileClass.instance, academic);
         loadFileDocumentEmploymentAcademic = addLFAProp(baseGroup, "Загрузить файл заявления", fileDocumentEmploymentAcademic);
         openFileDocumentEmploymentAcademic = addOFAProp(baseGroup, "Открыть файл заявления", fileDocumentEmploymentAcademic);
 
@@ -2636,27 +2688,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
         titleNonRussianSpecialist.setMinimumWidth(10);
         titleNonRussianSpecialist.setPreferredWidth(50);
 
-        fileForeignResumeNonRussianSpecialist = addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", CustomFileClass.instance, nonRussianSpecialist);
+        fileForeignResumeNonRussianSpecialist = addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", DynamicFormatFileClass.instance, nonRussianSpecialist);
         loadFileForeignResumeNonRussianSpecialist = addLFAProp(baseGroup, "Load file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
         openFileForeignResumeNonRussianSpecialist = addOFAProp(baseGroup, "Open file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
 
-        fileNativeResumeNonRussianSpecialist = addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", CustomFileClass.instance, nonRussianSpecialist);
+        fileNativeResumeNonRussianSpecialist = addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", DynamicFormatFileClass.instance, nonRussianSpecialist);
         loadFileNativeResumeNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл резюме", fileNativeResumeNonRussianSpecialist);
         openFileNativeResumeNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл резюме", fileNativeResumeNonRussianSpecialist);
 
-        filePassportNonRussianSpecialist = addDProp("filePassportNonRussianSpecialist", "Файл паспорта", CustomFileClass.instance, nonRussianSpecialist);
+        filePassportNonRussianSpecialist = addDProp("filePassportNonRussianSpecialist", "Файл паспорта", DynamicFormatFileClass.instance, nonRussianSpecialist);
         loadFilePassportNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл паспорта", filePassportNonRussianSpecialist);
         openFilePassportNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл паспорта", filePassportNonRussianSpecialist);
 
-        fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", CustomFileClass.instance, nonRussianSpecialist);
+        fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", DynamicFormatFileClass.instance, nonRussianSpecialist);
         loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
         openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
-        fileMinutesOfMeetingExpertCollegiumProject = addDProp("fileMinutesOfMeetingExpertCollegiumProject", "Файл протокола заседания Экспертной коллегии", CustomFileClass.instance, project);
+        fileMinutesOfMeetingExpertCollegiumProject = addDProp("fileMinutesOfMeetingExpertCollegiumProject", "Файл протокола заседания Экспертной коллегии", DynamicFormatFileClass.instance, project);
         loadFileMinutesOfMeetingExpertCollegiumProject = addLFAProp(minutesOfMettingGroup, "Загрузить файл протокола заседания Экспертной коллегии", fileMinutesOfMeetingExpertCollegiumProject);
         openFileMinutesOfMeetingExpertCollegiumProject = addOFAProp(minutesOfMettingGroup, "Открыть Файл протокола заседания Экспертной коллегии", fileMinutesOfMeetingExpertCollegiumProject);
 
-        fileWrittenConsentClaimerProject = addDProp("fileWrittenConsentClaimerProject", "Файл письменного согласия заявителя", CustomFileClass.instance, project);
+        fileWrittenConsentClaimerProject = addDProp("fileWrittenConsentClaimerProject", "Файл письменного согласия заявителя", DynamicFormatFileClass.instance, project);
         loadFileWrittenConsentClaimerProject = addLFAProp(writtenConsentGroup, "Загрузить файл письменного согласия заявителя", fileWrittenConsentClaimerProject);
         openFileWrittenConsentClaimerProject = addOFAProp(writtenConsentGroup, "Открыть Файл письменного согласия заявителя", fileWrittenConsentClaimerProject);
 
@@ -2686,8 +2738,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityMinLanguageDocumentType = addDProp(baseGroup, "quantityMinLanguageDocumentType", "Мин. док.", IntegerClass.instance, language, documentType);
         quantityMaxLanguageDocumentType = addDProp(baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
-        LP singleLanguageDocumentType = addJProp("Один док.", baseLM.equals2, quantityMaxLanguageDocumentType, 1, 2, addCProp(IntegerClass.instance, 1));
-        LP multipleLanguageDocumentType = addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, language, documentType), 1, 2, singleLanguageDocumentType, 1, 2);
+        LCP singleLanguageDocumentType = addJProp("Один док.", baseLM.equals2, quantityMaxLanguageDocumentType, 1, 2, addCProp(IntegerClass.instance, 1));
+        LCP multipleLanguageDocumentType = addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, language, documentType), 1, 2, singleLanguageDocumentType, 1, 2);
         translateLanguageDocumentType = addDProp(baseGroup, "translateLanguageDocumentType", "Перевод", StringClass.get(50), language, documentType);
 
         languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
@@ -2710,15 +2762,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         letterExpertSubjectLanguage = addDProp(baseGroup, "letterExpertSubjectLanguage", "Заголовок письма о заседании", StringClass.get(100), language);
         reminderProfileExpertSubjectLanguage = addDProp(baseGroup, "reminderProfileExpertSubjectLanguage", "Заголовок напоминания о заполнении профиля", StringClass.get(100), language);
 
-        LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
+        LCP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
         postfixDocument = addJProp(baseLM.and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
         hidePostfixDocument = addJProp(baseLM.and1, addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
 
-        LP translateNameDocument = addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
+        LCP translateNameDocument = addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
         nameDocument = addJProp("nameDocument", "Заголовок", baseLM.string2, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15), "", document), postfixDocument), 1);
 
         quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", true, "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
-        LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(baseLM.greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
+        LCP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(baseLM.greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
                 addJProp(baseLM.less2, addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 0, project, language, documentType), quantityProjectLanguageDocumentType), 1, 2, 3, quantityMinLanguageDocumentType, 2, 3));
         notEnoughProject = addMGProp(projectStatusGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
 
@@ -2752,7 +2804,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", sumDate, dateStartVote, 1, requiredPeriod);
         aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.sumDate, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
-        dateEndVote.setEventChangedSet(aggrDateEndVote, 1, dateStartVote, 1);
+        dateEndVote.setEventChangeNewSet(aggrDateEndVote, 1, dateStartVote, 1);
 
         weekStartVote = addJProp("weekStartVote", true, "Неделя начала", baseLM.weekInDate, dateStartVote, 1);
         quantityNewExpertWeek = addSGProp("quantityNewExpertWeek", "Кол-во заседаний", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1, weekStartVote, 2);
@@ -2809,7 +2861,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         voteProjectExpert = addAGProp(baseGroup, "voteProjectExpert", "Результ. заседание", addJProp(baseLM.and1, voteResultNewExpertVote, 1, 2, incrementVote, 2), 2, projectVote, 2);
         voteResultProjectExpert = addJProp(baseGroup, "voteResultProjectExpert", "Результ. заседания", voteResultCorExpertVote, 2, voteProjectExpert, 1, 2);
         doneProjectExpert = addJProp(baseGroup, "doneProjectExpert", "Проголосовал", baseLM.equals2, voteResultProjectExpert, 1, 2, addCProp(voteResult, "voted"));
-        LP doneProject = addSGProp(baseGroup, "doneProject", "Проголосовало", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneProjectExpert, 1, 2), 2); // сколько экспертов высказалось
+        LCP doneProject = addSGProp(baseGroup, "doneProject", "Проголосовало", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneProjectExpert, 1, 2), 2); // сколько экспертов высказалось
 
         // vote Revision 1
         inClusterExpertVote = addDProp(voteResultCheckGroup, "inClusterExpertVote", "Соотв-ие кластеру", LogicalClass.instance, expert, voteR1);
@@ -2939,7 +2991,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityEnoughDocumentsVote.setFixedCharWidth(3);
 
-        LP multiplyBy2 = addSFProp("((prm1)*2)", 1);
+        LCP multiplyBy2 = addSFProp("((prm1)*2)", 1);
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
                 addJProp(multiplyBy2, quantityInClusterVote, 1), 1,
                 quantityDoneVote, 1);
@@ -2994,7 +3046,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     public void initProperties1() {
 
-        LP betweenExpertVoteDateFromDateTo = addJProp(baseLM.betweenDates, dateExpertVote, 1, 2, 3, 4);
+        LCP betweenExpertVoteDateFromDateTo = addJProp(baseLM.betweenDates, dateExpertVote, 1, 2, 3, 4);
         doneExpertVoteDateFromDateTo = addJProp(baseLM.and1, doneNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
         quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во голосов.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
@@ -3002,7 +3054,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        LP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.numberMonthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
+        LCP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.numberMonthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
                 addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
         doneExpertVoteMonthYear = addJProp("doneExpertVoteMonthYear", "Проголосовал в текущем месяце", baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
         quantityDoneExpertMonthYear = addSGProp("quantityDoneExpertMonthYear", "Кол-во голосов.",
@@ -3064,7 +3116,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
-        nameNativeShortAggregateClusterProject = addOGProp(baseGroup, "nameNativeShortAggregateClusterProject", false, "Кластеры", GroupType.STRING_AGG, 1, true, 2, addJProp(baseLM.and1, nameNativeShort, 2, inProjectCluster, 1, 2), 1, 2, addCProp(StringClass.get(5), ";"), numberCluster, 2, 1);
+        nameNativeShortAggregateClusterProject = addOGProp(baseGroup, "nameNativeShortAggregateClusterProject", false, "Кластеры", GroupType.STRING_AGG, 1, Settings.instance.isDefaultOrdersNotNull(), true, 2, addJProp(baseLM.and1, nameNativeShort, 2, inProjectCluster, 1, 2), 1, 2, addCProp(StringClass.get(5), ";"), numberCluster, 2, 1);
 
         currentClusterProject = addJProp("currentClusterProject", true, "Рабочий кластер (ИД)", clusterNumber,
                 addMGProp(addJProp(and(false, true), numberCluster, 2, inProjectCluster, 1, 2, rejectedProjectCluster, 1, 2), 1), 1);
@@ -3146,8 +3198,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
-//        LP userRole = addCUProp("userRole", true, "Роль пользователя", baseLM.customUserSIDMainRole);
-        LP userRole = addSUProp("userRole", true, "Роль пользователя", Union.OVERRIDE, baseLM.customUserSIDMainRole, addCProp(StringClass.get(30), "expert", expert));
+//        LCP userRole = addCUProp("userRole", true, "Роль пользователя", baseLM.customUserSIDMainRole);
+        LCP userRole = addSUProp("userRole", true, "Роль пользователя", Union.OVERRIDE, baseLM.customUserSIDMainRole, addCProp(StringClass.get(30), "expert", expert));
 
 //        voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
 //        voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
@@ -3218,7 +3270,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateFormalControl = addJProp("updateDateFormalControl", "Дата изменения проекта", updateDateProject, projectFormalControl, 1);
 
         dateTimeSubmitFormalControl = addDProp("dateTimeSubmitFormalControl", "Дата/время отправки проекта", DateTimeClass.instance, formalControl);
-        dateTimeSubmitFormalControl.setEventChangedSet(updateDateFormalControl, 1, is(formalControl), 1);
+        dateTimeSubmitFormalControl.setEventChangeNewSet(updateDateFormalControl, 1, is(formalControl), 1);
         dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitFormalControl, 1);
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
@@ -3227,11 +3279,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
         overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.sumDate, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
-        addNotEnoughDocumentsFCResult = addJProp(formalControlResultGroup, true, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
-        addNoListOfExpertsFCResult = addJProp(formalControlResultGroup, true, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
-        addNotSuitableClusterFCResult = addJProp(formalControlResultGroup, true, "Не соответствует направлению", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notSuitableCluster"));
-        addRepeatedFCResult = addJProp(formalControlResultGroup, true, "Подана повторно", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "repeatedFC"));
-        addPositiveFCResult = addJProp(formalControlResultGroup, true, "Прошла формальную экспертизу", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "positiveFormalResult"));
+        addNotEnoughDocumentsFCResult = addJoinAProp(formalControlResultGroup, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
+        addNoListOfExpertsFCResult = addJoinAProp(formalControlResultGroup, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
+        addNotSuitableClusterFCResult = addJoinAProp(formalControlResultGroup, "Не соответствует направлению", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notSuitableCluster"));
+        addRepeatedFCResult = addJoinAProp(formalControlResultGroup, "Подана повторно", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "repeatedFC"));
+        addPositiveFCResult = addJoinAProp(formalControlResultGroup, "Прошла формальную экспертизу", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "positiveFormalResult"));
 
         projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
 
@@ -3239,8 +3291,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveResultLegalCheck = addJProp("positiveResultLegalCheck", "Положительное решение юридической проверки", baseLM.equals2, resultLegalCheck, 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
         negativeResultLegalCheck = addJProp("negativeResultLegalCheck", "Отрицательное решение юридической проверки", baseLM.equals2, resultLegalCheck, 1, addCProp(legalCheckResult, "negativeLegalCheckResult"));
 
-        addNegativeLCResult = addJProp(legalCheckResultGroup, true, "Не прошла юридическую проверку", addAAProp(legalCheck, resultLegalCheck), addCProp(legalCheckResult, "negativeLegalCheckResult"));
-        addPositiveLCResult = addJProp(legalCheckResultGroup, true, "Прошла юридическую проверку", addAAProp(legalCheck, resultLegalCheck), addCProp(legalCheckResult, "positiveLegalCheckResult"));
+        addNegativeLCResult = addJoinAProp(legalCheckResultGroup, "Не прошла юридическую проверку", addAAProp(legalCheck, resultLegalCheck), addCProp(legalCheckResult, "negativeLegalCheckResult"));
+        addPositiveLCResult = addJoinAProp(legalCheckResultGroup, "Прошла юридическую проверку", addAAProp(legalCheck, resultLegalCheck), addCProp(legalCheckResult, "positiveLegalCheckResult"));
         commentLegalCheck = addDProp("commentLegalCheck", "Комментарий", TextClass.instance, legalCheck);
         nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
 
@@ -3252,7 +3304,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateLegalCheck = addJProp("updateDateLegalCheck", "Дата изменения проекта", updateDateProject, projectLegalCheck, 1);
 
         dateTimeSubmitLegalCheck = addDProp("dateTimeSubmitLegalCheck", "Дата/время отправки проекта", DateTimeClass.instance, legalCheck);
-        dateTimeSubmitLegalCheck.setEventChangedSet(updateDateLegalCheck, 1, is(legalCheck), 1);
+        dateTimeSubmitLegalCheck.setEventChangeNewSet(updateDateLegalCheck, 1, is(legalCheck), 1);
         dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitLegalCheck, 1);
 
         resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
@@ -3265,7 +3317,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionLegalCheck = addDProp(idGroup, "projectActionLegalCheck", "Тип заявки (ИД)", projectAction, legalCheck);
         nameProjectActionLegalCheck = addJProp(baseGroup, "nameProjectActionLegalCheck", "Тип заявки", baseLM.name, projectActionLegalCheck, 1);
         nameProjectActionLegalCheck.setPreferredCharWidth(20);
-        projectActionLegalCheck.setEventChanged(addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
+        projectActionLegalCheck.setEventChangeNew(addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
 
         maxForesightLegalChek = addJProp("maxForesightLegalChek", maxForesightProjectCluster, projectLegalCheck, 1, addJProp(firstClusterProject, projectLegalCheck, 1), 1);
         nameMaxForesightLegalChek = addJProp("nameMaxForesightLegalChek", "Форсайт", nameNative, maxForesightLegalChek, 1);
@@ -3284,7 +3336,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateChangeLegalCheck = addDProp(changeLegalCheckGroup, "dateChangeLegalCheck", "Дата отсылки уведомления типа заявки", DateClass.instance, legalCheck);
 //        maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
 //                dateTimeFormalControl, 1, projectFormalControl, 1);
-//        LP currentDateFormalControlProject = maxFormalControlProjectProps[0];
+//        LCP currentDateFormalControlProject = maxFormalControlProjectProps[0];
         currentFormalControlProject = addMGProp("currentFormalControlProject", "Последняя формальная проверка", object(formalControl), projectFormalControl, 1);
 
         needNoticeNegativeLegalCheck = addJProp("needNoticeNegativeLegalCheck", true, "Требуется отсылка уведомления", baseLM.andNot1, negativeResultLegalCheck, 1, resultNoticedLegalCheck, 1);
@@ -3294,7 +3346,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectActionFormalControl = addDProp(idGroup, "projectActionFormalControl", "Тип заявки (ИД)", projectAction, formalControl);
         nameProjectActionFormalControl = addJProp(baseGroup, "nameProjectActionFormalControl", "Тип заявки", baseLM.name, projectActionFormalControl, 1);
         nameProjectActionFormalControl.setPreferredCharWidth(20);
-        projectActionFormalControl.setEventChanged(addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
+        projectActionFormalControl.setEventChangeNew(addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
 
         executeFormalControlProject = addJProp("executeFormalControlProject", true, "Действующая", and(false, false),
                 currentFormalControlProject, 1,
@@ -3333,7 +3385,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         // последняя юридическая проверка
 //        maxLegalCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateLegalCheckProject", "currentLCProject"}, new String[]{"Дата посл. юр. проверки", "Посл. юр. проверка"}, 1,
 //                dateTimeLegalCheck, 1, projectLegalCheck, 1);
-//        LP currentDateLegalCheckProject = maxLegalCheckProjectProps[0];
+//        LCP currentDateLegalCheckProject = maxLegalCheckProjectProps[0];
         currentLegalCheckProject = addMGProp("currentLegalCheckProject", "Последняя юридическая проверка", object(legalCheck), projectLegalCheck, 1);
 
         
@@ -3380,12 +3432,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveResultForesightCheckProject = addJProp("positiveResultForesightCheckProject", "Положительное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
         negativeResultForesightCheckProject = addJProp("negativeResultForesightCheckProject", "Отрицательное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"));
 
-        setNegativeResultForesightCheckProject = addJProp(true, "setNegativeResultForesightCheckProject", "Не прошла проверку на соответствие форсайту", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"));
-        setNegativeResultForesightCheckProjectApply = addEPAProp("setNegativeResultForesightCheckProjectApply", "Не прошла проверку на соответствие форсайту", EPA_DEFAULT, setNegativeResultForesightCheckProject, 1, baseLM.apply, baseLM.cancel);
+        setNegativeResultForesightCheckProject = addSetPropertyAProp("setNegativeResultForesightCheckProject", "Не прошла проверку на соответствие форсайту", resultForesightCheckProject, 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"), 1);
+        setNegativeResultForesightCheckProjectApply = addListAProp("setNegativeResultForesightCheckProjectApply", "Не прошла проверку на соответствие форсайту", setNegativeResultForesightCheckProject, 1, baseLM.apply, baseLM.cancel);
         setNegativeResultForesightCheckProjectApply.property.askConfirm = true;
         setNegativeResultForesightCheckProjectApply.setImage("delete.png");
 
-        setPositiveResultForesightCheckProject = addJProp(true, "Прошла проверку на соответствие форсайты", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
+        setPositiveResultForesightCheckProject = addSetPropertyAProp("Прошла проверку на соответствие форсайты", resultForesightCheckProject, 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
 
         commentForesightCheckProject = addDProp("commentForesightCheckProject", "Комментарий проверки на форсайты", TextClass.instance, project);
 
@@ -3424,10 +3476,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 needTranslationProject, 1);
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
-        sentForTranslationProject.setEventChangedSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
+        sentForTranslationProject.setEventChangeNewSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
 
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
-        dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", baseLM.jumpWorkdays, baseLM.defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
+        dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", baseLM.jumpWorkdays, true, baseLM.defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
 
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
@@ -3436,9 +3488,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.instance, vote);
 
-        attachProtocolDecisionVote = addJProp(actionGroup, "attachProtocolDecisionVote", "Сгенерировать протокол", baseLM.and1, addAProp(new AttachProtocolDecisionVoteActionProperty()), 1, closedSucceededVote, 1);
-        loadFileDecisionVote = addJProp(actionGroup, true, "loadFileDecisionVote", "Загрузить решение", baseLM.and1, addLFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
-        openFileDecisionVote = addJProp(actionGroup, true, "openFileDecisionVote", "Открыть решение", baseLM.and1, addOFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
+        attachProtocolDecisionVote = addIfAProp(actionGroup, "attachProtocolDecisionVote", "Сгенерировать протокол", closedSucceededVote, 1, addAProp(new AttachProtocolDecisionVoteActionProperty()), 1);
+        loadFileDecisionVote = addIfAProp(actionGroup, "loadFileDecisionVote", "Загрузить решение", closedSucceededVote, 1, addLFAProp(fileDecisionVote), 1);
+        openFileDecisionVote = addIfAProp(actionGroup, "openFileDecisionVote", "Открыть решение", closedSucceededVote, 1, addOFAProp(fileDecisionVote), 1);
 
         fileDecisionProject = addJProp("fileDecisionProject", "Решение по проекту", fileDecisionVote, voteLastProject, 1);
 
@@ -3473,7 +3525,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         maxOriginalDocsCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateOriginalDocsCheckProject", "currentOCProject"}, new String[]{"Дата посл. проверки документов", "Посл. проверка документов"}, 1,
                 dateTimeOriginalDocsCheck, 1, projectOriginalDocsCheck, 1);
-        LP currentDateOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[0];
+        LCP currentDateOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[0];
         executeOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[1];
 
         dateExecuteOriginalDocsCheckProject = addJProp("dateExecuteOriginalDocsCheckProject", true, "Дата действующей проверки оригиналов документов", dateOriginalDocsCheck, executeOriginalDocsCheckProject, 1);
@@ -3481,8 +3533,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 //        setNegativeResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, true, "Подан неполный пакет документов", addAAProp(originalDocsCheck, resultOriginalDocsCheck), addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
 //        setPositiveResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, true, "Подан полный пакет документов", addAAProp(originalDocsCheck, resultOriginalDocsCheck), addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
-        setNegativeResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, true, "Подан неполный пакет документов", addEPAProp(EPA_INTERFACE, resultOriginalDocsCheck), 1, addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
-        setPositiveResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, true, "Подан полный пакет документов", addEPAProp(EPA_INTERFACE, resultOriginalDocsCheck), 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
+        setNegativeResultOriginalDocsCheck = addSetPropertyAProp(originalDoscCheckGroup, "Подан неполный пакет документов", resultOriginalDocsCheck, 1, addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
+        setPositiveResultOriginalDocsCheck = addSetPropertyAProp(originalDoscCheckGroup, "Подан полный пакет документов", resultOriginalDocsCheck, 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
 
         negativeOriginalDocsCheckProject = addJProp("negativeOriginalDocsCheckProject", true, "Не полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
         positiveOriginalDocsCheckProject = addJProp("positiveOriginalDocsCheckProject", true, "Полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
@@ -3608,39 +3660,39 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         percentDoneExpert = addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", baseLM.share, quantityDoneExpert, 1, quantityTotalExpert, 1);
 
-        LP quantityClusterExpert = addSGProp("quantityClusterExpert", "Соотв-ие кластеру (голоса)",
+        LCP quantityClusterExpert = addSGProp("quantityClusterExpert", "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterNewExpertVote, 1, 2), 1);
         percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share, quantityClusterExpert, 1, quantityIsR1DoneExpert, 1);
 
-        LP quantityInnovativeExpert = addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
+        LCP quantityInnovativeExpert = addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeNewExpertVote, 1, 2), 1);
         percentInnovativeExpert = addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", baseLM.share, quantityInnovativeExpert, 1, quantityIsR1DoneExpert, 1);
 
-        LP quantityForeignExpert = addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
+        LCP quantityForeignExpert = addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
         percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", baseLM.share, quantityForeignExpert, 1, quantityIsR1DoneExpert, 1);
 
-        LP quantityCompetitiveAdvantagesExpert = addSGProp("quantityCompetitiveAdvantagesExpert", "Конкур. преим. (голоса)",
+        LCP quantityCompetitiveAdvantagesExpert = addSGProp("quantityCompetitiveAdvantagesExpert", "Конкур. преим. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesCorExpertVote, 1, 2), 1);
         percentCompetitiveAdvantagesExpert = addJProp(expertResultGroup, "percentCompetitiveAdvantagesExpert", "Конкур. преим. (%)", baseLM.share, quantityCompetitiveAdvantagesExpert, 1, quantityIsR2DoneExpert, 1);
 
-        LP quantityCommercePotentialExpert = addSGProp("quantityCommercePotentialExpert", "Потенциал коммерц. (голоса)",
+        LCP quantityCommercePotentialExpert = addSGProp("quantityCommercePotentialExpert", "Потенциал коммерц. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialCorExpertVote, 1, 2), 1);
         percentCommercePotentialExpert = addJProp(expertResultGroup, "percentCommercePotentialExpert", "Потенциал коммерц. (%)", baseLM.share, quantityCommercePotentialExpert, 1, quantityIsR2DoneExpert, 1);
 
-        LP quantityCanBeImplementedExpert = addSGProp("quantityCanBeImplementedExpert", "Теоретически реализуем (голоса)",
+        LCP quantityCanBeImplementedExpert = addSGProp("quantityCanBeImplementedExpert", "Теоретически реализуем (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedCorExpertVote, 1, 2), 1);
         percentCanBeImplementedExpert = addJProp(expertResultGroup, "percentCanBeImplementedExpert", "Теоретически реализуем (%)", baseLM.share, quantityCanBeImplementedExpert, 1, quantityIsR2DoneExpert, 1);
 
-        LP quantityHaveExpertiseExpert = addSGProp("quantityHaveExpertiseExpert", "Наличие экспертизы (голоса)",
+        LCP quantityHaveExpertiseExpert = addSGProp("quantityHaveExpertiseExpert", "Наличие экспертизы (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseCorExpertVote, 1, 2), 1);
         percentHaveExpertiseExpert = addJProp(expertResultGroup, "percentHaveExpertiseExpert", "Наличие экспертизы (%)", baseLM.share, quantityHaveExpertiseExpert, 1, quantityIsR2DoneExpert, 1);
 
-        LP quantityInternationalExperienceExpert = addSGProp("quantityInternationalExperienceExpert", "Международный опыт (голоса)",
+        LCP quantityInternationalExperienceExpert = addSGProp("quantityInternationalExperienceExpert", "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceCorExpertVote, 1, 2), 1);
         percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", baseLM.share, quantityInternationalExperienceExpert, 1, quantityIsR2DoneExpert, 1);
 
-        LP quantityEnoughDocumentsExpert = addSGProp("quantityEnoughDocumentsExpert", "Достаточно голосов (голоса)",
+        LCP quantityEnoughDocumentsExpert = addSGProp("quantityEnoughDocumentsExpert", "Достаточно голосов (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 1);
         percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", baseLM.share, quantityEnoughDocumentsExpert, 1, quantityIsR2DoneExpert, 1);
 
@@ -3668,13 +3720,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailLetterExpertVoteEA, baseLM.email, 1);
         addEARecipients(emailLetterExpertVoteEA, MimeMessage.RecipientType.BCC, emailExperts);
 
-        emailLetterExpertVote = addJProp(baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
+        emailLetterExpertVote = addJoinAProp(baseGroup, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
                 emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
         emailLetterExpertVote.setImage("email.png");
         emailLetterExpertVote.property.askConfirm = true;
         emailLetterExpertVote.setEventSetAction(inNewExpertVote, 1, 2);
 
-        allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", baseLM.andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
+        allowedEmailLetterExpertVote = addIfAProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", true, voteResultExpertVote, 1, 2, emailLetterExpertVote, 1, 2);
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
         emailClaimerFromAddress = addDProp("emailClaimerFromAddress", "Адрес отправителя (для заявителей)", StringClass.get(50));
@@ -3684,7 +3736,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailClaimerVoteEA, claimerEmailVote, 1);
 
         emailClaimerHeaderVote = addJProp("emailClaimerHeaderVote", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
-        emailClaimerVote = addJProp(actionGroup, true, "emailClaimerVote", "Письмо о рассмотрении", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
+        emailClaimerVote = addJoinAProp(actionGroup, "emailClaimerVote", "Письмо о рассмотрении", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
         emailClaimerVote.property.askConfirm = true;
 
         emailClaimerVote.setEventSetAction(openedVote, 1);
@@ -3692,36 +3744,34 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondVoteEA = addEAProp(emailIO, vote);
         addEARecipients(emailFondVoteEA, emailFondStartVote);
         emailFondHeaderVote = addJProp("emailFondHeaderVote", "Заголовок уведомления в фонд", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
-        emailFondVote = addJProp(actionGroup, true, "emailFondVote", "Письмо о рассмотрении", emailFondVoteEA, 1, emailFondHeaderVote, 1);
+        emailFondVote = addJoinAProp(actionGroup, "emailFondVote", "Письмо о рассмотрении", emailFondVoteEA, 1, emailFondHeaderVote, 1);
         emailFondVote.property.askConfirm = true;
         emailFondVote.setEventSetAction(openedVote, 1);
 
         emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecipients(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
 
-        setCurrentDateDecisionNoticedVote = addJProp(actionGroup, true, "setCurrentDateDecisionNoticedVote", "Установить текущую дату уведомления",
-                addEPAProp(EPA_INTERFACE, dateDecisionNoticedVote), 1, baseLM.currentDate);
+        setCurrentDateDecisionNoticedVote = addSetPropertyAProp(actionGroup, "setCurrentDateDecisionNoticedVote", "Установить текущую дату уведомления",
+                dateDecisionNoticedVote, 1, baseLM.currentDate);
 
-        emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1,
-                addEPAProp(EPA_DEFAULT,
-                        addJProp(true, emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), // отсылаем письмо
-                        decisionNoticedVote, // пишем, что отослано
-                        setCurrentDateDecisionNoticedVote // записываем дату отсылки
-                ), 1,
-                closedRejectedVote, 1);
+        emailNoticeRejectedVote = addIfAProp(actionGroup, "emailNoticeRejectedVote", "Письмо о несоответствии", closedRejectedVote, 1,
+                addListAProp(
+                        addJoinAProp(emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), 1, // отсылаем письмо
+                        addSetPropertyAProp(decisionNoticedVote, 1, baseLM.vtrue), 1, // пишем, что отослано
+                        setCurrentDateDecisionNoticedVote, 1 // записываем дату отсылки
+                ), 1);
         emailNoticeRejectedVote.setImage("email.png");
         emailNoticeRejectedVote.property.askConfirm = true;
 
         emailNoticeAcceptedStatusVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecipients(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
 
-        emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1,
-                addEPAProp(EPA_DEFAULT,
-                        addJProp(true, emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1),
-                        decisionNoticedVote,
-                        setCurrentDateDecisionNoticedVote
-                        ), 1,
-                closedAcceptedStatusVote, 1);
+        emailNoticeAcceptedStatusVote = addIfAProp(actionGroup, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", closedAcceptedStatusVote, 1,
+                addListAProp(
+                        addJoinAProp(emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1), 1,
+                        addSetPropertyAProp(decisionNoticedVote, 1, baseLM.vtrue), 1,
+                        setCurrentDateDecisionNoticedVote, 1
+                ), 1);
         emailNoticeAcceptedStatusVote.setImage("email.png");
         emailNoticeAcceptedStatusVote.property.askConfirm = true;
 
@@ -3730,13 +3780,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 //        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), addJProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1,);
 
-        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false),
-                addEPAProp(EPA_DEFAULT,
-                        addJProp(true, emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1),
-                        decisionNoticedVote,
-                        setCurrentDateDecisionNoticedVote
-                ), 1,
-                closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1);
+        emailNoticeAcceptedPreliminaryVote = addIfAProp(actionGroup, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)",
+                addJProp(baseLM.and1, closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1), 1,
+                addListAProp(
+                        addJoinAProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1,
+                        addSetPropertyAProp(decisionNoticedVote, 1, baseLM.vtrue), 1,
+                        setCurrentDateDecisionNoticedVote, 1
+                ), 1);
         emailNoticeAcceptedPreliminaryVote.setImage("email.png");
         emailNoticeAcceptedPreliminaryVote.property.askConfirm = true;
 
@@ -3747,7 +3797,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerNameVote = addJProp(add2Strings, 2, nameNativeClaimerVote, 1);
 
         emailStartHeaderVote = addJProp("emailStartHeaderVote", "Заголовок созыва заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Созыв заседания - "));
-        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
+        emailStartVote = addJoinAProp(baseGroup, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
         emailStartVote.property.askConfirm = true;
 //        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
@@ -3755,7 +3805,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailProtocolVoteEA, emailDocuments);
 
         emailProtocolHeaderVote = addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Протокол заседания - "));
-        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
+        emailProtocolVote = addJoinAProp(baseGroup, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
         emailProtocolVote.property.askConfirm = true;
 //        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
@@ -3763,7 +3813,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailClosedVoteEA, emailDocuments);
 
         emailClosedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Результаты заседания - "));
-        emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
+        emailClosedVote = addJoinAProp(baseGroup, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
         emailClosedVote.setImage("email.png");
         emailClosedVote.property.askConfirm = true;
         emailClosedVote.setEventSetAction(closedVote, 1);
@@ -3777,7 +3827,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailNotificationProjectEA, emailFinalClusterProject, 1);
         addEARecipients(emailNotificationProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailNotificationHeaderProject = addJProp(add2Strings, addCProp(StringClass.get(2000), "Проверка проекта - "), nameNativeProject, 1);
-        emailNotificationProject = addJProp(baseGroup, true, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
+        emailNotificationProject = addJoinAProp(baseGroup, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
         emailNotificationProject.setImage("email.png");
         emailNotificationProject.property.askConfirm = true;
         emailNotificationProject.setEventSetAction(needForesightCheckProject, 1);
@@ -3786,7 +3836,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailForesightClaimerProjectEA, emailClaimerProject, 1);
         addEARecipients(emailForesightClaimerProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailForesightClaimerHeaderProject = addJProp("emailForesightClaimerHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
-        emailForesightClaimerProject = addJProp(baseGroup, true, "emailForesightClaimerProject", "Уведомление о результатах проверки на форсайты (e-mail)", emailForesightClaimerProjectEA, 1, emailForesightClaimerHeaderProject, 1);
+        emailForesightClaimerProject = addJoinAProp(baseGroup, "emailForesightClaimerProject", "Уведомление о результатах проверки на форсайты (e-mail)", emailForesightClaimerProjectEA, 1, emailForesightClaimerHeaderProject, 1);
         emailForesightClaimerProject.setImage("email.png");
         emailForesightClaimerProject.property.askConfirm = true;
 //        emailForesightClaimerProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), negativeResultForesightCheckProject, 1);
@@ -3794,26 +3844,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailBureauTrProjectEA = addEAProp(emailIO, project);
         addEARecipients(emailBureauTrProjectEA, emailBureauTranslation);
         addEARecipients(emailBureauTrProjectEA, MimeMessage.RecipientType.CC, emailIO);
-        emailBureauTrProject = addJProp(baseGroup, true, "emailBureauTrProject", "Письмо в бюро переводов (e-mail)", emailBureauTrProjectEA, 1, addCProp(StringClass.get(2000), "Заявка на перевод. "));
+        emailBureauTrProject = addJoinAProp(baseGroup, "emailBureauTrProject", "Письмо в бюро переводов (e-mail)", emailBureauTrProjectEA, 1, addCProp(StringClass.get(2000), "Заявка на перевод. "));
         emailBureauTrProject.setImage("email.png");
         emailBureauTrProject.property.askConfirm = true;
         emailBureauTrProject.setEventSetAction(sentForTranslationProject, 1);
 
         resultNeedVoteProject = addDProp("resultNeedVoteProject", "Отослано уведомление", LogicalClass.instance, project);
         dateResultNeedVoteProject = addDProp("dateResultNeedVoteProject", "Дата отсылки уведомления", DateClass.instance, project);
-        setCurrentDateResultNeedVoteProject = addJProp(actionGroup, true, "setCurrentDateResultNeedVoteProject", "Установить текущую дату уведомления",
-                        addEPAProp(EPA_INTERFACE, dateResultNeedVoteProject), 1, baseLM.currentDate);
+        setCurrentDateResultNeedVoteProject = addSetPropertyAProp(actionGroup, "setCurrentDateResultNeedVoteProject", "Установить текущую дату уведомления", dateResultNeedVoteProject, 1, baseLM.currentDate);
         emailNeedVoteProjectEA = addEAProp(emailIO, project);
         addEARecipients(emailNeedVoteProjectEA, emailPresident);
         addEARecipients(emailNeedVoteProjectEA, MimeMessage.RecipientType.CC, emailIO);
 //        emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
-        emailNeedVoteProject = addJProp(actionGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", baseLM.and1,
-                        addEPAProp(EPA_DEFAULT,
-                                resultNeedVoteProject, // пишем, что отослано
-                                setCurrentDateResultNeedVoteProject, // записываем дату отсылки
-                                addJProp(true, emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1), 1) // отсылаем письмо
-                        ), 1,
-                needVoteProject, 1);
+        emailNeedVoteProject = addIfAProp(actionGroup, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", needVoteProject, 1,
+                        addListAProp(
+                                addSetPropertyAProp(resultNeedVoteProject, 1, baseLM.vtrue), 1, // пишем, что отослано
+                                setCurrentDateResultNeedVoteProject, 1, // записываем дату отсылки
+                                addJoinAProp(emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1), 1), 1 // отсылаем письмо
+                        ), 1);
         emailNeedVoteProject.setImage("email.png");
         emailNeedVoteProject.property.askConfirm = true;
         emailNeedVoteProject.setEventSetAction(needVoteProject, 1);
@@ -3823,7 +3871,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailTransferredProjectEA, emailIO);
         addEARecipients(emailTransferredProjectEA, MimeMessage.RecipientType.CC, emailFondTransferred);
         emailTransferredHeaderProject = addJProp("emailTransferredHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
-        emailTransferredProject = addJProp(baseGroup, true, "emailTransferredProject", "Уведомление о прохождении перевода (e-mail)", emailTransferredProjectEA, 1, emailTransferredHeaderProject, 1);
+        emailTransferredProject = addJoinAProp(baseGroup, "emailTransferredProject", "Уведомление о прохождении перевода (e-mail)", emailTransferredProjectEA, 1, emailTransferredHeaderProject, 1);
         emailTransferredProject.setImage("email.png");
         emailTransferredProject.property.askConfirm = true;
         emailTransferredProject.setEventSetAction(transferredProject, 1);
@@ -3843,8 +3891,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerFormalControl.setPreferredWidth(50);
 
 
-        setCurrentDateResultNoticedFormalControl = addJProp(actionGroup, true, "setCurrentDateResultNoticedFormalControl", "Установить текущую дату уведомления",
-                addEPAProp(EPA_INTERFACE, dateResultNoticedFormalControl), 1, baseLM.currentDate);
+        setCurrentDateResultNoticedFormalControl = addSetPropertyAProp(actionGroup, "setCurrentDateResultNoticedFormalControl", "Установить текущую дату уведомления",
+                dateResultNoticedFormalControl, 1, baseLM.currentDate);
 
         addEARecipients(emailClaimerFormalControlEA, claimerEmailFormalControl, 1);
 
@@ -3852,13 +3900,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
   //      emailClaimerFormalControl = addJProp(actionGroup, true, "emailClaimerFormalControl", "Письмо о формальной экспертизе", emailClaimerFormalControlEA, 1, emailClaimerHeaderFormalControl, 1);
 
         needEmailClaimerFormalControl = addSUProp("needEmailClaimerFormalControl", "Требуется уведомление", Union.OVERRIDE, addJProp(baseLM.equals2, resultFormalControl, 1, addCProp(formalControlResult, "notEnoughDocuments")), addJProp(baseLM.equals2, resultFormalControl, 1, addCProp(formalControlResult, "repeatedFC")));
-        emailClaimerFormalControl = addJProp(actionGroup, true, "emailClaimerFormalControl", "Письмо о формальной экспертизе", baseLM.and1,
-                addEPAProp(EPA_DEFAULT,
-                        setCurrentDateResultNoticedFormalControl, // записываем дату отсылки
-                        addJProp(true, emailClaimerFormalControlEA, 1, emailClaimerHeaderFormalControl, 1), // отсылаем письмо
-                        resultNoticedFormalControl // пишем, что отослано
-                ), 1,
-        needEmailClaimerFormalControl, 1);
+        emailClaimerFormalControl = addIfAProp(actionGroup, "emailClaimerFormalControl", "Письмо о формальной экспертизе", needEmailClaimerFormalControl, 1,
+                addListAProp(setCurrentDateResultNoticedFormalControl, 1, // записываем дату отсылки
+                        addJoinAProp(emailClaimerFormalControlEA, 1, emailClaimerHeaderFormalControl, 1), 1, // отсылаем письмо
+                        addSetPropertyAProp(resultNoticedFormalControl, 1, baseLM.vtrue), 1 // пишем, что отослано
+                ), 1);
 
         emailClaimerFormalControl.setImage("email.png");
         emailClaimerFormalControl.property.askConfirm = true;
@@ -3868,7 +3914,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailFondFormalControlEA, MimeMessage.RecipientType.CC, emailFondFC);
         emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
 
-        emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
+        emailFondFormalControl = addJoinAProp(actionGroup, "emailFondFormalControl", "Письмо о формальной экспертизе", emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
         emailFondFormalControl.property.askConfirm = true;
         emailFondFormalControl.setEventSetAction(resultFormalControl, 1);
@@ -3887,8 +3933,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerLegalCheck.setMinimumWidth(10);
         nameNativeClaimerLegalCheck.setPreferredWidth(50);
 
-        setCurrentDateResultNoticedLegalCheck = addJProp(actionGroup, true, "setCurrentDateResultNoticedLegalCheck", "Установить текущую дату уведомления",
-                addEPAProp(EPA_INTERFACE, dateResultNoticedLegalCheck), 1, baseLM.currentDate);
+        setCurrentDateResultNoticedLegalCheck = addSetPropertyAProp(actionGroup, "setCurrentDateResultNoticedLegalCheck", "Установить текущую дату уведомления",
+                dateResultNoticedLegalCheck, 1, baseLM.currentDate);
 
         addEARecipients(emailClaimerLegalCheckEA, claimerEmailLegalCheck, 1);
         addEARecipients(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
@@ -3896,34 +3942,32 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerHeaderLegalCheck = addJProp("emailClaimerHeaderLegalCheck", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerLegalCheck, 1);
 
-        emailClaimerLegalCheck = addJProp(actionGroup, true, "emailClaimerLegalCheck", "Письмо о формальной экспертизе", baseLM.and1,
-                addEPAProp(EPA_DEFAULT,
-                        setCurrentDateResultNoticedLegalCheck, // записываем дату отсылки
-                        addJProp(true, emailClaimerLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), // отсылаем письмо
-                        resultNoticedLegalCheck // пишем, что отослано
-                ), 1,
-        object(legalCheck), 1);
+        emailClaimerLegalCheck = addIfAProp(actionGroup, "emailClaimerLegalCheck", "Письмо о формальной экспертизе", object(legalCheck), 1,
+                addListAProp(
+                        setCurrentDateResultNoticedLegalCheck, 1, // записываем дату отсылки
+                        addJoinAProp(emailClaimerLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), 1, // отсылаем письмо
+                        addSetPropertyAProp(resultNoticedLegalCheck, 1, baseLM.vtrue), 1 // пишем, что отослано
+                ), 1);
         emailClaimerLegalCheck.setImage("email.png");
         emailClaimerLegalCheck.property.askConfirm = true;
 
         emailClaimerChangeLegalCheckEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
-        setCurrentDateChangeLegalCheck = addJProp(actionGroup, true, "setCurrentDateChangeLegalCheck", "Установить текущую дату уведомления",
-                addEPAProp(EPA_INTERFACE, dateChangeLegalCheck), 1, baseLM.currentDate);
+        setCurrentDateChangeLegalCheck = addSetPropertyAProp(actionGroup, "setCurrentDateChangeLegalCheck", "Установить текущую дату уведомления",
+                dateChangeLegalCheck, 1, baseLM.currentDate);
 
         addEARecipients(emailClaimerChangeLegalCheckEA, claimerEmailLegalCheck, 1);
         addEARecipients(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
 
-        emailClaimerChangeLegalCheck = addJProp(changeLegalCheckGroup, true, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", baseLM.and1,
-                addEPAProp(EPA_DEFAULT,
-                        setCurrentDateChangeLegalCheck, // записываем дату отсылки
-                        addJProp(true, emailClaimerChangeLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), // отсылаем письмо
-                        noticedChangeLegalCheck // пишем, что отослано
-                ), 1,
-                changeLegalCheck, 1);
+        emailClaimerChangeLegalCheck = addIfAProp(changeLegalCheckGroup, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", changeLegalCheck, 1,
+                addListAProp(
+                        setCurrentDateChangeLegalCheck, 1, // записываем дату отсылки
+                        addJoinAProp(emailClaimerChangeLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), 1, // отсылаем письмо
+                        addSetPropertyAProp(noticedChangeLegalCheck, 1, baseLM.vtrue), 1 // пишем, что отослано
+                ), 1);
         emailClaimerChangeLegalCheck.setImage("email.png");
         emailClaimerChangeLegalCheck.property.askConfirm = true;
 
-        emailClaimerLegalCheckProject = addJProp(actionGroup, true, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
+        emailClaimerLegalCheckProject = addJoinAProp(actionGroup, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
         emailClaimerLegalCheckProject.setEventSetAction(positiveResultForesightCheckProject, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", baseLM.equals2, languageExpert, 1, addCProp(language, "english"));
@@ -3933,7 +3977,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailAuthExpertEA, baseLM.email, 1);
         addEARecipients(emailAuthExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
-        emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
+        emailAuthExpert = addJoinAProp(baseGroup, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthExpert.setImage("email.png");
         emailAuthExpert.property.askConfirm = true;
@@ -3942,7 +3986,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailAuthProfileExpertEA, baseLM.email, 1);
         addEARecipients(emailAuthProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
-        emailAuthProfileExpert = addJProp(baseGroup, true, "emailAuthProfileExpert", "Уведомление о заполнении профиля (e-mail)",
+        emailAuthProfileExpert = addJoinAProp(baseGroup, "emailAuthProfileExpert", "Уведомление о заполнении профиля (e-mail)",
                 emailAuthProfileExpertEA, 1, addJProp(authProfileExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthProfileExpert.setImage("email.png");
         emailAuthProfileExpert.property.askConfirm = true;
@@ -3951,7 +3995,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailReminderProfileExpertEA, baseLM.email, 1);
         addEARecipients(emailReminderProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
-        emailReminderProfileExpert = addJProp(baseGroup, true, "emailReminderProfileExpert", "Напоминание о заполнении профиля (e-mail)",
+        emailReminderProfileExpert = addJoinAProp(baseGroup, "emailReminderProfileExpert", "Напоминание о заполнении профиля (e-mail)",
                 emailReminderProfileExpertEA, 1, addJProp(reminderProfileExpertSubjectLanguage, languageExpert, 1), 1);
         emailReminderProfileExpert.setImage("email.png");
         emailReminderProfileExpert.property.askConfirm = true;
@@ -3964,7 +4008,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAcceptedProjectEA = addEAProp(project);
         addEARecipients(emailAcceptedProjectEA, emailDocuments);
         emailClaimerAcceptedHeaderProject = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Решение о присвоении статуса участника - "), nameNativeClaimerProject, 1);
-        emailAcceptedProject = addJProp(baseGroup, true, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
+        emailAcceptedProject = addJoinAProp(baseGroup, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
         emailAcceptedProject.setImage("email.png");
         emailAcceptedProject.property.askConfirm = true;
         emailAcceptedProject.setEventSetAction(acceptedProject, 1);
@@ -4012,7 +4056,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailLetterExpertMonthYearEA = addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
         addEARecipients(emailLetterExpertMonthYearEA, emailForCertificates);
 
-        emailLetterCertificatesExpertMonthYear = addJProp(true, "emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, monthInPreviousDate, yearInPreviousDate);
+        emailLetterCertificatesExpertMonthYear = addJoinAProp("emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, monthInPreviousDate, yearInPreviousDate);
         emailLetterCertificatesExpertMonthYear.setImage("email.png");
         emailLetterCertificatesExpertMonthYear.property.askConfirm = true;
 
@@ -4101,9 +4145,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameRegulationsApplication = addJProp(baseGroup, "nameRegulationsApplication", "Регламент заявки", nameRegulationsProject, projectApplication, 1);
         nameRegulationsApplication.setFixedCharWidth(2);
 
-        openApplicationProjectActionApplication = addJProp("openApplicationProjectActionApplication", "Открыть анкету", openApplicationProjectAction, projectApplication, 1);
-        openCompleteApplicationProjectActionApplication = addJProp("openCompleteApplicationProjectActionApplication", "Открыть анкету (полную)", openCompleteApplicationProjectAction, projectApplication, 1);
-        exportProjectDocumentsActionApplication = addJProp("exportProjectDocumentsActionApplication", "Экспортировать документы", exportProjectDocumentsAction, projectApplication, 1);
+        openApplicationProjectActionApplication = addJoinAProp("openApplicationProjectActionApplication", "Открыть анкету", openApplicationProjectAction, projectApplication, 1);
+        openCompleteApplicationProjectActionApplication = addJoinAProp("openCompleteApplicationProjectActionApplication", "Открыть анкету (полную)", openCompleteApplicationProjectAction, projectApplication, 1);
+        exportProjectDocumentsActionApplication = addJoinAProp("exportProjectDocumentsActionApplication", "Экспортировать документы", exportProjectDocumentsAction, projectApplication, 1);
 
         needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true, true, true),
                 addCProp(LogicalClass.instance, true, project), 1,
@@ -4112,11 +4156,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 overdueLegalCheckProject, 1,
                 withdrawnProject, 1);
 
-        addPositiveLCResultProject = addJProp(legalCheckResultGroup, true, "Прошла юридическую проверку",
-                                              addAAProp(legalCheck, projectLegalCheck, resultLegalCheck), 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
-        setPositiveLCResultApplyProject = addJProp(actionGroup, true, "setPositiveLCResultApplyProject", "Прошла юридическую проверку", baseLM.and1,
-                addEPAProp(EPA_DEFAULT, addPositiveLCResultProject, 1, baseLM.apply, baseLM.cancel), 1,
-                needLegalCheckStatusProject, 1);
+        addPositiveLCResultProject = addJoinAProp(legalCheckResultGroup, "Прошла юридическую проверку",
+                addAAProp(legalCheck, projectLegalCheck, resultLegalCheck), 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
+        setPositiveLCResultApplyProject = addIfAProp(actionGroup, "setPositiveLCResultApplyProject", "Прошла юридическую проверку", needLegalCheckStatusProject, 1,
+                addListAProp(addPositiveLCResultProject, 1, baseLM.apply, baseLM.cancel), 1);
         setPositiveLCResultApplyProject.property.askConfirm = true;
         setPositiveLCResultApplyProject.setImage("sign_tick.png");
 
@@ -4397,7 +4440,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailConferenceExpertEA = addEAProp(expertConference, expert);
         addEARecipients(emailConferenceExpertEA, baseLM.email, 2);
 
-        emailConferenceExpert = addJProp(baseGroup, "emailConferenceExpert", "Участие в конф. (e-mail)", and(false, true), addJProp(true, emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2, inConferenceExpert, 1, 2, resultConferenceExpert, 1, 2);
+        emailConferenceExpert = addIfAProp(baseGroup, "emailConferenceExpert", "Участие в конф. (e-mail)", addJProp(baseLM.andNot1, inConferenceExpert, 1, 2, resultConferenceExpert, 1, 2), 1, 2, addJoinAProp(emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2);
         emailConferenceExpert.setImage("email.png");
         emailConferenceExpert.property.askConfirm = true;
 
@@ -4423,7 +4466,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ProjectFullR2FormEntity projectCompleteR2Foreign;
 
     private StatusLogFormEntity logNameStatusForm;
-    private LP formLogNameStatusProject;
+    private LCP formLogNameStatusProject;
 
     private VoteProtocolFormEntity voteProtocolSimple;
 
@@ -4658,7 +4701,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objCluster = addSingleGroupObject(5, "cluster", cluster, "Кластер");
             addPropertyDraw(inProjectCluster, objProject, objCluster);
             addPropertyDraw(objCluster, nameNative, nameForeign);
-            addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
+            addPropertyDraw(new LCP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
             addPropertyDraw(numberCluster, objCluster);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
 
@@ -4685,20 +4728,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
             addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getAddObjectAction(project)));
 
-            if (lng.equals("both"))
-                editR1Project = addJProp(true, "editR1Project", "Редактировать проект", baseLM.and1,
-                        addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1, isR1Project, 1).setImage("edit.png");
+            if (lng.equals("both")) {
+                editR1Project = addIfAProp((AbstractGroup)null, "editR1Project", "Редактировать проект", isR1Project, 1,
+                        addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1);
+                editR1Project.setImage("edit.png");
+            }
 
             if (lng.equals("rus")) {
-                translateToRussianProject = addJProp(translateActionGroup, true, "Перевести на русский", baseLM.and1,
-                        addMFAProp("Требуется перевод на русский", this, new ObjectEntity[]{objProject}), 1,
-                        needsToBeTranslatedToRussianProject, 1).setImage("edit.png");
+                translateToRussianProject = addIfAProp(translateActionGroup, "Перевести на русский", needsToBeTranslatedToRussianProject, 1,
+                        addMFAProp("Требуется перевод на русский", this, new ObjectEntity[]{objProject}), 1);
+                translateToRussianProject.setImage("edit.png");
             }
 
             if (lng.equals("eng")) {
-                translateToEnglishProject = addJProp(translateActionGroup, true, "Перевести на английский", baseLM.and1,
-                        addMFAProp("Требуется перевод на английский", this, new ObjectEntity[]{objProject}), 1,
-                        needsToBeTranslatedToEnglishProject, 1).setImage("edit.png");
+                translateToEnglishProject = addIfAProp(translateActionGroup, "Перевести на английский", needsToBeTranslatedToEnglishProject, 1,
+                        addMFAProp("Требуется перевод на английский", this, new ObjectEntity[]{objProject}), 1);
+                translateToEnglishProject.setImage("edit.png");
             }
 
             addDefaultHintsIncrementTable(this);
@@ -4762,7 +4807,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            }
             design.setShowTableFirstLogical(true);
 
-            PropertyObjectEntity sidProjectProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(255, 250, 205)), sidProject, 1), objProject);
+            CalcPropertyObjectEntity sidProjectProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(255, 250, 205)), sidProject, 1), objProject);
             if ("rus".equals(lng)) {
                 getPropertyDraw(nameNativeManagerProject).setPropertyBackground(sidProjectProperty);
                 getPropertyDraw(nameNativeClaimerProject).setPropertyBackground(sidProjectProperty);
@@ -4897,9 +4942,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             else
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(fillNativeProject, objProject)));
 
-            if (editR2Project == null)
-                editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
-                        addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1, isR2Project, 1).setImage("edit.png");
+            if (editR2Project == null) {
+                editR2Project = addIfAProp((AbstractGroup)null, "editR2Project", "Редактировать проект", isR2Project, 1,
+                        addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1);
+                editR2Project.setImage("edit.png");
+            }
 
             addDefaultHintsIncrementTable(this);
 
@@ -5044,7 +5091,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setEditType(openApplicationProjectAction, PropertyEditType.EDITABLE);
             setEditType(exportProjectDocumentsAction, PropertyEditType.EDITABLE);
 
-            addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(setPositiveResultForesightCheckProject, objProject));
 
             setPageSize(0);
 
@@ -5052,19 +5099,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
             applyForesightCheckProjectCluster.property.askConfirm = true;
             applyForesightCheckProjectCluster.setImage("sign_tick.png");
 
-            applyForesightCheckProject = addJProp(actionGroup, "applyForesightCheckProject", "Прошла проверку на соответствие форсайту", baseLM.andNot1,
-                    addJProp(applyForesightCheckProjectCluster, 1, finalClusterProject, 1), 1,
-                    resultForesightCheckProject, 1);
+            applyForesightCheckProject = addIfAProp(actionGroup, "applyForesightCheckProject", "Прошла проверку на соответствие форсайту", true, resultForesightCheckProject, 1,
+                    addJoinAProp(applyForesightCheckProjectCluster, 1, finalClusterProject, 1), 1);
             applyForesightCheckProject.property.askConfirm = true;
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
             return design;
         }
     }
@@ -5081,11 +5127,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", commentForesightCheckProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnOk(addPropertyObject(setNegativeResultForesightCheckProject, objProject));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(setNegativeResultForesightCheckProject, objProject));
 
-            rejectForesightCheckProject = addJProp(actionGroup, "rejectForesightCheckProject", "Не прошла проверку на соответствие форсайту", baseLM.andNot1,
-                    addMFAProp(actionGroup, "Не прошла проверку на соответствие форсайту", this, new ObjectEntity[]{objProject}, true), 1,
-                    resultForesightCheckProject, 1);
+            rejectForesightCheckProject = addIfAProp(actionGroup, "rejectForesightCheckProject", "Не прошла проверку на соответствие форсайту", true, resultForesightCheckProject, 1,
+                    addMFAProp(actionGroup, "Не прошла проверку на соответствие форсайту", this, new ObjectEntity[]{objProject}, true), 1);
             rejectForesightCheckProject.property.askConfirm = true;
             rejectForesightCheckProject.setImage("delete.png");
         }
@@ -5093,10 +5138,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
 
             design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
             design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
@@ -5268,18 +5313,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objComment = addSingleGroupObject(TextClass.instance, "Комментарий", baseLM.objectValue);
             objComment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnOk(addPropertyObject(addJProp(
-                    addEPAProp(EPA_INTERFACE, projectActionProject), 1, addCProp(projectAction, "preliminary")
-                    ), objProject));
-            
-            addActionsOnOk(addPropertyObject(addJProp(
-                    addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, changeLegalCheck, resultLegalCheck),
-                    1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
-                    ), objProject, objComment));
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addSetPropertyAProp(projectActionProject, 1, addCProp(projectAction, "preliminary")), objProject));
 
-            acceptPreliminaryLegalCheckProject = addJProp(actionGroup, "acceptPreliminaryLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)", and(false, false, true),
-                    addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
-                    needLegalCheckStatusProject, 1, isStatusProject, 1, isPreliminaryAndStatusProject, 1);
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addJoinAProp(
+                        addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, changeLegalCheck, resultLegalCheck),
+                        1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
+                        ), objProject, objComment));
+
+            acceptPreliminaryLegalCheckProject = addIfAProp(actionGroup, "acceptPreliminaryLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)",
+                    addJProp(and(false, true), needLegalCheckStatusProject, 1, isStatusProject, 1, isPreliminaryAndStatusProject, 1), 1,
+                    addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1);
             acceptPreliminaryLegalCheckProject.property.askConfirm = true;
             acceptPreliminaryLegalCheckProject.setImage("sign_tick.png");
         }
@@ -5287,10 +5330,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
 
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).panelLabelAbove = true;
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).constraints.fillHorizontal = 1;
@@ -5313,14 +5356,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objComment = addSingleGroupObject(TextClass.instance, "Комментарий", baseLM.objectValue);
             objComment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnOk(addPropertyObject(addJProp(
-                    addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, resultLegalCheck),
+            addActionsOnEvent(FormEventType.OK, addPropertyObject(addJoinAProp(
+                        addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, resultLegalCheck),
                         1, 2, addCProp(legalCheckResult, "negativeLegalCheckResult"))
-                                             , objProject, objComment));
+                                                 , objProject, objComment));
 
-            rejectLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Не прошла юридическую проверку", baseLM.and1,
-                    addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
-                    needLegalCheckStatusProject, 1);
+            rejectLegalCheckProject = addIfAProp(actionGroup, "rejectLegalCheckProject", "Не прошла юридическую проверку", needLegalCheckStatusProject, 1,
+                    addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1);
             rejectLegalCheckProject.property.askConfirm = true;
             rejectLegalCheckProject.setImage("delete.png");
         }
@@ -5328,10 +5370,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.getPrintFunction().setVisible(false);
-            design.getXlsFunction().setVisible(false);
-            design.getApplyFunction().setVisible(false);
-            design.getCancelFunction().setVisible(false);
+            design.getPrintButton().removeFromParent();
+            design.getXlsButton().removeFromParent();
+            design.getApplyButton().removeFromParent();
+            design.getCancelButton().removeFromParent();
 
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).panelLabelAbove = true;
             design.get(getPropertyDraw(baseLM.objectValue, objComment)).constraints.fillHorizontal = 1;
@@ -5416,12 +5458,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             DataObject projectObject = context.getKeyValue(projectInterface);
 
@@ -5436,7 +5474,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             } else if (fillForeign != null) {
                 lang = "Англ";
             }
-            langProject.execute(lang, context, projectObject);
+            langProject.change(lang, context, projectObject);
         }
     }
 
@@ -5455,7 +5493,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             foresightInterface = i.next();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
             DataObject clusterObject = context.getKeyValue(clusterInterface);
             DataObject foresightObject = context.getKeyValue(foresightInterface);
@@ -5463,26 +5501,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
             Object valueInProjectForesight = null;
             if (inProjectForesight.read(context, projectObject, foresightObject) == null)
                 valueInProjectForesight = true;
-            inProjectForesight.execute(valueInProjectForesight, context, projectObject, foresightObject);
+            inProjectForesight.change(valueInProjectForesight, context, projectObject, foresightObject);
 
             String codeForesight = "";
             Object codeForesightObject = sidForesight.read(context, foresightObject);
             if (codeForesightObject != null)
                 codeForesight = codeForesightObject.toString().trim();
 
-            LP isForesight = is(foresight);
-            Map<Object, KeyExpr> keys = isForesight.getMapKeys();
+            LCP<PropertyInterface> isForesight = is(foresight);
+            Map<PropertyInterface, KeyExpr> keys = isForesight.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
-            Query<Object, Object> query = new Query<Object, Object>(keys);
+            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
             query.properties.put("sidForesight", sidForesight.getExpr(BaseUtils.singleValue(keys)));
             query.and(isForesight.property.getExpr(keys).getWhere());
             query.and(clusterForesight.getExpr(context.getModifier(), key).compare(clusterObject.getExpr(), Compare.EQUALS));
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> rows : result.entrySet()) {
                 DataObject foresightNewObject = new DataObject(rows.getKey().get(((OrderedMap) keys).getKey(0)), foresight);
                 if (rows.getValue().get("sidForesight").toString().startsWith(codeForesight) && (!"".equals(codeForesight)))
-                    inProjectForesight.execute(valueInProjectForesight, context, projectObject, foresightNewObject);
+                    inProjectForesight.change(valueInProjectForesight, context, projectObject, foresightNewObject);
             }
         }
     }
@@ -5578,7 +5616,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
 //            getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
 
-            showIf(this, loadFileResolutionIPProject, addJProp(baseLM.andNot1, isR1Project, 1, openFileResolutionIPProject, 1), objProject);
+            showIf(this, loadFileResolutionIPProject, addJProp(baseLM.andNot1, isR1Project, 1, fileResolutionIPProject, 1), objProject);
 
             addObjectActions(this, objProject, false, false);
 
@@ -5592,26 +5630,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setForceViewType(editClaimerProject, ClassViewType.PANEL);
 
-            LP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
-            PropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
+            LCP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
+            CalcPropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
             getPropertyDraw(nameStatusProject).setPropertyBackground(statusProperty);
 
-            PropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
+            CalcPropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
             getPropertyDraw(dateProject).setPropertyBackground(dateProperty);
 
-            PropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
+            CalcPropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
             getPropertyDraw(dateStatusProject).setPropertyBackground(dateStatusProperty);
 
-            PropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
+            CalcPropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
             getPropertyDraw(nameNativeProject).setPropertyBackground(nameNativeProperty);
 
-            PropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
+            CalcPropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
             getPropertyDraw(nameForeignProject).setPropertyBackground(nameForeignProperty);
 
-            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
+            CalcPropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameNativeClaimerProject).setPropertyBackground(nameNativeCorrectHighlightClaimerProjectProperty);
 
-            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
+            CalcPropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameForeignClaimerProject).setPropertyBackground(nameForeignCorrectHighlightClaimerProjectProperty);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -5621,7 +5659,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(inProjectCluster, objProject, objCluster);
             addPropertyDraw(inClaimerProjectCluster, objProject, objCluster);
             addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort, sidCluster);
-            addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
+            addPropertyDraw(new LCP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
             addPropertyDraw(numberCluster, objCluster);
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
@@ -5650,10 +5688,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
 
-            showIf(this, new LP[] {quantityInClusterVote, quantityInnovativeVote, quantityForeignVote},
+            showIf(this, new LCP[] {quantityInClusterVote, quantityInnovativeVote, quantityForeignVote},
                     isR1Project, objProject);
 
-            showIf(this, new LP[] {quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote},
+            showIf(this, new LCP[] {quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote},
                     isR2Project, objProject);
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
@@ -5687,7 +5725,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             //getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
 //            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, openFileResolutionIPProject);
 //            getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
-            showIf(this, includeDocumentsProject, addJProp(baseLM.and1, addSUProp(Union.OVERRIDE, isR2Project, addJProp(baseLM.and1, isR1Project, 1, openFileResolutionIPProject, 1)), 1, positiveLegalResultProject, 1), objProject);
+            showIf(this, includeDocumentsProject, addJProp(baseLM.and1, addSUProp(Union.OVERRIDE, isR2Project, addJProp(baseLM.and1, isR1Project, 1, fileResolutionIPProject, 1)), 1, positiveLegalResultProject, 1), objProject);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote, businessExpertVote, exclExpertVote);
@@ -5985,10 +6023,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                         setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
 
-                        showIf(this, new LP[] {quantityInClusterVote, quantityInnovativeVote, quantityForeignVote},
+                        showIf(this, new LCP[] {quantityInClusterVote, quantityInnovativeVote, quantityForeignVote},
                                 isR1Application, objApplication);
 
-                        showIf(this, new LP[] {quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote},
+                        showIf(this, new LCP[] {quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote},
                                 isR2Application, objApplication);
 
 
@@ -6422,8 +6460,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("form.gif");
-            editClaimerProject = addJProp(actionGroup, true, "Юр.лицо", editClaimer, claimerProject, 1);
+            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}, false);
+            editClaimer.setImage("form.gif");
+            editClaimerProject = addJoinAProp(actionGroup, "Юр.лицо", editClaimer, claimerProject, 1);
         }
     }
 
@@ -6448,7 +6487,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
 
-            includeProjectClusterForesight = addJProp(actionGroup, true, "Подключить", editClaimer, claimerProject, 1);
+            includeProjectClusterForesight = addJoinAProp(actionGroup, "Подключить", editClaimer, claimerProject, 1);
 
             setPageSize(0);
         }
@@ -6503,7 +6542,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             //!!!
             //dateStartVote = addJProp(baseGroup, "dateStartVote", "Дата начала", baseLM.and1, date, 1, is(vote), 1);
-            //LP isDocumentUnique = addJProp(baseGroup,"isDocumentUnique", "уникальность док-та", baseLM.and1, languageDocument, is(), objDocument);
+            //LCP isDocumentUnique = addJProp(baseGroup,"isDocumentUnique", "уникальность док-та", baseLM.and1, languageDocument, is(), objDocument);
 
             objDocument = addSingleGroupObject(8, "document", document, fileDocument);
             addPropertyDraw(nameDocument, objDocument).setSID("docName");
@@ -7269,30 +7308,30 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(nameNativeShortCurrentCluster, ClassViewType.PANEL);
 
             addPropertyDraw(objProject, resolutionIPGroup);
-            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
+            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, fileResolutionIPProject, 1));
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
             getPropertyDraw(loadFileResolutionIPProject).forceViewType = ClassViewType.PANEL;
 
-            LP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
-            PropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
+            LCP highlightColor = addCProp(ColorClass.instance, new Color(223, 255, 223));
+            CalcPropertyObjectEntity statusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, statusDataProject, 1), objProject);
             getPropertyDraw(nameStatusProject).setPropertyBackground(statusProperty);
 
-            PropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
+            CalcPropertyObjectEntity dateProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateDataProject, 1), objProject);
             getPropertyDraw(dateProject).setPropertyBackground(dateProperty);
 
-            PropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
+            CalcPropertyObjectEntity dateStatusProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, dateStatusDataProject, 1), objProject);
             getPropertyDraw(dateStatusProject).setPropertyBackground(dateStatusProperty);
 
-            PropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
+            CalcPropertyObjectEntity nameNativeProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeDataProject, 1), objProject);
             getPropertyDraw(nameNativeProject).setPropertyBackground(nameNativeProperty);
 
-            PropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
+            CalcPropertyObjectEntity nameForeignProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignDataProject, 1), objProject);
             getPropertyDraw(nameForeignProject).setPropertyBackground(nameForeignProperty);
 
-            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
+            CalcPropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameNativeCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameNativeClaimerProject).setPropertyBackground(nameNativeCorrectHighlightClaimerProjectProperty);
 
-            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
+            CalcPropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, nameForeignCorrectHighlightClaimerProject, 1), objProject);
             getPropertyDraw(nameForeignClaimerProject).setPropertyBackground(nameForeignCorrectHighlightClaimerProjectProperty);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, openFileDocument);
@@ -7475,7 +7514,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             documentTemplateInterface = i.next();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
             DataObject documentTemplateObject = context.getKeyValue(documentTemplateInterface);
 
@@ -7484,11 +7523,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             query.properties.put("documentType", typeDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
             query.properties.put("languageDocument", languageDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
 
-            for (Map<String, Object> row : query.execute(context.getSession()).values()) {
+            for (Map<String, Object> row : query.execute(context).values()) {
                 DataObject documentObject = context.addObject(document);
-                projectDocument.execute(projectObject.getValue(), context, documentObject);
-                typeDocument.execute(row.get("documentType"), context, documentObject);
-                languageDocument.execute(row.get("languageDocument"), context, documentObject);
+                projectDocument.change(projectObject.getValue(), context, documentObject);
+                typeDocument.change(row.get("documentType"), context, documentObject);
+                languageDocument.change(row.get("languageDocument"), context, documentObject);
             }
         }
     }
@@ -7509,7 +7548,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             try {
                 DataObject projectObject = context.getKeyValue(projectInterface);
 
@@ -7525,7 +7564,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                 if (file == null)
                     file = generateApplicationFile(context, projectObject, false, newRegulation, complete);
-                context.addAction(new OpenFileClientAction(file, "pdf"));
+                context.delayUserInterfaction(new OpenFileClientAction(file, "pdf"));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -7548,12 +7587,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             try {
                 DataObject voteObject = context.getKeyValue(voteInterface);
 
-                File tempFile = context.getRemoteForm().generateFileFromForm(BL, voteProtocolSimple, voteProtocolSimple.objVote, voteObject);
-                fileDecisionVote.execute(IOUtils.getFileBytes(tempFile), context, voteObject);
+                File tempFile = context.generateFileFromForm(BL, voteProtocolSimple, voteProtocolSimple.objVote, voteObject);
+                fileDecisionVote.change(IOUtils.getFileBytes(tempFile), context, voteObject);
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -7571,18 +7610,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             expertInterface = interfaces.iterator().next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             DataObject expertObject = context.getKeyValue(expertInterface);
 
             List<String> expertSIDList = new ArrayList<String>();
 
-            LP isExpert = is(expert);
+            LCP isExpert = is(expert);
             Map<Object, KeyExpr> keys = isExpert.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -7611,7 +7646,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
                 DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), cluster);
-                Object clusterSID = sidCluster.read(context.getSession(), clusterObject);
+                Object clusterSID = sidCluster.read(context, clusterObject);
                 if (clusterSID != null)
                     prefix = clusterSID.toString();
             }
@@ -7622,7 +7657,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             while (expertSIDList.contains(generatedSid))
                 generatedSid = generateExpertSID(prefix, rand);
 
-            sidExpert.execute(generatedSid, context.getSession(), expertObject);
+            sidExpert.change(generatedSid, context, expertObject);
         }
     }
 
@@ -7644,13 +7679,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = interfaces.iterator().next();
         }
 
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
             try {
 
@@ -7664,40 +7694,40 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                 Object file = fileNativeApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
-                projectDocument.execute(projectObject.getValue(), context, documentObject);
-                typeDocument.execute(documentType.getID("application"), context, documentObject);
-                languageDocument.execute(language.getID("russian"), context, documentObject);
+                projectDocument.change(projectObject.getValue(), context, documentObject);
+                typeDocument.change(documentType.getID("application"), context, documentObject);
+                languageDocument.change(language.getID("russian"), context, documentObject);
                 if (file != null)
-                    fileDocument.execute(file, context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 else if (needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
-                    fileDocument.execute(generateApplicationFile(context, projectObject, false, false, false), context, documentObject);
+                    fileDocument.change(generateApplicationFile(context, projectObject, false, false, false), context, documentObject);
 
                 file = fileForeignApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
-                projectDocument.execute(projectObject.getValue(), context, documentObject);
-                typeDocument.execute(documentType.getID("application"), context, documentObject);
-                languageDocument.execute(language.getID("english"), context, documentObject);
+                projectDocument.change(projectObject.getValue(), context, documentObject);
+                typeDocument.change(documentType.getID("application"), context, documentObject);
+                languageDocument.change(language.getID("english"), context, documentObject);
                 if (file != null)
-                    fileDocument.execute(file, context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 else if (needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
-                    fileDocument.execute(generateApplicationFile(context, projectObject, true, false, false), context, documentObject);
+                    fileDocument.change(generateApplicationFile(context, projectObject, true, false, false), context, documentObject);
 
                 file = fileNativeSummaryProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    fileDocument.execute(file, context, documentObject);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("resume"), context, documentObject);
-                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("resume"), context, documentObject);
+                    languageDocument.change(language.getID("russian"), context, documentObject);
                 }
 
                 file = fileForeignSummaryProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    fileDocument.execute(file, context, documentObject);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("resume"), context, documentObject);
-                    languageDocument.execute(language.getID("english"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("resume"), context, documentObject);
+                    languageDocument.change(language.getID("english"), context, documentObject);
                 }
 
                 Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
@@ -7707,8 +7737,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
                 int countForeign = 1;
                 int countNative = 1;
-                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
-                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                int size = query.executeClasses(context).entrySet().size();
+                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                     row.getKey().get("nonRussianSpecialist");
                     row.getValue().get("fullNameNonRussianSpecialist");
                     row.getValue().get("fileForeignResumeNonRussianSpecialist");
@@ -7717,24 +7747,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     file = row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue();
                     if (file != null) {
                         documentObject = context.addObject(document);
-                        projectDocument.execute(projectObject.getValue(), context, documentObject);
-                        typeDocument.execute(documentType.getID("forres"), context, documentObject);
-                        languageDocument.execute(language.getID("english"), context, documentObject);
+                        projectDocument.change(projectObject.getValue(), context, documentObject);
+                        typeDocument.change(documentType.getID("forres"), context, documentObject);
+                        languageDocument.change(language.getID("english"), context, documentObject);
                         if (size > 1)
-                            postfixDocument.execute(String.valueOf(countForeign), context, documentObject);
-                        fileDocument.execute(file, context, documentObject);
+                            postfixDocument.change(String.valueOf(countForeign), context, documentObject);
+                        fileDocument.change(file, context, documentObject);
                         countForeign++;
                     }
 
                     file = row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue();
                     if (file != null) {
                         documentObject = context.addObject(document);
-                        projectDocument.execute(projectObject.getValue(), context, documentObject);
-                        typeDocument.execute(documentType.getID("forres"), context, documentObject);
-                        languageDocument.execute(language.getID("russian"), context, documentObject);
+                        projectDocument.change(projectObject.getValue(), context, documentObject);
+                        typeDocument.change(documentType.getID("forres"), context, documentObject);
+                        languageDocument.change(language.getID("russian"), context, documentObject);
                         if (size > 1)
-                            postfixDocument.execute(String.valueOf(countNative), context, documentObject);
-                        fileDocument.execute(file, context, documentObject);
+                            postfixDocument.change(String.valueOf(countNative), context, documentObject);
+                        fileDocument.change(file, context, documentObject);
                         countNative++;
                     }
                 }
@@ -7742,86 +7772,86 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 file = fileNativeTechnicalDescriptionProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("techdesc"), context, documentObject);
-                    languageDocument.execute(language.getID("russian"), context, documentObject);
-                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("techdesc"), context, documentObject);
+                    languageDocument.change(language.getID("russian"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 }
 
                 file = fileForeignTechnicalDescriptionProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("techdesc"), context, documentObject);
-                    languageDocument.execute(language.getID("english"), context, documentObject);
-                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("techdesc"), context, documentObject);
+                    languageDocument.change(language.getID("english"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 }
 
                 file = fileNativeRoadMapProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
-                    languageDocument.execute(language.getID("russian"), context, documentObject);
-                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("roadmap"), context, documentObject);
+                    languageDocument.change(language.getID("russian"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 }
 
                 file = fileForeignRoadMapProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
-                    languageDocument.execute(language.getID("english"), context, documentObject);
-                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("roadmap"), context, documentObject);
+                    languageDocument.change(language.getID("english"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 }
 
                 file = fileResolutionIPProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("ipres"), context, documentObject);
-                    languageDocument.execute(language.getID("english"), context, documentObject);
-                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.change(projectObject.getValue(), context, documentObject);
+                    typeDocument.change(documentType.getID("ipres"), context, documentObject);
+                    languageDocument.change(language.getID("english"), context, documentObject);
+                    fileDocument.change(file, context, documentObject);
                 }
                     } else {
 
                         Object file = fileNativeRoadMapProject.read(context, projectObject);
                         if (file != null) {
                             documentObject = context.addObject(document);
-                            projectDocument.execute(projectObject.getValue(), context, documentObject);
-                            typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
-                            languageDocument.execute(language.getID("russian"), context, documentObject);
-                            fileDocument.execute(file, context, documentObject);
+                            projectDocument.change(projectObject.getValue(), context, documentObject);
+                            typeDocument.change(documentType.getID("roadmap"), context, documentObject);
+                            languageDocument.change(language.getID("russian"), context, documentObject);
+                            fileDocument.change(file, context, documentObject);
                         }
 
                         file = fileForeignRoadMapProject.read(context, projectObject);
                         if (file != null) {
                             documentObject = context.addObject(document);
-                            projectDocument.execute(projectObject.getValue(), context, documentObject);
-                            typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
-                            languageDocument.execute(language.getID("english"), context, documentObject);
-                            fileDocument.execute(file, context, documentObject);
+                            projectDocument.change(projectObject.getValue(), context, documentObject);
+                            typeDocument.change(documentType.getID("roadmap"), context, documentObject);
+                            languageDocument.change(language.getID("english"), context, documentObject);
+                            fileDocument.change(file, context, documentObject);
                         }
 
                         file = fileNativeApplicationFormProject.read(context, projectObject);
                         documentObject = context.addObject(document);
-                        projectDocument.execute(projectObject.getValue(), context, documentObject);
-                        typeDocument.execute(documentType.getID("application"), context, documentObject);
-                        languageDocument.execute(language.getID("russian"), context, documentObject);
+                        projectDocument.change(projectObject.getValue(), context, documentObject);
+                        typeDocument.change(documentType.getID("application"), context, documentObject);
+                        languageDocument.change(language.getID("russian"), context, documentObject);
                         if (file != null)
-                            fileDocument.execute(file, context, documentObject);
+                            fileDocument.change(file, context, documentObject);
                         else if (needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
-                            fileDocument.execute(generateApplicationFile(context, projectObject, false, true, false), context, documentObject);
+                            fileDocument.change(generateApplicationFile(context, projectObject, false, true, false), context, documentObject);
 
                         file = fileForeignApplicationFormProject.read(context, projectObject);
                         documentObject = context.addObject(document);
-                        projectDocument.execute(projectObject.getValue(), context, documentObject);
-                        typeDocument.execute(documentType.getID("application"), context, documentObject);
-                        languageDocument.execute(language.getID("english"), context, documentObject);
+                        projectDocument.change(projectObject.getValue(), context, documentObject);
+                        typeDocument.change(documentType.getID("application"), context, documentObject);
+                        languageDocument.change(language.getID("english"), context, documentObject);
                         if (file != null)
-                            fileDocument.execute(file, context, documentObject);
+                            fileDocument.change(file, context, documentObject);
                         else if (needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
-                            fileDocument.execute(generateApplicationFile(context, projectObject, true, true, false), context, documentObject);
+                            fileDocument.change(generateApplicationFile(context, projectObject, true, true, false), context, documentObject);
 /*
                         Query<String, String> query = new Query<String, String>(Collections.singleton("specialist"));
                         query.and(projectSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")).compare(projectObject.getExpr(), Compare.EQUALS));
@@ -7874,26 +7904,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
 
-    public class ImportIPsExpertVoteActionProperty extends CustomActionProperty {
+    public class ImportIPsExpertVoteActionProperty extends CustomReadValueActionProperty {
 
-        protected FileActionClass valueClass;
+        protected CustomStaticFormatFileClass valueClass;
 
         public ImportIPsExpertVoteActionProperty() {
             super(genSID(), "Импортировать IP экспертов", new ValueClass[]{});
-            valueClass = FileActionClass.getDefinedInstance(true, "Файлы c данными","*");
+            valueClass = CustomStaticFormatFileClass.getDefinedInstance(true, "Файлы c данными", "*");
         }
 
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
+        protected DataClass getReadType() {
+            return DoubleClass.instance;
         }
 
-        @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
             try {
-                DataSession session = context.getSession();
+                List<byte[]> fileList = valueClass.getFiles(userValue);
 
-                List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+                DataSession session = context.getSession();
 
                 for(byte[] file : fileList) {
 
@@ -7912,7 +7940,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             DataObject voteObj = session.getDataObject(ids[0], ObjectType.instance);
                             DataObject expertObj = session.getDataObject(ids[1], ObjectType.instance);
                             if (ipExpertVote.read(session, expertObj, voteObj) == null)
-                                ipExpertVote.execute(m.group(1), session, expertObj, voteObj);
+                                ipExpertVote.change(m.group(1), context, expertObj, voteObj);
                         }
                     }
                 }
@@ -7922,11 +7950,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 
         }
-
-        @Override
-        public DataClass getValueClass() {
-            return valueClass;
-        }
     }
 
     public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign, boolean newRegulation, boolean complete) throws IOException, ClassNotFoundException, JRException, SQLException {
@@ -7934,10 +7957,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         File tempFile;
         if (newRegulation) {
             ProjectFullR2FormEntity applicationForm = foreign ? (complete ? projectCompleteR2Foreign : projectFullR2Foreign) : (complete ? projectCompleteR2Native : projectFullR2Native);
-            tempFile = context.getRemoteForm().generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
+            tempFile = context.generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
         } else {
             ProjectFullFormEntity applicationForm = foreign ? projectFullForeign : projectFullNative;
-            tempFile = context.getRemoteForm().generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
+            tempFile = context.generateFileFromForm(BL, applicationForm, applicationForm.objProject, project);
         }
         if (newRegulation) {
             byte[] descriptionFile;
@@ -7983,7 +8006,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = i.next();
         }
 
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
 
             boolean r2 = isR2Project.read(context, projectObject) != null;
@@ -8004,7 +8027,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             int previousBusiness = 0;
 //            int previousTechnical = 0;
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                 if (!row.getValue().get("business").isNull())
                     previousBusiness++;
                 previousResults.put(row.getKey().get("key"), (DataObject) row.getValue().get("vote"));
@@ -8034,7 +8057,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.util.List<DataObject> expertVotedBusiness = new ArrayList<DataObject>();
             java.util.List<DataObject> expertVotedTechnical = new ArrayList<DataObject>();
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                 DataObject objExpert = row.getKey().get("key");
 
                 boolean business = row.getValue().get("business").getValue() != null;
@@ -8063,29 +8086,29 @@ public class SkolkovoLogicsModule extends LogicsModule {
             Integer required = requiredTotal - previousResults.size();
             Integer requiredBusiness = Math.max(nvl((Integer) requiredBusinessQuantity.read(context), 0) - previousBusiness, 0);
             if (required > expertVoted.size() + expertNew.size()) {
-                context.addAction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
+                context.delayUserInterfaction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
                 return;
             }
 
             if (r2Foresight && (requiredBusiness > expertNewBusiness.size() + expertVotedBusiness.size())) {
-                context.addAction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
+                context.delayUserInterfaction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
                 return;
             }
 
             // создаем новое заседание
             DataObject voteObject = context.addObject(r2 ? voteR2 : voteR1);
-            projectVote.execute(projectObject.object, context, voteObject);
-            clusterVote.execute(currentClusterProject.read(context, projectObject), context, voteObject);
-            projectActionVote.execute(projectActionProject.read(context, projectObject), context, voteObject);
+            projectVote.change(projectObject.object, context, voteObject);
+            clusterVote.change(currentClusterProject.read(context, projectObject), context, voteObject);
+            projectActionVote.change(projectActionProject.read(context, projectObject), context, voteObject);
             if (r2)
-                percentNeededVote.execute(percentNeeded.read(context), context, voteObject);
-            requiredQuantityVote.execute(requiredTotal, context, voteObject);
+                percentNeededVote.change(percentNeeded.read(context), context, voteObject);
+            requiredQuantityVote.change(requiredTotal, context, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {
-                inExpertVote.execute(true, context, row.getKey(), voteObject);
-                oldExpertVote.execute(true, context, row.getKey(), voteObject);
-                ArrayList<LP> copyProperties = new ArrayList<LP>(Arrays.asList(dateExpertVote, voteResultExpertVote));
+                inExpertVote.change(true, context, row.getKey(), voteObject);
+                oldExpertVote.change(true, context, row.getKey(), voteObject);
+                ArrayList<LCP> copyProperties = new ArrayList<LCP>(Arrays.asList(dateExpertVote, voteResultExpertVote));
                 if (r2)
                     copyProperties.addAll(Arrays.asList(competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote,
                         haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote,
@@ -8096,8 +8119,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     copyProperties.addAll(Arrays.asList(inClusterExpertVote,
                         innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
                         competentExpertVote, completeExpertVote, completeCommentExpertVote));
-                for (LP property : copyProperties) {
-                    property.execute(property.read(context, row.getKey(), row.getValue()), context, row.getKey(), voteObject);
+                for (LCP property : copyProperties) {
+                    property.change(property.read(context, row.getKey(), row.getValue()), context, row.getKey(), voteObject);
                 }
             }
 
@@ -8117,7 +8140,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             includeExpertInVote(rand, context, voteObject, expertNewTechnical, expertNewBusiness, false);
                         } else {
                             if (expertVotedTechnical.isEmpty()) {
-                                context.addAction(new MessageClientAction("Недостаточно технических экспертов по форсайту", "Генерация заседания"));
+                                context.delayUserInterfaction(new MessageClientAction("Недостаточно технических экспертов по форсайту", "Генерация заседания"));
                                 return;
                             }
                             includeExpertInVote(rand, context, voteObject, expertVotedTechnical, expertVotedBusiness, false);
@@ -8125,25 +8148,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     }
                 } else
                     if (!expertNew.isEmpty())
-                        inExpertVote.execute(true, context, expertNew.remove(rand.nextInt(expertNew.size())), voteObject);
+                        inExpertVote.change(true, context, expertNew.remove(rand.nextInt(expertNew.size())), voteObject);
                     else
-                        inExpertVote.execute(true, context, expertVoted.remove(rand.nextInt(expertVoted.size())), voteObject);
+                        inExpertVote.change(true, context, expertVoted.remove(rand.nextInt(expertVoted.size())), voteObject);
                 required--;
             }
         }
 
         private void includeExpertInVote(Random rand, ExecutionContext context, DataObject voteObject, List<DataObject> experts, List<DataObject> expertsExtra, boolean isBusiness) throws SQLException {
             DataObject objExpert = experts.get(rand.nextInt(experts.size()));
-            inExpertVote.execute(true, context, objExpert, voteObject);
+            inExpertVote.change(true, context, objExpert, voteObject);
             if (isBusiness)
-                businessExpertVote.execute(true, context, objExpert, voteObject);
+                businessExpertVote.change(true, context, objExpert, voteObject);
             experts.remove(objExpert);
             expertsExtra.remove(objExpert);
         }
 
         @Override
-        public Set<Property> getChangeProps() {
-            return BaseUtils.toSet(projectVote.property, inExpertVote.property);
+        public Set<CalcProperty> getChangeProps() {
+            return BaseUtils.toSet((CalcProperty)projectVote.property, (CalcProperty)inExpertVote.property);
         }
     }
 
@@ -8158,12 +8181,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             voteInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
         @Override
-        public void execute(ExecutionContext context) throws SQLException {
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject voteObject = context.getKeyValue(voteInterface);
             java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(context, voteObject);
 
@@ -8175,7 +8194,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.sql.Date datePrev = null;
             DataObject votePrevObject = null;
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(context).entrySet()) {
                 java.sql.Date dateCur = (java.sql.Date) row.getValue().get("dateStartVote").getValue();
                 if (dateCur != null && dateCur.getTime() < dateStart.getTime() && (datePrev == null || dateCur.getTime() > datePrev.getTime())) {
                     datePrev = dateCur;
@@ -8190,19 +8209,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
 
             Set<DataObject> experts = new HashSet<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
                 experts.add(row.getKey().get("key"));
             }
 
             // копируем результаты старых заседаний
             for (DataObject expert : experts) {
-                inExpertVote.execute(true, context, expert, voteObject);
-                oldExpertVote.execute(true, context, expert, voteObject);
-                LP[] copyProperties = new LP[]{dateExpertVote, voteResultExpertVote, inClusterExpertVote,
+                inExpertVote.change(true, context, expert, voteObject);
+                oldExpertVote.change(true, context, expert, voteObject);
+                LCP[] copyProperties = new LCP[]{dateExpertVote, voteResultExpertVote, inClusterExpertVote,
                         innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
                         competentExpertVote, completeExpertVote, completeCommentExpertVote};
-                for (LP property : copyProperties) {
-                    property.execute(property.read(context, expert, votePrevObject), context, expert, voteObject);
+                for (LCP property : copyProperties) {
+                    property.change(property.read(context, expert, votePrevObject), context, expert, voteObject);
                 }
             }
         }

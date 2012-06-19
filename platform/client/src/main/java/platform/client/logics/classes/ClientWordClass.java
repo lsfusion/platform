@@ -3,24 +3,28 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.DocumentPropertyEditor;
+import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.WordPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.text.Format;
+import java.io.DataInputStream;
+import java.io.IOException;
 
-public class ClientWordClass extends ClientFileClass {
+public class ClientWordClass extends ClientStaticFormatFileClass {
 
     public final static ClientWordClass instance = new ClientWordClass();
 
-    private final String sID = "WordClass";
+    public ClientWordClass() {
+    }
 
-    @Override
-    public String getSID() {
-        return sID;
+    public ClientWordClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+    }
+
+    public String getFileSID() {
+        return "WordClass";
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
@@ -37,8 +41,8 @@ public class ClientWordClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
+    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
     }
 
     @Override

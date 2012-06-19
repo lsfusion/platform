@@ -457,9 +457,11 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
             }
         }
 
+        Collection<PropertyDescriptorImplement<Integer>> properties = getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny);
+
         List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
-        for (PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny)) {
-            result.add(new PropertyObjectDescriptor(implement.property, BaseUtils.join(implement.mapping, idToObjects)));
+        for (PropertyDescriptorImplement<Integer> implement : properties) {
+            result.add(implement.property.createPropertyObject(BaseUtils.join(implement.mapping, idToObjects)));
         }
         return result;
     }

@@ -23,13 +23,13 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return GroupType.SUM;
     }
 
-    public SumGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property) {
+    public SumGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
         super(sID, caption, innerInterfaces, groupInterfaces, property);
 
         finalizeInit();
     }
 
-    public SumGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property) {
+    public SumGroupProperty(String sID, String caption, Collection<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
         super(sID, caption, interfaces, property);
 
         finalizeInit();
@@ -40,31 +40,31 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));
     }
 
-    private PropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
-    private PropertyMapImplement<?, I> distribute;
+    private CalcPropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
+    public CalcPropertyMapImplement<?, I> distribute;
 
-    public <L extends PropertyInterface> void setDataChanges(OrderedMap<PropertyInterfaceImplement<I>, Boolean> mapOrders, PropertyMapImplement<L, I> restriction, boolean over) {
-        OrderedMap<PropertyInterfaceImplement<L>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<L>, Boolean>();
-        for(Map.Entry<PropertyInterfaceImplement<I>,Boolean> order : mapOrders.entrySet())
+    public <L extends PropertyInterface> void setDataChanges(OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> mapOrders, CalcPropertyMapImplement<L, I> restriction, boolean over) {
+        OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders = new OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean>();
+        for(Map.Entry<CalcPropertyInterfaceImplement<I>,Boolean> order : mapOrders.entrySet())
             orders.put(order.getKey().map(BaseUtils.reverse(restriction.mapping)),order.getValue());
 
         nullImplement = DerivedProperty.createDataProp(true, this);
 
-        distribute = DerivedProperty.createUGProp(new PropertyImplement<ClassPropertyInterface, PropertyInterfaceImplement<L>>(nullImplement.property,
+        distribute = DerivedProperty.createUGProp(new CalcPropertyImplement<ClassPropertyInterface, CalcPropertyInterfaceImplement<L>>(nullImplement.property,
                 BaseUtils.join(nullImplement.mapping, DerivedProperty.mapImplements(getMapInterfaces(), BaseUtils.reverse(restriction.mapping)))),
                 orders, restriction.property, over).map(restriction.mapping);
     }
 
-    public Set<Property> getDataChangeProps() {
+    public Set<CalcProperty> getDataChangeProps() {
         if(distribute!=null)
-            return BaseUtils.<Property>toSet(distribute.property, nullImplement.property);
+            return BaseUtils.<CalcProperty>toSet(distribute.property, nullImplement.property);
         return super.getDataChangeProps();
     }
 
     @Override
-    protected QuickSet<Property> calculateUsedDataChanges(StructChanges propChanges) {
+    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         if(distribute != null) {
-            Collection<Property> implementDepends = new HashSet<Property>();
+            Set<CalcProperty> implementDepends = new HashSet<CalcProperty>();
             groupProperty.mapFillDepends(implementDepends);
             return QuickSet.add(distribute.property.getUsedChanges(propChanges), propChanges.getUsedDataChanges(implementDepends), propChanges.getUsedChanges(implementDepends));
         } else
@@ -73,7 +73,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     // такая же помошь компилятору как и при getExpr в GroupProperty
     private Where getGroupKeys(PropertyChange<Interface<I>> propertyChange, Map<I, KeyExpr> mapKeys, Map<I, Expr> mapValueKeys) {
-        Map<PropertyInterfaceImplement<I>, Expr> changeValues = new HashMap<PropertyInterfaceImplement<I>, Expr>();
+        Map<CalcPropertyInterfaceImplement<I>, Expr> changeValues = new HashMap<CalcPropertyInterfaceImplement<I>, Expr>();
         for(Map.Entry<Interface<I>, Expr> keyValue : propertyChange.getMapExprs().entrySet())
             changeValues.put(keyValue.getKey().implement, keyValue.getValue());
 
@@ -91,7 +91,14 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     }
 
     @Override
-    protected MapDataChanges<Interface<I>> calculateDataChanges(PropertyChange<Interface<I>> propertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public Collection<DataProperty> getChangeProps() {
+        if(distribute!=null)
+            return groupProperty.mapChangeProps();
+        return super.getChangeProps();
+    }
+
+    @Override
+    protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> propertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(distribute != null) {
             // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
             // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
@@ -103,17 +110,17 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
             Where nullWhere = propertyChange.getWhere(getGroupImplements(mapValueKeys, propChanges)).and(groupProperty.mapExpr(mapValueKeys, propChanges).getWhere()); // where чтобы за null'ить
             if(!nullWhere.isFalse())
-                mapChanges = groupProperty.mapJoinDataChanges(mapKeys, CaseExpr.NULL, nullWhere.and(valueWhere), null, propChanges).changes.add(mapChanges);
+                mapChanges = groupProperty.mapJoinDataChanges(mapKeys, CaseExpr.NULL, nullWhere.and(valueWhere), null, propChanges).add(mapChanges);
 
             Expr distributeExpr = distribute.mapExpr(mapValueKeys, mapChanges.add(propChanges));
-            DataChanges dataChanges = groupProperty.mapJoinDataChanges(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere), null, propChanges).changes;
+            DataChanges dataChanges = groupProperty.mapJoinDataChanges(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere), null, propChanges);
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())
                     getExpr(propertyChange.getMapExprs(), dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(propertyChange.where);
             }
-            return new MapDataChanges<Interface<I>>(dataChanges);
+            return dataChanges;
         } else
             return super.calculateDataChanges(propertyChange, changedWhere, propChanges);
     }

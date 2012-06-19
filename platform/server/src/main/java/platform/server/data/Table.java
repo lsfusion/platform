@@ -133,16 +133,16 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
 
-    public Table(DataInputStream inStream, BaseClass baseClass) throws IOException {
+    public Table(DataInputStream inStream, BaseClass baseClass, int version) throws IOException {
         name = inStream.readUTF();
         int keysNum = inStream.readInt();
         keys = new ArrayList<KeyField>();
         for(int i=0;i<keysNum;i++)
-            keys.add((KeyField) Field.deserialize(inStream));
+            keys.add((KeyField) Field.deserialize(inStream, version));
         int propNum = inStream.readInt();
         properties = new HashSet<PropertyField>();
         for(int i=0;i<propNum;i++)
-            properties.add((PropertyField) Field.deserialize(inStream));
+            properties.add((PropertyField) Field.deserialize(inStream, version));
 
         Map<KeyField, AndClassSet> baseClasses = new HashMap<KeyField, AndClassSet>();
         for(KeyField key : keys)
@@ -196,7 +196,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public void outClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        getQuery().outClassesSelect(session, QueryEnvironment.empty, baseClass);
+        getQuery().outClassesSelect(session, baseClass);
     }
 
     public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {

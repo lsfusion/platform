@@ -5,7 +5,6 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.gwt.form.server.RemoteFormServiceImpl;
 import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;
-import platform.interop.form.RemoteFormInterface;
 
 import java.io.IOException;
 
@@ -20,11 +19,6 @@ public class GetFormHandler extends FormActionHandler<GetForm> {
                      ? action.sid
                      : "connectionsForm";
 
-        RemoteFormInterface remoteForm;
-        if (action.initialObjects != null)
-            remoteForm = servlet.getNavigator().createForm(sid, action.initialObjects, false, true);
-        else
-            remoteForm = servlet.getNavigator().createForm(sid, false, true);
-        return createResult(remoteForm);
+        return createResult(servlet.getNavigator().createForm(sid, action.initialObjects, false, false, true));
     }
 }
