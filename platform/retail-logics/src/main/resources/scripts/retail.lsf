@@ -9520,16 +9520,100 @@ fillMachineryModelDefaultValues 'Заполнить значения модел�
     EXEC addTerminalModel('ТСД EasyCSV', 'EasyCSVHandler');
 }
 
+fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, numCashReg) {
+    ADDOBJ groupCashRegister;
+    FOR gcr == addedObject() DO {
+        SET stockGroupMachinery(gcr) <- stock AS stock;
+        SET equipmentServerGroupMachinery(gcr) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(gcr) <- 'Группа касс по умолчанию' AS STRING[110];
+
+        LOCAL numCashRegister = INTEGER();
+        SET numCashRegister() <- 0;
+        WHILE numCashRegister() < (numCashReg AS INTEGER) DO {
+            ADDOBJ cashRegister;
+            FOR c == addedObject() DO {
+                SET groupMachineryMachinery(c) <- gcr AS groupCashRegister;
+                SET numCashRegister() <- numCashRegister() + 1;
+                SET nppMachinery(c) <- numCashRegister();
+                SET numberCashRegister(c) <- castTwoObjectsToString150(stock AS stock, numCashRegister());
+            }
+        }
+    }
+}
+
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES() nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
-                 fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                 fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues
-    PROPERTIES()     generateZReport, averageZReportCountGenerateZReport, averageBillCountGenerateZReport, averageBillDetailCountGenerateZReport,
-                     dateFromGenerateZReport, dateToGenerateZReport;
+    PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval
 ;
 
+//---------------------------------------------- Заполнение БД -------------------------------------------------//
+
+FORM fillDataBase 'Заполнение БД'
+
+    PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
+                    fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues
+
+    OBJECTS         es=equipmentServer FIXED PANEL
+    PROPERTIES(es)  SELECTOR name
+
+    OBJECTS         s=stock FIXED PANEL
+    PROPERTIES(s)   SELECTOR name
+
+    OBJECTS         c=INTEGER FIXED PANEL
+    PROPERTIES(c)   intValue = OBJVALUE
+
+    PROPERTIES (es, s, c) fillCashRegisterDefaultValues
+
+    PROPERTIES()    generateZReport, averageZReportCountGenerateZReport, averageBillCountGenerateZReport, averageBillDetailCountGenerateZReport,
+                    dateFromGenerateZReport, dateToGenerateZReport
+;
+
+DESIGN fillDataBase FROM DEFAULT {
+    main{
+        PROPERTY(intValue) {
+            caption = 'Количество касс';
+        }
+        PROPERTY(name(es)) {
+            caption = 'Сервер оборудования';
+        }
+        PROPERTY(name(s)) {
+            caption = 'Склад';
+        }
+
+        NEW mainContainer BEFORE functions.box {
+            title = 'Заполнение БД';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(fillVATDefaultValues());
+            ADD PROPERTY(fillCountryDefaultValues());
+            ADD PROPERTY(fillUOMDefaultValues());
+            ADD PROPERTY(fillCurrencyDefaultValues());
+            ADD PROPERTY(fillStatisticGroupDefaultValues());
+            ADD PROPERTY(fillLossItemGroupDefaultValues());
+            ADD PROPERTY(fillMachineryModelDefaultValues());
+
+            NEW containerFillEquipmentServer {
+                title = 'Заполнение касс по умолчанию';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(name(es));
+                ADD PROPERTY(name(s));
+                ADD PROPERTY(intValue);
+                ADD PROPERTY(fillCashRegisterDefaultValues);
+            }
+
+            NEW containerZReport {
+                title = 'Сгенерировать Z-отчёт';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(averageZReportCountGenerateZReport());
+                ADD PROPERTY(averageBillCountGenerateZReport());
+                ADD PROPERTY( averageBillDetailCountGenerateZReport());
+                ADD PROPERTY(dateFromGenerateZReport());
+                ADD PROPERTY(dateToGenerateZReport());
+                ADD PROPERTY(generateZReport());
+            }
+        }
+    }
+}
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
 
 //GROUP formularGroup 'Formular' : baseGroup;
@@ -9926,6 +10010,7 @@ NAVIGATOR {
             ADD dialogSku;
         }
         ADD parameters;
+        ADD fillDataBase;
         ADD importData;
     }
 
