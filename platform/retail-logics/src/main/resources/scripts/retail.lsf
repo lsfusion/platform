@@ -4132,23 +4132,94 @@ nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSup
 @implementPriceChangeDocument(priceChangeReturnSupplier, sku);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeReturnSupplier);
 
-// ----------------------------- Z - отчеты ---------------------------- //
+// ----------------------------- Кассовые документы ---------------------------- //
 
-CLASS zReport 'Z-отчет (открытый)' : outAccountDocumentLedger, historyObject;
+CLASS ABSTRACT cashDocument 'Кассовый документ';
+TABLE cashDocument (cashDocument);
+
+dateCashDocument 'Дата документа' = ABSTRACT DATE (cashDocument) IN documentHeaderGroup;
+timeCashDocument 'Время документа' = ABSTRACT TIME (cashDocument) IN documentHeaderGroup;
+dateTimeCashDocument 'Дата/время документа' = ABSTRACT DATETIME (cashDocument) IN documentHeaderGroup;
+numberCashDocument 'Номер' (incomeCashOrder) = ABSTRACT STRING[21] (cashDocument) IN documentPrmGroup;
+departmentStoreCashDocument (incomeCashOrder) = ABSTRACT departmentStore (cashDocument);
+nameDepartmentStoreCashDocument 'Подразделение' (cashDocument) =
+    name(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
+basisCashDocument 'Основание' = ABSTRACT STRING[100] (cashDocument) IN documentPrmGroup;
+cashRegisterCashDocument = ABSTRACT cashRegister(cashDocument);
+numberCashRegisterCashDocument 'Касса' (cashDocument) = numberCashRegister(cashRegisterCashDocument(cashDocument)) IN documentPrmGroup;
+
+CLASS ABSTRACT  incomeCashOrder 'ПКО': cashDocument;
+CLASS ABSTRACT outcomeCashOrder 'РКО': cashDocument;
+
+sumCashIncomeCashOrder 'Сумма' = ABSTRACT NUMERIC[16,2] (incomeCashOrder) IN documentSumGroup;
+isPrintedIncomeCashOrder 'Напечатан' = DATA BOOLEAN (incomeCashOrder);
+isNotPrintedIncomeCashOrder 'Не распечатан' (incomeCashOrder) =
+    incomeCashOrder AS incomeCashOrder  AND NOT isPrintedIncomeCashOrder(incomeCashOrder);
+
+isPrintedOutcomeCashOrder 'Напечатан' = DATA BOOLEAN (outcomeCashOrder);
+isNotPrintedOutcomeCashOrder 'Не распечатан' (outcomeCashOrder) =
+    outcomeCashOrder AS outcomeCashOrder  AND NOT isPrintedOutcomeCashOrder(outcomeCashOrder);
+
+curSumIncomeCashOrder 'Текущая сумма ПКО' (cashRegister) =
+    GROUP SUM sumCashIncomeCashOrder(incomeCashOrder)
+    BY cashRegisterCashDocument(incomeCashOrder);
+
+sumAIncomeCashOrderDateTime 'Сумма ПКО после даты/время' (cashRegister, date) =
+    GROUP SUM sumCashIncomeCashOrder(incomeCashOrder) AND
+              dateTimeCashDocument(incomeCashOrder) > (date AS DATETIME)
+    BY cashRegisterCashDocument(incomeCashOrder), date;
+
+sumIncomeCashOrderDateTime 'Сумма ПКО на дату/время' (cashRegister, date) =
+    (curSumIncomeCashOrder(cashRegister) AND (date AS DATETIME)) (-)
+    sumAIncomeCashOrderDateTime(cashRegister, date);
+
+sumCashOutcomeCashOrder 'Сумма' = ABSTRACT NUMERIC[16,2] (outcomeCashOrder) IN documentSumGroup;
+
+curSumOutcomeCashOrder 'Текущая сумма РКО' (cashRegister) =
+    GROUP SUM sumCashOutcomeCashOrder(outcomeCashOrder)
+    BY cashRegisterCashDocument(outcomeCashOrder);
+
+sumAOutcomeCashOrderDateTime 'Сумма РКО после даты/время' (cashRegister, date) =
+    GROUP SUM sumCashOutcomeCashOrder(outcomeCashOrder) AND
+              dateTimeCashDocument(outcomeCashOrder) > (date AS DATETIME)
+    BY cashRegisterCashDocument(outcomeCashOrder), date;
+
+sumOutcomeCashOrderDateTime 'Сумма РКО на дату/время' (cashRegister, date) =
+    (curSumOutcomeCashOrder(cashRegister) AND (date AS DATETIME)) (-)
+    sumAOutcomeCashOrderDateTime(cashRegister, date);
+
+curSumCashCashRegister 'Текущая сумма наличных в кассе' (cashRegister) =
+    curSumIncomeCashOrder(cashRegister) (-) curSumOutcomeCashOrder(cashRegister);
+
+sumCashCashRegisterDateTime 'Сумма наличных в кассе на дату/время' (cashRegister, date) =
+    sumIncomeCashOrderDateTime(cashRegister, date) (-) sumOutcomeCashOrderDateTime(cashRegister, date);
+
+CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, outAccountDocumentLedger, historyObject;
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
 TABLE zReport (zReport);
 
 @defineDocumentHeaderPosted(zReport);
-
 @defineDocumentHeaderTime(zReport);
 @defineDocumentHeaderDepartmentStore(zReport);
 
-numberZReport 'Номер Z-отчета' (zReport) = DATA INTEGER(zReport) IN documentPrmGroup;
+castBasisZReport =
+    FORMULA STRING[100] '\'Z-отчет №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
+
+numberZReport 'Номер Z-отчета' (zReport) = DATA STRING[21](zReport) IN documentPrmGroup;
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport)) IN documentPrmGroup;
 numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
 maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
+basisZReport 'Основание' (zReport) = castBasisZReport(numberZReport(zReport), numberCashRegisterZReport(zReport), dateZReport(zReport)) IN documentPrmGroup;
+
+dateCashDocument(zReport) += dateZReport(zReport);
+timeCashDocument(zReport) += timeZReport(zReport);
+dateTimeCashDocument(zReport) += dateTimeZReport(zReport);
+numberCashDocument(zReport) += numberZReport(zReport);
+departmentStoreCashDocument(zReport) += departmentStoreZReport(zReport);
+basisCashDocument(zReport) += basisZReport(zReport);
+cashRegisterCashDocument(zReport) += cashRegisterZReport(zReport);
 
 departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
     WHEN CHANGED(cashRegisterZReport(zReport));
@@ -4307,28 +4378,31 @@ sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) 
 
 billPayment (payment) = DATA bill (payment);
 
-numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
-zReportBillPaymentToPayment (zReport, bill, number, cashRegister) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportBill(billPayment(payment)))) WHERE payment IS payment;
-
-sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
-
-sumPaymentBill (bill) = GROUP SUM sumPayment(payment) BY billPayment(payment);
-
-CONSTRAINT bill IS bill AND NOT retailSumBillDetailBill(bill) == sumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
-
-// todo: проверить работает ли CONSTRAINT
-//Ещё как работает!
-
 paymentTypePayment (payment) = DATA paymentType(payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
 
 paymentMeansPayment (payment) = paymentMeansPaymentType(paymentTypePayment(payment));
 namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansPayment(payment));
 
+numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
+zReportBillPaymentToPayment (zReport, bill, number, cashRegister) = GROUP UNIQUE payment BY numberZReport(zReportBill(billPayment(payment))), numberBill(billPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportBill(billPayment(payment)))) WHERE payment IS payment;
+
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+
+sumPaymentBill (bill) = GROUP SUM sumPayment(payment) BY billPayment(payment);
+sumCashPaymentBill (bill) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment) == paymentMeans.cash  BY billPayment(payment);
+
+CONSTRAINT bill IS bill AND NOT retailSumBillDetailBill(bill) == sumPaymentBill(bill) MESSAGE 'Сумма платежей по чеку не соответствует сумме чека';
+
+// todo: проверить работает ли CONSTRAINT
+//Ещё как работает!
+
 // Итоги по Z-отчету
 
 @defineDocumentHeaderQuantityCustom(zReport, billDetail);
 
+sumCashZReport 'Сумма наличных Z-отчета' (zReport) = GROUP SUM sumCashPaymentBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
+sumCashIncomeCashOrder(zReport) += sumCashZReport(zReport);
 retailSumBillDetailZReport 'Сумма Z-отчета' (zReport) = GROUP SUM retailSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
 discountSumBillDetailZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumBillDetailBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
 discountSumBillZReport 'Сумма скидок по чекам Z-отчета' (zReport) = GROUP SUM discountSumBill(bill) BY zReportBill(bill) PERSISTENT IN documentSumGroup;
@@ -4339,68 +4413,35 @@ sumOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
 
-//---------------------------- Кассовые отчеты ----------------------------------------//
-CLASS cashReport 'Кассовый отчет' : transaction;
-TABLE cashReport (cashReport);
+//---------------------------- Инкасация ----------------------------------------------------------------//
 
-CLASS cashDocument 'Кассовый документ';
-TABLE cashDocument (cashDocument);
+CLASS collection 'Инкасация' : outcomeCashOrder, historyObject, numeratedObject;
+//CLASS collectionPosted 'Закрытая инкасация' : collection, postedObject;
+TABLE collection (collection);
 
-CLASS incomeCashOrder 'ПКО': cashDocument;
-CLASS outcomeCashOrder 'РКО': cashDocument;
-CLASS bankCardsReport 'Отчет по банковским карточкам': cashDocument;
+//@defineDocumentHeaderPosted(collection);
+@defineDocumentHeaderTime(collection);
+@defineDocumentHeaderDepartmentStore(collection);
 
-numberCashReport 'Номер кассового отчета' (cashReport) = DATA INTEGER (cashReport) IN baseGroup;
-startDateCashReport 'Дата начала' (cashReport) = DATA DATE (cashReport) IN baseGroup;
-endDateCashReport 'Дата окончания' (cashReport) = DATA DATE (cashReport) IN baseGroup;
+//numberCollection 'Номер' (collection) = DATA INTEGER (collection) IN documentPrmGroup;
+cashRegisterCollection (collection) = DATA cashRegister (collection);
+numberCashRegisterCollection 'Касса инкасации' (collection) = numberCashRegister(cashRegisterCollection(collection)) IN documentPrmGroup;
+sumCashCollection 'Сумма инкасации' = DATA NUMERIC[16,2] (collection) IN documentSumGroup;
+defaultNumeratorCollection = DATA numerator ();
+nameDefaultNumeratorCollection 'Нумератор инкасации' = name(defaultNumeratorCollection());
+castBasisCollection =
+    FORMULA STRING[100] '\'Инкасация №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
+basisCollection 'Основание' (collection) =
+    castBasisCollection(seriesNumberObject(collection), numberCashRegisterCollection(collection), dateCollection(collection)) IN documentPrmGroup;
 
-reportCashDocument 'Отчет документа (ИД)' (cashDocument) = DATA cashReport (cashDocument) IN idGroup;
-numberCashDocument 'Номер документа' (cashDocument) = DATA INTEGER (cashDocument) IN baseGroup;
-sumCashDocument 'Сумма документа' (cashDocument) = DATA NUMERIC[16,2] (cashDocument) IN baseGroup;
-dopInfoCashDocument 'Описание' (cashDocument) = DATA STRING[10] (cashDocument) IN baseGroup;
-
-@defineAggregation(zReport, incomeCashOrder, isPostedZReport);
-
-retailSumIncomeCashOrder(incomeCashOrder) = retailSumBillDetailZReport(zReportIncomeCashOrder(incomeCashOrder));
-sumCashDocument (incomeCashOrder) <- retailSumIncomeCashOrder(incomeCashOrder) WHEN CHANGED(retailSumIncomeCashOrder(incomeCashOrder));
-
-cashRegisterIncomeCashOrder (incomeCashOrder) = cashRegisterZReport(zReportIncomeCashOrder(incomeCashOrder));
-numberCashRegisterIncomeCashOrder 'Номер кассы' (incomeCashOrder) = numberCashRegister(cashRegisterIncomeCashOrder(incomeCashOrder));
-
-infoCashDocument 'Основание документа' (cashDocument) = UNION EXCLUSIVE numberCashRegisterIncomeCashOrder(cashDocument), dopInfoCashDocument (cashDocument);
-
-FORM cashReport 'Кассовый отчет'
-    OBJECTS r=cashReport FIXED PANEL
-    OBJECTS d=cashDocument
-    PROPERTIES (r) numberCashReport, startDateCashReport, endDateCashReport
-    PROPERTIES (d) objectClassName, numberCashDocument, infoCashDocument, sumCashDocument, ADDOBJ, delete
-    FILTERS reportCashDocument(d) == r
-    EDIT cashReport OBJECT r
-;
-
-FORM cashReports 'Кассовые отчеты'
-    OBJECTS r=cashReport, d=cashDocument
-
-    PROPERTIES (r) startDateCashReport, endDateCashReport
-    PROPERTIES (r) ADDFORM, EDITFORM, delete
-    PROPERTIES (d) READONLY numberCashDocument, sumCashDocument
-
-    FILTERS reportCashDocument(d) == r
-;
-
-DESIGN cashReports FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD r.box;
-        ADD d.box;
-    }
-
-    ADD functions.box;
-}
+dateCashDocument(collection) += dateCollection(collection);
+timeCashDocument(collection) += timeCollection(collection);
+dateTimeCashDocument(collection) += dateTimeCollection(collection);
+numberCashDocument(collection) += seriesNumberObject(collection);
+departmentStoreCashDocument(collection) += departmentStoreCollection(collection);
+cashRegisterCashDocument(collection) += cashRegisterCollection(collection);
+sumCashOutcomeCashOrder(collection) += sumCashCollection(collection);
+basisCashDocument(collection) += basisCollection(collection);
 
 // документ скидок для товарного отчета
 CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountDocumentLedger;
@@ -8456,7 +8497,8 @@ DESIGN statements FROM DEFAULT {
 FORM bill 'Z-отчет'
     OBJECTS z=zReport FIXED PANEL
     PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateZReport, timeZReport, numberZReport,
-                    countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumZReport
+                   basisZReport, countBillZReport, quantityBillDetailZReport, sumCashZReport, retailSumBillDetailZReport,
+                   discountSumBillDetailZReport
 
     OBJECTS b=bill, d=billDetail
     PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
@@ -8481,22 +8523,41 @@ FORM bill 'Z-отчет'
 ;
 
 DESIGN bill FROM DEFAULT{
-    NEW row.box BEFORE functions.box{
-        ADD d.box{
-            title = 'Строка чека';
-            fillHorizontal = 3;
-        };
-        ADD p.box{
-            fillHorizontal = 1;
-        };
-        POSITION d.box TO THE LEFT p.box;
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        NEW firstCase {
+
+            type = SPLITV;
+
+            ADD z.box;
+            ADD b.box;
+        }
+
+        NEW secondCase{
+
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD d.box{
+                title = 'Строка чека';
+                fillHorizontal = 3;
+            }
+            ADD p.box;
+        }
     }
-};
+
+    ADD functions.box;
+}
 
 FORM bills 'Чеки'
     OBJECTS z=zReport
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
-                            numberZReport, countBillZReport, quantityBillDetailZReport, retailSumBillDetailZReport, discountSumZReport
+                            numberZReport, basisZReport, countBillZReport, quantityBillDetailZReport, sumCashZReport,
+                            retailSumBillDetailZReport, discountSumBillDetailZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
@@ -8557,6 +8618,232 @@ DESIGN bills FROM DEFAULT{
         }
 
     ADD functions.box;
+}
+
+FORM incomeCashOrderPrint 'ПКО' PRINT
+
+    OBJECTS i = incomeCashOrder
+    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
+                           sumCashIncomeCashOrder, basisCashDocument
+
+;
+
+FORM outcomeCashOrderPrint 'РКО' PRINT
+
+    OBJECTS o = outcomeCashOrder
+    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
+                           sumCashOutcomeCashOrder, basisCashDocument
+
+;
+
+printIncomeCashOrder 'Распечатать' (incomeCashOrder) = [ACTION (incomeCashOrder) {
+
+    FORM incomeCashOrderPrint OBJECTS i = (incomeCashOrder AS incomeCashOrder);
+    SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
+
+}](incomeCashOrder) CONFIRM;
+
+printAllIncomeCashOrder 'Распечатать все непечатанные' = ACTION(date1, date2) {
+
+    FOR isNotPrintedIncomeCashOrder(incomeCashOrder) AND
+        dateCashDocument(incomeCashOrder) >= (date1 AS DATE) AND
+        dateCashDocument(incomeCashOrder) <= (date2 AS DATE) DO {
+        FORM incomeCashOrderPrint OBJECTS i = (incomeCashOrder AS incomeCashOrder);
+        SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
+    }
+
+} CONFIRM TOOLBAR;
+
+printOutcomeCashOrder 'Распечатать' (outcomeCashOrder) = [ACTION (outcomeCashOrder) {
+
+    FORM outcomeCashOrderPrint OBJECTS o = (outcomeCashOrder AS outcomeCashOrder);
+    SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
+
+}](outcomeCashOrder) CONFIRM;
+
+printAllOutcomeCashOrder 'Распечатать все непечатанные' = ACTION(date1, date2) {
+
+    FOR isNotPrintedOutcomeCashOrder(outcomeCashOrder) AND
+        dateCashDocument(outcomeCashOrder) >= (date1 AS DATE) AND
+        dateCashDocument(outcomeCashOrder) <= (date2 AS DATE) DO {
+        FORM outcomeCashOrderPrint OBJECTS o = (outcomeCashOrder AS outcomeCashOrder);
+        SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
+    }
+
+} CONFIRM TOOLBAR;
+
+sumCashForCollection 'Сумма инкасации' = SESSION DATA NUMERIC[16,2] (cashRegister);
+CONSTRAINT curSumCashCashRegister(cashRegister) < 0 MESSAGE 'Сумма инкасации не должна превышасть суммы наличных в кассе';
+
+addCollection 'Провести инкасацию' = ACTION (cashRegister, departmentStore, dateTime)  {
+    ADDOBJ collection;
+    FOR c == addedObject() DO {
+        SET cashRegisterCollection(c) <- (cashRegister AS cashRegister);
+        SET departmentStoreCollection(c) <- (departmentStore AS departmentStore);
+        SET dateCollection(c) <- dateInTime(dateTime AS DATETIME);
+        SET timeCollection(c) <- timeInDateTime(dateTime AS DATETIME);
+        SET sumCashCollection(c) <- sumCashForCollection(cashRegister AS cashRegister);
+        SET numeratorObject(c) <- defaultNumeratorCollection();
+        EXEC setValueNumeratedObject(c AS collection);
+    }
+    EXEC apply();
+}
+
+addAllCollection 'Провести все инкасации' = ACTION (departmentStore, dateTime)  {
+
+    FOR sumCashForCollection(cashRegister) AND
+        departmentStoreCashRegister(cashRegister) == departmentStore DO {
+        EXEC addCollection(cashRegister AS cashRegister, departmentStore AS departmentStore, dateTime AS DATETIME);
+    }
+
+} CONFIRM TOOLBAR;
+
+FORM addCollection 'Инкасация'
+
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES(d) name SELECTOR
+
+    OBJECTS c = cashRegister
+    PROPERTIES(c) READONLY numberCashRegister
+    PROPERTIES(c, dt) READONLY sumCashCashRegisterDateTime
+    PROPERTIES(c) sumCashForCollection
+    PROPERTIES(c, d, dt) addCollection
+    PROPERTIES addAllCollection(d, dt) TODRAW c
+
+    FILTERS departmentStoreCashRegister(c) == d
+;
+
+DESIGN addCollection FROM DEFAULT {
+
+    NEW topContainer {
+
+        type = SPLITV;
+
+        NEW firstCase {
+            childConstraints = TO THE RIGHT;
+            ADD dt.box;
+            ADD d.box;
+        }
+
+        ADD c.box;
+    }
+
+    ADD functions.box;
+}
+
+FORM editCollection 'Инкасация'
+
+    OBJECTS c= collection FIXED PANEL
+    PROPERTIES(c) seriesNumberObject, dateCollection, timeCollection, nameDepartmentStoreCollection,
+                  numberCashRegisterCollection, sumCashCollection, basisCollection
+
+;
+
+DESIGN editCollection FROM DEFAULT {
+
+    NEW topContainer{
+
+        childConstraints = TO THE BOTTOM;
+        NEW firstCase{
+
+            childConstraints = TO THE RIGHT;
+            NEW firstCaseOne{
+
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(seriesNumberObject);
+                ADD PROPERTY(dateCollection);
+                ADD PROPERTY(timeCollection);
+            }
+
+            NEW firstCaseTwo{
+
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(nameDepartmentStoreCollection);
+                ADD PROPERTY(numberCashRegisterCollection);
+                ADD PROPERTY(sumCashCollection);
+            }
+        }
+        ADD PROPERTY(basisCollection);
+    }
+
+    ADD functions.box;
+}
+
+addCollectionForm 'Инкасация' (departmentStore) = ACTION FORM addCollection OBJECTS d MODAL TOOLBAR;
+
+editCollectionForm 'Редактировать' (collection) = ACTION (collection) {
+
+    FORM editCollection OBJECTS c = (collection AS collection) MODAL;
+    IF formResult() == formResult.ok THEN {
+        EXEC apply();
+    }
+
+} TOOLBAR;
+
+FORM operationCashRegister 'Кассовые операции'
+
+    OBJECTS interval = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES(d) name SELECTOR
+
+    OBJECTS i = incomeCashOrder
+    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
+                           numberCashRegisterCashDocument, sumCashIncomeCashOrder, basisCashDocument, isPrintedIncomeCashOrder
+    PROPERTIES(i) printIncomeCashOrder
+    PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
+
+    FILTERS departmentStoreCashDocument(i) == d,
+            dateCashDocument(i) >= dFrom,
+            dateCashDocument(i) <= dTo
+
+    OBJECTS o = outcomeCashOrder
+    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
+                           numberCashRegisterCashDocument, sumCashOutcomeCashOrder, basisCashDocument, isPrintedOutcomeCashOrder
+    PROPERTIES(o) printOutcomeCashOrder
+    PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
+    PROPERTIES(o) delete
+    PROPERTIES addCollectionForm(d) TODRAW o, editCollectionForm(o)
+
+    FILTERS departmentStoreCashDocument(o) == d,
+            dateCashDocument(o) >= dFrom,
+            dateCashDocument(o) <= dTo
+
+;
+
+DESIGN operationCashRegister FROM DEFAULT {
+
+    NEW topContainer{
+
+        ADD interval.box{
+            caption = 'Период';
+            childConstraints = TO THE RIGHT;
+            PROPERTY(objFrom) {
+                caption = 'Дата (с)';
+            }
+            PROPERTY(objTo) {
+                caption = 'Дата (по)';
+            }
+        }
+
+        ADD d.box;
+        NEW firstCase {
+
+            type = SPLITV;
+            ADD i.box{
+                caption = 'ПКО';
+            }
+            ADD o.box{
+                caption = 'РКО';
+            }
+        }
+
+        ADD functions.box;
+    }
 }
 
 //----------------------------------- Акты проработки -------------------------------------------------//
@@ -9521,7 +9808,7 @@ fillCashRegisterDefaultValues 'Заполнить значения касс по
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, skuStockAverageInterval, calcCurrentQuantitySoldInterval
+    PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection, skuStockAverageInterval, calcCurrentQuantitySoldInterval
 ;
 
 //---------------------------------------------- Заполнение БД -------------------------------------------------//
@@ -9739,7 +10026,8 @@ NAVIGATOR {
         }
         NEW retailSale 'Розничные продажи'{
             ADD bills;
-            ADD cashReports;
+            ADD operationCashRegister;
+            ADD addCollection;
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
@@ -9862,6 +10150,9 @@ NAVIGATOR {
             ADD dialogInactiveItem;
             ADD addCoefficientNetGrossItem;
             ADD dialogCoefficientNetGrossItem;
+            ADD incomeCashOrderPrint;
+            ADD outcomeCashOrderPrint;
+            ADD editCollection;
         //    ADD addrateNaturalLossItem;
         //    ADD rateNaturalLossItem;
             ADD genTimeTables;
@@ -9946,7 +10237,6 @@ NAVIGATOR {
             ADD addTimeTable;
             ADD dialogTimeTable;
             ADD orderSupplier;
-            ADD cashReport;
             ADD rateWaste;
             ADD ordersShipment;
             ADD shipment;
