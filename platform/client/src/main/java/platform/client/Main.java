@@ -372,7 +372,7 @@ public class Main {
     }
 
     public static String getMainTitle() {
-        return "(NEW) " + BaseUtils.nvl(getDisplayName(), PLATFORM_TITLE);
+        return BaseUtils.nvl(getDisplayName(), PLATFORM_TITLE);
     }
 
     public static String getDisplayName() {
