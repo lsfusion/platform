@@ -233,6 +233,9 @@
 			</staticText>
 			<line>
 				<reportElement x="109" y="193" width="601" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement style="GroupCellStyle0" x="25" y="331" width="24" height="13" backcolor="#FFFFFF"/>
@@ -346,6 +349,9 @@
 			</staticText>
 			<line>
 				<reportElement x="109" y="219" width="601" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="125" y="220" width="585" height="7"/>
@@ -362,6 +368,9 @@
 			</staticText>
 			<line>
 				<reportElement x="109" y="245" width="601" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="125" y="245" width="585" height="10"/>
@@ -714,9 +723,15 @@
 			</staticText>
 			<line>
 				<reportElement x="109" y="48" width="601" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<line>
 				<reportElement x="130" y="75" width="580" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="109" y="49" width="601" height="7"/>
@@ -746,9 +761,15 @@
 			</staticText>
 			<line>
 				<reportElement x="109" y="97" width="601" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<line>
 				<reportElement x="130" y="118" width="580" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="130" y="118" width="580" height="7"/>
@@ -778,6 +799,9 @@
 			</staticText>
 			<line>
 				<reportElement x="135" y="145" width="575" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="135" y="146" width="575" height="7"/>
@@ -820,9 +844,15 @@
 			</textField>
 			<line>
 				<reportElement x="328" y="167" width="382" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<line>
 				<reportElement x="105" y="167" width="172" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="105" y="168" width="172" height="7"/>
@@ -852,6 +882,9 @@
 			</staticText>
 			<line>
 				<reportElement x="135" y="188" width="575" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 			<staticText>
 				<reportElement x="135" y="189" width="575" height="7"/>
@@ -881,6 +914,9 @@
 			</staticText>
 			<line>
 				<reportElement x="165" y="216" width="545" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
 			</line>
 		</band>
 	</summary>

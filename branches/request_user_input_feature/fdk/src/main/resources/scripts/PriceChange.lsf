@@ -54,8 +54,8 @@ importerPricePriceChangeDocumentDetail 'Цена изготовителя' (pric
 curSupplierPricePriceChangeDocumentDetail 'Цена поставщика (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 supplierPricePriceChangeDocumentDetail 'Цена поставщика' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 
-curValueRetailRangePriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
-valueRetailRangePriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
+curValueRetailVATPriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
+valueRetailVATPriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
 
 curRetailPricePriceChangeDocumentDetail 'Розничная цена (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
 retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
@@ -179,7 +179,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pcd) READONLY nameSkuPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
                              curImporterPricePriceChangeDocumentDetail, importerPricePriceChangeDocumentDetail,
                              curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
-                             curValueRetailRangePriceChangeDocumentDetail, valueRetailRangePriceChangeDocumentDetail,
+                             curValueRetailVATPriceChangeDocumentDetail, valueRetailVATPriceChangeDocumentDetail,
                              curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
                              curWarePricePriceChangeDocumentDetail, warePricePriceChangeDocumentDetail
 
@@ -367,8 +367,8 @@ META implementPriceChangeDocumentDetailPricePrefix (object, prefixA, prefixR)
     curSupplierPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###supplierPrice###object##Detail (priceChangeDocumentDetail);
     supplierPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += supplierPrice###object##Detail (priceChangeDocumentDetail);
 
-    curValueRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###valueRetailRange###object##Detail (priceChangeDocumentDetail);
-    valueRetailRangePriceChangeDocumentDetail (priceChangeDocumentDetail) += valueRetailRange###object##Detail (priceChangeDocumentDetail);
+    curValueRetailVATPriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixA###valueRetailVAT###object##Detail (priceChangeDocumentDetail);
+    valueRetailVATPriceChangeDocumentDetail (priceChangeDocumentDetail) += valueRetailVAT###object##Detail (priceChangeDocumentDetail);
 
     curRetailPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += prefixR###retailPrice###object##Detail (priceChangeDocumentDetail);
     retailPricePriceChangeDocumentDetail (priceChangeDocumentDetail) += retailPrice###object##Detail (priceChangeDocumentDetail);

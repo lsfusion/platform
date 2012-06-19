@@ -287,6 +287,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP computerNameLaunch;
     public LCP launchTime;
     public LCP launchRevision;
+    public LP documentNameCurrency;
 
     public LCP policyDescription;
     protected LCP<?> nameToPolicy;
@@ -702,6 +703,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
         shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
+        documentNameCurrency = addDProp(baseGroup, "documentNameCurrency", getString("logics.currency.document.name.currency"), StringClass.get(10), currency);
 
         // математические св-ва
         equals2 = addCFProp("equals2", Compare.EQUALS);
@@ -2395,7 +2397,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(parent, sID, getString("logics.currency.currencies"));
 
             ObjectEntity objCurrency = addSingleGroupObject(currency, getString("logics.currency"));
-            addPropertyDraw(objCurrency, baseLM.name, shortNameCurrency, symbolCurrency);
+            addPropertyDraw(objCurrency, baseLM.name, shortNameCurrency, symbolCurrency, documentNameCurrency);
             setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objCurrency);

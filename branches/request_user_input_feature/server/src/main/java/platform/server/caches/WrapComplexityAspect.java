@@ -26,7 +26,7 @@ public class WrapComplexityAspect {
     <K extends PropertyInterface> Expr wrapComplexity(Expr expr, Where where, CalcProperty<K> property, Map<K, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
         Expr wrapExpr = expr;
         if(expr.getComplexity(true) > Settings.instance.getLimitWrapComplexity()) {
-            System.out.println("WRAP COMPLEX EXPR " + property + " : " + expr.getComplexity(true));
+            System.out.println("WRAP COMPLEX EXPR " + property + "(" + property.getSID() + ") : " + expr.getComplexity(true));
             wrapExpr = SubQueryExpr.create(expr);
         }
         if(where != null) {

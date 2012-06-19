@@ -1,20 +1,14 @@
 package retail.actions;
 
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.poi.util.Internal;
-import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.interop.action.MessageClientAction;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
@@ -24,13 +18,11 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 import retail.RetailBusinessLogics;
 import retail.api.remote.SalesInfo;
-import retail.api.remote.TerminalDocumentTypeInfo;
 
 import java.io.IOException;
-import java.sql.*;
-import java.text.ParseException;
+import java.sql.SQLException;
+import java.sql.Time;
 import java.util.*;
-import java.util.Date;
 
 public class GenerateZReport extends ScriptingActionProperty {
     public GenerateZReport(ScriptingLogicsModule LM) {
@@ -59,9 +51,9 @@ public class GenerateZReport extends ScriptingActionProperty {
             newKeys.put("item", itemExpr);
 
             Query<Object, Object> query = new Query<Object, Object>(newKeys);
-            query.properties.put("currentBalanceSkuLedger", getLCP("currentBalanceSkuLedger").getExpr(itemExpr, departmentStoreExpr));
+            query.properties.put("currentBalanceSkuStock", getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
             query.properties.put("currentRetailPriceLedger", getLCP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
-            query.and(getLCP("currentBalanceSkuLedger").getExpr(itemExpr, departmentStoreExpr).getWhere());
+            query.and(getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr).getWhere());
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -69,14 +61,14 @@ public class GenerateZReport extends ScriptingActionProperty {
             List<Integer> departmentStoreList = new ArrayList<Integer>();
             for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
                 DataObject itemObject = new DataObject(rows.getKey().get("item"), (ConcreteClass) getClass("item"));
-                Double currentBalanceSkuLedger = (Double) rows.getValue().get("currentBalanceSkuLedger");
-                if (currentBalanceSkuLedger > 0) {
+                Double currentBalanceSkuStock = (Double) rows.getValue().get("currentBalanceSkuStock");
+                if (currentBalanceSkuStock > 0) {
                     Integer departmentStore = (Integer) rows.getKey().get("departmentStore");
                     if ((departmentStore != null) && (!departmentStoreList.contains(departmentStore)))
                         departmentStoreList.add(departmentStore);
                     Double currentRetailPriceLedger = (Double) rows.getValue().get("currentRetailPriceLedger");
-                    String barcodeItem = (String) getLCP("idBarcodeSku").read(context, itemObject);
-                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuLedger, currentRetailPriceLedger, departmentStore));
+                    String barcodeItem = (String) getLCP("idBarcodeSku").read(session, itemObject);
+                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, departmentStore));
                 }
             }
 
@@ -89,7 +81,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                 KeyExpr groupCashRegisterKey = BaseUtils.singleValue(groupCashRegisterKeys);
                 Query<PropertyInterface, Object> groupCashRegisterQuery = new Query<PropertyInterface, Object>(groupCashRegisterKeys);
                 groupCashRegisterQuery.and(isGroupCashRegister.property.getExpr(groupCashRegisterKeys).getWhere());
-                groupCashRegisterQuery.and(getLCP("departmentStoreGroupMachinery").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
+                groupCashRegisterQuery.and(getLCP("departmentStoreGroupCashRegister").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
 
                 OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> groupCashRegisterResult = groupCashRegisterQuery.execute(session.sql);
 
@@ -129,7 +121,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                     Map.Entry<String, Integer> numberCashRegisterDepartmentStore = (Map.Entry<String, Integer>) (numberCashRegisterDepartmentStoreMap.entrySet().toArray()[r.nextInt(numberCashRegisterDepartmentStoreMap.size())/*1*/]);
                     String numberCashRegister = numberCashRegisterDepartmentStore.getKey();
                     Integer departmentStore = numberCashRegisterDepartmentStore.getValue();
-                    Integer maxNumberZReport = (Integer) getLCP("maxNumberZReport").read(context, new DataObject(getLCP("numberCashRegisterToCashRegister").read(context, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
+                    Integer maxNumberZReport = (Integer) getLCP("maxNumberZReport").read(session, new DataObject(getLCP("cashRegisterNumber").read(session, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
                     Integer numberZReport = null;
                     while (numberZReport == null || (numberZReportCashRegisterMap.containsKey(numberZReport) && numberZReportCashRegisterMap.containsValue(numberCashRegister)))
                         numberZReport = (maxNumberZReport == null ? 0 : maxNumberZReport) + (zReportCount < 1 ? 0 : r.nextInt(zReportCount)) + 1;
@@ -145,16 +137,16 @@ public class GenerateZReport extends ScriptingActionProperty {
                         Time time = new Time(r.nextLong() % date.getTime());
                         Integer currentBillDetailCount = addDeviation(billDetailCount, 0.25, r);
                         for (ItemZReportInfo itemZReportInfo : itemZReportInfoList) {
-                            Double currentBalanceSkuLedger = itemZReportInfo.count;
-                            if ((currentBalanceSkuLedger > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
-                                Double quantityBillDetail = (double) r.nextInt((int) Math.ceil(currentBalanceSkuLedger / 5));
+                            Double currentBalanceSkuStock = itemZReportInfo.count;
+                            if ((currentBalanceSkuStock > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
+                                Double quantityBillDetail = (double) r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
                                 if ((quantityBillDetail > 0) && (currentBillDetailCount >= numberBillDetail)) {
                                     Double sumBillDetail = quantityBillDetail * (itemZReportInfo.price == null ? 0 : itemZReportInfo.price);
                                     numberBillDetail++;
                                     sumBill += sumBillDetail;
                                     SalesInfo salesInfo = new SalesInfo(numberCashRegister, numberZReport,
-                                            billNumber, date, time, null, itemZReportInfo.barcode == null ? null : itemZReportInfo.barcode.trim(),
-                                            quantityBillDetail, itemZReportInfo.price, sumBillDetail, 0.0, numberBillDetail, null);
+                                            billNumber, date, time, 0.0, 0.0, 0.0, itemZReportInfo.barcode == null ? null : itemZReportInfo.barcode.trim(),
+                                            quantityBillDetail, itemZReportInfo.price, sumBillDetail, null, null, numberBillDetail, null);
                                     billSalesInfoList.add(salesInfo);
                                     itemZReportInfo.count -= quantityBillDetail;
                                     billSalesInfoList.add(salesInfo);
@@ -164,6 +156,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                         }
                         for (SalesInfo s : billSalesInfoList) {
                             s.sumBill = sumBill;
+                            s.sumCash = sumBill;
                         }
                         salesInfoList.addAll(billSalesInfoList);
                     }

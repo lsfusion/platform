@@ -12,23 +12,21 @@ REQUIRE System,
         MasterData,
         RomanLogicsModule;
 
+PRIORITY RomanLogicsModule, Utils, Stock, Store;
+
 CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
-CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserBalanceSkuLedger, consignmentDetail;
+CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
 declarationDetailCStoWHDetail 'Партия (ИД)' = DATA declarationDetail (CStoWHDetail);
 declarationCStoWHDetail 'Декларация (ИД)' (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
-batchOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += declarationDetailCStoWHDetail (outUserBalanceSkuLedger);
+batchOutUserSkuLedger (outUserSkuLedger) += declarationDetailCStoWHDetail (outUserSkuLedger);
 
 skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 
 @defineRBCorrespondingDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ', warehouse, 'Оптовый склад');
 
-@defineDocumentDetailProps (CStoWH);
-
-descriptionBalanceSkuLedger (ledger) += descriptionCStoWHDetail (ledger);
-isPostedBalanceSkuLedger (ledger) += isPostedCStoWHDetail (ledger);
-quantityOutUserBalanceSkuLedger (outUserBalanceSkuLedger) += quantityCStoWHDetail (outUserBalanceSkuLedger);
+quantityOutUserSkuLedger (outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
 
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
@@ -38,14 +36,14 @@ sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
 priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
 totalSumCStoWHDetail 'Общая стоимость' (CStoWH) =
-    GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWH) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
+    GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
                                                       BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
 
 // подбор строк для расхода
 currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
-    currentBalanceBatchLedger(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
+    currentBalanceBatchStock(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
 
 currentBalanceBDeclaration 'Текущий остаток по декларации' (declaration) = GROUP SUM currentBalanceDeclarationDetail (declarationDetail)
     IF declarationDeclarationDetail(declarationDetail) == declaration BY declaration;
@@ -92,7 +90,6 @@ innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(
 
 currencyCStoWH 'Валюта (ИД)' (CStoWH) = DATA currency (CStoWH);
 shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH));
-currencyConsignment(consignment) += currencyCStoWH(consignment);
 
 FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     OBJECTS c=CStoWH FIXED PANEL
@@ -103,7 +100,7 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES(d) toFillQuantityInputAllDeclarationDetails
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY barcodeSkuDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
+    PROPERTIES (dd) READONLY barcodeDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
     PROPERTIES (dd) quantityInputDeclarationDetail, toFillQuantityInputDeclarationDetail
 
     FILTERS isAvailableDeclarationCStoWH (d, c)
@@ -129,6 +126,8 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
         SET quantityInputDeclarationDetail(declarationDetail) <- NULL;
 } TOOLBAR;
 
+@defineAddDetailDialogBarcode(CStoWH, sku);
+//@defineAddDetailDialogTerminal(WHtoS);
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
@@ -139,9 +138,11 @@ FORM CStoWH 'Расход с СВХ'
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
-                  nameCategoryCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
+                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
                   priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
     PROPERTIES(d) ADDOBJ, delete
+    PROPERTIES(c) TODRAW d addDetailDialogSkuCStoWHDetailCStoWH, addDetailDialogBarcodeCStoWHDetailCStoWH,
+                  deleteCStoWHDetailCStoWH //addDetailDialogTerminalCStoWHDetailCStoWH
 
     FILTERS inCStoWHCStoWHDetail(c, d)
 
@@ -157,7 +158,9 @@ DESIGN CStoWH FROM DEFAULT {
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
     PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
-                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, totalSumCStoWHDetail
+                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, totalSumCStoWHDetail
+
+    PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCStoWH(c), delete FORCE PANEL SHOWIF isDraftCStoWH(c),
                    postCStoWH SHOWIF isDraftCStoWH(c), unpostCStoWH SHOWIF isPostedCStoWH(c)
@@ -165,11 +168,11 @@ FORM CStoWHs 'Расходы с СВХ'
     PROPERTIES (c)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
                      printConsignmentSimpleHorizontal, editConsignment,
-                     printConsignmentSimpleVertical//, printConsignmentSimpleAttach,  printConsignmentAttach
+                     printConsignmentSimpleVertical
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
-                  nameCategoryCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
+                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail,sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
                   priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
 
     FILTERS inCStoWHCStoWHDetail(c, d)
@@ -183,7 +186,46 @@ DESIGN CStoWHs FROM DEFAULT {
         }
     }
     ADD d.box;
-    ADD c.panel;
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD c.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD c.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        ADD c.printGroup {
+            childConstraints = TO THE BOTTOM;
+            NEW case55{
+                childConstraints = TO THE RIGHT;
+
+                NEW contOne {
+                    title = 'Накладная';
+                    ADD PROPERTY(editConsignment);
+                }
+                NEW tn{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТН-2';
+                    ADD PROPERTY(printConsignmentSimpleVertical);
+                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                }
+            }
+            NEW ttn1{
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+                ADD PROPERTY(printConsignmentHorizontalB);
+            }
+        }
+    }
     ADD functions.box;
 }
 
@@ -196,5 +238,11 @@ consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignm
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
+
+currencyConsignment(consignment) += currencyCStoWH(consignment);
+isCustomsFlowConsignment (consignment) += consignment IS CStoWH;
+noteConsignment(consignment) += innerInvoicesCStoWH(consignment);
+

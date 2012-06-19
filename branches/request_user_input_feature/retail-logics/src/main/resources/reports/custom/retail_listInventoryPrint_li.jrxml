@@ -36,7 +36,7 @@
 	<field name="countPageInventoryListInventory" class="java.lang.Integer"/>
 	<field name="countPageInventoryDetailListInventory" class="java.lang.Integer"/>
 	<field name="quantityPageInventoryDetailListInventory" class="java.lang.Double"/>
-	<field name="accountSumPageInventoryDetailListInventory" class="java.lang.Double"/>
+	<field name="sumPageInventoryDetailListInventory" class="java.lang.Double"/>
 	<field name="countIndexListInventory" class="java.lang.Integer"/>
 	<field name="committeeListInventory" class="java.lang.Integer"/>
 	<group name="captionGroup5">
@@ -250,7 +250,7 @@
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="467" y="0" width="70" height="14"/>
 					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[$F{accountSumPageInventoryDetailListInventory}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{sumPageInventoryDetailListInventory}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="32" y="0" width="82" height="14"/>
@@ -339,7 +339,7 @@
 					<textElement>
 						<font size="10" isItalic="true" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{accountSumPageInventoryDetailListInventory})+ " белорусских рублей"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumPageInventoryDetailListInventory})+ " белорусских рублей"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="30">

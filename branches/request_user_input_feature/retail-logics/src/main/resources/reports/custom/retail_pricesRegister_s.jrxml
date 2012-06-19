@@ -66,7 +66,7 @@
 	<field name="supplierSumShipmentDetail" class="java.lang.Double"/>
 	<field name="supplierMarkupShipmentDetail" class="java.lang.Double"/>
 	<field name="supplierVATISumShipmentDetail" class="java.lang.Double"/>
-	<field name="valueSupplierRangeShipmentDetail" class="java.lang.Double"/>
+	<field name="valueSupplierVATShipmentDetail" class="java.lang.Double"/>
 	<field name="wareSumShipmentDetail" class="java.lang.Double"/>
 	<field name="warePriceShipmentDetail" class="java.lang.Double"/>
 	<field name="wareVATSumShipmentDetail" class="java.lang.Double"/>
@@ -74,7 +74,7 @@
 	<field name="invoiceSumShipmentDetail" class="java.lang.Double"/>
 	<field name="importerMarkupShipmentDetail" class="java.lang.Double"/>
 	<field name="markupSumShipmentDetail" class="java.lang.Double"/>
-	<field name="valueRetailRangeShipmentDetail" class="java.lang.Double"/>
+	<field name="valueRetailVATShipmentDetail" class="java.lang.Double"/>
 	<field name="retailVATSumShipmentDetail" class="java.lang.Double"/>
 	<field name="retailPriceShipmentDetail" class="java.lang.Double"/>
 	<field name="retailSumShipmentDetail" class="java.lang.Double"/>
@@ -366,7 +366,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{valueSupplierRangeShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueSupplierVATShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" x="480" y="0" width="55" height="11" backcolor="#FFFFFF"/>
@@ -402,7 +402,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{valueRetailRangeShipmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{valueRetailVATShipmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="690" y="0" width="45" height="22" backcolor="#FFFFFF"/>

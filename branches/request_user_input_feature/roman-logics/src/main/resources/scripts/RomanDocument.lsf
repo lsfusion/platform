@@ -1,6 +1,6 @@
 MODULE RomanDocument;
 
-REQUIRE Document;
+REQUIRE Document, Stock, Barcode, StorePrice, Supplier;
 
 META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
@@ -15,13 +15,16 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
     @defineDocumentHeaderQuantity(object);
 
     description###object 'Название документа' (object) =
-        [FORMULA STRING[200] '\' CAST($1 AS TEXT) \' || CAST($2 AS TEXT)'](
-        caption, seriesNumberObject(object));
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
+        caption, seriesNumberObject(object), date###object(object));
 
     description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
 
-    @implementBalanceSkuLedger (object, skuProp, stock);
+    @implementSkuLedger (object, skuProp, stock);
 
+    @defineDocumentDetailProps (object);
+
+    @defineAddDetailDialogSkuStock(object, sku, stock, dialogSku);
 END
 
 META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, caption, corresponder, corresponderCaption)
@@ -49,3 +52,10 @@ META defineDocumentDetailProps (object)
     category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
     nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail));
 END
+
+//-----------Для подбора товаров------------------//
+
+    @defineDialogSku(dialogSku);
+    @defineDialogSkuBarcode(dialogSku);
+    @defineDialogSkuSupplier(dialogSku);
+  //  @defineDialogSkuStorePrice(dialogSku);

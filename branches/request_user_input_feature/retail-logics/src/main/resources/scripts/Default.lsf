@@ -49,7 +49,7 @@ addCountryStringNumberValue 'Добавить страны' = ACTION (string, nu
 fillCountryDefaultValues 'Заполнить значения страны по умолчанию' = ACTION () {
     EXEC addCountryStringNumberValue('Республика Беларусь', 110, 'BELARUS', 'RB', 'BLR');//, TRUE);
     EXEC addCountryStringNumberValue('Российская Федерация', 210, 'RUSSIA', 'RU', 'RUS');//, TRUE);
-    EXEC addCountryStringNumberValue('Китайская Народная Демократическая Республика', 310, 'CHINA', 'CH', 'CHI');//, NULL);
+    EXEC addCountryStringNumberValue('Китайская Народная Республика', 310, 'CHINA', 'CH', 'CHI');//, NULL);
 }
 // todo: Пока что проблема с BOOLEAN, не подставляется
 

@@ -15,6 +15,10 @@ descriptionSku 'Наименование товара' (sku) =
 
 nameSku(sku) += descriptionSku (sku);
 
+skuGroupSku (sku) += categoryArticleSku(sku);
+
+quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+
 //------------------------ Приведение штрих-кодов RomanLogicsModule к логике Barcode.lsf -----------------------------//
 
 syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sku) {
@@ -29,7 +33,7 @@ syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sk
     }
 
     SET idBarcode(barcode) IF barcode == syncBarcode() <- barcode(sku);
-}
+} IN baseGroup;
 
 syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 
@@ -37,7 +41,6 @@ syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 CLASS warehouse 'Склад' : stock;
 
 importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
-
 
 
 FORM customStore 'Склад временного хранения'
@@ -55,6 +58,36 @@ FORM customStore 'Склад временного хранения'
 
     EDIT customStore OBJECT c
 ;
+
+DESIGN customStore FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        c.box {
+            childConstraints = TO THE BOTTOM;
+
+            NEW row1 {
+                childConstraints = TO THE RIGHT;
+                ADD c.lawGroup{
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            NEW row2{
+                childConstraints = TO THE RIGHT;
+                ADD c.contactGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD c.managementGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+                ADD c.docGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
 
 FORM customStores 'Склады временного хранения'
 

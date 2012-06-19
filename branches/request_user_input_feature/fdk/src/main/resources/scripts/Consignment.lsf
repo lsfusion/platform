@@ -149,6 +149,7 @@ isCustomsFlowConsignment 'Расход с СВХ' (consignment) = ABSTRACT BOOLE
 
 currencyConsignment 'Валюта (ИД)' (consignment) = ABSTRACT currency (consignment);
 shortNameCurrencyConsignment 'Валюта' (consignment) = shortNameCurrency(currencyConsignment(consignment));
+documentNameCurrencyConsignment 'Валюта в накладной сокр.' (consignment) = documentNameCurrency(currencyConsignment(consignment));
 isCurrencyConsignment 'Выбрана валюта' (consignment) = TRUE IF currencyConsignment(consignment);
 
 // Посуда на возврате
@@ -189,7 +190,7 @@ META defineConsignmentFormSimple(form, caption)
                        quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment,
                        UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
                        fullNameRecipientConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
-                       isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment
+                       isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -222,7 +223,7 @@ META defineConsignmentForm(form, caption)
                        quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment, sumKgGrossWeightConsignment,
                        sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
                        countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
-                       seriesObject, numberObject, isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment
+                       seriesObject, numberObject, isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
 
         OBJECTS d=consignmentDetail
 
@@ -257,7 +258,7 @@ FORM consignment 'Атрибуты накладной'
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
-                   countConsignmentDetailConsignment, noteConsignment, currencyConsignment SHOWIF isCustomsFlowConsignment(c)
+                   countConsignmentDetailConsignment, noteConsignment, shortNameCurrencyConsignment SHOWIF isCustomsFlowConsignment(c)
 
 
     OBJECTS d=consignmentDetail
@@ -282,9 +283,17 @@ DESIGN consignment FROM DEFAULT {
                 title = 'Атрибуты накладной';
                 childConstraints = TO THE RIGHT;
 
-                ADD c.carConsignmentGroup;
-
                 NEW wor1 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD c.carConsignmentGroup;
+                    NEW wor11 {
+                        title = 'Дополнительно';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (noteConsignment(c));
+                        ADD PROPERTY (shortNameCurrencyConsignment(c));
+                    }
+                }
+                NEW wor2 {
                     childConstraints = TO THE BOTTOM;
                     ADD c.issuanceConsignmentGroup;
                     ADD c.loadingConsignmentGroup;

@@ -266,6 +266,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return group;
     }
 
+    public LAP<?> findLAPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LAP<?>) findLPByCompoundName(name);
+    }
+
+    public LCP<?> findLCPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LCP<?>) findLPByCompoundName(name);
+    }
+
     public LP<?, ?> findLPByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
         if (currentLocalProperties.containsKey(name)) {
             return currentLocalProperties.get(name);
