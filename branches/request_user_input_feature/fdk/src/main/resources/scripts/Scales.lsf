@@ -125,6 +125,28 @@ DESIGN cellScales FROM DEFAULT {
     ADD functions.box;
 }
 
+//---------------------------- Этикетки в весы ----------------------------------------//
+
+CLASS labelFormat 'Формат этикетки' : named;
+
+idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
+idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;
+
+fileLabelFormat = DATA CUSTOMFILE (labelFormat);
+loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN baseGroup;
+
+fileMessageLabelFormat = DATA CUSTOMFILE (labelFormat);
+loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN baseGroup;
+
+scalesModelLabelFormat 'Модель весов'= DATA scalesModel (labelFormat);
+nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));
+
+FORM labelFormats 'Форматы этикеток весов'
+    OBJECTS c=labelFormat
+    PROPERTIES(c) idLabelFormat, name, nameScalesModelLabelFormat, loadFileLabelFormat, loadFileMessageLabelFormat
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
 // ----------------------------------------- Загрузка в ВУ -------------------------------------- //
 
 CLASS scalesPriceTransaction 'Загрузка прайса в весы' : machineryPriceTransaction;
