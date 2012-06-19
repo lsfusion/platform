@@ -83,18 +83,6 @@ skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
 
 @defineAddDetailDialogBarcode(WHfromCS, sku);
 
-FORM declarationsCStoWH 'Декларации'
-    OBJECTS c=CStoWH FIXED PANEL
-    PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, nameCustomStoreCStoWH//, nameStoreCustomsFlow
-
-    OBJECTS de=declaration
-
-    PROPERTIES (c, de) inCStoWHDeclaration
-    PROPERTIES (de) READONLY sidDeclaration, date, nameImporterDeclaration, currentBalanceDeclaration
-    FILTERS isCustomsDeclarationCStoWH (de, c)
-;
-
-
 FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL

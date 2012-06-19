@@ -113,7 +113,6 @@ NAVIGATOR {
         ADD employee;
         ADD employeeDialog;
         ADD barcodeInput;
-        ADD declarationsCStoWH;
         ADD importer;
         ADD customStore;
         ADD UOM;

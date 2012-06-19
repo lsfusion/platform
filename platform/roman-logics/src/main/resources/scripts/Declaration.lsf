@@ -220,6 +220,10 @@ sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDeta
 certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
 
 quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' = DATA INTEGER(declarationDetail);
+quantityCertificatedDeclarationFreightUnitSku 'Кол-во для экспертизы' = DATA NUMERIC[14,3] (declaration, freightUnit, sku);
+
+quantityCertificatedDeclarationSku 'Кол-во для экспертизы' (declaration, sku) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
+                                                                                       BY declaration, sku;
 
 certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA certificate(declarationDetail) IN idGroup;
 temporalCertificateDeclarationDetail 'Временный сертификат партии (ИД)' = DATA temporalCertificate(declarationDetail) IN idGroup;
@@ -388,12 +392,12 @@ registrationDeclarationDetail 'Таможенный сбор' (declarationDetail
 
 // учёт расходов на сертификацию
 expenseCertificateDeclaration 'Расходы на сертификацию (БУ)' (declaration) = GROUP SUM declarationPriceDeclarationDetail(declarationDetail) *
-                                                                                       quantityCertificatedDeclarationDetail(declarationDetail)
+                                                                                       quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
                                                                                     IF certificatedDeclarationDetail(declarationDetail)
                                                                                     BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 expenseCertificateManagerialDeclaration 'Расходы на сертификацию (УУ)' (declaration) = GROUP SUM priceManagerialDeclarationDetail(declarationDetail) *
-                                                                                                 quantityCertificatedDeclarationDetail(declarationDetail)
+                                                                                                 quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
                                                                                               IF certificatedDeclarationDetail(declarationDetail)
                                                                                               BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
@@ -518,6 +522,8 @@ inFreightUnitDeclarationDetail 'Связка' (freightUnit, declarationDetail) =
                                                                                                                            declarationDeclarationDetail(declarationDetail),
                                                                                                                            skuDeclarationDetail(declarationDetail));
 
+inFreightUnitDeclaration 'Связка' (freightUnit, declaration) = GROUP SUM inFreightUnitDeclarationDetail(freightUnit, declarationDetail)
+                                                                      BY freightUnit, declarationDeclarationDetail(declarationDetail);
 
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
                                                               BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
@@ -552,11 +558,6 @@ FORM declaration 'Декларация'
                   dutyDeclaration, NDSDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffNDSDeclararion, diffDeclaration, expenseCertificateDeclaration, exportDeclaration
 
-//    OBJECTS ii=innerInvoice
-//    PROPERTIES (ii) sidInnerInvoice
-//    PROPERTIES (d, ii) inDeclarationInnerInvoice
-//    FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
-
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
     FILTERS inDeclarationCorrection(d, c)
@@ -586,18 +587,22 @@ FORM declaration 'Декларация'
                     sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
 
-    //PROPERTIES (gd, ii) inGroupDeclarationInnerInvoice
-
     OBJECTS ii2=innerInvoice
     PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
 
     FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
 
-    OBJECTS f=freightUnit
-    PROPERTIES (f) barcode, nameDestinationFreightBox
-    PROPERTIES (f, dd) inFreightUnitDeclarationDetail
 
-    FILTERS inFreightUnitDeclarationDetail(f, dd)
+
+    OBJECTS sf=(s=sku, f=freightUnit)
+    PROPERTIES READONLY FORCE GRID sidArticleSku(s), sidColorSupplierItem(s), nameColorSupplierItem(s), sidSizeSupplierItem(s),
+                                   barcodeFreightUnit = barcode(f), nameDestinationFreightBox(f)
+
+    PROPERTIES (d, s) quantityDeclarationSku
+    PROPERTIES (f, s) quantityFreightUnitSku
+    PROPERTIES (d, f, s) quantityCertificatedDeclarationFreightUnitSku
+
+    FILTERS inFreightUnitDeclaration(f, d), quantityDeclarationSku(d, s), quantityFreightUnitSku(f, s)
 
     EDIT declaration OBJECT d
 ;
@@ -608,39 +613,39 @@ DESIGN declaration FROM DEFAULT{
          d.panel {
             childConstraints = TO THE RIGHTBOTTOM;
          }
-//        NEW document.box BEFORE dd.box {
-//            type = TABBED;
-//            ADD ii.box;
-//            ADD c.box;
-//        }
 
         POSITION d.box TO THE LEFT c.box;
-        POSITION gd.box TO THE LEFT ii2.box;
-
-//        ii.grid {
-//            fillHorizontal = 0.5;
-//        }
 
         c.grid {
             fillHorizontal = 0.5;
         }
 
-        dd.grid {
-            fillVertical = 3;
+        NEW primary.box {
+            type = TABBED;
+            fillVertical = 1.0;
+            fillHorizontal = 1.0;
+            NEW general.box {
+                title = 'Основные данные';
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+                ADD dd.box;
+                ADD gd.box;
+                ADD ii2.box;
+
+                POSITION gd.box TO THE LEFT ii2.box;
+            }
+
+            NEW certification.box {
+                title = 'Сертификация';
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+                ADD sf.box;
+            }
         }
 
-        gd.grid {
-            fillVertical = 2;
-        }
 
-        ii2.grid {
-            fillVertical = 2;
-            fillHorizontal = 0.4;
-        }
     }
 };
-
-
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
