@@ -266,6 +266,16 @@ public class Settings {
         this.statDegree = statDegree;
     }
 
+    private int barcodeLength = 13;
+
+    public int getBarcodeLength() {
+        return barcodeLength;
+    }
+
+    public void setBarcodeLength(int barcodeLength) {
+        this.barcodeLength = barcodeLength;
+    }
+
     private boolean killThread = true;
 
     public boolean getKillThread() {

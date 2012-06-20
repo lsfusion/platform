@@ -294,9 +294,11 @@ public class CashRegController {
         final int lengthCheck = 28;
         for (FormRow row : data.rows) {
 
-            Double quantity = (Double) row.values.get(quantityDraw);
+            Object quantity = row.values.get(quantityDraw);
 
             if (quantity != null) {
+                
+                Double doubleQuantity = (quantity instanceof Double ? (Double)quantity : 1.0);
 
                 Double price = BaseUtils.nvl((Double) row.values.get(priceDraw), 0.0);
                 String barcode = (BaseUtils.nvl((String) row.values.get(barcodeDraw), "")).trim();
@@ -305,11 +307,11 @@ public class CashRegController {
                 //artName = artName.replace('"', ' ');
                 //artName = artName.replace('\'', ' ');
                 Double sumPos = (Double) row.values.get(sumDraw);
-                Double sumFull = price * quantity;
+                Double sumFull = price * doubleQuantity;
 
                 int discount = ((Double) (sumFull - sumPos)).intValue();
                 totalDiscount += discount;
-                String priceString = quantity.intValue() + "x" + price.intValue() + (sumFull.equals(sumPos) ? "" : " ск. " + discount) + '=' + sumPos.intValue();
+                String priceString = doubleQuantity.intValue() + "x" + price.intValue() + (sumFull.equals(sumPos) ? "" : " ск. " + discount) + '=' + sumPos.intValue();
                 result += BaseUtils.padr(barcode, lengthCheck) + '\n' + BaseUtils.padr(artName, lengthCheck)
                         + '\n' + BaseUtils.padl(priceString, lengthCheck) + '\n';
             }

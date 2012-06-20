@@ -10,6 +10,7 @@ import platform.interop.PropertyEditType;
 import platform.interop.action.*;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.SQLSession;
@@ -916,7 +917,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
         userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
 
-        barcode = addDProp(recognizeGroup, "barcode", getString("logics.barcode"), StringClass.get(13), barcodeObject);
+        barcode = addDProp(recognizeGroup, "barcode", getString("logics.barcode"), StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
 
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", getString("logics.object"), barcode);
@@ -1864,7 +1865,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected UserEditFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.user.user"));
 
-            objUser = addSingleGroupObject(customUser, userFirstName, userLastName, userLogin, userPassword, email, nameUserMainRole);
+            objUser = addSingleGroupObject(customUser, userFirstName, userLastName, userLogin, userPassword, email, nameUserMainRole, barcode);
             objUser.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objRole = addSingleGroupObject(userRole, name, userRoleSID);

@@ -13,6 +13,7 @@ import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
@@ -1181,7 +1182,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP orderMaxCoupon = addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, is(orderSaleArticleRetail), 1);
 
         // сумма без сертификатов
-        LCP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(baseLM.and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(baseLM.percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1);
+        LCP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(baseLM.and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(roundSum, addJProp(baseLM.percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1), 1);
         LCP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(baseLM.and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         orderSalePayObligation = addSUProp(documentObligationGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
         sumWithDiscountObligationOrder = addJProp(documentObligationGroup, "sumWithDiscountObligationOrder", true, "Сумма к опл.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayObligation), 1);
@@ -1766,7 +1767,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             GroupObjectEntity gobjFindClient = new GroupObjectEntity(genID());
-            ObjectEntity barcodeClient = new ObjectEntity(genID(), StringClass.get(13), "Введите штрих код");
+            ObjectEntity barcodeClient = new ObjectEntity(genID(), StringClass.get(Settings.instance.getBarcodeLength()), "Введите штрих код");
             ObjectEntity nameClient = new ObjectEntity(genID(), StringClass.get(100), "Введите ФИО");
 
             gobjFindClient.add(barcodeClient);
@@ -1818,7 +1819,7 @@ public class VEDLogicsModule extends LogicsModule {
         private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
+            objBarcode = addSingleGroupObject(StringClass.get(Settings.instance.getBarcodeLength()), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
@@ -3617,7 +3618,7 @@ public class VEDLogicsModule extends LogicsModule {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{nameImplSubjectIncOrder, propsCustomerImplIncOrder,
-                    sumWithDiscountOrder, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, payWithCard};
+                    sumWithDiscountOrder, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, payWithCard, printOrderCheck};
         }
 
         @Override
@@ -3737,6 +3738,19 @@ public class VEDLogicsModule extends LogicsModule {
             }
         }
 
+        public ClientAction getPrintOrderAction(FormInstance<?> formInstance) {
+            if (toAdd) {
+
+                ObjectInstance art = formInstance.instanceFactory.getInstance(objObligation);
+
+                return VEDBL.cashRegController.getPrintOrderAction(formInstance,
+                        BaseUtils.toSet(art.groupTo),
+                        getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
+                        getPropertyDraw(baseLM.name, objObligation), getPropertyDraw(obligationSum, objObligation),
+                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objObligation));
+            } else
+                return null;
+        }
 
         @Override
         protected Font getDefaultFont() {
@@ -3756,7 +3770,10 @@ public class VEDLogicsModule extends LogicsModule {
             DefaultFormView design = super.createDefaultRichDesign();
 
             if (toAdd) {
-                design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(design.get(getPropertyDraw(payWithCard)));
+                design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(1, design.get(getPropertyDraw(printOrderCheck)));
+                design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(0, design.get(getPropertyDraw(payWithCard)));
+
+//                design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
                 design.get(getPropertyDraw(payWithCard)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
 
                 design.setHeaderFont(FONT_MEDIUM_PLAIN);
@@ -4098,7 +4115,7 @@ public class VEDLogicsModule extends LogicsModule {
         public CreateArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue);
+            objBarcode = addSingleGroupObject(StringClass.get(Settings.instance.getBarcodeLength()), "Штрих-код", baseLM.objectValue);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objArticle = addSingleGroupObject(article, "Товар", baseLM.name, articleToGroup, nameArticleGroupArticle);
@@ -4163,7 +4180,11 @@ public class VEDLogicsModule extends LogicsModule {
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             FormInstance<?> remoteForm = context.getFormInstance();
-            ClientAction printOrderAction = ((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm);
+            ClientAction printOrderAction;
+            if(remoteForm.entity instanceof CommitSaleCheckRetailFormEntity)
+                printOrderAction = ((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm);
+            else
+                printOrderAction = ((SaleCheckCertFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm);
             if(printOrderAction!=null)
                 context.delayUserInterfaction(printOrderAction);
         }
@@ -4281,7 +4302,7 @@ public class VEDLogicsModule extends LogicsModule {
             java.util.List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             java.util.List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
-            ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(StringClass.get(Settings.instance.getBarcodeLength())); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
             properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
