@@ -145,7 +145,7 @@ END
 META defineDocumentDetailActions (object)
     delete###object##Detail###object 'Очистить' = ACTION (object) {
         FOR object###object##Detail (detail) == object DO {
-          EXEC delete(detail AS object##Detail);
+            EXEC delete(detail AS object##Detail);
         };
     } IN documentPrmGroup TOOLBAR CONFIRM;
 END

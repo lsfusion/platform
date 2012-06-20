@@ -3,13 +3,10 @@ package platform.server.logics.property.actions;
 import platform.base.BaseUtils;
 import platform.server.classes.*;
 import platform.server.form.instance.CustomObjectInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class ChangeReadClassActionProperty extends CustomReadClassActionProperty {
 
@@ -19,7 +16,7 @@ public class ChangeReadClassActionProperty extends CustomReadClassActionProperty
 
     protected Read getReadClass(ExecutionContext context) {
         CustomObjectInstance object = (CustomObjectInstance) context.getSingleObjectInstance();
-        if(object==null)
+        if(object == null)
             return new Read((CustomClass) BaseUtils.single(interfaces).interfaceClass, true);
         else
             return new Read(object.baseClass, object.currentClass, true);

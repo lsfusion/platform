@@ -113,7 +113,7 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
         Map<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
-        return mapObjects != null ? BaseUtils.singleValue(mapObjects) : null;
+        return mapObjects != null && mapObjects.size() == 1 ? BaseUtils.singleValue(mapObjects) : null;
     }
 
     public boolean isGroupLast() {
