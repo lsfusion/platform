@@ -12,28 +12,24 @@ REQUIRE System,
         MasterData,
         RomanLogicsModule;
 
-PRIORITY Stock, RomanLogicsModule;
+PRIORITY RomanLogicsModule, Stock;
 
 // Приход на склад
-CLASS WHfromCS 'Приход на склад' : historyObject;
+CLASS WHfromCS 'Приход на склад' : historyObject, numberedObject;
 CLASS WHfromCSPosted 'Закрытый приход с СВХ' : WHfromCS, postedObject;
 
 CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferSkuLedger;
 
 CLASS inWarehouseScan 'Сканирование';
 
+//создание документа через метакод
+skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
+@defineRBCorrespondingDocument(WHfromCS, warehouse, 'Оптовый склад', sku, 'Расход с СВХ', customStore, 'СВХ');
 
-@defineDocumentBasePosted(WHfromCS);
-
-@defineDocumentStock(WHfromCS, warehouse, 'Оптовый склад');
-
-@defineDocumentDetailQuantity(WHfromCS);
-
-
+//задание связки расход-приход
 CStoWHWHfromCS 'Расход прихода (ИД)' = DATA CStoWHPosted(WHfromCS) IN idGroup;
 WHfromCSCStoWH (CStoWH) = GROUP UNIQUE WHfromCS BY CStoWHWHfromCS (WHfromCS);
-//CONSTRAINT CStoWHWHfromCS(p1) == CStoWHWHfromCS(p2) AND p1 != p2 CHECKED BY CStoWHWHfromCS MESSAGE 'Расход задействован в другом приходе';
-
+CONSTRAINT CStoWHWHfromCS(p1) == CStoWHWHfromCS(p2) AND p1 != p2 CHECKED BY CStoWHWHfromCS MESSAGE 'Расход задействован в другом приходе';
 
 numberCStoWHWHfromCS 'Номер' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
 seriesCStoWHWHfromCS 'Серия' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
@@ -41,11 +37,7 @@ seriesNumberWHfromCS 'Серия/Номер' (WHfromCS) = seriesNumberObject(CSt
 
 inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
 
-
-skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
-@defineDocumentDetailProps (WHfromCS);
-
-descriptionWHfromCSDetail 'Описание' (WHfromCSDetail) = DATA STRING[100](WHfromCSDetail);
+numberObject (WHfromCS) <- PREV (numberCStoWHWHfromCS (WHfromCS)) WHEN ASSIGNED (CStoWHWHfromCS(WHfromCS));
 
 quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
 quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
@@ -58,11 +50,6 @@ quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
 quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
 
 diffQuantityWHfromCSDetail (WHfromCSDetail) = quantityOriginWHfromCSDetail(WHfromCSDetail)!= quantityWHfromCSDetail(WHfromCSDetail);
-
-@implementSkuLedger (WHfromCS, sku, warehouse);
-
-currentBalanceDeclaration 'Остаток по декларации' (declaration) = GROUP SUM currentBalanceBatch(declarationDetail)
-    BY declarationDeclarationDetail (declarationDetail);
 
 toFillInWarehouseDetailsWHfromCS 'Заполнить приход по расходу' =  ACTION (WHfromCS) {
     FOR quantityDCStoWHSku (CStoWHWHfromCS(WHfromCS), sku) DO {
@@ -80,14 +67,56 @@ idBarcodeInWarehouseScan 'Штрих-код' = DATA STRING[13] (inWarehouseScan)
 WHfromCSInWarehouseScan 'Приход (ИД)' = DATA WHfromCS(inWarehouseScan) IN idGroup;
 skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
 
+//приемка по коробам
 
-@defineAddDetailDialogBarcode(WHfromCS, sku);
+currentFreightUnit 'Тек. короб (ИД)' = SESSION DATA freightUnit (WHfromCS);
+barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' = barcode(currentFreightUnit(WHfromCS));
+
+
+detailWHfromCSSku(WHfromCS, sku) = GROUP MAX detail BY WHfromCSWHfromCSDetail(detail), skuWHfromCSDetail(detail);
+addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCS) = ACTION (WHfromCS) {
+
+    FORM barcodeInput MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            LOCAL dialogBarcodeSku = sku();
+          //  LOCAL dialogBarcodeFreightUnit = freightUnit();
+
+            IF skuBarcodeIdDate(chosenString('barcode'), dateWHfromCS (WHfromCS)) IS sku THEN {
+
+                SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), dateWHfromCS (WHfromCS));
+
+                LOCAL dialogBarcodeDetail = WHfromCSDetail();
+                SET dialogBarcodeDetail() <- detailWHfromCSSku(WHfromCS, dialogBarcodeSku());
+                IF dialogBarcodeDetail() IS WHfromCSDetail THEN {
+                    SET quantityWHfromCSDetail(detail) IF detail == dialogBarcodeDetail() <-
+                        quantityWHfromCSDetail(detail) (+) (1.0 IF detail IS WHfromCSDetail);
+                } ELSE {
+                    ADDOBJ WHfromCSDetail;
+                    FOR w == addedObject() DO {
+                        SET WHfromCSWHfromCSDetail(w) <- WHfromCS AS WHfromCS;
+                        SET skuWHfromCSDetail(w) <- dialogBarcodeSku();
+                        SET quantityWHfromCSDetail(w) <- 1.0;
+                    }
+                }
+            } ELSE {
+
+            IF barcodeToObject(chosenString('barcode')) IS freightUnit THEN {
+                SET currentFreightUnit (WHfromCS) <- barcodeToObject(chosenString('barcode'));
+            } ELSE {
+
+            MESSAGE 'Не найден штрих-код'; }
+            }
+        }
+    } TOOLBAR EDITKEY 'F4';
+
+//@defineAddDetailDialogBarcode(WHfromCS, sku);
 
 FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL
-    PROPERTIES (w) numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-                   numberCStoWHWHfromCS, seriesCStoWHWHfromCS, toFillInWarehouseDetailsWHfromCS
+    PROPERTIES (w) numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
+                   toFillInWarehouseDetailsWHfromCS, barcodeCurrentFreightUnit
 
     OBJECTS d = WHfromCSDetail
     PROPERTIES (d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
@@ -96,7 +125,7 @@ FORM WHfromCS 'Приход на оптовый склад'
     PROPERTIES(d) quantityOriginWHfromCSDetail, quantityWHfromCSDetail
     PROPERTIES(d) ADDOBJ, delete
 
-    PROPERTIES(w) TODRAW d addDetailDialogBarcodeWHfromCSDetailWHfromCS
+   PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSDetailWHfromCS
 
     FILTERS inWHfromCSWHfromCSDetail(w, d)
 

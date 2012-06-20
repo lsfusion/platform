@@ -49,6 +49,7 @@ currentBalanceBDeclaration 'Текущий остаток по декларац�
     IF declarationDeclarationDetail(declarationDetail) == declaration BY declaration;
 
 isAvailableDeclarationCStoWH 'Декларация доступна для расхода' (declaration, CStoWH) =
+    declaration IS registeredDeclaration AND
     currentBalanceBDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH)>=dateTimeDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration);
