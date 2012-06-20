@@ -4084,10 +4084,11 @@ TABLE cashDocument (cashDocument);
 dateCashDocument 'Дата документа' = ABSTRACT DATE (cashDocument) IN documentHeaderGroup;
 timeCashDocument 'Время документа' = ABSTRACT TIME (cashDocument) IN documentHeaderGroup;
 dateTimeCashDocument 'Дата/время документа' = ABSTRACT DATETIME (cashDocument) IN documentHeaderGroup;
-numberCashDocument 'Номер' (incomeCashOrder) = ABSTRACT STRING[21] (cashDocument) IN documentPrmGroup;
-departmentStoreCashDocument (incomeCashOrder) = ABSTRACT departmentStore (cashDocument);
+numberCashDocument 'Номер' (cashDocument) = ABSTRACT STRING[21] (cashDocument) IN documentPrmGroup;
+departmentStoreCashDocument (cashDocument) = ABSTRACT departmentStore (cashDocument);
 nameDepartmentStoreCashDocument 'Подразделение' (cashDocument) =
     name(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
+nameCompanyCashDocument 'Компания' (cashDocument) = nameCompanyDepartmentStore(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
 basisCashDocument 'Основание' = ABSTRACT STRING[100] (cashDocument) IN documentPrmGroup;
 cashRegisterCashDocument = ABSTRACT cashRegister(cashDocument);
 numberCashRegisterCashDocument 'Касса' (cashDocument) = numberCashRegister(cashRegisterCashDocument(cashDocument)) IN documentPrmGroup;
@@ -4357,24 +4358,21 @@ sumOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumBillDetailZReport(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
 
-//---------------------------- Инкасация ----------------------------------------------------------------//
+//---------------------------- Инкассация ----------------------------------------------------------------//
 
-CLASS collection 'Инкасация' : outcomeCashOrder, historyObject, numeratedObject;
-//CLASS collectionPosted 'Закрытая инкасация' : collection, postedObject;
+CLASS collection 'Инкассация' : outcomeCashOrder, historyObject, numeratedObject;
 TABLE collection (collection);
 
-//@defineDocumentHeaderPosted(collection);
 @defineDocumentHeaderTime(collection);
 @defineDocumentHeaderDepartmentStore(collection);
 
-//numberCollection 'Номер' (collection) = DATA INTEGER (collection) IN documentPrmGroup;
 cashRegisterCollection (collection) = DATA cashRegister (collection);
-numberCashRegisterCollection 'Касса инкасации' (collection) = numberCashRegister(cashRegisterCollection(collection)) IN documentPrmGroup;
-sumCashCollection 'Сумма инкасации' = DATA NUMERIC[16,2] (collection) IN documentSumGroup;
+numberCashRegisterCollection 'Касса инкассации' (collection) = numberCashRegister(cashRegisterCollection(collection)) IN documentPrmGroup;
+sumCashCollection 'Сумма инкассации' = DATA NUMERIC[16,2] (collection) IN documentSumGroup;
 defaultNumeratorCollection = DATA numerator ();
-nameDefaultNumeratorCollection 'Нумератор инкасации' = name(defaultNumeratorCollection());
+nameDefaultNumeratorCollection 'Нумератор инкассации' = name(defaultNumeratorCollection());
 castBasisCollection =
-    FORMULA STRING[100] '\'Инкасация №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
+    FORMULA STRING[100] '\'Инкассация №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 basisCollection 'Основание' (collection) =
     castBasisCollection(seriesNumberObject(collection), numberCashRegisterCollection(collection), dateCollection(collection)) IN documentPrmGroup;
 
@@ -8467,16 +8465,16 @@ DESIGN bills FROM DEFAULT{
 FORM incomeCashOrderPrint 'ПКО' PRINT
 
     OBJECTS i = incomeCashOrder
-    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
-                           sumCashIncomeCashOrder, basisCashDocument
+    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameCompanyCashDocument,
+                           nameDepartmentStoreCashDocument, sumCashIncomeCashOrder, basisCashDocument
 
 ;
 
 FORM outcomeCashOrderPrint 'РКО' PRINT
 
     OBJECTS o = outcomeCashOrder
-    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
-                           sumCashOutcomeCashOrder, basisCashDocument
+    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameCompanyCashDocument,
+                           nameDepartmentStoreCashDocument, sumCashOutcomeCashOrder, basisCashDocument
 
 ;
 
@@ -8516,10 +8514,10 @@ printAllOutcomeCashOrder 'Распечатать все непечатанные
 
 } CONFIRM TOOLBAR;
 
-sumCashForCollection 'Сумма инкасации' = SESSION DATA NUMERIC[16,2] (cashRegister);
-CONSTRAINT curSumCashCashRegister(cashRegister) < 0 MESSAGE 'Сумма инкасации не должна превышасть суммы наличных в кассе';
+sumCashForCollection 'Сумма инкассации' = SESSION DATA NUMERIC[16,2] (cashRegister);
+CONSTRAINT curSumCashCashRegister(cashRegister) < 0 MESSAGE 'Сумма инкассации не должна превышасть суммы наличных в кассе';
 
-addCollection 'Провести инкасацию' = ACTION (cashRegister, departmentStore, dateTime)  {
+addCollection 'Провести инкассацию' = ACTION (cashRegister, departmentStore, dateTime)  {
     ADDOBJ collection;
     FOR c == addedObject() DO {
         SET cashRegisterCollection(c) <- (cashRegister AS cashRegister);
@@ -8530,19 +8528,20 @@ addCollection 'Провести инкасацию' = ACTION (cashRegister, depa
         SET numeratorObject(c) <- defaultNumeratorCollection();
         EXEC setValueNumeratedObject(c AS collection);
     }
-    EXEC apply();
 }
 
-addAllCollection 'Провести все инкасации' = ACTION (departmentStore, dateTime)  {
+addAllCollection 'Провести все инкассации' = ACTION (departmentStore, dateTime)  {
 
     FOR sumCashForCollection(cashRegister) AND
         departmentStoreCashRegister(cashRegister) == departmentStore DO {
         EXEC addCollection(cashRegister AS cashRegister, departmentStore AS departmentStore, dateTime AS DATETIME);
     }
 
+    EXEC apply();
+
 } CONFIRM TOOLBAR;
 
-FORM addCollection 'Инкасация'
+FORM addCollection 'Инкассация'
 
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
@@ -8554,7 +8553,6 @@ FORM addCollection 'Инкасация'
     PROPERTIES(c) READONLY numberCashRegister
     PROPERTIES(c, dt) READONLY sumCashCashRegisterDateTime
     PROPERTIES(c) sumCashForCollection
-    PROPERTIES(c, d, dt) addCollection
     PROPERTIES addAllCollection(d, dt) TODRAW c
 
     FILTERS departmentStoreCashRegister(c) == d
@@ -8578,7 +8576,7 @@ DESIGN addCollection FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM editCollection 'Инкасация'
+FORM editCollection 'Инкассация'
 
     OBJECTS c= collection FIXED PANEL
     PROPERTIES(c) seriesNumberObject, dateCollection, timeCollection, nameDepartmentStoreCollection,
@@ -8616,7 +8614,29 @@ DESIGN editCollection FROM DEFAULT {
     ADD functions.box;
 }
 
-addCollectionForm 'Инкасация' (departmentStore) = ACTION FORM addCollection OBJECTS d MODAL TOOLBAR;
+addCollectionForm 'Инкассация' (departmentStore) = ACTION (departmentStore) {
+
+    FORM addCollection OBJECTS d =(departmentStore AS departmentStore) MODAL;
+    IF formResult() == formResult.ok THEN {
+
+        FOR sumCashForCollection(cashRegister) AND
+            departmentStoreCashRegister(cashRegister) == departmentStore DO {
+            ADDOBJ collection;
+            FOR c == addedObject() DO {
+                SET cashRegisterCollection(c) <- (cashRegister AS cashRegister);
+                SET departmentStoreCollection(c) <- (departmentStore AS departmentStore);
+               // SET dateCollection(c) <- dateInTime(chosenDateTime('dt'));
+               // SET timeCollection(c) <- timeInDateTime(chosenDateTime('dt'));
+                SET sumCashCollection(c) <- sumCashForCollection(cashRegister AS cashRegister);
+                SET numeratorObject(c) <- defaultNumeratorCollection();
+                EXEC setValueNumeratedObject(c AS collection);
+            }
+        }
+
+        EXEC apply();
+    }
+
+} TOOLBAR;
 
 editCollectionForm 'Редактировать' (collection) = ACTION (collection) {
 
@@ -10033,7 +10053,6 @@ NAVIGATOR {
         NEW retailSale 'Розничные продажи'{
             ADD bills;
             ADD operationCashRegister;
-            ADD addCollection;
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
@@ -10158,6 +10177,7 @@ NAVIGATOR {
             ADD dialogCoefficientNetGrossItem;
             ADD incomeCashOrderPrint;
             ADD outcomeCashOrderPrint;
+            ADD addCollection;
             ADD editCollection;
         //    ADD addrateNaturalLossItem;
         //    ADD rateNaturalLossItem;
