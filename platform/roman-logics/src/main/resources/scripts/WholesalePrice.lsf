@@ -1,27 +1,11 @@
 MODULE WholesalePrice;
 
 REQUIRE System,
-        //Document,
-        //RomanDocument,
-        //Consignment,
         Declaration,
+        MasterData,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, RB;
-
-//NAMESPACE RB;
-
-inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
-inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
-
-inArticleCategory (category, article) = UNION OVERRIDE categoryArticle(article) == category,
-                                                       article == article AND NOT category;
-
-stringEqualsAll(string) = string == 'Все';
-
-inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierArticle(article) == brand AND supplier,
-                                                                  supplierArticle(article) == supplier AND NOT brand,
-                                                                  article == article AND NOT supplier AND NOT brand;
 
 CLASS wholesalePriceDocument 'Оптовый прайс' : transaction;
 
