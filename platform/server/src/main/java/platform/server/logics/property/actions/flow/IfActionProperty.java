@@ -78,9 +78,7 @@ public class IfActionProperty extends KeepContextActionProperty {
                ? falseType
                : falseType == null
                  ? trueType
-                 : trueType == falseType
-                   ? trueType
-                   : null;
+                 : trueType.getCompatible(falseType);
     }
 
     @Override

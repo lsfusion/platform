@@ -84,15 +84,20 @@ public class ConcatenateType extends AbstractType<byte[]> {
         throw new RuntimeException("not supported");
     }
 
-    public boolean isCompatible(Type type) {
-        if(!(type instanceof ConcatenateType)) return false;
-
+    @Override
+    public Type getCompatible(Type type) {
+        if(!(type instanceof ConcatenateType)) return null;
         ConcatenateType concatenate = (ConcatenateType)type;
         assert concatenate.types.length == types.length;
-        for(int i=0;i<types.length;i++)
-            if(!(types[i].isCompatible(concatenate.types[i])))
-                return false;
-        return true;
+
+        Type[] compatible = new Type[types.length];
+        for(int i=0;i<types.length;i++) {
+            Type compType = types[i].getCompatible(concatenate.types[i]);
+            if(compType == null)
+                return null;
+            compatible[i] = compType;
+        }
+        return new ConcatenateType(compatible);
     }
 
     private ConcreteClass createConcrete(ConcreteClass[] classes) {

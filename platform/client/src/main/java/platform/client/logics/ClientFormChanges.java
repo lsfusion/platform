@@ -14,8 +14,6 @@ import java.util.*;
 
 public class ClientFormChanges {
 
-    public Boolean dataChanged;
-
     public String message;
 
     public final Map<ClientGroupObject, ClassViewType> classViews;
@@ -80,7 +78,6 @@ public class ClientFormChanges {
         }
 
         message = inStream.readUTF();
-        dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);
     }
 
     private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {

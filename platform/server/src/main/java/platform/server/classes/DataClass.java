@@ -61,8 +61,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return remoteClass instanceof DataClass && getCompatible((DataClass) remoteClass) == this;
     }
 
-    public boolean isCompatible(Type type) {
-        return type instanceof DataClass && getCompatible((DataClass) type) != null;
+    public Type getCompatible(Type type) {
+        if(!(type instanceof DataClass))
+            return null;
+
+        return getCompatible((DataClass) type);
     }
 
     public DataClass getUpSet() {

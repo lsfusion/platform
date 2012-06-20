@@ -32,7 +32,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
         public boolean compatible(And<K> and) {
             for(int i=0;i<size;i++)
-                if(!getValue(i).getType().isCompatible(and.get(getKey(i)).getType()))
+                if(getValue(i).getType().getCompatible(and.get(getKey(i)).getType())==null)
                     return false;
             return true;
         }

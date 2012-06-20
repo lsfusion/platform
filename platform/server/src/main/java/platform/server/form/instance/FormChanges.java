@@ -16,8 +16,6 @@ import static platform.base.BaseUtils.serializeObject;
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
 
-    Boolean dataChanged = null;
-
     public String message = "";
 
     public Map<GroupObjectInstance, ClassViewType> classViews = new HashMap<GroupObjectInstance, ClassViewType>();
@@ -121,8 +119,6 @@ public class FormChanges {
         }
 
         outStream.writeUTF(message);
-
-        serializeObject(outStream, dataChanged);
     }
 
     private void serializeGroupObjectValue(DataOutputStream outStream, Map<ObjectInstance,? extends ObjectValue> values) throws IOException {

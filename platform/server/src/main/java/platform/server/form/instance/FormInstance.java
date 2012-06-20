@@ -912,9 +912,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
         Context.context.get().delayUserInteraction(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
-        if (isModal) {
-            Context.context.get().delayUserInteraction(new HideFormClientAction());
-        }
         return true;
     }
 
@@ -1197,9 +1194,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
 
         for (Entry<Set<GroupObjectInstance>, Set<PropertyReaderInstance>> entry : BaseUtils.groupSet(getChangedDrawProps(result, changedProps)).entrySet())
             updateDrawProps(result, entry.getKey(), entry.getValue());
-
-        if (dataChanged)
-            result.dataChanged = session.hasStoredChanges();
 
         // сбрасываем все пометки
         for (GroupObjectInstance group : groups) {
@@ -1578,11 +1572,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
     }
 
     public void formCancel() throws SQLException {
-        if (session.hasStoredChanges()) {
-            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
-            if (result == JOptionPane.YES_OPTION) {
-                cancel();
-            }
+        int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
+        if (result == JOptionPane.YES_OPTION) {
+            cancel();
         }
     }
 

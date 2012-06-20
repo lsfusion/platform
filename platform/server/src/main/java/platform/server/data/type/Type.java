@@ -38,7 +38,7 @@ public interface Type<T> extends ClassReader<T> {
     int getMaximumWidth();
     boolean fillReportDrawField(ReportDrawField reportField);
 
-    boolean isCompatible(Type type);
+    Type getCompatible(Type type);
 
     ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException;
 

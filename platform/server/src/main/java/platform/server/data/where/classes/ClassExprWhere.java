@@ -68,7 +68,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     
     public boolean checkType(KeyExpr keyExpr,Type type) {
         for(int i=1;i<wheres.length;i++)
-            assert type.isCompatible(wheres[0].get(keyExpr).getType());
+            assert type.getCompatible(wheres[0].get(keyExpr).getType())!=null;
         return true;
     }
 

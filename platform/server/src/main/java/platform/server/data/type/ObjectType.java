@@ -26,8 +26,11 @@ public class ObjectType extends AbstractType<Integer> {
         super();
     }
 
-    public boolean isCompatible(Type type) {
-        return type instanceof ObjectType;
+    @Override
+    public Type getCompatible(Type type) {
+        if(type instanceof ObjectType)
+            return this;
+        return null;
     }
 
     public static final ObjectType instance = new ObjectType();

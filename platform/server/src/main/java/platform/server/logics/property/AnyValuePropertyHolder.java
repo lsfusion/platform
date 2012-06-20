@@ -32,7 +32,7 @@ public class AnyValuePropertyHolder {
                                   LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && textProperty.property.getType() == TextClass.instance
-                && stringProperty.property.getType().isCompatible(StringClass.get(0))
+                && stringProperty.property.getType().getCompatible(StringClass.get(0))!=null
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
                 && doubleProperty.property.getType() == DoubleClass.instance

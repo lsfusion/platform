@@ -65,7 +65,8 @@ public class ListActionProperty extends KeepContextActionProperty {
                 if (type == null) {
                     type = actionRequestType;
                 } else {
-                    if (type != null && type != actionRequestType) {
+                    type = type.getCompatible(actionRequestType);
+                    if (type == null) {
                         return null;
                     }
                 }

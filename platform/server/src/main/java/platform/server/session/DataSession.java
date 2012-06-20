@@ -418,7 +418,7 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
     public static final SessionDataProperty isDataChanged = new SessionDataProperty("isDataChanged", "Is data changed", LogicalClass.instance);
     private void aspectChange(boolean hadStoredChanges) throws SQLException {
-        if(!hadStoredChanges) {
+        if(!hadStoredChanges && hasStoredChanges()) {
             StructChanges updateChanges = getFilterChanges(isDataChanged);
             updateSessionEvents(updateChanges, true);
 
