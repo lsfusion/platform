@@ -217,7 +217,14 @@ customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declaration
 sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
 
 // сертификация
-certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
+certificatedCategoryDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
+certificatedDataDeclarationDetail 'Необходимость сертификации' = DATA BOOLEAN(declarationDetail);
+
+certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = UNION OVERRIDE certificatedCategoryDeclarationDetail(declarationDetail),
+                                                                                                certificatedDataDeclarationDetail(declarationDetail);
+
+certificatedDeclarationSku 'Необходимость сертификации' (declaration, sku) = certificatedDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
+
 
 quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' = DATA INTEGER(declarationDetail);
 quantityCertificatedDeclarationFreightUnitSku 'Кол-во для экспертизы' = DATA NUMERIC[14,3] (declaration, freightUnit, sku);
@@ -568,8 +575,8 @@ FORM declaration 'Декларация'
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                     quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
-                    rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
-                    certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
+                    rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail
+    PROPERTIES (dd) certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 
@@ -602,7 +609,7 @@ FORM declaration 'Декларация'
     PROPERTIES (f, s) quantityFreightUnitSku
     PROPERTIES (d, f, s) quantityCertificatedDeclarationFreightUnitSku
 
-    FILTERS inFreightUnitDeclaration(f, d), quantityDeclarationSku(d, s), quantityFreightUnitSku(f, s)
+    FILTERS inFreightUnitDeclaration(f, d), certificatedDeclarationSku(d, s), quantityFreightUnitSku(f, s)
 
     EDIT declaration OBJECT d
 ;
@@ -611,39 +618,38 @@ FORM declaration 'Декларация'
 DESIGN declaration FROM DEFAULT{
     main {
          d.panel {
-            childConstraints = TO THE RIGHTBOTTOM;
+            childConstraints = TO THE BOTTOM;
          }
 
-        POSITION d.box TO THE LEFT c.box;
+         c.grid {
+            fillHorizontal = 0.6;
+         }
+         POSITION d.box TO THE LEFT c.box;
 
-        c.grid {
-            fillHorizontal = 0.5;
-        }
+         NEW primary.box {
+             type = TABBED;
+             //fillVertical = 1.0;
+             //fillHorizontal = 1.0;
+             NEW general.box {
+                 title = 'Основные данные';
+                 fillVertical = 1.0;
+                 fillHorizontal = 1.0;
+                 ADD dd.box;
+                 ADD gd.box;
+                 ADD ii2.box;
 
-        NEW primary.box {
-            type = TABBED;
-            fillVertical = 1.0;
-            fillHorizontal = 1.0;
-            NEW general.box {
-                title = 'Основные данные';
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-                ADD dd.box;
-                ADD gd.box;
-                ADD ii2.box;
+                 POSITION gd.box TO THE LEFT ii2.box;
+             }
 
-                POSITION gd.box TO THE LEFT ii2.box;
-            }
+             NEW certification.box {
+                 title = 'Сертификация';
+                 fillVertical = 1.0;
+                 fillHorizontal = 1.0;
+                 ADD sf.box;
+             }
+         }
 
-            NEW certification.box {
-                title = 'Сертификация';
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-                ADD sf.box;
-            }
-        }
-
-
+         ADD functions.box;
     }
 };
 
