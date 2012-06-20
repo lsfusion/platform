@@ -9739,6 +9739,33 @@ fillLossItemGroupDefaultValues 'Заполнить группы естестве
 // todo: переделать ньюмерик на что-нибудь другое, т.к. не записывает.
 
 
+addTerminalDocumentType 'Добавить тип документа ТСД' = ACTION (nameString, gtdt, handbook1String, handbook2String) {
+    ADDOBJ terminalDocumentType;
+    FOR tdt == addedObject() DO {
+        SET nameTerminalDocumentType(tdt) <- nameString AS STRING[110];
+        SET groupTerminalDocumentTypeTerminalDocumentType(tdt) <- gtdt AS groupTerminalDocumentType;
+        SET terminalHandbookType1TerminalDocumentType(tdt) <- terminalHandbookTypeID(handbook1String);
+        SET terminalHandbookType2TerminalDocumentType(tdt) <- terminalHandbookTypeID(handbook2String);
+    }
+}
+
+addTerminalHandbookType 'Добавить вид справочника ТСД' = ACTION (handbookTypeName, idString) {
+    SET idTerminalHandbookType(x) IF x==handbookTypeName <-idString AS STRING[110];
+}
+
+fillDocumentTypeDefaultValues 'Заполнить типы документов ТСД по умолчанию' = ACTION () {
+    EXEC addTerminalHandbookType(terminalHandbookType.supplier, 'supplier');
+    EXEC addTerminalHandbookType(terminalHandbookType.customer, 'customer');
+
+    ADDOBJ groupTerminalDocumentType;
+    FOR gtdt ==addedObject() DO {
+        SET nameGroupTerminalDocumentType(gtdt) <- 'Группа типов документов по умолчанию';
+        EXEC addTerminalDocumentType('Инвентаризация', gtdt, 'supplier', 'customer');
+        EXEC addTerminalDocumentType('Приход', gtdt, 'customer', 'supplier');
+        EXEC addTerminalDocumentType('Отгрузка по безналичному расчёту', gtdt, 'supplier', 'customer');
+    }
+}
+
 addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
     ADDOBJ cashRegisterModel;
     FOR crm == addedObject() DO {
@@ -9771,7 +9798,6 @@ addTerminalModel 'Добавить модель терминала' = ACTION (st
     }
 }
 
-
 fillMachineryModelDefaultValues 'Заполнить значения моделей оборудования по умолчанию' = ACTION () {
     EXEC addCashRegisterModel('Кассы EasyCSV', 'EasyCSVHandler');
     EXEC addCashRegisterModel('Кассы Kristal', 'KristalHandler');
@@ -9785,21 +9811,87 @@ fillMachineryModelDefaultValues 'Заполнить значения модел�
     EXEC addTerminalModel('ТСД EasyCSV', 'EasyCSVHandler');
 }
 
-fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, numCashReg) {
+fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, model, num) {
     ADDOBJ groupCashRegister;
-    FOR gcr == addedObject() DO {
-        SET departmentStoreGroupCashRegister(gcr) <- stock AS stock;
-        SET equipmentServerGroupMachinery(gcr) <- equipmentServer AS equipmentServer;
-        SET nameGroupMachinery(gcr) <- 'Группа касс по умолчанию' AS STRING[110];
+    FOR g == addedObject() DO {
+        SET stockGroupMachinery(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа касс по умолчанию' AS STRING[110];
 
         LOCAL numCashRegister = INTEGER();
         SET numCashRegister() <- 0;
-        WHILE numCashRegister() < (numCashReg AS INTEGER) DO {
+        WHILE numCashRegister() < (num AS INTEGER) DO {
             ADDOBJ cashRegister;
             FOR c == addedObject() DO {
-                SET groupCashRegisterCashRegister(c) <- gcr AS groupCashRegister;
+                SET groupMachineryMachinery(c) <- g AS groupCashRegister;
                 SET numCashRegister() <- numCashRegister() + 1;
                 SET nppMachinery(c) <- numCashRegister();
+                SET modelMachinery(c) <- model AS model;
+            }
+        }
+    }
+}
+
+fillScalesDefaultValues 'Заполнить значения весов по умолчанию' = ACTION(equipmentServer, stock, model, num) {
+    ADDOBJ groupScales;
+    FOR g == addedObject() DO {
+        SET stockGroupMachinery(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа весов по умолчанию' AS STRING[110];
+
+        LOCAL numScales = INTEGER();
+        SET numScales() <- 0;
+        WHILE numScales() < (num AS INTEGER) DO {
+            ADDOBJ scales;
+            FOR s == addedObject() DO {
+                SET groupMachineryMachinery(s) <- g AS groupScales;
+                SET numScales() <- numScales() + 1;
+                SET nppMachinery(s) <- numScales();
+                SET modelMachinery(s) <- model AS model;
+            }
+        }
+    }
+}
+
+fillPriceCheckerDefaultValues 'Заполнить значения прайс-чекеров по умолчанию' = ACTION(equipmentServer, stock, model, num) {
+
+    ADDOBJ groupPriceChecker;
+    FOR g == addedObject() DO {
+        SET stockGroupMachinery(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа прайс-чекеров по умолчанию' AS STRING[110];
+
+        LOCAL numPriceChecker = INTEGER();
+        SET numPriceChecker() <- 0;
+        WHILE numPriceChecker() < (num AS INTEGER) DO {
+            ADDOBJ priceChecker;
+            FOR pc == addedObject() DO {
+                SET groupMachineryMachinery(pc) <- g AS groupPriceChecker;
+                SET numPriceChecker() <- numPriceChecker() + 1;
+                SET nppMachinery(pc) <- numPriceChecker();
+                SET modelMachinery(pc) <- model AS model;
+            }
+        }
+    }
+}
+
+fillTerminalDefaultValues 'Заполнить значения ТСД по умолчанию' = ACTION(equipmentServer, stock, model, gtdt, num) {
+    ADDOBJ groupTerminal;
+    FOR g == addedObject() DO {
+        SET stockGroupMachinery(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа ТСД по умолчанию' AS STRING[110];
+        SET groupTerminalDocumentTypeGroupTerminal(g) <- gtdt AS groupTerminalDocumentType;
+
+        LOCAL numTerminal = INTEGER();
+        SET numTerminal() <- 0;
+        WHILE numTerminal() < (num AS INTEGER) DO {
+            ADDOBJ terminal;
+            FOR t == addedObject() DO {
+                SET groupMachineryMachinery(t) <- g AS groupTerminal;
+                SET numTerminal() <- numTerminal() + 1;
+                SET nppMachinery(t) <- numTerminal();
+                SET modelMachinery(t) <- model AS model;
             }
         }
     }
@@ -9816,7 +9908,8 @@ FORM parameters 'Параметры'
 FORM fillDataBase 'Заполнение БД'
 
     PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                    fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues
+                    fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
+                    fillDocumentTypeDefaultValues
 
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
@@ -9824,10 +9917,37 @@ FORM fillDataBase 'Заполнение БД'
     OBJECTS         s=stock FIXED PANEL
     PROPERTIES(s)   SELECTOR name
 
-    OBJECTS         c=INTEGER FIXED PANEL
-    PROPERTIES(c)   intValue = OBJVALUE
+    OBJECTS         gtdt=groupTerminalDocumentType FIXED PANEL
+    PROPERTIES(gtdt)   SELECTOR nameGroupTerminalDocumentType
 
-    PROPERTIES (es, s, c) fillCashRegisterDefaultValues
+    OBJECTS         crm=cashRegisterModel FIXED PANEL
+    PROPERTIES(crm) SELECTOR name
+
+    OBJECTS         sm=scalesModel FIXED PANEL
+    PROPERTIES(sm)  SELECTOR name
+
+    OBJECTS         pcm=priceCheckerModel FIXED PANEL
+    PROPERTIES(pcm)  SELECTOR name
+
+    OBJECTS         tm=terminalModel FIXED PANEL
+    PROPERTIES(tm)  SELECTOR name
+
+    OBJECTS         cCashReg=INTEGER FIXED PANEL
+    PROPERTIES(cCashReg)   intValueCashRegister = OBJVALUE
+
+    OBJECTS         cScales=INTEGER FIXED PANEL
+    PROPERTIES(cScales)   intValueScales = OBJVALUE
+
+    OBJECTS         cPriceChecker=INTEGER FIXED PANEL
+    PROPERTIES(cPriceChecker)   intValuePriceChecker = OBJVALUE
+
+    OBJECTS         cTerminal=INTEGER FIXED PANEL
+    PROPERTIES(cTerminal)   intValueTerminal = OBJVALUE
+
+    PROPERTIES (es, s, crm, cCashReg) fillCashRegisterDefaultValues
+    PROPERTIES (es, s, sm, cScales)  fillScalesDefaultValues
+    PROPERTIES (es, s, pcm, cPriceChecker)  fillPriceCheckerDefaultValues
+    PROPERTIES (es, s, tm, gtdt, cTerminal)  fillTerminalDefaultValues
 
     PROPERTIES()    generateZReport, averageZReportCountGenerateZReport, averageBillCountGenerateZReport, averageBillDetailCountGenerateZReport,
                     dateFromGenerateZReport, dateToGenerateZReport
@@ -9835,14 +9955,38 @@ FORM fillDataBase 'Заполнение БД'
 
 DESIGN fillDataBase FROM DEFAULT {
     main{
-        PROPERTY(intValue) {
+        PROPERTY(intValueCashRegister) {
             caption = 'Количество касс';
+        }
+        PROPERTY(intValueScales) {
+            caption = 'Количество весов';
+        }
+        PROPERTY(intValuePriceChecker) {
+            caption = 'Количество прайс-чекеров';
+        }
+        PROPERTY(intValueTerminal) {
+            caption = 'Количество ТСД';
         }
         PROPERTY(name(es)) {
             caption = 'Сервер оборудования';
         }
         PROPERTY(name(s)) {
             caption = 'Склад';
+        }
+        PROPERTY(name(crm)) {
+            caption = 'Модель касс';
+        }
+        PROPERTY(name(sm)) {
+            caption = 'Модель весов';
+        }
+        PROPERTY(name(pcm)) {
+            caption = 'Модель прайс-чекеров';
+        }
+        PROPERTY(name(tm)) {
+            caption = 'Модель ТСД';
+        }
+        PROPERTY(nameGroupTerminalDocumentType(gtdt)) {
+            caption = 'Группа типов документов';
         }
 
         NEW mainContainer BEFORE functions.box {
@@ -9854,15 +9998,40 @@ DESIGN fillDataBase FROM DEFAULT {
             ADD PROPERTY(fillCurrencyDefaultValues());
             ADD PROPERTY(fillStatisticGroupDefaultValues());
             ADD PROPERTY(fillLossItemGroupDefaultValues());
-            ADD PROPERTY(fillMachineryModelDefaultValues());
 
-            NEW containerFillEquipmentServer {
-                title = 'Заполнение касс по умолчанию';
+            NEW containerFillMachinery {
+                title = 'Заполнение оборудования по умолчанию';
                 childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(fillMachineryModelDefaultValues());
                 ADD PROPERTY(name(es));
                 ADD PROPERTY(name(s));
-                ADD PROPERTY(intValue);
-                ADD PROPERTY(fillCashRegisterDefaultValues);
+
+                NEW containerCashRegister {
+                    title = 'Кассы';
+                    ADD PROPERTY(name(crm));
+                    ADD PROPERTY(intValueCashRegister);
+                    ADD PROPERTY(fillCashRegisterDefaultValues);
+                }
+                NEW containerScales {
+                    title = 'Весы';
+                    ADD PROPERTY(name(sm));
+                    ADD PROPERTY(intValueScales);
+                    ADD PROPERTY(fillScalesDefaultValues);
+                }
+                NEW containerPriceChecker {
+                    title = 'Прайс-чекеры';
+                    ADD PROPERTY(name(pcm));
+                    ADD PROPERTY(intValuePriceChecker);
+                    ADD PROPERTY(fillPriceCheckerDefaultValues);
+                }
+                NEW containerTerminal {
+                    title = 'ТСД';
+                    ADD PROPERTY(fillDocumentTypeDefaultValues);
+                    ADD PROPERTY(nameGroupTerminalDocumentType(gtdt));
+                    ADD PROPERTY(name(tm));
+                    ADD PROPERTY(intValueTerminal);
+                    ADD PROPERTY(fillTerminalDefaultValues);
+                }
             }
 
             NEW containerZReport {
@@ -9870,7 +10039,7 @@ DESIGN fillDataBase FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(averageZReportCountGenerateZReport());
                 ADD PROPERTY(averageBillCountGenerateZReport());
-                ADD PROPERTY( averageBillDetailCountGenerateZReport());
+                ADD PROPERTY(averageBillDetailCountGenerateZReport());
                 ADD PROPERTY(dateFromGenerateZReport());
                 ADD PROPERTY(dateToGenerateZReport());
                 ADD PROPERTY(generateZReport());
