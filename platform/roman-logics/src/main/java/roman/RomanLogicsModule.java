@@ -1299,9 +1299,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         destination = addAbstractClass("destination", "Пункт назначения", baseClass);
 
-        store = addConcreteClass("store", "Магазин", destination, baseClass.named);
+        store = addConcreteClass("store", "Магазин", destination, (CustomClass) BL.Store.getClassByName("store"));//  baseClass.named
 
-        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("sku")); //
+        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("sku"));
 
         article = addAbstractClass("article", "Артикул", baseClass);
         articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);

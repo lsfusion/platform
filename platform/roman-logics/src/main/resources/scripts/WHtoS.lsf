@@ -27,7 +27,7 @@ nameSkuWHtoSDetail 'Наименование товара' (WHtoSDetail) = nameS
 nameImporterWHtoS 'Компания' (WHtoS) = name(importerWarehouse(warehouseWHtoS(WHtoS)));
 
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSDetail (ledger);
-descriptionSkuLedger (ledger) += descriptionWHtoS (ledger);
+//descriptionSkuLedger (ledger) += descriptionWHtoSDetail (ledger);
 
 UOMWHtoSDetail 'Единица измерения (ИД)' (WHtoSDetail) = DATA UOM (WHtoSDetail) IN idGroup;
 shortNameUOMWHtoSDetail 'Единица измерения' (WHtoSDetail) = shortName(UOMWHtoSDetail(WHtoSDetail));
@@ -72,6 +72,10 @@ packQuantityWHtoSDetail 'Количество грузовых мест' (WHtoSD
 packQuantityWHtoSDetailWHtoS 'Общее количество грузовых мест' (WHtoS) = GROUP SUM packQuantityWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
 
 balanceBSkuWHtoSDetail 'Остаток до' (WHtoSDetail) = balanceBSkuStockDateTime(skuWHtoSDetail(WHtoSDetail), warehouseWHtoSDetail(WHtoSDetail), dateTimeWHtoSDetail(WHtoSDetail));
+
+
+quantityWHtoSSku (WHtoS, sku) = GROUP SUM quantityWHtoSDetail(WHtoSDetail)
+                                          BY WHtoSWHtoSDetail(WHtoSDetail), skuWHtoSDetail(WHtoSDetail);
 
 @defineAddDetailDialogBarcode(WHtoS, sku);
 
@@ -215,6 +219,14 @@ DESIGN WHtoSs FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+FORM WHtoSsDialog 'Расход на магазин'
+    OBJECTS w = WHtoS
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
+                   countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumSupplierVATWHtoSDetailWHtoS,
+                   sumInvoiceWHtoSDetailWHtoS
+    DIALOG WHtoS OBJECT w
+;
 
 @defineConsignment(WHtoS);
 @implementConsignmentHeader(WHtoS, warehouse);

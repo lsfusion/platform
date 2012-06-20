@@ -13,15 +13,68 @@ REQUIRE System,
         CStoWH,
         WHfromCS,
         WHtoS,
+        SfromWH,
         WholesalePrice,
         RetailPrice,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
 
+EXTEND FORM stores
+
+    PROPERTIES(s) READONLY sidDestination FORCE GRID
+
+    OBJECTS su=supplier
+    PROPERTIES(su)    READONLY name
+    PROPERTIES(s, su) READONLY sidDestinationSupplier, relationStoreSupplier
+    FILTERGROUP filtersDocument
+        FILTER 'Связь маг./пост.' 'F11' relationStoreSupplier(s, su) DEFAULT
+;
+
+EXTEND DESIGN stores {
+    main {
+        preferredSize = (1024, 768);
+
+        firstCase {
+            NEW supDep {
+                type = TABBED;
+                ADD d.box;
+                ADD su.box;
+            }
+        }
+    }
+}
+
+EXTEND FORM store
+
+    PROPERTIES(s) sidDestination
+
+    OBJECTS su=supplier
+    PROPERTIES(su)    READONLY name
+    PROPERTIES(s, su) sidDestinationSupplier, relationStoreSupplier
+    FILTERGROUP filtersDocument
+        FILTER 'Связь маг./пост.' 'F11' relationStoreSupplier(s, su) DEFAULT
+;
+
+DESIGN store FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+        ADD s.box {
+            childConstraints = TO THE RIGHTBOTTOM;
+        }
+        NEW row1 {
+            childConstraints = TO THE RIGHT;
+            ADD d.box;
+            ADD su.box;
+        }
+        ADD functions.box;
+    }
+}
 
 NAVIGATOR {
     classifier {
+        ADD stores;
         ADD UOM;
         ADD taxes;
         ADD banks;
@@ -69,6 +122,7 @@ NAVIGATOR {
     baseElement {
         NEW merchandising 'Товародвижение' TO leftToolbar {
             ADD WHtoSs;
+            ADD SfromWHs;
         }
     }
 
@@ -152,12 +206,14 @@ NAVIGATOR {
         ADD dialogFormContract;
         ADD addDelayContract;
         ADD dialogDelayContract;
+        ADD WHtoSsDialog;
         ADD numerator;
         ADD dialogDate;
         ADD dialogSku;
-        ADD stores;
+        ADD storeForm;
         ADD suppliers;
         ADD contracts;
         ADD wholesalePriceDocument;
+        ADD SfromWH;
     }
 }

@@ -1,0 +1,228 @@
+//Store from WareHouse
+MODULE SfromWH;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        Declaration,
+        MasterData,
+        RomanLogicsModule,
+        WHtoS;
+
+PRIORITY RomanLogicsModule, Stock;
+
+CLASS SfromWH 'Приход на магазин' : historyObject, numberedObject;
+CLASS SfromWHDetail 'Строка прихода на магазин' : inTransferSkuLedger;
+CLASS SfromWHPosted 'Закрытый приход на магазин' : SfromWH, postedObject;
+
+@defineDocumentBasePosted(SfromWH);
+@defineDocumentStock(SfromWH, departmentStore, 'Отдел документа');
+
+WHtoSSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSPosted(SfromWH) IN idGroup;
+SfromWHWHtoS (WHtoS) = GROUP UNIQUE SfromWH BY WHtoSSfromWH (SfromWH);
+
+numberSfromWH 'Номер' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH)) IN documentHeaderGroup PERSISTENT;
+seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSSfromWH(SfromWH)) IN baseGroup PERSISTENT;
+seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSSfromWH(SfromWH)) PERSISTENT;
+warehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoS(WHtoSSfromWH(SfromWH));
+nameWarehouseSfromWH 'Оптовый склад' (SfromWH) = name(warehouseSfromWH(SfromWH));
+nameImporterSfromWH 'Поставщик' (SfromWH) = name(importerWarehouse(warehouseSfromWH(SfromWH)));
+
+storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
+nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
+
+
+CONSTRAINT storeSfromWH(SfromWH) != storeWHtoS(WHtoSSfromWH(SfromWH))
+    CHECKED  MESSAGE 'ошибка: Магазин из расхода должен совпадать с магазином из прихода'; //BY storeSfromWH
+
+@defineDocumentDetailQuantity(SfromWH); // к-во детайл
+@defineDocumentHeaderQuantity(SfromWH); // к-во всего
+
+descriptionSfromWH 'Название документа' (SfromWH) =
+    [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
+    'Приход на магазин', seriesNumberSfromWH(SfromWH), dateSfromWH(SfromWH));
+
+inWHtoSSfromWH (SfromWH, WHtoS) = WHtoSSfromWH(SfromWH) == WHtoS;
+
+skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) IN idGroup;
+@defineDocumentDetailProps (SfromWH);  // ш-к, цвет, бренд, и т.д.
+
+descriptionSfromWHDetail 'Название документа' (SfromWHDetail) = descriptionSfromWH(SfromWHSfromWHDetail(SfromWHDetail));
+
+quantitySfromWHSku (SfromWH, sku) = GROUP SUM quantitySfromWHDetail(SfromWHDetail)
+                                          BY SfromWHSfromWHDetail(SfromWHDetail), skuSfromWHDetail(SfromWHDetail);
+
+quantityOriginSfromWHDetail 'Кол-во плановое' (SfromWHDetail) = DATA NUMERIC[14,2](SfromWHDetail) IN baseGroup;    // todo: поставить на дерайв
+
+diffQuantitySfromWHDetail (SfromWHDetail) = quantityOriginSfromWHDetail(SfromWHDetail)!= quantitySfromWHDetail(SfromWHDetail);
+
+quantityOriginSfromWHDetail(SfromWHDetail) <- quantityWHtoSSku(WHtoSSfromWH(SfromWHSfromWHDetail(SfromWHDetail)), skuSfromWHDetail(SfromWHDetail))
+    WHEN CHANGED (skuSfromWHDetail(SfromWHDetail));
+
+
+@defineAddDetailDialogSkuStock(SfromWH, sku, warehouse, dialogSku);
+
+@implementSkuLedger (SfromWH, sku, departmentStore);
+
+nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = nameSku(skuSfromWHDetail(SfromWHDetail));
+
+quantityInAutoSkuLedger (ledger) += quantitySfromWHDetail (ledger);
+
+UOMSfromWHDetail 'Единица измерения (ИД)' (SfromWHDetail) = DATA UOM (SfromWHDetail) IN idGroup;
+shortNameUOMSfromWHDetail 'Единица измерения' (SfromWHDetail) = shortName(UOMSfromWHDetail(SfromWHDetail));
+
+importerPriceSfromWHDetail 'Цена без НДС (ед.)' (SfromWHDetail) = DATA NUMERIC[14,3] (SfromWHDetail);
+
+importerSumSfromWHDetail 'Стоимость без НДС' (SfromWHDetail) = importerPriceSfromWHDetail(SfromWHDetail) * quantitySfromWHDetail(SfromWHDetail);
+
+importerSumSfromWHDetailSfromWH 'Стоимость без НДС' (SfromWH)= GROUP SUM importerSumSfromWHDetail(SfromWHDetail) BY SfromWHSfromWHDetail(SfromWHDetail) IN documentSumGroup;
+
+
+supplierVATSfromWHDetail(SfromWHDetail) = DATA range (SfromWHDetail);
+numberSupplierVATSfromWHDetail 'НДС, номер' (SfromWHDetail) = numberRange(supplierVATSfromWHDetail(SfromWHDetail));
+valueSupplierVATSfromWHDetail 'НДС, %' (SfromWHDetail) = valueRateRangeDate
+    (supplierVATSfromWHDetail(SfromWHDetail), dateSfromWHDetail(SfromWHDetail));
+
+CONSTRAINT taxRange(supplierVATSfromWHDetail(SfromWHDetail)) != tax.taxVAT CHECKED BY supplierVATSfromWHDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+sumSupplierVATSfromWHDetail 'Сумма НДС' (SfromWHDetail) = [X*Y/100](
+    importerSumSfromWHDetail(SfromWHDetail), valueSupplierVATSfromWHDetail(SfromWHDetail));
+
+sumSupplierVATSfromWHDetailSfromWH 'Сумма НДС' (SfromWH) = GROUP SUM sumSupplierVATSfromWHDetail(SfromWHDetail) BY SfromWHSfromWHDetail(SfromWHDetail) IN documentSumGroup;
+
+sumInvoiceSfromWHDetail 'Стоимость с НДС' (SfromWHDetail) = importerSumSfromWHDetail(SfromWHDetail) (+) sumSupplierVATSfromWHDetail(SfromWHDetail);
+
+sumInvoiceSfromWHDetailSfromWH 'Стоимость с НДС' (SfromWH)= GROUP SUM sumInvoiceSfromWHDetail(SfromWHDetail) BY SfromWHSfromWHDetail(SfromWHDetail) IN documentSumGroup;
+
+noteSfromWHDetail 'Примечание' (SfromWHDetail) = DATA STRING[100] (SfromWHDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+
+balanceBSkuSfromWHDetail 'Остаток до' (SfromWHDetail) = balanceBSkuStockDateTime(skuSfromWHDetail(SfromWHDetail), departmentStoreSfromWHDetail(SfromWHDetail), dateTimeSfromWHDetail(SfromWHDetail));
+
+@defineAddDetailDialogBarcode(SfromWH, sku);
+
+
+//showSeriesNumberWHtoSSfromWH 'Расход на магазин' = ACTION (SfromWH) {
+//    FORM WHtoSsDialog OBJECTS w MODAL;
+//    IF formResult() == formResult.ok THEN {
+//        SET WHtoSSfromWH(SfromWH) <- chosenObject('c');
+//    }
+//} SHORTCUT numberSfromWH DEFAULT;
+
+
+FORM SfromWH 'Приход на магазин'
+    OBJECTS sf = SfromWH FIXED PANEL
+    PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, quantitySfromWHDetailSfromWH, importerSumSfromWHDetailSfromWH, sumSupplierVATSfromWHDetailSfromWH,
+                    sumInvoiceSfromWHDetailSfromWH, noteSfromWH
+    PROPERTIES (sf) numberSfromWH// READONLY, showSeriesNumberWHtoSSfromWH
+    PROPERTIES (sf) seriesSfromWH, nameWarehouseSfromWH, nameImporterSfromWH
+
+    OBJECTS d = SfromWHDetail
+    PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
+                  nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
+                  quantityOriginSfromWHDetail, quantitySfromWHDetail, importerPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
+                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail
+    PROPERTIES(sf) TODRAW d addDetailDialogSkuSfromWHDetailSfromWH, addDetailDialogBarcodeSfromWHDetailSfromWH,
+                  deleteSfromWHDetailSfromWH
+
+
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inSfromWHSfromWHDetail(sf, d)
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantitySfromWHDetail(d) DEFAULT
+
+    FILTERGROUP filtersDiff
+        FILTER 'Показывать отличающиеся' 'F10' diffQuantitySfromWHDetail(d)
+
+    EDIT SfromWH OBJECT sf
+;
+
+DESIGN SfromWH FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD sf.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD sf.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameDepartmentStoreSfromWH);
+                    ADD PROPERTY (numberSfromWH);
+                    ADD PROPERTY (seriesSfromWH);
+                    ADD PROPERTY (dateSfromWH);
+                    ADD PROPERTY (timeSfromWH);
+                }
+                NEW case {
+                childConstraints = TO THE RIGHT;
+                    title = 'Контрагент-поставщик';
+                    ADD PROPERTY (nameWarehouseSfromWH);
+                    ADD PROPERTY (nameImporterSfromWH);
+                }
+                ADD sf.documentPrmGroup;
+            }
+            NEW row2 {
+                ADD sf.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        };
+        ADD d.box;
+        ADD functions.box;
+    }
+}
+
+FORM SfromWHs 'Приходы на магазин'
+    OBJECTS sf = SfromWH
+    PROPERTIES (sf) READONLY objectClassName, numberSfromWH, seriesSfromWH, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
+                   countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, importerSumSfromWHDetailSfromWH, sumSupplierVATSfromWHDetailSfromWH,
+                   sumInvoiceSfromWHDetailSfromWH
+
+    PROPERTIES (sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+
+    PROPERTIES (sf) ADDFORM, EDITFORM SHOWIF isDraftSfromWH(sf), delete FORCE PANEL SHOWIF isDraftSfromWH(sf),
+                   postSfromWH SHOWIF isDraftSfromWH(sf), unpostSfromWH SHOWIF isPostedSfromWH(sf)
+
+    OBJECTS d = SfromWHDetail
+    PROPERTIES(d) READONLY indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
+                  quantityOriginSfromWHDetail, quantitySfromWHDetail, importerPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
+                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail
+
+    FILTERS inSfromWHSfromWHDetail(sf, d)
+;
+
+DESIGN SfromWHs FROM DEFAULT {
+    ADD sf.box{
+        PROPERTY (delete(sf)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        PROPERTY (objectClassName(sf)) {
+            preferredCharWidth = 15;
+        }
+        }
+    }
+    ADD d.box;
+
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD sf.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD sf.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+    ADD functions.box;
+}
+
