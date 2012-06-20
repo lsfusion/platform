@@ -1,15 +1,11 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.ActionPropertyObjectEntity;
-import platform.server.form.entity.CalcPropertyObjectEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.CalcPropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
@@ -19,7 +15,6 @@ import platform.server.session.*;
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.crossJoin;
 import static platform.base.BaseUtils.rightCrossJoin;
 
 public class CalcPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends CalcPropertyImplement<P, T> implements CalcPropertyInterfaceImplement<T> {
@@ -139,7 +134,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
 
     @Override
     public ActionPropertyMapImplement<?, T> mapEditAction(String editActionSID, CalcProperty filterProperty) {
-        return property.getEditAction(editActionSID, filterProperty).map(mapping);
+        ActionPropertyMapImplement<?, P> editAction = property.getEditAction(editActionSID, filterProperty);
+        return editAction == null ? null : editAction.map(mapping);
     }
     
     public Map<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {

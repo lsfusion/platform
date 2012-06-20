@@ -279,6 +279,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Type getChangeType() {
         ActionPropertyMapImplement<?, T> changeAction = getEditAction(ServerResponse.CHANGE);
+        if (changeAction == null) {
+            return null;
+        }
 
         Type type = changeAction.property.getSimpleRequestInputType();
 
