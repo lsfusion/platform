@@ -602,12 +602,8 @@ public class ClientFormController {
     public void gainedFocus() {
         //remoteForm может быть == null, если сработал closed, и тогда ничего вызывать не надо
         if (!isEditing() && remoteForm != null) {
-            if (remoteForm == null) {
-                return;
-            }
-
             try {
-                rmiQueue.syncRequest(new RmiVoidRequest() {
+                rmiQueue.asyncRequest(new RmiVoidRequest() {
                     @Override
                     protected void doExecute(long requestIndex) throws Exception {
                         remoteForm.gainedFocus(requestIndex);

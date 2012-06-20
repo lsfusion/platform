@@ -45,7 +45,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
         // ?? тут или нет
-        if (isReadOnly()) {
+        if (isReadOnly() &&
+                (actionId.equals(ServerResponse.CHANGE)
+                        || actionId.equals(ServerResponse.CHANGE_WYS)
+                        || actionId.equals(ServerResponse.EDIT_OBJECT)
+                        || actionId.equals(ServerResponse.GROUP_CHANGE))) {
             return null;
         }
 
