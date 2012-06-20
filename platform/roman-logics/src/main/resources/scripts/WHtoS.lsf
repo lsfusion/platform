@@ -221,11 +221,11 @@ DESIGN WHtoSs FROM DEFAULT {
 }
 
 FORM WHtoSsDialog 'Расход на магазин'
-    OBJECTS w = WHtoS
+    OBJECTS w = WHtoSPosted
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
                    countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, importerSumWHtoSDetailWHtoS, sumSupplierVATWHtoSDetailWHtoS,
                    sumInvoiceWHtoSDetailWHtoS
-    DIALOG WHtoS OBJECT w
+    DIALOG WHtoSPosted OBJECT w
 ;
 
 @defineConsignment(WHtoS);
