@@ -115,17 +115,23 @@ public class GenerateZReport extends ScriptingActionProperty {
             }
 
             if (!numberCashRegisterDepartmentStoreMap.isEmpty()) {
-                Map<Integer, String> numberZReportCashRegisterMap = new HashMap<Integer, String>();
+                Map<String, String> numberZReportCashRegisterMap = new HashMap<String, String>();
 
                 for (int z = 1; z <= zReportCount; z++) {
 
                     Map.Entry<String, Integer> numberCashRegisterDepartmentStore = (Map.Entry<String, Integer>) (numberCashRegisterDepartmentStoreMap.entrySet().toArray()[r.nextInt(numberCashRegisterDepartmentStoreMap.size())/*1*/]);
                     String numberCashRegister = numberCashRegisterDepartmentStore.getKey();
                     Integer departmentStore = numberCashRegisterDepartmentStore.getValue();
-                    Integer maxNumberZReport = (Integer) getLCP("maxNumberZReport").read(session, new DataObject(getLCP("cashRegisterNumber").read(session, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
-                    Integer numberZReport = null;
+                    Integer maxNumberZReport;
+                    try {
+                        String maxNumber = (String) getLCP("maxNumberZReport").read(session, new DataObject(getLCP("cashRegisterNumber").read(session, new DataObject(numberCashRegisterDepartmentStore.getKey(), StringClass.get(100))), (ConcreteClass) getClass("cashRegister")));
+                        maxNumberZReport = maxNumber==null ? null : Integer.parseInt(maxNumber);
+                    } catch (NumberFormatException e) {
+                        maxNumberZReport = Math.abs(r.nextInt());
+                    }
+                    String numberZReport = null;
                     while (numberZReport == null || (numberZReportCashRegisterMap.containsKey(numberZReport) && numberZReportCashRegisterMap.containsValue(numberCashRegister)))
-                        numberZReport = (maxNumberZReport == null ? 0 : maxNumberZReport) + (zReportCount < 1 ? 0 : r.nextInt(zReportCount)) + 1;
+                        numberZReport = String.valueOf((maxNumberZReport == null ? 0 : maxNumberZReport) + (zReportCount < 1 ? 0 : r.nextInt(zReportCount)) + 1);
                     if (!numberZReportCashRegisterMap.containsKey(numberZReport))
                         numberZReportCashRegisterMap.put(numberZReport, numberCashRegister);
                     java.sql.Date date = new java.sql.Date(dateFrom.getTime() + Math.abs(r.nextLong() % (dateTo.getTime() - dateFrom.getTime())));
@@ -142,7 +148,7 @@ public class GenerateZReport extends ScriptingActionProperty {
                             if ((currentBalanceSkuStock > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
                                 Double quantityBillDetail;
                                 if (itemZReportInfo.isWeightItem)
-                                    quantityBillDetail = currentBalanceSkuStock <= 0.005 ? currentBalanceSkuStock : ((double)Math.round(r.nextDouble() * currentBalanceSkuStock / 5 * 1000) / 1000);
+                                    quantityBillDetail = currentBalanceSkuStock <= 0.005 ? currentBalanceSkuStock : ((double) Math.round(r.nextDouble() * currentBalanceSkuStock / 5 * 1000) / 1000);
                                 else
                                     quantityBillDetail = Math.ceil(currentBalanceSkuStock / 5) == 1 ? 1.0 : r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
                                 if ((quantityBillDetail > 0) && (currentBillDetailCount >= numberBillDetail)) {
