@@ -2193,81 +2193,19 @@ META metaCodeDocumentMachineryPriceTransaction (document, stockProp)
                                                                                 RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
 END
 
-FORM machineryPriceTransaction 'Загрузка прайса в оборудование'
-    OBJECTS t = machineryPriceTransaction FIXED PANEL
-    PROPERTIES(t) nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                  snapshotMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction
-
-    OBJECTS b = barcode
-    PROPERTIES(b) READONLY idBarcode
-    PROPERTIES(t, b)       inMachineryPriceTransactionBarcode, nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
-     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
-     isWeightMachineryPriceTransactionBarcode, expiryDataMachineryPriceTransactionBarcode,
-     compositionMachineryPriceTransactionBarcode FORCE PANEL
-    FILTERS inMachineryPriceTransactionBarcode(t, b)
-
-    EDIT machineryPriceTransaction OBJECT t;
+EXTEND FORM machineryPriceTransaction
+    PROPERTIES(t,b) daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode,
+                    isWeightMachineryPriceTransactionBarcode, expiryDataMachineryPriceTransactionBarcode,
+                    compositionMachineryPriceTransactionBarcode
 ;
 
-FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
-    OBJECTS s = stock FIXED PANEL
-    PROPERTIES name(s) SELECTOR, createBalanceMachineryPriceTransaction(s), createPriceMachineryPriceTransaction(s), snapshotGroupMachineryDepartmentStore(s)
+EXTEND FORM machineryPriceTransactions
+    // todo : это нужно будет перенести в Machinery.lsf
+    PROPERTIES(s) createBalanceMachineryPriceTransaction, createPriceMachineryPriceTransaction, snapshotGroupMachineryDepartmentStore
 
-    OBJECTS t = machineryPriceTransaction
-    PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
-                           descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
-                           quantityMachineryPriceTransactionErrorMachineryPriceTransaction BACKGROUND quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
-                           nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
-    PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
-    PROPERTIES(t)          ADDFORM, EDITFORM, delete
-    FILTERS stockMachineryPriceTransaction(t) == s
-
-    OBJECTS b = barcode
-    PROPERTIES(b)    idBarcode
-    PROPERTIES(t, b) nameMachineryPriceTransactionBarcode, priceMachineryPriceTransactionBarcode,
-                     daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
+    PROPERTIES(t, b) daysExpiryMachineryPriceTransactionBarcode, hoursExpiryMachineryPriceTransactionBarcode,
                      expiryDataMachineryPriceTransactionBarcode, labelFormatMachineryPriceTransactionBarcode
-
-    FILTERS inMachineryPriceTransactionBarcode(t, b)
-
-    OBJECTS e = machineryPriceTransactionError
-    PROPERTIES(e)    dataMachineryPriceTransactionError, dateMachineryPriceTransactionError
-    PROPERTIES(e)  FORCE PANEL  errorTraceMachineryPriceTransactionError
-    FILTERS machineryPriceTransactionMachineryPriceTransactionError(e) == t
 ;
-
-DESIGN machineryPriceTransactions FROM DEFAULT {
-
-    main {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD t.box {
-            preferredSize = ( -1, 300);
-            minimumSize = ( -1, 300);
-            maximumSize = ( -1, 300);
-        }
-
-        NEW specContainer{
-            type = TABBED;
-            ADD b.box;
-            NEW errorContainer {
-               title = 'Сообщения об ошибках';
-               ADD e.box;
-               PROPERTY(errorTraceMachineryPriceTransactionError(e)) {
-                  fillHorizontal = 1;
-                  panelLabelAbove = TRUE;
-               }
-            }
-        }
-    }
-    }
-
-    ADD functions.box;
-}
 
 //---------------------------- Карты проработки (разруба) ----------------------------------------//
 GROUP cutGroup 'Разделка' : baseGroup;
