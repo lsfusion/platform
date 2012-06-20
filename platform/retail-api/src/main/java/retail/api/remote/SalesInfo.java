@@ -6,7 +6,7 @@ import java.sql.Time;
 
 public class SalesInfo implements Serializable {
     public String cashRegisterNumber;
-    public Integer zReportNumber;
+    public String zReportNumber;
     public Integer billNumber;
     public Date date;
     public Time time;
@@ -22,7 +22,7 @@ public class SalesInfo implements Serializable {
     public Integer numberBillDetail;
     public String filename;
 
-    public SalesInfo(String cashRegisterNumber, Integer zReportNumber, Integer billNumber, Date date, Time time,
+    public SalesInfo(String cashRegisterNumber, String zReportNumber, Integer billNumber, Date date, Time time,
                      Double sumBill, Double sumCard, Double sumCash, String barcodeItem, Double quantityBillDetail, Double priceBillDetail,
                      Double sumBillDetail, Double discountSumBillDetail, Double discountSumBill, Integer numberBillDetail, String filename) {
         this.cashRegisterNumber = cashRegisterNumber;

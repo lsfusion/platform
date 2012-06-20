@@ -142,7 +142,7 @@ public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
                         BillInfo billInfo = billInfoMap.get(billNumber);
                         if (billInfo != null) {
                             String cashRegisterNumber = new String(billDetailFile.getField("CASHIER").getBytes(), "Cp1251").trim();
-                            Integer zReportNumber = new Integer(new String(billDetailFile.getField("CREG").getBytes(), "Cp1251").trim());
+                            String zReportNumber = new String(billDetailFile.getField("CREG").getBytes(), "Cp1251").trim();
                             String barcode = new String(billDetailFile.getField("BARCODE").getBytes(), "Cp1251").trim();
                             Double quantity = new Double(new String(billDetailFile.getField("COUNT").getBytes(), "Cp1251").trim());
                             Double price = new Double(new String(billDetailFile.getField("PRICE").getBytes(), "Cp1251").trim());

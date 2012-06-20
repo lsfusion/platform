@@ -134,7 +134,7 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
                                 importFile.read();
                                 String postType = new String(importFile.getField("JFPOSTYPE").getBytes(), "Cp1251").trim();
                                 if ("P".equals(postType)) {
-                                    Integer zReportNumber = new Integer(new String(importFile.getField("JFZNO").getBytes(), "Cp1251").trim());
+                                    String zReportNumber = new String(importFile.getField("JFZNO").getBytes(), "Cp1251").trim();
                                     Integer billNumber = new Integer(new String(importFile.getField("JFCHECKNO").getBytes(), "Cp1251").trim());
                                     java.sql.Date date = new java.sql.Date(new SimpleDateFormat("yyyymmdd").parse(new String(importFile.getField("JFDATE").getBytes(), "Cp1251").trim()).getTime());
                                     String timeString = new String(importFile.getField("JFTIME").getBytes(), "Cp1251").trim();
