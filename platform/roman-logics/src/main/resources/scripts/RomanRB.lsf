@@ -126,6 +126,7 @@ NAVIGATOR {
         NEW merchandising 'Товародвижение' TO leftToolbar {
             ADD WHtoSDirs;
             ADD SfromWHs;
+            ADD WHtoSTrs;
         }
     }
 
@@ -220,5 +221,7 @@ NAVIGATOR {
         ADD SfromWH;
         ADD warehouse;
         ADD stores;
+        ADD WHtoSTr;
+        ADD WHtoSTrsDialog;
     }
 }

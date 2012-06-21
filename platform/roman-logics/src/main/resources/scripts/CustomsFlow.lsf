@@ -72,7 +72,7 @@ isAvailableDeclarationCStoWH 'Декларация доступна для ра�
     currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH)>=dateTimeDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
-    importerWarehouse(warehouseCStoWH(CStoWH))==importerDeclaration(declaration);
+    companyWarehouse(warehouseCStoWH(CStoWH))==importerDeclaration(declaration);
 
 isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);

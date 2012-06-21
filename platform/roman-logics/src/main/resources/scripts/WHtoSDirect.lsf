@@ -14,17 +14,20 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-CLASS WHtoSDir 'Расход на магазин' : historyObject, numberedObject, consignment;
-CLASS WHtoSDirDetail 'Строка расхода на магазин' : outAutoSkuLedger, consignmentDetail;
-CLASS WHtoSDirPosted 'Закрытый расход на магазин' : WHtoSDir, postedObject, consignment;
+CLASS WHtoSDir 'Расход на магазин (одно юрлицо)' : historyObject, numberedObject, consignment;
+CLASS WHtoSDirDetail 'Строка расхода на магазин (одно юрлицо)' : outAutoSkuLedger, consignmentDetail;
+CLASS WHtoSDirPosted 'Закрытый расход на магазин (одно юрлицо)' : WHtoSDir, postedObject, consignment;
 
 
 skuWHtoSDirDetail 'Товар (ИД)' (WHtoSDirDetail) = DATA sku (WHtoSDirDetail)IN idGroup;
 nameSkuWHtoSDirDetail 'Наименование товара' (WHtoSDirDetail) = nameSku(skuWHtoSDirDetail(WHtoSDirDetail));
 
-@defineRBCorrespondingDocument(WHtoSDir, warehouse, 'Оптовый склад', sku, 'Расход на магазин', store, 'Магазин');
+@defineRBCorrespondingDocument(WHtoSDir, warehouse, 'Оптовый склад', sku, 'Расход на магазин (прямой)', store, 'Магазин');
 
-nameImporterWHtoSDir 'Компания' (WHtoSDir) = name(importerWarehouse(warehouseWHtoSDir(WHtoSDir)));
+CONSTRAINT WHtoSDir IS WHtoSDir AND NOT companyWarehouse(warehouseWHtoSDir(WHtoSDir)) == companyStore(storeWHtoSDir(WHtoSDir))
+    CHECKED BY storeWHtoSDir MESSAGE 'Перемещение не в рамках одного юрлица';
+
+//nameImporterWHtoSDir 'Компания' (WHtoSDir) = name(importerWarehouse(warehouseWHtoSDir(WHtoSDir)));
 
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSDirDetail (ledger);
 //descriptionSkuLedger (ledger) += descriptionWHtoSDirDetail (ledger);
@@ -77,7 +80,7 @@ quantityWHtoSDirSku (WHtoSDir, sku) = GROUP SUM quantityWHtoSDirDetail(WHtoSDirD
 
 @defineAddDetailDialogBarcode(WHtoSDir, sku);
 
-FORM WHtoSDir 'Расход на магазин'
+FORM WHtoSDir 'Расход на магазин (одно юрлицо)'
     OBJECTS w = WHtoSDir FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateWHtoSDir, timeWHtoSDir, nameWarehouseWHtoSDir, nameStoreWHtoSDir,
                    quantityWHtoSDirDetailWHtoSDir, importerSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
@@ -134,7 +137,7 @@ DESIGN WHtoSDir FROM DEFAULT {
     }
 }
 
-FORM WHtoSDirs 'Расходы на магазин'
+FORM WHtoSDirs 'Расходы на магазин (одно юрлицо)'
     OBJECTS w = WHtoSDir
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSDir, timeWHtoSDir, nameWarehouseWHtoSDir, nameStoreWHtoSDir,
                    countWHtoSDirDetailWHtoSDir, quantityWHtoSDirDetailWHtoSDir, importerSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
@@ -218,7 +221,7 @@ DESIGN WHtoSDirs FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM WHtoSDirsDialog 'Расход на магазин'
+FORM WHtoSDirsDialog 'Расход на магазин (одно юрлицо)'
     OBJECTS w = WHtoSDirPosted
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSDir, nameWarehouseWHtoSDir, nameStoreWHtoSDir,
                    countWHtoSDirDetailWHtoSDir, quantityWHtoSDirDetailWHtoSDir, importerSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,

@@ -30,7 +30,7 @@ seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSDirSfromWH(SfromWH)) IN
 seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSDirSfromWH(SfromWH)) PERSISTENT;
 warehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoSDir(WHtoSDirSfromWH(SfromWH));
 nameWarehouseSfromWH 'Оптовый склад' (SfromWH) = name(warehouseSfromWH(SfromWH));
-nameImporterSfromWH 'Поставщик' (SfromWH) = name(importerWarehouse(warehouseSfromWH(SfromWH)));
+//nameImporterSfromWH 'Поставщик' (SfromWH) = name(importerWarehouse(warehouseSfromWH(SfromWH)));
 
 storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
@@ -106,7 +106,7 @@ FORM SfromWH 'Приход на магазин'
     OBJECTS sf = SfromWH FIXED PANEL
     PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, quantitySfromWHDetailSfromWH, importerSumSfromWHDetailSfromWH, sumSupplierVATSfromWHDetailSfromWH,
                     sumInvoiceSfromWHDetailSfromWH, noteSfromWH
-    PROPERTIES (sf) numberSfromWH, seriesSfromWH, nameWarehouseSfromWH, nameImporterSfromWH
+    PROPERTIES (sf) numberSfromWH, seriesSfromWH, nameWarehouseSfromWH//, nameImporterSfromWH
 
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
@@ -151,7 +151,7 @@ DESIGN SfromWH FROM DEFAULT {
                 childConstraints = TO THE RIGHT;
                     title = 'Контрагент-поставщик';
                     ADD PROPERTY (nameWarehouseSfromWH);
-                    ADD PROPERTY (nameImporterSfromWH);
+                   // ADD PROPERTY (nameImporterSfromWH);
                 }
                 ADD sf.documentPrmGroup;
             }

@@ -56,17 +56,16 @@ syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 //---------------------------------  -------------------------------------------//
 CLASS warehouse 'Склад' : Stock.stock;
 
-importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
-nameImporterWarehouse 'Импортер ' (warehouse) = name(importerWarehouse(warehouse)) IN baseGroup;
+companyWarehouse 'Импортер ИД' (warehouse) = DATA company(warehouse);
+nameCompanyWarehouse 'Импортер ' (warehouse) = name(companyWarehouse(warehouse)) IN baseGroup;
 
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
-//legalEntityStock(stock) += importerWarehouse(stock);
 addressStock(stock) += addressWarehouse(stock);
 
 FORM warehouse 'Оптовый склад'
 
     OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, addressWarehouse, nameImporterWarehouse
+    PROPERTIES(w)     name, addressWarehouse, nameCompanyWarehouse
 
     ORDER BY          name
     EDIT warehouse OBJECT w
@@ -75,12 +74,12 @@ FORM warehouse 'Оптовый склад'
 FORM warehouses 'Оптовые склады'
 
     OBJECTS           w=warehouse
-    PROPERTIES(w)     READONLY name, addressWarehouse, nameImporterWarehouse
+    PROPERTIES(w)     READONLY name, addressWarehouse, nameCompanyWarehouse
     PROPERTIES(w)     ADDFORM, EDITFORM, delete
 
     ORDER BY          name
 ;
-stockGroupStock (warehouse) += importerWarehouse (warehouse);
+stockGroupStock (warehouse) += companyWarehouse (warehouse);
 
 FORM customStore 'Склад временного хранения'
 
