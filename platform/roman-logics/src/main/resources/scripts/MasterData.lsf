@@ -2,11 +2,12 @@ MODULE MasterData;
 
 REQUIRE System,
         Stock,
+        Store,
         LegalEntity,
         Barcode,
         RomanLogicsModule;
 
-PRIORITY Stock, LegalEntity, RomanLogicsModule;
+PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
 //--------------------------------- Наименование товара -------------------------------------------//
 descriptionSku 'Наименование товара' (sku) =
@@ -53,10 +54,12 @@ syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sk
 syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 
 //---------------------------------  -------------------------------------------//
-CLASS warehouse 'Склад' : stock;
+CLASS warehouse 'Склад' : Stock.stock;
 
 importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
+nameImporterWarehouse 'Импортер ' (warehouse) = name(importerWarehouse(warehouse)) IN baseGroup;
 
+stockGroupStock (warehouse) += importerWarehouse (warehouse);
 
 FORM customStore 'Склад временного хранения'
 
@@ -187,3 +190,60 @@ FORM importers 'Компании'
     PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;
+
+FORM storesR 'Магазины'
+    TREE treeStore a=STRING[3], c=company
+    PROPERTIES READONLY OBJVALUE(a), name(c)
+
+    FILTERS stringEqualsAll(a), c IS company
+
+    PROPERTIES(c)          addC=ADDFORM FORCE PANEL, editC=EDITFORM FORCE PANEL, delete FORCE PANEL
+
+    OBJECTS s=store
+    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore, nameRegionStore
+    PROPERTIES(s)          ADDFORM, EDITFORM, delete
+    FILTERS companyStore(s)==c
+
+    OBJECTS d=departmentStore
+    PROPERTIES(d) READONLY objectClassName, name
+    FILTERS inStoreDepartment(s, d)
+;
+
+DESIGN storesR FROM DEFAULT {
+
+
+    NEW topContainer {
+
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+
+        ADD treeStore.box;
+
+        NEW firstCase {
+
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 3;
+
+            ADD s.box;
+            ADD d.box;
+        }
+    }
+
+    PROPERTY (delete(c)) {
+        caption = 'Удалить';
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    PROPERTY (addC) {
+        caption = 'Добавить';
+    }
+
+    PROPERTY (editC) {
+        caption = 'Ред-ть';
+        maximumCharWidth = 5;
+    }
+
+    ADD functions.box;
+}

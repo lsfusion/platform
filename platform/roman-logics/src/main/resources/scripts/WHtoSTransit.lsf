@@ -1,5 +1,5 @@
-//From WareHouse to Store
-MODULE WHtoS;
+//From WareHouse to Store (between different companies)
+MODULE WHtoSTransit;
 
 REQUIRE System,
 
@@ -44,7 +44,7 @@ numberSupplierVATWHtoSDetail 'НДС, номер' (WHtoSDetail) = numberRange(su
 valueSupplierVATWHtoSDetail 'НДС, %' (WHtoSDetail) = valueRateRangeDate
     (supplierVATWHtoSDetail(WHtoSDetail), dateWHtoSDetail(WHtoSDetail));
 
-    CONSTRAINT taxRange(supplierVATWHtoSDetail(WHtoSDetail)) != tax.taxVAT CHECKED BY supplierVATWHtoSDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(supplierVATWHtoSDetail(WHtoSDetail)) != tax.taxVAT CHECKED BY supplierVATWHtoSDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
 //VATWHtoSDetail 'НДС, %' (WHtoSDetail) = DATA NUMERIC[10,5] (WHtoSDetail);
@@ -63,8 +63,6 @@ netWeightWHtoSDetail 'Вес (ед.)' (WHtoSDetail) = netWeightSku(skuWHtoSDetai
 sumNetWeightWHtoSDetail 'Общая масса груза, кг.' (WHtoSDetail) = netWeightWHtoSDetail(WHtoSDetail)*quantityWHtoSDetail(WHtoSDetail);
 
 sumNetWeightWHtoS 'Общая масса груза, кг.' (WHtoS) = GROUP SUM sumNetWeightWHtoSDetail(WHtoSDetail) BY WHtoSWHtoSDetail(WHtoSDetail) IN documentSumGroup;
-
-noteWHtoSDetail 'Примечание' (WHtoSDetail) = DATA STRING[100] (WHtoSDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 packQuantityWHtoSDetail 'Количество грузовых мест' (WHtoSDetail) = round0(quantityWHtoSDetail(WHtoSDetail)/
     UNION OVERRIDE 1 IF WHtoSDetail IS WHtoSDetail, quantityPackSku(skuWHtoSDetail(WHtoSDetail)));
@@ -89,7 +87,7 @@ FORM WHtoS 'Расход на магазин'
     PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, nameBrandWHtoSDetail, sidArticleWHtoSDetail,
                   nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, shortNameUOMWHtoSDetail, balanceBSkuWHtoSDetail,
                   quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, numberSupplierVATWHtoSDetail, valueSupplierVATWHtoSDetail,
-                  sumSupplierVATWHtoSDetail, sumInvoiceWHtoSDetail, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
+                  sumSupplierVATWHtoSDetail, sumInvoiceWHtoSDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoSDetailWHtoS, addDetailDialogBarcodeWHtoSDetailWHtoS,
                   deleteWHtoSDetailWHtoS
@@ -156,7 +154,7 @@ FORM WHtoSs 'Расходы на магазин'
     OBJECTS d = WHtoSDetail
     PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail,
                   quantityWHtoSDetail, importerPriceWHtoSDetail, importerSumWHtoSDetail, numberSupplierVATWHtoSDetail, valueSupplierVATWHtoSDetail,
-                  sumSupplierVATWHtoSDetail, sumInvoiceWHtoSDetail, sumNetWeightWHtoSDetail, packQuantityWHtoSDetail
+                  sumSupplierVATWHtoSDetail, sumInvoiceWHtoSDetail
 
     FILTERS inWHtoSWHtoSDetail(w, d)
 ;

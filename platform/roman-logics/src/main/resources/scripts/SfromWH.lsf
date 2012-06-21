@@ -11,7 +11,7 @@ REQUIRE System,
         Declaration,
         MasterData,
         RomanLogicsModule,
-        WHtoS;
+        WHtoSDirect;
 
 PRIORITY RomanLogicsModule, Stock;
 
@@ -22,13 +22,13 @@ CLASS SfromWHPosted 'Закрытый приход на магазин' : SfromW
 @defineDocumentBasePosted(SfromWH);
 @defineDocumentStock(SfromWH, departmentStore, 'Отдел документа');
 
-WHtoSSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSPosted(SfromWH) IN idGroup;
-SfromWHWHtoS (WHtoS) = GROUP UNIQUE SfromWH BY WHtoSSfromWH (SfromWH);
+WHtoSDirSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSDirPosted(SfromWH) IN idGroup;
+SfromWHWHtoSDir (WHtoSDir) = GROUP UNIQUE SfromWH BY WHtoSDirSfromWH (SfromWH);
 
-numberSfromWH 'Номер' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH)) IN documentHeaderGroup PERSISTENT;
-seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSSfromWH(SfromWH)) IN baseGroup PERSISTENT;
-seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSSfromWH(SfromWH)) PERSISTENT;
-warehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoS(WHtoSSfromWH(SfromWH));
+numberSfromWH 'Номер' (SfromWH) = numberObject(WHtoSDirSfromWH(SfromWH)) IN documentHeaderGroup PERSISTENT;
+seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSDirSfromWH(SfromWH)) IN baseGroup PERSISTENT;
+seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSDirSfromWH(SfromWH)) PERSISTENT;
+warehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoSDir(WHtoSDirSfromWH(SfromWH));
 nameWarehouseSfromWH 'Оптовый склад' (SfromWH) = name(warehouseSfromWH(SfromWH));
 nameImporterSfromWH 'Поставщик' (SfromWH) = name(importerWarehouse(warehouseSfromWH(SfromWH)));
 
@@ -36,7 +36,7 @@ storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
 
-CONSTRAINT storeSfromWH(SfromWH) != storeWHtoS(WHtoSSfromWH(SfromWH))
+CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSDir(WHtoSDirSfromWH(SfromWH))
     CHECKED  MESSAGE 'ошибка: Магазин из расхода должен совпадать с магазином из прихода'; //BY storeSfromWH
 
 @defineDocumentDetailQuantity(SfromWH); // к-во детайл
@@ -46,7 +46,7 @@ descriptionSfromWH 'Название документа' (SfromWH) =
     [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
     'Приход на магазин', seriesNumberSfromWH(SfromWH), dateSfromWH(SfromWH));
 
-inWHtoSSfromWH (SfromWH, WHtoS) = WHtoSSfromWH(SfromWH) == WHtoS;
+inWHtoSDirSfromWH (SfromWH, WHtoSDir) = WHtoSDirSfromWH(SfromWH) == WHtoSDir;
 
 skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) IN idGroup;
 @defineDocumentDetailProps (SfromWH);  // ш-к, цвет, бренд, и т.д.
@@ -56,7 +56,7 @@ descriptionSfromWHDetail 'Название документа' (SfromWHDetail) =
 quantitySfromWHSku 'Количество принятое' (SfromWH, sku) = GROUP SUM quantitySfromWHDetail(SfromWHDetail)
                                           BY SfromWHSfromWHDetail(SfromWHDetail), skuSfromWHDetail(SfromWHDetail);
 
-quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSSku (WHtoSSfromWH(SfromWH), sku);
+quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSDirSku (WHtoSDirSfromWH(SfromWH), sku);
 
 diffQuantitySfromWHSku 'Разница' (SfromWH, sku) = quantitySfromWHSku(SfromWH, sku) (-) quantityOriginSfromWHSku(SfromWH, sku);
 

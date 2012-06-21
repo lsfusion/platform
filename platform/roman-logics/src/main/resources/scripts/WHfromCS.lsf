@@ -20,7 +20,7 @@ CLASS WHfromCSPosted 'Закрытый приход с СВХ' : WHfromCS, poste
 
 CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferSkuLedger;
 
-CLASS inWarehouseScan 'Сканирование';
+//CLASS inWarehouseScan 'Сканирование';
 
 //создание документа через метакод
 skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
@@ -35,9 +35,21 @@ numberCStoWHWHfromCS 'Номер' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfro
 seriesCStoWHWHfromCS 'Серия' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
 seriesNumberWHfromCS 'Серия/Номер' (WHfromCS) = seriesNumberObject(CStoWHWHfromCS(WHfromCS)) PERSISTENT;
 
+numberObject (WHfromCS) <- PREV (numberCStoWHWHfromCS (WHfromCS)) WHEN ASSIGNED (CStoWHWHfromCS(WHfromCS));
+
 inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
 
-numberObject (WHfromCS) <- PREV (numberCStoWHWHfromCS (WHfromCS)) WHEN ASSIGNED (CStoWHWHfromCS(WHfromCS));
+//для учета по коробам
+freightUnitWHfromCSDetail 'Короб (ИД)' (WHfromCSDetail) = DATA freightUnit(WHfromCSDetail);
+barcodeFreightUnitWHfromCSDetail 'Короб' (WHfromCSDetail) = barcode (freightUnitWHfromCSDetail(WHfromCSDetail));
+
+quantityWHfromCSDetailsSkuFreightUnit 'Количество принятое' (sku, freightUnit, WHfromCS) =
+    GROUP SUM quantityWHfromCSDetail(WHfromCSDetail)
+    BY skuWHfromCSDetail(WHfromCSDetail), freightUnitWHfromCSDetail(WHfromCSDetail), WHfromCSWHfromCSDetail(WHfromCSDetail);
+
+isNotShippedSkuFreightUnitWHfromCS (sku, freightUnit, WHfromCS) = quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWHWHfromCS(WHfromCS))
+    AND NOT quantityWHfromCSDetailsSkuFreightUnit(sku, freightUnit, WHfromCS);
+
 
 quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
 quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
@@ -50,30 +62,18 @@ quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
 quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
 
 diffQuantityWHfromCSDetail (WHfromCSDetail) = quantityOriginWHfromCSDetail(WHfromCSDetail)!= quantityWHfromCSDetail(WHfromCSDetail);
-
-toFillInWarehouseDetailsWHfromCS 'Заполнить приход по расходу' =  ACTION (WHfromCS) {
-    FOR quantityDCStoWHSku (CStoWHWHfromCS(WHfromCS), sku) DO {
-        ADDOBJ WHfromCSDetail;
-        FOR w == addedObject() DO {
-            SET skuWHfromCSDetail(w) <- sku AS sku;
-            SET WHfromCSWHfromCSDetail(w) <- WHfromCS AS WHfromCS;
-            SET quantityOriginWHfromCSDetail(w) <- quantityDCStoWHSku(CStoWHWHfromCS(WHfromCSWHfromCSDetail(w)), sku);
-        };
-    };
-} CONFIRM;
-
-
-idBarcodeInWarehouseScan 'Штрих-код' = DATA STRING[13] (inWarehouseScan);
-WHfromCSInWarehouseScan 'Приход (ИД)' = DATA WHfromCS(inWarehouseScan) IN idGroup;
-skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
+//
+//idBarcodeInWarehouseScan 'Штрих-код' = DATA STRING[13] (inWarehouseScan);
+//WHfromCSInWarehouseScan 'Приход (ИД)' = DATA WHfromCS(inWarehouseScan) IN idGroup;
+//skuInWarehouseScan 'Товар (ИД)' = DATA sku(inWarehouseScan) IN idGroup;
 
 //приемка по коробам
 
 currentFreightUnit 'Тек. короб (ИД)' = SESSION DATA freightUnit (WHfromCS);
 barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' = barcode(currentFreightUnit(WHfromCS));
 
-
 detailWHfromCSSku(WHfromCS, sku) = GROUP MAX detail BY WHfromCSWHfromCSDetail(detail), skuWHfromCSDetail(detail);
+
 addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCS) = ACTION (WHfromCS) {
 
     FORM barcodeInput MODAL;
@@ -96,6 +96,7 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCS) = ACTIO
                     FOR w == addedObject() DO {
                         SET WHfromCSWHfromCSDetail(w) <- WHfromCS AS WHfromCS;
                         SET skuWHfromCSDetail(w) <- dialogBarcodeSku();
+                        SET freightUnitWHfromCSDetail(w) <- currentFreightUnit(WHfromCS);
                         SET quantityWHfromCSDetail(w) <- 1.0;
                     }
                 }
@@ -106,21 +107,31 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCS) = ACTIO
             } ELSE {
 
             MESSAGE 'Не найден штрих-код'; }
-            }
-        }
-    } TOOLBAR EDITKEY 'F4';
+          }
+    }
+} TOOLBAR EDITKEY 'F4';
 
-//@defineAddDetailDialogBarcode(WHfromCS, sku);
+
+fillWHfromCSDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromCS) = ACTION (WHfromCS) {
+    FOR isNotShippedSkuFreightUnitWHfromCS (sku AS sku, currentFreightUnit(WHfromCS), WHfromCS AS WHfromCS) DO {
+        ADDOBJ WHfromCSDetail;
+        FOR w == addedObject() DO {
+            SET skuWHfromCSDetail (w) <- sku AS sku;
+            SET quantityWHfromCSDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS sku, currentFreightUnit(WHfromCS), CStoWHWHfromCS(WHfromCS));
+            SET freightUnitWHfromCSDetail(w) <- currentFreightUnit(WHfromCS);
+        }
+    }
+} EDITKEY 'F5' CONFIRM;
 
 FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL
     PROPERTIES (w) numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-                   toFillInWarehouseDetailsWHfromCS, barcodeCurrentFreightUnit
+                   barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit
 
     OBJECTS d = WHfromCSDetail
     PROPERTIES (d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
-                            sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail
+                            sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail, barcodeFreightUnitWHfromCSDetail
 
     PROPERTIES(d) quantityOriginWHfromCSDetail, quantityWHfromCSDetail
     PROPERTIES(d) ADDOBJ, delete
@@ -146,8 +157,8 @@ FORM WHfromCSs 'Приходы на оптовый склад'
                    postWHfromCS SHOWIF isDraftWHfromCS(w), unpostWHfromCS SHOWIF isPostedWHfromCS(w)
 
     OBJECTS d = WHfromCSDetail
-    PROPERTIES(d) READONLY isPostedSkuLedger, indexWHfromCSDetail, barcodeWHfromCSDetail,
-                           nameBrandWHfromCSDetail, sidArticleWHfromCSDetail, sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail,
+    PROPERTIES(d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
+                            sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail,
                            quantityOriginWHfromCSDetail, quantityWHfromCSDetail
 
     FILTERS inWHfromCSWHfromCSDetail(w, d)
