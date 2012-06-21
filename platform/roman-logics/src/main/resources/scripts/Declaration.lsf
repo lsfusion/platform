@@ -226,8 +226,15 @@ certificatedDeclarationDetail 'Необходимость сертификаци
 certificatedDeclarationSku 'Необходимость сертификации' (declaration, sku) = certificatedDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
 
 
-quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' = DATA INTEGER(declarationDetail);
 quantityCertificatedDeclarationFreightUnitSku 'Кол-во для экспертизы' = DATA NUMERIC[14,3] (declaration, freightUnit, sku);
+
+quantityCertificatedFreightUnitDeclarationDetail 'Кол-во для экспертизы' (freightUnit, declarationDetail) = quantityCertificatedDeclarationFreightUnitSku(declarationDeclarationDetail(declarationDetail), freightUnit, skuDeclarationDetail(declarationDetail));
+
+quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' (declarationDetail) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, skuDeclarationDetail(declarationDetail))
+    BY declarationDetail;
+
+quantityCertificatedDeclarationFreightUnit 'Кол-во для экспертизы' (declaration, freightUnit) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
+                                                                                       BY declaration, freightUnit;
 
 quantityCertificatedDeclarationSku 'Кол-во для экспертизы' (declaration, sku) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
                                                                                        BY declaration, sku;
@@ -514,7 +521,6 @@ inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice)
 inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
                                                                                   BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
 
-
 quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku) BY freightInnerInvoice(innerInvoice),
                                                                                                                              declarationInnerInvoice(innerInvoice),
                                                                                                                              sku PERSISTENT;
@@ -522,14 +528,14 @@ quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP 
 quantityImporterFreightUnitSku 'Кол-во' (importer, freightUnit, sku) = UNION EXCLUSIVE quantityImporterStockSku(importer, freightUnit, sku),
                                                                                        quantityImporterDirectSupplierBoxSku(importer, freightUnit, sku);
 
-inFreightUnitDeclarationDetail 'Связка' (freightUnit, declarationDetail) = quantityImporterFreightUnitSku(importerDeclarationDetail(declarationDetail),
+inFreightUnitDeclarationDetail 'Кол-во' (freightUnit, declarationDetail) = quantityImporterFreightUnitSku(importerDeclarationDetail(declarationDetail),
                                                                                                           freightUnit AS freightUnit,
                                                                                                           skuDeclarationDetail(declarationDetail)) AND
                                                                                              quantityFreightDeclarationSku(freightFreightUnit(freightUnit),
                                                                                                                            declarationDeclarationDetail(declarationDetail),
                                                                                                                            skuDeclarationDetail(declarationDetail));
 
-inFreightUnitDeclaration 'Связка' (freightUnit, declaration) = GROUP SUM inFreightUnitDeclarationDetail(freightUnit, declarationDetail)
+inFreightUnitDeclaration 'Кол-во' (freightUnit, declaration) = GROUP SUM inFreightUnitDeclarationDetail(freightUnit, declarationDetail)
                                                                       BY freightUnit, declarationDeclarationDetail(declarationDetail);
 
 quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
@@ -576,7 +582,7 @@ FORM declaration 'Декларация'
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                     quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                     rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail
-    PROPERTIES (dd) certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
+    PROPERTIES (dd) certificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 
@@ -669,7 +675,7 @@ FORM declarations 'Декларации'
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                             quantityDeclarationDetail, supplierPriceDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                             rateDutyDeclarationDetail, NDSDeclarationDetail, NDSDataDeclarationDetail, rateNDSDeclarationDetail,
-                            certificatedDeclarationDetail, quantityCertificatedDeclarationDetail,
+                            certificatedDeclarationDetail,
                             sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                             sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                             correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,

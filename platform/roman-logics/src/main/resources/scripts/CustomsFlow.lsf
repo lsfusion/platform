@@ -24,6 +24,10 @@ batchOutUserSkuLedger (outUserSkuLedger) += declarationDetailCStoWHDetail (outUs
 
 skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 
+freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;
+barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
+nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
+
 @defineRBCorrespondingDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ', warehouse, 'Оптовый склад');
 
 quantityOutUserSkuLedger (outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
@@ -42,17 +46,28 @@ quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHD
                                                       BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
 
 // подбор строк для расхода
-currentBalanceDeclarationDetail 'Текущий остаток' (declarationDetail) =
-    currentBalanceBatchStock(declarationDetail AS declarationDetail, customStoreDeclarationDetail(declarationDetail));
 
-currentBalanceBDeclaration 'Текущий остаток по декларации' (declaration) = GROUP SUM currentBalanceDeclarationDetail (declarationDetail)
-    IF declarationDeclarationDetail(declarationDetail) == declaration BY declaration;
+expenseFreightUnitDeclarationDetail 'Расход' (freightUnit, declarationDetail) = GROUP SUM quantityCStoWHDetail(CStoWHDetail) IF isPostedCStoWHDetail(CStoWHDetail)
+    BY freightUnitCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
+
+currentBalanceFreightUnitDeclarationDetail 'Текущий остаток' (freightUnit, declarationDetail) =
+    inFreightUnitDeclarationDetail(freightUnit, declarationDetail) (-)                   // приход
+    quantityCertificatedFreightUnitDeclarationDetail(freightUnit, declarationDetail) (-) // на сертификацию
+    expenseFreightUnitDeclarationDetail(freightUnit, declarationDetail);                 // отгрузка
+
+currentBalanceDeclarationFreightUnit 'Текущий остаток' (declaration, freightUnit) = GROUP SUM currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail)
+                                                                      BY declarationDeclarationDetail(declarationDetail), freightUnit;
+
+currentBalanceDeclaration 'Текущий остаток' (declaration) = GROUP SUM currentBalanceDeclarationFreightUnit(declaration, freightUnit)
+                                                                      BY declaration;
+
 
 isAvailableDeclarationCStoWH 'Декларация доступна для расхода' (declaration, CStoWH) =
     declaration IS registeredDeclaration AND
-    currentBalanceBDeclaration (declaration)>0 AND
+    currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH)>=dateTimeDeclaration(declaration) AND
-    customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration);
+    customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration);// AND
+//    importerWarehouse(warehouseCStoWH(CStoWH))==importerDeclaration(declaration);
 
 isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
@@ -65,17 +80,28 @@ inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
 declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255(sidDeclaration(declaration))
     IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-quantityInputDeclarationDetail 'Кол-во' = SESSION DATA NUMERIC[14,3] (declarationDetail);
+quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = SESSION DATA NUMERIC[14,3] (freightUnit, declarationDetail);
+
+quantityInputDeclarationFreightUnit 'Кол-во подобрано' (declaration, freightUnit) = GROUP SUM quantityInputFreightUnitDeclarationDetail(freightUnit, declarationDetail)
+    BY declarationDeclarationDetail(declarationDetail), freightUnit;
+
+quantityInputDeclaration 'Кол-во подобрано' (declaration) =  GROUP SUM quantityInputDeclarationFreightUnit(declaration, freightUnit)
+    BY declaration;
+
+
 isInputDeclarationDetail 'Вкл' = SESSION DATA BOOLEAN (declarationDetail);
 
-toFillQuantityInputDeclarationDetail 'Проставить количество' (declarationDetail) = ACTION (declarationDetail) {
-    SET quantityInputDeclarationDetail (declarationDetail) <- currentBalanceDeclarationDetail (declarationDetail);
+toFillQuantityInputAllDeclarationDetails 'Проставить количество' (declaration) = ACTION (declaration) {
+    FOR currentBalanceDeclarationFreightUnit(declaration, freightUnit) AND currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail) DO {
+            SET quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) <- currentBalanceFreightUnitDeclarationDetail (freightUnit, declarationDetail);
+    }
 }
 
-toFillQuantityInputAllDeclarationDetails 'Проставить количество' (declaration) = ACTION (declaration) {
-    FOR declarationDeclarationDetail(declarationDetail AS declarationDetail) == declaration
-    DO {
-        SET quantityInputDeclarationDetail (declarationDetail) <- currentBalanceDeclarationDetail (declarationDetail);
+toFillQuantityInputDetailDeclarationFreightUnit 'Проставить количество' (declaration, freightUnit) = ACTION (declaration, freightUnit) {
+    IF currentBalanceDeclarationFreightUnit(declaration, freightUnit) THEN {
+        FOR currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail) DO {
+            SET quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) <- currentBalanceFreightUnitDeclarationDetail (freightUnit, declarationDetail);
+        }
     }
 }
 
@@ -97,37 +123,47 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES (c) numberObject, seriesObject
 
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, currentBalanceBDeclaration
+    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, currentBalanceDeclaration, quantityInputDeclaration
     PROPERTIES(d) toFillQuantityInputAllDeclarationDetails
 
+    OBJECTS f=freightUnit
+    PROPERTIES READONLY barcodeFreightUnit = barcode(f), nameDestinationFreightBox(f) FORCE GRID, currentBalanceDeclarationFreightUnit(d, f)
+    PROPERTIES(d, f)    quantityInputDeclarationFreightUnit READONLY, toFillQuantityInputDetailDeclarationFreightUnit
+
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY barcodeDeclarationDetail, sidArticleDeclarationDetail, currentBalanceDeclarationDetail
-    PROPERTIES (dd) quantityInputDeclarationDetail, toFillQuantityInputDeclarationDetail
+    PROPERTIES (dd) READONLY barcodeDeclarationDetail, sidArticleDeclarationDetail
+    PROPERTIES (f, dd) currentBalanceFreightUnitDeclarationDetail, quantityInputFreightUnitDeclarationDetail
 
-    FILTERS isAvailableDeclarationCStoWH (d, c)
-
-    FILTERGROUP filters1
-        FILTER 'Сроки текущей декларации' 'F10' inDeclarationDeclarationDetail(d, dd) DEFAULT
-    FILTERGROUP filters2
-        FILTER 'Выбранные' 'F9' quantityInputDeclarationDetail(dd)
+    FILTERS isAvailableDeclarationCStoWH (d, c),
+            currentBalanceDeclarationFreightUnit(d, f),
+            currentBalanceFreightUnitDeclarationDetail(f, dd)
 ;
+
+DESIGN declarationDetailCStoWHInput FROM DEFAULT {
+    main {
+        f.box {
+            title = 'Короба';
+        }
+    }
+}
 
 inputDeclarationDetailCStoWH 'Подбор строк декларации' = ACTION (CStoWH) {
     FORM declarationDetailCStoWHInput MODAL;
         IF formResult() == formResult.ok THEN {
-            FOR quantityInputDeclarationDetail(declarationDetail) DO {
+            FOR quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) DO {
                 ADDOBJ CStoWHDetail;
                 FOR cd == addedObject() DO {
                 SET CStoWHCStoWHDetail(cd) <- CStoWH AS CStoWH;
                 SET declarationDetailCStoWHDetail(cd) <- declarationDetail AS declarationDetail;
-                SET quantityCStoWHDetail(cd) <- quantityInputDeclarationDetail(declarationDetail);
+                SET quantityCStoWHDetail(cd) <- quantityInputFreightUnitDeclarationDetail(freightUnit, declarationDetail);
+                SET freightUnitCStoWHDetail(cd) <- freightUnit AS freightUnit;
                 }
                }
             }
-        SET quantityInputDeclarationDetail(declarationDetail) <- NULL;
+        SET quantityInputFreightUnitDeclarationDetail(freightUnit, declarationDetail) <- NULL;
 } TOOLBAR;
 
-@defineAddDetailDialogBarcode(CStoWH, sku);
+//@defineAddDetailDialogBarcode(CStoWH, sku);
 //@defineAddDetailDialogTerminal(WHtoS);
 
 FORM CStoWH 'Расход с СВХ'
@@ -139,11 +175,11 @@ FORM CStoWH 'Расход с СВХ'
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
-                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
+                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
+                  sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
                   priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
-    PROPERTIES(d) ADDOBJ, delete
-    PROPERTIES(c) TODRAW d addDetailDialogSkuCStoWHDetailCStoWH, addDetailDialogBarcodeCStoWHDetailCStoWH,
-                  deleteCStoWHDetailCStoWH //addDetailDialogTerminalCStoWHDetailCStoWH
+    PROPERTIES(d) delete
+    PROPERTIES(c) TODRAW d deleteCStoWHDetailCStoWH
 
     FILTERS inCStoWHCStoWHDetail(c, d)
 
@@ -173,8 +209,8 @@ FORM CStoWHs 'Расходы с СВХ'
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
-                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail,sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
-                  priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
+                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
+                  sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
 
     FILTERS inCStoWHCStoWHDetail(c, d)
 ;
