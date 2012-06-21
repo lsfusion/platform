@@ -1380,7 +1380,7 @@ aggPropSetting [LP property]
 	;
 
 notNullSetting returns [boolean toResolve = false, boolean inSession = false]
-	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } session=sessionType {$inSession= (session==null ? false : $session.session)})?
+	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } session=sessionType {$inSession= (session==null ? false : $session.session);})?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
