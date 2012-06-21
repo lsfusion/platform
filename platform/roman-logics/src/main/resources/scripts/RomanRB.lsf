@@ -81,6 +81,7 @@ NAVIGATOR {
         ADD banks;
         ADD employees;
         ADD importers;
+        ADD warehouses;
         ADD storesR;
     }
     customs {
@@ -217,6 +218,7 @@ NAVIGATOR {
         ADD contracts;
         ADD wholesalePriceDocument;
         ADD SfromWH;
+        ADD warehouse;
         ADD stores;
     }
 }

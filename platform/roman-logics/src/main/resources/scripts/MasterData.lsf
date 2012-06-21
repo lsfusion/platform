@@ -59,6 +59,27 @@ CLASS warehouse 'Склад' : Stock.stock;
 importerWarehouse 'Импортер ИД' (warehouse) = DATA importer(warehouse);
 nameImporterWarehouse 'Импортер ' (warehouse) = name(importerWarehouse(warehouse)) IN baseGroup;
 
+addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
+//legalEntityStock(stock) += importerWarehouse(stock);
+addressStock(stock) += addressWarehouse(stock);
+
+FORM warehouse 'Оптовый склад'
+
+    OBJECTS           w=warehouse FIXED PANEL
+    PROPERTIES(w)     name, addressWarehouse, nameImporterWarehouse
+
+    ORDER BY          name
+    EDIT warehouse OBJECT w
+;
+
+FORM warehouses 'Оптовые склады'
+
+    OBJECTS           w=warehouse
+    PROPERTIES(w)     READONLY name, addressWarehouse, nameImporterWarehouse
+    PROPERTIES(w)     ADDFORM, EDITFORM, delete
+
+    ORDER BY          name
+;
 stockGroupStock (warehouse) += importerWarehouse (warehouse);
 
 FORM customStore 'Склад временного хранения'

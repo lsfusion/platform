@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE System, Utils, Hierarchy;
+REQUIRE System, Utils, Hierarchy, LegalEntity;
 
 // ----------------------------------- Склады ------------------------------------------ //
 
@@ -11,6 +11,8 @@ CLASS ABSTRACT stock 'Склад' : named;
 TABLE stock(stock);
 
 stockGroupStock (stock) = ABSTRACT stockGroup (stock);
+//legalEntityStock (stock) = ABSTRACT legalEntity (stock);
+//nameLegalEntityStock 'Юр. лицо' (stock) = name(legalEntityStock(stock));
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;

@@ -88,6 +88,8 @@ storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(
 chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT;
 
 companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(departmentStore)) PERSISTENT;
+//legalEntityStock (stock) += companyDepartmentStore(stock);
+
 nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
 UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
 
