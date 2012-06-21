@@ -2025,7 +2025,6 @@ public abstract class LogicsModule {
     }
 
     public LAP addAProp(AbstractGroup group, ActionProperty property) {
-        property.finalizeInit();
         return addProperty(group, new LAP(property));
     }
 
@@ -2376,15 +2375,15 @@ public abstract class LogicsModule {
     }
 
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, LCP<L> second, int... mapping) {
-        follows(first, PropertyFollows.RESOLVE_ALL, second, mapping);
+        follows(first, PropertyFollows.RESOLVE_ALL, false, second, mapping);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, int options, LCP<L> second, int... mapping) {
+    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, int options, boolean session, LCP<L> second, int... mapping) {
         Map<L, T> mapInterfaces = new HashMap<L, T>();
         for (int i = 0; i < second.listInterfaces.size(); i++) {
             mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i] - 1));
         }
-        first.property.addFollows(new CalcPropertyMapImplement<L, T>(second.property, mapInterfaces), options, this);
+        first.property.addFollows(new CalcPropertyMapImplement<L, T>(second.property, mapInterfaces), options, session, this);
     }
 
     protected void followed(LCP first, LCP... lps) {
@@ -2402,6 +2401,10 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> property, int resolve, ValueClass... classes) {
+        setNotNull(property, false, resolve, classes);
+    }
+
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> property, boolean session, int resolve, ValueClass... classes) {
 
         ValueClass[] values = new ValueClass[property.listInterfaces.size()];
         System.arraycopy(classes, 0, values, 0, classes.length);
@@ -2413,7 +2416,7 @@ public abstract class LogicsModule {
         checkProp.property.addFollows(
                 mapCalcListImplement(property, checkProp.listInterfaces),
                 ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
-                resolve, this);
+                resolve, session, this);
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> ActionPropertyMapImplement<P, T> mapActionListImplement(LAP<P> property, List<T> mapList) {

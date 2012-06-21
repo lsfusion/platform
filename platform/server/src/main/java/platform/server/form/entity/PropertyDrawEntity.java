@@ -7,6 +7,8 @@ import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.CustomClass;
+import platform.server.classes.DataClass;
+import platform.server.data.type.Type;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
@@ -42,6 +44,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
     public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
+
+    public Type getChangeType(FormEntity form) {
+        Type type = null;
+        ActionPropertyObjectEntity<?> changeAction = getEditAction(ServerResponse.CHANGE, form);
+
+        if(changeAction!=null)
+            type = changeAction.property.getSimpleRequestInputType();
+
+        assert type == null || type instanceof DataClass;
+
+        return type;
+    }
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
         // ?? тут или нет

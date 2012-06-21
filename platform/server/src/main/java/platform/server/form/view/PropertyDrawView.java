@@ -1,16 +1,20 @@
 package platform.server.form.view;
 
 import platform.interop.form.ReportConstants;
+import platform.interop.form.ServerResponse;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
+import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.property.ActionPropertyMapImplement;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
@@ -87,8 +91,8 @@ public class PropertyDrawView extends ComponentView {
         return entity.propertyObject.property.getType();
     }
 
-    public Type getChangeType() {
-        return entity.propertyObject.property.getChangeType();
+    public Type getChangeType(FormEntity form) {
+        return entity.getChangeType(form);
     }
 
     public String getSID() {
@@ -202,7 +206,7 @@ public class PropertyDrawView extends ComponentView {
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
 
-        Type changeType = getChangeType();
+        Type changeType = getChangeType(pool.context.view.entity);
         outStream.writeBoolean(changeType != null);
         if (changeType != null) {
             TypeSerializer.serializeType(outStream, changeType);

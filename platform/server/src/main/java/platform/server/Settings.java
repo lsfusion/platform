@@ -318,8 +318,11 @@ public class Settings {
 
     private int limitWhereJoinsCount = 20;
     private int limitWhereJoinsComplexity = 200;
+
+    // очень опасная эвристика - может в определенных случаях "потерять ключ", то есть образуется And в котором не хватает KeyExpr'а
     private int limitClassWhereCount = 40;
-    private int limitClassWhereComplexity = 400;
+    private int limitClassWhereComplexity = 4000;
+
     private int limitWhereJoinPack = 300;
 
     private boolean noExclusiveCompile = true;

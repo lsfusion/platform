@@ -452,7 +452,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName, Boolean notNullResolve) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName, Boolean notNullResolve, boolean notNullSession) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name);
@@ -479,7 +479,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (notNullResolve != null) {
-            setNotNull((LCP)property, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
+            setNotNull((LCP)property, notNullSession, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
         }
 
         checkPropertyValue(property, name);
@@ -1387,8 +1387,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LPWithParams> props) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParams + ", " + options + ", " + props + ");");
+    public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LPWithParams> props, List<Boolean> sessions) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParams + ", " + options + ", " + props + ", " + sessions + ");");
         LCP mainProp = (LCP) findLPByCompoundName(mainPropName);
         checkProperty(mainProp, mainPropName);
         checkParamCount(mainProp, namedParams.size());
@@ -1399,7 +1399,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (int j = 0; j < params.length; j++) {
                 params[j] = props.get(i).usedParams.get(j) + 1;
             }
-            follows(mainProp, options.get(i), (LCP) props.get(i).property, params);
+            follows(mainProp, options.get(i), sessions.get(i), (LCP) props.get(i).property, params);
         }
     }
 

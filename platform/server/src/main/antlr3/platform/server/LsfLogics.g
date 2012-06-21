@@ -1205,10 +1205,11 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 	boolean isPersistent = false;
 	Boolean isLoggable = null;
 	Boolean notNullResolve = null;
+	boolean notNullSession = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve, notNullSession);
 		self.makeLoggable(property, isLoggable);
 	}
 }
@@ -1229,7 +1230,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
-		|	s=notNullSetting { notNullResolve = $s.toResolve; }
+		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullSession = $s.inSession; }
 		)*
 	;
 
@@ -1378,8 +1379,8 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting returns [boolean toResolve = false] 
-	:	'NOT' 'NULL' ('DELETE' { toResolve = true; })?
+notNullSetting returns [boolean toResolve = false, boolean inSession = false]
+	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } session=sessionType {$inSession= (session==null ? false : $session.session)})?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1791,23 +1792,26 @@ followsStatement
 	String mainProp;
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<Integer> options = new ArrayList<Integer>();
+	List<Boolean> sessions = new ArrayList<Boolean>();
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedFollows(mainProp, context, options, props);
+		self.addScriptedFollows(mainProp, context, options, props, sessions);
 	}
 }
 	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }
 		'=>'
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType)?
 		{
 			props.add($firstExpr.property); 
 			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
+			sessions.add(session == null ? false : $session.session);
 		}
-		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
+		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType)?
 			{
 		     	props.add($nextExpr.property); 
 		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
+			sessions.add(session == null ? false : $session.session);
 			}
 		)*
 		';'
@@ -1824,17 +1828,20 @@ followsResolveType returns [Integer type]
 ////////////////////////////////// WRITE STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+sessionType returns [Boolean session]
+	:	('SESSION'	{ $session = true; })?
+	;
+
 writeWhenStatement
 @init {
 	List<String> context;
 	LPWithParams value = null;
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
-	boolean session = false;
 	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, !ascending, session);
+		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, !ascending, session==null ? false : $session.session);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
@@ -1846,7 +1853,7 @@ writeWhenStatement
 		whenExpr=propertyExpression[context, false]
 		('ORDER' ('DESC' { ascending = false; } )?
 		orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); })?
-		('SESSION' { session = true; })?
+		session=sessionType
 		';'
 	;
 

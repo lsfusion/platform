@@ -279,9 +279,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Type getChangeType() {
         ActionPropertyMapImplement<?, T> changeAction = getEditAction(ServerResponse.CHANGE);
-        if (changeAction == null) {
-            return null;
-        }
 
         Type type = changeAction.property.getSimpleRequestInputType();
 
@@ -461,9 +458,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void finalizeInit() {
         assert !finalized;
         finalized = true;
-        if(this instanceof ActionProperty)
-            for(CalcProperty<?> property : ((ActionProperty<?>)this).getChangeProps()) // вообще говоря DataProperty и IsClassProperty
-                property.actionChangeProps.add((ActionProperty) this);
     }
 
     @IdentityLazy

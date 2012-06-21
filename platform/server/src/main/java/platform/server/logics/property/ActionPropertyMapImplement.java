@@ -29,8 +29,8 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new ActionPropertyMapImplement<P, K>(property, BaseUtils.join(mapping, remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(CalcPropertyMapImplement<L, T> where, int options) {
-        property.setEventAction(where.map(BaseUtils.reverse(mapping)), new OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean>(), false, false, options);
+    public <L extends PropertyInterface> void mapEventAction(CalcPropertyMapImplement<L, T> where, boolean session, int options) {
+        property.setEventAction(where.map(BaseUtils.reverse(mapping)), new OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean>(), false, session, options);
     }
 
     public ActionPropertyObjectEntity<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {

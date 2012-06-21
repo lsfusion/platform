@@ -335,9 +335,9 @@ constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(articl
 ////////////////FOLLOWS STATEMENT////////////////
 // Syntax:
 // propertyName(param1, ..., paramN) =>
-//      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING)],
+//      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING) [SESSION]],
 //      ...
-//      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING)];
+//      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING) [SESSION]];
 //foo(store, article) => foo2(store, article) RESOLVE NOTHING;
 
 
@@ -345,7 +345,7 @@ constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(articl
 // Syntax:
 // propertyName(param1, ..., paramN) <- valuePropertyExpression WHEN changePropertyExpression
 // or
-// actionPropertyName(param1, ..., paramN) WHEN changePropertyExpression
+// actionPropertyName(param1, ..., paramN) WHEN changePropertyExpression [ORDER [DESC] orderExpression1, ..., orderExpressionN] [SESSION]
 
 
 //////////////// FORM STATEMENT /////////////////

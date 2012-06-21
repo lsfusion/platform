@@ -832,6 +832,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             finishAbstract();
 
+            finishActions();
+
             finishLogInit();
 
             LM.initClassForms();
@@ -885,6 +887,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         
         for(ExclusiveUnionProperty abstractUnion : abstractUnions)
             assert abstractUnion.checkClasses();
+    }
+
+    protected void finishActions() { // потому как могут использовать abstract
+        for (Property property : getProperties())
+            if(property instanceof ActionProperty) {
+                for(CalcProperty<?> calcProperty : ((ActionProperty<?>)property).getChangeProps()) // вообще говоря DataProperty и IsClassProperty
+                    calcProperty.actionChangeProps.add((ActionProperty) property);
+            }
     }
 
     private void finishLogInit() {

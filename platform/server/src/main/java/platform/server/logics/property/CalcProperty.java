@@ -5,7 +5,6 @@ import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.interop.Compare;
-import platform.interop.action.ClientAction;
 import platform.server.Message;
 import platform.server.Settings;
 import platform.server.ThisMessage;
@@ -95,11 +94,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         getImplement().change(keys, env, value);
     }
 
-    public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, int options, LogicsModule lm) {
-        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, lm);
+    public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, int options, boolean session, LogicsModule lm) {
+        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, session, lm);
     }
 
-    public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, String caption, int options, LogicsModule lm) {
+    public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, String caption, int options, boolean session, LogicsModule lm) {
 //        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
 
         Collection<Property> props = new ArrayList<Property>();
@@ -108,14 +107,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 //            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
 //            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
             ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
-            setAction.mapEventAction(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
+            setAction.mapEventAction(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)), session, ActionEvent.RESOLVE);
             lm.addProp(setAction.property);
         }
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
 //            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
 //            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), ActionEvent.RESOLVE);
             ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
-            setAction.mapEventAction(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)), ActionEvent.RESOLVE);
+            setAction.mapEventAction(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)), session, ActionEvent.RESOLVE);
             lm.addProp(setAction.property);
         }
 
@@ -141,7 +140,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                                 new LogPropertyActionProperty<T>(this).getImplement()
                         )
                 );
-        constraintAction.mapEventAction(DerivedProperty.createAnyGProp(this).getImplement(), 0);
+        constraintAction.mapEventAction(DerivedProperty.createAnyGProp(this).getImplement(), false, 0);
         lm.addProp(constraintAction.property);
     }
 
@@ -709,7 +708,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             listInterfaces.add(mapClass.getKey());
             listValues.add(mapClass.getValue());
         }
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<T>("DE" + getSID() + "_" + editActionSID, "sys", this, listInterfaces, listValues, editActionSID, null);
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<T>("DE" + getSID() + "_" + editActionSID, "sys", this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 
