@@ -9226,13 +9226,37 @@ fillDocumentTypeDefaultValues 'Заполнить типы документов 
     EXEC addTerminalHandbookType(terminalHandbookType.customer, '02');
 
     ADDOBJ groupTerminalDocumentType;
-    FOR gtdt ==addedObject() DO {
+    FOR gtdt == addedObject() DO {
         SET nameGroupTerminalDocumentType(gtdt) <- 'Группа типов документов по умолчанию';
         EXEC addTerminalDocumentType('Инвентаризация', gtdt, '01','01', '02');
         EXEC addTerminalDocumentType('Приход', gtdt, '02', '02', '01');
         EXEC addTerminalDocumentType('Отгрузка по безналичному расчёту', gtdt, '03', '01', '02');
     }
 }
+
+addLabelType 'Добавить тип ценника' = ACTION(name, width, height, orientation, file, byDefault) {
+    ADDOBJ labelType;
+    FOR lt ==  addedObject() DO {
+        SET name(lt) <- name AS STRING[110];
+        SET widthLabelType(lt) <-width AS INTEGER;
+        SET heightLabelType(lt) <-height AS INTEGER;
+        SET orientationLabelType(lt) <- orientation;
+        SET fileTemplateLabelType(lt) <-file AS STRING[200];
+
+        FOR storeDepartmentStore(departmentStore) != 0 DO {
+            SET inLabelTypeDepartmentStore(lt, departmentStore) <- TRUE;
+            IF byDefault == TRUE THEN {
+                SET isDefaultLabelTypeDepartmentStore(lt, departmentStore) <- TRUE;
+            }
+        }
+    }
+}
+
+fillLabelTypeDefaultValues 'Заполнить типы ценников по умолчанию' = ACTION() {
+    EXEC addLabelType('Ценник 200x130', 200, 130, printOrientation.portrait, 'Label_printLabelTransaction_l.jrxml', TRUE);
+    EXEC addLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
+}
+
 
 addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
     ADDOBJ cashRegisterModel;
@@ -9376,7 +9400,7 @@ FORM fillDataBase 'Заполнение БД'
 
     PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
                     fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
-                    fillDocumentTypeDefaultValues
+                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues
 
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
@@ -9459,6 +9483,7 @@ DESIGN fillDataBase FROM DEFAULT {
             ADD PROPERTY(fillCurrencyDefaultValues());
             ADD PROPERTY(fillStatisticGroupDefaultValues());
             ADD PROPERTY(fillLossItemGroupDefaultValues());
+            ADD PROPERTY(fillLabelTypeDefaultValues());
 
             NEW containerFillMachinery {
                 title = 'Заполнение оборудования по умолчанию';
@@ -9480,6 +9505,7 @@ DESIGN fillDataBase FROM DEFAULT {
                     ADD PROPERTY(fillScalesDefaultValues);
                 }
                 NEW containerPriceChecker {
+                    childConstraints = TO THE BOTTOM;
                     title = 'Прайс-чекеры';
                     ADD PROPERTY(intValuePriceChecker);
                     ADD PROPERTY(fillPriceCheckerDefaultValues);
