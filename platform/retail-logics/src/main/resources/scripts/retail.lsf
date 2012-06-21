@@ -9719,6 +9719,8 @@ NAVIGATOR {
         ADD listInventoryPrint;
         ADD collationSheetPrint;
         ADD detailCollationSheetPrint;
+        ADD incomeCashOrderPrint;
+        ADD outcomeCashOrderPrint;
     }
 
     ADD adminElement TO formsTree {
@@ -9778,8 +9780,6 @@ NAVIGATOR {
             ADD dialogInactiveItem;
             ADD addCoefficientNetGrossItem;
             ADD dialogCoefficientNetGrossItem;
-            ADD incomeCashOrderPrint;
-            ADD outcomeCashOrderPrint;
             ADD addCollection;
             ADD editCollection;
         //    ADD addrateNaturalLossItem;
