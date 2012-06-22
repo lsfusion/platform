@@ -37,6 +37,9 @@ shortNameUOMWHtoSDirDetail 'Единица измерения' (WHtoSDirDetail) 
 
 importerPriceWHtoSDirDetail 'Цена без НДС (ед.)' (WHtoSDirDetail) = DATA NUMERIC[14,3] (WHtoSDirDetail);
 
+wholesalePriceWHtoSDirDetail 'Оптовая цена' (WHtoSDirDetail) =  priceWholesaleArticleDateTime(articleSku(skuWHtoSDirDetail(WHtoSDirDetail), dateTimeWHtoSDirDetail(WHtoSDirDetail));
+importerPriceWHtoSDirDetail (SfromWHDetail) <- wholesalePriceWHtoSDirDetail(WHtoSDirDetail) WHEN (CHANGED(skuWHtoSDirDetail(WHtoSDirDetail) OR dateTimeWHtoSDirDetail(WHtoSDirDetail));
+
 importerSumWHtoSDirDetail 'Стоимость без НДС' (WHtoSDirDetail) = importerPriceWHtoSDirDetail(WHtoSDirDetail) * quantityWHtoSDirDetail(WHtoSDirDetail);
 
 importerSumWHtoSDirDetailWHtoSDir 'Стоимость без НДС' (WHtoSDir)= GROUP SUM importerSumWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail) IN documentSumGroup;

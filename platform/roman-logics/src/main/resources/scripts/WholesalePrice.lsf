@@ -9,17 +9,34 @@ PRIORITY RomanLogicsModule, RB;
 
 CLASS wholesalePriceDocument 'Оптовый прайс' : transaction;
 
+dateTimeWholesalePriceDocument 'Дата/время' = DATA DATETIME(wholesalePriceDocument);
+
 declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
 
 inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
-priceWholesalePriceDocumentArticle 'Цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = priceCustomDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
+priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = priceManagerialDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
+
+priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+
+orderWholesalePriceDocument = LIST(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
+
+concatWholesalePriceDocumentArticleDateTime (article, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
+                                                                   priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) AND
+                                                                   dateTimeWholesalePriceDocument(wholesalePriceDocument) < (dateTime AS DATETIME)
+                                                                BY article, dateTime;
+
+documentWholesalePriceArticleDateTime (article, dateTime) = concatWholesalePriceDocumentArticleDateTime(article, dateTime)[2];
+
+priceWholesaleArticleDateTime(article, dateTime) = priceWholesalePriceDocumentArticle(documentWholesalePriceArticleDateTime(article, dateTime), article);
+
 
 
 FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS w=wholesalePriceDocument FIXED PANEL
-    PROPERTIES(w) date
+    PROPERTIES(w) dateTimeWholesalePriceDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -35,7 +52,7 @@ FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (w, a) priceWholesalePriceDocumentArticle
+    PROPERTIES (w, a) priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
     FILTERS inArticleWholesalePriceDocument(w, a)
 
@@ -64,12 +81,12 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
 FORM wholesalePriceDocuments 'Оптовые прайсы'
 
     OBJECTS w=wholesalePriceDocument
-    PROPERTIES(w) READONLY date
+    PROPERTIES(w) READONLY dateTimeWholesalePriceDocument
     PROPERTIES(w) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (w, a) READONLY priceWholesalePriceDocumentArticle
+    PROPERTIES (w, a) READONLY priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
     FILTERS inArticleWholesalePriceDocument(w, a)
 ;
@@ -79,7 +96,7 @@ toCreateWholesalePriceDocument 'Прайс по декларации' =  ACTION 
     ADDOBJ wholesalePriceDocument;
     FOR w == addedObject() DO {
         SET declarationWholesalePriceDocument(w) <- declaration AS declaration;
-        SET priceWholesalePriceDocumentArticle(w, article) <- priceDeclarationArticle(declaration, article);
+        SET priceWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
         SET inArticleWholesalePriceDocument(w, article) <- inDeclarationArticle(declaration, article);
 
         FORM wholesalePriceDocument OBJECTS w=addedObject() MODAL;

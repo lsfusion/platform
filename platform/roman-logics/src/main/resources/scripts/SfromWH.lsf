@@ -9,6 +9,8 @@ REQUIRE System,
         RomanDocument,
         Consignment,
         Declaration,
+        RetailPrice,
+        WholesalePrice,
         MasterData,
         RomanLogicsModule,
         WHtoSDirect;
@@ -72,11 +74,19 @@ quantityInAutoSkuLedger (ledger) += quantitySfromWHDetail (ledger);
 UOMSfromWHDetail 'Единица измерения (ИД)' (SfromWHDetail) = DATA UOM (SfromWHDetail) IN idGroup;
 shortNameUOMSfromWHDetail 'Единица измерения' (SfromWHDetail) = shortName(UOMSfromWHDetail(SfromWHDetail));
 
-importerPriceSfromWHDetail 'Цена без НДС (ед.)' (SfromWHDetail) = DATA NUMERIC[14,3] (SfromWHDetail);
+supplierPriceSfromWHDetail 'Цена без НДС (ед.)' (SfromWHDetail) = DATA NUMERIC[14,3] (SfromWHDetail);
 
-importerSumSfromWHDetail 'Стоимость без НДС' (SfromWHDetail) = importerPriceSfromWHDetail(SfromWHDetail) * quantitySfromWHDetail(SfromWHDetail);
+importerPriceSfromWHDetail 'Цена первого импортёра' (SfromWHDetail) = DATA NUMERIC[14,3] (SfromWHDetail);
+
+////importerPriceWHtoSDirDetail
+
+retailPriceSfromWHDetail 'Розничная цена' (SfromWHDetail) = UNION OVERRIDE priceBasePriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail)),
+                                                                           priceDiscountPriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail));
+
+importerSumSfromWHDetail 'Стоимость без НДС' (SfromWHDetail) = supplierPriceSfromWHDetail(SfromWHDetail) * quantitySfromWHDetail(SfromWHDetail);
 
 importerSumSfromWHDetailSfromWH 'Стоимость без НДС' (SfromWH)= GROUP SUM importerSumSfromWHDetail(SfromWHDetail) BY SfromWHSfromWHDetail(SfromWHDetail) IN documentSumGroup;
+
 
 
 supplierVATSfromWHDetail(SfromWHDetail) = DATA range (SfromWHDetail);
@@ -111,8 +121,8 @@ FORM SfromWH 'Приход на магазин'
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
                   nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
-                  quantitySfromWHDetail, importerPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail
+                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
+                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail, wholesalePriceSfromWHDetail, retailPriceSfromWHDetail
 
     PROPERTIES(sf) TODRAW d addDetailDialogSkuSfromWHDetailSfromWH, addDetailDialogBarcodeSfromWHDetailSfromWH,
                   deleteSfromWHDetailSfromWH
@@ -173,7 +183,7 @@ DESIGN SfromWH FROM DEFAULT {
 FORM SfromWHs 'Приходы на магазин'
     OBJECTS sf = SfromWH
     PROPERTIES (sf) READONLY objectClassName, numberSfromWH, seriesSfromWH, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
-                   countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, importerSumSfromWHDetailSfromWH, sumSupplierVATSfromWHDetailSfromWH,
+                   countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, supplierPriceSfromWHDetail, importerSumSfromWHDetailSfromWH, sumSupplierVATSfromWHDetailSfromWH,
                    sumInvoiceSfromWHDetailSfromWH
 
     PROPERTIES (sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -184,8 +194,8 @@ FORM SfromWHs 'Приходы на магазин'
 
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) READONLY indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
-                  quantitySfromWHDetail, importerPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail
+                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
+                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail, wholesalePriceSfromWHDetail, retailPriceSfromWHDetail
 
     FILTERS inSfromWHSfromWHDetail(sf, d)
 ;

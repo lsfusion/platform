@@ -433,10 +433,14 @@ priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (decl
 quantityDeclarationArticle 'Кол-во' (declaration, article) = GROUP SUM quantityDeclarationSku(declaration, sku) BY declaration, articleSku(sku);
 inDeclarationArticle (declaration, article) = TRUE IF quantityDeclarationArticle(declaration, article);
 
-priceDeclarationSku 'Себестоимость (БУ)' (declaration, sku) = priceCustomDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
+priceCustomDeclarationSku 'Себестоимость (БУ)' (declaration, sku) = priceCustomDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
+priceManagerialDeclarationSku 'Себестоимость (УУ)' (declaration, sku) = priceManagerialDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
 
-priceDeclarationArticle 'Себестоимость (БУ)' (declaration, article) = GROUP MAX priceDeclarationSku(declaration, sku)
+priceCustomDeclarationArticle 'Себестоимость (БУ)' (declaration, article) = GROUP MAX priceCustomDeclarationSku(declaration, sku)
                                                                              BY declaration, articleSku(sku);
+
+priceManagerialDeclarationArticle 'Себестоимость (УУ)' (declaration, article) = GROUP MAX priceManagerialDeclarationSku(declaration, sku)
+                                                                                       BY declaration, articleSku(sku);
 
 
 // для экспорта в Декларант
