@@ -24,11 +24,16 @@ nameSkuWHtoSTrDetail 'Наименование товара' (WHtoSTrDetail) = n
 
 @defineRBCorrespondingDocument(WHtoSTr, warehouse, 'Оптовый склад', sku, 'Расход на магазин', store, 'Магазин');
 
+transitWarehouseWHtoSTr 'Промежуточный склад (ИД)' (WHtoSTr) = DATA warehouse (WHtoSTr) IN idGroup;
+nameTransitWarehouseWHtoSTr 'Промежуточный склад' (WHtoSTr) = name(transitWarehouseWHtoSTr(WHtoSTr)) IN documentHeaderGroup;
 //nameImporterWHtoSTr 'Компания' (WHtoSTr) = name(importerWarehouse(warehouseWHtoSTr(WHtoSTr)));
 
 CONSTRAINT companyWarehouse(warehouseWHtoSTr(WHtoSTr)) == companyStore(storeWHtoSTr(WHtoSTr))
     CHECKED BY storeWHtoSTr MESSAGE 'Перемещение в рамках одного юрлица';
-    
+
+CONSTRAINT WHtoSTr IS WHtoSTr AND NOT companyWarehouse (transitWarehouseWHtoSTr(WHtoSTr)) == companyStore(storeWHtoSTr(WHtoSTr))
+    CHECKED BY transitWarehouseWHtoSTr MESSAGE 'Склад не относится к юрлицу магазина-получателя';
+
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSTrDetail (ledger);
 
 UOMWHtoSTrDetail 'Единица измерения (ИД)' (WHtoSTrDetail) = DATA UOM (WHtoSTrDetail) IN idGroup;
@@ -81,7 +86,7 @@ quantityWHtoSTrSku (WHtoSTr, sku) = GROUP SUM quantityWHtoSTrDetail(WHtoSTrDetai
 
 FORM WHtoSTr 'Расход на магазин др.юрлица'
     OBJECTS w = WHtoSTr FIXED PANEL
-    PROPERTIES (w) numberObject, seriesObject, dateWHtoSTr, timeWHtoSTr, nameWarehouseWHtoSTr, nameStoreWHtoSTr,
+    PROPERTIES (w) numberObject, seriesObject, dateWHtoSTr, timeWHtoSTr, nameWarehouseWHtoSTr, nameTransitWarehouseWHtoSTr, nameStoreWHtoSTr,
                    quantityWHtoSTrDetailWHtoSTr, importerSumWHtoSTrDetailWHtoSTr, sumSupplierVATWHtoSTrDetailWHtoSTr,
                    sumInvoiceWHtoSTrDetailWHtoSTr, sumNetWeightWHtoSTr, packQuantityWHtoSTrDetailWHtoSTr, noteWHtoSTr
 
@@ -122,6 +127,7 @@ DESIGN WHtoSTr FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                     title = 'Контрагент';
                     ADD PROPERTY (nameStoreWHtoSTr);
+                    ADD PROPERTY (nameTransitWarehouseWHtoSTr);
                 }
                 ADD w.documentPrmGroup;
             }
@@ -138,7 +144,7 @@ DESIGN WHtoSTr FROM DEFAULT {
 
 FORM WHtoSTrs 'Расходы на магазин др.юрлица'
     OBJECTS w = WHtoSTr
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSTr, timeWHtoSTr, nameWarehouseWHtoSTr, nameStoreWHtoSTr,
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSTr, timeWHtoSTr, nameWarehouseWHtoSTr, nameTransitWarehouseWHtoSTr, nameStoreWHtoSTr,
                    countWHtoSTrDetailWHtoSTr, quantityWHtoSTrDetailWHtoSTr, importerSumWHtoSTrDetailWHtoSTr, sumSupplierVATWHtoSTrDetailWHtoSTr,
                    sumInvoiceWHtoSTrDetailWHtoSTr, packQuantityWHtoSTrDetailWHtoSTr, sumNetWeightWHtoSTr
 

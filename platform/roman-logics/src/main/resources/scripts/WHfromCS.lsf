@@ -26,6 +26,7 @@ CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferS
 skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
 @defineRBCorrespondingDocument(WHfromCS, warehouse, 'Оптовый склад', sku, 'Расход с СВХ', customStore, 'СВХ');
 
+quantityInTransferSkuLedger (ledger) += quantityWHfromCSDetail(ledger);
 //задание связки расход-приход
 CStoWHWHfromCS 'Расход прихода (ИД)' = DATA CStoWHPosted(WHfromCS) IN idGroup;
 WHfromCSCStoWH (CStoWH) = GROUP UNIQUE WHfromCS BY CStoWHWHfromCS (WHfromCS);
