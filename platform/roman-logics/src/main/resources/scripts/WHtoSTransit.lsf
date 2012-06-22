@@ -231,7 +231,8 @@ FORM WHtoSTrsDialog 'Расход на магазин др.юрлица'
 @defineConsignment(WHtoSTr);
 @implementConsignmentHeader(WHtoSTr, warehouse);
 
-senderConsignment (consignment) += warehouseWHtoSTr(consignment);
+senderConsignment (consignment) += companyWarehouse(warehouseWHtoSTr(consignment));
+recipientConsignment (consignment) += companyStore(storeWHtoSTr(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += WHtoSTrWHtoSTrDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuWHtoSTrDetail (consignmentDetail);

@@ -275,6 +275,7 @@ DESIGN CStoWHs FROM DEFAULT {
 @implementConsignmentHeader(CStoWH, customStore);
 
 senderConsignment (consignment) += customStoreCStoWH(consignment);
+recipientConsignment (consignment) += companyWarehouse(warehouseCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

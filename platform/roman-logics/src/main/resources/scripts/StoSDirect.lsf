@@ -1,0 +1,277 @@
+//From Store to Store (the same company)
+MODULE StoSDirect;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        Declaration,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+CLASS StoSDir 'Перемещение на магазин (одно юрлицо)' : historyObject, numberedObject, consignment;
+CLASS StoSDirDetail 'Строка перемещения на магазин (одно юрлицо)' : outAutoSkuLedger, consignmentDetail;
+CLASS StoSDirPosted 'Закрытое перемещение на магазин (одно юрлицо)' : StoSDir, postedObject, consignment;
+
+
+skuStoSDirDetail 'Товар (ИД)' (StoSDirDetail) = DATA sku (StoSDirDetail)IN idGroup;
+nameSkuStoSDirDetail 'Наименование товара' (StoSDirDetail) = nameSku(skuStoSDirDetail(StoSDirDetail));
+
+@defineDocumentBasePosted(StoSDir);
+
+senderDepartmentStoreStoSDir = DATA departmentStore(StoSDir) AUTOSET;
+nameSenderDepartmentStoreStoSDir 'Отдел-отправитель' (StoSDir) = name(senderDepartmentStoreStoSDir(StoSDir)) IN documentHeaderGroup
+        MINCHARWIDTH 20 PREFCHARWIDTH 40;
+senderStoreStoSDir 'Магазин-отправитель (ИД)' (StoSDir) = storeDepartmentStore(senderDepartmentStoreStoSDir(StoSDir));
+nameSenderStoreStoSDir 'Магазин-отправитель' (StoSDir)= name(senderStoreStoSDir(StoSDir));
+
+senderDepartmentStoreStoSDirDetail (StoSDirDetail) = senderDepartmentStoreStoSDir(StoSDirStoSDirDetail(StoSDirDetail));
+nameSenderDepartmentStoreStoSDirDetail 'Отдел-отправитель' (StoSDirDetail) = name(senderDepartmentStoreStoSDirDetail(StoSDirDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+
+recipientStoreStoSDir = DATA store(StoSDir) AUTOSET;
+nameRecipientStoreStoSDir 'Магазин-получатель' (StoSDir) = name(recipientStoreStoSDir(StoSDir)) IN documentHeaderGroup
+        MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+recipientStoreStoSDirDetail (StoSDirDetail) = recipientStoreStoSDir(StoSDirStoSDirDetail(StoSDirDetail));
+nameRecipientStoreStoSDirDetail 'Магазин-получатель' (StoSDirDetail) = name(recipientStoreStoSDirDetail(StoSDirDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+@defineDocumentDetailQuantity(StoSDir);
+@defineDocumentDetailNumbered(StoSDir);
+@defineDocumentHeaderQuantity(StoSDir);
+@defineDocumentDescription(StoSDir, 'Перемещение на магазин (одно юрлицо)');
+@implementSkuLedger (StoSDir, sku, senderDepartmentStore);
+@defineDocumentDetailProps (StoSDir);
+@defineAddDetailDialogSkuStock(StoSDir, sku, senderDepartmentStore, dialogSku);
+
+
+CONSTRAINT StoSDir IS StoSDir AND NOT companyStore(senderStoreStoSDir(StoSDir)) == companyStore(recipientStoreStoSDir(StoSDir))
+    CHECKED BY recipientStoreStoSDir MESSAGE 'Перемещение не в рамках одного юрлица';
+
+
+quantityOutAutoSkuLedger (ledger) += quantityStoSDirDetail (ledger);
+//descriptionSkuLedger (ledger) += descriptionStoSDirDetail (ledger);
+
+UOMStoSDirDetail 'Единица измерения (ИД)' (StoSDirDetail) = DATA UOM (StoSDirDetail) IN idGroup;
+shortNameUOMStoSDirDetail 'Единица измерения' (StoSDirDetail) = shortName(UOMStoSDirDetail(StoSDirDetail));
+
+retailPriceStoSDirDetail 'Розничная цена (ед.)' (StoSDirDetail) = DATA NUMERIC[14,3] (StoSDirDetail);
+retailSumStoSDirDetail 'Розничная сумма' (StoSDirDetail) = retailPriceStoSDirDetail(StoSDirDetail) * quantityStoSDirDetail(StoSDirDetail);
+retailSumStoSDirDetailStoSDir 'Розничная сумма' (StoSDir)= GROUP SUM retailSumStoSDirDetail(StoSDirDetail)
+    BY StoSDirStoSDirDetail(StoSDirDetail) IN documentSumGroup;
+
+retailVATStoSDirDetail(StoSDirDetail) = DATA range (StoSDirDetail);
+numberRetailVATStoSDirDetail 'НДС, номер' (StoSDirDetail) = numberRange(retailVATStoSDirDetail(StoSDirDetail));
+valueRetailVATStoSDirDetail 'НДС, %' (StoSDirDetail) = valueRateRangeDate
+    (retailVATStoSDirDetail(StoSDirDetail), dateStoSDirDetail(StoSDirDetail));
+
+CONSTRAINT taxRange(retailVATStoSDirDetail(StoSDirDetail)) != tax.taxVAT CHECKED BY retailVATStoSDirDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+sumRetailVATStoSDirDetail 'Сумма НДС' (StoSDirDetail) = [X*Y/100](
+    retailSumStoSDirDetail(StoSDirDetail), valueRetailVATStoSDirDetail(StoSDirDetail));
+
+sumRetailVATStoSDirDetailStoSDir 'Сумма НДС' (StoSDir) = GROUP SUM sumRetailVATStoSDirDetail(StoSDirDetail)
+    BY StoSDirStoSDirDetail(StoSDirDetail) IN documentSumGroup;
+
+importerSumStoSDirDetail 'Стоимость без НДС' (StoSDirDetail) = retailSumStoSDirDetail(StoSDirDetail) (-) sumRetailVATStoSDirDetail(StoSDirDetail);
+
+importerSumStoSDirDetailStoSDir 'Стоимость без НДС' (StoSDir)= GROUP SUM importerSumStoSDirDetail(StoSDirDetail) BY StoSDirStoSDirDetail(StoSDirDetail) IN documentSumGroup;
+
+
+netWeightStoSDirDetail 'Вес (ед.)' (StoSDirDetail) = netWeightSku(skuStoSDirDetail(StoSDirDetail));
+
+sumNetWeightStoSDirDetail 'Общая масса груза, кг.' (StoSDirDetail) = netWeightStoSDirDetail(StoSDirDetail)*quantityStoSDirDetail(StoSDirDetail);
+
+sumNetWeightStoSDir 'Общая масса груза, кг.' (StoSDir) = GROUP SUM sumNetWeightStoSDirDetail(StoSDirDetail) BY StoSDirStoSDirDetail(StoSDirDetail) IN documentSumGroup;
+
+packQuantityStoSDirDetail 'Количество грузовых мест' (StoSDirDetail) = round0(quantityStoSDirDetail(StoSDirDetail)/
+    UNION OVERRIDE 1 IF StoSDirDetail IS StoSDirDetail, quantityPackSku(skuStoSDirDetail(StoSDirDetail)));
+
+packQuantityStoSDirDetailStoSDir 'Общее количество грузовых мест' (StoSDir) = GROUP SUM packQuantityStoSDirDetail(StoSDirDetail) BY StoSDirStoSDirDetail(StoSDirDetail) IN documentSumGroup;
+
+balanceBSkuStoSDirDetail 'Остаток до' (StoSDirDetail) = balanceBSkuStockDateTime(skuStoSDirDetail(StoSDirDetail), senderDepartmentStoreStoSDirDetail(StoSDirDetail), dateTimeStoSDirDetail(StoSDirDetail));
+
+
+quantityStoSDirSku (StoSDir, sku) = GROUP SUM quantityStoSDirDetail(StoSDirDetail)
+                                          BY StoSDirStoSDirDetail(StoSDirDetail), skuStoSDirDetail(StoSDirDetail);
+
+@defineAddDetailDialogBarcode(StoSDir, sku);
+
+FORM StoSDir 'Перемещение на магазин (одно юрлицо)'
+    OBJECTS s = StoSDir FIXED PANEL
+    PROPERTIES (s) numberObject, seriesObject, dateStoSDir, timeStoSDir, nameSenderDepartmentStoreStoSDir, nameSenderStoreStoSDir, nameRecipientStoreStoSDir,
+                   balanceBSkuStoSDirDetail, quantityStoSDirDetailStoSDir, importerSumStoSDirDetailStoSDir, sumRetailVATStoSDirDetailStoSDir,
+                   retailSumStoSDirDetailStoSDir, sumNetWeightStoSDir, packQuantityStoSDirDetailStoSDir, noteStoSDir
+
+    OBJECTS d = StoSDirDetail
+    PROPERTIES(d) indexStoSDirDetail, barcodeStoSDirDetail, nameSkuStoSDirDetail, nameBrandStoSDirDetail, sidArticleStoSDirDetail,
+                  nameCategoryStoSDirDetail, sidColorStoSDirDetail, nameColorStoSDirDetail, shortNameUOMStoSDirDetail, balanceBSkuStoSDirDetail,
+                  quantityStoSDirDetail, retailPriceStoSDirDetail, importerSumStoSDirDetail, numberRetailVATStoSDirDetail, valueRetailVATStoSDirDetail,
+                  sumRetailVATStoSDirDetail, retailSumStoSDirDetail
+
+    PROPERTIES(s) TODRAW d addDetailDialogSkuStoSDirDetailStoSDir, addDetailDialogBarcodeStoSDirDetailStoSDir,
+                  deleteStoSDirDetailStoSDir
+
+
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inStoSDirStoSDirDetail(s, d)
+
+    EDIT StoSDir OBJECT s
+;
+
+DESIGN StoSDir FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD s.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD s.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameSenderDepartmentStoreStoSDir);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateStoSDir);
+                    ADD PROPERTY (timeStoSDir);
+                }
+                NEW case {
+                childConstraints = TO THE BOTTOM;
+                    title = 'Контрагент';
+                    ADD PROPERTY (nameRecipientStoreStoSDir);
+                }
+                ADD s.documentPrmGroup;
+            }
+            NEW row2 {
+                ADD s.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        };
+        ADD d.box;
+        ADD functions.box;
+    }
+}
+
+FORM StoSDirs 'Перемещиния на магазин (одно юрлицо)'
+    OBJECTS s = StoSDir
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSDir, timeStoSDir, nameSenderDepartmentStoreStoSDir, nameRecipientStoreStoSDir,
+                   countStoSDirDetailStoSDir, quantityStoSDirDetailStoSDir, importerSumStoSDirDetailStoSDir, sumRetailVATStoSDirDetailStoSDir,
+                   retailSumStoSDirDetailStoSDir, sumNetWeightStoSDir, packQuantityStoSDirDetailStoSDir
+
+    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+
+    PROPERTIES (s) ADDFORM, EDITFORM SHOWIF isDraftStoSDir(s), delete FORCE PANEL SHOWIF isDraftStoSDir(s),
+                   postStoSDir SHOWIF isDraftStoSDir(s), unpostStoSDir SHOWIF isPostedStoSDir(s)
+
+    PROPERTIES (s) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                   printConsignmentVerticalB, printConsignmentHorizontalB,
+                   printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                   printConsignmentSimpleVertical, printConsignmentSimpleAttach
+
+    OBJECTS d = StoSDirDetail
+    PROPERTIES(d) READONLY indexStoSDirDetail, barcodeStoSDirDetail, nameSkuStoSDirDetail, shortNameUOMStoSDirDetail,
+                  quantityStoSDirDetail, retailPriceStoSDirDetail, importerSumStoSDirDetail, numberRetailVATStoSDirDetail, valueRetailVATStoSDirDetail,
+                  sumRetailVATStoSDirDetail, retailSumStoSDirDetail
+
+    FILTERS inStoSDirStoSDirDetail(s, d)
+;
+
+DESIGN StoSDirs FROM DEFAULT {
+    ADD s.box{
+        PROPERTY (delete(s)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        PROPERTY (objectClassName(s)) {
+            preferredCharWidth = 15;
+        }
+        }
+    }
+    ADD d.box;
+
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD s.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD s.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        ADD s.printGroup {
+            childConstraints = TO THE BOTTOM;
+            NEW case55{
+                childConstraints = TO THE RIGHT;
+
+                NEW contOne {
+                    title = 'Накладная';
+                    ADD PROPERTY(editConsignment);
+                }
+                NEW tn{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТН-2';
+                    ADD PROPERTY(printConsignmentSimpleVertical);
+                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    ADD PROPERTY(printConsignmentSimpleAttach);
+                }
+            }
+            NEW ttn1{
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+                ADD PROPERTY(printConsignmentHorizontalB);
+                ADD PROPERTY(printConsignmentAttach);
+            }
+
+        }
+
+    }
+    ADD functions.box;
+}
+
+FORM StoSDirsDialog 'Перемещения на магазин (одно юрлицо)'
+    OBJECTS s = StoSDirPosted
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSDir, nameSenderDepartmentStoreStoSDir,
+                   nameRecipientStoreStoSDir, countStoSDirDetailStoSDir, quantityStoSDirDetailStoSDir, importerSumStoSDirDetailStoSDir,
+                   sumRetailVATStoSDirDetailStoSDir, retailSumStoSDirDetailStoSDir
+    DIALOG StoSDirPosted OBJECT s
+;
+
+@defineConsignment(StoSDir);
+@implementConsignmentHeader(StoSDir, senderDepartmentStore);
+
+senderConsignment (consignment) += companyStore(senderStoreStoSDir(consignment));
+recipientConsignment (consignment) += companyStore(recipientStoreStoSDir(consignment));
+
+consignmentConsignmentDetail (consignmentDetail) += StoSDirStoSDirDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuStoSDirDetail (consignmentDetail);
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMStoSDirDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityStoSDirDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += retailPriceStoSDirDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueRetailVATStoSDirDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += sumRetailVATStoSDirDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += importerSumStoSDirDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += retailSumStoSDirDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightStoSDirDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityStoSDirDetail(consignmentDetail);
+//currencyConsignment(consignment) += currencyStoSDir(consignment);
+//isCustomsFlowConsignment (consignment) += consignment IS StoSDir;
+noteConsignment(consignment) += noteStoSDir(consignment);
+
+//noteConsignmentDetail
+
+//todo: Надо наполнить свойствами накладную. (УНП...)

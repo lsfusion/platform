@@ -14,6 +14,7 @@ REQUIRE System,
         WHfromCS,
         WHtoSDirect,
         WHtoSTransit,
+        StoSDirect,
         SfromWH,
         WholesalePrice,
         RetailPrice,
@@ -127,6 +128,7 @@ NAVIGATOR {
             ADD WHtoSDirs;
             ADD SfromWHs;
             ADD WHtoSTrs;
+            ADD StoSDirs;
         }
     }
 
@@ -154,18 +156,9 @@ NAVIGATOR {
         ADD dialogWarePrice;
         ADD addRangeWare;
         ADD dialogRangeWare;
-        ADD addAddressLegalEntity;
-        ADD dialogAddressLegalEntity;
-        ADD addPostAddressLegalEntity;
-        ADD dialogPostAddressLegalEntity;
-        ADD addManagerLegalEntity;
-        ADD dialogManagerLegalEntity;
-        ADD addAccountantLegalEntity;
-        ADD dialogAccountantLegalEntity;
-        ADD addPhoneLegalEntity;
-        ADD dialogPhoneLegalEntity;
         ADD addAddressBank;
         ADD dialogAddressBank;
+        ADD StoSDirsDialog;
         ADD bank;
         ADD position;
         ADD employee;
@@ -222,6 +215,7 @@ NAVIGATOR {
         ADD warehouse;
         ADD stores;
         ADD WHtoSTr;
+        ADD StoSDir;
         ADD WHtoSTrsDialog;
     }
 }

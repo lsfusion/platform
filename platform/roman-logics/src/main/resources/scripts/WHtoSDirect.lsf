@@ -236,7 +236,8 @@ FORM WHtoSDirsDialog 'Расход на магазин (одно юрлицо)'
 @defineConsignment(WHtoSDir);
 @implementConsignmentHeader(WHtoSDir, warehouse);
 
-senderConsignment (consignment) += warehouseWHtoSDir(consignment);
+senderConsignment (consignment) += companyWarehouse(warehouseWHtoSDir(consignment));
+recipientConsignment (consignment) += companyStore(storeWHtoSDir(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += WHtoSDirWHtoSDirDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuWHtoSDirDetail (consignmentDetail);
