@@ -122,7 +122,7 @@ FORM SfromWH 'Приход на магазин'
     PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
                   nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
                   quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail, wholesalePriceSfromWHDetail, retailPriceSfromWHDetail
+                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail, retailPriceSfromWHDetail
 
     PROPERTIES(sf) TODRAW d addDetailDialogSkuSfromWHDetailSfromWH, addDetailDialogBarcodeSfromWHDetailSfromWH,
                   deleteSfromWHDetailSfromWH
@@ -195,7 +195,7 @@ FORM SfromWHs 'Приходы на магазин'
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) READONLY indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
                   quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, importerSumSfromWHDetail, numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail, wholesalePriceSfromWHDetail, retailPriceSfromWHDetail
+                  sumSupplierVATSfromWHDetail, sumInvoiceSfromWHDetail, retailPriceSfromWHDetail
 
     FILTERS inSfromWHSfromWHDetail(sf, d)
 ;
