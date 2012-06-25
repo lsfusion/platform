@@ -133,7 +133,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 itemQuery.properties.put("price", retailLM.findLCPByCompoundName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
                 itemQuery.properties.put("daysExpiry", retailLM.findLCPByCompoundName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
                 itemQuery.properties.put("hoursExpiry", retailLM.findLCPByCompoundName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("expiryDate", retailLM.findLCPByCompoundName("expiryDateSkuDepartmentStoreMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                itemQuery.properties.put("expiryDate", retailLM.findLCPByCompoundName("expiryDataMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
                 itemQuery.properties.put("labelFormat", retailLM.findLCPByCompoundName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
                 itemQuery.properties.put("composition", retailLM.findLCPByCompoundName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
                 itemQuery.properties.put("isWeight", retailLM.findLCPByCompoundName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
@@ -156,7 +156,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     Integer numberItemGroup = (Integer) entry.getValue().get("itemGroup");
                     String canonicalNameItemGroup = numberItemGroup == null ? "" : (String) retailLM.findLCPByCompoundName("canonicalNameItemGroup").read(session, new DataObject(numberItemGroup, (ConcreteClass) retailLM.findClassByCompoundName("itemGroup")));
 
-                    Integer cellScalesObject = (Integer) retailLM.findLCPByCompoundName("groupScalesCompositionToCellScales").read(session, groupObject, new DataObject(composition, TextClass.instance));
+                    Integer cellScalesObject = composition==null ? null : (Integer) retailLM.findLCPByCompoundName("groupScalesCompositionToCellScales").read(session, groupObject, new DataObject(composition, TextClass.instance));
                     Integer compositionNumberCellScales = cellScalesObject == null ? null : (Integer) retailLM.findLCPByCompoundName("numberCellScales").read(session, new DataObject(cellScalesObject, (ConcreteClass) retailLM.findClassByCompoundName("cellScales")));
 
                     itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expiryDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberItemGroup == null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
@@ -517,6 +517,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             ImportField sidTypePaymentField = new ImportField(retailLM.findLCPByCompoundName("sidPaymentType"));
             ImportField sumPaymentField = new ImportField(retailLM.findLCPByCompoundName("sumPayment"));
             ImportField numberPaymentField = new ImportField(retailLM.findLCPByCompoundName("numberPayment"));
+            
+            ImportField numberDiscountCardField = new ImportField(retailLM.findLCPByCompoundName("numberDiscountCard"));
 
             List<ImportProperty<?>> saleProperties = new ArrayList<ImportProperty<?>>();
             List<ImportProperty<?>> returnProperties = new ArrayList<ImportProperty<?>>();
@@ -525,7 +527,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("zReportPosted"), retailLM.findLCPByCompoundName("numberNumberCashRegisterToZReportPosted").getMapping(zReportNumberField, cashRegisterField));
             ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("cashRegister"), retailLM.findLCPByCompoundName("cashRegisterNumber").getMapping(cashRegisterField));
             ImportKey<?> billKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("bill"), retailLM.findLCPByCompoundName("zReportBillToBill").getMapping(zReportNumberField, numberBillField, cashRegisterField));
-            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("item"), getLCP("Barcode_skuBarcodeIdDate").getMapping(idBarcodeBillDetailField, dateField));
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("item"), retailLM.findLCPByCompoundName("skuBarcodeIdDate").getMapping(idBarcodeBillDetailField, dateField));
+            ImportKey<?> discountCardKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("discountCard"), retailLM.findLCPByCompoundName("numberToDiscountCard").getMapping(numberDiscountCardField, dateField));
 
             saleProperties.add(new ImportProperty(zReportNumberField, retailLM.findLCPByCompoundName("numberZReport").getMapping(zReportKey)));
             saleProperties.add(new ImportProperty(cashRegisterField, retailLM.findLCPByCompoundName("cashRegisterZReport").getMapping(zReportKey),
@@ -539,6 +542,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             saleProperties.add(new ImportProperty(discountSumSaleBillField, retailLM.findLCPByCompoundName("discountSumSaleBill").getMapping(billKey)));
             saleProperties.add(new ImportProperty(zReportNumberField, retailLM.findLCPByCompoundName("zReportBill").getMapping(billKey),
                     LM.baseLM.object(retailLM.findClassByCompoundName("zReport")).getMapping(zReportKey)));
+            saleProperties.add(new ImportProperty(numberDiscountCardField, retailLM.findLCPByCompoundName("numberDiscountCard").getMapping(discountCardKey)));
+            saleProperties.add(new ImportProperty(numberDiscountCardField, retailLM.findLCPByCompoundName("discountCardBill").getMapping(billKey),
+                    LM.baseLM.object(retailLM.findClassByCompoundName("discountCard")).getMapping(discountCardKey)));
 
             ImportKey<?> billSaleDetailKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("billSaleDetail"), retailLM.findLCPByCompoundName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField, cashRegisterField));
             saleProperties.add(new ImportProperty(numberBillDetailField, retailLM.findLCPByCompoundName("numberBillDetail").getMapping(billSaleDetailKey)));
@@ -566,7 +572,10 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             returnProperties.add(new ImportProperty(discountSumReturnBillField, retailLM.findLCPByCompoundName("discountSumReturnBill").getMapping(billKey)));
             returnProperties.add(new ImportProperty(zReportNumberField, retailLM.findLCPByCompoundName("zReportBill").getMapping(billKey),
                     LM.baseLM.object(retailLM.findClassByCompoundName("zReport")).getMapping(zReportKey)));
-
+            returnProperties.add(new ImportProperty(numberDiscountCardField, retailLM.findLCPByCompoundName("numberDiscountCard").getMapping(discountCardKey)));
+            returnProperties.add(new ImportProperty(numberDiscountCardField, retailLM.findLCPByCompoundName("discountCardBill").getMapping(billKey),
+                    LM.baseLM.object(retailLM.findClassByCompoundName("discountCard")).getMapping(discountCardKey)));
+            
             ImportKey<?> billReturnDetailKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("billReturnDetail"), retailLM.findLCPByCompoundName("zReportBillBillDetailToBillDetail").getMapping(zReportNumberField, numberBillField, numberBillDetailField, cashRegisterField));
             returnProperties.add(new ImportProperty(numberBillDetailField, retailLM.findLCPByCompoundName("numberBillDetail").getMapping(billReturnDetailKey)));
             returnProperties.add(new ImportProperty(idBarcodeBillDetailField, retailLM.findLCPByCompoundName("idBarcodeBillDetail").getMapping(billReturnDetailKey)));
@@ -590,11 +599,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                     if (sale.quantityBillDetail < 0)
                         dataReturn.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
                                 sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                                sale.discountSumBillDetail, sale.discountSumBill));
+                                sale.discountSumBillDetail, sale.discountSumBill, sale.numberDiscountCard));
                     else
                         dataSale.add(Arrays.<Object>asList(sale.cashRegisterNumber, sale.zReportNumber, sale.date, sale.time, sale.billNumber,
                                 sale.numberBillDetail, sale.barcodeItem, sale.quantityBillDetail, sale.priceBillDetail, sale.sumBillDetail,
-                                sale.discountSumBillDetail, sale.discountSumBill));
+                                sale.discountSumBillDetail, sale.discountSumBill, sale.numberDiscountCard));
                     if (sale.sumCash != 0)
                         dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.billNumber, sale.cashRegisterNumber, "cash", sale.sumCash, 1));
                     if (sale.sumCard != 0)
@@ -604,18 +613,18 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
             List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
                     numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillSaleDetailField,
                     retailPriceBillSaleDetailField, retailSumBillSaleDetailField, discountSumBillSaleDetailField,
-                    discountSumSaleBillField);
+                    discountSumSaleBillField, numberDiscountCardField);
 
             List<ImportField> returnImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,
                     numberBillField, numberBillDetailField, idBarcodeBillDetailField, quantityBillReturnDetailField,
                     retailPriceBillReturnDetailField, retailSumBillReturnDetailField, discountSumBillReturnDetailField,
-                    discountSumReturnBillField);
+                    discountSumReturnBillField, numberDiscountCardField);
 
 
-            new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, billKey, billSaleDetailKey, itemKey),
+            new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, billKey, billSaleDetailKey, itemKey, discountCardKey),
                     saleProperties).synchronize(true);
 
-            new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, billKey, billReturnDetailKey, itemKey),
+            new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, billKey, billReturnDetailKey, itemKey, discountCardKey),
                     returnProperties).synchronize(true);
 
             ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) retailLM.findClassByCompoundName("payment"), retailLM.findLCPByCompoundName("zReportBillPaymentToPayment").getMapping(zReportNumberField, numberBillField, numberPaymentField, cashRegisterField));

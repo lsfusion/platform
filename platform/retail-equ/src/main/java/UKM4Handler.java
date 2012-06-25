@@ -1,3 +1,5 @@
+import com.google.common.collect.Maps;
+import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.Util;
 import org.xBaseJ.fields.CharField;
@@ -5,14 +7,14 @@ import org.xBaseJ.fields.DateField;
 import org.xBaseJ.fields.Field;
 import org.xBaseJ.fields.NumField;
 import org.xBaseJ.xBaseJException;
+import platform.server.data.Time;
 import retail.api.remote.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
 
@@ -124,7 +126,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                     PRICERUB.put(item.price);
                     CLIENTINDE.put(0);
                     DELETED.put(1);
-                    MODDATE.put(new GregorianCalendar(transactionInfo.date.getYear() + 1900, transactionInfo.date.getMonth()+1, transactionInfo.date.getDay()));/*transactionInfo.date*/
+                    MODDATE.put(new GregorianCalendar(transactionInfo.date.getYear() + 1900, transactionInfo.date.getMonth() + 1, transactionInfo.date.getDay()));/*transactionInfo.date*/
                     filePlucash.write();
                     filePlucash.file.setLength(filePlucash.file.length() - 1);
                 }
@@ -157,10 +159,134 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
 
     @Override
     public SalesBatch readSalesInfo(List<CashRegisterInfo> cashRegisterInfoList) throws IOException, ParseException {
-        return null;
+        Map<String, String> cashRegisterDirectories = new HashMap<String, String>();
+        for (CashRegisterInfo cashRegister : cashRegisterInfoList) {
+            if ((cashRegister.directory != null) && (!cashRegisterDirectories.containsValue(cashRegister.directory)))
+                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.directory);
+            if ((cashRegister.port != null) && (!cashRegisterDirectories.containsValue(cashRegister.port)))
+                cashRegisterDirectories.put(cashRegister.cashRegisterNumber, cashRegister.port);
+        }
+        List<SalesInfo> salesInfoList = new ArrayList<SalesInfo>();
+        List<String> readFiles = new ArrayList<String>();
+        for (Map.Entry<String, String> entry : cashRegisterDirectories.entrySet()) {
+            DBF importSailFile = null;
+            DBF importDiscFile = null;
+            DBF importCardFile = null;
+            Map<String, Double> discountMap = new HashMap<String, Double>();
+            Map<String, Integer> discCardMap = new HashMap<String, Integer>();
+            try {
+                if (entry.getValue() != null) {
+
+                    String fileDiscPath = entry.getValue().trim() + "/CASHDISC.DBF";
+                    if (new File(fileDiscPath).exists()) {
+                        importDiscFile = new DBF(fileDiscPath);
+                        readFiles.add(fileDiscPath);
+                        int recordDiscCount = importDiscFile.getRecordCount();
+                        for (int i = 0; i < recordDiscCount; i++) {
+                            importDiscFile.read();
+
+                            String cashRegisterNumber = new String(importDiscFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
+                            String zNumber = new String(importDiscFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
+                            Integer billNumber = new Integer(new String(importDiscFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
+                            Integer numberBillDetail = new Integer(new String(importDiscFile.getField("ID").getBytes(), "Cp1251").trim());
+                            Integer type = new Integer(new String(importDiscFile.getField("DISCOUNTIN").getBytes(), "Cp1251").trim());
+                            Double discountSum = new Double(new String(importDiscFile.getField("DISCOUNTRU").getBytes(), "Cp1251").trim());
+
+                            String sid = cashRegisterNumber + "_" + zNumber + "_" + billNumber + "_" + numberBillDetail;
+                            if (type.equals(4)) {
+                                Double tempSum = discountMap.get(sid);
+                                discountMap.put(sid, discountSum + (tempSum == null ? 0 : tempSum));
+                            }
+                        }
+                        importDiscFile.close();
+                    }
+
+                    String fileCardPath = entry.getValue().trim() + "/CASHDCRD.DBF";
+                    if (new File(fileCardPath).exists()) {
+                        importCardFile = new DBF(fileCardPath);
+                        readFiles.add(fileCardPath);
+                        int recordCardCount = importCardFile.getRecordCount();
+                        for (int i = 0; i < recordCardCount; i++) {
+                            importCardFile.read();
+
+                            String cashRegisterNumber = new String(importCardFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
+                            String zNumber = new String(importCardFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
+                            Integer billNumber = new Integer(new String(importCardFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
+                            String cardNumberString = new String(importCardFile.getField("CARDNUMBER").getBytes(), "Cp1251").trim();
+                            Integer cardNumber = new Integer(cardNumberString.substring(cardNumberString.length()-4, cardNumberString.length()));
+
+                            String sid = cashRegisterNumber + "_" + zNumber + "_" + billNumber;
+                            discCardMap.put(sid, cardNumber);
+                        }
+                        importCardFile.close();
+                    }
+
+                    String fileSailPath = entry.getValue().trim() + "/CASHSAIL.DBF";
+                    if (new File(fileSailPath).exists()) {
+                        importSailFile = new DBF(fileSailPath);
+                        readFiles.add(fileSailPath);
+                        int recordSailCount = importSailFile.getRecordCount();
+                        Map<Integer, Double[]> billNumberSumBill = new HashMap<Integer, Double[]>();
+
+                        //for (int i = 0; i < 2624; i++) {
+                        //    importSailFile.read();
+                        //}
+                        for (int i = 0; i < /*recordSailCount*//*83*/130; i++) {
+                            importSailFile.read();
+
+                            Integer operation = new Integer(new String(importSailFile.getField("OPERATION").getBytes(), "Cp1251").trim());
+                            //0 - возврат cash, 1 - продажа cash, 2,4 - возврат card, 3,5 - продажа card
+
+                            String cashRegisterNumber = new String(importSailFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
+                            String zNumber = new String(importSailFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
+                            Integer billNumber = new Integer(new String(importSailFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
+                            Integer numberBillDetail = new Integer(new String(importSailFile.getField("ID").getBytes(), "Cp1251").trim());
+                            java.sql.Date date = new java.sql.Date(new SimpleDateFormat("yyyymmdd").parse(new String(importSailFile.getField("DATE").getBytes(), "Cp1251").trim()).getTime());
+                            String timeString = new String(importSailFile.getField("TIME").getBytes(), "Cp1251").trim();
+                            timeString = timeString.length() == 3 ? ("0" + timeString) : timeString;
+                            java.sql.Time time = new java.sql.Time(DateUtils.parseDate(timeString, new String[]{"hhmm"}).getTime());
+                            String barcodeBillDetail = new String(importSailFile.getField("CARDARTICU").getBytes(), "Cp1251").trim();
+                            Double quantityBillDetail = new Double(new String(importSailFile.getField("QUANTITY").getBytes(), "Cp1251").trim());
+                            Double priceBillDetail = new Double(new String(importSailFile.getField("PRICERUB").getBytes(), "Cp1251").trim());
+                            Double sumBillDetail = new Double(new String(importSailFile.getField("TOTALRUB").getBytes(), "Cp1251").trim());
+                            Double discountSumBillDetail = discountMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber + "_" + numberBillDetail);
+                            Integer discountCardNumber = discCardMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber);
+                            
+                            Double[] tempSumBill = billNumberSumBill.get(billNumber);
+                            billNumberSumBill.put(billNumber, new Double[]{(tempSumBill != null ? tempSumBill[0] : 0) + (operation <= 1 ? sumBillDetail : 0),
+                                    (tempSumBill != null ? tempSumBill[1] : 0) + (operation > 1 ? sumBillDetail : 0)});
+
+                            salesInfoList.add(new SalesInfo(cashRegisterNumber, zNumber, billNumber, date, time, 0.0, 0.0, 0.0,
+                                    barcodeBillDetail, quantityBillDetail * (operation % 2 == 1 ? 1 : -1), priceBillDetail, sumBillDetail * (operation % 2 == 1 ? 1 : -1),
+                                    discountSumBillDetail, null, discountCardNumber, numberBillDetail, null));
+                        }
+                        for (SalesInfo salesInfo : salesInfoList) {
+                            salesInfo.sumCash = billNumberSumBill.get(salesInfo.billNumber)[0];
+                            salesInfo.sumCard = billNumberSumBill.get(salesInfo.billNumber)[1];
+                            salesInfo.sumBill = salesInfo.sumCash + salesInfo.sumCard;
+                        }
+                    }
+                }
+            } catch (xBaseJException e) {
+                throw new RuntimeException(e.toString(), e.getCause());
+            } finally {
+                if (importSailFile != null)
+                    importSailFile.close();
+                if (importCardFile != null)
+                    importCardFile.close();
+                if (importDiscFile != null)
+                    importDiscFile.close();
+            }
+        }
+        return new UKM4SalesBatch(salesInfoList, readFiles);
     }
 
     @Override
     public void finishReadingSalesInfo(UKM4SalesBatch salesBatch) {
+        for (String readFile : salesBatch.readFiles) {
+            File f = new File(readFile);
+            if (!f.delete())
+                throw new RuntimeException("The file " + f.getAbsolutePath() + " can not be deleted");
+        }
     }
 }

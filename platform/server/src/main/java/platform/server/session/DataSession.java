@@ -460,7 +460,8 @@ public class DataSession extends BaseMutableModifier implements SessionChanges, 
 
     // для hint'ов
     private Modifier getSessionEventModifier() {
-        FormInstance form = Context.context.get().getFormInstance();
+        //FormInstance form = Context.context.get().getFormInstance();
+        FormInstance form = Context.context.get()!=null ? Context.context.get().getFormInstance() : null;
         if(form!=null)
             return form;
         return this;

@@ -1801,6 +1801,8 @@ numberDiscountCard 'Номер дисконтной карты' (discountCard) =
         PARTITION SUM 1 IF discountCard IS discountCard
         ORDER discountCard IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
 
+numberToDiscountCard (discountCard) = GROUP UNIQUE discountCard BY numberDiscountCard(discountCard) WHERE discountCard IS discountCard;
+
 customerDiscountCard (discountCard) = DATA customer(discountCard);
 nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
 

@@ -19,12 +19,14 @@ public class SalesInfo implements Serializable {
     public Double sumBillDetail;
     public Double discountSumBillDetail;
     public Double discountSumBill;
+    public Integer numberDiscountCard;
     public Integer numberBillDetail;
     public String filename;
 
     public SalesInfo(String cashRegisterNumber, String zReportNumber, Integer billNumber, Date date, Time time,
-                     Double sumBill, Double sumCard, Double sumCash, String barcodeItem, Double quantityBillDetail, Double priceBillDetail,
-                     Double sumBillDetail, Double discountSumBillDetail, Double discountSumBill, Integer numberBillDetail, String filename) {
+                     Double sumBill, Double sumCard, Double sumCash, String barcodeItem, Double quantityBillDetail,
+                     Double priceBillDetail, Double sumBillDetail, Double discountSumBillDetail, Double discountSumBill,
+                     Integer numberDiscountCard, Integer numberBillDetail, String filename) {
         this.cashRegisterNumber = cashRegisterNumber;
         this.zReportNumber = zReportNumber;
         this.billNumber = billNumber;
@@ -39,6 +41,7 @@ public class SalesInfo implements Serializable {
         this.sumBillDetail = sumBillDetail;
         this.discountSumBillDetail = discountSumBillDetail;
         this.discountSumBill = discountSumBill;
+        this.numberDiscountCard = numberDiscountCard;
         this.numberBillDetail = numberBillDetail;
         this.filename = filename;
     }

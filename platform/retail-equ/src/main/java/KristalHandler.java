@@ -148,7 +148,7 @@ public class KristalHandler extends CashRegisterHandler<KristalSalesBatch> {
                             Double price = new Double(new String(billDetailFile.getField("PRICE").getBytes(), "Cp1251").trim());
                             Double sumBillDetail = new Double(new String(billDetailFile.getField("SUM").getBytes(), "Cp1251").trim());
                             salesInfoList.add(new SalesInfo(cashRegisterNumber, zReportNumber, billNumber, billInfo.date,
-                                    billInfo.time, billInfo.sumBill, billInfo.sumCard, billInfo.sumCash, barcode, quantity, price, sumBillDetail, null, billInfo.discountSum, billInfo.numberBillDetail++, null));
+                                    billInfo.time, billInfo.sumBill, billInfo.sumCard, billInfo.sumCash, barcode, quantity, price, sumBillDetail, null, billInfo.discountSum, null, billInfo.numberBillDetail++, null));
                         }
                     }
                     billDetailFile.close();
