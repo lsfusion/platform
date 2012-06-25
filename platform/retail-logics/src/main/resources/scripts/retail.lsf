@@ -101,26 +101,6 @@ META defineDocumentDetailItemExtra (object)
 
 END
 
-META defineDocumentDetailItemActions (object)
-    add###object##DetailBarcode 'Добавить строку по штрих-коду' = ACTION (object) {
-        FORM barcodeInput MODAL;
-
-        IF formResult() == formResult.ok THEN {
-            SET tmpSku() <- skuBarcodeIdDate(chosenString('barcode'), date###object(object));
-            IF tmpSku() IS item THEN {
-                ADDOBJ object##Detail;
-                FOR o == addedObject() DO {
-                    SET object###object##Detail(o) <- object AS object;
-                    SET item###object##Detail(o) <- tmpSku();
-            //        SET quantity###object##Detail(o) <- amountBarcode(barcodeIdDate(chosenString('barcode'), date###object(object)));
-                };
-            } ELSE
-                MESSAGE 'Не найден штрих-код';
-        };
-
-    } TOOLBAR EDITKEY 'F4';
-END
-
 META defineDocumentBaseDepartmentStoreItem (object)
     @defineDocumentBase(object);
 
@@ -197,32 +177,6 @@ META defineDocumentDetailPackWeightItem (object)
     grossWeight###object##Detail 'Масса груза, т.' (idetail) = round3(
         grossWeightItem(item###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
 END
-
-
-//-----------------------------Заполнение из документа ТСД--------------------------------//
-
-META defineAddDetailDialogTerminal (object)
-    addDetailDialogTerminal###object##Detail###object 'Импорт из ТСД' (object) = ACTION (object) {
-        FORM terminalDocumentsDialog MODAL;
-        IF formResult() == formResult.ok THEN {
-            LOCAL document = terminalDocument ();
-            SET document() <- chosenObject('td');
-            SET usedTerminalDocument(terminalDocument) IF terminalDocument == document()  <- TRUE;
-
-            FOR terminalDocumentTerminalDocumentDetail(tdd) == document()  DO {
-                ADDOBJ object##Detail;
-                FOR o == addedObject() DO {
-                    SET object###object##Detail(o) <- object AS object;
-                    SET item###object##Detail(o) <- skuBarcode(barcodeIdDate(barcodeTerminalDocumentDetail(tdd), date###object(object)));
-                    SET quantity###object##Detail(o) <- quantityTerminalDocumentDetail(tdd);
-                }
-            }
-
-        }
-    } TOOLBAR;
-END
-
-
 
 // ----------------------------------- Поставщик ------------------------------------------ //
 
@@ -3052,7 +3006,7 @@ descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '\'С-
 
 @defineAddDetailDialogSkuStock(specification, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(specification, item);
-@defineAddDetailDialogTerminal(specification);
+@defineAddDetailDialogTerminal(specification, item);
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -3188,7 +3142,7 @@ descriptionStatementDetail 'Название документа' (statementDetai
 
 @defineAddDetailDialogSkuStock(statement, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(statement, item);
-@defineAddDetailDialogTerminal(statement);
+@defineAddDetailDialogTerminal(statement, item);
 
 @implementSkuLedger(statement, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityStatementDetail(ledger);
@@ -3326,7 +3280,7 @@ descriptionShipmentDetail 'Название документа' (shipmentDetail)
 
 @defineAddDetailDialogSku(shipment, item, dialogSku);
 @defineAddDetailDialogBarcode(shipment, item);
-@defineAddDetailDialogTerminal(shipment);
+@defineAddDetailDialogTerminal(shipment, item);
 
 @implementSkuLedger(shipment, item, departmentStore);
 @implementBatch(shipment, item);
@@ -3590,7 +3544,7 @@ descriptionWriteOffDetail 'Название документа' (writeOffDetail)
 
 @defineAddDetailDialogSkuStock(writeOff, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(writeOff, item);
-@defineAddDetailDialogTerminal(writeOff);
+@defineAddDetailDialogTerminal(writeOff, item);
 
 @implementSkuLedger(writeOff, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityWriteOffDetail(ledger);
@@ -3633,7 +3587,7 @@ descriptionInnerFlowDetail 'Название документа' (innerFlowDetai
 
 @defineAddDetailDialogSkuStock(innerFlow, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(innerFlow, item);
-@defineAddDetailDialogTerminal(innerFlow);
+@defineAddDetailDialogTerminal(innerFlow, item);
 
 @implementSkuLedger(innerFlow, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
@@ -3790,7 +3744,7 @@ descriptionInnerArrivalDetail 'Название документа' (innerArriva
 
 @defineAddDetailDialogSku(innerArrival, item, dialogSku);
 @defineAddDetailDialogBarcode(innerArrival, item);
-@defineAddDetailDialogTerminal(innerArrival);
+@defineAddDetailDialogTerminal(innerArrival, item);
 
 // для расчета себестоимости
 
@@ -3955,7 +3909,7 @@ descriptionReturnSupplierDetail 'Название документа' (returnSup
 
 @defineAddDetailDialogSkuStockSupplier(returnSupplier, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(returnSupplier, item);
-@defineAddDetailDialogTerminal(returnSupplier);
+@defineAddDetailDialogTerminal(returnSupplier, item);
 
 @implementSkuLedger(returnSupplier, item, departmentStore);
 quantityOutUserSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
@@ -4286,7 +4240,7 @@ descriptionUserPriceChangeDetail 'Название документа' (userPric
 
 @defineAddDetailDialogSkuStock(userPriceChange, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(userPriceChange, item);
-@defineAddDetailDialogTerminal(userPriceChange);
+@defineAddDetailDialogTerminal(userPriceChange, item);
 
 @implementBaseSkuDepartmentStoreLedger(userPriceChange, item);
 
@@ -4329,7 +4283,7 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
 
 @defineAddDetailDialogSkuStock(disparity, item, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(disparity, item);
-@defineAddDetailDialogTerminal(disparity);
+@defineAddDetailDialogTerminal(disparity, item);
 
 @implementSkuLedger(disparity, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityDisparityDetail(ledger);

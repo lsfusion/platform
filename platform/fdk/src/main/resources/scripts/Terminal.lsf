@@ -265,6 +265,28 @@ DESIGN terminalDocumentsDialog FROM DEFAULT {
     ADD functions.box;
 }
 
+//----------------------------- Макросы для документов --------------------------------//
+
+META defineAddDetailDialogTerminal (object, skuProp)
+    addDetailDialogTerminal###object##Detail###object 'Импорт из ТСД' (object) = ACTION (object) {
+        FORM terminalDocumentsDialog MODAL;
+        IF formResult() == formResult.ok THEN {
+            LOCAL document = terminalDocument ();
+            SET document() <- chosenObject('td');
+            SET usedTerminalDocument(terminalDocument) IF terminalDocument == document()  <- TRUE;
+
+            FOR terminalDocumentTerminalDocumentDetail(tdd) == document()  DO {
+                ADDOBJ object##Detail;
+                FOR o == addedObject() DO {
+                    SET object###object##Detail(o) <- object AS object;
+                    SET skuProp###object##Detail(o) <- skuBarcode(barcodeIdDate(barcodeTerminalDocumentDetail(tdd), date###object(object)));
+                    SET quantity###object##Detail(o) <- quantityTerminalDocumentDetail(tdd);
+                }
+            }
+        }
+    } TOOLBAR;
+END
+
 // -------------------------------------------- Загрузка в ВУ ------------------------------------------------ //
 
 CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machineryPriceTransaction;
