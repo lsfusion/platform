@@ -38,6 +38,8 @@ shortNameUOMWHtoSDirDetail 'Единица измерения' (WHtoSDirDetail) 
 
 importerPriceWHtoSDirDetail 'Цена без НДС (ед.)' (WHtoSDirDetail) = DATA NUMERIC[14,3] (WHtoSDirDetail);
 
+importerPriceWHtoSDirSku 'Цена без НДС' (WHtoSDir, sku) = GROUP MAX importerPriceWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail), skuWHtoSDirDetail(WHtoSDirDetail);
+
 wholesalePriceWHtoSDirDetail 'Оптовая цена' (WHtoSDirDetail) =  priceWholesaleArticleDateTime(articleSku(skuWHtoSDirDetail(WHtoSDirDetail)), dateTimeWHtoSDirDetail(WHtoSDirDetail));
 importerPriceWHtoSDirDetail (WHtoSDirDetail) <- wholesalePriceWHtoSDirDetail(WHtoSDirDetail) WHEN CHANGED(skuWHtoSDirDetail(WHtoSDirDetail)) OR CHANGED (dateTimeWHtoSDirDetail(WHtoSDirDetail));
 

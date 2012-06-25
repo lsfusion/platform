@@ -7,6 +7,7 @@ REQUIRE System,
         Document,
         RomanDocument,
         Historizable,
+        RetailPrice,
         MasterData,
         RomanLogicsModule;
 
@@ -116,6 +117,8 @@ TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 
 CLASS correction 'КТС' : transaction;
 
+GROUP sumGroup;
+
 customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGroup;
 nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN baseGroup;
 
@@ -125,7 +128,7 @@ endDeclaration 'Конец обработки' = DATA TIME (declaration) IN base
 
 dateTimeDeclaration 'Дата/время' (declaration) = toDateTime(date(declaration), endDeclaration(declaration));
 
-dateTimeRegistrationDeclaration 'Дата/время регистрации' = DATA DATETIME(declaration) IN baseGroup;
+dateTimeRegistrationDeclaration 'Дата/время регистрации' = DATA DATETIME(registeredDeclaration) IN baseGroup;
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
@@ -529,6 +532,10 @@ quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP 
                                                                                                                              declarationInnerInvoice(innerInvoice),
                                                                                                                              sku PERSISTENT;
 
+quantityFreightDeclaration 'Кол-во' (freight, declaration) = GROUP SUM quantityFreightDeclarationSku (freight, declaration, sku) BY freight, declaration;
+
+sidFreightDeclaration 'Номер' (freight, declaration) = sidImporterFreight(importerDeclaration(declaration), freight);
+
 quantityImporterFreightUnitSku 'Кол-во' (importer, freightUnit, sku) = UNION EXCLUSIVE quantityImporterStockSku(importer, freightUnit, sku),
                                                                                        quantityImporterDirectSupplierBoxSku(importer, freightUnit, sku);
 
@@ -579,6 +586,11 @@ FORM declaration 'Декларация'
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
     FILTERS inDeclarationCorrection(d, c)
 
+    OBJECTS f=freight
+    PROPERTIES (f, d) sidFreightDeclaration
+    PROPERTIES (f) date, toCreatePriceChangeDocument SHOWIF isPriceChangeDocumentFreight(f)
+    FILTERS quantityFreightDeclaration (f, d)
+
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
                     nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
@@ -611,15 +623,15 @@ FORM declaration 'Декларация'
 
 
 
-    OBJECTS sf=(s=sku, f=freightUnit)
+    OBJECTS sf=(s=sku, fu=freightUnit)
     PROPERTIES READONLY FORCE GRID sidArticleSku(s), sidColorSupplierItem(s), nameColorSupplierItem(s), sidSizeSupplierItem(s),
-                                   barcodeFreightUnit = barcode(f), nameDestinationFreightBox(f)
+                                   barcodeFreightUnit = barcode(fu), nameDestinationFreightBox(fu)
 
     PROPERTIES (d, s) quantityDeclarationSku
-    PROPERTIES (f, s) quantityFreightUnitSku
-    PROPERTIES (d, f, s) quantityCertificatedDeclarationFreightUnitSku
+    PROPERTIES (fu, s) quantityFreightUnitSku
+    PROPERTIES (d, fu, s) quantityCertificatedDeclarationFreightUnitSku
 
-    FILTERS inFreightUnitDeclaration(f, d), certificatedDeclarationSku(d, s), quantityFreightUnitSku(f, s)
+    FILTERS inFreightUnitDeclaration(fu, d), certificatedDeclarationSku(d, s), quantityFreightUnitSku(fu, s)
 
     EDIT declaration OBJECT d
 ;
@@ -628,22 +640,26 @@ FORM declaration 'Декларация'
 DESIGN declaration FROM DEFAULT{
     main {
          d.panel {
-            childConstraints = TO THE BOTTOM;
+            childConstraints = TO THE RIGHTBOTTOM;
          }
 
          c.grid {
-            fillHorizontal = 0.6;
+            fillHorizontal = 0.4;
          }
+
+         f.grid {
+            fillHorizontal = 0.4;
+         }
+
          POSITION d.box TO THE LEFT c.box;
+         POSITION d.box TO THE LEFT f.box;
 
          NEW primary.box {
              type = TABBED;
-             //fillVertical = 1.0;
+             fillVertical = 0.6;
              //fillHorizontal = 1.0;
              NEW general.box {
                  title = 'Основные данные';
-                 fillVertical = 1.0;
-                 fillHorizontal = 1.0;
                  ADD dd.box;
                  ADD gd.box;
                  ADD ii2.box;
@@ -653,8 +669,8 @@ DESIGN declaration FROM DEFAULT{
 
              NEW certification.box {
                  title = 'Сертификация';
-                 fillVertical = 1.0;
-                 fillHorizontal = 1.0;
+                 //fillVertical = 1.0;
+                 //fillHorizontal = 1.0;
                  ADD sf.box;
              }
          }

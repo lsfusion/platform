@@ -78,15 +78,21 @@ supplierPriceSfromWHDetail 'Цена без НДС (ед.)' (SfromWHDetail) = DA
 
 importerPriceSfromWHDetail 'Цена первого импортёра' (SfromWHDetail) = DATA NUMERIC[14,3] (SfromWHDetail);
 
-////importerPriceWHtoSDirDetail
+importerPriceSfromWHDetail(SfromWHDetail) <- importerPriceWHtoSDirSku(WHtoSDirSfromWH(SfromWHSfromWHDetail(SfromWHDetail)), skuSfromWHDetail(SfromWHDetail))
+                                WHEN CHANGED (WHtoSDirSfromWH(SfromWHSfromWHDetail(SfromWHDetail))) OR CHANGED (skuSfromWHDetail(SfromWHDetail));
 
-retailPriceSfromWHDetail 'Розничная цена' (SfromWHDetail) = UNION OVERRIDE priceBasePriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail)),
-                                                                           priceDiscountPriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail));
+retailPriceSfromWHDetail 'Розничная цена' =  DATA NUMERIC[14,3] (SfromWHDetail);
+
+
+retailPriceChangeSfromWHDetail(SfromWHDetail) = UNION OVERRIDE priceBasePriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail)),
+                                                               priceDiscountPriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail));
+
+retailPriceSfromWHDetail(SfromWHDetail) <- retailPriceChangeSfromWHDetail(SfromWHDetail) WHEN CHANGED (WHtoSDirSfromWH(SfromWHSfromWHDetail(SfromWHDetail))) OR CHANGED (dateTimeSfromWHDetail(SfromWHDetail));
+
 
 importerSumSfromWHDetail 'Стоимость без НДС' (SfromWHDetail) = supplierPriceSfromWHDetail(SfromWHDetail) * quantitySfromWHDetail(SfromWHDetail);
 
 importerSumSfromWHDetailSfromWH 'Стоимость без НДС' (SfromWH)= GROUP SUM importerSumSfromWHDetail(SfromWHDetail) BY SfromWHSfromWHDetail(SfromWHDetail) IN documentSumGroup;
-
 
 
 supplierVATSfromWHDetail(SfromWHDetail) = DATA range (SfromWHDetail);

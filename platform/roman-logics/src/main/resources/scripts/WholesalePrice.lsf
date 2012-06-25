@@ -96,7 +96,7 @@ toCreateWholesalePriceDocument 'Прайс по декларации' =  ACTION 
     ADDOBJ wholesalePriceDocument;
     FOR w == addedObject() DO {
         SET declarationWholesalePriceDocument(w) <- declaration AS declaration;
-        SET priceWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
+        SET priceWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article)*rateExchangeDeclaration(declaration);
         SET inArticleWholesalePriceDocument(w, article) <- inDeclarationArticle(declaration, article);
 
         FORM wholesalePriceDocument OBJECTS w=addedObject() MODAL;
