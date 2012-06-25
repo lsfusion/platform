@@ -231,7 +231,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                         //for (int i = 0; i < 2624; i++) {
                         //    importSailFile.read();
                         //}
-                        for (int i = 0; i < /*recordSailCount*//*83*/130; i++) {
+                        for (int i = 0; i < recordSailCount/*83*//*130*/; i++) {
                             importSailFile.read();
 
                             Integer operation = new Integer(new String(importSailFile.getField("OPERATION").getBytes(), "Cp1251").trim());
