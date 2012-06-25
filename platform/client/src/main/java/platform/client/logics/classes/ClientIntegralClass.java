@@ -46,7 +46,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
         return format;
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new IntegerPropertyRenderer(property);
     }
 

@@ -16,9 +16,7 @@ import java.awt.*;
 
 import static platform.base.BaseUtils.nullEquals;
 
-public class DataCellView extends JPanel implements CellView {
-    private CellViewListener listener;
-
+public class DataCellView extends JPanel implements PanelView {
     private final JLabel label;
 
     private final DataCellViewTable table;
@@ -112,10 +110,6 @@ public class DataCellView extends JPanel implements CellView {
 
     public JComponent getComponent() {
         return this;
-    }
-
-    public void setListener(CellViewListener listener) {
-        this.listener = listener;
     }
 
     public void setValue(Object ivalue) {

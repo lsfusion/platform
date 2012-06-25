@@ -88,7 +88,7 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
     }
 
     //todo: это будет не нужно после интеграции сервлетов в Spring
-    private WebApplicationContext getSpringContext() {
+    protected WebApplicationContext getSpringContext() {
         return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
 

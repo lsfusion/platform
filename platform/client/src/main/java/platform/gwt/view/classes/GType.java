@@ -26,7 +26,7 @@ public abstract class GType implements Serializable {
         return gridField;
     }
 
-    public FormItem createEditorType(FormLogicsProvider formLogics, GPropertyDraw property) {
+    public FormItem createGridEditorItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         // по умолчанию просто используем тот же FormItem, что и в панели...
         return createPanelFormItem(formLogics, property);
     }

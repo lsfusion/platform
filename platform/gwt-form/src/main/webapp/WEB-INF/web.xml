@@ -10,7 +10,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>navigator.jsp</welcome-file>
+        <welcome-file>form.jsp</welcome-file>
     </welcome-file-list>
 
     <context-param>
@@ -25,29 +25,21 @@
     </context-param>
 
     <servlet>
-        <servlet-name>RemoteFormService</servlet-name>
-        <servlet-class>platform.gwt.form.server.RemoteFormServiceImpl</servlet-class>
+        <servlet-name>RemoteGwtService</servlet-name>
+        <servlet-class>platform.gwt.main.server.RemoteServiceImpl</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LoginService</servlet-name>
         <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>NavigatorService</servlet-name>
-        <servlet-class>platform.gwt.navigator.server.NavigatorServiceImpl</servlet-class>
-    </servlet>
 
     <servlet-mapping>
-        <servlet-name>RemoteFormService</servlet-name>
-        <url-pattern>/platform.gwt.form.Form/dispatch</url-pattern>
+        <servlet-name>RemoteGwtService</servlet-name>
+        <url-pattern>/platform.gwt.main.Main/dispatch</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
         <url-pattern>/platform.gwt.login.Login/dispatch</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>NavigatorService</servlet-name>
-        <url-pattern>/platform.gwt.navigator.Navigator/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -57,6 +49,15 @@
     <servlet-mapping>
         <servlet-name>readFileHandler</servlet-name>
         <url-pattern>/readFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>navigatorDSHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>navigatorDSHandler</servlet-name>
+        <url-pattern>/navigatorDS</url-pattern>
     </servlet-mapping>
 
     <servlet>

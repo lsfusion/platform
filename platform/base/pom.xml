@@ -8,6 +8,7 @@
     <name>Base</name>
 
     <properties>
+        <servlet.api.version>2.3</servlet.api.version>
         <spring.version>3.0.5.RELEASE</spring.version>
         <gwt.version>2.3.0</gwt.version>
         <smartgwt.version>3.0p</smartgwt.version>
@@ -243,6 +244,11 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
@@ -266,6 +272,12 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${google.guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${servlet.api.version}</version>
             </dependency>
 
             <dependency>

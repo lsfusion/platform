@@ -1,11 +1,9 @@
 package platform.server.form.view;
 
 import platform.interop.form.ReportConstants;
-import platform.interop.form.ServerResponse;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
-import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
@@ -14,7 +12,6 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
-import platform.server.logics.property.ActionPropertyMapImplement;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
@@ -113,14 +110,14 @@ public class PropertyDrawView extends ComponentView {
                 : null;
     }
 
-    private String getSingleCaption() {
+    public String getSimpleCaption() {
         String caption = getCaption();
         return caption == null ? getDefaultCaption() : caption;
     }
 
     public ReportDrawField getReportDrawField() {
 
-        ReportDrawField reportField = new ReportDrawField(getSID(), getSingleCaption());
+        ReportDrawField reportField = new ReportDrawField(getSID(), getSimpleCaption());
 
         Type type = getType();
 

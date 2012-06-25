@@ -19,10 +19,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ActionCellView extends JButton implements CellView, EditPropertyHandler {
+public class ActionCellView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
-
-    private CellViewListener listener;
 
     private Color defaultBackground;
 
@@ -71,10 +69,6 @@ public class ActionCellView extends JButton implements CellView, EditPropertyHan
 
     public JComponent getComponent() {
         return this;
-    }
-
-    public void setListener(CellViewListener listener) {
-        this.listener = listener;
     }
 
     public void setValue(Object value) {

@@ -1,0 +1,16 @@
+package platform.gwt.main.client;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.Messages;
+
+public interface MainFrameMessages extends Messages {
+    String title();
+
+    public static class Instance {
+        private static final MainFrameMessages instance = (MainFrameMessages) GWT.create(MainFrameMessages.class);
+
+        public static MainFrameMessages get() {
+            return instance;
+        }
+    }
+}

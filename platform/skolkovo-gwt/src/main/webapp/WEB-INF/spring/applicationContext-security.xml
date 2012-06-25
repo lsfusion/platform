@@ -17,9 +17,6 @@
         <intercept-url pattern="/form.jsp" access="hasRole('admin')"/>
         <intercept-url pattern="/skolkovo.gwt.form.Form/*" access="hasRole('admin')"/>
 
-        <intercept-url pattern="/skolkovo.gwt.navigator.Navigator/*" access="hasRole('admin')"/>
-        <intercept-url pattern="/navigator.jsp" access="hasRole('admin')"/>
-
         <!-- пока закрываем доступ -->
         <intercept-url pattern="/skolkovo.gwt.claimer.Claimer/*" access="hasRole('admin')"/>
         <intercept-url pattern="/claimer.jsp" access="hasRole('admin')"/>
@@ -51,7 +48,7 @@
 
     <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
         <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/navigator.jsp" />
+        <b:property name="defaultTargetUrl" value="/form.jsp" />
     </b:bean>
 
     <b:bean id="accessDeniedHandler" class="platform.gwt.base.server.spring.AccessDeniedHandlerImpl" >

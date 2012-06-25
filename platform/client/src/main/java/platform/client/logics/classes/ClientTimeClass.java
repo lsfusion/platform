@@ -35,7 +35,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
         return new SimpleDateFormat("HH:mm:ss");
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new TimePropertyRenderer(property);
     }
 

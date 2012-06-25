@@ -18,6 +18,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>gwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>paas-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-servlet</artifactId>
             <scope>runtime</scope>
@@ -35,15 +44,6 @@
         <dependency>
             <groupId>com.smartgwt</groupId>
             <artifactId>smartgwt</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>gwt-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>paas-api</artifactId>
         </dependency>
 
         <dependency>

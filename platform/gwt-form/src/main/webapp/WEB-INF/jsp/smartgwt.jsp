@@ -65,7 +65,7 @@
 
         <!--load skin-->
         <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading skin...';</script>
-        <script src='smartgwt/sc/skins/Enterprise/load_skin.js?isc_version=8.1.js'></script>
+        <script src='smartgwt/sc/skins/Enterprise/load_skin.js?isc_version=8.2.js'></script>
 
         <!--include the application JS-->
         <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading Application<br>Please wait...';</script>

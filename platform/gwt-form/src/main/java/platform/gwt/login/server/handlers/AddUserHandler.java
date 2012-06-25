@@ -9,14 +9,13 @@ import platform.gwt.base.server.captcha.CaptchaServiceSingleton;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import platform.gwt.login.shared.actions.AddUser;
 import platform.gwt.login.server.LoginServiceImpl;
+import platform.interop.RemoteLogicsInterface;
 
 import java.io.IOException;
 
-public class AddUserHandler extends SimpleActionHandlerEx<AddUser, StringResult> {
-    protected final LoginServiceImpl servlet;
-
+public class AddUserHandler extends SimpleActionHandlerEx<AddUser, StringResult, RemoteLogicsInterface> {
     public AddUserHandler(LoginServiceImpl servlet) {
-        this.servlet = servlet;
+        super(servlet);
     }
 
     @Override

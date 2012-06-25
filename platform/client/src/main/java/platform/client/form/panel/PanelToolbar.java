@@ -182,7 +182,7 @@ public class PanelToolbar {
                     rightContainer.add(control.getView(), Arrays.asList(rightContainer.getComponents()).indexOf(prevProp.getView()) + 1);
                 }
             }
-            control.getCellView().changeViewType(viewType);
+            control.getPanelView().changeViewType(viewType);
         }
     }
 }

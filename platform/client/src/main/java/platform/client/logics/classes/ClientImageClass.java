@@ -41,7 +41,7 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
         return Integer.MAX_VALUE;
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new ImagePropertyRenderer(property);
     }
 

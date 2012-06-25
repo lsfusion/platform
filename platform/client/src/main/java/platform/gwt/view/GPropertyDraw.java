@@ -34,7 +34,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         ListGridField gridField = baseType.createGridField(formLogics, this);
         gridField.setCanEdit(!(editType == GPropertyEditType.EDITABLE));
         if (changeType != null && baseType != changeType) {
-            gridField.setEditorType(changeType.createEditorType(formLogics, this));
+//            gridField.setEditorType(changeType.createGridEditorItem(formLogics, this));
         }
 
         return gridField;

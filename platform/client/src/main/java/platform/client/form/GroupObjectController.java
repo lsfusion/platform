@@ -415,7 +415,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
                 for (PropertyController control : panelToolbar.getProperties()) {
                     control.addView(formLayout);
-                    control.getCellView().changeViewType(classView);
+                    control.getPanelView().changeViewType(classView);
                 }
 
                 formLayout.add(showType.showTypeKey, showType.view);

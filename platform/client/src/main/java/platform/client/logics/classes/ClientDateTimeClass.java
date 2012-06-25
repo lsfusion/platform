@@ -41,7 +41,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
         return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new DateTimePropertyRenderer(property);
     }
 

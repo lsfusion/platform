@@ -7,6 +7,8 @@ import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
+import com.smartgwt.client.widgets.form.fields.events.ShowValueEvent;
+import com.smartgwt.client.widgets.form.fields.events.ShowValueHandler;
 import com.smartgwt.client.widgets.grid.CellFormatter;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
@@ -38,7 +40,18 @@ public class GActionType extends GDataType {
         ButtonItem buttonItem = new ButtonItem();
         buttonItem.setEndRow(false);
         buttonItem.setStartRow(false);
-        buttonItem.setIcon(property.iconPath);
+        if (property.iconPath != null) {
+            buttonItem.setIcon(property.iconPath);
+        }
+        if (property.caption != null) {
+            buttonItem.setTitle(property.caption);
+        }
+        buttonItem.addShowValueHandler(new ShowValueHandler() {
+            @Override
+            public void onShowValue(ShowValueEvent event) {
+                event.getItem().setDisabled(event.getDataValue() == null);
+            }
+        });
         buttonItem.addClickHandler(new com.smartgwt.client.widgets.form.fields.events.ClickHandler() {
             @Override
             public void onClick(com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {

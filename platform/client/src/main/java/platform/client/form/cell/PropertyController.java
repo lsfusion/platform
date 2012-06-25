@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PropertyController implements CellViewListener {
+public class PropertyController {
 
     protected ClientGroupObjectValue columnKey;
     protected ClientPropertyDraw key;
@@ -20,7 +20,7 @@ public class PropertyController implements CellViewListener {
         return key;
     }
 
-    protected final CellView view;
+    protected final PanelView view;
     protected ExternalScreenComponent extView;
 
     // возвращаем только как компоненту, большего пока не надо
@@ -28,7 +28,7 @@ public class PropertyController implements CellViewListener {
         return view.getComponent();
     }
 
-    public CellView getCellView() {
+    public PanelView getPanelView() {
         return view;
     }
 
@@ -41,15 +41,13 @@ public class PropertyController implements CellViewListener {
         this.form = form;
         this.columnKey = columnKey;
 
-        view = key.getPanelComponent(form, columnKey);
+        view = key.getPanelView(form, columnKey);
 
         if (key.focusable != null) {
             view.getComponent().setFocusable(key.focusable);
         } else if (key.editKey != null) {
             view.getComponent().setFocusable(false);
         }
-
-        view.setListener(this);
 
         if (key.editKey != null) {
             form.getComponent().addKeyBinding(key.editKey, key.groupObject, new KeyAdapter() {
@@ -94,17 +92,6 @@ public class PropertyController implements CellViewListener {
 
     public void forceEdit() {
         view.forceEdit();
-    }
-
-    public void changeValue(Object ivalue, boolean aggValue) {
-//        try {
-//            form.executeEditAction(getKey(), columnKey, EditActionResult.CHANGE);
-//            form.changePropertyDraw(getKey(), columnKey, ivalue, false, aggValue);
-//        } catch (IOException e) {
-//            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), e);
-//        }
-
-        //todo: remove... along with interface
     }
 
     public void hideViews() {

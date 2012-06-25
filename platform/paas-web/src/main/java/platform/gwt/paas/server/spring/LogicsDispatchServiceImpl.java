@@ -7,6 +7,7 @@ import com.gwtplatform.dispatch.shared.Action;
 import com.gwtplatform.dispatch.shared.ActionException;
 import com.gwtplatform.dispatch.shared.Result;
 import com.gwtplatform.dispatch.shared.ServiceException;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import platform.base.ExceptionUtils;
@@ -15,16 +16,14 @@ import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.paas.server.exceptions.RemoteActionException;
 import platform.gwt.paas.shared.exceptions.MessageException;
 
-import java.util.logging.Logger;
-
 @Component("gwtpDispatch")
 public class LogicsDispatchServiceImpl extends DispatchServiceImpl {
     @Autowired
     private BusinessLogicsProvider blProvider;
-    protected final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(LogicsDispatchServlet.class);
+    protected final static Logger logger = Logger.getLogger(LogicsDispatchServlet.class);
 
     @Autowired
-    public LogicsDispatchServiceImpl(Logger logger, Dispatch dispatch, RequestProvider requestProvider) {
+    public LogicsDispatchServiceImpl(java.util.logging.Logger logger, Dispatch dispatch, RequestProvider requestProvider) {
         super(logger, dispatch, requestProvider);
     }
 

@@ -8,7 +8,7 @@ import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
-import platform.client.form.cell.CellView;
+import platform.client.form.cell.PanelView;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
@@ -154,13 +154,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public PropertyRendererComponent getRendererComponent() {
         if (renderer == null) {
-            renderer = baseType.getRendererComponent(caption, this);
+            renderer = baseType.getRendererComponent(this);
         }
         return renderer;
     }
 
-    public CellView getPanelComponent(ClientFormController form, ClientGroupObjectValue columnKey) {
-        return baseType.getPanelComponent(this, columnKey, form);
+    public PanelView getPanelView(ClientFormController form, ClientGroupObjectValue columnKey) {
+        return baseType.getPanelView(this, columnKey, form);
     }
 
     public int getMinimumWidth(JComponent comp) {

@@ -3,7 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.cell.CellView;
+import platform.client.form.cell.PanelView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GType;
@@ -28,9 +28,9 @@ public interface ClientType {
 
     Format getDefaultFormat();
 
-    PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property);
+    PropertyRendererComponent getRendererComponent(ClientPropertyDraw property);
 
-    CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
+    PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 
     PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value);
 

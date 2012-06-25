@@ -4,17 +4,16 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
+import skolkovo.api.remote.SkolkovoRemoteInterface;
 import skolkovo.gwt.expert.server.ExpertServiceImpl;
 import skolkovo.gwt.expert.shared.actions.GetVoteInfo;
 import skolkovo.gwt.expert.shared.actions.GetVoteInfoResult;
 
 import java.io.IOException;
 
-public class GetVoteInfoHandler extends SimpleActionHandlerEx<GetVoteInfo, GetVoteInfoResult> {
-    private final ExpertServiceImpl servlet;
-
+public class GetVoteInfoHandler extends SimpleActionHandlerEx<GetVoteInfo, GetVoteInfoResult, SkolkovoRemoteInterface> {
     public GetVoteInfoHandler(ExpertServiceImpl servlet) {
-        this.servlet = servlet;
+        super(servlet);
     }
 
     @Override

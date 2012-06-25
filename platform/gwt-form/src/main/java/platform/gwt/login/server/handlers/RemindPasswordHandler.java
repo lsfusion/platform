@@ -7,14 +7,13 @@ import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.login.server.LoginServiceImpl;
 import platform.gwt.login.shared.actions.RemindPassword;
+import platform.interop.RemoteLogicsInterface;
 
 import java.io.IOException;
 
-public class RemindPasswordHandler extends SimpleActionHandlerEx<RemindPassword, VoidResult> {
-    protected final LoginServiceImpl servlet;
-
+public class RemindPasswordHandler extends SimpleActionHandlerEx<RemindPassword, VoidResult, RemoteLogicsInterface> {
     public RemindPasswordHandler(LoginServiceImpl servlet) {
-        this.servlet = servlet;
+        super(servlet);
     }
 
     @Override

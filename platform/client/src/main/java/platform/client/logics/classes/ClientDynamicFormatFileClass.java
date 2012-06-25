@@ -27,7 +27,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
         return "CustomFileClass";
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new DynamicFormatFileRenderer(property);
     }
 

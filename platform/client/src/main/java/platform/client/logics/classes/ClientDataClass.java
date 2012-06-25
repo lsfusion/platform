@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.cell.CellView;
+import platform.client.form.cell.PanelView;
 import platform.client.form.cell.DataCellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -81,7 +81,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     public abstract String getPreferredMask();
 
-    public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
         return new DataCellView(form, key, columnKey);
     }
 

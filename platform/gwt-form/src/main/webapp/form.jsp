@@ -15,6 +15,6 @@
         <jsp:include page="WEB-INF/jsp/smartgwt.jsp"/>
 
         <script type="text/javascript" language="javascript"
-                src="platform.gwt.form.Form/platform.gwt.form.Form.nocache.js"></script>
+                src="platform.gwt.main.Main/platform.gwt.main.Main.nocache.js"></script>
     </body>
 </html>

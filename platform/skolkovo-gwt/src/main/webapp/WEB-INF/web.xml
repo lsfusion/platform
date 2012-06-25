@@ -11,7 +11,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>navigator.jsp</welcome-file>
+        <welcome-file>form.jsp</welcome-file>
     </welcome-file-list>
 
     <context-param>
@@ -63,20 +63,11 @@
 
     <servlet>
         <servlet-name>RemoteFormService</servlet-name>
-        <servlet-class>platform.gwt.form.server.RemoteFormServiceImpl</servlet-class>
+        <servlet-class>platform.gwt.main.server.RemoteServiceImpl</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>RemoteFormService</servlet-name>
         <url-pattern>/skolkovo.gwt.form.Form/dispatch</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>NavigatorService</servlet-name>
-        <servlet-class>platform.gwt.navigator.server.NavigatorServiceImpl</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>NavigatorService</servlet-name>
-        <url-pattern>/skolkovo.gwt.navigator.Navigator/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>

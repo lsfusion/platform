@@ -63,7 +63,7 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
         return filterDescription;
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new CustomStaticFormatFileRenderer(property, filterExtensions[0]);
     }
 

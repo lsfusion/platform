@@ -12,11 +12,9 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ProcessFormChangesClientAction;
+import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.action.UpdateCurrentClassClientAction;
-import platform.interop.form.FormUserPreferences;
-import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.ReportGenerationData;
-import platform.interop.form.ServerResponse;
+import platform.interop.form.*;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteClass;
@@ -671,6 +669,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {
-        return currentInvocation.pauseForUserInteraction(actions);
+        Object[] result = currentInvocation.pauseForUserInteraction(actions);
+
+        //todo: remove this stuff... when done properly in gwt
+        if (actions[0] instanceof RequestUserInputClientAction) {
+            if (result[0] == null) {
+                result[0] = UserInputResult.canceled;
+            }
+        }
+        return result;
     }
 }

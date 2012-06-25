@@ -4,17 +4,16 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
+import skolkovo.api.remote.SkolkovoRemoteInterface;
 import skolkovo.gwt.expertprofile.server.ExpertProfileServiceImpl;
 import skolkovo.gwt.expertprofile.shared.actions.GetProfileInfo;
 import skolkovo.gwt.expertprofile.shared.actions.GetProfileInfoResult;
 
 import java.io.IOException;
 
-public class GetProfileInfoHandler extends SimpleActionHandlerEx<GetProfileInfo, GetProfileInfoResult> {
-    private final ExpertProfileServiceImpl servlet;
-
+public class GetProfileInfoHandler extends SimpleActionHandlerEx<GetProfileInfo, GetProfileInfoResult, SkolkovoRemoteInterface> {
     public GetProfileInfoHandler(ExpertProfileServiceImpl servlet) {
-        this.servlet = servlet;
+        super(servlet);
     }
 
     @Override

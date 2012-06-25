@@ -40,7 +40,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     @Override
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new ColorPropertyRenderer(property);
     }
 

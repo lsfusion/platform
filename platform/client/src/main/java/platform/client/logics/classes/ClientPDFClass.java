@@ -27,7 +27,7 @@ public class ClientPDFClass extends ClientStaticFormatFileClass {
         return "PDFClass";
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new PDFPropertyRenderer(property);
     }
 

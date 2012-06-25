@@ -5,7 +5,7 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.ActionCellView;
-import platform.client.form.cell.CellView;
+import platform.client.form.cell.PanelView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
@@ -50,11 +50,11 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new ActionPropertyRenderer(property);
     }
 
-    public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
         return new ActionCellView(key, columnKey, form);
     }
 

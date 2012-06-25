@@ -27,7 +27,7 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
         return "ExcelClass";
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new ExcelPropertyRenderer(property);
     }
 

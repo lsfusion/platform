@@ -1,6 +1,7 @@
 package platform.base;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -58,6 +59,18 @@ public class ReflectionUtils {
             field.set(target, value);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static Method getDeclaredMethodOrNull(Class<?> clazz, String methodName, Class<?>... args) {
+        if (clazz == null || methodName == null) {
+            return null;
+        }
+
+        try {
+            return clazz.getDeclaredMethod(methodName, args);
+        } catch (NoSuchMethodException e) {
+            return null;
         }
     }
 }

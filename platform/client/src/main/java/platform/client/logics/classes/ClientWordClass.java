@@ -27,7 +27,7 @@ public class ClientWordClass extends ClientStaticFormatFileClass {
         return "WordClass";
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new WordPropertyRenderer(property);
     }
 

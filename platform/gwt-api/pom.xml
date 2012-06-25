@@ -36,9 +36,14 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
         </dependency>
+
         <!--чтобы избавиться от ошибок GWT при компиляции-->
         <dependency>
             <groupId>javax.validation</groupId>

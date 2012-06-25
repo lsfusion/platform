@@ -654,7 +654,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends OverrideModifier 
                         msg = getString("form.instance.do.you.really.want.to.edit.property");
                     }
                     PropertyDrawView propertyView = entity.getRichDesign().get(propertyDraw);
-                    String caption = propertyView.getCaption();
+                    String caption = propertyView.getSimpleCaption();
                     if (caption != null) {
                         msg += " \"" + caption + "\"?";
                     }

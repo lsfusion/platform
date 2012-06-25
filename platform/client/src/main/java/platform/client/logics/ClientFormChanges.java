@@ -1,7 +1,6 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
-import platform.client.form.GroupObjectController;
 import platform.gwt.view.changes.dto.GFormChangesDTO;
 import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.view.changes.dto.GPropertyReaderDTO;
@@ -33,7 +32,7 @@ public class ClientFormChanges {
     public final Set<ClientPropertyReader> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
-    public ClientFormChanges(DataInputStream inStream, ClientForm clientForm, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
+    public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
 
         classViews = new HashMap<ClientGroupObject, ClassViewType>();
         int count = inStream.readInt();

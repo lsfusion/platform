@@ -17,7 +17,7 @@ public class ClientNavigatorElement {
     private static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
 
     public int ID;
-    private String caption;
+    public String caption;
     public String sID;
     public List<String> childrenSid = new LinkedList<String>();
     public List<ClientNavigatorElement> children = new LinkedList<ClientNavigatorElement>();

@@ -5,7 +5,7 @@ import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.cell.CellView;
+import platform.client.form.cell.PanelView;
 import platform.client.form.cell.DataCellView;
 import platform.client.form.editor.IntegerPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
@@ -63,11 +63,11 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return NumberFormat.getInstance();
     }
 
-    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
         return new IntegerPropertyRenderer(property);
     }
 
-    public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+    public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
         return new DataCellView(form, key, columnKey);
     }
 
