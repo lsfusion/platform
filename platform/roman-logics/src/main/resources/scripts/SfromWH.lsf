@@ -26,6 +26,7 @@ CLASS SfromWHPosted 'Закрытый приход на магазин' : SfromW
 
 WHtoSDirSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSDirPosted(SfromWH) IN idGroup;
 SfromWHWHtoSDir (WHtoSDir) = GROUP UNIQUE SfromWH BY WHtoSDirSfromWH (SfromWH);
+CONSTRAINT WHtoSDirSfromWH(p1) == WHtoSDirSfromWH(p2) AND p1 != p2 CHECKED BY WHtoSDirSfromWH MESSAGE 'Расход задействован в другом приходе';
 
 numberSfromWH 'Номер' (SfromWH) = numberObject(WHtoSDirSfromWH(SfromWH)) IN documentHeaderGroup PERSISTENT;
 seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSDirSfromWH(SfromWH)) IN baseGroup PERSISTENT;
@@ -34,12 +35,14 @@ warehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoSDir
 nameWarehouseSfromWH 'Оптовый склад' (SfromWH) = name(warehouseSfromWH(SfromWH));
 //nameImporterSfromWH 'Поставщик' (SfromWH) = name(importerWarehouse(warehouseSfromWH(SfromWH)));
 
+//numberObject (SfromWH) <- PREV (numberSfromWH (SfromWH)) WHEN ASSIGNED (WHtoSDirSfromWH(SfromWH));
+
 storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
 
 CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSDir(WHtoSDirSfromWH(SfromWH))
-    CHECKED  MESSAGE 'ошибка: Магазин из расхода должен совпадать с магазином из прихода'; //BY storeSfromWH
+    CHECKED BY WHtoSDirSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
 @defineDocumentDetailQuantity(SfromWH); // к-во детайл
 @defineDocumentHeaderQuantity(SfromWH); // к-во всего

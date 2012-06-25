@@ -1,4 +1,4 @@
-//From Store to Store (the same company)
+//To Store From Store (the same company)
 MODULE StoSDirect;
 
 REQUIRE System,
@@ -14,9 +14,9 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-CLASS StoSDir 'Перемещение на магазин (одно юрлицо)' : historyObject, numberedObject, consignment;
-CLASS StoSDirDetail 'Строка перемещения на магазин (одно юрлицо)' : outAutoSkuLedger, consignmentDetail;
-CLASS StoSDirPosted 'Закрытое перемещение на магазин (одно юрлицо)' : StoSDir, postedObject, consignment;
+CLASS StoSDir 'Перемещение (расход) на магазин (одно юрлицо)' : historyObject, numberedObject, consignment;
+CLASS StoSDirDetail 'Строка перемещения (расход) на магазин (одно юрлицо)' : outAutoSkuLedger, consignmentDetail;
+CLASS StoSDirPosted 'Закрытое перемещение (расход) на магазин (одно юрлицо)' : StoSDir, postedObject, consignment;
 
 
 skuStoSDirDetail 'Товар (ИД)' (StoSDirDetail) = DATA sku (StoSDirDetail)IN idGroup;
@@ -44,14 +44,14 @@ nameRecipientStoreStoSDirDetail 'Магазин-получатель' (StoSDirDe
 @defineDocumentDetailQuantity(StoSDir);
 @defineDocumentDetailNumbered(StoSDir);
 @defineDocumentHeaderQuantity(StoSDir);
-@defineDocumentDescription(StoSDir, 'Перемещение на магазин (одно юрлицо)');
+@defineDocumentDescription(StoSDir, 'Перемещение (расход) на магазин (одно юрлицо)');
 @implementSkuLedger (StoSDir, sku, senderDepartmentStore);
 @defineDocumentDetailProps (StoSDir);
 @defineAddDetailDialogSkuStock(StoSDir, sku, senderDepartmentStore, dialogSku);
 
 
 CONSTRAINT StoSDir IS StoSDir AND NOT companyStore(senderStoreStoSDir(StoSDir)) == companyStore(recipientStoreStoSDir(StoSDir))
-    CHECKED BY recipientStoreStoSDir MESSAGE 'Перемещение не в рамках одного юрлица';
+    CHECKED BY recipientStoreStoSDir MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
 
 
 quantityOutAutoSkuLedger (ledger) += quantityStoSDirDetail (ledger);
@@ -72,6 +72,11 @@ valueRetailVATStoSDirDetail 'НДС, %' (StoSDirDetail) = valueRateRangeDate
 
 CONSTRAINT taxRange(retailVATStoSDirDetail(StoSDirDetail)) != tax.taxVAT CHECKED BY retailVATStoSDirDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
+retailPriceStoSDirDetailStoSDirSku 'Цена по расходу' (StoSDir, sku) = GROUP EQUAL retailPriceStoSDirDetail(StoSDirDetail)
+    BY StoSDirStoSDirDetail(StoSDirDetail), skuStoSDirDetail(StoSDirDetail);
+
+retailVATStoSDirDetailStoSDirSku 'Шкала по расходу' (StoSDir, sku) = GROUP EQUAL retailVATStoSDirDetail(StoSDirDetail)
+    BY StoSDirStoSDirDetail(StoSDirDetail), skuStoSDirDetail(StoSDirDetail);
 
 sumRetailVATStoSDirDetail 'Сумма НДС' (StoSDirDetail) = [X*Y/100](
     retailSumStoSDirDetail(StoSDirDetail), valueRetailVATStoSDirDetail(StoSDirDetail));
@@ -103,7 +108,7 @@ quantityStoSDirSku (StoSDir, sku) = GROUP SUM quantityStoSDirDetail(StoSDirDetai
 
 @defineAddDetailDialogBarcode(StoSDir, sku);
 
-FORM StoSDir 'Перемещение на магазин (одно юрлицо)'
+FORM StoSDir 'Перемещение (расход) на магазин (одно юрлицо)'
     OBJECTS s = StoSDir FIXED PANEL
     PROPERTIES (s) numberObject, seriesObject, dateStoSDir, timeStoSDir, nameSenderDepartmentStoreStoSDir, nameSenderStoreStoSDir, nameRecipientStoreStoSDir,
                    balanceBSkuStoSDirDetail, quantityStoSDirDetailStoSDir, importerSumStoSDirDetailStoSDir, sumRetailVATStoSDirDetailStoSDir,
@@ -159,7 +164,7 @@ DESIGN StoSDir FROM DEFAULT {
     }
 }
 
-FORM StoSDirs 'Перемещиния на магазин (одно юрлицо)'
+FORM StoSDirs 'Перемещения (расход) на магазин (одно юрлицо)'
     OBJECTS s = StoSDir
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSDir, timeStoSDir, nameSenderDepartmentStoreStoSDir, nameRecipientStoreStoSDir,
                    countStoSDirDetailStoSDir, quantityStoSDirDetailStoSDir, importerSumStoSDirDetailStoSDir, sumRetailVATStoSDirDetailStoSDir,
@@ -243,7 +248,7 @@ DESIGN StoSDirs FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM StoSDirsDialog 'Перемещения на магазин (одно юрлицо)'
+FORM StoSDirsDialog 'Перемещения (расход) на магазин (одно юрлицо)'
     OBJECTS s = StoSDirPosted
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSDir, nameSenderDepartmentStoreStoSDir,
                    nameRecipientStoreStoSDir, countStoSDirDetailStoSDir, quantityStoSDirDetailStoSDir, importerSumStoSDirDetailStoSDir,

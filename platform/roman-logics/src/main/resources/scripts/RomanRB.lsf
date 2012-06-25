@@ -15,6 +15,7 @@ REQUIRE System,
         WHtoSDirect,
         WHtoSTransit,
         StoSDirect,
+        SfromSDirect,
         SfromWH,
         WholesalePrice,
         RetailPrice,
@@ -74,6 +75,7 @@ DESIGN store FROM DEFAULT {
     }
 }
 
+
 NAVIGATOR {
     classifier {
       //  ADD stores;
@@ -129,6 +131,7 @@ NAVIGATOR {
             ADD SfromWHs;
             ADD WHtoSTrs;
             ADD StoSDirs;
+            ADD SfromSDirs;
         }
     }
 
@@ -216,6 +219,7 @@ NAVIGATOR {
         ADD stores;
         ADD WHtoSTr;
         ADD StoSDir;
+        ADD SfromSDir;
         ADD WHtoSTrsDialog;
     }
 }
