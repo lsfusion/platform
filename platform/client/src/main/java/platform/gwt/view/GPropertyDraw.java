@@ -2,11 +2,16 @@ package platform.gwt.view;
 
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.grid.ListGridField;
+import platform.gwt.view.changes.GGroupObjectValue;
 import platform.gwt.view.classes.GType;
 import platform.gwt.view.logics.FormLogicsProvider;
+import platform.gwt.view.logics.GGroupObjectLogicsSupplier;
+import platform.gwt.view.reader.*;
 import platform.gwt.view.renderer.GTypeRenderer;
 
-public class GPropertyDraw extends GComponent {
+import java.util.Map;
+
+public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int ID;
     public GGroupObject groupObject;
     public String sID;
@@ -18,13 +23,19 @@ public class GPropertyDraw extends GComponent {
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
+    public GCaptionReader captionReader;
+    public GFooterReader footerReader;
+    public GBackgroundReader backgroundReader;
+    public GForegroundReader foregroundReader;
+
+    public GPropertyDraw(){}
+
     public ListGridField createGridField(FormLogicsProvider formLogics) {
         ListGridField gridField = baseType.createGridField(formLogics, this);
         gridField.setCanEdit(!(editType == GPropertyEditType.EDITABLE));
         if (changeType != null && baseType != changeType) {
             gridField.setEditorType(changeType.createEditorType(formLogics, this));
         }
-        gridField.setShowHover(true);
 
         return gridField;
     }
@@ -46,4 +57,14 @@ public class GPropertyDraw extends GComponent {
 
         return baseType.createPanelRenderer(formLogics, this);
     }
+
+    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values) {
+        controller.updatePropertyDrawValues(this, values);
+    }
+
+    @Override
+    public int getGroupObjectID() {
+        return groupObject != null ? groupObject.ID : -1;
+    }
+
 }

@@ -19,10 +19,10 @@ public class GridDataRecord extends ListGridRecord {
         }
     }
 
-    public static GridDataRecord[] createRecords(ArrayList<GGroupObjectValue> gridKeys, HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>> gridProps) {
+    public static GridDataRecord[] createRecords(ArrayList<GGroupObjectValue> gridKeys, Map<GPropertyDraw, Map<GGroupObjectValue, Object>> gridProps) {
         HashMap<GGroupObjectValue, HashMap<GPropertyDraw, Object>> values = new HashMap<GGroupObjectValue, HashMap<GPropertyDraw, Object>>();
 
-        for (Map.Entry<GPropertyDraw, HashMap<GGroupObjectValue, Object>> entry : gridProps.entrySet()) {
+        for (Map.Entry<GPropertyDraw, Map<GGroupObjectValue, Object>> entry : gridProps.entrySet()) {
             GPropertyDraw property = entry.getKey();
             for (Map.Entry<GGroupObjectValue, Object> e : entry.getValue().entrySet()) {
                 GGroupObjectValue key = e.getKey();

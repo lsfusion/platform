@@ -4,13 +4,16 @@ import platform.base.BaseUtils;
 import platform.client.form.GroupObjectController;
 import platform.gwt.view.changes.dto.GFormChangesDTO;
 import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.view.changes.dto.GPropertyReaderDTO;
 import platform.gwt.view.changes.dto.ObjectDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class ClientFormChanges {
 
@@ -153,18 +156,12 @@ public class ClientFormChanges {
             }
 
             for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : properties.entrySet()) {
-                if (!(entry.getKey() instanceof ClientPropertyDraw)) {
-                    continue;
-                }
-                ClientPropertyDraw clientProperty = (ClientPropertyDraw) entry.getKey();
-
                 HashMap<GGroupObjectValueDTO, ObjectDTO> propValues = new HashMap<GGroupObjectValueDTO, ObjectDTO>();
                 for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
-                    propValues.put(clientValues.getKey().getGwtGroupObjectValueDTO(), new ObjectDTO(clientValues.getValue()));
+                    propValues.put(clientValues.getKey().getGwtGroupObjectValueDTO(), new ObjectDTO(convertValue(clientValues.getValue())));
                 }
-
-
-                gwtFormChanges.properties.put(clientProperty.ID, propValues);
+                ClientPropertyReader reader = entry.getKey();
+                gwtFormChanges.properties.put(new GPropertyReaderDTO(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType()), propValues);
             }
 
             for (ClientPropertyReader dropProperty : dropProperties) {
@@ -174,11 +171,17 @@ public class ClientFormChanges {
             }
 
             for (ClientPropertyReader panelProperty : panelProperties) {
-                if (panelProperty instanceof ClientPropertyDraw) {
-                    gwtFormChanges.panelProperties.add(((ClientPropertyDraw) panelProperty).ID);
-                }
+                gwtFormChanges.panelProperties.add(new GPropertyReaderDTO(panelProperty.getID(), panelProperty.getGroupObject() != null ? panelProperty.getGroupObject().ID : -1, panelProperty.getType()));
             }
         }
         return gwtFormChanges;
+    }
+
+    public Object convertValue(Object value) {
+        if (value instanceof Color) {
+            return "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
+        } else {
+            return value;
+        }
     }
 }

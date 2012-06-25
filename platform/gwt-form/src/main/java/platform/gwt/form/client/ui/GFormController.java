@@ -4,15 +4,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.util.SC;
-import com.smartgwt.client.widgets.events.ClickEvent;
-import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.layout.*;
-import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
 import platform.gwt.base.shared.GClassViewType;
@@ -85,7 +82,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
         dispatcher.setForm(form);
 
-        mainPane = new GFormLayout(form.mainContainer) {
+        mainPane = new GFormLayout(this, form.mainContainer) {
             public boolean isShowTypeInItsPlace(GGroupObject groupObject) {
                 GGroupObjectController goc = GFormController.this.controllers.get(groupObject);
                 return goc != null && !goc.isInGrid() && goc.getShowTypeView().needToBeVisible();
@@ -206,6 +203,14 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         applyRemoteChanges();
     }
 
+    public GPropertyDraw getProperty(int id) {
+        return form.getProperty(id);
+    }
+
+    public GGroupObject getGroupObject(int groupID) {
+        return form.getGroupObject(groupID);
+    }
+
     private void applyRemoteChanges() {
         dispatcher.execute(new GetRemoteChanges(), new FormChangesBlockingCallback());
     }
@@ -274,6 +279,10 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
     public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
         dispatcher.execute(new CollapseGroupObject(group.ID, value.getValueDTO()), new FormChangesBlockingCallback());
+    }
+
+    public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
+        dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new FormChangesBlockingCallback());
     }
 
     private void executeConsecutiveActions(Action<FormChangesResult>... actions) {

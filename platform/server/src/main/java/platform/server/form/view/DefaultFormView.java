@@ -100,6 +100,7 @@ public class DefaultFormView extends FormView {
                 panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
             }
             formButtonContainer = formSet.getFormButtonContainer();
+            formButtonContainer.gwtResizable = false;
             mainContainer.add(formButtonContainer);
 
             initFormButtons();
@@ -138,15 +139,26 @@ public class DefaultFormView extends FormView {
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCloseKeyStroke(), null);
 
-        formButtonContainer.add(printFunction);
-        formButtonContainer.add(xlsFunction);
-        formButtonContainer.add(editFunction);
-        formButtonContainer.add(nullFunction);
-        formButtonContainer.add(refreshFunction);
-        formButtonContainer.add(applyFunction);
-        formButtonContainer.add(cancelFunction);
-        formButtonContainer.add(okFunction);
-        formButtonContainer.add(closeFunction);
+        ContainerView leftControlsContainer = createContainer();
+        leftControlsContainer.setSID("leftControls");
+        leftControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        ContainerView rightControlsContainer = createContainer();
+        rightControlsContainer.setSID("rightControls");
+        rightControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+        leftControlsContainer.add(printFunction);
+        leftControlsContainer.add(xlsFunction);
+        leftControlsContainer.add(editFunction);
+        leftControlsContainer.add(nullFunction);
+
+        rightControlsContainer.add(refreshFunction);
+        rightControlsContainer.add(applyFunction);
+        rightControlsContainer.add(cancelFunction);
+        rightControlsContainer.add(okFunction);
+        rightControlsContainer.add(closeFunction);
+
+        formButtonContainer.add(leftControlsContainer);
+        formButtonContainer.add(rightControlsContainer);
     }
 
     private void setupFormButton(PropertyDrawView printFunction, SimplexComponentDirections directions, KeyStroke editKey, String iconPath) {

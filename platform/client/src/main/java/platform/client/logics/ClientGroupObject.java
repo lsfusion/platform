@@ -12,7 +12,10 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GGroupObject;
+import platform.gwt.view.reader.GRowBackgroundReader;
+import platform.gwt.view.reader.GRowForegroundReader;
 import platform.interop.ClassViewType;
+import platform.interop.form.PropertyReadType;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
@@ -199,6 +202,11 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             for (ClientGroupObject upGroup : upTreeGroups) {
                 gwtGroupObject.upTreeGroups.add(upGroup.getGwtGroupObject());
             }
+
+            if (rowBackgroundReader != null)
+                gwtGroupObject.rowBackgroundReader = new GRowBackgroundReader(rowBackgroundReader.getID());
+            if (rowForegroundReader != null)
+                gwtGroupObject.rowForegroundReader = new GRowForegroundReader(rowForegroundReader.getID());
         }
         return gwtGroupObject;
     }
@@ -215,6 +223,14 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateRowBackgroundValues(readKeys);
         }
+
+        public int getID() {
+            return ClientGroupObject.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.ROW_BACKGROUND;
+        }
     }
 
     public class RowForegroundReader implements ClientPropertyReader {
@@ -228,6 +244,14 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateRowForegroundValues(readKeys);
+        }
+
+        public int getID() {
+            return ClientGroupObject.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.ROW_FOREGROUND;
         }
     }
 }

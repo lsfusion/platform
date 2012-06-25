@@ -12,6 +12,7 @@ import platform.gwt.view.GComponent;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -255,6 +256,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     protected void initGwtComponent(GComponent component) {
         component.ID = ID;
+        component.sID = sID;
         component.container = container == null ? null : container.getGwtComponent();
         component.defaultComponent = defaultComponent;
         component.drawToToolbar = drawToToolbar();

@@ -10,5 +10,8 @@ public interface ClientPropertyReader {
 
     ClientGroupObject getGroupObject();
 
-    boolean shouldBeDrawn(ClientFormController form);    
+    boolean shouldBeDrawn(ClientFormController form);
+
+    int getID();
+    byte getType();
 }

@@ -18,7 +18,7 @@ public class GTreeTableTree extends Tree {
     public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
     public final List<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
 
-    public HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>>();
+    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
     public HashMap<GGroupObject, List<GPropertyDraw>> groupPropsMap = new HashMap<GGroupObject, List<GPropertyDraw>>();
 
     public GTreeTableTree(GForm iForm) {
@@ -183,7 +183,7 @@ public class GTreeTableTree extends Tree {
         return nodes;
     }
 
-    public void setValues(GPropertyDraw property, HashMap<GGroupObjectValue, Object> propValues) {
+    public void setValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues) {
         if (propValues != null) {
             values.put(property, propValues);
         }

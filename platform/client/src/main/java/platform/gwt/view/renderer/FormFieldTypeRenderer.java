@@ -54,9 +54,26 @@ public class FormFieldTypeRenderer implements GTypeRenderer {
         item.setValue(value);
     }
 
+    public void setTitle(Object title) {
+        item.setTitle(title == null ? "" : title.toString().trim());
+        item.updateState();
+    }
+
     public void setChangedHandler(PropertyChangedHandler handler) {
         this.handler = handler;
     }
+
+    @Override
+    public void updateCellBackgroundValue(Object value) {
+        if (value != null)
+            itemForm.setBackgroundColor((String) value);
+    }
+
+    @Override
+    public void updateCellForegroundValue(Object value) {
+    }
+
+
 
     public DynamicForm getItemForm() {
         return itemForm;

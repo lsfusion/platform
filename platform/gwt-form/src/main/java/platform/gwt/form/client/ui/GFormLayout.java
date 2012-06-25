@@ -13,17 +13,17 @@ public abstract class GFormLayout extends VLayout {
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> contViews = new HashMap<GContainer, GAbstractFormContainer>();
 
-    public GFormLayout(GContainer mainContainer) {
-        createContainerViews(mainContainer);
+    public GFormLayout(GFormController formController, GContainer mainContainer) {
+        createContainerViews(formController, mainContainer);
         addMember(this.mainContainer);
     }
 
-    private void createContainerViews(GContainer container) {
+    private void createContainerViews(GFormController formController, GContainer container) {
         GAbstractFormContainer formContainer;
         if (GContainerType.isSplitPane(container.type)) {
             formContainer = new GFormSplitPane(container);
         } else if (GContainerType.isTabbedPane(container.type)) {
-            formContainer = new GFormTabbedPane(container);
+            formContainer = new GFormTabbedPane(formController, container);
         } else {
             formContainer = new GFormContainer(container);
         }
@@ -40,7 +40,7 @@ public abstract class GFormLayout extends VLayout {
 
         for (GComponent child : container.children) {
             if (child instanceof GContainer) {
-                createContainerViews((GContainer) child);
+                createContainerViews(formController, (GContainer) child);
             }
         }
     }
@@ -82,6 +82,8 @@ public abstract class GFormLayout extends VLayout {
     }
 
     private void adjustContainerSize(GContainer container) {
+        if (!container.resizable)
+            return;
         for (GComponent child : container.children) {
             if (child instanceof GContainer) {
                 adjustContainerSize((GContainer) child);

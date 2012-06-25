@@ -3,6 +3,10 @@ package platform.gwt.form.client.ui;
 import com.smartgwt.client.widgets.layout.VLayout;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGrid;
+import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.changes.GGroupObjectValue;
+
+import java.util.Map;
 
 public class GGridController {
     private GGrid key;
@@ -45,5 +49,25 @@ public class GGridController {
 
     public void show() {
         formLayout.add(key, gridView, 0);
+    }
+
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        table.updateCellBackgroundValues(propertyDraw, values);
+    }
+
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        table.updateCellForegroundValues(propertyDraw, values);
+    }
+
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        table.updatePropertyCaptions(propertyDraw, values);
+    }
+
+    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+        table.updateRowBackgroundValues(values);
+    }
+
+    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+        table.updateRowForegroundValues(values);
     }
 }

@@ -1,5 +1,8 @@
 package platform.gwt.view;
 
+import platform.gwt.view.reader.GRowBackgroundReader;
+import platform.gwt.view.reader.GRowForegroundReader;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +18,9 @@ public class GGroupObject implements Serializable {
     public boolean isRecursive;
     public GTreeGroup parent;
     public List<GGroupObject> upTreeGroups = new ArrayList<GGroupObject>();
+
+    public GRowBackgroundReader rowBackgroundReader;
+    public GRowForegroundReader rowForegroundReader;
 
     public String getCaption() {
         if (objects.isEmpty()) {

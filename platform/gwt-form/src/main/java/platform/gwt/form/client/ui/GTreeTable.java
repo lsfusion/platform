@@ -1,19 +1,14 @@
 package platform.gwt.form.client.ui;
 
-import com.smartgwt.client.types.Autofit;
 import com.smartgwt.client.types.SelectionStyle;
 import com.smartgwt.client.widgets.grid.ListGridField;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.*;
 import com.smartgwt.client.widgets.tree.TreeGrid;
 import com.smartgwt.client.widgets.tree.TreeNode;
 import com.smartgwt.client.widgets.tree.events.*;
-import platform.gwt.view.GForm;
-import platform.gwt.view.GGroupObject;
-import platform.gwt.view.GObject;
-import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.*;
 import platform.gwt.view.changes.GGroupObjectValue;
-import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
-import platform.gwt.view.changes.dto.ObjectDTO;
 
 import java.util.*;
 
@@ -29,6 +24,12 @@ public class GTreeTable extends TreeGrid {
     private List<GTreeTableNode> expandedNodes;
 
     private boolean dataUpdated;
+
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<GGroupObjectValue, Object>();
+    private Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<GGroupObjectValue, Object>();
 
     public GTreeTable(GFormController iformController, GForm iform) {
         this.formController = iformController;
@@ -133,7 +134,7 @@ public class GTreeTable extends TreeGrid {
         dataUpdated = true;
     }
 
-    public void setValues(GPropertyDraw property, HashMap<GGroupObjectValue, Object> propValues) {
+    public void setValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues) {
         if (propValues != null) {
             tree.setValues(property, propValues);
             dataUpdated = true;
@@ -148,6 +149,53 @@ public class GTreeTable extends TreeGrid {
 
             dataUpdated = false;
         }
+
+        boolean needsFieldsRefresh = false;
+        for (GPropertyDraw property : tree.properties) {
+            Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
+            if (captions != null) {
+                Object value = captions.values().iterator().next();
+                getField(property.sID).setTitle(value == null ? null : value.toString().trim());
+                needsFieldsRefresh = true;
+            }
+        }
+        if (needsFieldsRefresh)
+            refreshFields();
+    }
+
+    @Override
+    protected String getCellCSSText(ListGridRecord record, int rowNum, int colNum) {
+        String cssText = "";
+
+        GPropertyDraw property = null;
+        for (GPropertyDraw prop : tree.properties) {
+            if (getFieldName(colNum).equals(prop.sID)){
+                property = prop;
+            }
+        }
+        if (property != null) {
+            Object background = null;
+            if (rowBackgroundValues.get(((GTreeTableNode) record).key) != null) {
+                background = rowBackgroundValues.get(((GTreeTableNode) record).key);
+            } else if (cellBackgroundValues.get(property) != null) {
+                background = cellBackgroundValues.get(property).get(((GTreeTableNode) record).key);
+            }
+            if (background != null) {
+                cssText += "background-color:" + background + ";";
+            }
+
+            Object foreground = null;
+            if (rowForegroundValues.get(((GTreeTableNode) record).key) != null) {
+                foreground = rowForegroundValues.get(((GTreeTableNode) record).key);
+            } else if (cellForegroundValues.get(property) != null) {
+                foreground = cellForegroundValues.get(property).get(((GTreeTableNode) record).key);
+            }
+            if (foreground != null) {
+                cssText += "color:" + foreground + ";";
+            }
+        }
+
+        return cssText.isEmpty() ? super.getCellCSSText(record, rowNum, colNum) : cssText;
     }
 
     public void saveVisualState() {
@@ -191,5 +239,25 @@ public class GTreeTable extends TreeGrid {
                 }
             }
         }
+    }
+
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        propertyCaptions.put(propertyDraw, values);
+    }
+
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        cellBackgroundValues.put(propertyDraw, values);
+    }
+
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        cellForegroundValues.put(propertyDraw, values);
+    }
+
+    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+        rowBackgroundValues = values;
+    }
+
+    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+        rowForegroundValues = values;
     }
 }

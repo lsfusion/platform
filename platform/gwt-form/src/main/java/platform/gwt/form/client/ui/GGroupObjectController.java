@@ -3,18 +3,20 @@ package platform.gwt.form.client.ui;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import platform.gwt.base.shared.GClassViewType;
-import platform.gwt.view.GForm;
-import platform.gwt.view.GGroupObject;
-import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.*;
 import platform.gwt.view.changes.GFormChanges;
 import platform.gwt.view.changes.GGroupObjectValue;
+import platform.gwt.view.logics.GGroupObjectLogicsSupplier;
+import platform.gwt.view.reader.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class GGroupObjectController {
+public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     public GGroupObject groupObject;
     private GFormLayout formLayout;
+    private GFormController formController;
 
     public GGridController grid;
     public GPanelController panel;
@@ -23,17 +25,20 @@ public class GGroupObjectController {
     private GClassViewType showType = GClassViewType.HIDE;
     private GShowTypeView showTypeView;
 
+    public GGroupObjectController(){}
+
     public GGroupObjectController(GFormController iformController, GForm iform, GGroupObject igroupObject, GFormLayout formLayout) {
         groupObject = igroupObject;
         this.formLayout = formLayout;
+        formController = iformController;
 
         gridToolbar = new GToolbarPanel();
 
-        panel = new GPanelController(iformController, iform, formLayout);
+        panel = new GPanelController(formController, iform, formLayout);
 
         panelToolbar = new GToolbarPanel();
 
-        showTypeView = new GShowTypeView(igroupObject, iformController) {
+        showTypeView = new GShowTypeView(igroupObject, formController) {
             @Override
             public void hide() {
                 GGroupObjectController.this.hide();
@@ -46,7 +51,7 @@ public class GGroupObjectController {
         };
 
         if(groupObject != null) { 
-            grid = new GGridController(groupObject.grid, iformController, iform, this, formLayout);
+            grid = new GGridController(groupObject.grid, formController, iform, this, formLayout);
             grid.addView();
 
             formLayout.add(groupObject.grid.container, panelToolbar);
@@ -73,15 +78,15 @@ public class GGroupObjectController {
             setClassView(GClassViewType.valueOf(classViewValue));
         }
 
-        for (GPropertyDraw property : fc.properties.keySet()) {
-            if (property.groupObject == groupObject) {
-                if (fc.panelProperties.contains(property)) {
-                    addPanelProperty(property);
-                    panel.setValue(property, fc.properties.get(property));
-                } else {
-                    addGridProperty(property);
-                    if (grid != null)
-                        grid.getTable().setValues(property, fc.properties.get(property));
+        for (GPropertyReader propertyReader : fc.properties.keySet()) {
+            if (propertyReader instanceof GPropertyDraw) {
+                GPropertyDraw property = (GPropertyDraw) propertyReader;
+                if (property.groupObject == groupObject) {
+                    if (fc.panelProperties.contains(property)) {
+                        addPanelProperty(property);
+                    } else {
+                        addGridProperty(property);
+                    }
                 }
             }
         }
@@ -96,7 +101,77 @@ public class GGroupObjectController {
             grid.getTable().setCurrentKey(currentKey);
         }
 
+        for (GPropertyReader propertyReader : fc.properties.keySet()) {
+            if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
+                propertyReader.update(this, fc.properties.get(propertyReader));
+            }
+        }
+
         update();
+    }
+
+    @Override
+    public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.ID);
+        if (panel.containsProperty(property)) {
+            panel.setValue(property, values);
+        } else {
+            grid.getTable().setValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (panel.containsProperty(property)) {
+            panel.updateCellBackgroundValues(property, values);
+        } else {
+            grid.updateCellBackgroundValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (panel.containsProperty(property)) {
+            panel.updateCellForegroundValues(property, values);
+        } else {
+            grid.updateCellForegroundValues(property, values);
+        }
+    }
+
+    @Override
+    public void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (panel.containsProperty(property)) {
+            panel.updatePropertyCaptions(property, values);
+        } else {
+            grid.updatePropertyCaptions(property, values);
+        }
+    }
+
+    @Override
+    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
+    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+        if (isInGrid()) {
+            grid.updateRowBackgroundValues(values);
+        } else {
+            if (values != null && !values.isEmpty())
+                panel.updateRowBackgroundValue(values.values().iterator().next());
+        }
+    }
+
+    @Override
+    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+        if (isInGrid()) {
+            grid.updateRowForegroundValues(values);
+        } else {
+            if (values != null && !values.isEmpty())
+                panel.updateRowForegroundValue(values.values().iterator().next());
+        }
     }
 
     public void hide() {

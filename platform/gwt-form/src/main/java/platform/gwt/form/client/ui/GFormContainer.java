@@ -19,6 +19,7 @@ public class GFormContainer extends GAbstractFormContainer {
             else
                 containerComponent = new HStack(10);
 
+        containerComponent.setAlign(key.hAlign.getSmartGWTAlignment());
         addBorder();
     }
 }

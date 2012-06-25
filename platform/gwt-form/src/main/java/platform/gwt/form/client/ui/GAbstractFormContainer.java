@@ -6,13 +6,13 @@ import platform.gwt.base.shared.GContainerType;
 import platform.gwt.view.GComponent;
 import platform.gwt.view.GContainer;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class GAbstractFormContainer {
     protected Layout containerComponent;
     protected GContainer key;
-    protected Map<GComponent, Canvas> children = new HashMap<GComponent, Canvas>();
+    protected Map<GComponent, Canvas> children = new LinkedHashMap<GComponent, Canvas>();
 
 
     public boolean isTabbed() {

@@ -19,6 +19,7 @@ import platform.gwt.view.changes.GGroupObjectValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class GGridTable extends ListGrid {
     private final GFormController formController;
@@ -29,10 +30,16 @@ public class GGridTable extends ListGrid {
     public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
 
     public ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
-    public HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>>();
+    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
     private int currentInd = -1;
+
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<GGroupObjectValue, Object>();
+    private Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<GGroupObjectValue, Object>();
 
     public GGridTable(GFormController iformController, GForm iform, GGroupObjectController igroupController) {
         this.formController = iformController;
@@ -175,7 +182,7 @@ public class GGridTable extends ListGrid {
         this.keys = keys;
     }
 
-    public void setValues(GPropertyDraw property, HashMap<GGroupObjectValue, Object> propValues) {
+    public void setValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues) {
         if (propValues != null) {
             dataUpdated = true;
             values.put(property, propValues);
@@ -207,10 +214,77 @@ public class GGridTable extends ListGrid {
             selectSingleRecord(currentInd);
             internalSelecting = false;
         }
+
+        boolean needsFieldsRefresh = false;
+        for (GPropertyDraw property : properties) {
+            Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
+            if (captions != null) {
+                Object value = captions.values().iterator().next();
+                getField(property.sID).setTitle(value == null ? null : value.toString().trim());
+                needsFieldsRefresh = true;
+            }
+        }
+        if (needsFieldsRefresh)
+            refreshFields();
+    }
+
+    @Override
+    protected String getCellCSSText(ListGridRecord record, int rowNum, int colNum) {
+        String cssText = "";
+
+        GPropertyDraw property = null;
+        for (GPropertyDraw prop : properties) {
+            if (getFieldName(colNum).equals(prop.sID)){
+                property = prop;
+            }
+        }
+        if (property != null) {
+            Object background = null;
+            if (rowBackgroundValues.get(((GridDataRecord) record).key) != null) {
+                background = rowBackgroundValues.get(((GridDataRecord) record).key);
+            } else if (cellBackgroundValues.get(property) != null) {
+                background = cellBackgroundValues.get(property).get(((GridDataRecord) record).key);
+            }
+            if (background != null) {
+                cssText += "background-color:" + background + ";";
+            }
+
+            Object foreground = null;
+            if (rowForegroundValues.get(((GridDataRecord) record).key) != null) {
+                foreground = rowForegroundValues.get(((GridDataRecord) record).key);
+            } else if (cellForegroundValues.get(property) != null) {
+                foreground = cellForegroundValues.get(property).get(((GridDataRecord) record).key);
+            }
+            if (foreground != null) {
+                cssText += "color:" + foreground + ";";
+            }
+        }
+
+        return cssText.isEmpty() ? super.getCellCSSText(record, rowNum, colNum) : cssText;
     }
 
     public boolean isEmpty() {
         return getTotalRows() == 0 || getFields().length == 0;
+    }
+
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        cellBackgroundValues.put(propertyDraw, values);
+    }
+
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        cellForegroundValues.put(propertyDraw, values);
+    }
+
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        propertyCaptions.put(propertyDraw, values);
+    }
+
+    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+        rowBackgroundValues = values;
+    }
+
+    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+        rowForegroundValues = values;
     }
 
     private native void scrollRecordIntoView(int currentInd) /*-{

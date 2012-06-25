@@ -14,9 +14,13 @@ import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GPropertyDraw;
-import platform.gwt.view.GPropertyEditType;
+import platform.gwt.view.*;
+import platform.gwt.view.reader.GBackgroundReader;
+import platform.gwt.view.reader.GCaptionReader;
+import platform.gwt.view.reader.GFooterReader;
+import platform.gwt.view.reader.GForegroundReader;
 import platform.interop.PropertyEditType;
+import platform.interop.form.PropertyReadType;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreenConstraints;
 
@@ -268,6 +272,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean shouldBeDrawn(ClientFormController form) {
         return baseType.shouldBeDrawn(form);
+    }
+
+    public byte getType() {
+        return PropertyReadType.DRAW;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -525,6 +533,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
             gwtPropertyDraw.focusable = focusable;
             gwtPropertyDraw.checkEquals = checkEquals;
+
+            if (captionReader != null)
+                gwtPropertyDraw.captionReader = new GCaptionReader(captionReader.getID(), captionReader.getGroupObject() != null ? captionReader.getGroupObject().ID : -1);
+            if (footerReader != null)
+                gwtPropertyDraw.footerReader = new GFooterReader(footerReader.getID(), footerReader.getGroupObject() != null ? footerReader.getGroupObject().ID : -1);
+            if (backgroundReader != null)
+                gwtPropertyDraw.backgroundReader = new GBackgroundReader(backgroundReader.getID(), backgroundReader.getGroupObject() != null ? backgroundReader.getGroupObject().ID : -1);
+            if (foregroundReader != null)
+                gwtPropertyDraw.foregroundReader = new GForegroundReader(foregroundReader.getID(), foregroundReader.getGroupObject() != null ? foregroundReader.getGroupObject().ID : -1);
         }
         return gwtPropertyDraw;
     }
@@ -541,6 +558,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CAPTION;
+        }
     }
 
     public class FooterReader implements ClientPropertyReader {
@@ -553,6 +578,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.FOOTER;
         }
     }
 
@@ -568,6 +601,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateCellBackgroundValues(ClientPropertyDraw.this, readKeys);
         }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CELL_BACKGROUND;
+        }
     }
 
     public class ForegroundReader implements ClientPropertyReader {
@@ -581,6 +622,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
             controller.updateCellForegroundValues(ClientPropertyDraw.this, readKeys);
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CELL_FOREGROUND;
         }
     }
 }

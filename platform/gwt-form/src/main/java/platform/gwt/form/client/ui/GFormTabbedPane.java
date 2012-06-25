@@ -7,13 +7,15 @@ import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
 import com.smartgwt.client.widgets.tab.Tab;
 import com.smartgwt.client.widgets.tab.TabSet;
+import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
+import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 import platform.gwt.view.GComponent;
 import platform.gwt.view.GContainer;
 
 public class GFormTabbedPane extends GAbstractFormContainer {
     private TabSet tabPane;
 
-    public GFormTabbedPane(GContainer key) {
+    public GFormTabbedPane(final GFormController formController, final GContainer key) {
         this.key = key;
 
         if (key.gwtIsLayout)
@@ -29,6 +31,14 @@ public class GFormTabbedPane extends GAbstractFormContainer {
 
         tabPane = new TabSet();
         containerComponent.addMember(tabPane);
+
+        tabPane.addTabSelectedHandler(new TabSelectedHandler() {
+            @Override
+            public void onTabSelected(TabSelectedEvent tabSelectedEvent) {
+                int index = tabSelectedEvent.getTabNum();
+                formController.setTabVisible(key, (GComponent) children.keySet().toArray()[index]);
+            }
+        });
 
         addBorder();
     }
