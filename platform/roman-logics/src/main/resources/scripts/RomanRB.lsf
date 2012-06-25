@@ -17,6 +17,7 @@ REQUIRE System,
         StoSDirect,
         SfromSDirect,
         SfromWH,
+        StoSTransit,
         WholesalePrice,
         RetailPrice,
         RomanLogicsModule;
@@ -132,6 +133,7 @@ NAVIGATOR {
             ADD WHtoSTrs;
             ADD StoSDirs;
             ADD SfromSDirs;
+            ADD StoSTrs;
         }
     }
 
@@ -221,5 +223,7 @@ NAVIGATOR {
         ADD StoSDir;
         ADD SfromSDir;
         ADD WHtoSTrsDialog;
+        ADD StoSTrsDialog;
+        ADD StoSTr;
     }
 }

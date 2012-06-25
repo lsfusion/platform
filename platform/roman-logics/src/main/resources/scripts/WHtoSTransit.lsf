@@ -9,6 +9,7 @@ REQUIRE System,
         RomanDocument,
         Consignment,
         Declaration,
+        WholesalePrice,
         MasterData,
         RomanLogicsModule;
 
@@ -40,6 +41,9 @@ UOMWHtoSTrDetail 'Единица измерения (ИД)' (WHtoSTrDetail) = DA
 shortNameUOMWHtoSTrDetail 'Единица измерения' (WHtoSTrDetail) = shortName(UOMWHtoSTrDetail(WHtoSTrDetail));
 
 importerPriceWHtoSTrDetail 'Цена без НДС (ед.)' (WHtoSTrDetail) = DATA NUMERIC[14,3] (WHtoSTrDetail);
+
+wholesalePriceWHtoSTrDetail 'Оптовая цена' (WHtoSTrDetail) =  priceWholesaleArticleDateTime(articleSku(skuWHtoSTrDetail(WHtoSTrDetail)), dateTimeWHtoSTrDetail(WHtoSTrDetail));
+importerPriceWHtoSTrDetail (WHtoSTrDetail) <- wholesalePriceWHtoSTrDetail(WHtoSTrDetail) WHEN CHANGED(skuWHtoSTrDetail(WHtoSTrDetail)) OR CHANGED (dateTimeWHtoSTrDetail(WHtoSTrDetail));
 
 importerSumWHtoSTrDetail 'Стоимость без НДС' (WHtoSTrDetail) = importerPriceWHtoSTrDetail(WHtoSTrDetail) * quantityWHtoSTrDetail(WHtoSTrDetail);
 

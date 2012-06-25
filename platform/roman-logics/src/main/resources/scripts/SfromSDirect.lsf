@@ -31,10 +31,10 @@ numberSfromSDir 'Номер' (SfromSDir) = numberObject(StoSDirSfromSDir(SfromSD
 seriesSfromSDir 'Серия' (SfromSDir) = seriesObject(StoSDirSfromSDir(SfromSDir)) IN baseGroup PERSISTENT;
 seriesNumberSfromSDir 'Серия/Номер' (SfromSDir) = seriesNumberObject(StoSDirSfromSDir(SfromSDir)) PERSISTENT;
 
-senderDepartmentStoreSfromSDir 'Отдел-отправитель(ИД)' (SfromSDir) = senderDepartmentStoreStoSDir(StoSDirSfromSDir(SfromSDir));
+senderDepartmentStoreSfromSDir 'Отдел-отправитель(ИД)' (SfromSDir) = departmentStoreStoSDir(StoSDirSfromSDir(SfromSDir));
 nameSenderDepartmentStoreSfromSDir 'Отдел-отправитель' (SfromSDir) = name(senderDepartmentStoreSfromSDir(SfromSDir));
 
-senderStoreSfromSDir 'Магазин-отправитель (ИД)' (SfromSDir) = senderStoreStoSDir(StoSDirSfromSDir(SfromSDir));
+senderStoreSfromSDir 'Магазин-отправитель (ИД)' (SfromSDir) = storeStoSDir(StoSDirSfromSDir(SfromSDir));
 nameSenderStoreSfromSDir 'Магазин-отправитель' (SfromSDir)= name(senderStoreSfromSDir(SfromSDir));
 
 recipientStoreSfromSDir 'Магазин-получатель (ИД)' (SfromSDir) = recipientStoreStoSDir(StoSDirSfromSDir(SfromSDir));
