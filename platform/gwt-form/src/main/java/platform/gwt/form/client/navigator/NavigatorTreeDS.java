@@ -1,5 +1,6 @@
 package platform.gwt.form.client.navigator;
 
+import com.google.gwt.core.client.GWT;
 import com.smartgwt.client.data.DataSource;
 import com.smartgwt.client.data.fields.DataSourceBooleanField;
 import com.smartgwt.client.data.fields.DataSourceImageField;
@@ -39,7 +40,7 @@ public class NavigatorTreeDS extends DataSource {
 
         setFields(captionField, elementIdField, parentIdField, isFormField, iconField);
 
-        setDataURL("/navigatorDS");
+        setDataURL(GWT.getHostPageBaseURL() + "navigatorDS");
         setClientOnly(true);
     }
 }
