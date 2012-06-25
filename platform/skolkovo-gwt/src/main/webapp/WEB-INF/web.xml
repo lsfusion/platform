@@ -63,7 +63,7 @@
 
     <servlet>
         <servlet-name>RemoteFormService</servlet-name>
-        <servlet-class>platform.gwt.main.server.RemoteServiceImpl</servlet-class>
+        <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>RemoteFormService</servlet-name>

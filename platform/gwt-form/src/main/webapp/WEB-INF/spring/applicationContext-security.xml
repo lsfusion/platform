@@ -12,7 +12,7 @@
 
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <intercept-url pattern="/form.jsp" access="hasAnyRole('admin')"/>
-        <intercept-url pattern="/platform.gwt.main.Main/*" access="hasRole('admin')"/>
+        <intercept-url pattern="/platform.gwt.form.Form/*" access="hasRole('admin')"/>
 
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/form.jsp"/>
 
@@ -34,7 +34,7 @@
 
     <b:bean id="readFileHandler" class="platform.gwt.base.server.handlers.ReadFileRequestHandler"/>
 
-    <b:bean id="navigatorDSHandler" class="platform.gwt.main.server.navigator.ds.NavigatorDSHandler"/>
+    <b:bean id="navigatorDSHandler" class="platform.gwt.form.server.navigator.ds.NavigatorDSHandler"/>
 
     <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
         <b:property name="URI" value="/readFile"/>
