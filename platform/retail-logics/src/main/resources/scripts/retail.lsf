@@ -297,7 +297,7 @@ DESIGN statisticGroups FROM DEFAULT {
         childConstraints = TO THE RIGHT;
         type = SPLITH;
 
-        ADD treeGroups.box;
+        ADD treeGroups.tree.box;
 
         ADD cg.box{
             fillHorizontal = 4;
@@ -1112,7 +1112,7 @@ DESIGN naturalLossItem FROM DEFAULT {
         type = SPLITH;
         childConstraints = TO THE RIGHT;
 
-        ADD treeNaturalLossItem.box;
+        ADD treeNaturalLossItem.tree.box;
 
         NEW firstCase {
 
@@ -1164,7 +1164,7 @@ DESIGN naturalLossItems FROM DEFAULT {
         type = SPLITH;
         childConstraints = TO THE RIGHT;
 
-        ADD treeNaturalLossItem.box;
+        ADD treeNaturalLossItem.tree.box;
 
         NEW firstCase {
 
@@ -1410,8 +1410,8 @@ DESIGN item FROM DEFAULT {
                 ADD dt.box BEFORE d.grid.box;
                 ADD sp.box BEFORE d.grid.box;
                 POSITION dt.box TO THE LEFT sp.box;
-                ADD treeStore.box BEFORE d.grid.box;
-                POSITION treeStore.box TO THE LEFT d.grid.box;
+                ADD treeStore.tree.box BEFORE d.grid.box;
+                POSITION treeStore.tree.box TO THE LEFT d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
                 d.grid.box {
                     fillHorizontal = 3;
@@ -1487,7 +1487,7 @@ FORM barcodeForm 'Товары по Ш-К'
 ;
 
 DESIGN barcodeForm FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT b.box;
+    POSITION treeGroup.tree.box TO THE LEFT b.box;
 
     treeGroup.tree {
         fillHorizontal = 0.4;
@@ -1546,7 +1546,7 @@ DESIGN itemGroups FROM DEFAULT {
         childConstraints = TO THE RIGHT;
         type = SPLITH;
 
-        ADD treeGroups.box ;
+        ADD treeGroups.tree.box ;
 
         ADD cg.box{
             fillHorizontal = 4;
@@ -2245,22 +2245,22 @@ DESIGN cutting FROM DEFAULT {
             NEW caseOneBox {
                 title = 'Подразделение';
 
-                ADD treeStore.box {
+                ADD treeStore.tree.box {
                     fillHorizontal = 1;
                 };
                 ADD dep.box {
                     fillHorizontal = 2;
                 };
-                POSITION treeStore.box TO THE LEFT dep.box;
+                POSITION treeStore.tree.box TO THE LEFT dep.box;
             }
             NEW caseTwoBox { title = 'Товар, для которого действует карта';
-                ADD treeGroup.box {
+                ADD treeGroup.tree.box {
                     fillHorizontal = 1;
                 };
                 ADD i.box {
                     fillHorizontal = 2;
                 };
-                POSITION treeGroup.box TO THE LEFT i.box;
+                POSITION treeGroup.tree.box TO THE LEFT i.box;
             }
         }
     }
@@ -5259,8 +5259,8 @@ DESIGN orderSupplier FROM DEFAULT {
         }
     }
 
-    POSITION treeGroup.box TO THE LEFT i.box;
-    POSITION treeGroup.box TO THE BOTTOM header.box;
+    POSITION treeGroup.tree.box TO THE LEFT i.box;
+    POSITION treeGroup.tree.box TO THE BOTTOM header.box;
 
     i.grid {
         fillHorizontal = 4;
@@ -6642,8 +6642,8 @@ FORM collationSheetItem 'Товары для добавления в сличи�
 ;
 
 DESIGN collationSheetItem FROM DEFAULT {
-    POSITION treeGroup.box TO THE LEFT i.box;
-        treeGroup.box{ fillHorizontal = 1.5;}
+    POSITION treeGroup.tree.box TO THE LEFT i.box;
+        treeGroup.tree.box{ fillHorizontal = 1.5;}
         i.box{ fillHorizontal = 3.5;}
 
 }
@@ -6925,7 +6925,7 @@ DESIGN inventory FROM DEFAULT {
             NEW z.box { title = 'Описи';
                 fillVertical = 5;
                 childConstraints = TO THE RIGHT;
-                ADD treeDepartmentStore.box {
+                ADD treeDepartmentStore.tree.box {
                     fillHorizontal = 2;
 
                     PROPERTY(objectClassName) {
@@ -6976,10 +6976,10 @@ DESIGN inventory FROM DEFAULT {
                 }
                 NEW firstCase { title = 'Пересчитанный товар';
                     fillVertical = 4;
-                    ADD treeGroup.box { title = 'Товарные группы';};
+                    ADD treeGroup.tree.box { title = 'Товарные группы';};
                     ADD i.box;
-                    POSITION treeGroup.box TO THE LEFT i.box;
-                        treeGroup.box{ fillHorizontal = 1.5;}
+                    POSITION treeGroup.tree.box TO THE LEFT i.box;
+                        treeGroup.tree.box{ fillHorizontal = 1.5;}
                         i.box{ fillHorizontal = 3.5;}
 
                 ADD PROPERTY(dialogItemByCollationSheet(cs)) IN i.panel;
@@ -8667,8 +8667,8 @@ DESIGN statisticalReport FROM DEFAULT {
                 type = SPLITV;
                 childConstraints = TO THE BOTTOM;
 
-                ADD treeStore.box {title = 'Магазины';};
-                ADD treeGroups.box {title = 'Статистические группы';};
+                ADD treeStore.tree.box {title = 'Магазины';};
+                ADD treeGroups.tree.box {title = 'Статистические группы';};
             }
 
             NEW secondCase {
@@ -8883,10 +8883,10 @@ FORM torgSales '12-Торг (продажи)'
 DESIGN torgSales FROM DEFAULT {
 
     main{
-        ADD treeGroups.box  BEFORE functions.box {
+        ADD treeGroups.tree.box  BEFORE functions.box {
             title = 'Показатели по стат. группам с учетом ед. изм. и коэфф. перевода';
         }
-        NEW firstCase BEFORE treeGroups.box {
+        NEW firstCase BEFORE treeGroups.tree.box {
             childConstraints = TO THE RIGHT;
             title = 'Параметры отчета';
 
@@ -8961,8 +8961,8 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
                 NEW firstCaseTwo {
 
                     type = SPLITV;
-                    ADD treeStore.box {title = 'Магазины';};
-                    ADD treeGroups.box {title = 'Товарные группы';};
+                    ADD treeStore.tree.box {title = 'Магазины';};
+                    ADD treeGroups.tree.box {title = 'Товарные группы';};
                 }
             }
 

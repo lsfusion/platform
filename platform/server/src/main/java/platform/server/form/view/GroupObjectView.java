@@ -7,7 +7,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -80,6 +79,10 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         ID = iID;
     }
 
+    public String getSID() {
+        return entity.getSID();
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, entity.banClassView);
         pool.serializeCollection(outStream, this, serializationType);
@@ -100,6 +103,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.writeInt(outStream, entity.pageSize);
         outStream.writeBoolean(needVScroll);
         outStream.writeInt(tableRowsCount == null ? -1 : tableRowsCount);
+        outStream.writeUTF(getSID());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

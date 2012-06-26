@@ -250,8 +250,8 @@ DESIGN supplier FROM DEFAULT {
             ADD st.box {
 
                 ADD dt.box BEFORE st.grid.box;
-                ADD stockTree.box BEFORE st.grid.box;
-                POSITION stockTree.box TO THE LEFT st.grid.box;
+                ADD stockTree.tree.box BEFORE st.grid.box;
+                POSITION stockTree.tree.box TO THE LEFT st.grid.box;
                 st.grid.box {
                     fillHorizontal = 3;
                 };

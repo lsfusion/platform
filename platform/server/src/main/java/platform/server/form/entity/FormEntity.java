@@ -339,7 +339,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         groups.add(group);
 
         if (richDesign != null)
-            richDesign.addGroupObjectEntity(group);
+            richDesign.addGroupObject(group);
     }
 
     protected void addPropertyDraw(ObjectEntity object, Object... groups) {
@@ -518,7 +518,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
 //        assert richDesign == null;
         if (richDesign != null)
-            richDesign.addPropertyDrawEntity(newPropertyDraw);
+            richDesign.addPropertyDraw(newPropertyDraw);
 
         return newPropertyDraw;
     }

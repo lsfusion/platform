@@ -10,7 +10,6 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
-import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -28,6 +27,8 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
 import platform.server.form.window.*;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
@@ -56,7 +57,8 @@ import java.util.regex.Pattern;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
-import static platform.server.logics.PropertyUtils.*;
+import static platform.server.logics.PropertyUtils.getIntNum;
+import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -333,21 +335,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
 
         FormEntity form = findFormByCompoundName(formName);
-
-        ScriptingFormView formView = new ScriptingFormView(form, applyDefault, this);
+        FormView formView = applyDefault ? new DefaultFormView(form) : new FormView(form);
+        ScriptingFormView scriptingView = new ScriptingFormView(formView, this);
         if (caption != null) {
             formView.caption = caption;
         }
 
         form.setRichDesign(formView);
 
-        return formView;
+        return scriptingView;
     }
 
     public ScriptingFormView getDesignForExtending(String formName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("getDesignForExtending(" + formName + ");");
         FormEntity form = findFormByCompoundName(formName);
-        return (ScriptingFormView) form.getRichDesign();
+        return new ScriptingFormView(form.getRichDesign(), this);
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {

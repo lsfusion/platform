@@ -226,8 +226,8 @@ FORM priceSetDocument 'Документ базовых цен'
 ;
 
 DESIGN priceSetDocument FROM DEFAULT {
-    POSITION treeSupplierBrand.box TO THE LEFT treeCategory.box;
-    POSITION treeCategory.box TO THE LEFT aa.box;
+    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
+    POSITION treeCategory.tree.box TO THE LEFT aa.box;
 
     treeSupplierBrand.tree {
         fillHorizontal = 1.5;
@@ -303,8 +303,8 @@ FORM discountPriceSetDocument 'Распродажа'
 ;
 
 DESIGN discountPriceSetDocument FROM DEFAULT {
-    POSITION treeSupplierBrand.box TO THE LEFT treeCategory.box;
-    POSITION treeCategory.box TO THE LEFT aa.box;
+    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
+    POSITION treeCategory.tree.box TO THE LEFT aa.box;
 
     treeSupplierBrand.tree {
         fillHorizontal = 1.5;

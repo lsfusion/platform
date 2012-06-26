@@ -62,49 +62,45 @@ public class DefaultFormView extends FormView {
     }
 
     public DefaultFormView(FormEntity<?> formEntity) {
-        this(formEntity, true);
-    }
-
-    protected DefaultFormView(FormEntity<?> formEntity, boolean applyDefaultDesign) {
         super(formEntity);
 
         caption = entity.caption;
 
-        if (applyDefaultDesign) {
-            FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory);
+        FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory);
+        setComponentSID(formSet.getFormButtonContainer(), formSet.getFormButtonContainer().getSID());
 
-            for (GroupObjectView groupObject : groupObjects) {
-                addGroupObjectView(groupObject);
-            }
-
-            for (TreeGroupView treeGroupView : treeGroups) {
-                TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroupView, containerFactory);
-
-                //вставляем перед первым groupObject в данной treeGroup
-                mainContainer.addBefore(treeSet.getContainer(), groupContainers.get(mgroupObjects.get(treeGroupView.entity.groups.get(0))));
-
-                treeContainers.put(treeGroupView, treeSet.getContainer());
-            }
-
-            for (PropertyDrawView propertyDraw : properties) {
-                addPropertyDrawView(propertyDraw);
-            }
-
-            for (RegularFilterGroupView filterGroupView : regularFilters) {
-                GroupObjectView filterGroupObject = mgroupObjects.get(filterGroupView.entity.getToDraw(entity));
-                filterContainers.get(filterGroupObject).add(filterGroupView);
-            }
-
-            // передобавляем еще раз, чтобы управляющие кнопки оказались в конце контейнера
-            for (GroupObjectEntity group : entity.groups) {
-                panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
-            }
-            formButtonContainer = formSet.getFormButtonContainer();
-            formButtonContainer.gwtResizable = false;
-            mainContainer.add(formButtonContainer);
-
-            initFormButtons();
+        for (GroupObjectView groupObject : groupObjects) {
+            addGroupObjectView(groupObject);
         }
+
+        for (TreeGroupView treeGroupView : treeGroups) {
+            TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroupView, containerFactory);
+            setComponentSID(treeSet.getContainer(), treeSet.getContainer().getSID());
+
+            //вставляем перед первым groupObject в данной treeGroup
+            mainContainer.addBefore(treeSet.getContainer(), groupContainers.get(mgroupObjects.get(treeGroupView.entity.groups.get(0))));
+
+            treeContainers.put(treeGroupView, treeSet.getContainer());
+        }
+
+        for (PropertyDrawView propertyDraw : properties) {
+            addPropertyDrawView(propertyDraw);
+        }
+
+        for (RegularFilterGroupView filterGroupView : regularFilters) {
+            GroupObjectView filterGroupObject = mgroupObjects.get(filterGroupView.entity.getToDraw(entity));
+            filterContainers.get(filterGroupObject).add(filterGroupView);
+        }
+
+        // передобавляем еще раз, чтобы управляющие кнопки оказались в конце контейнера
+        for (GroupObjectEntity group : entity.groups) {
+            panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
+        }
+        formButtonContainer = formSet.getFormButtonContainer();
+        formButtonContainer.gwtResizable = false;
+        mainContainer.add(formButtonContainer);
+
+        initFormButtons();
     }
 
     private void initFormButtons() {
@@ -139,11 +135,9 @@ public class DefaultFormView extends FormView {
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCloseKeyStroke(), null);
 
-        ContainerView leftControlsContainer = createContainer();
-        leftControlsContainer.setSID("leftControls");
+        ContainerView leftControlsContainer = createContainer(null, null, "leftControls");
         leftControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        ContainerView rightControlsContainer = createContainer();
-        rightControlsContainer.setSID("rightControls");
+        ContainerView rightControlsContainer = createContainer(null, null, "rightControls");
         rightControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         leftControlsContainer.add(printFunction);
@@ -182,10 +176,15 @@ public class DefaultFormView extends FormView {
         mainContainer.add(groupSet.getGroupContainer());
 
         groupContainers.put(groupObject, groupSet.getGroupContainer());
+        setComponentSID(groupSet.getGroupContainer(), groupSet.getGroupContainer().getSID());
         panelContainers.put(groupObject, groupSet.getPanelContainer());
+        setComponentSID(groupSet.getPanelContainer(), groupSet.getPanelContainer().getSID());
         controlsContainers.put(groupObject, groupSet.getControlsContainer());
+        setComponentSID(groupSet.getControlsContainer(), groupSet.getControlsContainer().getSID());
         filterContainers.put(groupObject, groupSet.getFilterContainer());
+        setComponentSID(groupSet.getFilterContainer(), groupSet.getFilterContainer().getSID());
         gridContainers.put(groupObject, groupSet.getGridContainer());
+        setComponentSID(groupSet.getGridContainer(), groupSet.getGridContainer().getSID());
 
         if (groupObject.size() == 1) {
             groupSet.getGridContainer().add(0, groupObject.get(0).classChooser);
@@ -215,15 +214,15 @@ public class DefaultFormView extends FormView {
     }
 
     @Override
-    public GroupObjectView addGroupObjectEntity(GroupObjectEntity groupObject) {
-        GroupObjectView view = super.addGroupObjectEntity(groupObject);
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject) {
+        GroupObjectView view = super.addGroupObject(groupObject);
         addGroupObjectView(view);
         return view;
     }
 
     @Override
-    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity propertyDraw) {
-        PropertyDrawView view = super.addPropertyDrawEntity(propertyDraw);
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw) {
+        PropertyDrawView view = super.addPropertyDraw(propertyDraw);
         addPropertyDrawView(view);
         return view;
     }
@@ -245,7 +244,7 @@ public class DefaultFormView extends FormView {
             if (groupPropertyContainers.get(groupObject).containsKey(groupAbstract))
                 groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupAbstract);
             else {
-                groupPropertyContainer = createContainer(groupAbstract.caption);
+                groupPropertyContainer = createContainer(groupAbstract.caption, null, getPropertyGroupContainerSID(groupObject.entity, groupAbstract));
                 groupPropertyContainers.get(groupObject).put(groupAbstract, groupPropertyContainer);
             }
 
@@ -259,4 +258,20 @@ public class DefaultFormView extends FormView {
         ContainerView groupContainer = panelContainers.get(groupObject);
         ((groupContainer == null) ? mainContainer : groupContainer).add(childComponent);
     }
+
+    private static String getPropertyGroupContainerSID(GroupObjectEntity group, AbstractGroup propertyGroup) {
+        String propertyGroupSID = propertyGroup.getSID();
+        if (propertyGroupSID.contains("_")) {
+            String[] sids = propertyGroupSID.split("_", 2);
+            propertyGroupSID = sids[1];
+        }
+        // todo : здесь конечно совсем хак - нужно более четку схему сделать
+//        if (lm.getGroupBySID(propertyGroupSID) != null) {
+//            используем простое имя для групп данного модуля
+//            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
+//        }
+        return group.getSID() + "." + propertyGroupSID;
+    }
+
+
 }

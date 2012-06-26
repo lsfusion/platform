@@ -597,7 +597,7 @@ NAVIGATOR {
 //
 //getMainContainer => CONTAINER main
 //
-//getTreeContainer => CONTAINER treeName.box
+//getTreeContainer => CONTAINER treeName.tree.box
 //get(TreeGroupEntity) => COMPONENT treeName.tree
 //
 //getGroupObjectContainer => CONTAINER groupName.box

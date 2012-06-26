@@ -56,7 +56,7 @@ FORM employee 'Сотрудник'
 DESIGN employee FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
-        NEW oneCase BEFORE treeEmployeeDivision.box {
+        NEW oneCase BEFORE treeEmployeeDivision.tree.box {
             title = 'Сотрудник';
             childConstraints = TO THE RIGHT;
             NEW twoCase {
@@ -76,7 +76,7 @@ DESIGN employee FROM DEFAULT {
             };
 
         }
-        POSITION treeEmployeeDivision.box TO THE LEFT d.box;
+        POSITION treeEmployeeDivision.tree.box TO THE LEFT d.box;
         ADD functions.box;
     }
 }

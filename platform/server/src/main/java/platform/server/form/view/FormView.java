@@ -3,7 +3,8 @@ package platform.server.form.view;
 import platform.base.OrderedMap;
 import platform.base.identity.IDGenerator;
 import platform.interop.PropertyEditType;
-import platform.interop.form.layout.*;
+import platform.interop.form.layout.AbstractForm;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.LogicalClass;
 import platform.server.data.type.Type;
 import platform.server.form.entity.*;
@@ -30,6 +31,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator;
+
+    private final Map<String, ComponentView> sidToComponent = new HashMap<String, ComponentView>();
 
     public KeyStroke keyStroke = null;
 
@@ -95,38 +98,35 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         this.idGenerator = entity.getIDGenerator();
 
         mainContainer = new ContainerView(idGenerator.idShift());
+        setComponentSID(mainContainer, getMainContainerSID());
 
         for (GroupObjectEntity group : entity.groups) {
-            createGroupObjectView(group);
+            addGroupObjectBase(group);
         }
 
         for (TreeGroupEntity treeGroup : entity.treeGroups) {
-            treeGroups.add(new TreeGroupView(this, treeGroup));
+            addTreeGroup(treeGroup);
         }
 
         for (PropertyDrawEntity property : entity.propertyDraws) {
-            createPropertyDrawView(property);
+            addPropertyDrawBase(property);
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
-            regularFilters.add(new RegularFilterGroupView(filterGroup));
+            addRegularFilterGroup(filterGroup);
         }
 
-        fillComponentMaps();
+        initButtons();
     }
 
-    private GroupObjectView createGroupObjectView(GroupObjectEntity groupObject) {
-        GroupObjectView clientGroup = new GroupObjectView(idGenerator, groupObject);
-
-        groupObjects.add(clientGroup);
-
-        return clientGroup;
+    private void addPropertyDrawView(PropertyDrawView property) {
+        mproperties.put(property.entity, property);
     }
 
-    private PropertyDrawView createPropertyDrawView(PropertyDrawEntity property) {
+    private PropertyDrawView addPropertyDrawBase(PropertyDrawEntity property) {
         PropertyDrawView propertyView = new PropertyDrawView(property);
-
         properties.add(propertyView);
+        addPropertyDrawView(propertyView);
 
         //походу инициализируем порядки по умолчанию
         Boolean ascending = entity.defaultOrders.get(property);
@@ -137,55 +137,86 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return propertyView;
     }
 
-    public GroupObjectView addGroupObjectEntity(GroupObjectEntity groupObject) {
-        GroupObjectView groupObjectView = createGroupObjectView(groupObject);
-        mgroupObjects.put(groupObject, groupObjectView);
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property) {
+        return addPropertyDrawBase(property);
+    }
+
+    private void addGroupObjectView(GroupObjectView groupObjectView) {
+        mgroupObjects.put(groupObjectView.entity, groupObjectView);
+        setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView.entity));
+        setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView.entity));
 
         for (ObjectView object : groupObjectView) {
             mobjects.put(object.entity, object);
+            setComponentSID(object.classChooser, getClassChooserSID(object.entity));
         }
+    }
 
+    private GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject) {
+        GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject);
+        groupObjects.add(groupObjectView);
+        addGroupObjectView(groupObjectView);
         return groupObjectView;
     }
 
-    public PropertyDrawView addPropertyDrawEntity(PropertyDrawEntity property) {
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject) {
+        return addGroupObjectBase(groupObject);
+    }
 
-        PropertyDrawView propertyView = createPropertyDrawView(property);
-        mproperties.put(property, propertyView);
+    private void addTreeGroupView(TreeGroupView treeGroupView) {
+        mtreeGroups.put(treeGroupView.entity, treeGroupView);
+        setComponentSID(treeGroupView, getTreeSID(treeGroupView.entity));
+    }
 
-        return propertyView;
+    private TreeGroupView addTreeGroup(TreeGroupEntity treeGroup) {
+        TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
+        treeGroups.add(treeGroupView);
+        addTreeGroupView(treeGroupView);
+        return treeGroupView;
+    }
+
+    private void addRegularFilterGroupView(RegularFilterGroupView filterGroupView) {
+        mfilters.put(filterGroupView.entity, filterGroupView);
+        setComponentSID(filterGroupView, getRegularFilterGroupSID(filterGroupView.entity));
+    }
+
+    private RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroup) {
+        RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
+        regularFilters.add(filterGroupView);
+        addRegularFilterGroupView(filterGroupView);
+        return filterGroupView;
     }
 
     public void fillComponentMaps() {
         for (GroupObjectView group : groupObjects) {
-            mgroupObjects.put(group.entity, group);
-
-            for (ObjectView object : group) {
-                mobjects.put(object.entity, object);
-            }
+            addGroupObjectView(group);
         }
 
         for (TreeGroupView treeGroup : treeGroups) {
-            mtreeGroups.put(treeGroup.entity, treeGroup);
+            addTreeGroupView(treeGroup);
         }
 
         for (PropertyDrawView property : properties) {
-            mproperties.put(property.entity, property);
+            addPropertyDrawView(property);
         }
 
         for (RegularFilterGroupView filterGroup : regularFilters) {
-            mfilters.put(filterGroup.entity, filterGroup);
+            addRegularFilterGroupView(filterGroup);
         }
 
-        printButton = getProperty(entity.printActionPropertyDraw);
-        editButton = getProperty(entity.editActionPropertyDraw);
-        xlsButton = getProperty(entity.xlsActionPropertyDraw);
-        nullButton = getProperty(entity.nullActionPropertyDraw);
-        refreshButton = getProperty(entity.refreshActionPropertyDraw);
-        applyButton = getProperty(entity.applyActionPropertyDraw);
-        cancelButton = getProperty(entity.cancelActionPropertyDraw);
-        okButton = getProperty(entity.okActionPropertyDraw);
-        closeButton = getProperty(entity.closeActionPropertyDraw);
+        initButtons();
+    }
+
+    private void initButtons() {
+        printButton = setupFormButton(entity.printActionPropertyDraw, "print");
+        editButton = setupFormButton(entity.editActionPropertyDraw, "edit");
+        xlsButton = setupFormButton(entity.xlsActionPropertyDraw, "xls");
+        nullButton = setupFormButton(entity.nullActionPropertyDraw, "null");
+        refreshButton = setupFormButton(entity.refreshActionPropertyDraw, "refresh");
+        applyButton = setupFormButton(entity.applyActionPropertyDraw, "apply");
+        cancelButton = setupFormButton(entity.cancelActionPropertyDraw, "cancel");
+        okButton = setupFormButton(entity.okActionPropertyDraw, "ok");
+        closeButton = setupFormButton(entity.closeActionPropertyDraw, "close");
     }
 
     public int getID() {
@@ -210,7 +241,14 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         container.setTitle(title);
         container.setDescription(description);
         container.setSID(sID);
+        if (sID != null) {
+            sidToComponent.put(sID, container);
+        }
         return container;
+    }
+
+    public void removeContainerFromMapping(ContainerView container) {
+        sidToComponent.remove(container.getSID());
     }
 
     public PropertyDrawView getPrintButton() {
@@ -710,6 +748,49 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public void setPropertyDrawViewHide(PropertyDrawEntity property, boolean hide) {
         getProperty(property).hide = hide;
+    }
+
+    protected void setComponentSID(ComponentView component, String sid) {
+        component.setSID(sid);
+        sidToComponent.put(component.getSID(), component);
+    }
+
+    public ComponentView getComponentBySID(String sid) {
+        return sidToComponent.get(sid);
+    }
+
+    private PropertyDrawView setupFormButton(PropertyDrawEntity function, String type) {
+        PropertyDrawView functionView = getProperty(function);        
+        setComponentSID(functionView, getClientFunctionSID(type));
+        return functionView;         
+    }
+
+    private static String getMainContainerSID() {
+        return "main";
+    }
+
+    private static String getTreeSID(TreeGroupEntity entity) {
+        return entity.getSID() + ".tree";
+    }
+
+    private static String getRegularFilterGroupSID(RegularFilterGroupEntity entity) {
+        return "filters." + entity.getSID();
+    }
+
+    private static String getGridSID(GroupObjectEntity entity) {
+        return entity.getSID() + ".grid";
+    }
+
+    private static String getShowTypeSID(GroupObjectEntity entity) {
+        return entity.getSID() + ".showType";
+    }
+
+    private static String getClassChooserSID(ObjectEntity entity) {
+        return entity.getSID() + ".classChooser";
+    }
+
+    private static String getClientFunctionSID(String type) {
+        return "functions." + type;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

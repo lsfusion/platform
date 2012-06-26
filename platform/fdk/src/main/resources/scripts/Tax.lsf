@@ -139,11 +139,11 @@ DESIGN tax FROM DEFAULT {
             ADD u.box {
                 fillHorizontal = 3.8;
             };
-            ADD treeTaxUnit.box {
+            ADD treeTaxUnit.tree.box {
                 title = 'Налоговые субъекты';
                 fillHorizontal = 1.2;
             };
-            POSITION treeTaxUnit.box TO THE LEFT u.box;
+            POSITION treeTaxUnit.tree.box TO THE LEFT u.box;
        }
        NEW firstCase BEFORE secondCase {
             ADD ra.box {

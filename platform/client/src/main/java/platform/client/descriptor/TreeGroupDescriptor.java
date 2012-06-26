@@ -71,6 +71,6 @@ public class TreeGroupDescriptor extends ContextIdentityObject implements Client
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {
-        return parent.findContainerBySID(GroupObjectContainerSet.TREE_GROUP_CONTAINER + getID());
+        return parent.findContainerBySID(getSID() + GroupObjectContainerSet.TREE_GROUP_CONTAINER);
     }
 }

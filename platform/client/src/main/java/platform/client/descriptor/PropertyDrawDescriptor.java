@@ -101,7 +101,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public ClientContainer getDestinationContainer(ClientContainer parent, List<GroupObjectDescriptor> groupObjects) {
         GroupObjectDescriptor groupObject = getGroupObject(groupObjects);
         if (groupObject != null) {
-            return parent.findContainerBySID(GroupObjectContainerSet.PANEL_CONTAINER + groupObject.getID());
+            return parent.findContainerBySID(groupObject.getSID() + GroupObjectContainerSet.PANEL_CONTAINER);
         } else
             return null;
     }

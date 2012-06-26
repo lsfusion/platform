@@ -45,7 +45,7 @@ FORM labelType 'Тип ценника'
 ;
 
 DESIGN labelType FROM DEFAULT {
-    POSITION treeStore.box TO THE LEFT d.box;
+    POSITION treeStore.tree.box TO THE LEFT d.box;
     treeStore.tree {
         fillHorizontal = 0.3;
     }

@@ -147,7 +147,7 @@ FORM departmentStores 'Отделы магазинов'
 ;
 
 DESIGN departmentStores FROM DEFAULT {
-    POSITION treeStore.box TO THE LEFT d.box;
+    POSITION treeStore.tree.box TO THE LEFT d.box;
     treeStore.tree {
         fillHorizontal = 0.3;
     }
@@ -197,7 +197,7 @@ DESIGN stores FROM DEFAULT {
         type = SPLITH;
         childConstraints = TO THE RIGHT;
 
-        ADD treeStore.box;
+        ADD treeStore.tree.box;
 
         NEW firstCase {
 

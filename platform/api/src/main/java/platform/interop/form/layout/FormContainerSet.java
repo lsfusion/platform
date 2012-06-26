@@ -21,12 +21,11 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         set.mainContainer = form.getMainContainer();
         set.mainContainer.setDescription(getString("form.layout.main.container"));
-        set.mainContainer.setSID("mainContainer");
         set.mainContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
         set.formButtonContainer = contFactory.createContainer();
         set.formButtonContainer.setDescription(getString("form.layout.service.buttons"));
-        set.formButtonContainer.setSID("serviceButtons");
+        set.formButtonContainer.setSID("functions.box");
         set.formButtonContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.mainContainer.add((T)set.formButtonContainer);
 

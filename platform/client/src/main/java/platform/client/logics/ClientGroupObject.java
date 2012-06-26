@@ -130,6 +130,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         }
         needVerticalScroll = inStream.readBoolean();
         tableRowsCount = inStream.readInt();
+        sID = inStream.readUTF();
     }
 
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
@@ -156,7 +157,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {
-        return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
+        return parent.findContainerBySID(getSID() + GroupObjectContainerSet.GROUP_CONTAINER);
     }
 
     // по аналогии с сервером

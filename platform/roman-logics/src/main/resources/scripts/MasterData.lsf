@@ -237,7 +237,7 @@ DESIGN storesR FROM DEFAULT {
         type = SPLITH;
         childConstraints = TO THE RIGHT;
 
-        ADD treeStore.box;
+        ADD treeStore.tree.box;
 
         NEW firstCase {
 
