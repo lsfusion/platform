@@ -123,8 +123,7 @@ FORM StoSTr 'Перемещение (расход) на магазин (др. ю
                   quantityStoSTrDetail, retailPriceStoSTrDetail, importerSumStoSTrDetail, numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
                   sumRetailVATStoSTrDetail, retailSumStoSTrDetail
 
-    PROPERTIES(s) TODRAW d addDetailDialogSkuStoSTrDetailStoSTr, addDetailDialogBarcodeStoSTrDetailStoSTr,
-                  deleteStoSTrDetailStoSTr
+    PROPERTIES(s) TODRAW d addDetailDialogSkuStoSTrDetailStoSTr, addDetailDialogBarcodeStoSTrDetailStoSTr, deleteStoSTrDetailStoSTr
 
 
     PROPERTIES(d) ADDOBJ, delete
@@ -257,7 +256,7 @@ DESIGN StoSTrs FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM StoSTrsDialog 'Перемещения (расход) на магазин (одно юрлицо)'
+FORM StoSTrsDialog 'Перемещения (расход) на магазин (др. юрлицо)'
     OBJECTS s = StoSTrPosted
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSTr, nameDepartmentStoreStoSTr,
                    nameRecipientStoreStoSTr, countStoSTrDetailStoSTr, quantityStoSTrDetailStoSTr, importerSumStoSTrDetailStoSTr,

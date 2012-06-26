@@ -14,11 +14,7 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
     @defineDocumentHeaderQuantity(object);
 
-    description###object 'Название документа' (object) =
-        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
-        caption, seriesNumberObject(object), date###object(object));
-
-    description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
+    @defineDocumentDescription (object, caption);
 
     @implementSkuLedger (object, skuProp, stock);
 

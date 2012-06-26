@@ -1,0 +1,240 @@
+//From Store to Store  (the different company)
+MODULE SfromSTransit;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        Declaration,
+        MasterData,
+        StoSTransit,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+CLASS SfromSTr 'Перемещение (приход) на магазин (др. юрлицо)' : historyObject, numberedObject;
+CLASS SfromSTrDetail 'Строка перемещения (приход) на магазин (др юрлицо)' : inTransferSkuLedger;
+CLASS SfromSTrPosted 'Закрытое перемещение (приход) на магазин (др юрлицо)' : SfromSTr, postedObject;
+
+@defineDocumentBasePosted(SfromSTr);
+@defineDocumentStock(SfromSTr, departmentStore, 'Отдел документа');
+
+StoSTrSfromSTr 'Расход прихода (ИД)' (SfromSTr) = DATA StoSTrPosted(SfromSTr) IN idGroup;
+SfromSTrStoSTr (StoSTr) = GROUP UNIQUE SfromSTr BY StoSTrSfromSTr (SfromSTr);
+
+CONSTRAINT StoSTrSfromSTr(p1) == StoSTrSfromSTr(p2) AND p1 != p2 CHECKED BY StoSTrSfromSTr MESSAGE 'Расход задействован в другом приходе';
+
+senderDepartmentStoreSfromSTr 'Отдел-отправитель(ИД)' (SfromSTr) = departmentStoreStoSTr(StoSTrSfromSTr(SfromSTr));
+nameSenderDepartmentStoreSfromSTr 'Отдел-отправитель' (SfromSTr) = name(senderDepartmentStoreSfromSTr(SfromSTr));
+
+senderStoreSfromSTr 'Магазин-отправитель (ИД)' (SfromSTr) = storeStoSTr(StoSTrSfromSTr(SfromSTr));
+nameSenderStoreSfromSTr 'Магазин-отправитель' (SfromSTr)= name(senderStoreSfromSTr(SfromSTr));
+
+transitWarehouseSfromSTr 'Промежуточный склад (ИД)' (SfromSTr)= transitWarehouseStoSTr(StoSTrSfromSTr(SfromSTr));
+nameTransitWarehouseSfromSTr 'Промежуточный склад' (SfromSTr) = name(transitWarehouseSfromSTr(SfromSTr));
+
+recipientStoreSfromSTr 'Магазин-получатель (ИД)' (SfromSTr) = recipientStoreStoSTr(StoSTrSfromSTr(SfromSTr));
+nameRecipientStoreSfromSTr 'Магазин-получатель' (SfromSTr)= name(recipientStoreSfromSTr(SfromSTr));
+
+storeSfromSTr (SfromSTr) = storeDepartmentStore(departmentStoreSfromSTr(SfromSTr));
+nameStoreSfromSTr 'Магазин' (SfromSTr) = name(storeSfromSTr(SfromSTr));
+
+CONSTRAINT storeSfromSTr(SfromSTr) != recipientStoreSfromSTr(SfromSTr)
+    CHECKED BY recipientStoreSfromSTr   MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
+
+@defineDocumentDetailQuantity(SfromSTr); // к-во детайл
+@defineDocumentHeaderQuantity(SfromSTr); // к-во всего
+@defineDocumentDescription (SfromSTr, 'Перемещение (приход) на магазин (др. юрлицо)');
+
+inStoSTrSfromSTr (StoSTr, SfromSTr) = StoSTrSfromSTr(SfromSTr) == StoSTr;
+
+skuSfromSTrDetail 'Товар (ИД)' (SfromSTrDetail) = DATA sku(SfromSTrDetail) IN idGroup;
+@defineDocumentDetailProps (SfromSTr);  // ш-к, цвет, бренд, и т.д.
+
+
+quantitySfromSTrSku 'Количество принятое' (SfromSTr, sku) = GROUP SUM quantitySfromSTrDetail(SfromSTrDetail)
+                                          BY SfromSTrSfromSTrDetail(SfromSTrDetail), skuSfromSTrDetail(SfromSTrDetail);
+
+quantityOriginSfromSTrSku 'Кол-во плановое' (SfromSTr, sku) = quantityStoSTrSku(StoSTrSfromSTr(SfromSTr), sku);
+
+diffQuantitySfromSTrSku 'Разница' (SfromSTr, sku) = quantitySfromSTrSku(SfromSTr, sku) (-) quantityOriginSfromSTrSku(SfromSTr, sku);
+
+
+@defineAddDetailDialogSkuStock(SfromSTr, sku, departmentStore, dialogSku);
+
+@implementSkuLedger (SfromSTr, sku, departmentStore);
+
+nameSkuSfromSTrDetail 'Наименование товара' (SfromSTrDetail) = nameSku(skuSfromSTrDetail(SfromSTrDetail));
+UOMSfromSTrDetail 'Единица измерения (ИД)' (SfromSTrDetail) = DATA UOM (SfromSTrDetail) IN idGroup;
+shortNameUOMSfromSTrDetail 'Единица измерения' (SfromSTrDetail) = shortName(UOMSfromSTrDetail(SfromSTrDetail));
+
+
+importerPriceSfromSTrDetail 'Цена первого импортёра' (SfromSTrDetail) = DATA NUMERIC[14,3] (SfromSTrDetail);
+importerSumSfromSTrDetail 'Сумма импортера' (SfromSTrDetail) = importerPriceSfromSTrDetail(SfromSTrDetail) * quantitySfromSTrDetail(SfromSTrDetail);
+importerSumSfromSTrDetailSfromSTr 'Сумма импортера' (SfromSTr) = GROUP SUM importerSumSfromSTrDetail(SfromSTrDetail) BY SfromSTrSfromSTrDetail(SfromSTrDetail) IN documentSumGroup;
+
+supplierPriceSfromSTrDetail 'Цена без НДС (ед.)' (SfromSTrDetail) = DATA NUMERIC[14,3] (SfromSTrDetail);
+
+
+//importerPriceSfromSTrDetail(SfromSTrDetail) <- importerPriceWHtoSDirSku(WHtoSDirSfromSTr(SfromSTrSfromSTrDetail(SfromSTrDetail)), skuSfromSTrDetail(SfromSTrDetail))
+//                                WHEN CHANGED (WHtoSDirSfromSTr(SfromSTrSfromSTrDetail(SfromSTrDetail))) OR CHANGED (skuSfromSTrDetail(SfromSTrDetail));
+
+retailPriceSfromSTrDetail 'Розничная цена' =  DATA NUMERIC[14,3] (SfromSTrDetail);
+
+retailPriceSfromSTrDetail(SfromSTrDetail) <- retailPriceStoSTrDetailStoSTrSku(StoSTrSfromSTr(SfromSTrSfromSTrDetail(SfromSTrDetail)), skuSfromSTrDetail(SfromSTrDetail))
+                                WHEN CHANGED (skuSfromSTrDetail(SfromSTrDetail)) OR CHANGED (StoSTrSfromSTr(SfromSTrSfromSTrDetail(SfromSTrDetail)));
+
+//retailPriceChangeSfromSTrDetail(SfromSTrDetail) = UNION OVERRIDE priceBasePriceChangeDocumentArticleDateTime(articleSku(skuSfromSTrDetail(SfromSTrDetail)), dateTimeSfromSTrDetail(SfromSTrDetail)),
+//                                                               priceDiscountPriceChangeDocumentArticleDateTime(articleSku(skuSfromSTrDetail(SfromSTrDetail)), dateTimeSfromSTrDetail(SfromSTrDetail));
+//
+//retailPriceSfromSTrDetail(SfromSTrDetail) <- retailPriceChangeSfromSTrDetail(SfromSTrDetail) WHEN CHANGED (WHtoSDirSfromSTr(SfromSTrSfromSTrDetail(SfromSTrDetail))) OR CHANGED (dateTimeSfromSTrDetail(SfromSTrDetail));
+
+
+supplierSumSfromSTrDetail 'Стоимость без НДС' (SfromSTrDetail) = supplierPriceSfromSTrDetail(SfromSTrDetail) * quantitySfromSTrDetail(SfromSTrDetail);
+
+supplierSumSfromSTrDetailSfromSTr 'Стоимость без НДС' (SfromSTr)= GROUP SUM supplierSumSfromSTrDetail(SfromSTrDetail) BY SfromSTrSfromSTrDetail(SfromSTrDetail) IN documentSumGroup;
+
+
+supplierVATSfromSTrDetail(SfromSTrDetail) = DATA range (SfromSTrDetail);
+numberSupplierVATSfromSTrDetail 'НДС, номер' (SfromSTrDetail) = numberRange(supplierVATSfromSTrDetail(SfromSTrDetail));
+valueSupplierVATSfromSTrDetail 'НДС, %' (SfromSTrDetail) = valueRateRangeDate
+    (supplierVATSfromSTrDetail(SfromSTrDetail), dateSfromSTrDetail(SfromSTrDetail));
+
+CONSTRAINT taxRange(supplierVATSfromSTrDetail(SfromSTrDetail)) != tax.taxVAT CHECKED BY supplierVATSfromSTrDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+sumSupplierVATSfromSTrDetail 'Сумма НДС' (SfromSTrDetail) = [X*Y/100](
+    supplierSumSfromSTrDetail(SfromSTrDetail), valueSupplierVATSfromSTrDetail(SfromSTrDetail));
+
+sumSupplierVATSfromSTrDetailSfromSTr 'Сумма НДС' (SfromSTr) = GROUP SUM sumSupplierVATSfromSTrDetail(SfromSTrDetail) BY SfromSTrSfromSTrDetail(SfromSTrDetail) IN documentSumGroup;
+
+sumInvoiceSfromSTrDetail 'Стоимость с НДС' (SfromSTrDetail) = supplierSumSfromSTrDetail(SfromSTrDetail) (+) sumSupplierVATSfromSTrDetail(SfromSTrDetail);
+
+sumInvoiceSfromSTrDetailSfromSTr 'Стоимость с НДС' (SfromSTr)= GROUP SUM sumInvoiceSfromSTrDetail(SfromSTrDetail) BY SfromSTrSfromSTrDetail(SfromSTrDetail) IN documentSumGroup;
+
+noteSfromSTrDetail 'Примечание' (SfromSTrDetail) = DATA STRING[100] (SfromSTrDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+
+balanceBSkuSfromSTrDetail 'Остаток до' (SfromSTrDetail) = balanceBSkuStockDateTime(skuSfromSTrDetail(SfromSTrDetail), departmentStoreSfromSTrDetail(SfromSTrDetail), dateTimeSfromSTrDetail(SfromSTrDetail));
+
+@defineAddDetailDialogBarcode(SfromSTr, sku);
+
+
+FORM SfromSTr 'Перемещение (приход) на магазин (др юрлицо)'
+    OBJECTS s = SfromSTr FIXED PANEL
+    PROPERTIES (s) numberObject, seriesObject, dateSfromSTr, timeSfromSTr, nameDepartmentStoreSfromSTr, nameSenderStoreSfromSTr, nameTransitWarehouseSfromSTr,
+                   quantitySfromSTrDetailSfromSTr, supplierSumSfromSTrDetailSfromSTr, sumSupplierVATSfromSTrDetailSfromSTr,
+                   sumInvoiceSfromSTrDetailSfromSTr, noteSfromSTr
+
+    OBJECTS d = SfromSTrDetail
+    PROPERTIES(d) indexSfromSTrDetail, barcodeSfromSTrDetail, nameSkuSfromSTrDetail, nameBrandSfromSTrDetail, sidArticleSfromSTrDetail,
+                  nameCategorySfromSTrDetail, sidColorSfromSTrDetail, nameColorSfromSTrDetail, shortNameUOMSfromSTrDetail, balanceBSkuSfromSTrDetail,
+                  quantitySfromSTrDetail, importerPriceSfromSTrDetail, supplierSumSfromSTrDetail, numberSupplierVATSfromSTrDetail,
+                  valueSupplierVATSfromSTrDetail, sumSupplierVATSfromSTrDetail, sumInvoiceSfromSTrDetail, retailPriceSfromSTrDetail
+
+    PROPERTIES(s) TODRAW d addDetailDialogSkuSfromSTrDetailSfromSTr, addDetailDialogBarcodeSfromSTrDetailSfromSTr, deleteSfromSTrDetailSfromSTr
+
+
+
+    PROPERTIES(d) ADDOBJ, delete
+
+    OBJECTS i=sku
+    PROPERTIES(i) nameSku
+    PROPERTIES(s,i) quantitySfromSTrSku, quantityOriginSfromSTrSku, diffQuantitySfromSTrSku
+    FILTERS inSfromSTrSfromSTrDetail(s, d)
+
+    FILTERS quantityOriginSfromSTrSku(s,i) OR quantitySfromSTrSku(s,i)
+
+    FILTERGROUP filtersDiff
+        FILTER 'Показать отличающиеся' 'F10' diffQuantitySfromSTrSku(s,i) !=0
+
+    EDIT SfromSTr OBJECT s
+;
+
+DESIGN SfromSTr FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD s.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD s.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameDepartmentStoreSfromSTr);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateSfromSTr);
+                    ADD PROPERTY (timeSfromSTr);
+                }
+                NEW case {
+                childConstraints = TO THE RIGHT;
+                    title = 'Контрагент';
+                    ADD PROPERTY (nameSenderStoreSfromSTr);
+                    ADD PROPERTY (nameTransitWarehouseSfromSTr);
+                }
+                ADD s.documentPrmGroup;
+            }
+            NEW row2 {
+                ADD s.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        };
+        NEW row3{
+            type = TABBED;
+            ADD d.box;
+            ADD i.box;
+        }
+        ADD functions.box;
+    }
+}
+
+FORM SfromSTrs 'Перемещения (приход) на магазин (др. юрлицо)'
+    OBJECTS s = SfromSTr
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateSfromSTr, timeSfromSTr, nameDepartmentStoreSfromSTr, nameSenderStoreSfromSTr,
+                   countSfromSTrDetailSfromSTr, quantitySfromSTrDetailSfromSTr, supplierSumSfromSTrDetailSfromSTr,
+                   sumSupplierVATSfromSTrDetailSfromSTr, sumInvoiceSfromSTrDetailSfromSTr, noteSfromSTr
+
+    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (s) ADDFORM, EDITFORM SHOWIF isDraftSfromSTr(s), delete FORCE PANEL SHOWIF isDraftSfromSTr(s),
+                   postSfromSTr SHOWIF isDraftSfromSTr(s), unpostSfromSTr SHOWIF isPostedSfromSTr(s)
+
+    OBJECTS d = SfromSTrDetail
+    PROPERTIES(d) READONLY indexSfromSTrDetail, barcodeSfromSTrDetail, nameSkuSfromSTrDetail, shortNameUOMSfromSTrDetail, balanceBSkuSfromSTrDetail,
+                  quantitySfromSTrDetail, importerPriceSfromSTrDetail, importerSumSfromSTrDetail, supplierSumSfromSTrDetail, numberSupplierVATSfromSTrDetail,
+                  valueSupplierVATSfromSTrDetail, sumSupplierVATSfromSTrDetail, sumInvoiceSfromSTrDetail, retailPriceSfromSTrDetail
+
+    FILTERS inSfromSTrSfromSTrDetail(s, d)
+;
+
+DESIGN SfromSTrs FROM DEFAULT {
+    ADD s.box{
+        PROPERTY (delete(s)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        PROPERTY (objectClassName(s)) {
+            preferredCharWidth = 15;
+        }
+        }
+    }
+    ADD d.box;
+
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD s.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD s.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+    ADD functions.box;
+}

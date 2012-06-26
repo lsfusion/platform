@@ -59,6 +59,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/StoSDirect.lsf",
             "/scripts/SfromSDirect.lsf",
             "/scripts/StoSTransit.lsf",
+            "/scripts/SfromSTransit.lsf",
             "/scripts/SfromWH.lsf",
             "/scripts/MasterData.lsf",
             "/scripts/StorePrice.lsf",

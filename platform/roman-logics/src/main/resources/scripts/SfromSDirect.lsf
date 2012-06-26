@@ -79,6 +79,11 @@ shortNameUOMSfromSDirDetail 'Единица измерения' (SfromSDirDetail
 
 
 retailPriceSfromSDirDetail 'Розничная цена (ед.)' (SfromSDirDetail) = DATA NUMERIC[14,3] (SfromSDirDetail);
+
+retailPriceSfromSDirDetail(SfromSDirDetail) <- retailPriceStoSDirDetailStoSDirSku(
+    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
+    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
+
 retailSumSfromSDirDetail 'Розничная сумма' (SfromSDirDetail) = retailPriceSfromSDirDetail(SfromSDirDetail) * quantitySfromSDirDetail(SfromSDirDetail);
 retailSumSfromSDirDetailSfromSDir 'Розничная сумма' (SfromSDir)= GROUP SUM retailSumSfromSDirDetail(SfromSDirDetail)
     BY SfromSDirSfromSDirDetail(SfromSDirDetail) IN documentSumGroup;
@@ -87,6 +92,10 @@ retailVATSfromSDirDetail(SfromSDirDetail) = DATA range (SfromSDirDetail);
 numberRetailVATSfromSDirDetail 'НДС, номер' (SfromSDirDetail) = numberRange(retailVATSfromSDirDetail(SfromSDirDetail));
 valueRetailVATSfromSDirDetail 'НДС, %' (SfromSDirDetail) = valueRateRangeDate
     (retailVATSfromSDirDetail(SfromSDirDetail), dateSfromSDirDetail(SfromSDirDetail));
+
+retailVATSfromSDirDetail(SfromSDirDetail) <- retailVATStoSDirDetailStoSDirSku(
+    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
+    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
 
 CONSTRAINT taxRange(retailVATSfromSDirDetail(SfromSDirDetail)) != tax.taxVAT CHECKED BY retailVATSfromSDirDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
@@ -115,45 +124,7 @@ packQuantitySfromSDirDetailSfromSDir 'Общее количество грузо
 
 balanceBSkuSfromSDirDetail 'Остаток до' (SfromSDirDetail) = balanceBSkuStockDateTime(skuSfromSDirDetail(SfromSDirDetail), departmentStoreSfromSDirDetail(SfromSDirDetail), dateTimeSfromSDirDetail(SfromSDirDetail));
 
-
-detailSfromSDirSku(SfromSDir, sku) = GROUP MAX detail BY SfromSDirSfromSDirDetail(detail), skuSfromSDirDetail(detail);
-
-addDialogSkuBarcodeSfromSDir 'Ввод штрих-кода' (SfromSDir) = ACTION (SfromSDir) {
-
-    FORM barcodeInput MODAL;
-
-    IF formResult() == formResult.ok THEN {
-        LOCAL dialogBarcodeSku = sku();
-
-        IF skuBarcodeIdDate(chosenString('barcode'), dateSfromSDir (SfromSDir)) IS sku THEN {
-
-            SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), dateSfromSDir (SfromSDir));
-
-            LOCAL dialogBarcodeDetail = SfromSDirDetail();
-            SET dialogBarcodeDetail() <- detailSfromSDirSku(SfromSDir, dialogBarcodeSku());
-            IF dialogBarcodeDetail() IS SfromSDirDetail THEN {
-                SET quantitySfromSDirDetail(detail) IF detail == dialogBarcodeDetail() <-
-                    quantitySfromSDirDetail(detail) (+) (1.0 IF detail IS SfromSDirDetail);
-
-            } ELSE {
-                ADDOBJ SfromSDirDetail;
-                FOR s == addedObject() DO {
-                    SET SfromSDirSfromSDirDetail(s) <- SfromSDir AS SfromSDir;
-                    SET skuSfromSDirDetail(s) <- dialogBarcodeSku();
-                    SET retailPriceSfromSDirDetail(s) <- retailPriceStoSDirDetailStoSDirSku(
-                    StoSDirSfromSDir(SfromSDirSfromSDirDetail(s)), dialogBarcodeSku() AS sku);
-                    SET retailVATSfromSDirDetail(s) <- retailVATStoSDirDetailStoSDirSku(
-                    StoSDirSfromSDir(SfromSDirSfromSDirDetail(s)), dialogBarcodeSku() AS sku);
-                    SET quantitySfromSDirDetail(w) <- 1.0;
-                }
-            }
-        } ELSE {
-
-        MESSAGE 'Не найден штрих-код'; }
-    }
-
-} TOOLBAR EDITKEY 'F4';
-
+@defineAddDetailDialogBarcode(SfromSDir, sku);
 
 FORM SfromSDir 'Перемещение (приход) на магазин (одно юрлицо)'
     OBJECTS s = SfromSDir FIXED PANEL
@@ -167,7 +138,7 @@ FORM SfromSDir 'Перемещение (приход) на магазин (од�
                   quantitySfromSDirDetail, retailPriceSfromSDirDetail, importerSumSfromSDirDetail, numberRetailVATSfromSDirDetail, valueRetailVATSfromSDirDetail,
                   sumRetailVATSfromSDirDetail, retailSumSfromSDirDetail
 
-    PROPERTIES(s) TODRAW d addDialogSkuBarcodeSfromSDir, addDetailDialogSkuSfromSDirDetailSfromSDir, deleteSfromSDirDetailSfromSDir
+    PROPERTIES(s) TODRAW d addDetailDialogBarcodeSfromSDirDetailSfromSDir, addDetailDialogSkuSfromSDirDetailSfromSDir, deleteSfromSDirDetailSfromSDir
 
 
 
