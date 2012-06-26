@@ -173,7 +173,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
             DBF importDiscFile = null;
             DBF importCardFile = null;
             Map<String, Double> discountMap = new HashMap<String, Double>();
-            Map<String, Integer> discCardMap = new HashMap<String, Integer>();
+            Map<String, String> discountCardMap = new HashMap<String, String>();
             try {
                 if (entry.getValue() != null) {
 
@@ -212,11 +212,11 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                             String cashRegisterNumber = new String(importCardFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
                             String zNumber = new String(importCardFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
                             Integer billNumber = new Integer(new String(importCardFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
-                            String cardNumberString = new String(importCardFile.getField("CARDNUMBER").getBytes(), "Cp1251").trim();
-                            Integer cardNumber = new Integer(cardNumberString.substring(cardNumberString.length()-4, cardNumberString.length()));
+                            String cardNumber = new String(importCardFile.getField("CARDNUMBER").getBytes(), "Cp1251").trim();
+                            //Integer cardNumber = new Integer(cardNumberString.substring(cardNumberString.length()-4, cardNumberString.length()));
 
                             String sid = cashRegisterNumber + "_" + zNumber + "_" + billNumber;
-                            discCardMap.put(sid, cardNumber);
+                            discountCardMap.put(sid, cardNumber);
                         }
                         importCardFile.close();
                     }
@@ -228,10 +228,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                         int recordSailCount = importSailFile.getRecordCount();
                         Map<Integer, Double[]> billNumberSumBill = new HashMap<Integer, Double[]>();
 
-                        //for (int i = 0; i < 2624; i++) {
-                        //    importSailFile.read();
-                        //}
-                        for (int i = 0; i < recordSailCount/*83*//*130*/; i++) {
+                        for (int i = 0; i < recordSailCount; i++) {
                             importSailFile.read();
 
                             Integer operation = new Integer(new String(importSailFile.getField("OPERATION").getBytes(), "Cp1251").trim());
@@ -250,7 +247,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                             Double priceBillDetail = new Double(new String(importSailFile.getField("PRICERUB").getBytes(), "Cp1251").trim());
                             Double sumBillDetail = new Double(new String(importSailFile.getField("TOTALRUB").getBytes(), "Cp1251").trim());
                             Double discountSumBillDetail = discountMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber + "_" + numberBillDetail);
-                            Integer discountCardNumber = discCardMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber);
+                            String discountCardNumber = discountCardMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber);
                             
                             Double[] tempSumBill = billNumberSumBill.get(billNumber);
                             billNumberSumBill.put(billNumber, new Double[]{(tempSumBill != null ? tempSumBill[0] : 0) + (operation <= 1 ? sumBillDetail : 0),

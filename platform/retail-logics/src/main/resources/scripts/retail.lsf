@@ -1794,28 +1794,24 @@ FORM customers 'Покупатели'
 ;
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
-CLASS discountCard 'Дисконтная карта';
+CLASS discountCard 'Дисконтная карта' : numeratedObject;
 TABLE discountCard (discountCard);
 
-numberDiscountCard 'Номер дисконтной карты' (discountCard) = //DATA INTEGER (discountCard);
-        PARTITION SUM 1 IF discountCard IS discountCard
-        ORDER discountCard IN recognizeGroup MINCHARWIDTH 3 PREFCHARWIDTH 3;
-
-numberToDiscountCard (discountCard) = GROUP UNIQUE discountCard BY numberDiscountCard(discountCard) WHERE discountCard IS discountCard;
+discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
 
 customerDiscountCard (discountCard) = DATA customer(discountCard);
 nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
 
 FORM discountCard 'Дисконтная карта'
     OBJECTS d=discountCard FIXED PANEL
-    PROPERTIES(d) numberDiscountCard, nameCustomerDiscountCard
+    PROPERTIES(d) seriesNumberObject, nameCustomerDiscountCard
 
     EDIT discountCard OBJECT d
 ;
 
 FORM discountCards 'Дисконтные карты'
     OBJECTS d=discountCard
-    PROPERTIES(d) READONLY numberDiscountCard, nameCustomerDiscountCard
+    PROPERTIES(d) READONLY seriesNumberObject, nameCustomerDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
@@ -4058,7 +4054,7 @@ numberBill 'Номер чека' (bill) = DATA INTEGER (bill) IN documentHeaderG
 zReportBillToBill (zReport, bill, cashRegister) = GROUP UNIQUE bill BY numberZReport(zReportBill(bill)), numberBill(bill), numberCashRegister(cashRegisterZReport(zReportBill(bill))) WHERE bill IS bill;
 
 discountCardBill (bill) = DATA discountCard (bill);
-numberDiscountCardBill 'Номер дисконтной карты' (bill) = numberDiscountCard(discountCardBill(bill));
+numberDiscountCardBill 'Номер дисконтной карты' (bill) = seriesNumberObject(discountCardBill(bill));
 nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
 
 zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
@@ -9213,6 +9209,19 @@ fillLabelTypeDefaultValues 'Заполнить типы ценников по у
     EXEC addLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
 }
 
+fillDiscountCardDefaultValues 'Заполнить дисконтные карты по умолчанию' = ACTION () {
+   LOCAL num = INTEGER();
+   SET num() <- 0;
+   WHILE num() < 20 DO {
+        ADDOBJ discountCard;
+        FOR d == addedObject() DO {
+        EXEC setValueNumeratedObject(d);
+        SET numberObject(d) <-castToString255(num());
+        SET seriesObject(d) <-'AA';
+        SET num() <- num() + 1;
+        }
+   }
+}
 
 addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
     ADDOBJ cashRegisterModel;
@@ -9356,7 +9365,7 @@ FORM fillDataBase 'Заполнение БД'
 
     PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
                     fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
-                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues
+                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues, fillDiscountCardDefaultValues
 
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
