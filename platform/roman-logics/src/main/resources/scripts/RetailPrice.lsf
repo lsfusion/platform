@@ -239,7 +239,7 @@ DESIGN priceChangeDocument FROM DEFAULT {
 
 }
 
-FORM priceChangeDocuments 'Документы базовых цен'
+FORM priceBaseChangeDocuments 'Документы базовых цен'
 
     OBJECTS p=basePriceChangeDocument
     PROPERTIES(p) READONLY sidPriceChangeDocument, date, timePriceChangeDocument, dateTimeToPriceChangeDocument

@@ -99,7 +99,7 @@ NAVIGATOR {
     }
 
     prices {
-        ADD priceChangeDocuments;
+        ADD priceBaseChangeDocuments;
         ADD discountPriceChangeDocuments;
         ADD freights;
         ADD coefficientRetails;
