@@ -208,6 +208,7 @@ NAVIGATOR {
         ADD addSureSupplierStock;
         ADD dialogSureSupplierStock;
         ADD addAddressBank;
+        ADD sumAccountDocumentLedger;
         ADD dialogAddressBank;
         ADD addFormContract;
         ADD dialogFormContract;

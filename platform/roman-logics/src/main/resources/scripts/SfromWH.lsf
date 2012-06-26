@@ -91,16 +91,12 @@ FORM SfromWH 'Приход на магазин'
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
                   nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
-                  quantitySfromWHDetail,
-                            importerPriceSfromWHDetail, supplierPriceSfromWHDetail, //supplierMarkupSfromWHDetail,
-                            numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                            supplierVATISumSfromWHDetail, invoiceISumSfromWHDetail,
-                            numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
-                            retailPriceSfromWHDetail
+                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail,
+                  numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
+                  supplierVATISumSfromWHDetail, invoiceISumSfromWHDetail,
+                  numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
+                  retailPriceSfromWHDetail
 
-
-//                  quantitySfromWHDetail, importerPriceSfromWHDetail, importerSumSfromWHDetail, supplierPriceSfromWHDetail, numberSupplierVATSfromWHDetail, numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
-//                  sumRetailVATSfromWHDetail, sumInvoiceSfromWHDetail, retailPriceSfromWHDetail
 
     PROPERTIES(sf) TODRAW d addDetailDialogSkuSfromWHDetailSfromWH, addDetailDialogBarcodeSfromWHDetailSfromWH,
                   deleteSfromWHDetailSfromWH
@@ -139,7 +135,6 @@ DESIGN SfromWH FROM DEFAULT {
                 childConstraints = TO THE RIGHT;
                     title = 'Контрагент-поставщик';
                     ADD PROPERTY (nameWarehouseSfromWH);
-                   // ADD PROPERTY (nameImporterSfromWH);
                 }
                 ADD sf.documentPrmGroup;
             }
@@ -162,8 +157,6 @@ FORM SfromWHs 'Приходы на магазин'
     OBJECTS sf = SfromWH
     PROPERTIES (sf) READONLY objectClassName, numberSfromWH, seriesSfromWH, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
                    countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH
-//                   quantitySfromWHDetailSfromWH, supplierSumSfromWHDetailSfromWH, sumRetailVATSfromWHDetailSfromWH,
-//                   sumInvoiceSfromWHDetailSfromWH
 
     PROPERTIES (sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -173,17 +166,11 @@ FORM SfromWHs 'Приходы на магазин'
 
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) READONLY  indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
-                            quantitySfromWHDetail,
-                            importerPriceSfromWHDetail, supplierPriceSfromWHDetail, //supplierMarkupSfromWHDetail,
-                            numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                            supplierVATISumSfromWHDetail, invoiceISumSfromWHDetail,
-                            numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
-                            retailPriceSfromWHDetail
-
-    
-    
-//                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, importerSumSfromWHDetail, numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
-//                  sumRetailVATSfromWHDetail, sumInvoiceSfromWHDetail, retailPriceSfromWHDetail
+                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail,
+                  numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
+                  supplierVATISumSfromWHDetail, invoiceISumSfromWHDetail,
+                  numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
+                  retailPriceSfromWHDetail
 
     FILTERS inSfromWHSfromWHDetail(sf, d)
 ;
