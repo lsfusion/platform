@@ -9,6 +9,7 @@ REQUIRE System,
         Document,
         Historizable,
         Consignment,
+        PriceChange,
         Declaration,
         CStoWH,
         WHfromCS,
@@ -100,10 +101,12 @@ NAVIGATOR {
 
     prices {
         ADD priceBaseChangeDocuments;
-        ADD discountPriceChangeDocuments;
+        ADD discountPriceSetDocuments;
         ADD freights;
         ADD coefficientRetails;
         ADD wholesalePriceDocuments;
+        ADD priceChangeDocuments;
+        ADD priceChangeCommitteeDialog;
     }
 
     accountInfo {
@@ -142,8 +145,8 @@ NAVIGATOR {
     adminElement {
         ADD certificate;
         ADD declaration;
-        ADD priceChangeDocument;
-        ADD discountPriceChangeDocument;
+        ADD priceSetDocument;
+        ADD discountPriceSetDocument;
         ADD declarationInvoices;
         ADD coefficientRetail;
         ADD logPriceArticle;
@@ -228,5 +231,7 @@ NAVIGATOR {
         ADD StoSTrsDialog;
         ADD StoSTr;
         ADD SfromSTr;
+        ADD priceChangePrint;
+        ADD priceChangeCommittee;
     }
 }

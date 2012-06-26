@@ -90,8 +90,8 @@ importerPriceSfromWHDetail(SfromWHDetail) <- importerPriceWHtoSDirSku(WHtoSDirSf
 retailPriceSfromWHDetail 'Розничная цена' =  DATA NUMERIC[14,3] (SfromWHDetail);
 
 
-retailPriceChangeSfromWHDetail(SfromWHDetail) = UNION OVERRIDE priceBasePriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail)),
-                                                               priceDiscountPriceChangeDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail));
+retailPriceChangeSfromWHDetail(SfromWHDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail)),
+                                                               priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail));
 
 retailPriceSfromWHDetail(SfromWHDetail) <- retailPriceChangeSfromWHDetail(SfromWHDetail) WHEN CHANGED (dateTimeSfromWHDetail(SfromWHDetail))
                                                                                            OR CHANGED (skuSfromWHDetail(SfromWHDetail));

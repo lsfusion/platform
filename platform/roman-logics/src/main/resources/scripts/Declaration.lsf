@@ -271,13 +271,29 @@ rateExchangeDeclaration 'Курс обмена' (declaration) = nearestRateExcha
 
 rateExchangeDeclarationDetail 'Курс обмена' (declarationDetail) = rateExchangeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
+priceContractDeclarationDetail 'Цена контракта' (declarationDetail) = priceInvoiceImporterFreightSku(importerDeclarationDetail(declarationDetail),
+                                                                                                     freightDeclarationDetail(declarationDetail),
+                                                                                                     skuDeclarationDetail(declarationDetail));
+
+priceContractRateDeclarationDetail 'Цена контракта (руб.)' (declarationDetail) = priceContractDeclarationDetail(declarationDetail) *
+                                                                                 rateExchangeDeclarationDetail(declarationDetail);
+
+
 declarationPriceDeclarationDetail 'Цена товара (БУ)' (declarationDetail) = priceFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
-                                                                                            freightDeclarationDetail(declarationDetail),
-                                                                                            skuDeclarationDetail(declarationDetail));
+                                                                                                       freightDeclarationDetail(declarationDetail),
+                                                                                                       skuDeclarationDetail(declarationDetail));
 
 priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDetail) = priceInFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
                                                                                                         freightDeclarationDetail(declarationDetail),
                                                                                                         skuDeclarationDetail(declarationDetail));
+
+declarationSumDeclarationDetail 'Стоимость товара' (declarationDetail) = declarationPriceDeclarationDetail(declarationDetail) *
+                                                                              quantityDeclarationDetail(declarationDetail);
+
+declarationSumRateDeclarationDetail 'Стоимость товара (руб.)' (declarationDetail) = declarationSumDeclarationDetail(declarationDetail) *
+                                                                                    rateExchangeDeclarationDetail(declarationDetail);
+
+
 
 priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(declarationPriceDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
@@ -588,7 +604,7 @@ FORM declaration 'Декларация'
 
     OBJECTS f=freight
     PROPERTIES (f, d) sidFreightDeclaration
-    PROPERTIES (f) date, toCreatePriceChangeDocument SHOWIF isPriceChangeDocumentFreight(f)
+    PROPERTIES (f) date, toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
     FILTERS quantityFreightDeclaration (f, d)
 
     OBJECTS dd=declarationDetail
