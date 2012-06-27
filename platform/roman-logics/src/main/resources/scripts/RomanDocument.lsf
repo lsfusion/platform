@@ -34,6 +34,22 @@ META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, captio
 
 END
 
+META defineRBCorrespondingDocumentWithRetailPrices (object, stock, stockCaption, skuProp, caption, corresponder, corresponderCaption)
+
+    @defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, caption, corresponder, corresponderCaption);
+
+    @defineDocumentDetailBasePrice(SfromWH);
+    @defineDocumentDetailBaseSum(SfromWH);
+
+    @defineDocumentDetailInvoicePrice(SfromWH);
+    @defineDocumentDetailInvoiceSum(SfromWH);
+
+    @defineDocumentHeaderBaseSum(SfromWH);
+    @defineDocumentHeaderInvoiceSum(SfromWH);
+
+    @implementBaseSkuDepartmentStoreLedger(SfromWH, sku);
+END
+
 // для использования метакода должно быть определено свойство sku###object##Detail
 META defineDocumentDetailProps (object)
 
@@ -49,6 +65,9 @@ META defineDocumentDetailProps (object)
     nameBrand###object##Detail 'Бренд' (object##Detail) = name(brand###object##Detail(object##Detail));
     category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
     nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail));
+
+    UOM###object##Detail 'Единица измерения (ИД)' (object##Detail) = DATA UOM (object##Detail) IN idGroup;
+    shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortName(UOM###object##Detail(object##Detail));
 END
 
 //-----------Для подбора товаров------------------//

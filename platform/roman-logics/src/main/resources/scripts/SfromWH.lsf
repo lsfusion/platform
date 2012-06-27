@@ -27,10 +27,8 @@ CLASS SfromWHPosted 'Закрытый приход на магазин' : SfromW
 
 skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) IN idGroup;
 nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = nameSku(skuSfromWHDetail(SfromWHDetail));
-UOMSfromWHDetail 'Единица измерения (ИД)' (SfromWHDetail) = DATA UOM (SfromWHDetail) IN idGroup;
-shortNameUOMSfromWHDetail 'Единица измерения' (SfromWHDetail) = shortName(UOMSfromWHDetail(SfromWHDetail));
 
-@defineRBCorrespondingDocument(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
+@defineRBCorrespondingDocumentWithRetailPrices(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
 
 
 WHtoSPostedSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSPosted(SfromWH) IN idGroup;
@@ -58,19 +56,6 @@ nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
 CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSPosted(WHtoSPostedSfromWH(SfromWH))
     CHECKED BY WHtoSPostedSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
-
-
-@defineDocumentDetailBasePrice(SfromWH);
-@defineDocumentDetailBaseSum(SfromWH);
-
-@defineDocumentDetailInvoicePrice(SfromWH);
-@defineDocumentDetailInvoiceSum(SfromWH);
-
-@defineDocumentHeaderBaseSum(SfromWH);
-@defineDocumentHeaderInvoiceSum(SfromWH);
-
-@implementBaseSkuDepartmentStoreLedger(SfromWH, sku);
-
 
 quantitySfromWHSku 'Количество принятое' (SfromWH, sku) = GROUP SUM quantitySfromWHDetail(SfromWHDetail)
                                           BY SfromWHSfromWHDetail(SfromWHDetail), skuSfromWHDetail(SfromWHDetail);

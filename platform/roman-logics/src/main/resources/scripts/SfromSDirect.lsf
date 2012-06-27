@@ -74,9 +74,6 @@ diffQuantitySfromSDirSku 'Разница' (SfromSDir, sku) = quantitySfromSDirSk
 @implementSkuLedger (SfromSDir, sku, departmentStore);
 
 nameSkuSfromSDirDetail 'Наименование товара' (SfromSDirDetail) = nameSku(skuSfromSDirDetail(SfromSDirDetail));
-UOMSfromSDirDetail 'Единица измерения (ИД)' (SfromSDirDetail) = DATA UOM (SfromSDirDetail) IN idGroup;
-shortNameUOMSfromSDirDetail 'Единица измерения' (SfromSDirDetail) = shortName(UOMSfromSDirDetail(SfromSDirDetail));
-
 
 retailPriceSfromSDirDetail 'Розничная цена (ед.)' (SfromSDirDetail) = DATA NUMERIC[14,3] (SfromSDirDetail);
 

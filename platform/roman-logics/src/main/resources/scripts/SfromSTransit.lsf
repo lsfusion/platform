@@ -68,9 +68,6 @@ diffQuantitySfromSTrSku 'Разница' (SfromSTr, sku) = quantitySfromSTrSku(S
 @implementSkuLedger (SfromSTr, sku, departmentStore);
 
 nameSkuSfromSTrDetail 'Наименование товара' (SfromSTrDetail) = nameSku(skuSfromSTrDetail(SfromSTrDetail));
-UOMSfromSTrDetail 'Единица измерения (ИД)' (SfromSTrDetail) = DATA UOM (SfromSTrDetail) IN idGroup;
-shortNameUOMSfromSTrDetail 'Единица измерения' (SfromSTrDetail) = shortName(UOMSfromSTrDetail(SfromSTrDetail));
-
 
 importerPriceSfromSTrDetail 'Цена первого импортёра' (SfromSTrDetail) = DATA NUMERIC[14,3] (SfromSTrDetail);
 importerSumSfromSTrDetail 'Сумма импортера' (SfromSTrDetail) = importerPriceSfromSTrDetail(SfromSTrDetail) * quantitySfromSTrDetail(SfromSTrDetail);

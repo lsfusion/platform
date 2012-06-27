@@ -60,9 +60,6 @@ CONSTRAINT companyWarehouse(transitWarehouseStoSTr(StoSTr)) != companyStore(reci
 quantityOutAutoSkuLedger (ledger) += quantityStoSTrDetail (ledger);
 descriptionSkuLedger (ledger) += descriptionStoSTrDetail (ledger);
 
-UOMStoSTrDetail 'Единица измерения (ИД)' (StoSTrDetail) = DATA UOM (StoSTrDetail) IN idGroup;
-shortNameUOMStoSTrDetail 'Единица измерения' (StoSTrDetail) = shortName(UOMStoSTrDetail(StoSTrDetail));
-
 retailPriceStoSTrDetail 'Розничная цена (ед.)' (StoSTrDetail) = DATA NUMERIC[14,3] (StoSTrDetail);
 retailSumStoSTrDetail 'Розничная сумма' (StoSTrDetail) = retailPriceStoSTrDetail(StoSTrDetail) * quantityStoSTrDetail(StoSTrDetail);
 retailSumStoSTrDetailStoSTr 'Розничная сумма' (StoSTr)= GROUP SUM retailSumStoSTrDetail(StoSTrDetail)

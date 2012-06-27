@@ -52,9 +52,6 @@ CONSTRAINT StoSDir IS StoSDir AND NOT companyStore(storeStoSDir(StoSDir)) == com
 quantityOutAutoSkuLedger (ledger) += quantityStoSDirDetail (ledger);
 descriptionSkuLedger (ledger) += descriptionStoSDirDetail (ledger);
 
-UOMStoSDirDetail 'Единица измерения (ИД)' (StoSDirDetail) = DATA UOM (StoSDirDetail) IN idGroup;
-shortNameUOMStoSDirDetail 'Единица измерения' (StoSDirDetail) = shortName(UOMStoSDirDetail(StoSDirDetail));
-
 retailPriceStoSDirDetail 'Розничная цена (ед.)' (StoSDirDetail) = DATA NUMERIC[14,3] (StoSDirDetail);
 retailSumStoSDirDetail 'Розничная сумма' (StoSDirDetail) = retailPriceStoSDirDetail(StoSDirDetail) * quantityStoSDirDetail(StoSDirDetail);
 retailSumStoSDirDetailStoSDir 'Розничная сумма' (StoSDir)= GROUP SUM retailSumStoSDirDetail(StoSDirDetail)

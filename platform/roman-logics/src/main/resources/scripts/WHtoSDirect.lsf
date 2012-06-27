@@ -34,9 +34,6 @@ CONSTRAINT WHtoSDir IS WHtoSDir AND NOT companyWarehouse(warehouseWHtoSDir(WHtoS
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSDirDetail (ledger);
 //descriptionSkuLedger (ledger) += descriptionWHtoSDirDetail (ledger);
 
-UOMWHtoSDirDetail 'Единица измерения (ИД)' (WHtoSDirDetail) = DATA UOM (WHtoSDirDetail) IN idGroup;
-shortNameUOMWHtoSDirDetail 'Единица измерения' (WHtoSDirDetail) = shortName(UOMWHtoSDirDetail(WHtoSDirDetail));
-
 importerPriceWHtoSDirDetail 'Цена без НДС (ед.)' (WHtoSDirDetail) = DATA NUMERIC[14,3] (WHtoSDirDetail);
 
 importerPriceWHtoSDirSku 'Цена без НДС' (WHtoSDir, sku) = GROUP MAX importerPriceWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail), skuWHtoSDirDetail(WHtoSDirDetail);

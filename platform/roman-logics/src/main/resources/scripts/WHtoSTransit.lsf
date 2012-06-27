@@ -38,9 +38,6 @@ CONSTRAINT WHtoSTr IS WHtoSTr AND NOT companyWarehouse (transitWarehouseWHtoSTr(
 
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSTrDetail (ledger);
 
-UOMWHtoSTrDetail 'Единица измерения (ИД)' (WHtoSTrDetail) = DATA UOM (WHtoSTrDetail) IN idGroup;
-shortNameUOMWHtoSTrDetail 'Единица измерения' (WHtoSTrDetail) = shortName(UOMWHtoSTrDetail(WHtoSTrDetail));
-
 importerPriceWHtoSTrDetail 'Цена без НДС (ед.)' (WHtoSTrDetail) = DATA NUMERIC[14,3] (WHtoSTrDetail);
 
 wholesalePriceWHtoSTrDetail 'Оптовая цена' (WHtoSTrDetail) =  priceWholesaleArticleDateTime(articleSku(skuWHtoSTrDetail(WHtoSTrDetail)), dateTimeWHtoSTrDetail(WHtoSTrDetail));
