@@ -41,7 +41,7 @@ importerPriceWHtoSDirDetail 'Цена без НДС (ед.)' (WHtoSDirDetail) = 
 
 importerPriceWHtoSDirSku 'Цена без НДС' (WHtoSDir, sku) = GROUP MAX importerPriceWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail), skuWHtoSDirDetail(WHtoSDirDetail);
 
-wholesalePriceWHtoSDirDetail 'Оптовая цена' (WHtoSDirDetail) =  priceWholesaleArticleDateTime(articleSku(skuWHtoSDirDetail(WHtoSDirDetail)), dateTimeWHtoSDirDetail(WHtoSDirDetail));
+wholesalePriceWHtoSDirDetail 'Оптовая цена' (WHtoSDirDetail) =  priceWholesaleArticleDateTime(articleWHtoSDirDetail(WHtoSDirDetail), dateTimeWHtoSDirDetail(WHtoSDirDetail));
 importerPriceWHtoSDirDetail (WHtoSDirDetail) <- wholesalePriceWHtoSDirDetail(WHtoSDirDetail) WHEN CHANGED(skuWHtoSDirDetail(WHtoSDirDetail)) OR CHANGED (dateTimeWHtoSDirDetail(WHtoSDirDetail));
 
 importerSumWHtoSDirDetail 'Стоимость без НДС' (WHtoSDirDetail) = importerPriceWHtoSDirDetail(WHtoSDirDetail) * quantityWHtoSDirDetail(WHtoSDirDetail);

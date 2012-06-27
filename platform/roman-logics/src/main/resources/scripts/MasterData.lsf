@@ -37,7 +37,7 @@ inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierA
 
 //------------------------ Приведение штрих-кодов RomanLogicsModule к логике Barcode.lsf -----------------------------//
 
-syncBarcodeSku 'Синхронизировать штрих-код' = ACTION (sku) {
+syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTION (sku) {
 //    SET dataBarcodeIdDate(barcode, date) IF barcode == barcode(sku AS RomanLogicsModule.sku) AND date == 2001_01_01 NOT NULL;
 
     LOCAL syncBarcode = barcode();
@@ -55,9 +55,18 @@ syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 
 //---------------------------------  -------------------------------------------//
 CLASS warehouse 'Склад' : Stock.stock;
+CLASS groupWarehouse 'Группа складов' : stockGroup;
+
+@defineHierarchy(groupWarehouse);
+parentStockGroup (stockGroup) += parentGroupWarehouse (stockGroup);
 
 companyWarehouse 'Импортер ИД' (warehouse) = DATA company(warehouse);
 nameCompanyWarehouse 'Импортер ' (warehouse) = name(companyWarehouse(warehouse)) IN baseGroup;
+
+groupWarehouseWarehouse (warehouse) = DATA groupWarehouse(warehouse);
+nameGroupWarehouseWarehouse 'Группа складов' (warehouse) = name(groupWarehouseWarehouse(warehouse)) IN baseGroup;
+
+stockGroupStock (stock) += groupWarehouseWarehouse (stock);
 
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);
@@ -65,7 +74,7 @@ addressStock(stock) += addressWarehouse(stock);
 FORM warehouse 'Оптовый склад'
 
     OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, addressWarehouse, nameCompanyWarehouse
+    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse
 
     ORDER BY          name
     EDIT warehouse OBJECT w
@@ -79,7 +88,6 @@ FORM warehouses 'Оптовые склады'
 
     ORDER BY          name
 ;
-stockGroupStock (warehouse) += companyWarehouse (warehouse);
 
 FORM customStore 'Склад временного хранения'
 
@@ -267,3 +275,10 @@ DESIGN storesR FROM DEFAULT {
 
     ADD functions.box;
 }
+
+@defineHierarchy(category);
+
+parentSkuGroup (skuGroup) += parentCategory(skuGroup);
+
+skuGroupSku (sku) += categoryArticleSku (sku);
+

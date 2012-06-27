@@ -1374,7 +1374,7 @@ public class RomanLogicsModule extends LogicsModule {
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
-        importer = addConcreteClass("importer", "Импортер", subject, (CustomClass) BL.LegalEntity.getClassByName("company"), (CustomClass) BL.Stock.getClassByName("stockGroup"));
+        importer = addConcreteClass("importer", "Импортер", subject, (CustomClass) BL.LegalEntity.getClassByName("company"));
         exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
 
         commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);

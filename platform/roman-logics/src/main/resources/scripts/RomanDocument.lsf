@@ -27,8 +27,8 @@ META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, captio
 
     @defineRBDocument (object, stock, stockCaption, skuProp, caption);
 
-    corresponder###object (object) = DATA corresponder (object);
-    name###corresponder###object corresponderCaption (object) = name (corresponder###object(object));
+    corresponder###object (object) = DATA corresponder (object) IN idGroup;
+    name###corresponder###object corresponderCaption (object) = name (corresponder###object(object)) IN documentHeaderGroup;
 
 END
 

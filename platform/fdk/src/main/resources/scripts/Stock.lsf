@@ -509,8 +509,8 @@ FORM currentBalanceSkuStock 'Текущие остатки'
 
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
-    FILTERS           isParentSkuGroupSku(sk, s)//,
-                      //isParentStockGroupStock(sg, st)
+    FILTERS           isParentSkuGroupSku(sk, s),
+                      isParentStockGroupStock(sg, st)
     ORDER BY          nameSku
 
 
