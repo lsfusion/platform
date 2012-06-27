@@ -40,6 +40,16 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public Map<Object, List<PropertyObjectDescriptor>> eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
     public OrderedMap<PropertyDrawDescriptor, Boolean> defaultOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
 
+    public PropertyDrawDescriptor printActionPropertyDraw;
+    public PropertyDrawDescriptor editActionPropertyDraw;
+    public PropertyDrawDescriptor xlsActionPropertyDraw;
+    public PropertyDrawDescriptor nullActionPropertyDraw;
+    public PropertyDrawDescriptor refreshActionPropertyDraw;
+    public PropertyDrawDescriptor applyActionPropertyDraw;
+    public PropertyDrawDescriptor cancelActionPropertyDraw;
+    public PropertyDrawDescriptor okActionPropertyDraw;
+    public PropertyDrawDescriptor closeActionPropertyDraw;
+
     // по сути IncrementLazy
     IncrementView allPropertiesLazy;
     private List<PropertyObjectDescriptor> allProperties;
@@ -223,6 +233,16 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
 
+        pool.serializeObject(outStream, printActionPropertyDraw);
+        pool.serializeObject(outStream, editActionPropertyDraw);
+        pool.serializeObject(outStream, xlsActionPropertyDraw);
+        pool.serializeObject(outStream, nullActionPropertyDraw);
+        pool.serializeObject(outStream, refreshActionPropertyDraw);
+        pool.serializeObject(outStream, applyActionPropertyDraw);
+        pool.serializeObject(outStream, cancelActionPropertyDraw);
+        pool.serializeObject(outStream, okActionPropertyDraw);
+        pool.serializeObject(outStream, closeActionPropertyDraw);
+
         outStream.writeInt(defaultOrders.size());
         for (Map.Entry<PropertyDrawDescriptor, Boolean> entry : defaultOrders.entrySet()) {
             pool.serializeObject(outStream, entry.getKey(), serializationType);
@@ -257,6 +277,16 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
+
+        printActionPropertyDraw = pool.deserializeObject(inStream);
+        editActionPropertyDraw = pool.deserializeObject(inStream);
+        xlsActionPropertyDraw = pool.deserializeObject(inStream);
+        nullActionPropertyDraw = pool.deserializeObject(inStream);
+        refreshActionPropertyDraw = pool.deserializeObject(inStream);
+        applyActionPropertyDraw = pool.deserializeObject(inStream);
+        cancelActionPropertyDraw = pool.deserializeObject(inStream);
+        okActionPropertyDraw = pool.deserializeObject(inStream);
+        closeActionPropertyDraw = pool.deserializeObject(inStream);
 
         defaultOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
         int orderCount = inStream.readInt();

@@ -8,15 +8,10 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.session.DataSession;
 
 import java.awt.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-
-import static platform.server.logics.property.derived.DerivedProperty.createAnd;
-import static platform.server.logics.property.derived.DerivedProperty.createStatic;
 
 public class ApplyActionProperty extends FormToolbarActionProperty {
     private final BusinessLogics BL;
@@ -35,8 +30,7 @@ public class ApplyActionProperty extends FormToolbarActionProperty {
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form) {
         super.proceedDefaultDraw(propertyDraw, form);
 
-        ArrayList<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
         propertyDraw.propertyBackground = form.addPropertyObject(
-                new LCP(createAnd(interfaces, createStatic(Color.green, ColorClass.instance), DataSession.isDataChanged.getImplement(interfaces)).property));
+                BL.LM.addJProp(BL.LM.and1, BL.LM.addCProp(ColorClass.instance, Color.green), new LCP(DataSession.isDataChanged)));
     }
 }

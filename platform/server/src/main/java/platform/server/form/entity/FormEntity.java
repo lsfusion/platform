@@ -826,6 +826,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
 
+        pool.serializeObject(outStream, printActionPropertyDraw);
+        pool.serializeObject(outStream, editActionPropertyDraw);
+        pool.serializeObject(outStream, xlsActionPropertyDraw);
+        pool.serializeObject(outStream, nullActionPropertyDraw);
+        pool.serializeObject(outStream, refreshActionPropertyDraw);
+        pool.serializeObject(outStream, applyActionPropertyDraw);
+        pool.serializeObject(outStream, cancelActionPropertyDraw);
+        pool.serializeObject(outStream, okActionPropertyDraw);
+        pool.serializeObject(outStream, closeActionPropertyDraw);
+
         outStream.writeInt(defaultOrders.size());
         for (Map.Entry<PropertyDrawEntity<?>, Boolean> entry : defaultOrders.entrySet()) {
             pool.serializeObject(outStream, entry.getKey(), serializationType);
@@ -860,6 +870,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
+
+        printActionPropertyDraw = pool.deserializeObject(inStream);
+        editActionPropertyDraw = pool.deserializeObject(inStream);
+        xlsActionPropertyDraw = pool.deserializeObject(inStream);
+        nullActionPropertyDraw = pool.deserializeObject(inStream);
+        refreshActionPropertyDraw = pool.deserializeObject(inStream);
+        applyActionPropertyDraw = pool.deserializeObject(inStream);
+        cancelActionPropertyDraw = pool.deserializeObject(inStream);
+        okActionPropertyDraw = pool.deserializeObject(inStream);
+        closeActionPropertyDraw = pool.deserializeObject(inStream);
 
         int orderCount = inStream.readInt();
         for (int i = 0; i < orderCount; i++) {
