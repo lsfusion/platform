@@ -53,6 +53,13 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
 
 syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
 
+FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY nameSku
+    PROPERTIES(s) syncBarcodeSku
+;
+
 //---------------------------------  -------------------------------------------//
 CLASS warehouse 'Склад' : Stock.stock;
 CLASS groupWarehouse 'Группа складов' : stockGroup;

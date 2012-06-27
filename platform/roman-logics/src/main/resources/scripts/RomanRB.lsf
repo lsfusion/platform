@@ -128,6 +128,7 @@ NAVIGATOR {
         ADD consignmentSimpleVertical;
         ADD consignmentSimpleAttach;
         ADD consignment;
+        ADD printMarksWHfromCS;
     }
 
     baseElement {
@@ -231,6 +232,7 @@ NAVIGATOR {
         ADD StoSTrsDialog;
         ADD StoSTr;
         ADD SfromSTr;
+        ADD syncBarcodeSkuForm;
         ADD priceChangePrint;
         ADD priceChangeCommittee;
     }

@@ -123,11 +123,36 @@ fillWHfromCSDetailsSkuFreightUnit 'Заполнить строки из коро
     }
 } EDITKEY 'F5' CONFIRM;
 
+dateTimeWHfromCSSKU 'Дата' = SESSION DATA DATE (sku);
+shouldBePrintWHfromCS = SESSION DATA BOOLEAN (sku);
+
+priceBaseWHfromCSDateTime 'Цена' (sku) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), currentDateTime());
+priceDiscountWHfromCSDateTime 'Цена скидочная' (sku) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), currentDateTime());
+
+FORM printMarksWHfromCS 'Печать маркировок товара' PRINT
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
+                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
+                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku,
+                           priceBaseWHfromCSDateTime, priceDiscountWHfromCSDateTime
+
+    FILTERS shouldBePrintWHfromCS(s)
+;
+
+printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCS) = ACTION (WHfromCS) {
+
+    SET shouldBePrintWHfromCS(sku) <- NULL;
+    SET shouldBePrintWHfromCS(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCS), CStoWHWHfromCS(WHfromCS));
+    FORM printMarksWHfromCS MODAL;
+
+} CONFIRM;
+
 FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL
     PROPERTIES (w) numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-                   barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit
+                   barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit, printMarksSkuFreightUnit
 
     OBJECTS d = WHfromCSDetail
     PROPERTIES (d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
@@ -136,7 +161,7 @@ FORM WHfromCS 'Приход на оптовый склад'
     PROPERTIES(d) quantityOriginWHfromCSDetail, quantityWHfromCSDetail
     PROPERTIES(d) ADDOBJ, delete
 
-   PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSDetailWHfromCS
+    PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSDetailWHfromCS
 
     FILTERS inWHfromCSWHfromCSDetail(w, d)
 
