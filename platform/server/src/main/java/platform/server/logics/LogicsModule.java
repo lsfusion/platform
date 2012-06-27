@@ -921,7 +921,7 @@ public abstract class LogicsModule {
                 ((CalcProperty)lp.property), new CalcPropertyMapImplement<PropertyInterface, P>((CalcProperty<PropertyInterface>) baseLM.reverseBarcode.property))));
     }
 
-    protected LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
+    public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
     }
 
