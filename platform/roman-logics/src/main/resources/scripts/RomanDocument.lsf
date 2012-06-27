@@ -21,6 +21,8 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
     @defineDocumentDetailProps (object);
 
     @defineAddDetailDialogSkuStock(object, sku, stock, dialogSku);
+
+    @defineAddDetailDialogBarcode(object, sku);
 END
 
 META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, caption, corresponder, corresponderCaption)

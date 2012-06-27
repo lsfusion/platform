@@ -73,7 +73,6 @@ diffQuantityWHfromCSDetail (WHfromCSDetail) = quantityOriginWHfromCSDetail(WHfro
 currentFreightUnit 'Тек. короб (ИД)' = SESSION DATA freightUnit (WHfromCS);
 barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' = barcode(currentFreightUnit(WHfromCS));
 
-detailWHfromCSSku(WHfromCS, sku) = GROUP MAX detail BY WHfromCSWHfromCSDetail(detail), skuWHfromCSDetail(detail);
 
 addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCS) = ACTION (WHfromCS) {
 

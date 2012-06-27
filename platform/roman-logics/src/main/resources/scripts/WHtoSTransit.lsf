@@ -87,7 +87,6 @@ balanceBSkuWHtoSTrDetail 'Остаток до' (WHtoSTrDetail) = balanceBSkuStoc
 quantityWHtoSTrSku (WHtoSTr, sku) = GROUP SUM quantityWHtoSTrDetail(WHtoSTrDetail)
                                           BY WHtoSTrWHtoSTrDetail(WHtoSTrDetail), skuWHtoSTrDetail(WHtoSTrDetail);
 
-@defineAddDetailDialogBarcode(WHtoSTr, sku);
 
 FORM WHtoSTr 'Расход на магазин др.юрлица'
     OBJECTS w = WHtoSTr FIXED PANEL

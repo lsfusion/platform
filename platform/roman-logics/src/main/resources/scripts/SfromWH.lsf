@@ -87,7 +87,6 @@ retailPriceSfromWHDetail(SfromWHDetail) <- retailPriceChangeSfromWHDetail(SfromW
 
 balanceBSkuSfromWHDetail 'Остаток до' (SfromWHDetail) = balanceBSkuStockDateTime(skuSfromWHDetail(SfromWHDetail), departmentStoreSfromWHDetail(SfromWHDetail), dateTimeSfromWHDetail(SfromWHDetail));
 
-@defineAddDetailDialogBarcode(SfromWH, sku);
 
 FORM SfromWH 'Приход на магазин'
     OBJECTS sf = SfromWH FIXED PANEL
