@@ -240,7 +240,7 @@ public class DefaultFormView extends FormView {
 
             ContainerView groupPropertyContainer = groupPropertyContainers.get(Optional.fromNullable(groupObject), groupAbstract);
             if (groupPropertyContainer == null) {
-                groupPropertyContainer = createContainer(groupAbstract.caption, null, getPropertyGroupContainerSID(groupObject.entity, groupAbstract));
+                groupPropertyContainer = createContainer(groupAbstract.caption, null, getPropertyGroupContainerSID(groupObject, groupAbstract));
                 groupPropertyContainers.put(Optional.fromNullable(groupObject), groupAbstract, groupPropertyContainer);
             }
 
@@ -255,7 +255,7 @@ public class DefaultFormView extends FormView {
         ((groupContainer == null) ? mainContainer : groupContainer).add(childComponent);
     }
 
-    private static String getPropertyGroupContainerSID(GroupObjectEntity group, AbstractGroup propertyGroup) {
+    private static String getPropertyGroupContainerSID(GroupObjectView group, AbstractGroup propertyGroup) {
         String propertyGroupSID = propertyGroup.getSID();
         if (propertyGroupSID.contains("_")) {
             String[] sids = propertyGroupSID.split("_", 2);
@@ -266,7 +266,7 @@ public class DefaultFormView extends FormView {
 //            используем простое имя для групп данного модуля
 //            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
 //        }
-        return group.getSID() + "." + propertyGroupSID;
+        return (group == null ? "NOGROUP" : group.entity.getSID()) + "." + propertyGroupSID;
     }
 
 
