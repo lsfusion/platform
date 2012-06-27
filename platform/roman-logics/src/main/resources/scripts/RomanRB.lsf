@@ -214,7 +214,6 @@ NAVIGATOR {
         ADD dialogFormContract;
         ADD addDelayContract;
         ADD dialogDelayContract;
-        ADD WHtoSDirsDialog;
         ADD numerator;
         ADD dialogDate;
         ADD dialogSku;
@@ -228,7 +227,7 @@ NAVIGATOR {
         ADD WHtoSTr;
         ADD StoSDir;
         ADD SfromSDir;
-        ADD WHtoSTrsDialog;
+        ADD WHtoSPostedDialog;
         ADD StoSTrsDialog;
         ADD StoSTr;
         ADD SfromSTr;

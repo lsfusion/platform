@@ -1,0 +1,41 @@
+//From WareHouse to Store (the posted)
+MODULE WHtoSPosted;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        Declaration,
+        WholesalePrice,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+CLASS ABSTRACT WHtoSPosted 'Расход на магазин закрытый': numberedObject;
+
+dateWHtoSPosted 'Дата' (WHtoSPosted) = ABSTRACT DATE (WHtoSPosted);
+timeWHtoSPosted 'Время' (WHtoSPosted) = ABSTRACT TIME (WHtoSPosted);
+warehouseWHtoSPosted 'Оптовый склад (ИД)' (WHtoSPosted) = ABSTRACT warehouse (WHtoSPosted);
+nameWarehouseWHtoSPosted 'Оптовый склад' (WHtoSPosted) = name(warehouseWHtoSPosted(WHtoSPosted));
+storeWHtoSPosted 'Магазин (ИД)' (WHtoSPosted) = ABSTRACT store (WHtoSPosted);
+nameStoreWHtoSPosted 'Магазин-получатель' (WHtoSPosted) = name(storeWHtoSPosted(WHtoSPosted));
+
+quantityWHtoSPostedDetailWHtoSPosted 'Кол-во (всего)' (WHtoSPosted) = ABSTRACT NUMERIC[16,2] (WHtoSPosted);
+invoiceVATSumWHtoSPostedDetailWHtoSPosted 'Сумма НДС поставщика' (WHtoSPosted) = ABSTRACT NUMERIC[16,2] (WHtoSPosted);
+invoiceSumWHtoSPostedDetailWHtoSPosted 'Сумма поставщика с НДС' (WHtoSPosted) = ABSTRACT NUMERIC[16,2] (WHtoSPosted);
+
+quantityWHtoSPostedSku 'Кол-во плановое' (WHtoSPosted, sku) = ABSTRACT NUMERIC[16,2] (WHtoSPosted, sku);
+
+
+FORM WHtoSPostedDialog 'Расходы на магазин'
+    OBJECTS w = WHtoSPosted
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSPosted, timeWHtoSPosted, nameWarehouseWHtoSPosted, nameStoreWHtoSPosted,
+                   quantityWHtoSPostedDetailWHtoSPosted, invoiceVATSumWHtoSPostedDetailWHtoSPosted, invoiceSumWHtoSPostedDetailWHtoSPosted
+
+    DIALOG WHtoSPosted OBJECT w
+;
+

@@ -11,13 +11,14 @@ REQUIRE System,
         Declaration,
         WholesalePrice,
         MasterData,
+        WHtoSPosted,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS WHtoSDir 'Расход на магазин (одно юрлицо)' : historyObject, numberedObject, consignment;
 CLASS WHtoSDirDetail 'Строка расхода на магазин (одно юрлицо)' : outAutoSkuLedger, consignmentDetail;
-CLASS WHtoSDirPosted 'Закрытый расход на магазин (одно юрлицо)' : WHtoSDir, postedObject, consignment;
+CLASS WHtoSDirPosted 'Закрытый расход на магазин (одно юрлицо)' : WHtoSDir, WHtoSPosted, postedObject, consignment;
 
 
 skuWHtoSDirDetail 'Товар (ИД)' (WHtoSDirDetail) = DATA sku (WHtoSDirDetail)IN idGroup;
@@ -227,14 +228,6 @@ DESIGN WHtoSDirs FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM WHtoSDirsDialog 'Расход на магазин (одно юрлицо)'
-    OBJECTS w = WHtoSDirPosted
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSDir, nameWarehouseWHtoSDir, nameStoreWHtoSDir,
-                   countWHtoSDirDetailWHtoSDir, quantityWHtoSDirDetailWHtoSDir, importerSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
-                   sumInvoiceWHtoSDirDetailWHtoSDir
-    DIALOG WHtoSDirPosted OBJECT w
-;
-
 @defineConsignment(WHtoSDir);
 @implementConsignmentHeader(WHtoSDir, warehouse);
 
@@ -259,3 +252,16 @@ noteConsignment(consignment) += noteWHtoSDir(consignment);
 //noteConsignmentDetail
 
 //todo: Надо наполнить свойствами накладную. (УНП...)
+
+//---------------------------- Закрытый расход ----------------------------
+
+dateWHtoSPosted(WHtoSPosted) += dateWHtoSDir (WHtoSPosted);
+timeWHtoSPosted (WHtoSPosted) += timeWHtoSDir (WHtoSPosted);
+warehouseWHtoSPosted(WHtoSPosted) += warehouseWHtoSDir (WHtoSPosted);
+storeWHtoSPosted(WHtoSPosted) += storeWHtoSDir(WHtoSPosted);
+
+quantityWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += quantityWHtoSDirDetailWHtoSDir (WHtoSPosted);
+invoiceVATSumWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += sumSupplierVATWHtoSDirDetailWHtoSDir (WHtoSPosted);
+invoiceSumWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += sumInvoiceWHtoSDirDetailWHtoSDir (WHtoSPosted);
+
+quantityWHtoSPostedSku(WHtoSPosted, sku) +=  quantityWHtoSDirSku(WHtoSPosted, sku);

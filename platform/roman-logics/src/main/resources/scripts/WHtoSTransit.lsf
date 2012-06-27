@@ -11,13 +11,14 @@ REQUIRE System,
         Declaration,
         WholesalePrice,
         MasterData,
+        WHtoSPosted,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS WHtoSTr 'Расход на магазин др.юрлица' : historyObject, numberedObject, consignment;
 CLASS WHtoSTrDetail 'Строка расхода на магазин др.юрлица' : outAutoSkuLedger, consignmentDetail;
-CLASS WHtoSTrPosted 'Закрытый расход на магазин др.юрлица' : WHtoSTr, postedObject, consignment;
+CLASS WHtoSTrPosted 'Закрытый расход на магазин др.юрлица' : WHtoSTr, WHtoSPosted, postedObject, consignment;
 
 
 skuWHtoSTrDetail 'Товар (ИД)' (WHtoSTrDetail) = DATA sku (WHtoSTrDetail)IN idGroup;
@@ -230,13 +231,6 @@ DESIGN WHtoSTrs FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM WHtoSTrsDialog 'Расход на магазин др.юрлица'
-    OBJECTS w = WHtoSTrPosted
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSTr, nameWarehouseWHtoSTr, nameStoreWHtoSTr,
-                   countWHtoSTrDetailWHtoSTr, quantityWHtoSTrDetailWHtoSTr, importerSumWHtoSTrDetailWHtoSTr, sumSupplierVATWHtoSTrDetailWHtoSTr,
-                   sumInvoiceWHtoSTrDetailWHtoSTr
-    DIALOG WHtoSTrPosted OBJECT w
-;
 
 @defineConsignment(WHtoSTr);
 @implementConsignmentHeader(WHtoSTr, warehouse);
@@ -262,3 +256,16 @@ noteConsignment(consignment) += noteWHtoSTr(consignment);
 //noteConsignmentDetail
 
 //todo: Надо наполнить свойствами накладную. (УНП...)
+
+//---------------------------- Закрытый расход ----------------------------
+
+dateWHtoSPosted(WHtoSPosted) += dateWHtoSTr (WHtoSPosted);
+timeWHtoSPosted (WHtoSPosted) += timeWHtoSTr (WHtoSPosted);
+warehouseWHtoSPosted(WHtoSPosted) += warehouseWHtoSTr (WHtoSPosted);
+storeWHtoSPosted(WHtoSPosted) += storeWHtoSTr(WHtoSPosted);
+
+quantityWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += quantityWHtoSTrDetailWHtoSTr (WHtoSPosted);
+invoiceVATSumWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += sumSupplierVATWHtoSTrDetailWHtoSTr (WHtoSPosted);
+invoiceSumWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += sumInvoiceWHtoSTrDetailWHtoSTr (WHtoSPosted);
+
+quantityWHtoSPostedSku(WHtoSPosted, sku) +=  quantityWHtoSTrSku(WHtoSPosted, sku);

@@ -16,7 +16,8 @@ REQUIRE System,
         WholesalePrice,
         MasterData,
         RomanLogicsModule,
-        WHtoSDirect;
+        WHtoSDirect,
+        WHtoSTransit;
 
 PRIORITY RomanLogicsModule, Stock;
 
@@ -32,25 +33,31 @@ shortNameUOMSfromWHDetail 'Единица измерения' (SfromWHDetail) = 
 @defineRBCorrespondingDocument(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
 
 
-WHtoSDirSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSDirPosted(SfromWH) IN idGroup;
-SfromWHWHtoSDir (WHtoSDir) = GROUP UNIQUE SfromWH BY WHtoSDirSfromWH (SfromWH);
-CONSTRAINT WHtoSDirSfromWH(p1) == WHtoSDirSfromWH(p2) AND p1 != p2 CHECKED BY WHtoSDirSfromWH MESSAGE 'Расход задействован в другом приходе';
+WHtoSPostedSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSPosted(SfromWH) IN idGroup;
+SfromWHWHtoSPosted (WHtoSPosted) = GROUP UNIQUE SfromWH BY WHtoSPostedSfromWH (SfromWH);
+CONSTRAINT WHtoSPostedSfromWH(p1) == WHtoSPostedSfromWH(p2) AND p1 != p2 CHECKED BY WHtoSPostedSfromWH MESSAGE 'Расход задействован в другом приходе';
 
-numberSfromWH 'Номер' (SfromWH) = numberObject(WHtoSDirSfromWH(SfromWH)) IN documentHeaderGroup PERSISTENT;
-seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSDirSfromWH(SfromWH)) IN baseGroup PERSISTENT;
-seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSDirSfromWH(SfromWH)) PERSISTENT;
-//warehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoSDir(WHtoSDirSfromWH(SfromWH));      // todo: надо как-то подставить значение из расхода
-//nameWarehouseSfromWH 'Оптовый склад' (SfromWH) = name(warehouseSfromWH(SfromWH));
+numberSfromWH 'Номер док. расхода' (SfromWH) = numberObject(WHtoSPostedSfromWH(SfromWH)) IN documentHeaderGroup;
+seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSPostedSfromWH(SfromWH)) IN documentHeaderGroup;
+seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSPostedSfromWH(SfromWH));
+warehouseWarehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoSPosted(WHtoSPostedSfromWH(SfromWH));
+
+
+numberObject (SfromWH) <- PREV(numberSfromWH (SfromWH)) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
+seriesObject (SfromWH) <- PREV(seriesSfromWH (SfromWH)) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
+seriesNumberObject (SfromWH) <- PREV(seriesNumberSfromWH (SfromWH)) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
+warehouseSfromWH (SfromWH) <- warehouseWarehouseSfromWH (SfromWH) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
+
+//todo: Леша должен переделать ,чтобы подставлялись нужные значения.
+
 companyWarehouseSfromWH (SfromWH) = companyWarehouse(warehouseSfromWH(SfromWH));
 nameCompanyWarehouseSfromWH 'Поставщик' (SfromWH) = name(companyWarehouseSfromWH(SfromWH));
-//numberObject (SfromWH) <- PREV (numberSfromWH (SfromWH)) WHEN ASSIGNED (WHtoSDirSfromWH(SfromWH));
-
 storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
 
-CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSDir(WHtoSDirSfromWH(SfromWH))
-    CHECKED BY WHtoSDirSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
+CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSPosted(WHtoSPostedSfromWH(SfromWH))
+    CHECKED BY WHtoSPostedSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
 
 @defineDocumentDetailBasePrice(SfromWH);
@@ -68,7 +75,7 @@ CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSDir(WHtoSDirSfromWH(SfromWH))
 quantitySfromWHSku 'Количество принятое' (SfromWH, sku) = GROUP SUM quantitySfromWHDetail(SfromWHDetail)
                                           BY SfromWHSfromWHDetail(SfromWHDetail), skuSfromWHDetail(SfromWHDetail);
 
-quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSDirSku (WHtoSDirSfromWH(SfromWH), sku);
+quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSPostedSku (WHtoSPostedSfromWH(SfromWH), sku);
 
 diffQuantitySfromWHSku 'Разница' (SfromWH, sku) = quantitySfromWHSku(SfromWH, sku) (-) quantityOriginSfromWHSku(SfromWH, sku);
 
@@ -85,8 +92,8 @@ balanceBSkuSfromWHDetail 'Остаток до' (SfromWHDetail) = balanceBSkuStoc
 FORM SfromWH 'Приход на магазин'
     OBJECTS sf = SfromWH FIXED PANEL
     PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, quantitySfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH,
-                    invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH, noteSfromWH
-    PROPERTIES (sf) numberSfromWH, seriesSfromWH, nameWarehouseSfromWH
+                    invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH, noteSfromWH, numberSfromWH
+    PROPERTIES (sf) READONLY seriesObject, nameWarehouseSfromWH
 
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
@@ -127,7 +134,7 @@ DESIGN SfromWH FROM DEFAULT {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameDepartmentStoreSfromWH);
                     ADD PROPERTY (numberSfromWH);
-                    ADD PROPERTY (seriesSfromWH);
+                    ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateSfromWH);
                     ADD PROPERTY (timeSfromWH);
                 }
@@ -155,7 +162,7 @@ DESIGN SfromWH FROM DEFAULT {
 
 FORM SfromWHs 'Приходы на магазин'
     OBJECTS sf = SfromWH
-    PROPERTIES (sf) READONLY objectClassName, numberSfromWH, seriesSfromWH, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
+    PROPERTIES (sf) READONLY objectClassName, numberObject, seriesObject, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
                    countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH
 
     PROPERTIES (sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

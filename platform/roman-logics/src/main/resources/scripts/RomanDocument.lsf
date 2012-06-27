@@ -55,3 +55,4 @@ END
     @defineDialogSkuBarcode(dialogSku);
     @defineDialogSkuSupplier(dialogSku);
   //  @defineDialogSkuStorePrice(dialogSku);
+
