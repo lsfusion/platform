@@ -1,5 +1,8 @@
 package platform.server.form.view;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.*;
@@ -38,10 +41,9 @@ public class DefaultFormView extends FormView {
     public ContainerView getGridContainer(GroupObjectView treeGroup) { return gridContainers.get(treeGroup); }
     public ContainerView getGridContainer(GroupObjectEntity groupObject) { return getGridContainer(get(groupObject)); }
 
-    protected transient Map<GroupObjectView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectView, Map<AbstractGroup, ContainerView>>();
+    protected transient Table<Optional<GroupObjectView>, AbstractGroup, ContainerView> groupPropertyContainers = HashBasedTable.create();
     public ContainerView getGroupPropertyContainer(GroupObjectView groupObject, AbstractGroup group) {
-        Map<AbstractGroup, ContainerView> groupPropertyContainer = groupPropertyContainers.get(groupObject);
-        return groupPropertyContainer == null ? null : groupPropertyContainer.get(group);
+        return groupPropertyContainers.get(Optional.fromNullable(groupObject), group);
     }
     public ContainerView getGroupPropertyContainer(GroupObjectEntity groupObject, AbstractGroup group) { return getGroupPropertyContainer(get(groupObject), group); }
 
@@ -228,7 +230,6 @@ public class DefaultFormView extends FormView {
     }
 
     private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {
-
         while (groupAbstract != null) {
 
             while (groupAbstract != null && !groupAbstract.createContainer) {
@@ -237,15 +238,10 @@ public class DefaultFormView extends FormView {
 
             if (groupAbstract == null) break;
 
-            if (!groupPropertyContainers.containsKey(groupObject))
-                groupPropertyContainers.put(groupObject, new HashMap<AbstractGroup, ContainerView>());
-
-            ContainerView groupPropertyContainer;
-            if (groupPropertyContainers.get(groupObject).containsKey(groupAbstract))
-                groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupAbstract);
-            else {
+            ContainerView groupPropertyContainer = groupPropertyContainers.get(Optional.fromNullable(groupObject), groupAbstract);
+            if (groupPropertyContainer == null) {
                 groupPropertyContainer = createContainer(groupAbstract.caption, null, getPropertyGroupContainerSID(groupObject.entity, groupAbstract));
-                groupPropertyContainers.get(groupObject).put(groupAbstract, groupPropertyContainer);
+                groupPropertyContainers.put(Optional.fromNullable(groupObject), groupAbstract, groupPropertyContainer);
             }
 
             groupPropertyContainer.add(childComponent);
