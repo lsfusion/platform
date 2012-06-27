@@ -109,7 +109,7 @@ consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consign
 skuConsignmentDetail (consignmentDetail) = ABSTRACT sku (consignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
 
-//UOMConsignmentDetail (consignmentDetail) = UOMSku(skuConsignmentDetail(consignmentDetail));
+//UOMConsignmentDetail (consignmentDetail) = ABSTRACT UOM (consignmentDetail);
 //shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
 shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (consignmentDetail);
 

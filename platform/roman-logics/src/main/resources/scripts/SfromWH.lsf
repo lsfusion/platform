@@ -73,10 +73,25 @@ retailPriceSfromWHDetail(SfromWHDetail) <- retailPriceChangeSfromWHDetail(SfromW
 balanceBSkuSfromWHDetail 'Остаток до' (SfromWHDetail) = balanceBSkuStockDateTime(skuSfromWHDetail(SfromWHDetail), departmentStoreSfromWHDetail(SfromWHDetail), dateTimeSfromWHDetail(SfromWHDetail));
 
 
+toFillSfromWHDetailsSfromWH 'Заполнить документ из расхода' =  ACTION (SfromWH) {
+    FOR SfromWHWHtoSPosted(WHtoSPostedWHtoSPostedDetail(WHtoSPostedDetail)) == SfromWH DO {
+        ADDOBJ SfromWHDetail;
+        FOR d == addedObject() DO {
+            SET SfromWHSfromWHDetail(d) <- SfromWH AS SfromWH;
+            SET quantitySfromWHDetail (d) <- quantityWHtoSPostedDetail(WHtoSPostedDetail);
+            SET skuSfromWHDetail (d) <- skuWHtoSPostedDetail(WHtoSPostedDetail);
+            SET UOMSfromWHDetail (d) <- UOMWHtoSPostedDetail(WHtoSPostedDetail);
+            SET importerPriceSfromWHDetail (d) <- importerPriceWHtoSPostedDetail(WHtoSPostedDetail);
+            SET supplierPriceSfromWHDetail (d) <- supplierPriceWHtoSPostedDetail(WHtoSPostedDetail);
+            SET supplierVATSfromWHDetail (d) <- supplierVATWHtoSPostedDetail(WHtoSPostedDetail);
+        };
+    };
+} CONFIRM;
+
 FORM SfromWH 'Приход на магазин'
     OBJECTS sf = SfromWH FIXED PANEL
     PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, quantitySfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH,
-                    invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH, noteSfromWH, numberSfromWH
+                    invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH, noteSfromWH, numberSfromWH, toFillSfromWHDetailsSfromWH
     PROPERTIES (sf) READONLY seriesObject, nameWarehouseSfromWH
 
     OBJECTS d = SfromWHDetail
@@ -124,8 +139,14 @@ DESIGN SfromWH FROM DEFAULT {
                 }
                 NEW row11 {
                 childConstraints = TO THE RIGHT;
-                    title = 'Контрагент-поставщик';
-                    ADD PROPERTY (nameWarehouseSfromWH);
+                    NEW row111 {
+                        title = 'Контрагент-поставщик';
+                        ADD PROPERTY (nameWarehouseSfromWH);
+                    }
+                    NEW row112{
+                        title = 'Расход';
+                        ADD PROPERTY (toFillSfromWHDetailsSfromWH);
+                    }
                 }
                 ADD sf.documentPrmGroup;
             }

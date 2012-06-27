@@ -34,16 +34,17 @@ CONSTRAINT WHtoSDir IS WHtoSDir AND NOT companyWarehouse(warehouseWHtoSDir(WHtoS
 quantityOutAutoSkuLedger (ledger) += quantityWHtoSDirDetail (ledger);
 //descriptionSkuLedger (ledger) += descriptionWHtoSDirDetail (ledger);
 
-importerPriceWHtoSDirDetail 'Цена без НДС (ед.)' (WHtoSDirDetail) = DATA NUMERIC[14,3] (WHtoSDirDetail);
+importerPriceWHtoSDirDetail 'Цена изготовителя/импортера' (WHtoSDirDetail) = DATA NUMERIC[14,3] (WHtoSDirDetail);
+supplierPriceWHtoSDirDetail 'Цена поставщика без НДС' (WHtoSDirDetail) = DATA NUMERIC[14,3] (WHtoSDirDetail);
 
 importerPriceWHtoSDirSku 'Цена без НДС' (WHtoSDir, sku) = GROUP MAX importerPriceWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail), skuWHtoSDirDetail(WHtoSDirDetail);
 
 wholesalePriceWHtoSDirDetail 'Оптовая цена' (WHtoSDirDetail) =  priceWholesaleArticleDateTime(articleWHtoSDirDetail(WHtoSDirDetail), dateTimeWHtoSDirDetail(WHtoSDirDetail));
-importerPriceWHtoSDirDetail (WHtoSDirDetail) <- wholesalePriceWHtoSDirDetail(WHtoSDirDetail) WHEN CHANGED(skuWHtoSDirDetail(WHtoSDirDetail)) OR CHANGED (dateTimeWHtoSDirDetail(WHtoSDirDetail));
+supplierPriceWHtoSDirDetail (WHtoSDirDetail) <- wholesalePriceWHtoSDirDetail(WHtoSDirDetail) WHEN CHANGED(skuWHtoSDirDetail(WHtoSDirDetail)) OR CHANGED (dateTimeWHtoSDirDetail(WHtoSDirDetail));
 
-importerSumWHtoSDirDetail 'Стоимость без НДС' (WHtoSDirDetail) = importerPriceWHtoSDirDetail(WHtoSDirDetail) * quantityWHtoSDirDetail(WHtoSDirDetail);
+supplierSumWHtoSDirDetail 'Стоимость без НДС' (WHtoSDirDetail) = supplierPriceWHtoSDirDetail(WHtoSDirDetail) * quantityWHtoSDirDetail(WHtoSDirDetail);
 
-importerSumWHtoSDirDetailWHtoSDir 'Стоимость без НДС' (WHtoSDir)= GROUP SUM importerSumWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail) IN documentSumGroup;
+supplierSumWHtoSDirDetailWHtoSDir 'Стоимость без НДС' (WHtoSDir)= GROUP SUM supplierSumWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail) IN documentSumGroup;
 
 
 supplierVATWHtoSDirDetail(WHtoSDirDetail) = DATA range (WHtoSDirDetail);
@@ -54,14 +55,12 @@ valueSupplierVATWHtoSDirDetail 'НДС, %' (WHtoSDirDetail) = valueRateRangeDate
 CONSTRAINT taxRange(supplierVATWHtoSDirDetail(WHtoSDirDetail)) != tax.taxVAT CHECKED BY supplierVATWHtoSDirDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 
-//VATWHtoSDirDetail 'НДС, %' (WHtoSDirDetail) = DATA NUMERIC[10,5] (WHtoSDirDetail);
-
 sumSupplierVATWHtoSDirDetail 'Сумма НДС' (WHtoSDirDetail) = [X*Y/100](
-    importerSumWHtoSDirDetail(WHtoSDirDetail), valueSupplierVATWHtoSDirDetail(WHtoSDirDetail));
+    supplierSumWHtoSDirDetail(WHtoSDirDetail), valueSupplierVATWHtoSDirDetail(WHtoSDirDetail));
 
 sumSupplierVATWHtoSDirDetailWHtoSDir 'Сумма НДС' (WHtoSDir) = GROUP SUM sumSupplierVATWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail) IN documentSumGroup;
 
-sumInvoiceWHtoSDirDetail 'Стоимость с НДС' (WHtoSDirDetail) = importerSumWHtoSDirDetail(WHtoSDirDetail) (+) sumSupplierVATWHtoSDirDetail(WHtoSDirDetail);
+sumInvoiceWHtoSDirDetail 'Стоимость с НДС' (WHtoSDirDetail) = supplierSumWHtoSDirDetail(WHtoSDirDetail) (+) sumSupplierVATWHtoSDirDetail(WHtoSDirDetail);
 
 sumInvoiceWHtoSDirDetailWHtoSDir 'Стоимость с НДС' (WHtoSDir)= GROUP SUM sumInvoiceWHtoSDirDetail(WHtoSDirDetail) BY WHtoSDirWHtoSDirDetail(WHtoSDirDetail) IN documentSumGroup;
 
@@ -86,13 +85,13 @@ quantityWHtoSDirSku (WHtoSDir, sku) = GROUP SUM quantityWHtoSDirDetail(WHtoSDirD
 FORM WHtoSDir 'Расход на магазин (одно юрлицо)'
     OBJECTS w = WHtoSDir FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateWHtoSDir, timeWHtoSDir, nameWarehouseWHtoSDir, nameStoreWHtoSDir,
-                   quantityWHtoSDirDetailWHtoSDir, importerSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
+                   quantityWHtoSDirDetailWHtoSDir, supplierSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
                    sumInvoiceWHtoSDirDetailWHtoSDir, sumNetWeightWHtoSDir, packQuantityWHtoSDirDetailWHtoSDir, noteWHtoSDir
 
     OBJECTS d = WHtoSDirDetail
     PROPERTIES(d) indexWHtoSDirDetail, barcodeWHtoSDirDetail, nameSkuWHtoSDirDetail, nameBrandWHtoSDirDetail, sidArticleWHtoSDirDetail,
                   nameCategoryWHtoSDirDetail, sidColorWHtoSDirDetail, nameColorWHtoSDirDetail, shortNameUOMWHtoSDirDetail, balanceBSkuWHtoSDirDetail,
-                  quantityWHtoSDirDetail, importerPriceWHtoSDirDetail, importerSumWHtoSDirDetail, numberSupplierVATWHtoSDirDetail, valueSupplierVATWHtoSDirDetail,
+                  quantityWHtoSDirDetail, importerPriceWHtoSDirDetail, supplierPriceWHtoSDirDetail, supplierSumWHtoSDirDetail, numberSupplierVATWHtoSDirDetail, valueSupplierVATWHtoSDirDetail,
                   sumSupplierVATWHtoSDirDetail, sumInvoiceWHtoSDirDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoSDirDetailWHtoSDir, addDetailDialogBarcodeWHtoSDirDetailWHtoSDir,
@@ -143,7 +142,7 @@ DESIGN WHtoSDir FROM DEFAULT {
 FORM WHtoSDirs 'Расходы на магазин (одно юрлицо)'
     OBJECTS w = WHtoSDir
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoSDir, timeWHtoSDir, nameWarehouseWHtoSDir, nameStoreWHtoSDir,
-                   countWHtoSDirDetailWHtoSDir, quantityWHtoSDirDetailWHtoSDir, importerSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
+                   countWHtoSDirDetailWHtoSDir, quantityWHtoSDirDetailWHtoSDir, supplierSumWHtoSDirDetailWHtoSDir, sumSupplierVATWHtoSDirDetailWHtoSDir,
                    sumInvoiceWHtoSDirDetailWHtoSDir, packQuantityWHtoSDirDetailWHtoSDir, sumNetWeightWHtoSDir
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -159,7 +158,7 @@ FORM WHtoSDirs 'Расходы на магазин (одно юрлицо)'
 
     OBJECTS d = WHtoSDirDetail
     PROPERTIES(d) READONLY indexWHtoSDirDetail, barcodeWHtoSDirDetail, nameSkuWHtoSDirDetail, shortNameUOMWHtoSDirDetail,
-                  quantityWHtoSDirDetail, importerPriceWHtoSDirDetail, importerSumWHtoSDirDetail, numberSupplierVATWHtoSDirDetail, valueSupplierVATWHtoSDirDetail,
+                  quantityWHtoSDirDetail, importerPriceWHtoSDirDetail, supplierPriceWHtoSDirDetail, supplierSumWHtoSDirDetail, numberSupplierVATWHtoSDirDetail, valueSupplierVATWHtoSDirDetail,
                   sumSupplierVATWHtoSDirDetail, sumInvoiceWHtoSDirDetail
 
     FILTERS inWHtoSDirWHtoSDirDetail(w, d)
@@ -234,10 +233,10 @@ consignmentConsignmentDetail (consignmentDetail) += WHtoSDirWHtoSDirDetail (cons
 skuConsignmentDetail (consignmentDetail) += skuWHtoSDirDetail (consignmentDetail);
 shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHtoSDirDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityWHtoSDirDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += importerPriceWHtoSDirDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += supplierPriceWHtoSDirDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += valueSupplierVATWHtoSDirDetail (consignmentDetail);
 sumVATConsignmentDetail (consignmentDetail) += sumSupplierVATWHtoSDirDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += importerSumWHtoSDirDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += supplierSumWHtoSDirDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceWHtoSDirDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHtoSDirDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityWHtoSDirDetail(consignmentDetail);
@@ -261,3 +260,15 @@ invoiceVATSumWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += sumSupplierVATWHtoSDir
 invoiceSumWHtoSPostedDetailWHtoSPosted(WHtoSPosted) += sumInvoiceWHtoSDirDetailWHtoSDir (WHtoSPosted);
 
 quantityWHtoSPostedSku(WHtoSPosted, sku) +=  quantityWHtoSDirSku(WHtoSPosted, sku);
+
+//---------------------------- Закрытый расход Detail----------------------------
+
+WHtoSPostedWHtoSPostedDetail (WHtoSPostedDetail) += WHtoSDirWHtoSDirDetail (WHtoSPostedDetail);
+
+skuWHtoSPostedDetail (WHtoSPostedDetail) += skuWHtoSDirDetail (WHtoSPostedDetail);
+UOMWHtoSPostedDetail (WHtoSPostedDetail) += UOMWHtoSDirDetail (WHtoSPostedDetail);
+quantityWHtoSPostedDetail (WHtoSPostedDetail) += quantityWHtoSDirDetail (WHtoSPostedDetail);
+importerPriceWHtoSPostedDetail (WHtoSPostedDetail) += importerPriceWHtoSDirDetail (WHtoSPostedDetail);
+supplierPriceWHtoSPostedDetail (WHtoSPostedDetail) += supplierPriceWHtoSDirDetail (WHtoSPostedDetail);
+supplierVATWHtoSPostedDetail(WHtoSPostedDetail) += supplierVATWHtoSDirDetail (WHtoSPostedDetail);
+

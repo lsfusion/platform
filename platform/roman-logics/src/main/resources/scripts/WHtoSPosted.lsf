@@ -7,7 +7,6 @@ REQUIRE System,
         Numerator,
         Document,
         RomanDocument,
-        Consignment,
         Declaration,
         WholesalePrice,
         MasterData,
@@ -16,6 +15,8 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS ABSTRACT WHtoSPosted 'Расход на магазин закрытый': numberedObject;
+CLASS ABSTRACT WHtoSPostedDetail 'Строка расхода на магазин';
+
 
 dateWHtoSPosted 'Дата' (WHtoSPosted) = ABSTRACT DATE (WHtoSPosted);
 timeWHtoSPosted 'Время' (WHtoSPosted) = ABSTRACT TIME (WHtoSPosted);
@@ -29,6 +30,39 @@ invoiceVATSumWHtoSPostedDetailWHtoSPosted 'Сумма НДС поставщик�
 invoiceSumWHtoSPostedDetailWHtoSPosted 'Сумма поставщика с НДС' (WHtoSPosted) = ABSTRACT NUMERIC[16,2] (WHtoSPosted);
 
 quantityWHtoSPostedSku 'Кол-во плановое' (WHtoSPosted, sku) = ABSTRACT NUMERIC[16,2] (WHtoSPosted, sku);
+
+//--------------------------Detail----------------------------------------------
+
+WHtoSPostedWHtoSPostedDetail (WHtoSPostedDetail) = ABSTRACT WHtoSPosted (WHtoSPostedDetail);
+
+skuWHtoSPostedDetail (WHtoSPostedDetail) = ABSTRACT sku (WHtoSPostedDetail);
+UOMWHtoSPostedDetail (WHtoSPostedDetail) = ABSTRACT UOM (WHtoSPostedDetail);
+quantityWHtoSPostedDetail 'Количество' (WHtoSPostedDetail) = ABSTRACT NUMERIC[14,3] (WHtoSPostedDetail);
+importerPriceWHtoSPostedDetail 'Цена изготовителя/импортера' (WHtoSPostedDetail) = ABSTRACT NUMERIC[14,2] (WHtoSPostedDetail);
+supplierPriceWHtoSPostedDetail 'Цена поставщика без НДС' (WHtoSPostedDetail) = ABSTRACT NUMERIC[14,2] (WHtoSPostedDetail);
+
+//importerSumWHtoSPostedDetail 'Стоимость без НДС' (WHtoSPostedDetail) = ABSTRACT NUMERIC[16,2] (WHtoSPostedDetail);
+supplierVATWHtoSPostedDetail(WHtoSPostedDetail) = ABSTRACT range (WHtoSPostedDetail);
+CONSTRAINT taxRange(supplierVATWHtoSPostedDetail(WHtoSPostedDetail)) != tax.taxVAT CHECKED BY supplierVATWHtoSPostedDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+//sumVATWHtoSPostedDetail 'Сумма НДС' (WHtoSPostedDetail) = ABSTRACT NUMERIC[16,2] (WHtoSPostedDetail);
+//sumInvoiceWHtoSPostedDetail 'Сумма с НДС' (WHtoSPostedDetail) = ABSTRACT NUMERIC[16,2] (WHtoSPostedDetail);
+
+
+//    barcodeWHtoSPostedDetail 'Штрих-код' (object##Detail) = barcode(skuWHtoSPostedDetail(WHtoSPostedDetail));
+//
+//    sidSizeWHtoSPostedDetail 'Размер' (WHtoSPostedDetail) = sidSizeSupplierItem(skuWHtoSPostedDetail(WHtoSPostedDetail));
+//    sidColorWHtoSPostedDetail 'Цвет (код)' (WHtoSPostedDetail) = sidColorSupplierItem(skuWHtoSPostedDetail(WHtoSPostedDetail));
+//    nameColorWHtoSPostedDetail 'Цвет' (WHtoSPostedDetail) = nameColorSupplierItem(skuWHtoSPostedDetail(WHtoSPostedDetail));
+//
+//    articleWHtoSPostedDetail 'Артикул (ИД)' (WHtoSPostedDetail) = articleSku(skuWHtoSPostedDetail(WHtoSPostedDetail)) IN idGroup;
+//    sidArticleWHtoSPostedDetail 'Артикул' (WHtoSPostedDetail) = sidArticle(articleWHtoSPostedDetail(WHtoSPostedDetail));
+//
+//    brandWHtoSPostedDetail 'Бренд (ИД)' (WHtoSPostedDetail) = brandSupplierArticle(articleWHtoSPostedDetail(WHtoSPostedDetail)) IN idGroup;
+//    nameBrandWHtoSPostedDetail 'Бренд' (WHtoSPostedDetail) = name(brandWHtoSPostedDetail(WHtoSPostedDetail));
+//
+//    categoryWHtoSPostedDetail 'Номенклатурная группа (ИД)' (WHtoSPostedDetail) = categoryArticle(articleWHtoSPostedDetail(WHtoSPostedDetail)) IN idGroup;
+//    nameCategoryWHtoSPostedDetail 'Номенклатурная группа' (WHtoSPostedDetail) = name(categoryWHtoSPostedDetail(WHtoSPostedDetail));
 
 
 FORM WHtoSPostedDialog 'Расходы на магазин'
