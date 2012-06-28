@@ -39,19 +39,23 @@ noteContract 'Примечание' = DATA TEXT (contract) MINCHARWIDTH 50 PREFC
 // ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
 
 META defineContractDefault (contract, partyA, partyB)
+    @defineContractDefaultCustom(contract, partyA, partyB, partyA, partyB);
+END
+
+META defineContractDefaultCustom (contract, partyA, partyB, prefixA, prefixB)
     data###contract###partyA###partyB = DATA contract (partyA, partyB);
 
-    CONSTRAINT partyA != partyA###contract(data###contract###partyA###partyB(partyA, partyB)) CHECKED BY data###contract###partyA###partyB
+    CONSTRAINT partyA != prefixA###contract(data###contract###partyA###partyB(partyA, partyB)) CHECKED BY data###contract###partyA###partyB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
-    CONSTRAINT partyB != partyB###contract(data###contract###partyA###partyB(partyA, partyB)) CHECKED BY data###contract###partyA###partyB
+    CONSTRAINT partyB != prefixB###contract(data###contract###partyA###partyB(partyA, partyB)) CHECKED BY data###contract###partyA###partyB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
 
-    contract###partyA###partyB (partyA, partyB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
-                                                         BY partyA###contract(contract), partyB###contract(contract)](partyA, partyB) OR
-                                                  data###contract###partyA###partyB(partyA, partyB);
-    number###contract###partyA###partyB 'Основной договор' (partyA, partyB) = numberContract(contract###partyA###partyB(partyA, partyB));
+    contract###partyA###partyB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
+                                                         BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB) OR
+                                                  data###contract###partyA###partyB(pA, pB);
+    number###contract###partyA###partyB 'Основной договор' (pA, pB) = numberContract(contract###partyA###partyB(pA, pB));
 
-    is###partyA###partyB###contract 'Основной' (partyA, partyB, contract) = contract###partyA###partyB (partyA, partyB) == contract;
+    is###partyA###partyB###contract 'Основной' (pA, pB, contract) = contract###partyA###partyB (pA, pB) == contract;
 END
 
 // Формы
@@ -97,3 +101,72 @@ FORM contractSku 'Договор на поставку товаров'
 
     EDIT contract OBJECT c
 ;
+
+// --------------------------------------- Договора между юрлицами ------------------------------------- //
+
+CLASS contractSkuCompany 'Договор на поставку между компаниями' : contractSku;
+
+companyAContractSkuCompany = DATA company (contractSkuCompany) AUTOSET;
+nameCompanyAContractSkuCompany 'Компания (поставщик)' (contract) = name(companyAContractSkuCompany(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyAContract (contract) += companyAContractSkuCompany(contract);
+
+companyBContractSkuCompany = DATA company (contractSkuCompany) AUTOSET;
+nameCompanyBContractSkuCompany 'Компания (покупатель)' (contract) = name(companyBContractSkuCompany(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyBContract (contract) += companyBContractSkuCompany(contract);
+
+@defineContractDefaultCustom(contractSkuCompany, company, company, companyA, companyB);
+
+// Формы
+FORM contractSkuCompany 'Договор'
+    OBJECTS c=contractSkuCompany FIXED PANEL
+    PROPERTIES(c) nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany,
+                  numberContract, dateFromContract, dateToContract,
+                  nameCurrencyContract, noteContract,
+                  nameTypeContractSku, dialogTypeContractSku,
+                  nameFormContractSku, dialogFormContractSku,
+                  delayContractSku, dialogDelayContractSku
+
+    EDIT contractSkuCompany OBJECT c
+;
+
+FORM contractsSkuCompany 'Договора'
+    OBJECTS c=contractSkuCompany
+    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
+                           nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    ORDER BY dateFromContract
+
+    DIALOG contractSkuCompany OBJECT c
+;
+
+EXTEND FORM company
+
+    OBJECTS cb=company
+    PROPERTIES(cb) name
+    PROPERTIES(co, cb)    numberContractSkuCompanyCompanyCompany
+
+    OBJECTS cc=contractSkuCompany
+    PROPERTIES(cc)  READONLY numberContract, dateFromContract, dateToContract,
+                            nameTypeContractSku, nameFormContractSku, delayContractSku,
+                            nameCurrencyContract, noteContract
+    PROPERTIES(co, cb, cc) isCompanyCompanyContractSkuCompany
+    PROPERTIES(cc)  ADDFORM, EDITFORM, delete
+    FILTERS companyAContractSkuCompany(cc) == co,
+            companyBContractSkuCompany(cc) == cb
+;
+
+EXTEND DESIGN company {
+    extendContainer {
+        NEW companyContractSku {
+            title = 'Договора между компаниями';
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD cb.box;
+            ADD cc.box {
+                fillHorizontal = 2;
+            }
+        }
+    }
+}

@@ -3152,7 +3152,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 
 @defineDocumentBasePostedDepartmentStoreItem(shipment);
 
-@defineDocumentHeaderSupplierContract(shipment);
+@defineDocumentHeaderSupplierContractDepartmentStore(shipment);
 @defineDocumentHeaderPriceChange(shipment);
 
 @defineDocumentDetailItemExtra(shipment);
@@ -3750,7 +3750,7 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 
 @defineDocumentBasePostedDepartmentStoreItem(returnSupplier);
 
-@defineDocumentHeaderSupplierContract(returnSupplier);
+@defineDocumentHeaderSupplierContractDepartmentStore(returnSupplier);
 @defineDocumentHeaderPriceChange(returnSupplier);
 
 @defineDocumentDetailItemExtra(returnSupplier);
@@ -9682,6 +9682,8 @@ NAVIGATOR {
             ADD contractSku;
             ADD contractSkuSupplier;
             ADD contractsSkuSupplier;
+            ADD contractSkuCompany;
+            ADD contractsSkuCompany;
             ADD cashRegisterModel;
             ADD scalesModel;
             ADD priceCheckerModel;
