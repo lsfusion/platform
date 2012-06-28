@@ -1787,6 +1787,7 @@ followsStatement
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<Integer> options = new ArrayList<Integer>();
 	List<Boolean> sessions = new ArrayList<Boolean>();
+	boolean inSession = false;
 }
 @after {
 	if (inPropParseState()) {
@@ -1795,17 +1796,19 @@ followsStatement
 }
 	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }
 		'=>'
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType)?
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType { inSession = $session.session; })?
 		{
 			props.add($firstExpr.property); 
 			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-			sessions.add(session == null ? false : $session.session);
+			sessions.add(inSession);
 		}
-		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType)?
+		(','
+			{	inSession = false;	} 
+			nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType { inSession = $session.session; })?
 			{
 		     	props.add($nextExpr.property); 
 		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-				sessions.add(session == null ? false : $session.session);
+				sessions.add(inSession);
 			}
 		)*
 		';'
