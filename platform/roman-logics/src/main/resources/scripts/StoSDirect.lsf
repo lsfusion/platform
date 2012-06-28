@@ -36,9 +36,6 @@ CONSTRAINT StoSDir IS StoSDir AND NOT companyStore(senderStoreStoSDir(StoSDir)) 
 //quantityOutAutoSkuLedger (ledger) += quantityStoSDirDetail (ledger);
 //descriptionSkuLedger (ledger) += descriptionStoSDirDetail (ledger);
 
-balanceBSkuStoSDirDetail 'Остаток до' (StoSDirDetail) = balanceBSkuStockDateTime(skuStoSDirDetail(StoSDirDetail), departmentStoreStoSDirDetail(StoSDirDetail), dateTimeStoSDirDetail(StoSDirDetail));
-
-
 FORM StoSDir 'Перемещение (расход) на магазин (одно юрлицо)'
     OBJECTS s = StoSDir FIXED PANEL
     PROPERTIES (s) numberObject, seriesObject, dateStoSDir, timeStoSDir, nameDepartmentStoreStoSDir, nameStoreStoSDir,

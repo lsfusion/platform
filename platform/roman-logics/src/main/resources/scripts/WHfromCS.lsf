@@ -25,18 +25,15 @@ CLASS WHfromCSDetail 'Строка прихода на склад' : inTransferS
 //создание документа через метакод
 skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail) IN idGroup;
 @defineRBCorrespondingDocument(WHfromCS, warehouse, 'Оптовый склад', sku, 'Расход с СВХ', customStore, 'СВХ');
+@defineUniqueDocumentComingByExpense(WHfromCS, CStoWH);
 
 quantityInTransferSkuLedger (ledger) += quantityWHfromCSDetail(ledger);
-//задание связки расход-приход
-CStoWHWHfromCS 'Расход прихода (ИД)' = DATA CStoWHPosted(WHfromCS) IN idGroup;
-WHfromCSCStoWH (CStoWH) = GROUP UNIQUE WHfromCS BY CStoWHWHfromCS (WHfromCS);
-CONSTRAINT CStoWHWHfromCS(p1) == CStoWHWHfromCS(p2) AND p1 != p2 CHECKED BY CStoWHWHfromCS MESSAGE 'Расход задействован в другом приходе';
 
 numberCStoWHWHfromCS 'Номер' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
 seriesCStoWHWHfromCS 'Серия' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
 seriesNumberWHfromCS 'Серия/Номер' (WHfromCS) = seriesNumberObject(CStoWHWHfromCS(WHfromCS)) PERSISTENT;
 
-numberObject (WHfromCS) <- PREV (numberCStoWHWHfromCS (WHfromCS)) WHEN ASSIGNED (CStoWHWHfromCS(WHfromCS));
+//numberObject (WHfromCS) <- PREV (numberCStoWHWHfromCS (WHfromCS)) WHEN ASSIGNED (CStoWHWHfromCS(WHfromCS));
 
 inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
 

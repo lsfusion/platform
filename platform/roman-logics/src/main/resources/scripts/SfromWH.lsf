@@ -70,9 +70,6 @@ retailPriceChangeSfromWHDetail(SfromWHDetail) = UNION OVERRIDE priceBasePriceSet
 retailPriceSfromWHDetail(SfromWHDetail) <- retailPriceChangeSfromWHDetail(SfromWHDetail) WHEN CHANGED (dateTimeSfromWHDetail(SfromWHDetail))
                                                                                            OR CHANGED (skuSfromWHDetail(SfromWHDetail));
 
-balanceBSkuSfromWHDetail 'Остаток до' (SfromWHDetail) = balanceBSkuStockDateTime(skuSfromWHDetail(SfromWHDetail), departmentStoreSfromWHDetail(SfromWHDetail), dateTimeSfromWHDetail(SfromWHDetail));
-
-
 toFillSfromWHDetailsSfromWH 'Заполнить документ из расхода' =  ACTION (SfromWH) {
     FOR SfromWHWHtoSPosted(WHtoSPostedWHtoSPostedDetail(WHtoSPostedDetail)) == SfromWH DO {
         ADDOBJ SfromWHDetail;

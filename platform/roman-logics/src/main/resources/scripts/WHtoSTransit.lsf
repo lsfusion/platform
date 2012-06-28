@@ -78,9 +78,6 @@ packQuantityWHtoSTrDetail 'Количество грузовых мест' (WHto
 
 packQuantityWHtoSTrDetailWHtoSTr 'Общее количество грузовых мест' (WHtoSTr) = GROUP SUM packQuantityWHtoSTrDetail(WHtoSTrDetail) BY WHtoSTrWHtoSTrDetail(WHtoSTrDetail) IN documentSumGroup;
 
-balanceBSkuWHtoSTrDetail 'Остаток до' (WHtoSTrDetail) = balanceBSkuStockDateTime(skuWHtoSTrDetail(WHtoSTrDetail), warehouseWHtoSTrDetail(WHtoSTrDetail), dateTimeWHtoSTrDetail(WHtoSTrDetail));
-
-
 quantityWHtoSTrSku (WHtoSTr, sku) = GROUP SUM quantityWHtoSTrDetail(WHtoSTrDetail)
                                           BY WHtoSTrWHtoSTrDetail(WHtoSTrDetail), skuWHtoSTrDetail(WHtoSTrDetail);
 

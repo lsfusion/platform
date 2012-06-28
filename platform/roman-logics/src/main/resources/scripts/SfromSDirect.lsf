@@ -24,17 +24,23 @@ CLASS SfromSDir 'Перемещение (приход) на магазин (од
 CLASS SfromSDirDetail 'Строка перемещения (приход) на магазин (одно юрлицо)' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS SfromSDirPosted 'Закрытое перемещение (приход) на магазин (одно юрлицо)' : SfromSDir, postedObject;
 
-@defineDocumentBasePosted(SfromSDir);
-@defineDocumentStock(SfromSDir, departmentStore, 'Отдел документа');
 
-StoSDirSfromSDir 'Расход прихода (ИД)' (SfromSDir) = DATA StoSDirPosted(SfromSDir) IN idGroup;
-SfromSDirStoSDir (StoSDir) = GROUP UNIQUE SfromSDir BY StoSDirSfromSDir (SfromSDir);
+skuSfromSDirDetail 'Товар (ИД)' (SfromSDirDetail) = DATA sku (SfromSDirDetail)IN idGroup;
+nameSkuSfromSDirDetail 'Наименование товара' (SfromSDirDetail) = nameSku(skuSfromSDirDetail(SfromSDirDetail));
 
-CONSTRAINT StoSDirSfromSDir(p1) == StoSDirSfromSDir(p2) AND p1 != p2 CHECKED BY StoSDirSfromSDir MESSAGE 'Расход задействован в другом приходе';
 
-numberSfromSDir 'Номер' (SfromSDir) = numberObject(StoSDirSfromSDir(SfromSDir)) IN documentHeaderGroup PERSISTENT;
-seriesSfromSDir 'Серия' (SfromSDir) = seriesObject(StoSDirSfromSDir(SfromSDir)) IN baseGroup PERSISTENT;
-seriesNumberSfromSDir 'Серия/Номер' (SfromSDir) = seriesNumberObject(StoSDirSfromSDir(SfromSDir)) PERSISTENT;
+@defineRBCorrespondingDocumentWithRetailPrices(SfromSDir, departmentStore, 'Отдел документа', sku, 'Перемещение (приход) на магазин (одно юрлицо)', store, 'Магазин-отправитлеь');
+@defineDocumentDetailPackWeightSku(SfromSDir);
+@defineDocumentHeaderSkuQuantity(SfromSDir);
+@defineUniqueDocumentComingByExpense(SfromSDir, StoSDir);
+@defineDocumentHeaderOriginSkuQuantity (SfromSDir, StoSDir);
+
+recipientStoreSfromSDir 'Магазин документа (ИД)' (SfromSDir) = storeDepartmentStore(departmentStoreSfromSDir(SfromSDir));
+nameRecipientStoreSfromSDir 'Магазин документа' (SfromSDir)  = name(recipientStoreSfromSDir(SfromSDir)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+CONSTRAINT SfromSDir IS SfromSDir AND NOT companyStore(recipientStoreSfromSDir(SfromSDir)) == companyStore(storeSfromSDir(SfromSDir))
+    CHECKED BY storeSfromSDir  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
+
 
 senderDepartmentStoreSfromSDir 'Отдел-отправитель(ИД)' (SfromSDir) = departmentStoreStoSDir(StoSDirSfromSDir(SfromSDir));
 nameSenderDepartmentStoreSfromSDir 'Отдел-отправитель' (SfromSDir) = name(senderDepartmentStoreSfromSDir(SfromSDir));
@@ -42,107 +48,46 @@ nameSenderDepartmentStoreSfromSDir 'Отдел-отправитель' (SfromSDi
 senderStoreSfromSDir 'Магазин-отправитель (ИД)' (SfromSDir) = storeStoSDir(StoSDirSfromSDir(SfromSDir));
 nameSenderStoreSfromSDir 'Магазин-отправитель' (SfromSDir)= name(senderStoreSfromSDir(SfromSDir));
 
-recipientStoreSfromSDir 'Магазин-получатель (ИД)' (SfromSDir) = storeStoSDir(StoSDirSfromSDir(SfromSDir));
-nameRecipientStoreSfromSDir 'Магазин-получатель' (SfromSDir)= name(recipientStoreSfromSDir(SfromSDir));
 
-storeSfromSDir (SfromSDir) = storeDepartmentStore(departmentStoreSfromSDir(SfromSDir));
-nameStoreSfromSDir 'Магазин' (SfromSDir) = name(storeSfromSDir(SfromSDir));
-
-CONSTRAINT storeSfromSDir(SfromSDir) != recipientStoreSfromSDir(SfromSDir)
-    CHECKED BY recipientStoreSfromSDir  MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
-
-@defineDocumentDetailQuantity(SfromSDir); // к-во детайл
-@defineDocumentHeaderQuantity(SfromSDir); // к-во всего
-
-descriptionSfromSDir 'Название документа' (SfromSDir) =
-    [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
-    'Перемещение (приход) на магазин (одно юрлицо)', seriesNumberSfromSDir(SfromSDir), dateSfromSDir(SfromSDir));
-descriptionSfromSDirDetail 'Название документа' (SfromSDirDetail) = descriptionSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail));
+CONSTRAINT SfromSDir IS SfromSDir AND NOT storeSfromSDir(SfromSDir) == senderStoreSfromSDir(SfromSDir)
+    CHECKED BY senderStoreSfromSDir  MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
 
-inStoSDirSfromSDir (StoSDir, SfromSDir) = StoSDirSfromSDir(SfromSDir) == StoSDir;
+retailPriceChangeSfromSDirDetail(SfromSDirDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuSfromSDirDetail(SfromSDirDetail)), dateTimeSfromSDirDetail(SfromSDirDetail)),
+                                                               priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuSfromSDirDetail(SfromSDirDetail)), dateTimeSfromSDirDetail(SfromSDirDetail));
 
-skuSfromSDirDetail 'Товар (ИД)' (SfromSDirDetail) = DATA sku(SfromSDirDetail) IN idGroup;
-@defineDocumentDetailProps (SfromSDir);  // ш-к, цвет, бренд, и т.д.
+retailPriceSfromSDirDetail(SfromSDirDetail) <- retailPriceChangeSfromSDirDetail(SfromSDirDetail) WHEN CHANGED (dateTimeSfromSDirDetail(SfromSDirDetail))
+                                                                                           OR CHANGED (skuSfromSDirDetail(SfromSDirDetail));
 
+toFillSfromSDirDetailsSfromSDir 'Заполнить документ из расхода' =  ACTION (SfromSDir) {
+    FOR SfromSDirStoSDir(StoSDirStoSDirDetail(StoSDirDetail)) == SfromSDir DO {
+        ADDOBJ SfromSDirDetail;
+        FOR d == addedObject() DO {
+            SET SfromSDirSfromSDirDetail(d) <- SfromSDir AS SfromSDir;
+            SET quantitySfromSDirDetail (d) <- quantityStoSDirDetail(StoSDirDetail);
+            SET skuSfromSDirDetail (d) <- skuStoSDirDetail(StoSDirDetail);
+            SET UOMSfromSDirDetail (d) <- UOMStoSDirDetail(StoSDirDetail);
+        };
+    };
+} CONFIRM;
 
-quantitySfromSDirDetailSkuSfromSDir 'Количество принятое' (sku, SfromSDir) = GROUP SUM quantitySfromSDirDetail(SfromSDirDetail)
-                                          BY skuSfromSDirDetail(SfromSDirDetail), SfromSDirSfromSDirDetail(SfromSDirDetail);
-
-quantityOriginSfromSDirDetailSkuSfromSDir 'Кол-во плановое' (sku, SfromSDir) = quantityStoSDirDetailSkuStoSDir(sku, StoSDirSfromSDir(SfromSDir));
-
-diffQuantitySfromSDirDetailSkuSfromSDir 'Разница' (sku, SfromSDir) = quantitySfromSDirDetailSkuSfromSDir(sku, SfromSDir) (-) quantityOriginSfromSDirDetailSkuSfromSDir(sku, SfromSDir);
-
-
-@defineAddDetailDialogSkuStock(SfromSDir, sku, departmentStore, dialogSku);
-
-@implementSkuLedger (SfromSDir, sku, departmentStore);
-
-nameSkuSfromSDirDetail 'Наименование товара' (SfromSDirDetail) = nameSku(skuSfromSDirDetail(SfromSDirDetail));
-
-retailPriceSfromSDirDetail 'Розничная цена (ед.)' (SfromSDirDetail) = DATA NUMERIC[14,3] (SfromSDirDetail);
-
-//retailPriceSfromSDirDetail(SfromSDirDetail) <- retailPriceStoSDirDetailStoSDirSku(
-//    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
-//    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
-
-retailSumSfromSDirDetail 'Розничная сумма' (SfromSDirDetail) = retailPriceSfromSDirDetail(SfromSDirDetail) * quantitySfromSDirDetail(SfromSDirDetail);
-retailSumSfromSDirDetailSfromSDir 'Розничная сумма' (SfromSDir)= GROUP SUM retailSumSfromSDirDetail(SfromSDirDetail)
-    BY SfromSDirSfromSDirDetail(SfromSDirDetail) IN documentSumGroup;
-
-retailVATSfromSDirDetail(SfromSDirDetail) = DATA range (SfromSDirDetail);
-numberRetailVATSfromSDirDetail 'НДС, номер' (SfromSDirDetail) = numberRange(retailVATSfromSDirDetail(SfromSDirDetail));
-valueRetailVATSfromSDirDetail 'НДС, %' (SfromSDirDetail) = valueRateRangeDate
-    (retailVATSfromSDirDetail(SfromSDirDetail), dateSfromSDirDetail(SfromSDirDetail));
-
-//retailVATSfromSDirDetail(SfromSDirDetail) <- retailVATStoSDirDetailStoSDirSku(
-//    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
-//    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
-
-CONSTRAINT taxRange(retailVATSfromSDirDetail(SfromSDirDetail)) != tax.taxVAT CHECKED BY retailVATSfromSDirDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-
-sumRetailVATSfromSDirDetail 'Сумма НДС' (SfromSDirDetail) = [X*Y/100](
-    retailSumSfromSDirDetail(SfromSDirDetail), valueRetailVATSfromSDirDetail(SfromSDirDetail));
-
-sumRetailVATSfromSDirDetailSfromSDir 'Сумма НДС' (SfromSDir) = GROUP SUM sumRetailVATSfromSDirDetail(SfromSDirDetail)
-    BY SfromSDirSfromSDirDetail(SfromSDirDetail) IN documentSumGroup;
-
-importerSumSfromSDirDetail 'Стоимость без НДС' (SfromSDirDetail) = retailSumSfromSDirDetail(SfromSDirDetail) (-) sumRetailVATSfromSDirDetail(SfromSDirDetail);
-
-importerSumSfromSDirDetailSfromSDir 'Стоимость без НДС' (SfromSDir)= GROUP SUM importerSumSfromSDirDetail(SfromSDirDetail) BY SfromSDirSfromSDirDetail(SfromSDirDetail) IN documentSumGroup;
-
-
-netWeightSfromSDirDetail 'Вес (ед.)' (SfromSDirDetail) = netWeightSku(skuSfromSDirDetail(SfromSDirDetail));
-
-sumNetWeightSfromSDirDetail 'Общая масса груза, кг.' (SfromSDirDetail) = netWeightSfromSDirDetail(SfromSDirDetail)*quantitySfromSDirDetail(SfromSDirDetail);
-
-sumNetWeightSfromSDir 'Общая масса груза, кг.' (SfromSDir) = GROUP SUM sumNetWeightSfromSDirDetail(SfromSDirDetail) BY SfromSDirSfromSDirDetail(SfromSDirDetail) IN documentSumGroup;
-
-packQuantitySfromSDirDetail 'Количество грузовых мест' (SfromSDirDetail) = round0(quantitySfromSDirDetail(SfromSDirDetail)/
-    UNION OVERRIDE 1 IF SfromSDirDetail IS SfromSDirDetail, quantityPackSku(skuSfromSDirDetail(SfromSDirDetail)));
-
-packQuantitySfromSDirDetailSfromSDir 'Общее количество грузовых мест' (SfromSDir) = GROUP SUM packQuantitySfromSDirDetail(SfromSDirDetail) BY SfromSDirSfromSDirDetail(SfromSDirDetail) IN documentSumGroup;
-
-balanceBSkuSfromSDirDetail 'Остаток до' (SfromSDirDetail) = balanceBSkuStockDateTime(skuSfromSDirDetail(SfromSDirDetail), departmentStoreSfromSDirDetail(SfromSDirDetail), dateTimeSfromSDirDetail(SfromSDirDetail));
-
-@defineAddDetailDialogBarcode(SfromSDir, sku);
 
 FORM SfromSDir 'Перемещение (приход) на магазин (одно юрлицо)'
     OBJECTS s = SfromSDir FIXED PANEL
-    PROPERTIES (s) numberSfromSDir, seriesSfromSDir, dateSfromSDir, timeSfromSDir, nameDepartmentStoreSfromSDir, nameSenderDepartmentStoreSfromSDir, nameSenderStoreSfromSDir,
-                   quantitySfromSDirDetailSfromSDir, importerSumSfromSDirDetailSfromSDir, sumRetailVATSfromSDirDetailSfromSDir,
-                   retailSumSfromSDirDetailSfromSDir, noteSfromSDir
+    PROPERTIES (s) numberObject, seriesObject, dateSfromSDir, timeSfromSDir, nameDepartmentStoreSfromSDir, nameSenderDepartmentStoreSfromSDir, nameSenderStoreSfromSDir,
+                   quantitySfromSDirDetailSfromSDir, invoiceVATSumSfromSDirDetailSfromSDir, invoiceSumSfromSDirDetailSfromSDir, retailSumSfromSDirDetailSfromSDir, noteSfromSDir,
+                   toFillSfromSDirDetailsSfromSDir
 
     OBJECTS d = SfromSDirDetail
     PROPERTIES(d) indexSfromSDirDetail, barcodeSfromSDirDetail, nameSkuSfromSDirDetail, nameBrandSfromSDirDetail, sidArticleSfromSDirDetail,
                   nameCategorySfromSDirDetail, sidColorSfromSDirDetail, nameColorSfromSDirDetail, shortNameUOMSfromSDirDetail, balanceBSkuSfromSDirDetail,
-                  quantitySfromSDirDetail, retailPriceSfromSDirDetail, importerSumSfromSDirDetail, numberRetailVATSfromSDirDetail, valueRetailVATSfromSDirDetail,
-                  sumRetailVATSfromSDirDetail, retailSumSfromSDirDetail
+                  quantitySfromSDirDetail, importerPriceSfromSDirDetail, supplierPriceSfromSDirDetail,
+                  numberSupplierVATSfromSDirDetail, valueSupplierVATSfromSDirDetail,
+                  supplierVATISumSfromSDirDetail, invoiceISumSfromSDirDetail,
+                  numberRetailVATSfromSDirDetail, valueRetailVATSfromSDirDetail,
+                  retailPriceSfromSDirDetail
 
     PROPERTIES(s) TODRAW d addDetailDialogBarcodeSfromSDirDetailSfromSDir, addDetailDialogSkuSfromSDirDetailSfromSDir, deleteSfromSDirDetailSfromSDir
-
-
 
     PROPERTIES(d) ADDOBJ, delete
 
@@ -169,18 +114,27 @@ DESIGN SfromSDir FROM DEFAULT {
                 ADD s.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameDepartmentStoreSfromSDir);
-                    ADD PROPERTY (numberSfromSDir);
-                    ADD PROPERTY (seriesSfromSDir);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateSfromSDir);
                     ADD PROPERTY (timeSfromSDir);
                 }
-                NEW case {
-                childConstraints = TO THE RIGHT;
+                NEW row11 {
+                    childConstraints = TO THE RIGHT;
                     title = 'Контрагент';
                     ADD PROPERTY (nameSenderDepartmentStoreSfromSDir);
                     ADD PROPERTY (nameSenderStoreSfromSDir);
                 }
-                ADD s.documentPrmGroup;
+
+                NEW row12 {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.documentPrmGroup;
+                    NEW row121{
+                        childConstraints = TO THE RIGHT;
+                        title = 'Расход';
+                        ADD PROPERTY (toFillSfromSDirDetailsSfromSDir);
+                    }
+                }
             }
             NEW row2 {
                 ADD s.documentSumGroup {
@@ -199,8 +153,8 @@ DESIGN SfromSDir FROM DEFAULT {
 
 FORM SfromSDirs 'Перемещения (приход) на магазин (одно юрлицо)'
     OBJECTS s = SfromSDir
-    PROPERTIES (s) READONLY objectClassName, numberSfromSDir, seriesSfromSDir, dateSfromSDir, timeSfromSDir, nameDepartmentStoreSfromSDir, nameSenderStoreSfromSDir,
-                   countSfromSDirDetailSfromSDir, quantitySfromSDirDetailSfromSDir, importerSumSfromSDirDetailSfromSDir, sumRetailVATSfromSDirDetailSfromSDir,
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateSfromSDir, timeSfromSDir, nameDepartmentStoreSfromSDir, nameSenderStoreSfromSDir,
+                   countSfromSDirDetailSfromSDir, quantitySfromSDirDetailSfromSDir, invoiceVATSumSfromSDirDetailSfromSDir, invoiceSumSfromSDirDetailSfromSDir,
                    retailSumSfromSDirDetailSfromSDir
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -209,9 +163,12 @@ FORM SfromSDirs 'Перемещения (приход) на магазин (од
                    postSfromSDir SHOWIF isDraftSfromSDir(s), unpostSfromSDir SHOWIF isPostedSfromSDir(s)
 
     OBJECTS d = SfromSDirDetail
-    PROPERTIES(d) READONLY indexSfromSDirDetail, barcodeSfromSDirDetail, nameSkuSfromSDirDetail, shortNameUOMSfromSDirDetail, balanceBSkuSfromSDirDetail,
-                  quantitySfromSDirDetail, retailPriceSfromSDirDetail, importerSumSfromSDirDetail, numberRetailVATSfromSDirDetail, valueRetailVATSfromSDirDetail,
-                  sumRetailVATSfromSDirDetail, retailSumSfromSDirDetail
+    PROPERTIES(d) READONLY  indexSfromSDirDetail, barcodeSfromSDirDetail, nameSkuSfromSDirDetail, shortNameUOMSfromSDirDetail, balanceBSkuSfromSDirDetail,
+                  quantitySfromSDirDetail, importerPriceSfromSDirDetail, supplierPriceSfromSDirDetail,
+                  numberSupplierVATSfromSDirDetail, valueSupplierVATSfromSDirDetail,
+                  supplierVATISumSfromSDirDetail, invoiceISumSfromSDirDetail,
+                  numberRetailVATSfromSDirDetail, valueRetailVATSfromSDirDetail,
+                  retailPriceSfromSDirDetail
 
     FILTERS inSfromSDirSfromSDirDetail(s, d)
 ;
