@@ -268,7 +268,7 @@ META defineDocumentHeaderOutSumCustomPrefix (object, detail, prefix, caption)
     prefix###retailVATISum###detail###object 'Сумма НДС (без посуды)'###caption (object) =
         GROUP SUM prefix###retailVATISum###detail(idetail) BY object###detail(idetail);
 
-    prefix###retailVATSum###detail###object 'Сумма НДС'###caption (detail) = prefix###retailVATISum###detail###object(detail) (+) prefix###wareVATSum###detail###object(detail);
+    prefix###retailVATSum###detail###object 'Сумма НДС'###caption (object) = prefix###retailVATISum###detail###object(object) (+) prefix###wareVATSum###detail###object(object);
 
     prefix###markupSum###detail###object 'Сумма надбавки'###caption (object) =
         GROUP SUM prefix###markupSum###detail(idetail) BY object###detail(idetail);

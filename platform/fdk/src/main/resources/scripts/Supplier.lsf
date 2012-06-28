@@ -4,7 +4,8 @@ REQUIRE System,
         Historizable,
         Utils,
         LegalEntity,
-        Stock;
+        Stock,
+        Contract;
 
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
@@ -28,123 +29,40 @@ contactSupplierStock 'Контактная информация' = DATA STRING[5
 
 // ---------------------------------------- Договора ------------------------------------ //
 
-CLASS contract 'Договор';
-TABLE contract (contract);
-TABLE contractDate (contract, DATE);
+CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
 
-CLASS STATIC contractType 'Тип договора' {
-    sale 'Договор купли-продажи',
-    commission 'Договор комиссии'
-}
+supplierContractSkuSupplier = DATA supplier (contractSkuSupplier) AUTOSET;
+nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyAContract (contract) += supplierContractSkuSupplier(contract);
 
-CLASS STATIC contractForm 'Порядок оплаты' {
-    prepayment 'С отсрочкой платежа',
-    implement 'По факту реализации',
-    requirement 'Платежное требование'
-}
+companyContractSkuSupplier = DATA company (contractSkuSupplier) AUTOSET;
+nameCompanyContractSkuSupplier 'Компания' (contract) = name(companyContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyBContract (contract) += companyContractSkuSupplier(contract);
 
-supplierContract = DATA supplier (contract) AUTOSET;
-nameSupplierContract 'Поставщик' (contract) = name(supplierContract(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+@defineContractDefault(contractSkuSupplier, supplier, company);
 
-companyContract = DATA company (contract) AUTOSET;
-nameCompanyContract 'Компания' (contract) = name(companyContract(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-
-countContractCompanySupplier 'Кол-во договоров' (company, supplier) =
-    GROUP SUM 1 IF companyContract(contract) == company AND supplierContract(contract) == supplier BY company, supplier;
-
-numberContract 'Номер договора' = DATA STRING[30] (contract) IN recognizeGroup;
-dateFromContract 'Дата начала договора' = DATA DATE (contract) IN recognizeGroup;
-dateToContract 'Дата окончания договора' = DATA DATE (contract) IN recognizeGroup;
-activeContract 'Действуюший' (contract, date) =
-    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
-
-GROUP paymentGroup 'Взаиморасчеты' : publicGroup;
-dataTypeContract(contract) = DATA contractType (contract);
-typeContract(contract) = contractType.sale IF contract IS contract OR dataTypeContract(contract) PERSISTENT;
-nameTypeContract 'Тип договора' (contract) = name(contractType.sale IF contract IS contract OR typeContract(contract)) IN paymentGroup;
-
-@defineHistorizableCustom(formContract, 'Порядок оплаты по договору', contractForm, name, contract, name, paymentGroup);
-CONSTRAINT contract IS contract AND NOT formContract(contract)  MESSAGE 'Не выбран порядок оплаты по договору';
-
-@defineHistorizable(delayContract, 'Отсрочка платежа (календ. дней)', INTEGER, contract, numberContract, paymentGroup);
-
-currencyContract = DATA currency (contract);
-nameCurrencyContract 'Валюта взаиморасчетов' (contract) = name(currencyContract(contract)) IN paymentGroup;
-shortNameCurrencyContract 'Валюта взаиморасчетов' (contract) = shortNameCurrency(currencyContract(contract)) IN paymentGroup;
-symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContract(contract)) IN paymentGroup;
-
-noteContract 'Примечание' = DATA TEXT (contract) MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-dataContractCompanySupplier = DATA contract (company, supplier);
-CONSTRAINT supplier != supplierContract(dataContractCompanySupplier(company, supplier)) CHECKED BY dataContractCompanySupplier
-    MESSAGE 'Договор по умолчанию для поставщика должен соответствовать договорам поставщика';
-CONSTRAINT company != companyContract(dataContractCompanySupplier(company, supplier)) CHECKED BY dataContractCompanySupplier
-    MESSAGE 'Договор по умолчанию для компании должен соответствовать договорам компании';
-
-contractCompanySupplier (company, supplier) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
-                                                     BY companyContract(contract), supplierContract(contract)](company, supplier) OR
-                                              dataContractCompanySupplier(company, supplier);
-numberContractCompanySupplier 'Основной договор' (company, supplier) = numberContract(contractCompanySupplier(company, supplier));
-
-equalsCompanySupplierContract 'Основной' (company, supplier, contract) = contractCompanySupplier(company, supplier) == contract;
-
-// ------------------------------------------ Формы для договоров --------------------------------------- //
-
-FORM contract 'Договор'
-    OBJECTS c=contract FIXED PANEL
-    PROPERTIES(c) nameCompanyContract, nameSupplierContract,
+// Формы
+FORM contractSkuSupplier 'Договор'
+    OBJECTS c=contractSkuSupplier FIXED PANEL
+    PROPERTIES(c) nameCompanyContractSkuSupplier, nameSupplierContractSkuSupplier,
                   numberContract, dateFromContract, dateToContract,
-                  nameTypeContract,
-                  nameFormContract, dialogFormContract,
-                  delayContract, dialogDelayContract,
-                  nameCurrencyContract, noteContract
+                  nameCurrencyContract, noteContract,
+                  nameTypeContractSku, dialogTypeContractSku,
+                  nameFormContractSku, dialogFormContractSku,
+                  delayContractSku, dialogDelayContractSku
 
-    EDIT contract OBJECT c
+    EDIT contractSkuSupplier OBJECT c
 ;
 
-DESIGN contract FROM DEFAULT {
-    main{
-//        preferredSize = (1024, 768);
-        c.panel {
-            childConstraints = TO THE BOTTOM;
-            NEW HeaderContainer {
-                childConstraints = TO THE RIGHT;
-                NEW contractor {
-                    title = 'Контрагенты';
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameCompanyContract);
-                    ADD PROPERTY(nameSupplierContract);
-                }
-                NEW attributes {
-                    childConstraints = TO THE RIGHT;
-                    title = 'Реквизиты';
-                    ADD PROPERTY(numberContract);
-                    ADD PROPERTY(dateFromContract);
-                    ADD PROPERTY(dateToContract);
-                }
-            }
-            ADD c.paymentGroup {
-                childConstraints = TO THE RIGHT;
-            }
-
-            ADD PROPERTY(noteContract) {
-                panelLabelAbove = TRUE;
-                fillHorizontal = 1;
-            }
-        }
-    }
-}
-
-FORM contracts 'Договоры'
-    OBJECTS c=contract
+FORM contractsSkuSupplier 'Договора'
+    OBJECTS c=contractSkuSupplier
     PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
-                           nameCompanyContract, nameSupplierContract,
-                           nameTypeContract
+                           nameCompanyContractSkuSupplier, nameSupplierContractSkuSupplier
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY dateFromContract
 
-    DIALOG contract OBJECT c
+    DIALOG contractSkuSupplier OBJECT c
 ;
 
 // ------------------------------------------ Формы для поставщика --------------------------------------- //
@@ -170,12 +88,12 @@ FORM supplier 'Поставщик'
     OBJECTS co=company
     PROPERTIES(co) READONLY name
 
-    OBJECTS c=contract
-    PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract, nameTypeContract, nameFormContract, delayContract,
+    OBJECTS c=contractSkuSupplier
+    PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract, nameTypeContractSku, nameFormContractSku, delayContractSku,
                             nameCurrencyContract, noteContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
-    FILTERS supplierContract(c) == s,
-            companyContract(c) == co
+    FILTERS supplierContractSkuSupplier(c) == s,
+            companyContractSkuSupplier(c) == co
 
     OBJECTS l=license
     PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
@@ -197,11 +115,11 @@ FORM supplier 'Поставщик'
 
     PROPERTIES(s, a) equalsLegalEntityAccount
 
-    PROPERTIES(co, s)    numberContractCompanySupplier
-    PROPERTIES(co, s, c) equalsCompanySupplierContract
+    PROPERTIES(s, co)    numberContractSkuSupplierSupplierCompany
+    PROPERTIES(s, co, c) isSupplierCompanyContractSkuSupplier
 
     FILTERGROUP filtersCompany
-        FILTER 'Показывать юр. лица с которыми есть договор' 'F5' countContractCompanySupplier(co, s)
+        FILTER 'Показывать юр. лица с которыми есть договор' 'F5' countContractPartyAPartyB(co, s)
 
     EDIT supplier OBJECT s
 ;
@@ -277,12 +195,12 @@ META defineDocumentHeaderSupplierContract(object)
 
     supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
 
-    contract###object (object) = DATA contract (object);
+    contract###object (object) = DATA contractSkuSupplier (object);
     numberContract###object 'Договор' (object) = numberContract(contract###object(object)) IN documentPrmGroup;
 
     dateFromContract###object 'Договор от' (object) = dateFromContract(contract###object(object)) IN documentPrmGroup;
 
-    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContract(contract###object(object))
+    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContractSkuSupplier(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного поставщика';
     CONSTRAINT contract###object(object) AND NOT activeContract(contract###object(object), date###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите действующий договор';

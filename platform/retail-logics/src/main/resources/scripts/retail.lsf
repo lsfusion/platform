@@ -183,10 +183,10 @@ END
 META defineDocumentHeaderSupplierContractDepartmentStore(object)
     @defineDocumentHeaderSupplierContract(object);
 
-    contract###object (object) <- contractCompanySupplier(companyDepartmentStore(departmentStore###object(object)), supplier###object(object))
-                                  IF countContractCompanySupplier(companyDepartmentStore(departmentStore###object(object)), supplier###object(object)) == 1
+    contract###object (object) <- contractSkuSupplierSupplierCompany(supplier###object(object), companyDepartmentStore(departmentStore###object(object)))
+                                  IF countContractPartyAPartyB(supplier###object(object), companyDepartmentStore(departmentStore###object(object))) == 1
                                   WHEN CHANGED(supplier###object(object));
-    CONSTRAINT contract###object(object) AND NOT companyDepartmentStore(departmentStore###object(object)) == companyContract(contract###object(object))
+    CONSTRAINT contract###object(object) AND NOT companyDepartmentStore(departmentStore###object(object)) == companyContractSkuSupplier(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';
 END
 
@@ -1712,17 +1712,17 @@ FORM company 'Компания'
 
     OBJECTS s=supplier
     PROPERTIES(s)       name
-    PROPERTIES(co, s)   numberContractCompanySupplier
+    PROPERTIES(s, co)   numberContractSkuSupplierSupplierCompany
 
     OBJECTS c=contract
-    PROPERTIES(c)  READONLY numberContract, nameSupplierContract, nameFormContract, nameTypeContract, dateFromContract,
-                   dateToContract, nameCurrencyContract, noteContract, delayContract
+    PROPERTIES(c)  READONLY numberContract, nameSupplierContractSkuSupplier, nameTypeContractSku, nameFormContractSku, delayContractSku, dateFromContract,
+                   dateToContract, nameCurrencyContract, noteContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
-    FILTERS companyContract(c) == co,
-            supplierContract(c) == s
+    FILTERS companyContractSkuSupplier(c) == co,
+            supplierContractSkuSupplier(c) == s
 
     FILTERGROUP filters
-        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F10' countContractCompanySupplier(co, s) DEFAULT
+        FILTER 'Показывать только поставщиков, с которыми есть договор' 'F10' countContractPartyAPartyB(co, s) DEFAULT
 
     EDIT company OBJECT co
 ;
@@ -9579,8 +9579,8 @@ NAVIGATOR {
         }
         NEW contragents 'Контрагенты'{
             ADD suppliers;
+            ADD contractsSkuSupplier;
             ADD customers;
-            ADD contracts;
             ADD discountCards;
             ADD banks;
         }
@@ -9745,6 +9745,9 @@ NAVIGATOR {
             ADD customer;
             ADD company;
             ADD contract;
+            ADD contractSku;
+            ADD contractSkuSupplier;
+            ADD contractsSkuSupplier;
             ADD cashRegisterModel;
             ADD scalesModel;
             ADD priceCheckerModel;
@@ -9849,10 +9852,12 @@ NAVIGATOR {
             ADD dialogSureSupplierStock;
             ADD addAddressBank;
             ADD dialogAddressBank;
-            ADD addFormContract;
-            ADD dialogFormContract;
-            ADD addDelayContract;
-            ADD dialogDelayContract;
+            ADD addTypeContractSku;
+            ADD dialogTypeContractSku;
+            ADD addFormContractSku;
+            ADD dialogFormContractSku;
+            ADD addDelayContractSku;
+            ADD dialogDelayContractSku;
             ADD genTimeTable;
             ADD addTimeTable;
             ADD dialogTimeTable;
