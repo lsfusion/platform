@@ -52,6 +52,9 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * рабочий поток
      */
     public final void delayUserInterfaction(ClientAction action) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Interaction " + sid + " called delayUserInteraction: " + action);
+        }
         delayedActions.add(action);
     }
 
@@ -59,13 +62,17 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * рабочий поток
      */
     public final Object[] pauseForUserInteraction(ClientAction... actions) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Interaction " + sid + " called pauseForUserInteraction: " + Arrays.toString(actions));
+        }
+
         neededActionResultsCnt = actions.length;
         Collections.addAll(delayedActions, actions);
 
         try {
             pause();
         } catch (InterruptedException e) {
-            throw new RuntimeException("Thread was interrupted");
+            throw new RuntimeException("Interaction " + sid + " was interrupted");
         }
 
         if (clientException != null) {
@@ -83,12 +90,18 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     public final ServerResponse resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
         Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Interaction " + sid + " resumed after userInteraction: " + Arrays.toString(actionResults));
+        }
+
         this.actionResults = actionResults;
         return resume();
     }
 
     public final ServerResponse resumWithException(Exception clientException) throws RemoteException {
         Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
+
+        logger.debug("Interaction " + sid + " thrown client exception: ", clientException);
 
         this.clientException = clientException;
         return resume();

@@ -168,6 +168,16 @@
         <priority value="DEBUG"/>
     </category>
 
+    <category name="platform.server.form.instance.remote.PausableInvocation">
+        <priority value="DEBUG"/>
+        <appender-ref ref="stdout"/>
+    </category>
+
+    <category name="platform.server.form.instance.remote.RemoteForm">
+        <priority value="DEBUG"/>
+        <appender-ref ref="stdout"/>
+    </category>
+
     <category name="platform.server.logics.scripted.ScriptingLogicsModule" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="scriptlog"/>

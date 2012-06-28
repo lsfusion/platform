@@ -1,10 +1,14 @@
 package platform.server.form.instance.remote;
 
+import org.apache.log4j.Logger;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 
 public abstract class PausableInvocation<T, E extends Exception> {
+    protected final static Logger logger = Logger.getLogger(PausableInvocation.class);
+
     protected final String sid;
     private final ExecutorService invocationsExecutor;
 
@@ -37,11 +41,15 @@ public abstract class PausableInvocation<T, E extends Exception> {
                     Thread.currentThread().interrupt();
                 }
 
+                logger.info("Run invocation: " + sid);
+
                 try {
                     runInvocation();
                     invocationResult = InvocationResult.FINISHED;
+                    logger.debug("Invocation " + sid + " finished");
                 } catch (Throwable t) {
                     invocationResult = new InvocationResult(t);
+                    logger.debug("Invocation " + sid + " thrown an exception: ", t);
                 }
 
                 try {

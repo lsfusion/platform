@@ -153,43 +153,43 @@ public class FormChanges {
     }
 
     public void logChanges(FormInstance<?> bv, Logger logger) {
-        logger.debug("getFormChanges:");
-        logger.debug("  GROUPOBJECTS ---------------");
+        logger.trace("getFormChanges:");
+        logger.trace("  GROUPOBJECTS ---------------");
         for (GroupObjectInstance group : bv.groups) {
             List<Map<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if (groupGridObjects != null) {
-                logger.debug("   " + group.getID() + " - Current grid objects chaned to:");
+                logger.trace("   " + group.getID() + " - Current grid objects chaned to:");
                 for (Map<ObjectInstance, DataObject> value : groupGridObjects)
-                    logger.debug("     " + value);
+                    logger.trace("     " + value);
             }
 
             Map<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
             if (value != null) {
-                logger.debug("   " + group.getID() + " - Current object changed to:  " + value);
+                logger.trace("   " + group.getID() + " - Current object changed to:  " + value);
             }
         }
 
-        logger.debug("  PROPERTIES ---------------");
-        logger.debug("   Values ---------------");
+        logger.trace("  PROPERTIES ---------------");
+        logger.trace("   Values ---------------");
         for (PropertyReaderInstance property : properties.keySet()) {
             Map<Map<ObjectInstance, DataObject>, ObjectValue> propertyValues = properties.get(property);
-            logger.debug("    " + property + " ---- property");
+            logger.trace("    " + property + " ---- property");
             for (Map.Entry<Map<ObjectInstance, DataObject>, ObjectValue> propValue : propertyValues.entrySet())
-                logger.debug("      " + propValue.getKey() + " -> " + propValue.getValue());
+                logger.trace("      " + propValue.getKey() + " -> " + propValue.getValue());
         }
 
-        logger.debug("   Goes to panel ---------------");
+        logger.trace("   Goes to panel ---------------");
         for (PropertyReaderInstance property : panelProperties) {
-            logger.debug("     " + property);
+            logger.trace("     " + property);
         }
 
-        logger.debug("   Droped ---------------");
+        logger.trace("   Droped ---------------");
         for (PropertyDrawInstance property : dropProperties)
-            logger.debug("     " + property);
+            logger.trace("     " + property);
 
-        logger.debug("  CLASSVIEWS ---------------");
+        logger.trace("  CLASSVIEWS ---------------");
         for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
-            logger.debug("     " + classView.getKey() + " - " + classView.getValue());
+            logger.trace("     " + classView.getKey() + " - " + classView.getValue());
         }
     }
 }

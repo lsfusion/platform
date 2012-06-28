@@ -12,9 +12,11 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ProcessFormChangesClientAction;
-import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.action.UpdateCurrentClassClientAction;
-import platform.interop.form.*;
+import platform.interop.form.FormUserPreferences;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.ReportGenerationData;
+import platform.interop.form.ServerResponse;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteClass;
@@ -145,7 +147,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         try {
             FormChanges formChanges = form.endApply();
 
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 formChanges.logChanges(form, logger);
             }
 
@@ -233,11 +235,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
                 updateCurrentClass = groupObject.objects.iterator().next();
 
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
-                    logger.info("   keys: ");
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
+                    logger.trace("   keys: ");
                     for (Map.Entry<ObjectInstance, DataObject> entry : valueToSet.entrySet()) {
-                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                        logger.trace(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
                     }
                 }
             }
@@ -536,19 +538,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
                 form.executeEditAction(propertyDraw, actionSID, keys);
 
-                if (logger.isInfoEnabled()) {
-                    logger.info(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
                     if (keys.size() > 0) {
-                        logger.info("   columnKeys: ");
+                        logger.trace("   columnKeys: ");
                         for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                            logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            logger.trace(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
                         }
                     }
 
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("   current object's values: ");
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("   current object's values: ");
                         for (ObjectInstance obj : form.getObjects()) {
-                            logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
                         }
                     }
                 }
@@ -579,26 +581,26 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void acquireRequestLock(long requestIndex) {
-//        System.out.println("Acquiring lock for form #" + getID() + " for request #" + requestIndex);
+        logger.debug("Acquiring request lock for form #" + getID() + " for request #" + requestIndex);
         try {
             if (requestIndex >= 0) {
                 sequentialRequestLock.take(requestIndex);
             }
             requestLock.take();
-//            System.out.println(".Acquired lock for form #" + getID() + " for request #" + requestIndex);
+            logger.debug("Acquired request lock for form #" + getID() + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
     }
 
     public void releaseCurrentRequestLock(long requestIndex) {
-//        System.out.println("Releasing lock for form #" + getID() + " for request #" + requestIndex);
+        logger.debug("Releasing request lock for form #" + getID() + " for request #" + requestIndex);
         try {
             requestLock.put(LOCK_OBJECT);
             if (requestIndex >= 0) {
                 sequentialRequestLock.offer(requestIndex + 1, LOCK_OBJECT);
             }
-//            System.out.println("Released lock for form #" + getID() + " for request #" + requestIndex);
+            logger.debug("Released request lock for form #" + getID() + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
@@ -669,14 +671,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {
-        Object[] result = currentInvocation.pauseForUserInteraction(actions);
-
-        //todo: remove this stuff... when done properly in gwt
-        if (actions[0] instanceof RequestUserInputClientAction) {
-            if (result[0] == null) {
-                result[0] = UserInputResult.canceled;
-            }
-        }
-        return result;
+        return currentInvocation.pauseForUserInteraction(actions);
     }
 }
