@@ -22,14 +22,14 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS SfromWH 'Приход на магазин' : historyObject, numberedObject;
-CLASS SfromWHDetail 'Строка прихода на магазин' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger;
+CLASS SfromWHDetail 'Строка прихода на магазин' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS SfromWHPosted 'Закрытый приход на магазин' : SfromWH, postedObject;
 
 skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) IN idGroup;
 nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = nameSku(skuSfromWHDetail(SfromWHDetail));
 
 @defineRBCorrespondingDocumentWithRetailPrices(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
-
+quantityInTransferSkuLedger (ledger) += quantitySfromWHDetail(ledger);
 
 WHtoSPostedSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSPosted(SfromWH) IN idGroup;
 SfromWHWHtoSPosted (WHtoSPosted) = GROUP UNIQUE SfromWH BY WHtoSPostedSfromWH (SfromWH);
