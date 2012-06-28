@@ -100,9 +100,9 @@ META defineDocumentDetailProps (object)
     article###object##Detail 'Артикул (ИД)' (object##Detail) = articleSku(sku###object##Detail(object##Detail)) IN idGroup;
     sidArticle###object##Detail 'Артикул' (object##Detail) = sidArticle(article###object##Detail(object##Detail));
     brand###object##Detail 'Бренд (ИД)' (object##Detail) = brandSupplierArticle(article###object##Detail(object##Detail)) IN idGroup;
-    nameBrand###object##Detail 'Бренд' (object##Detail) = name(brand###object##Detail(object##Detail));
+    nameBrand###object##Detail 'Бренд' (object##Detail) = name(brand###object##Detail(object##Detail)) MINCHARWIDTH 15;
     category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
-    nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail));
+    nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail)) MINCHARWIDTH 15;
 
     UOM###object##Detail 'Единица измерения (ИД)' (object##Detail) = DATA UOM (object##Detail) IN idGroup;
     shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortName(UOM###object##Detail(object##Detail));

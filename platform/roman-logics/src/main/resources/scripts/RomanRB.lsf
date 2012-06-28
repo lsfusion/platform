@@ -248,5 +248,7 @@ NAVIGATOR {
         ADD WHfromS;
         ADD WHtoWH;
         ADD WHfromWH;
+        ADD addSupplierVATCustomCategory10;
+        ADD dialogSupplierVATCustomCategory10;
     }
 }
