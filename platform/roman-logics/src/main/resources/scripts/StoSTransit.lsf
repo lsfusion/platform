@@ -22,103 +22,53 @@ CLASS StoSTrPosted 'Закрытое перемещение (расход) на 
 skuStoSTrDetail 'Товар (ИД)' (StoSTrDetail) = DATA sku (StoSTrDetail)IN idGroup;
 nameSkuStoSTrDetail 'Наименование товара' (StoSTrDetail) = nameSku(skuStoSTrDetail(StoSTrDetail));
 
-@defineDocumentBasePosted(StoSTr);
-@defineDocumentStock(StoSTr, departmentStore, 'Отдел документа');
+@defineRBCorrespondingDocumentWithRetailPrices(StoSTr, departmentStore, 'Отдел документа', sku, 'Перемещение (расход) на магазин (др. юрлицо)', store, 'Магазин-получатель');
+@defineDocumentDetailPackWeightSku(StoSTr);
+@defineDocumentHeaderSkuQuantity(StoSTr);
 
-storeStoSTr 'Магазин-отправитель (ИД)' (StoSTr) = storeDepartmentStore(departmentStoreStoSTr(StoSTr));
-nameStoreStoSTrDetail 'Магазин-отправитель' (StoSTrDetail) = name(storeStoSTr(StoSTrDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+senderStoreStoSTr 'Магазин-отправитель (ИД)' (StoSTr) = storeDepartmentStore(departmentStoreStoSTr(StoSTr));
+nameSenderStoreStoSTrDetail 'Магазин-отправитель' (StoSTrDetail) = name(senderStoreStoSTr(StoSTrDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-
-recipientStoreStoSTr = DATA store(StoSTr) AUTOSET;
-nameRecipientStoreStoSTr 'Магазин-получатель' (StoSTr) = name(recipientStoreStoSTr(StoSTr)) IN documentHeaderGroup
-        MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-recipientStoreStoSTrDetail (StoSTrDetail) = recipientStoreStoSTr(StoSTrStoSTrDetail(StoSTrDetail));
-nameRecipientStoreStoSTrDetail 'Магазин-получатель' (StoSTrDetail) = name(recipientStoreStoSTrDetail(StoSTrDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-@defineDocumentDetailQuantity(StoSTr);
-@defineDocumentDetailNumbered(StoSTr);
-@defineDocumentHeaderQuantity(StoSTr);
-@defineDocumentDescription(StoSTr, 'Перемещение (расход) на магазин (др. юрлицо)');
-@implementSkuLedger (StoSTr, sku, departmentStore);
-@defineDocumentDetailProps (StoSTr);
-@defineAddDetailDialogSkuStock(StoSTr, sku, departmentStore, dialogSku);
-
-CONSTRAINT companyStore(recipientStoreStoSTr(StoSTr)) == companyStore(storeStoSTr(StoSTr))
-    CHECKED BY storeStoSTr, recipientStoreStoSTr  MESSAGE 'Перемещение (расход) в рамках одного юрлица';
+CONSTRAINT StoSTr IS StoSTr AND companyStore(senderStoreStoSTr(StoSTr)) == companyStore(storeStoSTr(StoSTr))
+    CHECKED BY storeStoSTr  MESSAGE 'Перемещение (расход) в рамках одного юрлица';
 
 transitWarehouseStoSTr 'Промежуточный склад (ИД)' (WHtoSTr) = DATA warehouse (StoSTr) IN idGroup;
 nameTransitWarehouseStoSTr 'Промежуточный склад' (StoSTr) = name(transitWarehouseStoSTr(StoSTr)) IN documentHeaderGroup  MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-CONSTRAINT companyWarehouse(transitWarehouseStoSTr(StoSTr)) == companyStore(storeStoSTr(StoSTr))
-    CHECKED BY storeStoSTr, transitWarehouseStoSTr MESSAGE 'Промежуточный склад должен быть другого юрлица';
+CONSTRAINT StoSTr IS StoSTr AND NOT companyWarehouse(transitWarehouseStoSTr(StoSTr)) == companyStore(storeStoSTr(StoSTr))
+    CHECKED BY storeStoSTr, transitWarehouseStoSTr MESSAGE 'Промежуточный склад и магазин-получатель не одного юрлица';
 
-CONSTRAINT companyWarehouse(transitWarehouseStoSTr(StoSTr)) != companyStore(recipientStoreStoSTr(StoSTr))
-    CHECKED BY recipientStoreStoSTr, transitWarehouseStoSTr MESSAGE 'Промежуточный склад и магазин-получатель не одного юрлица';
+CONSTRAINT StoSTr IS StoSTr AND companyWarehouse(transitWarehouseStoSTr(StoSTr)) == companyStore(senderStoreStoSTr(StoSTr))
+    CHECKED BY senderStoreStoSTr, transitWarehouseStoSTr MESSAGE 'Промежуточный склад и магазин-получатель д.б. разных юрлиц';
 
+//quantityOutAutoSkuLedger (ledger) += quantityStoSTrDetail (ledger);
+//descriptionSkuLedger (ledger) += descriptionStoSTrDetail (ledger);
 
-quantityOutAutoSkuLedger (ledger) += quantityStoSTrDetail (ledger);
-descriptionSkuLedger (ledger) += descriptionStoSTrDetail (ledger);
-
-retailPriceStoSTrDetail 'Розничная цена (ед.)' (StoSTrDetail) = DATA NUMERIC[14,3] (StoSTrDetail);
-retailSumStoSTrDetail 'Розничная сумма' (StoSTrDetail) = retailPriceStoSTrDetail(StoSTrDetail) * quantityStoSTrDetail(StoSTrDetail);
-retailSumStoSTrDetailStoSTr 'Розничная сумма' (StoSTr)= GROUP SUM retailSumStoSTrDetail(StoSTrDetail)
-    BY StoSTrStoSTrDetail(StoSTrDetail) IN documentSumGroup;
-
-retailVATStoSTrDetail(StoSTrDetail) = DATA range (StoSTrDetail);
-numberRetailVATStoSTrDetail 'НДС, номер' (StoSTrDetail) = numberRange(retailVATStoSTrDetail(StoSTrDetail));
-valueRetailVATStoSTrDetail 'НДС, %' (StoSTrDetail) = valueRateRangeDate
-    (retailVATStoSTrDetail(StoSTrDetail), dateStoSTrDetail(StoSTrDetail));
-
-CONSTRAINT taxRange(retailVATStoSTrDetail(StoSTrDetail)) != tax.taxVAT CHECKED BY retailVATStoSTrDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-retailPriceStoSTrDetailStoSTrSku 'Цена по расходу' (StoSTr, sku) = GROUP EQUAL retailPriceStoSTrDetail(StoSTrDetail)
-    BY StoSTrStoSTrDetail(StoSTrDetail), skuStoSTrDetail(StoSTrDetail);
-
-retailVATStoSTrDetailStoSTrSku 'Шкала по расходу' (StoSTr, sku) = GROUP EQUAL retailVATStoSTrDetail(StoSTrDetail)
-    BY StoSTrStoSTrDetail(StoSTrDetail), skuStoSTrDetail(StoSTrDetail);
-
-sumRetailVATStoSTrDetail 'Сумма НДС' (StoSTrDetail) = [X*Y/100](
-    retailSumStoSTrDetail(StoSTrDetail), valueRetailVATStoSTrDetail(StoSTrDetail));
-
-sumRetailVATStoSTrDetailStoSTr 'Сумма НДС' (StoSTr) = GROUP SUM sumRetailVATStoSTrDetail(StoSTrDetail)
-    BY StoSTrStoSTrDetail(StoSTrDetail) IN documentSumGroup;
-
-importerSumStoSTrDetail 'Стоимость без НДС' (StoSTrDetail) = retailSumStoSTrDetail(StoSTrDetail) (-) sumRetailVATStoSTrDetail(StoSTrDetail);
-
-importerSumStoSTrDetailStoSTr 'Стоимость без НДС' (StoSTr)= GROUP SUM importerSumStoSTrDetail(StoSTrDetail) BY StoSTrStoSTrDetail(StoSTrDetail) IN documentSumGroup;
-
-
-netWeightStoSTrDetail 'Вес (ед.)' (StoSTrDetail) = netWeightSku(skuStoSTrDetail(StoSTrDetail));
-
-sumNetWeightStoSTrDetail 'Общая масса груза, кг.' (StoSTrDetail) = netWeightStoSTrDetail(StoSTrDetail)*quantityStoSTrDetail(StoSTrDetail);
-
-sumNetWeightStoSTr 'Общая масса груза, кг.' (StoSTr) = GROUP SUM sumNetWeightStoSTrDetail(StoSTrDetail) BY StoSTrStoSTrDetail(StoSTrDetail) IN documentSumGroup;
-
-packQuantityStoSTrDetail 'Количество грузовых мест' (StoSTrDetail) = round0(quantityStoSTrDetail(StoSTrDetail)/
-    UNION OVERRIDE 1 IF StoSTrDetail IS StoSTrDetail, quantityPackSku(skuStoSTrDetail(StoSTrDetail)));
-
-packQuantityStoSTrDetailStoSTr 'Общее количество грузовых мест' (StoSTr) = GROUP SUM packQuantityStoSTrDetail(StoSTrDetail) BY StoSTrStoSTrDetail(StoSTrDetail) IN documentSumGroup;
-
-balanceBSkuStoSTrDetail 'Остаток до' (StoSTrDetail) = balanceBSkuStockDateTime(skuStoSTrDetail(StoSTrDetail), departmentStoreStoSTrDetail(StoSTrDetail), dateTimeStoSTrDetail(StoSTrDetail));
-
-
-quantityStoSTrSku (StoSTr, sku) = GROUP SUM quantityStoSTrDetail(StoSTrDetail)
-                                          BY StoSTrStoSTrDetail(StoSTrDetail), skuStoSTrDetail(StoSTrDetail);
-
-@defineAddDetailDialogBarcode(StoSTr, sku);
 
 FORM StoSTr 'Перемещение (расход) на магазин (др. юрлицо)'
     OBJECTS s = StoSTr FIXED PANEL
-    PROPERTIES (s) numberObject, seriesObject, dateStoSTr, timeStoSTr, nameDepartmentStoreStoSTr, nameRecipientStoreStoSTr, nameTransitWarehouseStoSTr,
-                   quantityStoSTrDetailStoSTr, importerSumStoSTrDetailStoSTr, sumRetailVATStoSTrDetailStoSTr,
-                   retailSumStoSTrDetailStoSTr, sumNetWeightStoSTr, packQuantityStoSTrDetailStoSTr, noteStoSTr
+    PROPERTIES (s) numberObject, seriesObject, dateStoSTr, timeStoSTr, nameDepartmentStoreStoSTr, nameStoreStoSTr, nameTransitWarehouseStoSTr,
+                   quantityStoSTrDetailStoSTr, invoiceVATSumStoSTrDetailStoSTr, invoiceSumStoSTrDetailStoSTr, retailSumStoSTrDetailStoSTr, noteStoSTr
+
+
+
+//    PROPERTIES (s) numberObject, seriesObject, dateStoSTr, timeStoSTr, nameDepartmentStoreStoSTr, nameRecipientStoreStoSTr, nameTransitWarehouseStoSTr,
+//                   quantityStoSTrDetailStoSTr, importerSumStoSTrDetailStoSTr, sumRetailVATStoSTrDetailStoSTr,
+//                   retailSumStoSTrDetailStoSTr, sumNetWeightStoSTr, packQuantityStoSTrDetailStoSTr, noteStoSTr
 
     OBJECTS d = StoSTrDetail
+//    PROPERTIES(d) indexStoSTrDetail, barcodeStoSTrDetail, nameSkuStoSTrDetail, nameBrandStoSTrDetail, sidArticleStoSTrDetail,
+//                  nameCategoryStoSTrDetail, sidColorStoSTrDetail, nameColorStoSTrDetail, shortNameUOMStoSTrDetail, balanceBSkuStoSTrDetail,
+//                  quantityStoSTrDetail, retailPriceStoSTrDetail, importerSumStoSTrDetail, numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
+//                  sumRetailVATStoSTrDetail, retailSumStoSTrDetail
     PROPERTIES(d) indexStoSTrDetail, barcodeStoSTrDetail, nameSkuStoSTrDetail, nameBrandStoSTrDetail, sidArticleStoSTrDetail,
                   nameCategoryStoSTrDetail, sidColorStoSTrDetail, nameColorStoSTrDetail, shortNameUOMStoSTrDetail, balanceBSkuStoSTrDetail,
-                  quantityStoSTrDetail, retailPriceStoSTrDetail, importerSumStoSTrDetail, numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
-                  sumRetailVATStoSTrDetail, retailSumStoSTrDetail
+                  quantityStoSTrDetail, importerPriceStoSTrDetail, supplierPriceStoSTrDetail,
+                  numberSupplierVATStoSTrDetail, valueSupplierVATStoSTrDetail,
+                  supplierVATISumStoSTrDetail, invoiceISumStoSTrDetail,
+                  numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
+                  retailPriceStoSTrDetail
+
 
     PROPERTIES(s) TODRAW d addDetailDialogSkuStoSTrDetailStoSTr, addDetailDialogBarcodeStoSTrDetailStoSTr, deleteStoSTrDetailStoSTr
 
@@ -149,7 +99,7 @@ DESIGN StoSTr FROM DEFAULT {
                 childConstraints = TO THE RIGHT;
                     NEW case11 {
                         title = 'Контрагент';
-                        ADD PROPERTY (nameRecipientStoreStoSTr);
+                        ADD PROPERTY (nameStoreStoSTr);
                     }
                     NEW case12 {
                         title = 'Транзит';
@@ -171,9 +121,13 @@ DESIGN StoSTr FROM DEFAULT {
 
 FORM StoSTrs 'Перемещения (расход) на магазин (др. юрлицо)'
     OBJECTS s = StoSTr
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSTr, timeStoSTr, nameDepartmentStoreStoSTr, nameRecipientStoreStoSTr,
-                   countStoSTrDetailStoSTr, quantityStoSTrDetailStoSTr, importerSumStoSTrDetailStoSTr, sumRetailVATStoSTrDetailStoSTr,
-                   retailSumStoSTrDetailStoSTr, sumNetWeightStoSTr, packQuantityStoSTrDetailStoSTr
+//    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSTr, timeStoSTr, nameDepartmentStoreStoSTr, nameRecipientStoreStoSTr,
+//                   countStoSTrDetailStoSTr, quantityStoSTrDetailStoSTr, importerSumStoSTrDetailStoSTr, sumRetailVATStoSTrDetailStoSTr,
+//                   retailSumStoSTrDetailStoSTr, sumNetWeightStoSTr, packQuantityStoSTrDetailStoSTr
+
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSTr, timeStoSTr, nameDepartmentStoreStoSTr, nameStoreStoSTr,
+                   countStoSTrDetailStoSTr, quantityStoSTrDetailStoSTr, invoiceVATSumStoSTrDetailStoSTr, invoiceSumStoSTrDetailStoSTr,
+                   retailSumStoSTrDetailStoSTr
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -187,9 +141,15 @@ FORM StoSTrs 'Перемещения (расход) на магазин (др. �
                    printConsignmentSimpleVertical, printConsignmentSimpleAttach
 
     OBJECTS d = StoSTrDetail
-    PROPERTIES(d) READONLY indexStoSTrDetail, barcodeStoSTrDetail, nameSkuStoSTrDetail, shortNameUOMStoSTrDetail,
-                  quantityStoSTrDetail, retailPriceStoSTrDetail, importerSumStoSTrDetail, numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
-                  sumRetailVATStoSTrDetail, retailSumStoSTrDetail
+//    PROPERTIES(d) READONLY indexStoSTrDetail, barcodeStoSTrDetail, nameSkuStoSTrDetail, shortNameUOMStoSTrDetail,
+//                  quantityStoSTrDetail, retailPriceStoSTrDetail, importerSumStoSTrDetail, numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
+//                  sumRetailVATStoSTrDetail, retailSumStoSTrDetail
+    PROPERTIES(d) READONLY  indexStoSTrDetail, barcodeStoSTrDetail, nameSkuStoSTrDetail, shortNameUOMStoSTrDetail, balanceBSkuStoSTrDetail,
+                  quantityStoSTrDetail, importerPriceStoSTrDetail, supplierPriceStoSTrDetail,
+                  numberSupplierVATStoSTrDetail, valueSupplierVATStoSTrDetail,
+                  supplierVATISumStoSTrDetail, invoiceISumStoSTrDetail,
+                  numberRetailVATStoSTrDetail, valueRetailVATStoSTrDetail,
+                  retailPriceStoSTrDetail
 
     FILTERS inStoSTrStoSTrDetail(s, d)
 ;
@@ -256,16 +216,17 @@ DESIGN StoSTrs FROM DEFAULT {
 FORM StoSTrsDialog 'Перемещения (расход) на магазин (др. юрлицо)'
     OBJECTS s = StoSTrPosted
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoSTr, nameDepartmentStoreStoSTr,
-                   nameRecipientStoreStoSTr, countStoSTrDetailStoSTr, quantityStoSTrDetailStoSTr, importerSumStoSTrDetailStoSTr,
-                   sumRetailVATStoSTrDetailStoSTr, retailSumStoSTrDetailStoSTr
+                   nameStoreStoSTr, countStoSTrDetailStoSTr, quantityStoSTrDetailStoSTr, invoiceVATSumStoSTrDetailStoSTr,
+                   invoiceSumStoSTrDetailStoSTr, retailSumStoSTrDetailStoSTr
+
     DIALOG StoSTrPosted OBJECT s
 ;
 
 @defineConsignment(StoSTr);
 @implementConsignmentHeader(StoSTr, departmentStore);
 
-senderConsignment (consignment) += companyStore(storeStoSTr(consignment));
-recipientConsignment (consignment) += companyStore(recipientStoreStoSTr(consignment));
+senderConsignment (consignment) += companyStore(senderStoreStoSTr(consignment));
+recipientConsignment (consignment) += companyStore(storeStoSTr(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += StoSTrStoSTrDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuStoSTrDetail (consignmentDetail);
@@ -273,10 +234,10 @@ shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMStoSTrDetail (c
 quantityConsignmentDetail (consignmentDetail) += quantityStoSTrDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += retailPriceStoSTrDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += valueRetailVATStoSTrDetail (consignmentDetail);
-sumVATConsignmentDetail (consignmentDetail) += sumRetailVATStoSTrDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += importerSumStoSTrDetail (consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += retailSumStoSTrDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightStoSTrDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += supplierVATISumStoSTrDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += supplierSumStoSTrDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumStoSTrDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightStoSTrDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityStoSTrDetail(consignmentDetail);
 //currencyConsignment(consignment) += currencyStoSTr(consignment);
 //isCustomsFlowConsignment (consignment) += consignment IS StoSTr;
