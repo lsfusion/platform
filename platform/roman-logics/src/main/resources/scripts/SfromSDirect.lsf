@@ -37,7 +37,7 @@ nameSenderDepartmentStoreSfromSDir 'Отдел-отправитель' (SfromSDi
 senderStoreSfromSDir 'Магазин-отправитель (ИД)' (SfromSDir) = storeStoSDir(StoSDirSfromSDir(SfromSDir));
 nameSenderStoreSfromSDir 'Магазин-отправитель' (SfromSDir)= name(senderStoreSfromSDir(SfromSDir));
 
-recipientStoreSfromSDir 'Магазин-получатель (ИД)' (SfromSDir) = recipientStoreStoSDir(StoSDirSfromSDir(SfromSDir));
+recipientStoreSfromSDir 'Магазин-получатель (ИД)' (SfromSDir) = storeStoSDir(StoSDirSfromSDir(SfromSDir));
 nameRecipientStoreSfromSDir 'Магазин-получатель' (SfromSDir)= name(recipientStoreSfromSDir(SfromSDir));
 
 storeSfromSDir (SfromSDir) = storeDepartmentStore(departmentStoreSfromSDir(SfromSDir));
@@ -61,12 +61,12 @@ skuSfromSDirDetail 'Товар (ИД)' (SfromSDirDetail) = DATA sku(SfromSDirDet
 @defineDocumentDetailProps (SfromSDir);  // ш-к, цвет, бренд, и т.д.
 
 
-quantitySfromSDirSku 'Количество принятое' (SfromSDir, sku) = GROUP SUM quantitySfromSDirDetail(SfromSDirDetail)
-                                          BY SfromSDirSfromSDirDetail(SfromSDirDetail), skuSfromSDirDetail(SfromSDirDetail);
+quantitySfromSDirDetailSkuSfromSDir 'Количество принятое' (sku, SfromSDir) = GROUP SUM quantitySfromSDirDetail(SfromSDirDetail)
+                                          BY skuSfromSDirDetail(SfromSDirDetail), SfromSDirSfromSDirDetail(SfromSDirDetail);
 
-quantityOriginSfromSDirSku 'Кол-во плановое' (SfromSDir, sku) = quantityStoSDirSku(StoSDirSfromSDir(SfromSDir), sku);
+quantityOriginSfromSDirDetailSkuSfromSDir 'Кол-во плановое' (sku, SfromSDir) = quantityStoSDirDetailSkuStoSDir(sku, StoSDirSfromSDir(SfromSDir));
 
-diffQuantitySfromSDirSku 'Разница' (SfromSDir, sku) = quantitySfromSDirSku(SfromSDir, sku) (-) quantityOriginSfromSDirSku(SfromSDir, sku);
+diffQuantitySfromSDirDetailSkuSfromSDir 'Разница' (sku, SfromSDir) = quantitySfromSDirDetailSkuSfromSDir(sku, SfromSDir) (-) quantityOriginSfromSDirDetailSkuSfromSDir(sku, SfromSDir);
 
 
 @defineAddDetailDialogSkuStock(SfromSDir, sku, departmentStore, dialogSku);
@@ -77,9 +77,9 @@ nameSkuSfromSDirDetail 'Наименование товара' (SfromSDirDetail)
 
 retailPriceSfromSDirDetail 'Розничная цена (ед.)' (SfromSDirDetail) = DATA NUMERIC[14,3] (SfromSDirDetail);
 
-retailPriceSfromSDirDetail(SfromSDirDetail) <- retailPriceStoSDirDetailStoSDirSku(
-    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
-    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
+//retailPriceSfromSDirDetail(SfromSDirDetail) <- retailPriceStoSDirDetailStoSDirSku(
+//    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
+//    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
 
 retailSumSfromSDirDetail 'Розничная сумма' (SfromSDirDetail) = retailPriceSfromSDirDetail(SfromSDirDetail) * quantitySfromSDirDetail(SfromSDirDetail);
 retailSumSfromSDirDetailSfromSDir 'Розничная сумма' (SfromSDir)= GROUP SUM retailSumSfromSDirDetail(SfromSDirDetail)
@@ -90,9 +90,9 @@ numberRetailVATSfromSDirDetail 'НДС, номер' (SfromSDirDetail) = numberRa
 valueRetailVATSfromSDirDetail 'НДС, %' (SfromSDirDetail) = valueRateRangeDate
     (retailVATSfromSDirDetail(SfromSDirDetail), dateSfromSDirDetail(SfromSDirDetail));
 
-retailVATSfromSDirDetail(SfromSDirDetail) <- retailVATStoSDirDetailStoSDirSku(
-    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
-    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
+//retailVATSfromSDirDetail(SfromSDirDetail) <- retailVATStoSDirDetailStoSDirSku(
+//    StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)), skuSfromSDirDetail(SfromSDirDetail))
+//    WHEN CHANGED (skuSfromSDirDetail(SfromSDirDetail)) OR CHANGED (StoSDirSfromSDir(SfromSDirSfromSDirDetail(SfromSDirDetail)));
 
 CONSTRAINT taxRange(retailVATSfromSDirDetail(SfromSDirDetail)) != tax.taxVAT CHECKED BY retailVATSfromSDirDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
@@ -143,13 +143,13 @@ FORM SfromSDir 'Перемещение (приход) на магазин (од�
 
     OBJECTS i=sku
     PROPERTIES(i) nameSku
-    PROPERTIES(s,i) quantitySfromSDirSku, quantityOriginSfromSDirSku, diffQuantitySfromSDirSku
+    PROPERTIES(i,s) quantitySfromSDirDetailSkuSfromSDir, quantityOriginSfromSDirDetailSkuSfromSDir, diffQuantitySfromSDirDetailSkuSfromSDir
     FILTERS inSfromSDirSfromSDirDetail(s, d)
 
-    FILTERS quantityOriginSfromSDirSku(s,i) OR quantitySfromSDirSku(s,i)
+    FILTERS quantityOriginSfromSDirDetailSkuSfromSDir(i,s) OR quantitySfromSDirDetailSkuSfromSDir(i, s)
 
     FILTERGROUP filtersDiff
-        FILTER 'Показать отличающиеся' 'F10' diffQuantitySfromSDirSku(s,i) !=0
+        FILTER 'Показать отличающиеся' 'F10' diffQuantitySfromSDirDetailSkuSfromSDir(i,s) !=0
 
     EDIT SfromSDir OBJECT s
 ;

@@ -134,8 +134,8 @@ NAVIGATOR {
     baseElement {
         NEW merchandising 'Товародвижение' TO leftToolbar {
             ADD WHtoSDirs;
-            ADD SfromWHs;
             ADD WHtoSTrs;
+            ADD SfromWHs;
             ADD StoSDirs;
             ADD SfromSDirs;
             ADD StoSTrs;
