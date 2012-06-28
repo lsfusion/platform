@@ -2066,7 +2066,7 @@ scope {
 	:	(	decl=designDeclaration 			{ $designStatement::design = formView = $decl.view; }
 		|	edecl=extendDesignDeclaration 	{ $designStatement::design = formView = $edecl.view; }	
 		)
-		componentStatementBody[formView, formView == null ? null : formView.getMainContainer()]
+		componentStatementBody[formView == null ? null : formView.getView(), formView == null ? null : formView.getMainContainer()]
 	;
 
 designDeclaration returns [ScriptingFormView view]

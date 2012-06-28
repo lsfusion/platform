@@ -180,4 +180,8 @@ public class ScriptingFormView {
     public ContainerView getMainContainer() {
         return view.mainContainer;
     }
+
+    public FormView getView() {
+        return view;
+    }
 }
