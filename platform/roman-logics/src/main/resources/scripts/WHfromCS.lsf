@@ -120,19 +120,57 @@ fillWHfromCSDetailsSkuFreightUnit 'Заполнить строки из коро
     }
 } EDITKEY 'F5' CONFIRM;
 
-dateTimeWHfromCSSKU 'Дата' = SESSION DATA DATE (sku);
 shouldBePrintWHfromCS = SESSION DATA BOOLEAN (sku);
 
-priceBaseWHfromCSDateTime 'Цена' (sku) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), currentDateTime());
-priceDiscountWHfromCSDateTime 'Цена скидочная' (sku) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), currentDateTime());
+priceBaseWHfromCSDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
+priceDiscountWHfromCSDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
+
+quantityWHfromCSFreightUnitSku (WHfromCS, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCS(WHfromCS), freightUnit, sku);
+
+quantityPositionsSkuInWHFromCSFreightUnit 'Кол-во позиций в коробе' (WHfromCS, freightUnit) =
+    GROUP SUM 1 IF quantityWHfromCSFreightUnitSku(WHfromCS, freightUnit, sku) BY WHfromCS, freightUnit;
+quantityPositionsSkuInFreightUnitWHfromCS 'Кол-во позиций в коробе' (WHfromCS) = quantityPositionsSkuInWHFromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
+
+quantitySkuInWHFromCSFreightUnit 'Кол-во позиций в документе' (WHfromCS, freightUnit) =
+    GROUP SUM quantityWHfromCSFreightUnitSku(WHfromCS, freightUnit, sku) BY WHfromCS, freightUnit;
+quantitySkuInFreightUnitWHfromCS 'Кол-во позиций в документе' (WHfromCS) = quantitySkuInWHFromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
+
+//quantityPositionsSkuInFreightUnit 'Кол-во позиций в коробе' (freightUnit) = GROUP SUM 1 IF quantityFreightUnitSku(freightUnit, sku) BY freightUnit;
+//quantityPositionsSkuInFreightUnitWHfromCS 'Кол-во позиций в коробе' (WHfromCS) = quantityPositionsSkuInFreightUnit(currentFreightUnit(WHfromCS));
+
+//quantitySkuInFreightUnit 'Кол-во товара в коробе' (freightUnit) = GROUP SUM quantityFreightUnitSku(freightUnit, sku) BY freightUnit;
+//quantitySkuInFreightUnitWHfromCS 'Кол-во товара в коробе' (WHfromCS) = quantitySkuInFreightUnit(currentFreightUnit(WHfromCS));
+
+quantityPositionsSkuWHfromCSFreightUnit 'Кол-во позиций в документе' (WHfromCS, freightUnit) =
+    GROUP SUM 1 IF quantityWHfromCSDetail(WHfromCSDetail) BY WHfromCSWHfromCSDetail(WHfromCSDetail), freightUnitWHfromCSDetail(WHfromCSDetail);
+quantityPositionsSkuWHfromCS 'Кол-во позиций в документе' (WHfromCS) =
+    quantityPositionsSkuWHfromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
+
+quantitySkuWHfromCSFreightUnit 'Кол-во товара в документе' (WHfromCS, freightUnit) =
+    GROUP SUM quantityWHfromCSDetail(WHfromCSDetail) BY WHfromCSWHfromCSDetail(WHfromCSDetail), freightUnitWHfromCSDetail(WHfromCSDetail);
+quantitySkuWHfromCS 'Кол-во товара в документе' (WHfromCS) =
+    quantitySkuWHfromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
+
+quantityRemainedPositionSkuWHfromCS 'Кол-во оставшихся позиций в коробе' (WHfromCS) =
+    UNION OVERRIDE 0 AND WHfromCS, quantityPositionsSkuInFreightUnitWHfromCS(WHfromCS) (-) quantityPositionsSkuWHfromCS(WHfromCS);
+
+quantityRemainedSkuWHfromCS 'Кол-во оставшегося товара в коробе' (WHfromCS) =
+    UNION OVERRIDE 0 AND WHfromCS, quantitySkuInFreightUnitWHfromCS(WHfromCS) (-) quantitySkuWHfromCS(WHfromCS);
+
+quantitySkuInWHfromCS 'Кол-во товара' (WHfromCS, sku) = GROUP SUM quantityWHfromCSDetail(WHfromCSDetail)
+    BY WHfromCSWHfromCSDetail(WHfromCSDetail), skuWHfromCSDetail(WHfromCSDetail);
 
 FORM printMarksWHfromCS 'Печать маркировок товара' PRINT
+
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
-                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku,
-                           priceBaseWHfromCSDateTime, priceDiscountWHfromCSDateTime
+                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku
+
+    PROPERTIES(s, dt)      priceBaseWHfromCSDateTimeSku, priceDiscountWHfromCSDateTimeSku
 
     FILTERS shouldBePrintWHfromCS(s)
 ;
@@ -141,22 +179,33 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
 
     SET shouldBePrintWHfromCS(sku) <- NULL;
     SET shouldBePrintWHfromCS(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCS), CStoWHWHfromCS(WHfromCS));
-    FORM printMarksWHfromCS MODAL;
+    FORM printMarksWHfromCS OBJECTS dt = dateTimeWHfromCS(WHfromCS) MODAL;
 
 } CONFIRM;
 
+printMarksSkuWHfromCS 'Печать маркировок товаров' (WHfromCS) = ACTION (WHfromCS) {
+
+    SET shouldBePrintWHfromCS(sku) <- NULL;
+    SET shouldBePrintWHfromCS(sku) <- TRUE IF quantitySkuInWHfromCS(WHfromCS, sku);
+    FORM printMarksWHfromCS OBJECTS dt = dateTimeWHfromCS(WHfromCS) MODAL;
+
+} CONFIRM TOOLBAR;
+
 FORM WHfromCS 'Приход на оптовый склад'
 
-    OBJECTS w = WHfromCS FIXED PANEL
-    PROPERTIES (w) numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-                   barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit, printMarksSkuFreightUnit
+    OBJECTS w = WHfromCS FIXED PANEL, d = WHfromCSDetail
 
-    OBJECTS d = WHfromCSDetail
-    PROPERTIES (d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
-                            sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail, barcodeFreightUnitWHfromCSDetail
+    PROPERTIES(w)          numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
+                           barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit, printMarksSkuFreightUnit,
+                           printMarksSkuWHfromCS TODRAW d FORCE PANEL
+    PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCS SHOWIF barcodeCurrentFreightUnit(w),
+                           quantityRemainedSkuWHfromCS SHOWIF barcodeCurrentFreightUnit(w)
+
+    PROPERTIES(d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
+                           sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail, barcodeFreightUnitWHfromCSDetail
 
     PROPERTIES(d) quantityOriginWHfromCSDetail, quantityWHfromCSDetail
-    PROPERTIES(d) ADDOBJ, delete
+    PROPERTIES(d) delete
 
     PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSDetailWHfromCS
 
@@ -171,11 +220,42 @@ FORM WHfromCS 'Приход на оптовый склад'
     EDIT WHfromCS OBJECT w
 ;
 
+DESIGN WHfromCS FROM DEFAULT {
+
+    NEW topContainer {
+        title = 'Приход на оптовый склад';
+        childConstraints = TO THE BOTTOM;
+
+        NEW firstCase {
+            title = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(numberCStoWHWHfromCS);
+            ADD PROPERTY(seriesCStoWHWHfromCS);
+            ADD PROPERTY(dateWHfromCS);
+            ADD PROPERTY(timeWHfromCS);
+            ADD PROPERTY(nameWarehouseWHfromCS);
+        }
+
+        NEW secondCase {
+            title = 'Короб';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(quantityRemainedPositionSkuWHfromCS);
+            ADD PROPERTY(quantityRemainedSkuWHfromCS);
+            ADD PROPERTY(barcodeCurrentFreightUnit);
+            ADD PROPERTY(fillWHfromCSDetailsSkuFreightUnit);
+            ADD PROPERTY(printMarksSkuFreightUnit);
+        }
+    }
+
+    ADD d.box;
+    ADD functions.box;
+}
+
 FORM WHfromCSs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCS
     PROPERTIES (w) READONLY numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS
 
-    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHfromCS(w), delete FORCE PANEL SHOWIF isDraftWHfromCS(w),
+    PROPERTIES (w) printMarksSkuWHfromCS, ADDFORM, EDITFORM SHOWIF isDraftWHfromCS(w), delete FORCE PANEL SHOWIF isDraftWHfromCS(w),
                    postWHfromCS SHOWIF isDraftWHfromCS(w), unpostWHfromCS SHOWIF isPostedWHfromCS(w)
 
     OBJECTS d = WHfromCSDetail

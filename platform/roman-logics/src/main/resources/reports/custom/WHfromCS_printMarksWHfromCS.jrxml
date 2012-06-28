@@ -9,16 +9,16 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
-	<parameter name="s_report" class="net.sf.jasperreports.engine.JasperReport"/>
-	<parameter name="s_source" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<parameter name="s_params" class="java.util.Map"/>
+	<parameter name="dt_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="dt_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="dt_params" class="java.util.Map"/>
 	<detail>
 		<band>
 			<subreport>
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
-				<parametersMapExpression><![CDATA[$P{s_params}]]></parametersMapExpression>
-				<dataSourceExpression><![CDATA[$P{s_source}]]></dataSourceExpression>
-				<subreportExpression><![CDATA[$P{s_report}]]></subreportExpression>
+				<parametersMapExpression><![CDATA[$P{dt_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{dt_source}]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{dt_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

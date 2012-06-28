@@ -123,6 +123,10 @@ innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(
 currencyCStoWH 'Валюта (ИД)' (CStoWH) = DATA currency (CStoWH);
 shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH));
 
+// кол-во отгруженного товара по коробам и sku
+quantityCStoWHFreightUnitSku(CStoWH, freightUnit, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
+    BY CStoWHCStoWHDetail(CStoWHDetail), freightUnitCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
+
 FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     OBJECTS c=CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject
