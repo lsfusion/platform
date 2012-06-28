@@ -89,6 +89,7 @@ NAVIGATOR {
         ADD importers;
         ADD warehouses;
         ADD storesR;
+        ADD companies;
     }
     customs {
         ADD customStores;
@@ -211,16 +212,21 @@ NAVIGATOR {
         ADD addAddressBank;
         ADD sumAccountDocumentLedger;
         ADD dialogAddressBank;
-        ADD addFormContract;
-        ADD dialogFormContract;
-        ADD addDelayContract;
-        ADD dialogDelayContract;
+        ADD addTypeContractSku;
+        ADD dialogTypeContractSku;
+        ADD addFormContractSku;
+        ADD dialogFormContractSku;
+        ADD addDelayContractSku;
+        ADD dialogDelayContractSku;
+        ADD contractSku;
+        ADD contractSkuSupplier;
+        ADD contractsSkuSupplier;
         ADD numerator;
         ADD dialogDate;
         ADD dialogSku;
         ADD storeForm;
         ADD suppliers;
-        ADD contracts;
+//        ADD contracts;
         ADD wholesalePriceDocument;
         ADD SfromWH;
         ADD warehouse;
@@ -235,5 +241,6 @@ NAVIGATOR {
         ADD syncBarcodeSkuForm;
         ADD priceChangePrint;
         ADD priceChangeCommittee;
+        ADD company;
     }
 }

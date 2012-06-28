@@ -8,7 +8,12 @@ REQUIRE System,
         Document,
         RomanDocument,
         Consignment,
+        AccountDocument,
+        PriceChange,
+        StorePrice,
         Declaration,
+        RetailPrice,
+        WholesalePrice,
         MasterData,
         StoSDirect,
         RomanLogicsModule;
@@ -16,7 +21,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS SfromSDir 'Перемещение (приход) на магазин (одно юрлицо)' : historyObject, numberedObject;
-CLASS SfromSDirDetail 'Строка перемещения (приход) на магазин (одно юрлицо)' : inTransferSkuLedger;
+CLASS SfromSDirDetail 'Строка перемещения (приход) на магазин (одно юрлицо)' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS SfromSDirPosted 'Закрытое перемещение (приход) на магазин (одно юрлицо)' : SfromSDir, postedObject;
 
 @defineDocumentBasePosted(SfromSDir);
