@@ -1,0 +1,86 @@
+MODULE WHfromS;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        StoWH,
+        Barcode,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+// Приход на склад
+CLASS WHfromS 'Приход на склад из магазина' : historyObject, numberedObject;
+CLASS WHfromSPosted 'Закрытый приход на склад из магазина' : WHfromS, postedObject;
+
+CLASS WHfromSDetail 'Строка прихода на склад из магазина' : inTransferSkuLedger;
+
+//CLASS inWarehouseScan 'Сканирование';
+
+//создание документа через метакод
+skuWHfromSDetail 'Товар (ИД)' (WHfromSDetail) = DATA sku(WHfromSDetail) IN idGroup;
+@defineRBCorrespondingDocument(WHfromS, warehouse, 'Оптовый склад', sku, 'Приход на склад из магазина', store, 'Магазин-отправитель');
+@defineUniqueDocumentComingByExpense(WHfromS, StoWH);
+
+quantityInTransferSkuLedger (ledger) += quantityWHfromSDetail(ledger);
+
+numberStoWHWHfromS 'Номер' (WHfromS) = numberObject(StoWHWHfromS(WHfromS)) IN baseGroup PERSISTENT;
+seriesStoWHWHfromS 'Серия' (WHfromS) = seriesObject(StoWHWHfromS(WHfromS)) IN baseGroup PERSISTENT;
+seriesNumberWHfromS 'Серия/Номер' (WHfromS) = seriesNumberObject(StoWHWHfromS(WHfromS)) PERSISTENT;
+
+//numberObject (WHfromS) <- PREV (numberStoWHWHfromS (WHfromS)) WHEN ASSIGNED (StoWHWHfromS(WHfromS));
+
+inStoWHWHfromS (WHfromS, StoWH) = StoWHWHfromS(WHfromS) == StoWH;
+
+
+FORM WHfromS 'Приход на склад из магазина'
+
+    OBJECTS w = WHfromS FIXED PANEL
+    PROPERTIES (w) numberStoWHWHfromS, seriesStoWHWHfromS, dateWHfromS, timeWHfromS, nameWarehouseWHfromS
+
+    OBJECTS d = WHfromSDetail
+    PROPERTIES (d) READONLY indexWHfromSDetail, barcodeWHfromSDetail, nameBrandWHfromSDetail, sidArticleWHfromSDetail,
+                            sidColorWHfromSDetail, nameColorWHfromSDetail, sidSizeWHfromSDetail
+
+    PROPERTIES(d) quantityWHfromSDetail
+    PROPERTIES(d) ADDOBJ, delete
+
+    PROPERTIES(w) TODRAW d ADDOBJ,deleteWHfromSDetailWHfromS
+
+    FILTERS inWHfromSWHfromSDetail(w, d)
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantityWHfromSDetail(d) DEFAULT
+
+//    FILTERGROUP filtersDiff
+//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromSDetail(d)
+
+    EDIT WHfromS OBJECT w
+;
+
+FORM WHfromSs 'Приходы на склад из магазина'
+    OBJECTS w = WHfromS
+    PROPERTIES (w) READONLY numberObject, seriesObject, dateWHfromS, timeWHfromS, nameWarehouseWHfromS
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHfromS(w), delete FORCE PANEL SHOWIF isDraftWHfromS(w),
+                   postWHfromS SHOWIF isDraftWHfromS(w), unpostWHfromS SHOWIF isPostedWHfromS(w)
+
+    OBJECTS d = WHfromSDetail
+    PROPERTIES(d) READONLY indexWHfromSDetail, barcodeWHfromSDetail, nameBrandWHfromSDetail, sidArticleWHfromSDetail,
+                            sidColorWHfromSDetail, nameColorWHfromSDetail, sidSizeWHfromSDetail,
+                           quantityWHfromSDetail
+
+    FILTERS inWHfromSWHfromSDetail(w, d)
+;
+
+DESIGN WHfromSs FROM DEFAULT {
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}

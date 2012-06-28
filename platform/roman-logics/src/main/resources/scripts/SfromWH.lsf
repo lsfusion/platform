@@ -16,8 +16,7 @@ REQUIRE System,
         WholesalePrice,
         MasterData,
         RomanLogicsModule,
-        WHtoSDirect,
-        WHtoSTransit;
+        WHtoS;
 
 PRIORITY RomanLogicsModule, Stock;
 
@@ -31,20 +30,20 @@ nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = n
 @defineRBCorrespondingDocumentWithRetailPrices(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
 quantityInTransferSkuLedger (ledger) += quantitySfromWHDetail(ledger);
 
-WHtoSPostedSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoSPosted(SfromWH) IN idGroup;
-SfromWHWHtoSPosted (WHtoSPosted) = GROUP UNIQUE SfromWH BY WHtoSPostedSfromWH (SfromWH);
-CONSTRAINT WHtoSPostedSfromWH(p1) == WHtoSPostedSfromWH(p2) AND p1 != p2 CHECKED BY WHtoSPostedSfromWH MESSAGE 'Расход задействован в другом приходе';
+WHtoSSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoS(SfromWH) IN idGroup;
+SfromWHWHtoS (WHtoS) = GROUP UNIQUE SfromWH BY WHtoSSfromWH (SfromWH);
+CONSTRAINT WHtoSSfromWH(p1) == WHtoSSfromWH(p2) AND p1 != p2 CHECKED BY WHtoSSfromWH MESSAGE 'Расход задействован в другом приходе';
 
-numberSfromWH 'Номер док. расхода' (SfromWH) = numberObject(WHtoSPostedSfromWH(SfromWH)) IN documentHeaderGroup;
-seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSPostedSfromWH(SfromWH)) IN documentHeaderGroup;
-seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSPostedSfromWH(SfromWH));
-warehouseWarehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoSPosted(WHtoSPostedSfromWH(SfromWH));
+numberSfromWH 'Номер док. расхода' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH)) IN documentHeaderGroup;
+seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSSfromWH(SfromWH)) IN documentHeaderGroup;
+seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSSfromWH(SfromWH));
+warehouseWarehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoS(WHtoSSfromWH(SfromWH));
 
 
-numberObject (SfromWH) <- PREV(numberSfromWH (SfromWH)) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
-seriesObject (SfromWH) <- PREV(seriesSfromWH (SfromWH)) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
-seriesNumberObject (SfromWH) <- PREV(seriesNumberSfromWH (SfromWH)) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
-warehouseSfromWH (SfromWH) <- warehouseWarehouseSfromWH (SfromWH) WHEN CHANGED (WHtoSPostedSfromWH(SfromWH));
+numberObject (SfromWH) <- PREV(numberSfromWH (SfromWH)) WHEN CHANGED (WHtoSSfromWH(SfromWH));
+seriesObject (SfromWH) <- PREV(seriesSfromWH (SfromWH)) WHEN CHANGED (WHtoSSfromWH(SfromWH));
+seriesNumberObject (SfromWH) <- PREV(seriesNumberSfromWH (SfromWH)) WHEN CHANGED (WHtoSSfromWH(SfromWH));
+warehouseSfromWH (SfromWH) <- warehouseWarehouseSfromWH (SfromWH) WHEN CHANGED (WHtoSSfromWH(SfromWH));
 
 //todo: Леша должен переделать ,чтобы подставлялись нужные значения.
 
@@ -54,13 +53,13 @@ storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
 
-CONSTRAINT storeSfromWH(SfromWH) != storeWHtoSPosted(WHtoSPostedSfromWH(SfromWH))
-    CHECKED BY WHtoSPostedSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
+CONSTRAINT storeSfromWH(SfromWH) != storeWHtoS(WHtoSSfromWH(SfromWH))
+    CHECKED BY WHtoSSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
 quantitySfromWHSku 'Количество принятое' (SfromWH, sku) = GROUP SUM quantitySfromWHDetail(SfromWHDetail)
                                           BY SfromWHSfromWHDetail(SfromWHDetail), skuSfromWHDetail(SfromWHDetail);
 
-quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSPostedSku (WHtoSPostedSfromWH(SfromWH), sku);
+quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSSku (WHtoSSfromWH(SfromWH), sku);
 
 diffQuantitySfromWHSku 'Разница' (SfromWH, sku) = quantitySfromWHSku(SfromWH, sku) (-) quantityOriginSfromWHSku(SfromWH, sku);
 
@@ -71,16 +70,16 @@ retailPriceSfromWHDetail(SfromWHDetail) <- retailPriceChangeSfromWHDetail(SfromW
                                                                                            OR CHANGED (skuSfromWHDetail(SfromWHDetail));
 
 toFillSfromWHDetailsSfromWH 'Заполнить документ из расхода' =  ACTION (SfromWH) {
-    FOR SfromWHWHtoSPosted(WHtoSPostedWHtoSPostedDetail(WHtoSPostedDetail)) == SfromWH DO {
+    FOR SfromWHWHtoS(WHtoSWHtoSDetail(WHtoSDetail)) == SfromWH DO {
         ADDOBJ SfromWHDetail;
         FOR d == addedObject() DO {
             SET SfromWHSfromWHDetail(d) <- SfromWH AS SfromWH;
-            SET quantitySfromWHDetail (d) <- quantityWHtoSPostedDetail(WHtoSPostedDetail);
-            SET skuSfromWHDetail (d) <- skuWHtoSPostedDetail(WHtoSPostedDetail);
-            SET UOMSfromWHDetail (d) <- UOMWHtoSPostedDetail(WHtoSPostedDetail);
-            SET importerPriceSfromWHDetail (d) <- importerPriceWHtoSPostedDetail(WHtoSPostedDetail);
-            SET supplierPriceSfromWHDetail (d) <- supplierPriceWHtoSPostedDetail(WHtoSPostedDetail);
-            SET supplierVATSfromWHDetail (d) <- supplierVATWHtoSPostedDetail(WHtoSPostedDetail);
+            SET quantitySfromWHDetail (d) <- quantityWHtoSDetail(WHtoSDetail);
+            SET skuSfromWHDetail (d) <- skuWHtoSDetail(WHtoSDetail);
+            SET UOMSfromWHDetail (d) <- UOMWHtoSDetail(WHtoSDetail);
+            SET importerPriceSfromWHDetail (d) <- importerPriceWHtoSDetail(WHtoSDetail);
+            SET supplierPriceSfromWHDetail (d) <- supplierPriceWHtoSDetail(WHtoSDetail);
+            SET supplierVATSfromWHDetail (d) <- supplierVATWHtoSDetail(WHtoSDetail);
         };
     };
 } CONFIRM;

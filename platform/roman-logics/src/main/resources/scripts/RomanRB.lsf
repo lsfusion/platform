@@ -13,13 +13,14 @@ REQUIRE System,
         Declaration,
         CStoWH,
         WHfromCS,
-        WHtoSDirect,
-        WHtoSTransit,
-        StoSDirect,
-        SfromSDirect,
-        StoSTransit,
-        SfromSTransit,
+        WHtoS,
+        StoS,
+        StoWH,
+        SfromS,
         SfromWH,
+        WHfromS,
+        WHtoWH,
+        WHfromWH,
         WholesalePrice,
         RetailPrice,
         RomanLogicsModule;
@@ -134,13 +135,14 @@ NAVIGATOR {
 
     baseElement {
         NEW merchandising 'Товародвижение' TO leftToolbar {
-            ADD WHtoSDirs;
-            ADD WHtoSTrs;
+            ADD WHtoSs;
             ADD SfromWHs;
-            ADD StoSDirs;
-            ADD SfromSDirs;
-            ADD StoSTrs;
-            ADD SfromSTrs;
+            ADD StoSs;
+            ADD SfromSs;
+            ADD StoWHs;
+            ADD WHfromSs;
+            ADD WHtoWHs;
+            ADD WHfromWHs;
         }
     }
 
@@ -157,7 +159,7 @@ NAVIGATOR {
         ADD numerator;
         ADD CStoWH;
         ADD WHfromCS;
-        ADD WHtoSDir;
+        ADD WHtoS;
         ADD declarationDetailCStoWHInput;
         ADD unitsOfMeasure;
         ADD tax;
@@ -170,7 +172,7 @@ NAVIGATOR {
         ADD dialogRangeWare;
         ADD addAddressBank;
         ADD dialogAddressBank;
-        ADD StoSDirsDialog;
+        ADD StoSsDialog;
         ADD bank;
         ADD position;
         ADD employee;
@@ -231,16 +233,20 @@ NAVIGATOR {
         ADD SfromWH;
         ADD warehouse;
         ADD stores;
-        ADD WHtoSTr;
-        ADD StoSDir;
-        ADD SfromSDir;
-        ADD WHtoSPostedDialog;
-        ADD StoSTrsDialog;
-        ADD StoSTr;
-        ADD SfromSTr;
+        ADD WHtoS;
+        ADD StoS;
+        ADD SfromS;
+        ADD StoSsDialog;
+        ADD StoS;
+        ADD SfromS;
         ADD syncBarcodeSkuForm;
         ADD priceChangePrint;
         ADD priceChangeCommittee;
         ADD company;
+        ADD StoWH;
+        ADD StoWHsDialog;
+        ADD WHfromS;
+        ADD WHtoWH;
+        ADD WHfromWH;
     }
 }

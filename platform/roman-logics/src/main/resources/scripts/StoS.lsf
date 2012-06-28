@@ -1,0 +1,217 @@
+//To Store From Store
+MODULE StoS;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        Declaration,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+CLASS StoS 'Расход с магазина на магазин' : historyObject, numberedObject, consignment;
+CLASS StoSDetail 'Строка расхода с магазина на магазин' : outAutoSkuLedger, consignmentDetail;
+CLASS StoSPosted 'Закрытый расход с магазина на магазин' : StoS, postedObject, consignment;
+
+
+skuStoSDetail 'Товар (ИД)' (StoSDetail) = DATA sku (StoSDetail)IN idGroup;
+nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku(skuStoSDetail(StoSDetail));
+
+@defineRBCorrespondingDocumentWithRetailPrices(StoS, departmentStore, 'Отдел документа', sku, 'Расход с магазина на магазин', store, 'Магазин-получатель');
+@defineDocumentDetailPackWeightSku(StoS);
+@defineDocumentHeaderSkuQuantity(StoS);
+
+senderStoreStoS 'Магазин-отправитель (ИД)' (StoS) = storeDepartmentStore(departmentStoreStoS(StoS));
+nameSenderStoreStoSDetail 'Магазин-отправитель' (StoSDetail) = name(senderStoreStoS(StoSDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+CONSTRAINT StoS IS StoS AND NOT companyStore(senderStoreStoS(StoS)) == companyStore(storeStoS(StoS))
+    CHECKED BY storeStoS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
+
+
+quantityOutAutoSkuLedger (ledger) += quantityStoSDetail (ledger);
+
+
+FORM StoS 'Расход с магазина на магазин'
+    OBJECTS s = StoS FIXED PANEL
+    PROPERTIES (s) numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameStoreStoS,
+                   quantityStoSDetailStoS, retailVATSumStoSDetailStoS,
+                   retailSumStoSDetailStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, noteStoS
+
+    OBJECTS d = StoSDetail
+    PROPERTIES(d) indexStoSDetail, barcodeStoSDetail, nameSkuStoSDetail, nameBrandStoSDetail, sidArticleStoSDetail,
+                  nameCategoryStoSDetail, sidColorStoSDetail, nameColorStoSDetail, shortNameUOMStoSDetail, balanceBSkuStoSDetail,
+                  quantityStoSDetail, retailPriceStoSDetail, numberRetailVATStoSDetail, valueRetailVATStoSDetail,
+                  retailVATSumStoSDetail, retailSumStoSDetail
+
+    PROPERTIES(s) TODRAW d addDetailDialogSkuStoSDetailStoS, addDetailDialogBarcodeStoSDetailStoS,
+                  deleteStoSDetailStoS
+
+
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS inStoSStoSDetail(s, d)
+
+    EDIT StoS OBJECT s
+;
+
+DESIGN StoS FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD s.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD s.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameDepartmentStoreStoS);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateStoS);
+                    ADD PROPERTY (timeStoS);
+                }
+                NEW case {
+                childConstraints = TO THE BOTTOM;
+                    title = 'Контрагент';
+                    ADD PROPERTY (nameStoreStoS);
+                }
+                ADD s.documentPrmGroup;
+            }
+            NEW row2 {
+                childConstraints = TO THE BOTTOM;
+                ADD s.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(quantityStoSDetailStoS);
+                    ADD PROPERTY(retailVATSumStoSDetailStoS);
+                    ADD PROPERTY(retailSumStoSDetailStoS);
+                }
+                ADD s.sumConsignmentGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+        ADD d.box;
+        ADD functions.box;
+    }
+}
+
+FORM StoSs 'Расходы с магазина на магазин'
+    OBJECTS s = StoS
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameStoreStoS,
+                   countStoSDetailStoS, quantityStoSDetailStoS, retailVATSumStoSDetailStoS,
+                   retailSumStoSDetailStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment
+
+    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+
+    PROPERTIES (s) ADDFORM, EDITFORM SHOWIF isDraftStoS(s), delete FORCE PANEL SHOWIF isDraftStoS(s),
+                   postStoS SHOWIF isDraftStoS(s), unpostStoS SHOWIF isPostedStoS(s)
+
+    PROPERTIES (s) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                   printConsignmentVerticalB, printConsignmentHorizontalB,
+                   printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                   printConsignmentSimpleVertical, printConsignmentSimpleAttach
+
+    OBJECTS d = StoSDetail
+    PROPERTIES(d) READONLY indexStoSDetail, barcodeStoSDetail, nameSkuStoSDetail, shortNameUOMStoSDetail, balanceBSkuStoSDetail,
+                  quantityStoSDetail, retailPriceStoSDetail, numberRetailVATStoSDetail, valueRetailVATStoSDetail,
+                  retailVATSumStoSDetail, retailSumStoSDetail
+
+    FILTERS inStoSStoSDetail(s, d)
+;
+
+DESIGN StoSs FROM DEFAULT {
+    ADD s.box{
+        PROPERTY (delete(s)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        PROPERTY (objectClassName(s)) {
+            preferredCharWidth = 15;
+        }
+        }
+    }
+    ADD d.box;
+
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD s.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD s.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        ADD s.printGroup {
+            childConstraints = TO THE BOTTOM;
+            NEW case55{
+                childConstraints = TO THE RIGHT;
+
+                NEW contOne {
+                    title = 'Накладная';
+                    ADD PROPERTY(editConsignment);
+                }
+                NEW tn{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТН-2';
+                    ADD PROPERTY(printConsignmentSimpleVertical);
+                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    ADD PROPERTY(printConsignmentSimpleAttach);
+                }
+            }
+            NEW ttn1{
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+                ADD PROPERTY(printConsignmentHorizontalB);
+                ADD PROPERTY(printConsignmentAttach);
+            }
+
+        }
+
+    }
+    ADD functions.box;
+}
+
+FORM StoSsDialog 'Перемещения (расход) на магазин (одно юрлицо)'
+    OBJECTS s = StoSPosted
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, nameDepartmentStoreStoS,
+                   nameStoreStoS, countStoSDetailStoS, quantityStoSDetailStoS,
+                   retailVATSumStoSDetailStoS, retailSumStoSDetailStoS
+    DIALOG StoSPosted OBJECT s
+;
+
+@defineConsignment(StoS);
+@implementConsignmentHeader(StoS, departmentStore);
+
+senderConsignment (consignment) += companyStore(senderStoreStoS(consignment));
+recipientConsignment (consignment) += companyStore(storeStoS(consignment));
+
+consignmentConsignmentDetail (consignmentDetail) += StoSStoSDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuStoSDetail (consignmentDetail);
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMStoSDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityStoSDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += retailPriceStoSDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueRetailVATStoSDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += retailVATSumStoSDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += retailSumStoSDetail (consignmentDetail) (-) retailVATSumStoSDetailStoS(consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += retailSumStoSDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightStoSDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityStoSDetail(consignmentDetail);
+//currencyConsignment(consignment) += currencyStoS(consignment);
+//isCustomsFlowConsignment (consignment) += consignment IS StoS;
+noteConsignment(consignment) += noteStoS(consignment);
+
+//noteConsignmentDetail
+
+//todo: Надо наполнить свойствами накладную. (УНП...)

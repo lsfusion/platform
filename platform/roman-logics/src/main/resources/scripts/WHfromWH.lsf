@@ -1,0 +1,242 @@
+//From WareHouse to WareHouse
+MODULE WHfromWH;
+
+REQUIRE System,
+
+        Stock,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        Declaration,
+        WholesalePrice,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY RomanLogicsModule, Stock;
+
+CLASS WHfromWH 'Приход на склад со склада' : historyObject, numberedObject, consignment;
+CLASS WHfromWHDetail 'Строка прихода на склад со склада' : outAutoSkuLedger, consignmentDetail;
+CLASS WHfromWHPosted 'Закрытый приход на склад со склада' : WHfromWH, postedObject, consignment;
+
+
+skuWHfromWHDetail 'Товар (ИД)' (WHfromWHDetail) = DATA sku (WHfromWHDetail)IN idGroup;
+nameSkuWHfromWHDetail 'Наименование товара' (WHfromWHDetail) = nameSku(skuWHfromWHDetail(WHfromWHDetail));
+
+@defineRBCorrespondingDocument(WHfromWH, warehouse, 'Оптовый склад-отправитель', sku, 'Расход со склада на склад', store, 'Оптовый склад-получатель');
+
+quantityOutAutoSkuLedger (ledger) += quantityWHfromWHDetail (ledger);
+
+importerPriceWHfromWHDetail 'Цена изготовителя/импортера' (WHfromWHDetail) = DATA NUMERIC[14,3] (WHfromWHDetail);
+supplierPriceWHfromWHDetail 'Цена поставщика без НДС' (WHfromWHDetail) = DATA NUMERIC[14,3] (WHfromWHDetail);
+
+importerPriceWHfromWHSku 'Цена без НДС' (WHfromWH, sku) = GROUP MAX importerPriceWHfromWHDetail(WHfromWHDetail) BY WHfromWHWHfromWHDetail(WHfromWHDetail), skuWHfromWHDetail(WHfromWHDetail);
+
+wholesalePriceWHfromWHDetail 'Оптовая цена' (WHfromWHDetail) =  priceWholesaleArticleDateTime(articleWHfromWHDetail(WHfromWHDetail), dateTimeWHfromWHDetail(WHfromWHDetail));
+supplierPriceWHfromWHDetail (WHfromWHDetail) <- wholesalePriceWHfromWHDetail(WHfromWHDetail) WHEN CHANGED(skuWHfromWHDetail(WHfromWHDetail)) OR CHANGED (dateTimeWHfromWHDetail(WHfromWHDetail));
+
+supplierSumWHfromWHDetail 'Стоимость без НДС' (WHfromWHDetail) = supplierPriceWHfromWHDetail(WHfromWHDetail) * quantityWHfromWHDetail(WHfromWHDetail);
+
+supplierSumWHfromWHDetailWHfromWH 'Стоимость без НДС' (WHfromWH)= GROUP SUM supplierSumWHfromWHDetail(WHfromWHDetail) BY WHfromWHWHfromWHDetail(WHfromWHDetail) IN documentSumGroup;
+
+
+supplierVATWHfromWHDetail(WHfromWHDetail) = DATA range (WHfromWHDetail);
+numberSupplierVATWHfromWHDetail 'НДС, номер' (WHfromWHDetail) = numberRange(supplierVATWHfromWHDetail(WHfromWHDetail));
+valueSupplierVATWHfromWHDetail 'НДС, %' (WHfromWHDetail) = valueRateRangeDate
+    (supplierVATWHfromWHDetail(WHfromWHDetail), dateWHfromWHDetail(WHfromWHDetail));
+
+CONSTRAINT taxRange(supplierVATWHfromWHDetail(WHfromWHDetail)) != tax.taxVAT CHECKED BY supplierVATWHfromWHDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+
+sumSupplierVATWHfromWHDetail 'Сумма НДС' (WHfromWHDetail) = [X*Y/100](
+    supplierSumWHfromWHDetail(WHfromWHDetail), valueSupplierVATWHfromWHDetail(WHfromWHDetail));
+
+sumSupplierVATWHfromWHDetailWHfromWH 'Сумма НДС' (WHfromWH) = GROUP SUM sumSupplierVATWHfromWHDetail(WHfromWHDetail) BY WHfromWHWHfromWHDetail(WHfromWHDetail) IN documentSumGroup;
+
+sumInvoiceWHfromWHDetail 'Стоимость с НДС' (WHfromWHDetail) = supplierSumWHfromWHDetail(WHfromWHDetail) (+) sumSupplierVATWHfromWHDetail(WHfromWHDetail);
+
+sumInvoiceWHfromWHDetailWHfromWH 'Стоимость с НДС' (WHfromWH)= GROUP SUM sumInvoiceWHfromWHDetail(WHfromWHDetail) BY WHfromWHWHfromWHDetail(WHfromWHDetail) IN documentSumGroup;
+
+netWeightWHfromWHDetail 'Вес (ед.)' (WHfromWHDetail) = netWeightSku(skuWHfromWHDetail(WHfromWHDetail));
+
+sumNetWeightWHfromWHDetail 'Общая масса груза, кг.' (WHfromWHDetail) = netWeightWHfromWHDetail(WHfromWHDetail)*quantityWHfromWHDetail(WHfromWHDetail);
+
+sumNetWeightWHfromWH 'Общая масса груза, кг.' (WHfromWH) = GROUP SUM sumNetWeightWHfromWHDetail(WHfromWHDetail) BY WHfromWHWHfromWHDetail(WHfromWHDetail) IN documentSumGroup;
+
+packQuantityWHfromWHDetail 'Количество грузовых мест' (WHfromWHDetail) = round0(quantityWHfromWHDetail(WHfromWHDetail)/
+    UNION OVERRIDE 1 IF WHfromWHDetail IS WHfromWHDetail, quantityPackSku(skuWHfromWHDetail(WHfromWHDetail)));
+
+packQuantityWHfromWHDetailWHfromWH 'Общее количество грузовых мест' (WHfromWH) = GROUP SUM packQuantityWHfromWHDetail(WHfromWHDetail) BY WHfromWHWHfromWHDetail(WHfromWHDetail) IN documentSumGroup;
+
+
+quantityWHfromWHSku (WHfromWH, sku) = GROUP SUM quantityWHfromWHDetail(WHfromWHDetail)
+                                          BY WHfromWHWHfromWHDetail(WHfromWHDetail), skuWHfromWHDetail(WHfromWHDetail);
+
+
+FORM WHfromWH 'Приход на склад со склада'
+    OBJECTS w = WHfromWH FIXED PANEL
+    PROPERTIES (w) numberObject, seriesObject, dateWHfromWH, timeWHfromWH, nameWarehouseWHfromWH, nameStoreWHfromWH,
+                   quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH, sumSupplierVATWHfromWHDetailWHfromWH,
+                   sumInvoiceWHfromWHDetailWHfromWH, sumNetWeightWHfromWH, packQuantityWHfromWHDetailWHfromWH, noteWHfromWH
+
+    OBJECTS d = WHfromWHDetail
+    PROPERTIES(d) indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, nameBrandWHfromWHDetail, sidArticleWHfromWHDetail,
+                  nameCategoryWHfromWHDetail, sidColorWHfromWHDetail, nameColorWHfromWHDetail, shortNameUOMWHfromWHDetail, balanceBSkuWHfromWHDetail,
+                  quantityWHfromWHDetail, importerPriceWHfromWHDetail, supplierPriceWHfromWHDetail, supplierSumWHfromWHDetail, numberSupplierVATWHfromWHDetail, valueSupplierVATWHfromWHDetail,
+                  sumSupplierVATWHfromWHDetail, sumInvoiceWHfromWHDetail
+
+    PROPERTIES(w) TODRAW d addDetailDialogSkuWHfromWHDetailWHfromWH, addDetailDialogBarcodeWHfromWHDetailWHfromWH,
+                  deleteWHfromWHDetailWHfromWH
+
+
+    PROPERTIES(d) ADDOBJ, delete
+//    PROPERTIES(w) TODRAW(d) addDetailDialogTerminalWHfromWHDetailWHfromWH
+
+    FILTERS inWHfromWHWHfromWHDetail(w, d)
+
+    EDIT WHfromWH OBJECT w
+;
+
+DESIGN WHfromWH FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD w.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD w.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameWarehouseWHfromWH);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateWHfromWH);
+                    ADD PROPERTY (timeWHfromWH);
+                }
+                NEW case {
+                childConstraints = TO THE BOTTOM;
+                    title = 'Контрагент';
+                    ADD PROPERTY (nameStoreWHfromWH);
+                }
+                ADD w.documentPrmGroup;
+            }
+            NEW row2 {
+                ADD w.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        };
+        ADD d.box;
+        ADD functions.box;
+    }
+}
+
+FORM WHfromWHs 'Приходы на склад со склада'
+    OBJECTS w = WHfromWH
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromWH, timeWHfromWH, nameWarehouseWHfromWH, nameStoreWHfromWH,
+                   countWHfromWHDetailWHfromWH, quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH, sumSupplierVATWHfromWHDetailWHfromWH,
+                   sumInvoiceWHfromWHDetailWHfromWH, packQuantityWHfromWHDetailWHfromWH, sumNetWeightWHfromWH
+
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+
+    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHfromWH(w), delete FORCE PANEL SHOWIF isDraftWHfromWH(w),
+                   postWHfromWH SHOWIF isDraftWHfromWH(w), unpostWHfromWH SHOWIF isPostedWHfromWH(w)
+
+    PROPERTIES (w ) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                   printConsignmentVerticalB, printConsignmentHorizontalB,
+                   printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                   printConsignmentSimpleVertical, printConsignmentSimpleAttach
+
+    OBJECTS d = WHfromWHDetail
+    PROPERTIES(d) READONLY indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, shortNameUOMWHfromWHDetail,
+                  quantityWHfromWHDetail, importerPriceWHfromWHDetail, supplierPriceWHfromWHDetail, supplierSumWHfromWHDetail, numberSupplierVATWHfromWHDetail, valueSupplierVATWHfromWHDetail,
+                  sumSupplierVATWHfromWHDetail, sumInvoiceWHfromWHDetail
+
+    FILTERS inWHfromWHWHfromWHDetail(w, d)
+;
+
+DESIGN WHfromWHs FROM DEFAULT {
+    ADD w.box{
+        PROPERTY (delete(w)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        PROPERTY (objectClassName(w)) {
+            preferredCharWidth = 15;
+        }
+        }
+    }
+    ADD d.box;
+
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD w.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD w.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        ADD w.printGroup {
+            childConstraints = TO THE BOTTOM;
+            NEW case55{
+                childConstraints = TO THE RIGHT;
+
+                NEW contOne {
+                    title = 'Накладная';
+                    ADD PROPERTY(editConsignment);
+                }
+                NEW tn{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТН-2';
+                    ADD PROPERTY(printConsignmentSimpleVertical);
+                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    ADD PROPERTY(printConsignmentSimpleAttach);
+                }
+            }
+            NEW ttn1{
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+                ADD PROPERTY(printConsignmentHorizontalB);
+                ADD PROPERTY(printConsignmentAttach);
+            }
+
+        }
+
+    }
+    ADD functions.box;
+}
+
+@defineConsignment(WHfromWH);
+@implementConsignmentHeader(WHfromWH, warehouse);
+
+senderConsignment (consignment) += companyWarehouse(warehouseWHfromWH(consignment));
+recipientConsignment (consignment) += companyStore(storeWHfromWH(consignment));
+
+consignmentConsignmentDetail (consignmentDetail) += WHfromWHWHfromWHDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuWHfromWHDetail (consignmentDetail);
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHfromWHDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityWHfromWHDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += supplierPriceWHfromWHDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATWHfromWHDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += sumSupplierVATWHfromWHDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += supplierSumWHfromWHDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceWHfromWHDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHfromWHDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityWHfromWHDetail(consignmentDetail);
+//currencyConsignment(consignment) += currencyWHfromWH(consignment);
+//isCustomsFlowConsignment (consignment) += consignment IS WHfromWH;
+noteConsignment(consignment) += noteWHfromWH(consignment);
+
+//noteConsignmentDetail
+
+//todo: Надо наполнить свойствами накладную. (УНП...)
+
+
