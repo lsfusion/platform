@@ -864,7 +864,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams prop;
         if (action == null) {
             if (!(requestValueType instanceof DataClass)) {
-                errLog.emitNotDataTypeError(parser, typeId);
+                errLog.emitRequestUserInputDataTypeError(parser, typeId);
             }
 
             prop = wrapWithFlowAction(new LPWithParams(addRequestUserDataAProp(null, genSID(), "", (DataClass) requestValueType), new ArrayList<Integer>()));
@@ -1411,11 +1411,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
 
+        // todo [dale]: надо подумать разделять ли синтаксически два варианта и нужно ли выдавать ошибку в случае ненужного ORDER
         List<Object> params;
         if (valueProp != null) {
+            checkCalculationProperty(mainProp);
             params = getParamsPlainList(asList(valueProp, whenProp));
             ((LCP)mainProp).setEventChange(params.toArray());
         } else {
+            checkActionProperty(mainProp);
             boolean ordersNotNull = doesExtendContext(asList(whenProp), orders);
             params = getParamsPlainList(asList(whenProp), orders);
             ((LAP<?>)mainProp).setEventAction(session, descending, ordersNotNull, params.toArray());
@@ -1905,6 +1908,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property instanceof LAP<?>)) {
             errLog.emitNotActionExecutedPropertyError(parser);
+        }
+    }
+
+    public void checkCalculationProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(property instanceof LCP<?>)) {
+            errLog.emitNotCalculationPropertyError(parser);
         }
     }
 

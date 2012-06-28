@@ -54,7 +54,7 @@ CLASS STATIC storeSize 'Размер склада'
 //                                                                                                 [FIXEDCHARWIDTH <int value>] [MINCHARWIDTH <int value>] [MAXCHARWIDTH <int value>] [PREFCHARWIDTH <int value>]
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
-//                                                                                                 [AGGPROP] [NOT NULL [DELETE]];
+//                                                                                                 [AGGPROP] [NOT NULL [DELETE [SESSION]]];
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
 // Специальные имена свойств: PREV, CHANGED, ASSIGNED
 
@@ -294,6 +294,16 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 //  [(INLINE formName OBJECTS obj1=propertyExpression1, ..., objN=propertyExpressionN) ...]
 //  [(ATTACH (PDF, DOCX, HTML, RTF) [NAME propertyExpression] formName OBJECTS obj1=propertyExpression1, ..., objN=propertyExpressionN) ...]
 
+// Confirm action
+// statement syntax:
+// CONFIRM propertyExpression [LENGTH intValue]
+
+// Request action
+// statement syntax:
+// REQUEST type (INPUT | [objectName] actionStatement)
+// type can be built-in type or OBJECT
+
+
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
     SET (name(a) AND a IS article) <- (name(s) AND s IS store);
 };
@@ -321,16 +331,6 @@ createNewStore 'Добавить большой склад' = ACTION () {
 // CONSTRAINT propertyExpression [CHECKED [BY propertyName1, ..., propertyNameN]] propertyExpression MESSAGE 'message';
 CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
-constraintAction (store, article) = ACTION (store, article) {
-//    EXEC cancel();
-    IF foo(store, article) > 300000 THEN {
-        MESSAGE name(article);
-    }
-};
-constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(article) SESSION;
-
-// inQuantity(document, article) <- 15 WHEN CHANGED(foo(store(document), article));
-
 
 ////////////////FOLLOWS STATEMENT////////////////
 // Syntax:
@@ -346,6 +346,16 @@ constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(articl
 // propertyName(param1, ..., paramN) <- valuePropertyExpression WHEN changePropertyExpression
 // or
 // actionPropertyName(param1, ..., paramN) WHEN changePropertyExpression [ORDER [DESC] orderExpression1, ..., orderExpressionN] [SESSION]
+
+constraintAction (store, article) = ACTION (store, article) {
+//    EXEC cancel();
+    IF foo(store, article) > 300000 THEN {
+        MESSAGE name(article);
+    }
+};
+constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(article) SESSION;
+
+// inQuantity(document, article) <- 15 WHEN CHANGED(foo(store(document), article));
 
 
 //////////////// FORM STATEMENT /////////////////

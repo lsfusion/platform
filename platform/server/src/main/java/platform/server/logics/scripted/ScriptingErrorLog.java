@@ -312,6 +312,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "executed property should be an action");
     }
 
+    public void emitNotCalculationPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "property cannot be an action");
+    }
+
     public void emitExtendActionContextError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "action parameters must be defined explicitly");
     }
@@ -376,8 +380,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("property '%s' is not ABSTRACT", propName));
     }
 
-    public void emitNotDataTypeError(LsfLogicsParser parser, String typeName) throws SemanticErrorException {
-        emitSimpleError(parser, "");
+    public void emitRequestUserInputDataTypeError(LsfLogicsParser parser, String typeName) throws SemanticErrorException {
+        emitSimpleError(parser, format("type '%s' cannot be used with INPUT option", typeName));
     }
 
     public void emitOwnNamespacePriorityError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {

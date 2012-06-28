@@ -327,7 +327,6 @@ public class CashRegController {
     }
 
     public void addCashRegProperties() {
-        // todo [dale]: надо бы переделать это на LogicsModule
 //       пока не поддерживается
 //        LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.genSID(), "Аннулировать чек", "/A"));
         LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.baseLM.genSID(), "Продолжить печать", "/R"));

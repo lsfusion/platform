@@ -1380,7 +1380,7 @@ aggPropSetting [LP property]
 	;
 
 notNullSetting returns [boolean toResolve = false, boolean inSession = false]
-	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } session=sessionType {$inSession= (session==null ? false : $session.session);})?
+	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } st=sessionType { $inSession = $st.session; })?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1429,7 +1429,7 @@ extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithPar
 	
 keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
-	|	reqeustInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $reqeustInputPDB.property; }
+	|	requestInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $requestInputPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
@@ -1617,12 +1617,6 @@ changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 
 
 requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	List<LPWithParams> props = new ArrayList<LPWithParams>();
-	List<String> localPropNames = new ArrayList<String>();
-	boolean newSession = false;
-	boolean doApply = false;
-}
 @after {
 	if (inPropParseState()) {
 		$property = self.addScriptedRequestUserInputAProp($tid.sid, $objID.text, $PDB.property);
@@ -1811,7 +1805,7 @@ followsStatement
 			{
 		     	props.add($nextExpr.property); 
 		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-			sessions.add(session == null ? false : $session.session);
+				sessions.add(session == null ? false : $session.session);
 			}
 		)*
 		';'
@@ -1828,7 +1822,7 @@ followsResolveType returns [Integer type]
 ////////////////////////////////// WRITE STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-sessionType returns [Boolean session]
+sessionType returns [boolean session = false]
 	:	('SESSION'	{ $session = true; })?
 	;
 
@@ -1837,11 +1831,11 @@ writeWhenStatement
 	List<String> context;
 	LPWithParams value = null;
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
-	boolean ascending = true;
+	boolean descending = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, !ascending, session==null ? false : $session.session);
+		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, descending, $st.session);
 	}
 }
 	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
@@ -1851,9 +1845,10 @@ writeWhenStatement
 		)?
 		'WHEN'
 		whenExpr=propertyExpression[context, false]
-		('ORDER' ('DESC' { ascending = false; } )?
-		orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); })?
-		session=sessionType
+		(	'ORDER' ('DESC' { descending = true; })?
+			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
+		)?
+		st=sessionType
 		';'
 	;
 

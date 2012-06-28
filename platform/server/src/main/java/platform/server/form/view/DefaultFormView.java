@@ -266,7 +266,7 @@ public class DefaultFormView extends FormView {
 //            используем простое имя для групп данного модуля
 //            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
 //        }
-        return (group == null ? "NOGROUP" : group.entity.getSID()) + "." + propertyGroupSID;
+        return (group == null ? "NOGROUP" : group.entity.getSID()) + "." + propertyGroupSID; // todo [dale]: разобраться с NOGROUP
     }
 
 
