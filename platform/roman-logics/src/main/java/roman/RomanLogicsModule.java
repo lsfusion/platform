@@ -5637,7 +5637,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (!tree)
                 addObjectActions(this, objCustomCategory9);
 
-            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10);
+            objCustomCategory10 = addSingleGroupObject("customCategory10", customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10);
             addObjectActions(this, objCustomCategory10);
 
             objSubCategory = addSingleGroupObject(subCategory, "Дополнительное деление", nameSubCategory);
