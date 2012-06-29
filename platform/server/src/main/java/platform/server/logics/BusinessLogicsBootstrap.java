@@ -114,7 +114,7 @@ public class BusinessLogicsBootstrap {
     }
 
     private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
-        if (registry != null)
+        if (registry == null)
             registry = getRegistry(BL.getExportPort());
 
         try {
