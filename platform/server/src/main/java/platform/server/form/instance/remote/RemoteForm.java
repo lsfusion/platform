@@ -581,26 +581,26 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void acquireRequestLock(long requestIndex) {
-        logger.debug("Acquiring request lock for form #" + getID() + " for request #" + requestIndex);
+        logger.debug("Acquiring request lock for form #" + getSID() + " for request #" + requestIndex);
         try {
             if (requestIndex >= 0) {
                 sequentialRequestLock.take(requestIndex);
             }
             requestLock.take();
-            logger.debug("Acquired request lock for form #" + getID() + " for request #" + requestIndex);
+            logger.debug("Acquired request lock for form #" + getSID() + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
     }
 
     public void releaseCurrentRequestLock(long requestIndex) {
-        logger.debug("Releasing request lock for form #" + getID() + " for request #" + requestIndex);
+        logger.debug("Releasing request lock for form #" + getSID() + " for request #" + requestIndex);
         try {
             requestLock.put(LOCK_OBJECT);
             if (requestIndex >= 0) {
                 sequentialRequestLock.offer(requestIndex + 1, LOCK_OBJECT);
             }
-            logger.debug("Released request lock for form #" + getID() + " for request #" + requestIndex);
+            logger.debug("Released request lock for form #" + getSID() + " for request #" + requestIndex);
         } catch (InterruptedException e) {
             Throwables.propagate(e);
         }
@@ -626,7 +626,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private ServerResponse processPausableRMIRequest(final long requestIndex, final ERunnable runnable) throws RemoteException {
-        return executeServerInvocation(requestIndex, new RemotePausableInvocation("f#" + getID() + "_rq#" + requestIndex,  pausablesExecutor, this) {
+        return executeServerInvocation(requestIndex, new RemotePausableInvocation("f#" + getSID() + "_rq#" + requestIndex,  pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
