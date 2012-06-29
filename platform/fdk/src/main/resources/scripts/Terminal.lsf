@@ -108,12 +108,12 @@ FORM groupTerminalDocumentType 'Группа типов документов'
 
 FORM groupsTerminalDocumentType 'Группы типов документов'
     OBJECTS gtdt=groupTerminalDocumentType, tdt=terminalDocumentType
-    PROPERTIES(gtdt) nameGroupTerminalDocumentType
-    PROPERTIES(gtdt)  ADDFORM, EDITFORM, delete
+    PROPERTIES(gtdt) READONLY nameGroupTerminalDocumentType
+    PROPERTIES(gtdt) ADDFORM, EDITFORM, delete
 
     PROPERTIES(tdt) READONLY idTerminalDocumentType, nameTerminalDocumentType,
-    nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
-    nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
+                             nameInHandbook1TerminalDocumentType, idTerminalHandbookType1TerminalDocumentType,
+                             nameInHandbook2TerminalDocumentType, idTerminalHandbookType2TerminalDocumentType
 
     FILTERS groupTerminalDocumentTypeTerminalDocumentType (tdt) == gtdt
 ;
