@@ -228,7 +228,7 @@ META defineDocumentHeaderInvoiceSum (object)
         invoiceISum###object##Detail###object(object) (+) wareSum###object##Detail###object(object) IN documentSumGroup PERSISTENT;
 
     supplierSum###object##Detail###object 'Сумма поставщика без НДС' (object) =
-        invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object);
+        invoiceSum###object##Detail###object (object) (-) invoiceVATSum###object##Detail###object (object) IN documentSumGroup PERSISTENT;
 END
 
 META defineDocumentHeaderWareSumCustomPrefix (object, detail, prefix, caption)

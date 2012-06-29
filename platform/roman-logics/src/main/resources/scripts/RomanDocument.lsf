@@ -51,7 +51,7 @@ META defineRBCorrespondingDocumentWithRetailPrices (object, stock, stockCaption,
     @defineDocumentHeaderBaseSum(object);
     @defineDocumentHeaderInvoiceSum(object);
 
-    @implementBaseSkuDepartmentStoreLedger(object, sku);
+//    @implementBaseSkuDepartmentStoreLedger(object, sku);
 END
 
 META defineUniqueDocumentComingByExpense (object, objectFrom)

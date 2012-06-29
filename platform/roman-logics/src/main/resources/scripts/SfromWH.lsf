@@ -28,40 +28,27 @@ skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) I
 nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = nameSku(skuSfromWHDetail(SfromWHDetail));
 
 @defineRBCorrespondingDocumentWithRetailPrices(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
+@defineDocumentDetailPackWeightSku(SfromWH);
+@defineDocumentHeaderSkuQuantity(SfromWH);
+@defineUniqueDocumentComingByExpense(SfromWH, WHtoS);
+@defineDocumentHeaderOriginSkuQuantity(SfromWH, WHtoS);
+
 quantityInTransferSkuLedger (ledger) += quantitySfromWHDetail(ledger);
-
-WHtoSSfromWH 'Расход прихода (ИД)' (SfromWH) = DATA WHtoS(SfromWH) IN idGroup;
-SfromWHWHtoS (WHtoS) = GROUP UNIQUE SfromWH BY WHtoSSfromWH (SfromWH);
-CONSTRAINT WHtoSSfromWH(p1) == WHtoSSfromWH(p2) AND p1 != p2 CHECKED BY WHtoSSfromWH MESSAGE 'Расход задействован в другом приходе';
-
-numberSfromWH 'Номер док. расхода' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH)) IN documentHeaderGroup;
-seriesSfromWH 'Серия' (SfromWH) = seriesObject(WHtoSSfromWH(SfromWH)) IN documentHeaderGroup;
-seriesNumberSfromWH 'Серия/Номер' (SfromWH) = seriesNumberObject(WHtoSSfromWH(SfromWH));
-warehouseWarehouseSfromWH 'Оптовый склад(ИД)' (SfromWH) = warehouseWHtoS(WHtoSSfromWH(SfromWH));
-
-
-numberObject (SfromWH) <- PREV(numberSfromWH (SfromWH)) WHEN CHANGED (WHtoSSfromWH(SfromWH));
-seriesObject (SfromWH) <- PREV(seriesSfromWH (SfromWH)) WHEN CHANGED (WHtoSSfromWH(SfromWH));
-seriesNumberObject (SfromWH) <- PREV(seriesNumberSfromWH (SfromWH)) WHEN CHANGED (WHtoSSfromWH(SfromWH));
-warehouseSfromWH (SfromWH) <- warehouseWarehouseSfromWH (SfromWH) WHEN CHANGED (WHtoSSfromWH(SfromWH));
-
-//todo: Леша должен переделать ,чтобы подставлялись нужные значения.
 
 companyWarehouseSfromWH (SfromWH) = companyWarehouse(warehouseSfromWH(SfromWH));
 nameCompanyWarehouseSfromWH 'Поставщик' (SfromWH) = name(companyWarehouseSfromWH(SfromWH));
 storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
+identitySfromWH (SfromWH) =  storeSfromWH(SfromWH) == storeWHtoS(WHtoSSfromWH(SfromWH)) AND warehouseSfromWH(SfromWH) == warehouseWHtoS(WHtoSSfromWH(SfromWH));
 
-CONSTRAINT storeSfromWH(SfromWH) != storeWHtoS(WHtoSSfromWH(SfromWH))
-    CHECKED BY WHtoSSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
+CONSTRAINT SfromWH IS SfromWH AND NOT identitySfromWH(SfromWH) CHECKED BY WHtoSSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
-quantitySfromWHSku 'Количество принятое' (SfromWH, sku) = GROUP SUM quantitySfromWHDetail(SfromWHDetail)
-                                          BY SfromWHSfromWHDetail(SfromWHDetail), skuSfromWHDetail(SfromWHDetail);
+numberSfromWH 'Номер док-та расхода' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH));
 
-quantityOriginSfromWHSku 'Кол-во плановое' (SfromWH, sku) = quantityWHtoSSku (WHtoSSfromWH(SfromWH), sku);
-
-diffQuantitySfromWHSku 'Разница' (SfromWH, sku) = quantitySfromWHSku(SfromWH, sku) (-) quantityOriginSfromWHSku(SfromWH, sku);
+documentFlowSfromWH 'Документ расхода' (SfromWH) =
+    [FORMULA STRING[500] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \', \' || CAST($3 AS TEXT)'] (
+    seriesNumberObject(WHtoSSfromWH(SfromWH)), dateWHtoS(WHtoSSfromWH(SfromWH)), name(warehouseWHtoS(WHtoSSfromWH(SfromWH)))) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 retailPriceChangeSfromWHDetail(SfromWHDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail)),
                                                                priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuSfromWHDetail(SfromWHDetail)), dateTimeSfromWHDetail(SfromWHDetail));
@@ -86,19 +73,16 @@ toFillSfromWHDetailsSfromWH 'Заполнить документ из расхо
 
 FORM SfromWH 'Приход на магазин'
     OBJECTS sf = SfromWH FIXED PANEL
-    PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, quantitySfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH,
-                    invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH, noteSfromWH, numberSfromWH, toFillSfromWHDetailsSfromWH
-    PROPERTIES (sf) READONLY seriesObject, nameWarehouseSfromWH
+    PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, seriesObject, numberObject, numberSfromWH, nameWarehouseSfromWH, quantitySfromWHDetailSfromWH,
+                    supplierSumSfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH,
+                    retailSumSfromWHDetailSfromWH, noteSfromWH, toFillSfromWHDetailsSfromWH
 
     OBJECTS d = SfromWHDetail
     PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
                   nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
-                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail,
-                  numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                  supplierVATISumSfromWHDetail, invoiceISumSfromWHDetail,
-                  numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
+                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, supplierSumSfromWHDetail, numberSupplierVATSfromWHDetail,
+                  valueSupplierVATSfromWHDetail, supplierVATISumSfromWHDetail, invoiceSumSfromWHDetail, numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
                   retailPriceSfromWHDetail
-
 
     PROPERTIES(sf) TODRAW d addDetailDialogSkuSfromWHDetailSfromWH, addDetailDialogBarcodeSfromWHDetailSfromWH,
                   deleteSfromWHDetailSfromWH
@@ -107,13 +91,13 @@ FORM SfromWH 'Приход на магазин'
 
     OBJECTS i=sku
     PROPERTIES(i) nameSku
-    PROPERTIES(sf,i) quantitySfromWHSku, quantityOriginSfromWHSku, diffQuantitySfromWHSku
+    PROPERTIES(i, sf) quantitySfromWHDetailSkuSfromWH, quantityOriginSfromWHDetailSkuSfromWH, diffQuantitySfromWHDetailSkuSfromWH
 
     FILTERS inSfromWHSfromWHDetail(sf, d)
-    FILTERS quantityOriginSfromWHSku(sf,i) OR quantitySfromWHSku(sf,i)
+    FILTERS quantityOriginSfromWHDetailSkuSfromWH(i, sf) OR quantitySfromWHDetailSkuSfromWH(i, sf)
 
     FILTERGROUP filtersDiff
-        FILTER 'Показать отличающиеся' 'F10' diffQuantitySfromWHSku(sf,i) !=0
+        FILTER 'Показать отличающиеся' 'F10' diffQuantitySfromWHDetailSkuSfromWH(i, sf) !=0
 
     EDIT SfromWH OBJECT sf
 ;
@@ -128,19 +112,21 @@ DESIGN SfromWH FROM DEFAULT {
                 ADD sf.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameDepartmentStoreSfromWH);
-                    ADD PROPERTY (numberSfromWH);
+                    ADD PROPERTY (numberObject);
                     ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateSfromWH);
                     ADD PROPERTY (timeSfromWH);
                 }
                 NEW row11 {
                 childConstraints = TO THE RIGHT;
+
                     NEW row111 {
                         title = 'Контрагент-поставщик';
                         ADD PROPERTY (nameWarehouseSfromWH);
                     }
                     NEW row112{
                         title = 'Расход';
+                        ADD PROPERTY (numberSfromWH);
                         ADD PROPERTY (toFillSfromWHDetailsSfromWH);
                     }
                 }
@@ -163,21 +149,20 @@ DESIGN SfromWH FROM DEFAULT {
 
 FORM SfromWHs 'Приходы на магазин'
     OBJECTS sf = SfromWH
-    PROPERTIES (sf) READONLY objectClassName, numberObject, seriesObject, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
-                   countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH, retailSumSfromWHDetailSfromWH
+    PROPERTIES(sf) READONLY objectClassName, numberObject, seriesObject, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
+                   documentFlowSfromWH, countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, supplierSumSfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH,
+                   retailSumSfromWHDetailSfromWH
+    PROPERTIES(sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-
-    PROPERTIES (sf) ADDFORM, EDITFORM SHOWIF isDraftSfromWH(sf), delete FORCE PANEL SHOWIF isDraftSfromWH(sf),
+    PROPERTIES(sf) ADDFORM, EDITFORM SHOWIF isDraftSfromWH(sf), delete FORCE PANEL SHOWIF isDraftSfromWH(sf),
                    postSfromWH SHOWIF isDraftSfromWH(sf), unpostSfromWH SHOWIF isPostedSfromWH(sf)
 
     OBJECTS d = SfromWHDetail
-    PROPERTIES(d) READONLY  indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
-                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail,
-                  numberSupplierVATSfromWHDetail, valueSupplierVATSfromWHDetail,
-                  supplierVATISumSfromWHDetail, invoiceISumSfromWHDetail,
-                  numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
+    PROPERTIES(d) READONLY indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
+                  nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
+                  quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, supplierSumSfromWHDetail, numberSupplierVATSfromWHDetail,
+                  valueSupplierVATSfromWHDetail, supplierVATISumSfromWHDetail, invoiceSumSfromWHDetail, numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
                   retailPriceSfromWHDetail
 
     FILTERS inSfromWHSfromWHDetail(sf, d)
