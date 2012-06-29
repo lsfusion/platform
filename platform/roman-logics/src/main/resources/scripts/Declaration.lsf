@@ -467,6 +467,9 @@ priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (decl
                                                                                             registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
 
+priceCustomBatch (batch) += priceCustomDeclarationDetail(batch);
+priceManagerialBatch (batch) += priceManagerialCustomDeclarationDetail(batch);
+
 quantityDeclarationArticle 'Кол-во' (declaration, article) = GROUP SUM quantityDeclarationSku(declaration, sku) BY declaration, articleSku(sku);
 inDeclarationArticle (declaration, article) = TRUE IF quantityDeclarationArticle(declaration, article);
 

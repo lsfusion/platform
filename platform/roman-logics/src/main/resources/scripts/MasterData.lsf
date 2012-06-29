@@ -60,6 +60,28 @@ FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
     PROPERTIES(s) syncBarcodeSku
 ;
 
+//----------------------Определения себестоимости при создании оптового прайса  ----------------------//
+
+priceCustomBatch 'Себестоимость (БУ)' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+priceManagerialBatch 'Себестоимость (УУ)' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+
+
+concatPriceCustomBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) AND priceCustomBatch(batch) AND
+                                                                dateTimeBatch(batch) < (dateTime AS DATETIME)
+                                                                BY articleSku(skuBatch(batch)), dateTime;
+
+batchPriceCustomArticleDateTime (article, dateTime) = concatPriceCustomBatchArticleDateTime(article, dateTime)[2];
+priceCustomDateTime(article, dateTime) = priceCustomBatch(batchPriceCustomArticleDateTime(article, dateTime));
+
+
+concatPriceManagerialBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) AND priceManagerialBatch(batch) AND
+                                                                dateTimeBatch(batch) < (dateTime AS DATETIME)
+                                                                BY articleSku(skuBatch(batch)), dateTime;
+
+batchPriceManagerialArticleDateTime (article, dateTime) = concatPriceManagerialBatchArticleDateTime(article, dateTime)[2];
+priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceManagerialArticleDateTime(article, dateTime));
+
+
 //---------------------------------  -------------------------------------------//
 CLASS warehouse 'Склад' : Stock.stock;
 CLASS groupWarehouse 'Группа складов' : stockGroup;

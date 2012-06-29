@@ -10,15 +10,26 @@ PRIORITY RomanLogicsModule, RB;
 CLASS wholesalePriceDocument 'Оптовый прайс' : transaction;
 
 dateTimeWholesalePriceDocument 'Дата/время' = DATA DATETIME(wholesalePriceDocument);
+dateTimeWholesalePriceDocument(wholesalePriceDocument) <- currentDateTime() WHEN ASSIGNED(wholesalePriceDocument IS wholesalePriceDocument);
 
 declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
 
 inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
-priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = priceCustomDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
-priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = priceManagerialDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
+priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+//priceCustomDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
+priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- priceCustomDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+
+priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+//priceManagerialDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
+priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- priceManagerialDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
 
 priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+
+priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)
+    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
 
 orderWholesalePriceDocument = LIST(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
 
@@ -65,16 +76,22 @@ FORM wholesalePriceDocument 'Оптовый прайс'
 ;
 
 DESIGN wholesalePriceDocument FROM DEFAULT {
-    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
-    POSITION treeCategory.tree.box TO THE LEFT aa.box;
 
-    treeSupplierBrand.tree {
+
+    treeSupplierBrand.tree.box {
+        title = 'Поставщики-Бренды';
         fillHorizontal = 1.5;
+    }
+    treeCategory.tree.box {
+        title = 'Номенклатурные группы';
     }
 
     aa.box {
         fillHorizontal = 1.5;
     }
+
+    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
+    POSITION treeCategory.tree.box TO THE LEFT aa.box;
 
 }
 
@@ -96,6 +113,8 @@ toCreateWholesalePriceDocument 'Прайс по декларации' =  ACTION 
     ADDOBJ wholesalePriceDocument;
     FOR w == addedObject() DO {
         SET declarationWholesalePriceDocument(w) <- declaration AS declaration;
+        SET priceCustomWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
+        SET priceManagerialWholesalePriceDocumentArticle(w, article) <- priceManagerialDeclarationArticle(declaration, article);
         SET priceWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article)*rateExchangeDeclaration(declaration);
         SET inArticleWholesalePriceDocument(w, article) <- inDeclarationArticle(declaration, article);
 
