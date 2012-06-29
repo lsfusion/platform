@@ -156,3 +156,38 @@ groupMachineryMachineryPriceTransaction (transaction) += groupScalesScalesPriceT
 EXTEND FORM groupMachineryInput
     PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
 ;
+
+addScalesModel 'Добавить модель весов' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ scalesModel;
+    FOR sm == addedObject() DO {
+         SET name(sm) <- stringOne AS STRING[110];
+         SET handlerModel(sm) <- stringTwo AS STRING[200];
+    }
+}
+
+fillScalesModelDefaultValues 'Заполнить значения моделей весов по умолчанию' = ACTION () {
+    EXEC addScalesModel('Весы Digi', 'equ.clt.handler.digi.DigiHandler');
+    EXEC addScalesModel('Весы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC addScalesModel('Весы Штрих-Принт', 'equ.clt.handler.shtrihPrint.ShtrihPrintHandler');
+}
+
+fillScalesDefaultValues 'Заполнить значения весов по умолчанию' = ACTION(equipmentServer, stock, model, num) {
+    ADDOBJ groupScales;
+    FOR g == addedObject() DO {
+        SET stockGroupScales(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа весов по умолчанию' AS STRING[110];
+
+        LOCAL numScales = INTEGER();
+        SET numScales() <- 0;
+        WHILE numScales() < (num AS INTEGER) DO {
+            ADDOBJ scales;
+            FOR s == addedObject() DO {
+                SET groupScalesScales(s) <- g AS groupScales;
+                SET numScales() <- numScales() + 1;
+                SET nppMachinery(s) <- numScales();
+                SET scalesModelScales(s) <- model AS scalesModel;
+            }
+        }
+    }
+}

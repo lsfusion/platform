@@ -75,3 +75,36 @@ DESIGN groupsPriceChecker FROM DEFAULT {
 CLASS priceCheckerPriceTransaction 'Загрузка прайса в прайс чекеры' : machineryPriceTransaction;
 groupPriceCheckerPriceCheckerPriceTransaction 'Группа прайс чекеров' = DATA groupPriceChecker (priceCheckerPriceTransaction);
 groupMachineryMachineryPriceTransaction (transaction) += groupPriceCheckerPriceCheckerPriceTransaction(transaction);
+
+addPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ priceCheckerModel;
+    FOR pcm == addedObject() DO {
+         SET name(pcm) <- stringOne AS STRING[110];
+         SET handlerModel(pcm) <- stringTwo AS STRING[200];
+    }
+}
+
+fillPriceCheckerModelDefaultValues 'Заполнить значения моделей прайс-чекеров по умолчанию' = ACTION () {
+    EXEC addPriceCheckerModel('Прайс-чекеры EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+}
+
+fillPriceCheckerDefaultValues 'Заполнить значения прайс-чекеров по умолчанию' = ACTION(equipmentServer, stock, num) {
+
+    ADDOBJ groupPriceChecker;
+    FOR g == addedObject() DO {
+        SET stockGroupPriceChecker(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа прайс-чекеров по умолчанию' AS STRING[110];
+
+        LOCAL numPriceChecker = INTEGER();
+        SET numPriceChecker() <- 0;
+        WHILE numPriceChecker() < (num AS INTEGER) DO {
+            ADDOBJ priceChecker;
+            FOR pc == addedObject() DO {
+                SET groupPriceCheckerPriceChecker(pc) <- g AS groupPriceChecker;
+                SET numPriceChecker() <- numPriceChecker() + 1;
+                SET nppMachinery(pc) <- numPriceChecker();
+            }
+        }
+    }
+}

@@ -102,3 +102,39 @@ EXTEND FORM groupMachineryInput
     PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
                                                                     nameModelMachinery, dateCashRegister
 ;
+
+addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ cashRegisterModel;
+    FOR crm == addedObject() DO {
+         SET name(crm) <- stringOne AS STRING[110];
+         SET handlerModel(crm) <- stringTwo AS STRING[200];
+    }
+}
+
+fillCashRegisterModelDefaultValues 'Заполнить значения моделей касс по умолчанию' = ACTION () {
+    EXEC addCashRegisterModel('Кассы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC addCashRegisterModel('Кассы Kristal', 'equ.clt.handler.kristal.KristalHandler');
+    EXEC addCashRegisterModel('Кассы Maxishop', 'equ.clt.handler.maxishop.MaxishopHandler');
+    EXEC addCashRegisterModel('Кассы UKM4', 'equ.clt.handler.ukm4.UKM4Handler');
+}
+
+fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, model, num) {
+    ADDOBJ groupCashRegister;
+    FOR g == addedObject() DO {
+        SET departmentStoreGroupCashRegister(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа касс по умолчанию' AS STRING[110];
+
+        LOCAL numCashRegister = INTEGER();
+        SET numCashRegister() <- 0;
+        WHILE numCashRegister() < (num AS INTEGER) DO {
+            ADDOBJ cashRegister;
+            FOR c == addedObject() DO {
+                SET groupCashRegisterCashRegister(c) <- g AS groupCashRegister;
+                SET numCashRegister() <- numCashRegister() + 1;
+                SET nppMachinery(c) <- numCashRegister();
+                SET cashRegisterModelCashRegister(c) <- model AS cashRegisterModel;
+            }
+        }
+    }
+}

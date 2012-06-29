@@ -178,18 +178,13 @@ public class GenerateZReport extends ScriptingActionProperty {
             throw new RuntimeException(e);
         }
         try {
-            //String res = ((RetailBusinessLogics) LM.getBL()).sendSalesInfo(salesInfoList, "equServer1");
-            //JoinActionProperty jap = (JoinActionProperty) LM.findLPByCompoundName("equipmentServerActionProperty").property;
-            //String res = ((EquipmentServer)jap.action.property).sendSalesInfo(salesInfoList, "equServer1");
-            String res = ((EquipmentServerHolder)LM.getBL()).getEquipmentServer().sendSalesInfo(salesInfoList, "equServer1");
+            String res = ((EquipmentServerHolder) LM.getBL()).getEquipmentServer().sendSalesInfo(salesInfoList, "equServer1");
             if (res != null) {
                 throw new RuntimeException(res);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } /*catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException(e);
-        }*/
+        }
     }
 
     private Integer addDeviation(Integer value, Double percent, Random r) {

@@ -268,13 +268,7 @@ DESIGN terminalDocuments FROM DEFAULT {
     }
     ADD functions.box;
 }
-//
-//FORM terminalDocument 'Документ ТСД'
-//     OBJECTS td=terminalDocument FIXED PANEL
-//     PROPERTIES(td) idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
-//                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
-//
-//;
+
 //----------------------------- Макросы для документов --------------------------------//
 
 META defineAddDetailDialogTerminal (object, skuProp)
@@ -303,3 +297,66 @@ CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machi
 groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
 groupMachineryMachineryPriceTransaction (transaction) += groupTerminalTerminalPriceTransaction(transaction);
 
+// --------------------------------------- Заполнение по умолчанию ------------------------------------------- //
+addTerminalModel 'Добавить модель терминала' = ACTION (stringOne, stringTwo)  {
+    ADDOBJ terminalModel;
+    FOR tm == addedObject() DO {
+         SET name(tm) <- stringOne AS STRING[110];
+         SET handlerModel(tm) <- stringTwo AS STRING[200];
+    }
+}
+
+fillTerminalModelDefaultValues 'Заполнить значения моделей ТСД по умолчанию' = ACTION () {
+    EXEC addTerminalModel('ТСД InventoryTech', 'equ.clt.handler.inventoryTech.InventoryTechHandler');
+    EXEC addTerminalModel('ТСД EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+}
+
+addTerminalDocumentType 'Добавить тип документа ТСД' = ACTION (nameString, gtdt, idTypeString, handbook1String, handbook2String) {
+    ADDOBJ terminalDocumentType;
+    FOR tdt == addedObject() DO {
+        SET nameTerminalDocumentType(tdt) <- nameString AS STRING[110];
+        SET groupTerminalDocumentTypeTerminalDocumentType(tdt) <- gtdt AS groupTerminalDocumentType;
+        SET terminalHandbookType1TerminalDocumentType(tdt) <- terminalHandbookTypeID(handbook1String);
+        SET terminalHandbookType2TerminalDocumentType(tdt) <- terminalHandbookTypeID(handbook2String);
+        SET idTerminalDocumentType(tdt) <- idTypeString AS STRING[10];
+    }
+}
+
+addTerminalHandbookType 'Добавить вид справочника ТСД' = ACTION (handbookTypeName, idString) {
+    SET idTerminalHandbookType(x) IF x==handbookTypeName <-idString AS STRING[110];
+}
+
+fillTerminalDefaultValues 'Заполнить значения ТСД по умолчанию' = ACTION(equipmentServer, stock, model, gtdt, num) {
+    ADDOBJ groupTerminal;
+    FOR g == addedObject() DO {
+        SET stockGroupTerminal(g) <- stock AS stock;
+        SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET nameGroupMachinery(g) <- 'Группа ТСД по умолчанию' AS STRING[110];
+        SET groupTerminalDocumentTypeGroupTerminal(g) <- gtdt AS groupTerminalDocumentType;
+
+        LOCAL numTerminal = INTEGER();
+        SET numTerminal() <- 0;
+        WHILE numTerminal() < (num AS INTEGER) DO {
+            ADDOBJ terminal;
+            FOR t == addedObject() DO {
+                SET groupTerminalTerminal(t) <- g AS groupTerminal;
+                SET numTerminal() <- numTerminal() + 1;
+                SET nppMachinery(t) <- numTerminal();
+                SET terminalModelTerminal(t) <- model AS terminalModel;
+            }
+        }
+    }
+}
+
+fillDocumentTypeDefaultValues 'Заполнить типы документов ТСД по умолчанию' = ACTION () {
+    EXEC addTerminalHandbookType(terminalHandbookType.supplier, '01');
+    EXEC addTerminalHandbookType(terminalHandbookType.customer, '02');
+
+    ADDOBJ groupTerminalDocumentType;
+    FOR gtdt == addedObject() DO {
+        SET nameGroupTerminalDocumentType(gtdt) <- 'Группа типов документов по умолчанию';
+        EXEC addTerminalDocumentType('Инвентаризация', gtdt, '01', ' ', ' ');
+        EXEC addTerminalDocumentType('Приход', gtdt, '02', '01', ' ');
+        EXEC addTerminalDocumentType('Отгрузка по безналичному расчёту', gtdt, '03', '02', ' ');
+    }
+}

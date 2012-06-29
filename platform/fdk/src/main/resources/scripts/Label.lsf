@@ -155,3 +155,26 @@ DESIGN labelTransactions FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+addLabelType 'Добавить тип ценника' = ACTION(name, width, height, orientation, file, byDefault) {
+    ADDOBJ labelType;
+    FOR lt ==  addedObject() DO {
+        SET name(lt) <- name AS STRING[110];
+        SET widthLabelType(lt) <-width AS INTEGER;
+        SET heightLabelType(lt) <-height AS INTEGER;
+        SET orientationLabelType(lt) <- orientation;
+        SET fileTemplateLabelType(lt) <-file AS STRING[200];
+
+        FOR storeDepartmentStore(departmentStore) != 0 DO {
+            SET inLabelTypeDepartmentStore(lt, departmentStore) <- TRUE;
+            IF byDefault == TRUE THEN {
+                SET isDefaultLabelTypeDepartmentStore(lt, departmentStore) <- TRUE;
+            }
+        }
+    }
+}
+
+fillLabelTypeDefaultValues 'Заполнить типы ценников по умолчанию' = ACTION() {
+    EXEC addLabelType('Ценник 200x130', 200, 130, printOrientation.portrait, 'Label_printLabelTransaction_l.jrxml', TRUE);
+    EXEC addLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
+}
