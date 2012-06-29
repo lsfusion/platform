@@ -140,7 +140,9 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES(d, f)    quantityInputDeclarationFreightUnit READONLY, toFillQuantityInputDetailDeclarationFreightUnit
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY barcodeDeclarationDetail, sidArticleDeclarationDetail
+    PROPERTIES (dd) READONLY barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
+                             sidColorDeclarationDetail, nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
+                             nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail
     PROPERTIES (f, dd) currentBalanceFreightUnitDeclarationDetail, quantityInputFreightUnitDeclarationDetail
 
     FILTERS isAvailableDeclarationCStoWH (d, c),
