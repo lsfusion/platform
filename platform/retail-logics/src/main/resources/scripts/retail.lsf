@@ -1727,6 +1727,23 @@ FORM customers 'Покупатели'
     PROPERTIES(cu)   ADDFORM, EDITFORM, delete
 ;
 
+// ---------------------------- Нумераторы по умолчанию --------------------------------- //
+
+defaultNumeratorDocuments = DATA numerator ();
+nameDefaultNumeratorDocuments 'Нумератор для документов' = name(defaultNumeratorDocuments());
+
+numeratorObject(object) <- defaultNumeratorDocuments() WHEN ASSIGNED(object IS numeratedObject);
+
+defaultNumeratorOrders = DATA numerator ();
+nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
+
+defaultNumeratorDiscountCards = DATA numerator ();
+nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
+
+numeratorOrder(order) = numeratorObject(order) AND order IS order;
+// todo : включение этого derived'а отключает верхний derived
+//numeratorOrder(order) <- defaultNumeratorOrders() WHEN ASSIGNED(order IS order);
+
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
 CLASS discountCard 'Дисконтная карта' : numeratedObject;
 TABLE discountCard (discountCard);
@@ -1735,6 +1752,36 @@ discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNum
 
 customerDiscountCard (discountCard) = DATA customer(discountCard);
 nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
+
+FORM generationDiscountCards 'Генерация дисконтных карт'
+    OBJECTS n=numerator  FIXED PANEL
+    PROPERTIES(n) SELECTOR name
+
+    OBJECTS quantityCards=INTEGER FIXED PANEL
+    PROPERTIES(quantityCards) intValueQuantityCards = OBJVALUE;
+
+DESIGN generationDiscountCards FROM DEFAULT {
+    main{
+        PROPERTY(intValueQuantityCards) {
+            caption = 'Количество дисконтных карт';
+            }
+        }
+}
+
+generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
+    FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCards() MODAL CHECK;
+    IF formResult() == formResult.ok THEN {
+        LOCAL num = INTEGER();
+        SET num() <- 0;
+        WHILE num() < (chosenInt('quantityCards') AS INTEGER) DO {
+            ADDOBJ discountCard;
+            FOR d == addedObject() DO {
+                SET numeratorObject(d) <-chosenObject('n') AS numerator;
+                SET num() <- num() + 1;
+            }
+        }
+    }
+} TOOLBAR;
 
 FORM discountCard 'Дисконтная карта'
     OBJECTS d=discountCard FIXED PANEL
@@ -1747,6 +1794,10 @@ FORM discountCards 'Дисконтные карты'
     OBJECTS d=discountCard
     PROPERTIES(d) READONLY seriesNumberObject, nameCustomerDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, delete
+
+    ORDER BY seriesNumberObject
+
+    PROPERTIES() generateDiscountCards TODRAW d
 ;
 
 //---------------------------- Рецепты блюд ----------------------------------------//
@@ -3937,7 +3988,7 @@ descriptionZReport (zReport) =
     [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
 
-generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'retail.actions.GenerateZReport';
+generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.srv.actions.GenerateZReport';
 averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
 averageBillCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
 averageBillDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
@@ -6501,7 +6552,7 @@ toPrintListInventory 'Опись' (listInventory) = toPrintListInventoryTime(lis
 
 
 addDetailDialogTerminalListInventory 'Заполнить из документа ТСД' (listInventory) = ACTION (listInventory) {
-    FORM terminalDocumentsDialog MODAL;
+    FORM terminalDocuments MODAL;
     IF formResult() == formResult.ok THEN {
         LOCAL document = terminalDocument ();
         SET document() <- chosenObject('td');
@@ -8915,20 +8966,6 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
     }
 }
 
-// ---------------------------- Нумераторы по умолчанию --------------------------------- //
-
-defaultNumeratorDocuments = DATA numerator ();
-nameDefaultNumeratorDocuments 'Нумератор для документов' = name(defaultNumeratorDocuments());
-
-numeratorObject(object) <- defaultNumeratorDocuments() WHEN ASSIGNED(object IS numeratedObject);
-
-defaultNumeratorOrders = DATA numerator ();
-nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
-
-numeratorOrder(order) = numeratorObject(order) AND order IS order;
-// todo : включение этого derived'а отключает верхний derived
-//numeratorOrder(order) <- defaultNumeratorOrders() WHEN ASSIGNED(order IS order);
-
 //---------------------------------------------- Автоматическое заполнение -----------------------------------------------------//
 
 //------------------- Статистические группы----------------------------//
@@ -9143,20 +9180,6 @@ fillLabelTypeDefaultValues 'Заполнить типы ценников по у
     EXEC addLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
 }
 
-fillDiscountCardDefaultValues 'Заполнить дисконтные карты по умолчанию' = ACTION () {
-   LOCAL num = INTEGER();
-   SET num() <- 0;
-   WHILE num() < 20 DO {
-        ADDOBJ discountCard;
-        FOR d == addedObject() DO {
-        EXEC setValueNumeratedObject(d);
-        SET numberObject(d) <-castToString255(num());
-        SET seriesObject(d) <-'AA';
-        SET num() <- num() + 1;
-        }
-   }
-}
-
 addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
     ADDOBJ cashRegisterModel;
     FOR crm == addedObject() DO {
@@ -9190,16 +9213,16 @@ addTerminalModel 'Добавить модель терминала' = ACTION (st
 }
 
 fillMachineryModelDefaultValues 'Заполнить значения моделей оборудования по умолчанию' = ACTION () {
-    EXEC addCashRegisterModel('Кассы EasyCSV', 'EasyCSVHandler');
-    EXEC addCashRegisterModel('Кассы Kristal', 'KristalHandler');
-    EXEC addCashRegisterModel('Кассы Maxishop', 'MaxishopHandler');
-    EXEC addCashRegisterModel('Кассы UKM4', 'UKM4Handler');
-    EXEC addScalesModel('Весы Digi', 'DigiHandler');
-    EXEC addScalesModel('Весы EasyCSV', 'EasyCSVHandler');
-    EXEC addScalesModel('Весы Штрих-Принт', 'ShtrihPrintHandler');
-    EXEC addPriceCheckerModel('Прайс-чекеры EasyCSV', 'EasyCSVHandler');
-    EXEC addTerminalModel('ТСД InventoryTech', 'InventoryTechHandler');
-    EXEC addTerminalModel('ТСД EasyCSV', 'EasyCSVHandler');
+    EXEC addCashRegisterModel('Кассы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC addCashRegisterModel('Кассы Kristal', 'equ.clt.handler.kristal.KristalHandler');
+    EXEC addCashRegisterModel('Кассы Maxishop', 'equ.clt.handler.maxishop.MaxishopHandler');
+    EXEC addCashRegisterModel('Кассы UKM4', 'equ.clt.handler.ukm4.UKM4Handler');
+    EXEC addScalesModel('Весы Digi', 'equ.clt.handler.digi.DigiHandler');
+    EXEC addScalesModel('Весы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC addScalesModel('Весы Штрих-Принт', 'equ.clt.handler.shtrihPrint.ShtrihPrintHandler');
+    EXEC addPriceCheckerModel('Прайс-чекеры EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC addTerminalModel('ТСД InventoryTech', 'equ.clt.handler.inventoryTech.InventoryTechHandler');
+    EXEC addTerminalModel('ТСД EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
 }
 
 fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, model, num) {
@@ -9290,7 +9313,8 @@ fillTerminalDefaultValues 'Заполнить значения ТСД по ум�
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection, skuStockAverageInterval, calcCurrentQuantitySoldInterval
+    PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection,
+                    nameDefaultNumeratorDiscountCards, skuStockAverageInterval, calcCurrentQuantitySoldInterval
 ;
 
 //---------------------------------------------- Заполнение БД -------------------------------------------------//
@@ -9299,7 +9323,7 @@ FORM fillDataBase 'Заполнение БД'
 
     PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
                     fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
-                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues, fillDiscountCardDefaultValues
+                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues
 
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
@@ -9436,14 +9460,14 @@ DESIGN fillDataBase FROM DEFAULT {
 
 //GROUP formularGroup 'Formular' : baseGroup;
 
-importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'retail.actions.ImportDataActionProperty';// IN formularGroup;
+importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'retail.ImportDataActionProperty';// IN formularGroup;
 importUrl 'URL' = DATA STRING[200] (); //IN formularGroup;
 importLogin 'Логин' = DATA STRING[200] ();// IN formularGroup;
 importPassword 'Пароль' = DATA STRING[200] ();// IN formularGroup;
 
 //GROUP lstradeGroup 'LS Trade' : baseGroup;
 
-importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'retail.actions.ImportLSTDataActionProperty';// IN lstradeGroup;
+importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'retail.ImportLSTDataActionProperty';// IN lstradeGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] ();// IN lstradeGroup;
 importInactive 'Импортировать в том числе неактивные' = DATA BOOLEAN ();
 importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN ();
@@ -9757,7 +9781,7 @@ NAVIGATOR {
             ADD dialogMarkupItemDepartment;
             ADD addBanSupplierItemDepartment;
             ADD dialogBanSupplierItemDepartment;
-            ADD terminalDocumentsDialog;
+            ADD terminalDocument;
             ADD preliminaryOrder;
             ADD cashRegister;
             ADD scales;
@@ -9836,6 +9860,7 @@ NAVIGATOR {
             ADD naturalLoss;
             ADD consignment;
             ADD dialogSku;
+            ADD generationDiscountCards;
         }
         ADD parameters;
         ADD fillDataBase;

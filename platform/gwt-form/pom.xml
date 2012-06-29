@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>retail-api</artifactId>
+            <artifactId>equ-api</artifactId>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

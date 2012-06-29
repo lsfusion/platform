@@ -35,7 +35,7 @@ public class BusinessLogicsBootstrap {
     private static final Object serviceMonitor = new Object();
 
     private static BusinessLogics BL;
-    private static Registry registry;
+    public static Registry registry;
 
     public static void start() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
         System.setProperty("mail.mime.encodefilename", "true");
@@ -51,6 +51,8 @@ public class BusinessLogicsBootstrap {
         initLifecycleManager();
 
         lifecycle.fireStarting();
+
+        createRMIRegistry();
 
         boolean blCreated = true;
         try {
@@ -104,13 +106,17 @@ public class BusinessLogicsBootstrap {
         ClassUtils.initRMICompressedSocketFactory();
     }
 
-    private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
-        registry = LocateRegistry.getRegistry(BL.getExportPort());
-        try {
-            registry.list();
-        } catch (RemoteException e) {
-            registry = LocateRegistry.createRegistry(BL.getExportPort());
+    private static void createRMIRegistry() throws RemoteException {
+        if (springContext.containsBean("exportPort")) {
+            Integer exportPort = (Integer) springContext.getBean("exportPort");
+            registry = getRegistry(exportPort);
         }
+    }
+
+    private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
+        if (registry != null)
+            registry = getRegistry(BL.getExportPort());
+
         try {
             String dbName = BL.getDbName() == null ? "default" : BL.getDbName();
             registry.bind(dbName + "/AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
@@ -118,6 +124,16 @@ public class BusinessLogicsBootstrap {
         } catch (AlreadyBoundException e2) {
             throw new RuntimeException("The base is already started");
         }
+    }
+
+    private static Registry getRegistry(int exportPort) throws RemoteException {
+        registry = LocateRegistry.getRegistry(exportPort);
+        try {
+            registry.list();
+        } catch (RemoteException e) {
+            registry = LocateRegistry.createRegistry(exportPort);
+        }
+        return registry;
     }
 
     private static void initSpringContext() {

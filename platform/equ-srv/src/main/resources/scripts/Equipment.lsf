@@ -1,0 +1,3 @@
+MODULE Equipment;
+
+REQUIRE Terminal, CashRegister, Scales, PriceChecker;

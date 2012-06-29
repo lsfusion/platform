@@ -15,7 +15,7 @@ import static platform.base.BaseUtils.reverse;
 
 public class JoinActionProperty<T extends PropertyInterface> extends KeepContextActionProperty {
 
-    private final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
+    public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
     public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement, ValueClass[] classes) {
         super(sID, caption, listInterfaces.size());

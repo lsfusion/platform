@@ -23,8 +23,9 @@
         <module>budget-logics</module>
         <module>roman-logics</module>
         <module>sample-logics</module>
-        <module>retail-api</module>
-        <module>retail-equ</module>
+        <module>equ-api</module>
+        <module>equ-clt</module>
+        <module>equ-srv</module>
         <module>retail-logics</module>
         <module>gwt-form</module>
         <module>gwt-api</module>

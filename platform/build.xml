@@ -224,15 +224,15 @@
         </antcall>
     </target>
 
-    <target name="retail-equ-recursiveCompile">
+    <target name="equ-clt-recursiveCompile">
         <antcall target="recursiveCompile">
-            <param name="artifactId" value="retail-equ"/>
+            <param name="artifactId" value="equ-clt"/>
         </antcall>
     </target>
 
-    <target name="retail-equ-quickCompile">
+    <target name="equ-clt-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="retail-equ"/>
+            <param name="artifactId" value="equ-clt"/>
         </antcall>
     </target>
 

@@ -209,12 +209,12 @@ isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (terminalDocu
 
 // ----------------------------------------------- Формы документов ------------------------------------------ //
 
-FORM terminalDocuments 'Документы ТСД'
-    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
+FORM terminalDocument 'Документ ТСД'
+    OBJECTS td=terminalDocument FIXED PANEL
     PROPERTIES(td)  idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
                     idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument, usedTerminalDocument READONLY
-    PROPERTIES(td)  ADDFORM, EDITFORM, delete
 
+    OBJECTS tdd=terminalDocumentDetail
     PROPERTIES(tdd) numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
     isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail, ADDOBJ
 
@@ -222,9 +222,11 @@ FORM terminalDocuments 'Документы ТСД'
 
     FILTERGROUP filterUse
         FILTER 'Неиспользованные' 'F10' notUsedTerminalDocument(td) DEFAULT
+
+    EDIT terminalDocument OBJECT td;
 ;
 
-DESIGN terminalDocuments FROM DEFAULT {
+DESIGN terminalDocument FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
         NEW topContainer {
@@ -238,11 +240,13 @@ DESIGN terminalDocuments FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM terminalDocumentsDialog 'Документы ТСД'
-    OBJECTS td=terminalDocument, tdd=terminalDocumentDetail
+FORM terminalDocuments 'Документы ТСД'
+    OBJECTS td=terminalDocument
     PROPERTIES(td)  READONLY idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
                     idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
+    PROPERTIES(td)  ADDFORM, EDITFORM, delete
 
+    OBJECTS tdd=terminalDocumentDetail
     PROPERTIES(tdd) READONLY numberTerminalDocumentDetail, barcodeTerminalDocumentDetail, nameTerminalDocumentDetail,
     isNewTerminalDocumentDetail, priceTerminalDocumentDetail, quantityTerminalDocumentDetail, sumTerminalDocumentDetail
 
@@ -251,7 +255,7 @@ FORM terminalDocumentsDialog 'Документы ТСД'
         FILTER 'Неиспользованные' 'F10' notUsedTerminalDocument(td) DEFAULT
 ;
 
-DESIGN terminalDocumentsDialog FROM DEFAULT {
+DESIGN terminalDocuments FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
         NEW topContainer{
@@ -264,12 +268,18 @@ DESIGN terminalDocumentsDialog FROM DEFAULT {
     }
     ADD functions.box;
 }
-
+//
+//FORM terminalDocument 'Документ ТСД'
+//     OBJECTS td=terminalDocument FIXED PANEL
+//     PROPERTIES(td) idTerminalDocument, nameTerminalDocumentTypeTerminalDocument, idTerminalHandbookType1TerminalDocument,
+//                    idTerminalHandbookType2TerminalDocument, titleTerminalDocument, quantityTerminalDocument
+//
+//;
 //----------------------------- Макросы для документов --------------------------------//
 
 META defineAddDetailDialogTerminal (object, skuProp)
     addDetailDialogTerminal###object##Detail###object 'Импорт из ТСД' (object) = ACTION (object) {
-        FORM terminalDocumentsDialog MODAL;
+        FORM terminalDocuments MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL document = terminalDocument ();
             SET document() <- chosenObject('td');
