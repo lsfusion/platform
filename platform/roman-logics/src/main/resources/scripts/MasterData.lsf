@@ -16,10 +16,12 @@ descriptionSku 'Наименование товара' (sku) =
 
 nameSku(sku) += descriptionSku (sku);
 
+@defineHierarchy(category);
+
+parentSkuGroup (skuGroup) += parentCategory(skuGroup);
 skuGroupSku (sku) += categoryArticleSku(sku);
 
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
-
 
 // отбор артикулов
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
@@ -304,10 +306,3 @@ DESIGN storesR FROM DEFAULT {
 
     ADD functions.box;
 }
-
-@defineHierarchy(category);
-
-parentSkuGroup (skuGroup) += parentCategory(skuGroup);
-
-skuGroupSku (sku) += categoryArticleSku (sku);
-
