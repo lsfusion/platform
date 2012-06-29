@@ -29,8 +29,8 @@ META defineRBCorrespondingDocument (object, stock, stockCaption, skuProp, captio
 
     @defineRBDocument (object, stock, stockCaption, skuProp, caption);
 
-    corresponder###object (object) = DATA corresponder (object) IN idGroup;
-    name###corresponder###object corresponderCaption (object) = name (corresponder###object(object)) IN documentHeaderGroup;
+    corr###corresponder###object (object) = DATA corresponder (object) IN idGroup;
+    nameCorr###corresponder###object corresponderCaption (object) = name (corr###corresponder###object(object)) IN documentHeaderGroup;
 
     balanceBSku###object##Detail 'Остаток до' (object##Detail) = balanceBSkuStockDateTime(
         sku###object##Detail(object##Detail), stock###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));

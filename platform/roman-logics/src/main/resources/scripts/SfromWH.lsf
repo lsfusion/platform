@@ -35,12 +35,12 @@ nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = n
 
 quantityInTransferSkuLedger (ledger) += quantitySfromWHDetail(ledger);
 
-companyWarehouseSfromWH (SfromWH) = companyWarehouse(warehouseSfromWH(SfromWH));
-nameCompanyWarehouseSfromWH 'Поставщик' (SfromWH) = name(companyWarehouseSfromWH(SfromWH));
+companyCorrWarehouseSfromWH (SfromWH) = companyWarehouse(corrWarehouseSfromWH(SfromWH));
+nameCompanyCorrWarehouseSfromWH 'Поставщик' (SfromWH) = name(companyCorrWarehouseSfromWH(SfromWH));
 storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
 nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
-identitySfromWH (SfromWH) =  storeSfromWH(SfromWH) == storeWHtoS(WHtoSSfromWH(SfromWH)) AND warehouseSfromWH(SfromWH) == warehouseWHtoS(WHtoSSfromWH(SfromWH));
+identitySfromWH (SfromWH) =  storeSfromWH(SfromWH) == corrStoreWHtoS(WHtoSSfromWH(SfromWH)) AND corrWarehouseSfromWH(SfromWH) == warehouseWHtoS(WHtoSSfromWH(SfromWH));
 
 CONSTRAINT SfromWH IS SfromWH AND NOT identitySfromWH(SfromWH) CHECKED BY WHtoSSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
@@ -73,7 +73,7 @@ toFillSfromWHDetailsSfromWH 'Заполнить документ из расхо
 
 FORM SfromWH 'Приход на магазин'
     OBJECTS sf = SfromWH FIXED PANEL
-    PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, seriesObject, numberObject, numberSfromWH, nameWarehouseSfromWH, quantitySfromWHDetailSfromWH,
+    PROPERTIES (sf) nameDepartmentStoreSfromWH, dateSfromWH, timeSfromWH, seriesObject, numberObject, numberSfromWH, nameCorrWarehouseSfromWH, quantitySfromWHDetailSfromWH,
                     supplierSumSfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH,
                     retailSumSfromWHDetailSfromWH, noteSfromWH, toFillSfromWHDetailsSfromWH
 
@@ -122,7 +122,7 @@ DESIGN SfromWH FROM DEFAULT {
 
                     NEW row111 {
                         title = 'Контрагент-поставщик';
-                        ADD PROPERTY (nameWarehouseSfromWH);
+                        ADD PROPERTY (nameCorrWarehouseSfromWH);
                     }
                     NEW row112{
                         title = 'Расход';
@@ -149,7 +149,7 @@ DESIGN SfromWH FROM DEFAULT {
 
 FORM SfromWHs 'Приходы на магазин'
     OBJECTS sf = SfromWH
-    PROPERTIES(sf) READONLY objectClassName, numberObject, seriesObject, dateSfromWH, timeSfromWH, nameWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
+    PROPERTIES(sf) READONLY objectClassName, numberObject, seriesObject, dateSfromWH, timeSfromWH, nameCorrWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
                    documentFlowSfromWH, countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, supplierSumSfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH,
                    retailSumSfromWHDetailSfromWH
     PROPERTIES(sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

@@ -72,7 +72,7 @@ isAvailableDeclarationCStoWH 'Декларация доступна для ра�
     currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH)>=dateTimeDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
-    companyWarehouse(warehouseCStoWH(CStoWH))==importerDeclaration(declaration);
+    companyWarehouse(corrWarehouseCStoWH(CStoWH))==importerDeclaration(declaration);
 
 isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
@@ -179,7 +179,7 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
-    PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
+    PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameCorrWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
                    inputDeclarationDetailCStoWH, deleteCStoWHDetailCStoWH, declarationsCStoWH,
                    innerInvoicesCStoWH, shortNameCurrencyCStoWH
@@ -206,7 +206,7 @@ DESIGN CStoWH FROM DEFAULT {
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
     PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
-                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, totalSumCStoWHDetail
+                            nameCorrWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, totalSumCStoWHDetail
 
     PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -281,7 +281,7 @@ DESIGN CStoWHs FROM DEFAULT {
 @implementConsignmentHeader(CStoWH, customStore);
 
 senderConsignment (consignment) += customStoreCStoWH(consignment);
-recipientConsignment (consignment) += companyWarehouse(warehouseCStoWH(consignment));
+recipientConsignment (consignment) += companyWarehouse(corrWarehouseCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

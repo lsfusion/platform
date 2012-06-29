@@ -91,6 +91,7 @@ NAVIGATOR {
         ADD warehouses;
         ADD storesR;
         ADD companies;
+        ADD contractsSkuCompany;
     }
     customs {
         ADD customStores;
@@ -228,7 +229,7 @@ NAVIGATOR {
         ADD dialogSku;
         ADD storeForm;
         ADD suppliers;
-//        ADD contracts;
+        ADD contractSkuCompany;
         ADD wholesalePriceDocument;
         ADD SfromWH;
         ADD warehouse;

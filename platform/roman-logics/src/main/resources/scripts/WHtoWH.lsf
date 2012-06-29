@@ -23,7 +23,7 @@ CLASS WHtoWHPosted 'Закрытый расход со склада на скл�
 skuWHtoWHDetail 'Товар (ИД)' (WHtoWHDetail) = DATA sku (WHtoWHDetail)IN idGroup;
 nameSkuWHtoWHDetail 'Наименование товара' (WHtoWHDetail) = nameSku(skuWHtoWHDetail(WHtoWHDetail));
 
-@defineRBCorrespondingDocument(WHtoWH, warehouse, 'Оптовый склад-отправитель', sku, 'Расход со склада на склад', store, 'Оптовый склад-получатель');
+@defineRBCorrespondingDocument(WHtoWH, warehouse, 'Оптовый склад-отправитель', sku, 'Расход со склада на склад', warehouse, 'Оптовый склад-получатель');
 
 quantityOutAutoSkuLedger (ledger) += quantityWHtoWHDetail (ledger);
 
@@ -75,7 +75,7 @@ quantityWHtoWHSku (WHtoWH, sku) = GROUP SUM quantityWHtoWHDetail(WHtoWHDetail)
 
 FORM WHtoWH 'Расход со склада на склад'
     OBJECTS w = WHtoWH FIXED PANEL
-    PROPERTIES (w) numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameStoreWHtoWH,
+    PROPERTIES (w) numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
                    quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, sumSupplierVATWHtoWHDetailWHtoWH,
                    sumInvoiceWHtoWHDetailWHtoWH, sumNetWeightWHtoWH, packQuantityWHtoWHDetailWHtoWH, noteWHtoWH
 
@@ -115,7 +115,7 @@ DESIGN WHtoWH FROM DEFAULT {
                 NEW case {
                 childConstraints = TO THE BOTTOM;
                     title = 'Контрагент';
-                    ADD PROPERTY (nameStoreWHtoWH);
+                    ADD PROPERTY (nameCorrWarehouseWHtoWH);
                 }
                 ADD w.documentPrmGroup;
             }
@@ -132,7 +132,7 @@ DESIGN WHtoWH FROM DEFAULT {
 
 FORM WHtoWHs 'Расходы со склада на склад'
     OBJECTS w = WHtoWH
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameStoreWHtoWH,
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
                    countWHtoWHDetailWHtoWH, quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, sumSupplierVATWHtoWHDetailWHtoWH,
                    sumInvoiceWHtoWHDetailWHtoWH, packQuantityWHtoWHDetailWHtoWH, sumNetWeightWHtoWH
 
@@ -218,7 +218,7 @@ DESIGN WHtoWHs FROM DEFAULT {
 @implementConsignmentHeader(WHtoWH, warehouse);
 
 senderConsignment (consignment) += companyWarehouse(warehouseWHtoWH(consignment));
-recipientConsignment (consignment) += companyStore(storeWHtoWH(consignment));
+recipientConsignment (consignment) += companyStore(corrWarehouseWHtoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += WHtoWHWHtoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuWHtoWHDetail (consignmentDetail);

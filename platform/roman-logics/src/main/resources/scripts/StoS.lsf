@@ -29,8 +29,8 @@ nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku
 senderStoreStoS 'Магазин-отправитель (ИД)' (StoS) = storeDepartmentStore(departmentStoreStoS(StoS));
 nameSenderStoreStoSDetail 'Магазин-отправитель' (StoSDetail) = name(senderStoreStoS(StoSDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-CONSTRAINT StoS IS StoS AND NOT companyStore(senderStoreStoS(StoS)) == companyStore(storeStoS(StoS))
-    CHECKED BY storeStoS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
+CONSTRAINT StoS IS StoS AND NOT companyStore(senderStoreStoS(StoS)) == companyStore(corrStoreStoS(StoS))
+    CHECKED BY corrStoreStoS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
 
 
 quantityOutAutoSkuLedger (ledger) += quantityStoSDetail (ledger);
@@ -38,7 +38,7 @@ quantityOutAutoSkuLedger (ledger) += quantityStoSDetail (ledger);
 
 FORM StoS 'Расход с магазина на магазин'
     OBJECTS s = StoS FIXED PANEL
-    PROPERTIES (s) numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameStoreStoS,
+    PROPERTIES (s) numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameCorrStoreStoS,
                    quantityStoSDetailStoS, retailVATSumStoSDetailStoS,
                    retailSumStoSDetailStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, noteStoS
 
@@ -77,7 +77,7 @@ DESIGN StoS FROM DEFAULT {
                 NEW case {
                 childConstraints = TO THE BOTTOM;
                     title = 'Контрагент';
-                    ADD PROPERTY (nameStoreStoS);
+                    ADD PROPERTY (nameCorrStoreStoS);
                 }
                 ADD s.documentPrmGroup;
             }
@@ -101,7 +101,7 @@ DESIGN StoS FROM DEFAULT {
 
 FORM StoSs 'Расходы с магазина на магазин'
     OBJECTS s = StoS
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameStoreStoS,
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameCorrStoreStoS,
                    countStoSDetailStoS, quantityStoSDetailStoS, retailVATSumStoSDetailStoS,
                    retailSumStoSDetailStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment
 
@@ -186,7 +186,7 @@ DESIGN StoSs FROM DEFAULT {
 FORM StoSsDialog 'Перемещения (расход) на магазин (одно юрлицо)'
     OBJECTS s = StoSPosted
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, nameDepartmentStoreStoS,
-                   nameStoreStoS, countStoSDetailStoS, quantityStoSDetailStoS,
+                   nameCorrStoreStoS, countStoSDetailStoS, quantityStoSDetailStoS,
                    retailVATSumStoSDetailStoS, retailSumStoSDetailStoS
     DIALOG StoSPosted OBJECT s
 ;
@@ -195,7 +195,7 @@ FORM StoSsDialog 'Перемещения (расход) на магазин (о�
 @implementConsignmentHeader(StoS, departmentStore);
 
 senderConsignment (consignment) += companyStore(senderStoreStoS(consignment));
-recipientConsignment (consignment) += companyStore(storeStoS(consignment));
+recipientConsignment (consignment) += companyStore(corrStoreStoS(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += StoSStoSDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuStoSDetail (consignmentDetail);

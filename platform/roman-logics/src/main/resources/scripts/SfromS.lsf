@@ -38,18 +38,18 @@ nameSkuSfromSDetail 'Наименование товара' (SfromSDetail) = nam
 recipientStoreSfromS 'Магазин документа (ИД)' (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS));
 nameRecipientStoreSfromS 'Магазин документа' (SfromS)  = name(recipientStoreSfromS(SfromS)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-CONSTRAINT SfromS IS SfromS AND NOT companyStore(recipientStoreSfromS(SfromS)) == companyStore(storeSfromS(SfromS))
-    CHECKED BY storeSfromS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
+CONSTRAINT SfromS IS SfromS AND NOT companyStore(recipientStoreSfromS(SfromS)) == companyStore(corrStoreSfromS(SfromS))
+    CHECKED BY corrStoreSfromS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
 
 
 senderDepartmentStoreSfromS 'Отдел-отправитель(ИД)' (SfromS) = departmentStoreStoS(StoSSfromS(SfromS));
 nameSenderDepartmentStoreSfromS 'Отдел-отправитель' (SfromS) = name(senderDepartmentStoreSfromS(SfromS));
 
-senderStoreSfromS 'Магазин-отправитель (ИД)' (SfromS) = storeStoS(StoSSfromS(SfromS));
+senderStoreSfromS 'Магазин-отправитель (ИД)' (SfromS) = senderStoreStoS(StoSSfromS(SfromS));
 nameSenderStoreSfromS 'Магазин-отправитель' (SfromS)= name(senderStoreSfromS(SfromS));
 
 
-CONSTRAINT SfromS IS SfromS AND NOT storeSfromS(SfromS) == senderStoreSfromS(SfromS)
+CONSTRAINT SfromS IS SfromS AND NOT corrStoreSfromS(SfromS) == senderStoreSfromS(SfromS)
     CHECKED BY senderStoreSfromS  MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
 

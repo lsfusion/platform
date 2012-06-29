@@ -35,7 +35,7 @@ supplierPriceWHtoSDetail (WHtoSDetail) <- wholesalePriceWHtoSDetail(WHtoSDetail)
 
 FORM WHtoS 'Расход со склада на магазин'
     OBJECTS w = WHtoS FIXED PANEL
-    PROPERTIES (w) numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
+    PROPERTIES (w) numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameCorrStoreWHtoS,
                    quantityWHtoSDetailWHtoS, supplierSumWHtoSDetailWHtoS, invoiceVATSumWHtoSDetailWHtoS,
                    invoiceSumWHtoSDetailWHtoS, noteWHtoS
 
@@ -73,7 +73,7 @@ DESIGN WHtoS FROM DEFAULT {
                 NEW case {
                 childConstraints = TO THE BOTTOM;
                     title = 'Контрагент';
-                    ADD PROPERTY (nameStoreWHtoS);
+                    ADD PROPERTY (nameCorrStoreWHtoS);
                 }
                 ADD w.documentPrmGroup;
             }
@@ -90,7 +90,7 @@ DESIGN WHtoS FROM DEFAULT {
 
 FORM WHtoSs 'Расходы со склада на магазин'
     OBJECTS w = WHtoS
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameStoreWHtoS,
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameCorrStoreWHtoS,
                    countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, supplierSumWHtoSDetailWHtoS, invoiceVATSumWHtoSDetailWHtoS,
                    invoiceSumWHtoSDetailWHtoS
 
@@ -175,7 +175,7 @@ DESIGN WHtoSs FROM DEFAULT {
 @implementConsignmentHeader(WHtoS, warehouse);
 
 senderConsignment (consignment) += companyWarehouse(warehouseWHtoS(consignment));
-recipientConsignment (consignment) += companyStore(storeWHtoS(consignment));
+recipientConsignment (consignment) += companyStore(corrStoreWHtoS(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += WHtoSWHtoSDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuWHtoSDetail (consignmentDetail);
