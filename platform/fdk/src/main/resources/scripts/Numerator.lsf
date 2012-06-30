@@ -67,6 +67,11 @@ CLASS ABSTRACT numeratedObject 'Нумерируемый объект' : numbere
 numeratorObject 'Нумератор (ИД)' = DATA numerator (numeratedObject);
 nameNumeratorObject 'Нумератор' (numeratedObject) = name(numeratorObject(numeratedObject)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
 
+initValueNumeratorObject = ABSTRACT numerator (numeratedObject);
+initWhenNumeratorObject = ABSTRACT BOOLEAN (numeratedObject);
+
+numeratorObject (object) <- initValueNumeratorObject (object) WHEN initWhenNumeratorObject(object);
+
 setValueNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
     SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
     SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));

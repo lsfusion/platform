@@ -1,6 +1,8 @@
 MODULE Document;
 
-REQUIRE System;
+REQUIRE System, Numerator;
+
+// Логика проведения документов
 
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
 TABLE postedObject (postedObject);
@@ -18,9 +20,22 @@ timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS post
 userClosed(postedObject) <- currentUser() WHEN ASSIGNED(postedObject IS postedObject);
 computerClosed(postedObject) <- currentComputer() WHEN ASSIGNED(postedObject IS postedObject);
 
+// Логика нумерирования документов
+
+CLASS ABSTRACT numeratedDocument 'Нумерируемый документ' : numeratedObject;
+
+defaultNumeratorDocuments = DATA numerator ();
+nameDefaultNumeratorDocuments 'Нумератор для документов' = name(defaultNumeratorDocuments());
+
+initValueNumeratorObject(object) += defaultNumeratorDocuments() IF object IS numeratedDocument;
+initWhenNumeratorObject(object) += ASSIGNED(object IS numeratedDocument);
+
+// Стандартные группы
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 GROUP documentSumGroup 'Суммы документа': publicGroup;
 GROUP documentPrmGroup 'Параметры документа': publicGroup;
+
+// Макросы по созданию документов
 
 META defineDocumentTables (object)
     TABLE object (object);

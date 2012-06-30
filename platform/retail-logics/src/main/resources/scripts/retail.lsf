@@ -1729,20 +1729,8 @@ FORM customers 'Покупатели'
 
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
-defaultNumeratorDocuments = DATA numerator ();
-nameDefaultNumeratorDocuments 'Нумератор для документов' = name(defaultNumeratorDocuments());
-
-numeratorObject(object) <- defaultNumeratorDocuments() WHEN ASSIGNED(object IS numeratedObject);
-
-defaultNumeratorOrders = DATA numerator ();
-nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
-
 defaultNumeratorDiscountCards = DATA numerator ();
 nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
-
-numeratorOrder(order) = numeratorObject(order) AND order IS order;
-// todo : включение этого derived'а отключает верхний derived
-//numeratorOrder(order) <- defaultNumeratorOrders() WHEN ASSIGNED(order IS order);
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
 CLASS discountCard 'Дисконтная карта' : numeratedObject;
@@ -2336,7 +2324,7 @@ DESIGN seriesNumberCuttingStudyInputDetail FROM DEFAULT {
 
 // Акты проработки
 
-CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedObject, priceTransactionDocument;
+CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedDocument, priceTransactionDocument;
 TABLE actOfStudy (actOfStudy);
 
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
@@ -2576,7 +2564,7 @@ CLASS STATIC typeOfAddition 'Тип инвентаризации' {
 
 // Документ инвентаризации
 
-CLASS inventory 'Инвентаризация (открытая)' : historyObject, numeratedObject;
+CLASS inventory 'Инвентаризация (открытая)' : historyObject, numeratedDocument;
 TABLE inventory (inventory);
 
 CLASS inventoryPosted 'Инвентаризация (закрытая)' : inventory, postedObject;
@@ -2958,7 +2946,7 @@ GROUP itemSpecificationDetailInfo 'Информация по товару' : bas
 CLASS objectiveAcquiring 'Цель приобретения' : named;
 TABLE objectiveAcquiring (objectiveAcquiring);
 
-CLASS specification 'Счет-фактура': historyObject, numeratedObject;
+CLASS specification 'Счет-фактура': historyObject, numeratedDocument;
 CLASS specificationDetail 'Строка счет-фактуры';
 
 @defineDocumentBaseDepartmentStoreItem(specification);
@@ -3491,7 +3479,7 @@ FORM reasonOff 'Причина списания'
     PROPERTIES(r) name
 ;
 
-CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedObject;
+CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedDocument;
 CLASS writeOffDetail 'Строка списания' : outAutoSkuLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
@@ -4196,7 +4184,7 @@ sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDo
 
 //----------------------------------------------- Переоценка товара ---------------------------------------------------//
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedDocument, priceTransactionDocument, historyObject;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
 
@@ -4243,7 +4231,7 @@ CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'У
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Пересортица' : historyObject, numeratedObject, priceTransactionDocument;
+CLASS disparity 'Пересортица' : historyObject, numeratedDocument, priceTransactionDocument;
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы': outAutoSkuLedger;
 
@@ -4646,6 +4634,12 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 //TABLE order(order);
+
+defaultNumeratorOrders = DATA numerator ();
+nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
+
+initValueNumeratorObject(object) += defaultNumeratorOrders() IF object IS order;
+initWhenNumeratorObject(object) += ASSIGNED(object IS order);
 
 CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;
@@ -7561,13 +7555,12 @@ printPriceChangeInnerArrival 'Акт переоценки' (innerArrival) = prin
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
-    PROPERTIES (a) nameDepartmentStoreInnerArrival, numberInnerArrival SHOWIF departmentStoreInnerArrival(a),
-                   seriesInnerArrival SHOWIF departmentStoreInnerArrival(a), dateInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   timeInnerArrival SHOWIF innerFlowInnerArrival(a), nameSenderDepartmentInnerArrival READONLY SHOWIF innerFlowInnerArrival(a),
-                   toFillInnerArrivalDetailsInnerArrival SHOWIF innerFlowInnerArrival(a), showWareInnerArrival,
-                   noteInnerArrival READONLY SHOWIF innerFlowInnerArrival(a), quantityInnerArrivalDetailInnerArrival SHOWIF innerFlowInnerArrival(a),
-                   retailSumInnerArrivalDetailInnerArrival SHOWIF innerFlowInnerArrival(a), numberDisposalInnerArrival SHOWIF needToPriceChangeInnerArrival(a),
-                   namePriceChangeCommitteeInnerArrival SHOWIF needToPriceChangeInnerArrival(a)
+    PROPERTIES (a) nameDepartmentStoreInnerArrival
+    PROPERTIES (a) SHOWIF departmentStoreInnerArrival(a) numberInnerArrival, seriesInnerArrival, dateInnerArrival, timeInnerArrival,
+                                                         nameSenderDepartmentInnerArrival READONLY, toFillInnerArrivalDetailsInnerArrival,
+                                                         showWareInnerArrival, noteInnerArrival READONLY,
+                                                         quantityInnerArrivalDetailInnerArrival, retailSumInnerArrivalDetailInnerArrival
+    PROPERTIES (a) SHOWIF needToPriceChangeInnerArrival(a) numberDisposalInnerArrival, namePriceChangeCommitteeInnerArrival
 
     OBJECTS d=innerArrivalDetail
     PROPERTIES (d) SHOWIF innerFlowInnerArrival(a)
