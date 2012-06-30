@@ -78,11 +78,11 @@ FORM SfromWH 'Приход на магазин'
                     retailSumSfromWHDetailSfromWH, noteSfromWH, toFillSfromWHDetailsSfromWH
 
     OBJECTS d = SfromWHDetail
-    PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
-                  nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
+    PROPERTIES(d) indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, sidSizeSfromWHDetail, nameBrandSfromWHDetail,
+                  sidArticleSfromWHDetail, nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, balanceBSkuSfromWHDetail,
                   quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, supplierSumSfromWHDetail, numberSupplierVATSfromWHDetail,
                   valueSupplierVATSfromWHDetail, supplierVATISumSfromWHDetail, invoiceSumSfromWHDetail, numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
-                  retailPriceSfromWHDetail
+                  retailPriceSfromWHDetail, calcRetailMarkupSfromWHDetail
 
     PROPERTIES(sf) TODRAW d addDetailDialogSkuSfromWHDetailSfromWH, addDetailDialogBarcodeSfromWHDetailSfromWH,
                   deleteSfromWHDetailSfromWH
@@ -159,11 +159,11 @@ FORM SfromWHs 'Приходы на магазин'
                    postSfromWH SHOWIF isDraftSfromWH(sf), unpostSfromWH SHOWIF isPostedSfromWH(sf)
 
     OBJECTS d = SfromWHDetail
-    PROPERTIES(d) READONLY indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, nameBrandSfromWHDetail, sidArticleSfromWHDetail,
-                  nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, shortNameUOMSfromWHDetail, balanceBSkuSfromWHDetail,
+    PROPERTIES(d) READONLY indexSfromWHDetail, barcodeSfromWHDetail, nameSkuSfromWHDetail, shortNameUOMSfromWHDetail, sidSizeSfromWHDetail, nameBrandSfromWHDetail,
+                  sidArticleSfromWHDetail, nameCategorySfromWHDetail, sidColorSfromWHDetail, nameColorSfromWHDetail, balanceBSkuSfromWHDetail,
                   quantitySfromWHDetail, importerPriceSfromWHDetail, supplierPriceSfromWHDetail, supplierSumSfromWHDetail, numberSupplierVATSfromWHDetail,
                   valueSupplierVATSfromWHDetail, supplierVATISumSfromWHDetail, invoiceSumSfromWHDetail, numberRetailVATSfromWHDetail, valueRetailVATSfromWHDetail,
-                  retailPriceSfromWHDetail
+                  retailPriceSfromWHDetail, calcRetailMarkupSfromWHDetail
 
     FILTERS inSfromWHSfromWHDetail(sf, d)
 ;

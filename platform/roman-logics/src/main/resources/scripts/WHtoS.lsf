@@ -40,8 +40,8 @@ FORM WHtoS 'Расход со склада на магазин'
                    invoiceSumWHtoSDetailWHtoS, noteWHtoS
 
     OBJECTS d = WHtoSDetail
-    PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, nameBrandWHtoSDetail, sidArticleWHtoSDetail,
-                  nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, shortNameUOMWHtoSDetail, balanceBSkuWHtoSDetail,
+    PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail, sidSizeWHtoSDetail, nameBrandWHtoSDetail,
+                  sidArticleWHtoSDetail, nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, balanceBSkuWHtoSDetail,
                   quantityWHtoSDetail, importerPriceWHtoSDetail, supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail,
                   valueSupplierVATWHtoSDetail, supplierVATISumWHtoSDetail, invoiceSumWHtoSDetail
 
@@ -105,9 +105,10 @@ FORM WHtoSs 'Расходы со склада на магазин'
                    printConsignmentSimpleVertical, printConsignmentSimpleAttach
 
     OBJECTS d = WHtoSDetail
-    PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail,
-                  quantityWHtoSDetail, importerPriceWHtoSDetail, supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail, valueSupplierVATWHtoSDetail,
-                  supplierVATISumWHtoSDetail, invoiceSumWHtoSDetail
+    PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail, sidSizeWHtoSDetail, nameBrandWHtoSDetail,
+                  sidArticleWHtoSDetail, nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, balanceBSkuWHtoSDetail,
+                  quantityWHtoSDetail, importerPriceWHtoSDetail, supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail,
+                  valueSupplierVATWHtoSDetail, supplierVATISumWHtoSDetail, invoiceSumWHtoSDetail
 
     FILTERS inWHtoSWHtoSDetail(w, d)
 ;
