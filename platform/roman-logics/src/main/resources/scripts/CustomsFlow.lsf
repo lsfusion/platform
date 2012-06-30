@@ -70,7 +70,7 @@ currentBalanceDeclaration 'Текущий остаток' (declaration) = GROUP 
 isAvailableDeclarationCStoWH 'Декларация доступна для расхода' (declaration, CStoWH) =
     declaration IS registeredDeclaration AND
     currentBalanceDeclaration (declaration)>0 AND
-    dateTimeCStoWH(CStoWH)>=dateTimeDeclaration(declaration) AND
+    dateTimeCStoWH(CStoWH)>=dateTimeRegistrationDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
     companyWarehouse(corrWarehouseCStoWH(CStoWH))==importerDeclaration(declaration);
 

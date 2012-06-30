@@ -125,12 +125,13 @@ customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGrou
 nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN baseGroup;
 
 sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup MINCHARWIDTH 10;
-beginDeclaration 'Начало обработки' = DATA TIME (declaration) IN baseGroup;
-endDeclaration 'Конец обработки' = DATA TIME (declaration) IN baseGroup;
+beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN baseGroup;
+endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN baseGroup;
 
-dateTimeDeclaration 'Дата/время' (declaration) = toDateTime(date(declaration), endDeclaration(declaration));
+dateRegistrationDeclaration 'Дата регистрации' = DATA DATE(declaration) IN baseGroup;
+timeRegistrationDeclaration 'Время регистрации' = DATA TIME(declaration) IN baseGroup;
+dateTimeRegistrationDeclaration 'Дата/время' (declaration) = toDateTime(dateRegistrationDeclaration(declaration), timeRegistrationDeclaration(declaration));
 
-dateTimeRegistrationDeclaration 'Дата/время регистрации' = DATA DATETIME(registeredDeclaration) IN baseGroup;
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
@@ -164,7 +165,7 @@ quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) 
 
 @defineAggregationDouble(declaration, sku, declarationDetail, quantityDeclarationSku);
 
-dateTimeDeclarationDetail 'Дата/время декларации' (declarationDetail) = dateTimeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
+dateTimeDeclarationDetail 'Дата/время декларации' (declarationDetail) = endTimeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
 customStoreDeclarationDetail 'СВХ (ИД)' (declarationDetail) = customStoreDeclaration(declarationDeclarationDetail(declarationDetail)) IN idGroup;
 nameCustomStoreDeclarationDetail 'СВХ' (declarationDetail) = name(customStoreDeclarationDetail(declarationDetail)) IN baseGroup;
@@ -267,9 +268,14 @@ quantityNoCertificateDeclaration 'Кол-во без сертификатов' (
 //   MESSAGE 'Не у всех товаров требующих сертификации заданы сертификаты';
 
 // Для таможенных платежей
-rateExchangeDeclaration 'Курс обмена' (declaration) = nearestRateExchange(typeExchangePayCustom(),
-                                                                          currencyTypeExchange(typeExchangeSTX()),
-                                                                          declaration);
+typeExchangeDeclaration (declaration) = typeExchangePayCustom() IF declaration IS declaration;
+currencyDeclaration (declaration) = currencyTypeExchange(typeExchangeSTX()) IF declaration IS declaration;
+
+@defineNearestRateExchangeObject(declaration, dateRegistrationDeclaration);
+
+//rateExchangeDeclaration 'Курс обмена' (declaration) = nearestRateExchange(typeExchangePayCustom(),
+//                                                                          currencyTypeExchange(typeExchangeSTX()),
+//                                                                          declaration);
 
 rateExchangeDeclarationDetail 'Курс обмена' (declarationDetail) = rateExchangeDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
@@ -601,7 +607,7 @@ sumGroupDeclaration 'Стоимость' (groupDeclaration) = GROUP SUM sumDecla
 
 FORM declarationInvoices 'Присоединение инвойсов'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginTimeDeclaration, endTimeDeclaration,
                   nameImporterDeclaration
 
     OBJECTS ii=innerInvoice
@@ -614,8 +620,8 @@ showFormDeclarationInvoices 'Присоединить инвойсы' (declarati
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
-                  dateTimeRegistrationDeclaration, nameImporterDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
+    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, beginTimeDeclaration, endTimeDeclaration,
+                  dateRegistrationDeclaration, nameImporterDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices, exportDeclaration
 
@@ -732,14 +738,14 @@ DESIGN declaration FROM DEFAULT{
                   ADD sf.box;
               }
           }
-
-          ADD functions.box;
     }
+
+    ADD functions.box;
 };
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, date, beginDeclaration, endDeclaration,
+    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, beginTimeDeclaration, endTimeDeclaration,
                            rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
                            expenseCertificateDeclaration
