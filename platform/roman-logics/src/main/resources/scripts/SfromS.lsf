@@ -28,7 +28,6 @@ CLASS SfromSPosted 'Закрытый приход на магазин из ма�
 skuSfromSDetail 'Товар (ИД)' (SfromSDetail) = DATA sku (SfromSDetail)IN idGroup;
 nameSkuSfromSDetail 'Наименование товара' (SfromSDetail) = nameSku(skuSfromSDetail(SfromSDetail));
 
-
 @defineRBCorrespondingDocumentWithRetailPrices(SfromS, departmentStore, 'Отдел документа', sku, 'Приход на магазин из магазина', store, 'Магазин-отправитлеь');
 @defineDocumentDetailPackWeightSku(SfromS);
 @defineDocumentHeaderSkuQuantity(SfromS);
@@ -38,8 +37,10 @@ nameSkuSfromSDetail 'Наименование товара' (SfromSDetail) = nam
 recipientStoreSfromS 'Магазин документа (ИД)' (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS));
 nameRecipientStoreSfromS 'Магазин документа' (SfromS)  = name(recipientStoreSfromS(SfromS)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-CONSTRAINT SfromS IS SfromS AND NOT companyStore(recipientStoreSfromS(SfromS)) == companyStore(corrStoreSfromS(SfromS))
-    CHECKED BY corrStoreSfromS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
+
+identitySfromS (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS)) == corrStoreStoS(StoSSfromS(SfromS)) AND corrStoreSfromS(SfromS) == storeDepartmentStore(departmentStoreStoS(StoSSfromS(SfromS)));
+
+CONSTRAINT SfromS IS SfromS AND NOT identitySfromS(SfromS) CHECKED BY StoSSfromS MESSAGE  'Магазин-отправитель и Магазин-получатель из расхода и приход должны совпадать';
 
 initValueNumberObject (SfromS) += [PREV(numberObject(StoS))](StoSSfromS(SfromS));
 initValueSeriesObject (SfromS) += [PREV(seriesObject(StoS))](StoSSfromS(SfromS));
@@ -47,22 +48,11 @@ initValueSeriesObject (SfromS) += [PREV(seriesObject(StoS))](StoSSfromS(SfromS))
 initWhenNumberedObject(SfromS) += CHANGED(StoSSfromS(SfromS));
 
 
-senderDepartmentStoreSfromS 'Отдел-отправитель(ИД)' (SfromS) = departmentStoreStoS(StoSSfromS(SfromS));
-nameSenderDepartmentStoreSfromS 'Отдел-отправитель' (SfromS) = name(senderDepartmentStoreSfromS(SfromS));
+numberSfromS 'Номер док-та расхода' (SfromS) = numberObject(StoSSfromS(SfromS));
 
-senderStoreSfromS 'Магазин-отправитель (ИД)' (SfromS) = senderStoreStoS(StoSSfromS(SfromS));
-nameSenderStoreSfromS 'Магазин-отправитель' (SfromS)= name(senderStoreSfromS(SfromS));
-
-
-CONSTRAINT SfromS IS SfromS AND NOT corrStoreSfromS(SfromS) == senderStoreSfromS(SfromS)
-    CHECKED BY senderStoreSfromS  MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
-
-
-retailPriceChangeSfromSDetail(SfromSDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuSfromSDetail(SfromSDetail)), dateTimeSfromSDetail(SfromSDetail)),
-                                                               priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuSfromSDetail(SfromSDetail)), dateTimeSfromSDetail(SfromSDetail));
-
-retailPriceSfromSDetail(SfromSDetail) <- retailPriceChangeSfromSDetail(SfromSDetail) WHEN CHANGED (dateTimeSfromSDetail(SfromSDetail))
-                                                                                           OR CHANGED (skuSfromSDetail(SfromSDetail));
+documentFlowSfromS 'Документ расхода' (SfromS) =
+    [FORMULA STRING[500] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \', \' || CAST($3 AS TEXT)'] (
+    seriesNumberObject(StoSSfromS(SfromS)), dateStoS(StoSSfromS(SfromS)), name(departmentStoreStoS(StoSSfromS(SfromS)))) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 toFillSfromSDetailsSfromS 'Заполнить документ из расхода' =  ACTION (SfromS) {
     FOR SfromSStoS(StoSStoSDetail(StoSDetail)) == SfromS DO {
@@ -72,25 +62,33 @@ toFillSfromSDetailsSfromS 'Заполнить документ из расход
             SET quantitySfromSDetail (d) <- quantityStoSDetail(StoSDetail);
             SET skuSfromSDetail (d) <- skuStoSDetail(StoSDetail);
             SET UOMSfromSDetail (d) <- UOMStoSDetail(StoSDetail);
+            SET importerPriceSfromSDetail (d) <- importerPriceStoSDetail(StoSDetail);
+            SET supplierPriceSfromSDetail (d) <- supplierPriceStoSDetail(StoSDetail);
+            SET supplierVATSfromSDetail (d) <- supplierVATStoSDetail(StoSDetail);
         };
     };
 } CONFIRM;
 
 
+retailPriceChangeSfromSDetail(SfromSDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuSfromSDetail(SfromSDetail)), dateTimeSfromSDetail(SfromSDetail)),
+                                                               priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuSfromSDetail(SfromSDetail)), dateTimeSfromSDetail(SfromSDetail));
+
+retailPriceSfromSDetail(SfromSDetail) <- retailPriceChangeSfromSDetail(SfromSDetail) WHEN CHANGED (dateTimeSfromSDetail(SfromSDetail))
+                                                                                           OR CHANGED (skuSfromSDetail(SfromSDetail));
+
+
 FORM SfromS 'Приход на магазин из магазина'
     OBJECTS s = SfromS FIXED PANEL
-    PROPERTIES (s) numberObject, seriesObject, dateSfromS, timeSfromS, nameDepartmentStoreSfromS, nameSenderDepartmentStoreSfromS, nameSenderStoreSfromS,
-                   quantitySfromSDetailSfromS, invoiceVATSumSfromSDetailSfromS, invoiceSumSfromSDetailSfromS, retailSumSfromSDetailSfromS, noteSfromS,
-                   toFillSfromSDetailsSfromS
+    PROPERTIES (s) numberObject, seriesObject, dateSfromS, timeSfromS, numberSfromS, nameDepartmentStoreSfromS, nameCorrStoreSfromS,
+                   quantitySfromSDetailSfromS, supplierSumSfromSDetailSfromS, invoiceVATSumSfromSDetailSfromS,
+                   invoiceSumSfromSDetailSfromS, retailSumSfromSDetailSfromS, noteSfromS, toFillSfromSDetailsSfromS
 
     OBJECTS d = SfromSDetail
-    PROPERTIES(d) indexSfromSDetail, barcodeSfromSDetail, nameSkuSfromSDetail, nameBrandSfromSDetail, sidArticleSfromSDetail,
-                  nameCategorySfromSDetail, sidColorSfromSDetail, nameColorSfromSDetail, shortNameUOMSfromSDetail, balanceBSkuSfromSDetail,
-                  quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail,
-                  numberSupplierVATSfromSDetail, valueSupplierVATSfromSDetail,
-                  supplierVATISumSfromSDetail, invoiceISumSfromSDetail,
-                  numberRetailVATSfromSDetail, valueRetailVATSfromSDetail,
-                  retailPriceSfromSDetail
+    PROPERTIES(d) indexSfromSDetail, barcodeSfromSDetail, nameSkuSfromSDetail, shortNameUOMSfromSDetail, sidSizeSfromSDetail, nameBrandSfromSDetail,
+                  sidArticleSfromSDetail, nameCategorySfromSDetail, sidColorSfromSDetail, nameColorSfromSDetail, balanceBSkuSfromSDetail,
+                  quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail, supplierSumSfromSDetail, numberSupplierVATSfromSDetail,
+                  valueSupplierVATSfromSDetail, supplierVATISumSfromSDetail, invoiceSumSfromSDetail, numberRetailVATSfromSDetail,
+                  valueRetailVATSfromSDetail, retailPriceSfromSDetail, retailSumSfromSDetail, calcRetailMarkupSfromSDetail
 
     PROPERTIES(s) TODRAW d addDetailDialogBarcodeSfromSDetailSfromS, addDetailDialogSkuSfromSDetailSfromS, deleteSfromSDetailSfromS
 
@@ -109,6 +107,7 @@ FORM SfromS 'Приход на магазин из магазина'
     EDIT SfromS OBJECT s
 ;
 
+
 DESIGN SfromS FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
@@ -125,29 +124,26 @@ DESIGN SfromS FROM DEFAULT {
                     ADD PROPERTY (timeSfromS);
                 }
                 NEW row11 {
-                    childConstraints = TO THE RIGHT;
-                    title = 'Контрагент';
-                    ADD PROPERTY (nameSenderDepartmentStoreSfromS);
-                    ADD PROPERTY (nameSenderStoreSfromS);
-                }
-
-                NEW row12 {
-                    childConstraints = TO THE RIGHT;
-                    ADD s.documentPrmGroup;
-                    NEW row121{
-                        childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHT;
+                    NEW row111 {
+                        title = 'Контрагент-поставщик';
+                        ADD PROPERTY (nameCorrStoreSfromS);
+                    }
+                    NEW row112{
                         title = 'Расход';
+                        ADD PROPERTY (numberSfromS);
                         ADD PROPERTY (toFillSfromSDetailsSfromS);
                     }
                 }
+                ADD s.documentPrmGroup;
             }
             NEW row2 {
                 ADD s.documentSumGroup {
                     childConstraints = TO THE BOTTOM;
                 }
             }
-        };
-        NEW row3{
+        }
+        NEW row3 {
             type = TABBED;
             ADD d.box;
             ADD i.box;
@@ -158,9 +154,10 @@ DESIGN SfromS FROM DEFAULT {
 
 FORM SfromSs 'Приходы на магазин из магазина'
     OBJECTS s = SfromS
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateSfromS, timeSfromS, nameDepartmentStoreSfromS, nameSenderStoreSfromS,
-                   countSfromSDetailSfromS, quantitySfromSDetailSfromS, invoiceVATSumSfromSDetailSfromS, invoiceSumSfromSDetailSfromS,
-                   retailSumSfromSDetailSfromS
+
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateSfromS, timeSfromS, nameDepartmentStoreSfromS, nameCorrStoreSfromS,
+                   documentFlowSfromS, countSfromSDetailSfromS, quantitySfromSDetailSfromS, supplierSumSfromSDetailSfromS,
+                   invoiceVATSumSfromSDetailSfromS, invoiceSumSfromSDetailSfromS, retailSumSfromSDetailSfromS, noteSfromS
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -168,12 +165,11 @@ FORM SfromSs 'Приходы на магазин из магазина'
                    postSfromS SHOWIF isDraftSfromS(s), unpostSfromS SHOWIF isPostedSfromS(s)
 
     OBJECTS d = SfromSDetail
-    PROPERTIES(d) READONLY  indexSfromSDetail, barcodeSfromSDetail, nameSkuSfromSDetail, shortNameUOMSfromSDetail, balanceBSkuSfromSDetail,
-                  quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail,
-                  numberSupplierVATSfromSDetail, valueSupplierVATSfromSDetail,
-                  supplierVATISumSfromSDetail, invoiceISumSfromSDetail,
-                  numberRetailVATSfromSDetail, valueRetailVATSfromSDetail,
-                  retailPriceSfromSDetail
+    PROPERTIES(d) READONLY indexSfromSDetail, barcodeSfromSDetail, nameSkuSfromSDetail, shortNameUOMSfromSDetail, sidSizeSfromSDetail, nameBrandSfromSDetail,
+                  sidArticleSfromSDetail, nameCategorySfromSDetail, sidColorSfromSDetail, nameColorSfromSDetail, balanceBSkuSfromSDetail,
+                  quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail, supplierSumSfromSDetail, numberSupplierVATSfromSDetail,
+                  valueSupplierVATSfromSDetail, supplierVATISumSfromSDetail, invoiceSumSfromSDetail, numberRetailVATSfromSDetail,
+                  valueRetailVATSfromSDetail, retailPriceSfromSDetail, retailSumSfromSDetail, calcRetailMarkupSfromSDetail
 
     FILTERS inSfromSSfromSDetail(s, d)
 ;

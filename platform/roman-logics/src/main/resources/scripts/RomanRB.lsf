@@ -173,7 +173,6 @@ NAVIGATOR {
         ADD dialogRangeWare;
         ADD addAddressBank;
         ADD dialogAddressBank;
-        ADD StoSsDialog;
         ADD bank;
         ADD position;
         ADD employee;
@@ -238,7 +237,6 @@ NAVIGATOR {
         ADD WHtoS;
         ADD StoS;
         ADD SfromS;
-        ADD StoSsDialog;
         ADD StoS;
         ADD SfromS;
         ADD syncBarcodeSkuForm;

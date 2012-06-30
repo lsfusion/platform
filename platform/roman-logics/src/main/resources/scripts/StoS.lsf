@@ -26,12 +26,11 @@ nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku
 @defineDocumentDetailPackWeightSku(StoS);
 @defineDocumentHeaderSkuQuantity(StoS);
 
+//wholesalePriceWHtoWHDetail 'Оптовая цена' (WHtoWHDetail) =  priceWholesaleArticleDateTime(articleWHtoWHDetail(WHtoWHDetail), dateTimeWHtoWHDetail(WHtoWHDetail));
+//supplierPriceWHtoWHDetail (WHtoWHDetail) <- wholesalePriceWHtoWHDetail(WHtoWHDetail) WHEN CHANGED(skuWHtoWHDetail(WHtoWHDetail)) OR CHANGED (dateTimeWHtoWHDetail(WHtoWHDetail));
+
 senderStoreStoS 'Магазин-отправитель (ИД)' (StoS) = storeDepartmentStore(departmentStoreStoS(StoS));
 nameSenderStoreStoSDetail 'Магазин-отправитель' (StoSDetail) = name(senderStoreStoS(StoSDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-CONSTRAINT StoS IS StoS AND NOT companyStore(senderStoreStoS(StoS)) == companyStore(corrStoreStoS(StoS))
-    CHECKED BY corrStoreStoS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
-
 
 quantityOutAutoSkuLedger (ledger) += quantityStoSDetail (ledger);
 
@@ -39,14 +38,15 @@ quantityOutAutoSkuLedger (ledger) += quantityStoSDetail (ledger);
 FORM StoS 'Расход с магазина на магазин'
     OBJECTS s = StoS FIXED PANEL
     PROPERTIES (s) numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameCorrStoreStoS,
-                   quantityStoSDetailStoS, retailVATSumStoSDetailStoS,
-                   retailSumStoSDetailStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, noteStoS
+                   quantityStoSDetailStoS, supplierSumStoSDetailStoS, invoiceVATSumStoSDetailStoS,
+                   invoiceSumStoSDetailStoS, retailSumStoSDetailStoS, noteStoS
 
     OBJECTS d = StoSDetail
-    PROPERTIES(d) indexStoSDetail, barcodeStoSDetail, nameSkuStoSDetail, nameBrandStoSDetail, sidArticleStoSDetail,
-                  nameCategoryStoSDetail, sidColorStoSDetail, nameColorStoSDetail, shortNameUOMStoSDetail, balanceBSkuStoSDetail,
-                  quantityStoSDetail, retailPriceStoSDetail, numberRetailVATStoSDetail, valueRetailVATStoSDetail,
-                  retailVATSumStoSDetail, retailSumStoSDetail
+    PROPERTIES(d) indexStoSDetail, barcodeStoSDetail, nameSkuStoSDetail, shortNameUOMStoSDetail, sidSizeStoSDetail, nameBrandStoSDetail,
+                  sidArticleStoSDetail, nameCategoryStoSDetail, sidColorStoSDetail, nameColorStoSDetail, balanceBSkuStoSDetail,
+                  quantityStoSDetail, importerPriceStoSDetail, supplierPriceStoSDetail, supplierSumStoSDetail, numberSupplierVATStoSDetail,
+                  valueSupplierVATStoSDetail, supplierVATISumStoSDetail, invoiceSumStoSDetail, retailPriceStoSDetail//, calcRetailMarkupStoSDetail
+                  //, numberRetailVATStoSDetail, valueRetailVATStoSDetail, retailVATSumStoSDetail, retailSumStoSDetail
 
     PROPERTIES(s) TODRAW d addDetailDialogSkuStoSDetailStoS, addDetailDialogBarcodeStoSDetailStoS,
                   deleteStoSDetailStoS
@@ -85,12 +85,6 @@ DESIGN StoS FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD s.documentSumGroup {
                     childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY(quantityStoSDetailStoS);
-                    ADD PROPERTY(retailVATSumStoSDetailStoS);
-                    ADD PROPERTY(retailSumStoSDetailStoS);
-                }
-                ADD s.sumConsignmentGroup {
-                    childConstraints = TO THE BOTTOM;
                 }
             }
         }
@@ -102,8 +96,8 @@ DESIGN StoS FROM DEFAULT {
 FORM StoSs 'Расходы с магазина на магазин'
     OBJECTS s = StoS
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, timeStoS, nameDepartmentStoreStoS, nameCorrStoreStoS,
-                   countStoSDetailStoS, quantityStoSDetailStoS, retailVATSumStoSDetailStoS,
-                   retailSumStoSDetailStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment
+                   quantityStoSDetailStoS, supplierSumStoSDetailStoS, invoiceVATSumStoSDetailStoS, invoiceSumStoSDetailStoS,
+                   retailSumStoSDetailStoS, noteStoS, grossWeightConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -117,9 +111,11 @@ FORM StoSs 'Расходы с магазина на магазин'
                    printConsignmentSimpleVertical, printConsignmentSimpleAttach
 
     OBJECTS d = StoSDetail
-    PROPERTIES(d) READONLY indexStoSDetail, barcodeStoSDetail, nameSkuStoSDetail, shortNameUOMStoSDetail, balanceBSkuStoSDetail,
-                  quantityStoSDetail, retailPriceStoSDetail, numberRetailVATStoSDetail, valueRetailVATStoSDetail,
-                  retailVATSumStoSDetail, retailSumStoSDetail
+    PROPERTIES(d) READONLY indexStoSDetail, barcodeStoSDetail, nameSkuStoSDetail, shortNameUOMStoSDetail, sidSizeStoSDetail, nameBrandStoSDetail,
+                  sidArticleStoSDetail, nameCategoryStoSDetail, sidColorStoSDetail, nameColorStoSDetail, balanceBSkuStoSDetail,
+                  quantityStoSDetail, importerPriceStoSDetail, supplierPriceStoSDetail, supplierSumStoSDetail, numberSupplierVATStoSDetail,
+                  valueSupplierVATStoSDetail, supplierVATISumStoSDetail, invoiceSumStoSDetail, retailPriceStoSDetail//, calcRetailMarkupStoSDetail
+                  //, numberRetailVATStoSDetail, valueRetailVATStoSDetail, retailVATSumStoSDetail, retailSumStoSDetail
 
     FILTERS inStoSStoSDetail(s, d)
 ;
@@ -183,14 +179,6 @@ DESIGN StoSs FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM StoSsDialog 'Перемещения (расход) на магазин (одно юрлицо)'
-    OBJECTS s = StoSPosted
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoS, nameDepartmentStoreStoS,
-                   nameCorrStoreStoS, countStoSDetailStoS, quantityStoSDetailStoS,
-                   retailVATSumStoSDetailStoS, retailSumStoSDetailStoS
-    DIALOG StoSPosted OBJECT s
-;
-
 @defineConsignment(StoS);
 @implementConsignmentHeader(StoS, departmentStore);
 
@@ -201,13 +189,14 @@ consignmentConsignmentDetail (consignmentDetail) += StoSStoSDetail (consignmentD
 skuConsignmentDetail (consignmentDetail) += skuStoSDetail (consignmentDetail);
 shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMStoSDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityStoSDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += retailPriceStoSDetail (consignmentDetail);
-vatConsignmentDetail (consignmentDetail) += valueRetailVATStoSDetail (consignmentDetail);
-sumVATConsignmentDetail (consignmentDetail) += retailVATSumStoSDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += retailSumStoSDetail (consignmentDetail) (-) retailVATSumStoSDetailStoS(consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += retailSumStoSDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += supplierPriceStoSDetail (consignmentDetail);
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATStoSDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += supplierVATISumStoSDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += supplierSumStoSDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumStoSDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightStoSDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityStoSDetail(consignmentDetail);
+
 //currencyConsignment(consignment) += currencyStoS(consignment);
 //isCustomsFlowConsignment (consignment) += consignment IS StoS;
 noteConsignment(consignment) += noteStoS(consignment);
