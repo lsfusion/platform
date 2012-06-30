@@ -160,8 +160,7 @@ priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- p
                                         WHEN CHANGED (priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
 inArticlePriceSetDocument 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
-inArticleFreight (freight, article) = TRUE IF quantityFreightArticle(freight, article);
-
+inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
 toSetPricesPriceSetDocument 'Взять цены поставщика' =  ACTION (basePriceSetDocument) {
     FOR p == basePriceSetDocument AND inArticlePriceSetDocument(p, article) DO {
@@ -331,13 +330,14 @@ FORM discountPriceSetDocuments 'Распродажи'
 ;
 
 
+// розничный прайс по фрахту
 toCreatePriceSetDocument 'Расценка фрахта' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightPriceSetDocument(p) <- freight AS freight;
         SET priceInPriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET RRPPriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
-        SET inArticlePriceSetDocument(p, article) <- inArticleFreight(freight, article);
+        SET inArticlePriceSetDocument(p, article) <- inFreightArticle(freight, article);
         FORM priceSetDocument OBJECTS p=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC apply();
@@ -355,6 +355,7 @@ FORM freights 'Ценообразование по фрахтам'
     FILTERGROUP filtersDocument
         FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f)
 ;
+
 
 // Акции, распродажи
 CLASS ABSTRACT action 'Акция';

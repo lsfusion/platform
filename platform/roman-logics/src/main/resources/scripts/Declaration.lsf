@@ -120,23 +120,24 @@ TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 CLASS correction 'КТС' : transaction;
 
 GROUP sumGroup;
+GROUP docGroup;
 
 customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGroup;
-nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN baseGroup;
+nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN docGroup;
 
-sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN baseGroup MINCHARWIDTH 10;
-beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN baseGroup;
-endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN baseGroup;
+sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN docGroup MINCHARWIDTH 10;
+beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN docGroup;
+endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN docGroup;
 
-dateRegistrationDeclaration 'Дата регистрации' = DATA DATE(declaration) IN baseGroup;
-timeRegistrationDeclaration 'Время регистрации' = DATA TIME(declaration) IN baseGroup;
+dateRegistrationDeclaration 'Дата регистрации' = DATA DATE(declaration) IN docGroup;
+timeRegistrationDeclaration 'Время регистрации' = DATA TIME(declaration) IN docGroup;
 dateTimeRegistrationDeclaration 'Дата/время' (declaration) = toDateTime(dateRegistrationDeclaration(declaration), timeRegistrationDeclaration(declaration));
 
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN baseGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
-nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN baseGroup;
+nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN docGroup;
 
 dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (declaration) IN baseGroup;
 
@@ -283,6 +284,12 @@ priceContractDeclarationDetail 'Цена контракта' (declarationDetail)
                                                                                                      freightDeclarationDetail(declarationDetail),
                                                                                                      skuDeclarationDetail(declarationDetail));
 
+priceContractDeclarationArticle 'Цена поставщика' (declaration, article) = GROUP MAX priceContractDeclarationDetail(declarationDetail)
+                                                                                  BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail);
+
+RRPDeclarationArticle 'Рекомендованная цена' (declaration, article) = GROUP MAX RRPFreightArticle(freightDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail))
+                                                                             BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail);
+
 priceContractRateDeclarationDetail 'Цена контракта (руб.)' (declarationDetail) = priceContractDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeDeclarationDetail(declarationDetail);
 
@@ -390,7 +397,7 @@ VATDataDeclarationDetail 'НДС товара' = DATA NUMERIC[14,2](declarationD
 VATDataDeclarationDetail (declarationDetail) <- VATDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 VATDeclaration 'НДС декларации' (declaration) = GROUP SUM VATDeclarationDetail(declarationDetail)
-                                                       BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
+                                                       BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
 // за оформление
 sumRegistrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyRegistration()) IN baseGroup;
@@ -404,7 +411,7 @@ sumRegistrationDataDeclaration (declaration) <- sumRegistrationDeclaration(decla
 rateSumRegistrationDeclaration 'Таможенный сбор (конверт.)' (declaration) = round0(sumRegistrationDataDeclaration(declaration) *
                                                                                  rateExchangeDeclaration(declaration)) IN baseGroup PERSISTENT;
 
-totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyDeclaration(declaration), VATDeclaration(declaration), rateSumRegistrationDeclaration(declaration) IN baseGroup;
+totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyDeclaration(declaration), VATDeclaration(declaration), rateSumRegistrationDeclaration(declaration) IN sumGroup;
 
 
 // корректировка таможенной стоимости
@@ -435,14 +442,14 @@ diffVATDeclarationDetail 'Разница НДС' (declarationDetail) = correctio
                                                              IF correctionPriceDeclarationDetail(declarationDetail);
 
 diffVATDeclararion 'Разница НДС' (declaration) = GROUP SUM diffVATDeclarationDetail(declarationDetail)
-                                                        BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
+                                                        BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
-diffDeclaration 'Сумма доп. платежей' (declaration) = UNION SUM diffDutyDeclararion(declaration), diffVATDeclararion(declaration);
+diffDeclaration 'Сумма доп. платежей' (declaration) = UNION SUM diffDutyDeclararion(declaration), diffVATDeclararion(declaration) IN sumGroup;
 
 
 sumDeclarationDetail 'Стоимость' (declarationDetail) = supplierPriceDeclarationDetail(declarationDetail) * quantityDeclarationDetail(declarationDetail);
 
-sumDeclaration 'Сумма' (declaration) = GROUP SUM sumDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
+sumDeclaration 'Сумма' (declaration) = GROUP SUM sumDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
 registrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = round0((sumDeclarationDetail(declarationDetail) * rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)))/
                                                                             (quantityDeclarationDetail(declarationDetail) * sumDeclaration(declarationDeclarationDetail(declarationDetail)))) PERSISTENT;
@@ -451,12 +458,12 @@ registrationDeclarationDetail 'Таможенный сбор' (declarationDetail
 expenseCertificateDeclaration 'Расходы на сертификацию (БУ)' (declaration) = GROUP SUM priceRateDeclarationDetail(declarationDetail) *
                                                                                        quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
                                                                                     IF certificatedDeclarationDetail(declarationDetail)
-                                                                                    BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
+                                                                                    BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
 expenseCertificateManagerialDeclaration 'Расходы на сертификацию (УУ)' (declaration) = GROUP SUM priceManagerialDeclarationDetail(declarationDetail) *
                                                                                                  quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
                                                                                               IF certificatedDeclarationDetail(declarationDetail)
-                                                                                              BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
+                                                                                              BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
 
 dutyFinDeclarationDetail 'Пошлина' = (UNION OVERRIDE dutyDataDeclarationDetail(declarationDetail), correctionDutyDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail);
@@ -618,12 +625,28 @@ FORM declarationInvoices 'Присоединение инвойсов'
 
 showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d NEWSESSION MODAL TOOLBAR;
 
+// розничный прайс по декларации
+toCreateDeclarationPriceSetDocument 'Расценка декларации' =  ACTION (declaration) NEWSESSION {
+    ADDOBJ basePriceSetDocument;
+    FOR p == addedObject() DO {
+        SET priceInPriceSetDocumentArticle(p, article) <- priceContractDeclarationArticle(declaration, article);
+        SET RRPPriceSetDocumentArticle(p, article) <- RRPDeclarationArticle(declaration, article);
+        SET inArticlePriceSetDocument(p, article) <- inDeclarationArticle(declaration, article);
+        FORM priceSetDocument OBJECTS p=addedObject() MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC apply();
+        };
+    };
+} CONFIRM;
+
+
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
     PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   dateRegistrationDeclaration, timeRegistrationDeclaration, nameImporterDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion,
-                  diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices, exportDeclaration
+                  diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices,
+                  exportDeclaration, toCreateDeclarationPriceSetDocument
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -685,40 +708,60 @@ FORM declaration 'Декларация'
 
 DESIGN declaration FROM DEFAULT{
     main {
-          NEW topContainer {
-              fillVertical = 3;
-              d.panel {
-                childConstraints = TO THE RIGHTBOTTOM;
-                fillHorizontal = 2;
-              }
+          NEW allContainer {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
 
-              c.grid {
-                fillHorizontal = 1;
-              }
+            NEW topContainer {
+                fillVertical = 3;
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
 
-              f.grid {
-                fillHorizontal = 1;
-              }
+                NEW decContainer {
+                    childConstraints = TO THE RIGHT;
+                    fillHorizontal = 2;
 
-              POSITION d.box TO THE LEFT f.box;
-              POSITION f.box TO THE LEFT c.box;
-          }
+                    ADD d.docGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
 
-          NEW primary.box {
-              type = TABBED;
-              fillVertical = 5;
+                    ADD d.sumGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                }
 
-              NEW general.box {
+                NEW topContainer2 {
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
 
+                    ADD c.box {
+                        fillHorizontal = 1;
+                    }
+
+                    ADD f.box {
+                        fillHorizontal = 1;
+                    }
+                }
+            }
+
+
+            NEW primary.box {
+                type = TABBED;
+                fillVertical = 5;
+
+                NEW general.box {
+                  type = SPLITV;
                   childConstraints = TO THE BOTTOM;
                   title = 'Основные данные';
+
                   ADD dd.box {
                       fillVertical = 4;
                   };
 
                   NEW firstCase {
-                      childConstraints = TO THE RIGHT;
 
+                      type = SPLITH;
+                      childConstraints = TO THE RIGHT;
                       ADD gd.box {
                           fillVertical = 1;
                           fillHorizontal = 3;
@@ -730,13 +773,13 @@ DESIGN declaration FROM DEFAULT{
                       }
                   }
 
-                  POSITION gd.box TO THE LEFT ii2.box;
-              }
+                }
 
               NEW certification.box {
                   title = 'Сертификация';
                   ADD sf.box;
               }
+            }
           }
     }
 
@@ -749,7 +792,7 @@ FORM declarations 'Декларации'
                            rateExchangeDeclaration, nameImporterDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
                            expenseCertificateDeclaration
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) toCreateDeclarationPriceSetDocument, ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail,
@@ -794,6 +837,8 @@ DESIGN declarations FROM DEFAULT {
             ADD s.box;
         }
     }
+
+    ADD functions.box;
 }
 
 
