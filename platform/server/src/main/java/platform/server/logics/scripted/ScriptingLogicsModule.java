@@ -328,7 +328,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
-        return new ScriptingFormEntity(this, new FormEntity(baseLM.baseElement, formName, caption));
+        return new ScriptingFormEntity(this, new FormEntity(null, formName, caption));
     }
 
     public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {

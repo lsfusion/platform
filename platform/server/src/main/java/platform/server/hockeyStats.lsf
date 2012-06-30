@@ -100,3 +100,7 @@ PROPERTIES(team) place, conferencePlace, teamName, gamesPlayed, gamesWon, gamesW
                  gamesLostSO, gamesLostOT, gamesLost, goalsScored, goalsConceded, points
 PROPERTIES ADDOBJ(game), ADDOBJ(team);
 
+NAVIGATOR
+{
+    ADD MainForm;
+}
