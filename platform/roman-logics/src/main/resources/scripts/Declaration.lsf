@@ -119,8 +119,8 @@ TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 
 CLASS correction 'КТС' : transaction;
 
-GROUP sumGroup;
-GROUP docGroup;
+GROUP sumGroup 'Сумма' : baseGroup;;
+GROUP docGroup 'Описание' : baseGroup;;
 
 customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGroup;
 nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN docGroup;
