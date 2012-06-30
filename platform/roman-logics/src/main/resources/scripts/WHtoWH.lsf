@@ -23,74 +23,34 @@ CLASS WHtoWHPosted 'Закрытый расход со склада на скл�
 skuWHtoWHDetail 'Товар (ИД)' (WHtoWHDetail) = DATA sku (WHtoWHDetail)IN idGroup;
 nameSkuWHtoWHDetail 'Наименование товара' (WHtoWHDetail) = nameSku(skuWHtoWHDetail(WHtoWHDetail));
 
-@defineRBCorrespondingDocument(WHtoWH, warehouse, 'Оптовый склад-отправитель', sku, 'Расход со склада на склад', warehouse, 'Оптовый склад-получатель');
+@defineRBCorrespondingDocumentWithRetailPrices(WHtoWH, warehouse, 'Склад-отправитель', sku, 'Расход со склада на склад', warehouse, 'Склад-получатель');
+@defineDocumentDetailPackWeightSku(WHtoWH);
+@defineDocumentHeaderSkuQuantity(WHtoWH);
+
 
 quantityOutAutoSkuLedger (ledger) += quantityWHtoWHDetail (ledger);
-
-importerPriceWHtoWHDetail 'Цена изготовителя/импортера' (WHtoWHDetail) = DATA NUMERIC[14,3] (WHtoWHDetail);
-supplierPriceWHtoWHDetail 'Цена поставщика без НДС' (WHtoWHDetail) = DATA NUMERIC[14,3] (WHtoWHDetail);
-
-importerPriceWHtoWHSku 'Цена без НДС' (WHtoWH, sku) = GROUP MAX importerPriceWHtoWHDetail(WHtoWHDetail) BY WHtoWHWHtoWHDetail(WHtoWHDetail), skuWHtoWHDetail(WHtoWHDetail);
 
 wholesalePriceWHtoWHDetail 'Оптовая цена' (WHtoWHDetail) =  priceWholesaleArticleDateTime(articleWHtoWHDetail(WHtoWHDetail), dateTimeWHtoWHDetail(WHtoWHDetail));
 supplierPriceWHtoWHDetail (WHtoWHDetail) <- wholesalePriceWHtoWHDetail(WHtoWHDetail) WHEN CHANGED(skuWHtoWHDetail(WHtoWHDetail)) OR CHANGED (dateTimeWHtoWHDetail(WHtoWHDetail));
 
-supplierSumWHtoWHDetail 'Стоимость без НДС' (WHtoWHDetail) = supplierPriceWHtoWHDetail(WHtoWHDetail) * quantityWHtoWHDetail(WHtoWHDetail);
-
-supplierSumWHtoWHDetailWHtoWH 'Стоимость без НДС' (WHtoWH)= GROUP SUM supplierSumWHtoWHDetail(WHtoWHDetail) BY WHtoWHWHtoWHDetail(WHtoWHDetail) IN documentSumGroup;
-
-
-supplierVATWHtoWHDetail(WHtoWHDetail) = DATA range (WHtoWHDetail);
-numberSupplierVATWHtoWHDetail 'НДС, номер' (WHtoWHDetail) = numberRange(supplierVATWHtoWHDetail(WHtoWHDetail));
-valueSupplierVATWHtoWHDetail 'НДС, %' (WHtoWHDetail) = valueRateRangeDate
-    (supplierVATWHtoWHDetail(WHtoWHDetail), dateWHtoWHDetail(WHtoWHDetail));
-
-CONSTRAINT taxRange(supplierVATWHtoWHDetail(WHtoWHDetail)) != tax.taxVAT CHECKED BY supplierVATWHtoWHDetail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-
-sumSupplierVATWHtoWHDetail 'Сумма НДС' (WHtoWHDetail) = [X*Y/100](
-    supplierSumWHtoWHDetail(WHtoWHDetail), valueSupplierVATWHtoWHDetail(WHtoWHDetail));
-
-sumSupplierVATWHtoWHDetailWHtoWH 'Сумма НДС' (WHtoWH) = GROUP SUM sumSupplierVATWHtoWHDetail(WHtoWHDetail) BY WHtoWHWHtoWHDetail(WHtoWHDetail) IN documentSumGroup;
-
-sumInvoiceWHtoWHDetail 'Стоимость с НДС' (WHtoWHDetail) = supplierSumWHtoWHDetail(WHtoWHDetail) (+) sumSupplierVATWHtoWHDetail(WHtoWHDetail);
-
-sumInvoiceWHtoWHDetailWHtoWH 'Стоимость с НДС' (WHtoWH)= GROUP SUM sumInvoiceWHtoWHDetail(WHtoWHDetail) BY WHtoWHWHtoWHDetail(WHtoWHDetail) IN documentSumGroup;
-
-netWeightWHtoWHDetail 'Вес (ед.)' (WHtoWHDetail) = netWeightSku(skuWHtoWHDetail(WHtoWHDetail));
-
-sumNetWeightWHtoWHDetail 'Общая масса груза, кг.' (WHtoWHDetail) = netWeightWHtoWHDetail(WHtoWHDetail)*quantityWHtoWHDetail(WHtoWHDetail);
-
-sumNetWeightWHtoWH 'Общая масса груза, кг.' (WHtoWH) = GROUP SUM sumNetWeightWHtoWHDetail(WHtoWHDetail) BY WHtoWHWHtoWHDetail(WHtoWHDetail) IN documentSumGroup;
-
-packQuantityWHtoWHDetail 'Количество грузовых мест' (WHtoWHDetail) = round0(quantityWHtoWHDetail(WHtoWHDetail)/
-    UNION OVERRIDE 1 IF WHtoWHDetail IS WHtoWHDetail, quantityPackSku(skuWHtoWHDetail(WHtoWHDetail)));
-
-packQuantityWHtoWHDetailWHtoWH 'Общее количество грузовых мест' (WHtoWH) = GROUP SUM packQuantityWHtoWHDetail(WHtoWHDetail) BY WHtoWHWHtoWHDetail(WHtoWHDetail) IN documentSumGroup;
-
-
-quantityWHtoWHSku (WHtoWH, sku) = GROUP SUM quantityWHtoWHDetail(WHtoWHDetail)
-                                          BY WHtoWHWHtoWHDetail(WHtoWHDetail), skuWHtoWHDetail(WHtoWHDetail);
-
-
 FORM WHtoWH 'Расход со склада на склад'
     OBJECTS w = WHtoWH FIXED PANEL
+
     PROPERTIES (w) numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
-                   quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, sumSupplierVATWHtoWHDetailWHtoWH,
-                   sumInvoiceWHtoWHDetailWHtoWH, sumNetWeightWHtoWH, packQuantityWHtoWHDetailWHtoWH, noteWHtoWH
+                   quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
+                   invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
     OBJECTS d = WHtoWHDetail
-    PROPERTIES(d) indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, nameBrandWHtoWHDetail, sidArticleWHtoWHDetail,
-                  nameCategoryWHtoWHDetail, sidColorWHtoWHDetail, nameColorWHtoWHDetail, shortNameUOMWHtoWHDetail, balanceBSkuWHtoWHDetail,
-                  quantityWHtoWHDetail, importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail, valueSupplierVATWHtoWHDetail,
-                  sumSupplierVATWHtoWHDetail, sumInvoiceWHtoWHDetail
+
+    PROPERTIES(d) indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail, sidSizeWHtoWHDetail, nameBrandWHtoWHDetail,
+                  sidArticleWHtoWHDetail, nameCategoryWHtoWHDetail, sidColorWHtoWHDetail, nameColorWHtoWHDetail, balanceBSkuWHtoWHDetail,
+                  quantityWHtoWHDetail, importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail,
+                  valueSupplierVATWHtoWHDetail, supplierVATISumWHtoWHDetail, invoiceSumWHtoWHDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoWHDetailWHtoWH, addDetailDialogBarcodeWHtoWHDetailWHtoWH,
                   deleteWHtoWHDetailWHtoWH
 
-
     PROPERTIES(d) ADDOBJ, delete
-//    PROPERTIES(w) TODRAW(d) addDetailDialogTerminalWHtoWHDetailWHtoWH
 
     FILTERS inWHtoWHWHtoWHDetail(w, d)
 
@@ -133,8 +93,8 @@ DESIGN WHtoWH FROM DEFAULT {
 FORM WHtoWHs 'Расходы со склада на склад'
     OBJECTS w = WHtoWH
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
-                   countWHtoWHDetailWHtoWH, quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, sumSupplierVATWHtoWHDetailWHtoWH,
-                   sumInvoiceWHtoWHDetailWHtoWH, packQuantityWHtoWHDetailWHtoWH, sumNetWeightWHtoWH
+                   quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
+                   invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -148,9 +108,10 @@ FORM WHtoWHs 'Расходы со склада на склад'
                    printConsignmentSimpleVertical, printConsignmentSimpleAttach
 
     OBJECTS d = WHtoWHDetail
-    PROPERTIES(d) READONLY indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail,
-                  quantityWHtoWHDetail, importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail, valueSupplierVATWHtoWHDetail,
-                  sumSupplierVATWHtoWHDetail, sumInvoiceWHtoWHDetail
+    PROPERTIES(d) READONLY indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail, sidSizeWHtoWHDetail, nameBrandWHtoWHDetail,
+                  sidArticleWHtoWHDetail, nameCategoryWHtoWHDetail, sidColorWHtoWHDetail, nameColorWHtoWHDetail, balanceBSkuWHtoWHDetail,
+                  quantityWHtoWHDetail, importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail,
+                  valueSupplierVATWHtoWHDetail, supplierVATISumWHtoWHDetail, invoiceSumWHtoWHDetail
 
     FILTERS inWHtoWHWHtoWHDetail(w, d)
 ;
@@ -226,10 +187,10 @@ shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHtoWHDetail (c
 quantityConsignmentDetail (consignmentDetail) += quantityWHtoWHDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += supplierPriceWHtoWHDetail (consignmentDetail);
 vatConsignmentDetail (consignmentDetail) += valueSupplierVATWHtoWHDetail (consignmentDetail);
-sumVATConsignmentDetail (consignmentDetail) += sumSupplierVATWHtoWHDetail (consignmentDetail);
+sumVATConsignmentDetail (consignmentDetail) += supplierVATISumWHtoWHDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += supplierSumWHtoWHDetail (consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceWHtoWHDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += sumNetWeightWHtoWHDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumWHtoWHDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightWHtoWHDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityWHtoWHDetail(consignmentDetail);
 //currencyConsignment(consignment) += currencyWHtoWH(consignment);
 //isCustomsFlowConsignment (consignment) += consignment IS WHtoWH;

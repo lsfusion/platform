@@ -41,6 +41,11 @@ nameRecipientStoreSfromS 'Магазин документа' (SfromS)  = name(re
 CONSTRAINT SfromS IS SfromS AND NOT companyStore(recipientStoreSfromS(SfromS)) == companyStore(corrStoreSfromS(SfromS))
     CHECKED BY corrStoreSfromS  MESSAGE 'Перемещение (расход) не в рамках одного юрлица';
 
+initValueNumberObject (SfromS) += [PREV(numberObject(StoS))](StoSSfromS(SfromS));
+initValueSeriesObject (SfromS) += [PREV(seriesObject(StoS))](StoSSfromS(SfromS));
+
+initWhenNumberedObject(SfromS) += CHANGED(StoSSfromS(SfromS));
+
 
 senderDepartmentStoreSfromS 'Отдел-отправитель(ИД)' (SfromS) = departmentStoreStoS(StoSSfromS(SfromS));
 nameSenderDepartmentStoreSfromS 'Отдел-отправитель' (SfromS) = name(senderDepartmentStoreSfromS(SfromS));

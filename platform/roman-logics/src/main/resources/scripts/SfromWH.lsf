@@ -42,12 +42,12 @@ nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
 
 identitySfromWH (SfromWH) =  storeSfromWH(SfromWH) == corrStoreWHtoS(WHtoSSfromWH(SfromWH)) AND corrWarehouseSfromWH(SfromWH) == warehouseWHtoS(WHtoSSfromWH(SfromWH));
 
-CONSTRAINT SfromWH IS SfromWH AND NOT identitySfromWH(SfromWH) CHECKED BY WHtoSSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
+CONSTRAINT SfromWH IS SfromWH AND NOT identitySfromWH(SfromWH) CHECKED BY WHtoSSfromWH MESSAGE  'Магазин  и склад из расхода и приход должны совпадать';
 
-initValueNumberObject (WHfromCS) += [PREV(numberObject(WHfromCS))](WHtoSSfromWH(WHfromCS));
-initValueSeriesObject (WHfromCS) += [PREV(seriesObject(WHfromCS))](WHtoSSfromWH(WHfromCS));
+initValueNumberObject (SfromWH) += [PREV(numberObject(WHtoS))](WHtoSSfromWH(SfromWH));
+initValueSeriesObject (SfromWH) += [PREV(seriesObject(WHtoS))](WHtoSSfromWH(SfromWH));
 
-initWhenNumberedObject(WHfromCS) += CHANGED(WHtoSSfromWH(WHfromCS));
+initWhenNumberedObject(SfromWH) += CHANGED(WHtoSSfromWH(SfromWH));
 
 numberSfromWH 'Номер док-та расхода' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH));
 
@@ -156,7 +156,7 @@ FORM SfromWHs 'Приходы на магазин'
     OBJECTS sf = SfromWH
     PROPERTIES(sf) READONLY objectClassName, numberObject, seriesObject, dateSfromWH, timeSfromWH, nameCorrWarehouseSfromWH, nameDepartmentStoreSfromWH, nameStoreSfromWH,
                    documentFlowSfromWH, countSfromWHDetailSfromWH, quantitySfromWHDetailSfromWH, supplierSumSfromWHDetailSfromWH, invoiceVATSumSfromWHDetailSfromWH, invoiceSumSfromWHDetailSfromWH,
-                   retailSumSfromWHDetailSfromWH
+                   retailSumSfromWHDetailSfromWH, noteSfromWH
     PROPERTIES(sf) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
 
