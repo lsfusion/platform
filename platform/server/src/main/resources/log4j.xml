@@ -173,7 +173,7 @@
         <appender-ref ref="stdout"/>
     </category>
 
-    <category name="platform.server.form.instance.remote.RemoteForm">
+    <category name="platform.server.form.instance.remote.SequentialRequestLock">
         <priority value="DEBUG"/>
         <appender-ref ref="stdout"/>
     </category>

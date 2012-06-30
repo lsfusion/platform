@@ -2,8 +2,6 @@ package platform.server.form.instance.remote;
 
 import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
-import org.thavam.util.concurrent.BlockingHashMap;
-import org.thavam.util.concurrent.BlockingMap;
 import platform.base.BaseUtils;
 import platform.base.ERunnable;
 import platform.base.OrderedMap;
@@ -44,7 +42,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,14 +59,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
+    private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this, "-pausable-daemon-"));
+    private RemotePausableInvocation currentInvocation = null;
+
+    private AtomicInteger numberOfFormChangesRequests = new AtomicInteger();
+
+    private final SequentialRequestLock requestLock;
+
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener) throws RemoteException {
         super(port);
 
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
         this.reportManager = new FormReportManager(form);
-
-        initRequestLock();
+        this.requestLock = new SequentialRequestLock(getSID());
 
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
@@ -558,68 +561,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this, "-pausable-daemon-"));
-    private RemotePausableInvocation currentInvocation = null;
-
-    private AtomicInteger numberOfFormChangesRequests = new AtomicInteger();
-
-    private static final Object LOCK_OBJECT = new Object();
-
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private ArrayBlockingQueue requestLock = new ArrayBlockingQueue(1, true);
-
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private BlockingMap<Long, Object> sequentialRequestLock = new BlockingHashMap<Long, Object>();
-
-    public void initRequestLock() {
-        try {
-            sequentialRequestLock.offer(0L, LOCK_OBJECT);
-            requestLock.put(LOCK_OBJECT);
-        } catch (InterruptedException e) {
-            Throwables.propagate(e);
-        }
-    }
-
-    public void acquireRequestLock(long requestIndex) {
-        logger.debug("Acquiring request lock for form #" + getSID() + " for request #" + requestIndex);
-        try {
-            if (requestIndex >= 0) {
-                sequentialRequestLock.take(requestIndex);
-            }
-            requestLock.take();
-            logger.debug("Acquired request lock for form #" + getSID() + " for request #" + requestIndex);
-        } catch (InterruptedException e) {
-            Throwables.propagate(e);
-        }
-    }
-
-    public void releaseCurrentRequestLock(long requestIndex) {
-        logger.debug("Releasing request lock for form #" + getSID() + " for request #" + requestIndex);
-        try {
-            requestLock.put(LOCK_OBJECT);
-            if (requestIndex >= 0) {
-                sequentialRequestLock.offer(requestIndex + 1, LOCK_OBJECT);
-            }
-            logger.debug("Released request lock for form #" + getSID() + " for request #" + requestIndex);
-        } catch (InterruptedException e) {
-            Throwables.propagate(e);
-        }
-    }
-
     private <T> T processRMIRequest(long requestIndex, Callable<T> request) {
-        acquireRequestLock(requestIndex);
+        requestLock.acquireRequestLock(requestIndex);
         try {
             return request.call();
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            releaseCurrentRequestLock(requestIndex);
+            requestLock.releaseCurrentRequestLock(requestIndex);
         }
     }
 
     private ServerResponse executeServerInvocation(long requestIndex, RemotePausableInvocation invocation) throws RemoteException {
         numberOfFormChangesRequests.incrementAndGet();
-        acquireRequestLock(requestIndex);
+        requestLock.acquireRequestLock(requestIndex);
 
         currentInvocation = invocation;
         return invocation.execute();
@@ -649,7 +604,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 currentInvocation = null;
                 int left = numberOfFormChangesRequests.decrementAndGet();
                 assert left >= 0;
-                releaseCurrentRequestLock(requestIndex);
+                requestLock.releaseCurrentRequestLock(requestIndex);
             }
         });
     }

@@ -184,7 +184,7 @@
         <dependency>
             <groupId>org.thavam</groupId>
             <artifactId>blocking-map</artifactId>
-            <version>1.0</version>
+            <version>1.0-patched</version>
         </dependency>
     </dependencies>
 </project>
