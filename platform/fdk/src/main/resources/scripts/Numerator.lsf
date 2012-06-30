@@ -54,6 +54,14 @@ seriesObject 'Серия' = DATA STRING[2] (numberedObject) IN numberedGroup FIX
 seriesNumberObject 'Серия/Номер' (numberedObject) = [FORMULA STRING[21] '$1 || $2']
                                                     (seriesObject(numberedObject), numberObject(numberedObject));
 
+initValueNumberObject = ABSTRACT STRING[18] (numberedObject);
+initValueSeriesObject = ABSTRACT STRING[2] (numberedObject);
+
+initWhenNumberedObject = ABSTRACT BOOLEAN (numberedObject);
+
+numberObject (object) <- initValueNumberObject(object) WHEN initWhenNumberedObject(object);
+seriesObject (object) <- initValueSeriesObject(object) WHEN initWhenNumberedObject(object);
+
 CLASS ABSTRACT numeratedObject 'Нумерируемый объект' : numberedObject;
 
 numeratorObject 'Нумератор (ИД)' = DATA numerator (numeratedObject);

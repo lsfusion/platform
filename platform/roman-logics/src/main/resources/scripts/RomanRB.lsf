@@ -89,7 +89,7 @@ NAVIGATOR {
         ADD employees;
         ADD importers;
         ADD warehouses;
-        ADD storesR;
+        ADD stores;
         ADD companies;
         ADD contractsSkuCompany;
     }
@@ -224,6 +224,8 @@ NAVIGATOR {
         ADD contractSku;
         ADD contractSkuSupplier;
         ADD contractsSkuSupplier;
+        ADD contractSkuCompany;
+        ADD contractsSkuCompany;
         ADD numerator;
         ADD dialogDate;
         ADD dialogSku;
@@ -233,7 +235,6 @@ NAVIGATOR {
         ADD wholesalePriceDocument;
         ADD SfromWH;
         ADD warehouse;
-        ADD stores;
         ADD WHtoS;
         ADD StoS;
         ADD SfromS;

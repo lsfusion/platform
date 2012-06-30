@@ -29,11 +29,10 @@ skuWHfromCSDetail 'Товар (ИД)' (WHfromCSDetail) = DATA sku(WHfromCSDetail
 
 quantityInTransferSkuLedger (ledger) += quantityWHfromCSDetail(ledger);
 
-numberCStoWHWHfromCS 'Номер' (WHfromCS) = numberObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
-seriesCStoWHWHfromCS 'Серия' (WHfromCS) = seriesObject(CStoWHWHfromCS(WHfromCS)) IN baseGroup PERSISTENT;
-seriesNumberWHfromCS 'Серия/Номер' (WHfromCS) = seriesNumberObject(CStoWHWHfromCS(WHfromCS)) PERSISTENT;
+initValueNumberObject (WHfromCS) += [PREV(numberObject(WHfromCS))](CStoWHWHfromCS(WHfromCS));
+initValueSeriesObject (WHfromCS) += [PREV(seriesObject(WHfromCS))](CStoWHWHfromCS(WHfromCS));
 
-//numberObject (WHfromCS) <- PREV (numberCStoWHWHfromCS (WHfromCS)) WHEN ASSIGNED (CStoWHWHfromCS(WHfromCS));
+initWhenNumberedObject(WHfromCS) += CHANGED(CStoWHWHfromCS(WHfromCS));
 
 inCStoWHWHfromCS (WHfromCS, CStoWH) = CStoWHWHfromCS(WHfromCS) == CStoWH;
 
@@ -195,7 +194,7 @@ FORM WHfromCS 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCS FIXED PANEL, d = WHfromCSDetail
 
-    PROPERTIES(w)          numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
+    PROPERTIES(w)          numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
                            barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit, printMarksSkuFreightUnit,
                            printMarksSkuWHfromCS TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCS SHOWIF barcodeCurrentFreightUnit(w),
@@ -229,8 +228,8 @@ DESIGN WHfromCS FROM DEFAULT {
         NEW firstCase {
             title = 'Шапка документа';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY(numberCStoWHWHfromCS);
-            ADD PROPERTY(seriesCStoWHWHfromCS);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
             ADD PROPERTY(dateWHfromCS);
             ADD PROPERTY(timeWHfromCS);
             ADD PROPERTY(nameWarehouseWHfromCS);

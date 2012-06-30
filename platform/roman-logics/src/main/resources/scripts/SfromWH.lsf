@@ -44,6 +44,11 @@ identitySfromWH (SfromWH) =  storeSfromWH(SfromWH) == corrStoreWHtoS(WHtoSSfromW
 
 CONSTRAINT SfromWH IS SfromWH AND NOT identitySfromWH(SfromWH) CHECKED BY WHtoSSfromWH MESSAGE  'ошибка: Магазин из расхода должен совпадать с магазином из прихода';
 
+initValueNumberObject (WHfromCS) += [PREV(numberObject(WHfromCS))](WHtoSSfromWH(WHfromCS));
+initValueSeriesObject (WHfromCS) += [PREV(seriesObject(WHfromCS))](WHtoSSfromWH(WHfromCS));
+
+initWhenNumberedObject(WHfromCS) += CHANGED(WHtoSSfromWH(WHfromCS));
+
 numberSfromWH 'Номер док-та расхода' (SfromWH) = numberObject(WHtoSSfromWH(SfromWH));
 
 documentFlowSfromWH 'Документ расхода' (SfromWH) =

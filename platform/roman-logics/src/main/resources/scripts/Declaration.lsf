@@ -621,7 +621,7 @@ showFormDeclarationInvoices 'Присоединить инвойсы' (declarati
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
     PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, beginTimeDeclaration, endTimeDeclaration,
-                  dateRegistrationDeclaration, nameImporterDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
+                  dateRegistrationDeclaration, timeRegistrationDeclaration, nameImporterDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices, exportDeclaration
 
