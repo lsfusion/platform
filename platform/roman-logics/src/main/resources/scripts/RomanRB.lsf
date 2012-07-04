@@ -159,7 +159,7 @@ NAVIGATOR {
         }
 
         NEW merchandisingDocument 'Документы' {
-            ADD WHfromCSs;
+            //ADD WHfromCSs;
             ADD WHtoSs;
             ADD WHfromSs;
             ADD WHtoWHs;
