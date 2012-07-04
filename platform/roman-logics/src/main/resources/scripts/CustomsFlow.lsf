@@ -205,7 +205,7 @@ DESIGN CStoWH FROM DEFAULT {
 
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
-    PROPERTIES (c) READONLY numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
+    PROPERTIES (c) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
                             nameCorrWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, totalSumCStoWHDetail
 
     PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

@@ -34,8 +34,8 @@ seriesStoWHWHfromS 'Серия' (WHfromS) = seriesObject(StoWHWHfromS(WHfromS)) 
 seriesNumberWHfromS 'Серия/Номер' (WHfromS) = seriesNumberObject(StoWHWHfromS(WHfromS)) PERSISTENT;
 
 //numberObject (WHfromS) <- PREV (numberStoWHWHfromS (WHfromS)) WHEN ASSIGNED (StoWHWHfromS(WHfromS));
-
-inStoWHWHfromS (WHfromS, StoWH) = StoWHWHfromS(WHfromS) == StoWH;
+//
+//inStoWHWHfromS (WHfromS, StoWH) = StoWHWHfromS(WHfromS) == StoWH;
 
 
 FORM WHfromS 'Приход на склад из магазина'

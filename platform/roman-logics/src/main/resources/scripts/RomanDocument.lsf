@@ -54,12 +54,16 @@ META defineRBCorrespondingDocumentWithRetailPrices (object, stock, stockCaption,
 //    @implementBaseSkuDepartmentStoreLedger(object, sku);
 END
 
-META defineUniqueDocumentComingByExpense (object, objectFrom)
-    objectFrom###object 'Расход прихода (ИД)' (object) = DATA objectFrom##Posted(object) IN idGroup;
-    object###objectFrom (objectFrom) = GROUP UNIQUE object BY objectFrom###object (object);
+META defineUniqueDocumentComingByExpense (objectIn, objectOut)
+    objectOut###objectIn 'Расход прихода (ИД)' (objectIn) = DATA objectOut##Posted (objectIn) IN idGroup;
+    objectIn###objectOut (objectOut) = GROUP UNIQUE objectIn BY objectOut###objectIn (objectIn);
 
-    CONSTRAINT objectFrom###object(p1) == objectFrom###object(p2) AND p1 != p2 CHECKED BY objectFrom###object MESSAGE 'Расход задействован в другом приходе';
+    in###objectOut###objectIn (objectOut, objectIn) = objectOut###objectIn(objectIn) == objectOut;
+
+    CONSTRAINT objectOut###objectIn(p1) == objectOut###objectIn(p2) AND p1 != p2 CHECKED BY objectOut###objectIn MESSAGE 'Расход задействован в другом приходе';
+
 END
+
 
 META defineDocumentHeaderOriginSkuQuantity (object, objectFrom)
     quantityOrigin###object##DetailSku###object 'Кол-во плановое' (sku, object) = quantity###objectFrom##DetailSku###objectFrom(sku, objectFrom##object(object));

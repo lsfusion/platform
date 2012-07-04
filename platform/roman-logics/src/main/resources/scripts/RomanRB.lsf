@@ -99,7 +99,7 @@ NAVIGATOR {
         ADD declarations;
         ADD innerInvoices;
         ADD CStoWHs;
-        ADD WHfromCSs;
+        ADD WHfromCSIs;
     }
 
     prices {
@@ -131,7 +131,7 @@ NAVIGATOR {
         ADD consignmentSimpleVertical;
         ADD consignmentSimpleAttach;
         ADD consignment;
-        ADD printMarksWHfromCS;
+      //  ADD printMarksWHfromCS;
     }
 
     baseElement {
@@ -159,7 +159,7 @@ NAVIGATOR {
         ADD numerators;
         ADD numerator;
         ADD CStoWH;
-        ADD WHfromCS;
+        ADD WHfromCSI;
         ADD WHtoS;
         ADD declarationDetailCStoWHInput;
         ADD unitsOfMeasure;
