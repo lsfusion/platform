@@ -37,11 +37,11 @@ public class ActionEvent<P extends PropertyInterface> extends Event<P, ActionPro
         if((options & RESOLVE)==0)
             return;
 
-        PropertyChanges changes = session.getPropertyChanges();
+        PropertyChanges changes = session.getModifier().getPropertyChanges();
         for(SessionCalcProperty<T> sessionCalcProperty : where.property.getSessionCalcDepends())
             if(sessionCalcProperty instanceof ChangedProperty)
-                changes = changes.add(new PropertyChanges(sessionCalcProperty, ((ChangedProperty<T>)sessionCalcProperty).getFullChange(session)));
-        new ExecutionEnvironment(session).execute(writeTo, getChange(changes), null);
+                changes = changes.add(new PropertyChanges(sessionCalcProperty, ((ChangedProperty<T>)sessionCalcProperty).getFullChange(session.getModifier())));
+        session.execute(writeTo, getChange(changes), null);
     }
     
     private OrderedMap<Expr, Boolean> getOrderImplements(Map<P, KeyExpr> mapKeys, PropertyChanges changes) {

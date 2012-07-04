@@ -132,8 +132,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     // получает свойства, которые изменяют propChanges и соответственно hint'ить нельзя - временная затычка
     @IdentityLazy
-    public Set<CalcProperty> getChangeModifierProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    public QuickSet<CalcProperty> getChangeModifierProps() {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
         for(PropertyDrawEntity propertyDraw : propertyDraws) {
             Property property = propertyDraw.propertyObject.property;
             if(property instanceof CalcProperty) {
@@ -721,7 +721,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return resultPropertyDraw;
     }
 
-    public Set<CalcProperty> hintsIncrementTable = new HashSet<CalcProperty>();
+    public QuickSet<CalcProperty> hintsIncrementTable = new QuickSet<CalcProperty>();
 
     public void addHintsIncrementTable(LP... props) {
         for (LP prop : props) {
@@ -735,7 +735,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    public Set<CalcProperty> hintsNoUpdate = new HashSet<CalcProperty>();
+    public QuickSet<CalcProperty> hintsNoUpdate = new QuickSet<CalcProperty>();
 
     public void addHintsNoUpdate(GroupObjectEntity groupObject) {
         for (PropertyDrawEntity property : getProperties(groupObject)) {

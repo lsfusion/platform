@@ -10,11 +10,10 @@ import platform.interop.form.ServerResponse;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.ActionClass;
-import platform.server.classes.DataClass;
-import platform.server.classes.LogicalClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.query.MapKeysInterface;
@@ -33,10 +32,7 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.ImmutableModifier;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
-import platform.server.session.PropertyChanges;
+import platform.server.session.*;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -101,7 +97,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public String askConfirmMessage;
 
     public String toString() {
-        return caption;
+        return caption + " (" + sID + ")";
     }
 
     public int ID = 0;
@@ -214,7 +210,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return KeyExpr.getMapKeys(interfaces);
     }
 
-    public static Modifier defaultModifier = new ImmutableModifier(PropertyChanges.EMPTY);
+    public static Modifier defaultModifier = new Modifier() {
+        public PropertyChanges getPropertyChanges() {
+            return PropertyChanges.EMPTY;
+        }
+    };
 
     @IdentityLazy
     public Type getInterfaceType(T propertyInterface) { // true потому как может быть old не полный (в частности NewSessionAction)

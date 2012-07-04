@@ -74,7 +74,7 @@ public class IntegrationService {
         
         System.gc();
 
-        new ExecutionEnvironment(session).change(propertyChanges);
+        session.change(propertyChanges);
 
         return importTable;
     }
@@ -90,7 +90,7 @@ public class IntegrationService {
             // фильтруем только те, которых нету в ImportTable
             if (!delete.deleteAll)
                 query.and(GroupExpr.create(Collections.singletonMap("key",
-                                           delete.key.getExpr(importExprs, session.modifier)),
+                                           delete.key.getExpr(importExprs, session.getModifier())),
                                            Where.TRUE,
                                            query.mapKeys).getWhere().not());
 
@@ -104,11 +104,11 @@ public class IntegrationService {
                     groupExpr = intraKeyExpr; // собственно группируем по этому ключу
                     deleteExprs.put(propInt, groupExpr);
                 } else
-                    deleteExprs.put(propInt, entry.getValue().getDeleteExpr(importTable, intraKeyExpr, session.modifier));
+                    deleteExprs.put(propInt, entry.getValue().getDeleteExpr(importTable, intraKeyExpr, session.getModifier()));
             }
 
             query.and(GroupExpr.create(Collections.singletonMap("key", groupExpr),
-                                       delete.deleteProperty.property.getExpr(deleteExprs, session.modifier),
+                                       delete.deleteProperty.property.getExpr(deleteExprs, session.getModifier()),
                                        GroupType.ANY,
                                        Collections.singletonMap("key", keyExpr)).getWhere());
 

@@ -979,7 +979,7 @@ public class BaseUtils {
         public abstract G group(K key);
     }
 
-    public static <G, K> Map<G, Collection<K>> group(Group<G, K> getter, Collection<K> keys) {
+    public static <G, K> Map<G, Collection<K>> group(Group<G, K> getter, Iterable<K> keys) {
         Map<G, Collection<K>> result = new HashMap<G, Collection<K>>();
         for (K key : keys) {
             G group = getter.group(key);
@@ -2057,5 +2057,20 @@ public class BaseUtils {
         List<K> list = new ArrayList<K>(col);
         Collections.sort(list, comparator);
         return list;
+    }
+
+    public static <K> FunctionSet<K> merge(FunctionSet<K> set1, FunctionSet<K> set2) {
+        if(set1.isEmpty() || set2.isFull())
+            return set2;
+        if(set2.isEmpty() || set1.isFull())
+            return set1;
+        return new MergeFunctionSet<K>(set1, set2);
+    }
+    
+    public static <T> FunctionSet<T> universal(boolean empty) {
+        if(empty)
+            return EmptyFunctionSet.instance();
+        else
+            return FullFunctionSet.instance();
     }
 }

@@ -68,10 +68,10 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 Query<String, String> q = new Query<String, String>(keys);
                 q.and(dbExpr.isClass(paasLM.database));
                 q.and(
-                        paasLM.databaseConfiguration.getExpr(session.modifier, dbExpr).getWhere().not()
+                        paasLM.databaseConfiguration.getExpr(session.getModifier(), dbExpr).getWhere().not()
                 );
 
-                q.properties.put("name", LM.name.getExpr(session.modifier, dbExpr));
+                q.properties.put("name", LM.name.getExpr(session.getModifier(), dbExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
                 for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
@@ -747,11 +747,11 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 q.and(confExpr.isClass(paasLM.configuration));
                 if (projId != null) {
                     q.and(
-                            paasLM.configurationProject.getExpr(session.modifier, confExpr).compare(projId, Compare.EQUALS)
+                            paasLM.configurationProject.getExpr(session.getModifier(), confExpr).compare(projId, Compare.EQUALS)
                     );
                 }
 
-                q.properties.put("port", paasLM.configurationPort.getExpr(session.modifier, confExpr));
+                q.properties.put("port", paasLM.configurationPort.getExpr(session.getModifier(), confExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
                 for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {

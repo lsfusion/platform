@@ -59,6 +59,17 @@ public class AfterTranslateAspect {
             return thisJoinPoint.proceed();
     }
 
+    @Around("execution(platform.server.data.query.innerjoins.KeyEquals platform.server.data.where.AbstractWhere.calculateKeyEquals()) && target(where)")
+    public Object callCalculateKeyEquals(ProceedingJoinPoint thisJoinPoint, AbstractWhere where) throws Throwable {
+        Where from = where.getFrom();
+        MapTranslate translator = where.getTranslator();
+        if(from!=null && translator!=null)
+            return from.getKeyEquals().translateOuter(translator);
+        else
+            return thisJoinPoint.proceed();
+    }
+
+
     @Around("execution(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.classes.MeanClassWheres.calculateClassWhere()) && target(wheres)")
     public Object callMeanCalculateClassWhere(ProceedingJoinPoint thisJoinPoint, MeanClassWheres wheres) throws Throwable {
         MeanClassWheres.OuterContext from = wheres.getOuter().getFrom();

@@ -108,10 +108,6 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getOldDepends();
     }
 
-    public Set<ChangedProperty> mapChangedDepends() {
-        return property.getChangedDepends();
-    }
-
     public Object read(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {
         return property.read(context.getSession().sql, BaseUtils.join(mapping, interfaceValues), context.getModifier(), context.getQueryEnv());
     }
@@ -153,4 +149,13 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     public CalcPropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
         return new CalcPropertyObjectInstance<P>(property, BaseUtils.join(mapping, mapObjects));
     }
+    
+    public ClassWhere<Object> mapClassValueWhere() {
+        return property.getClassValueWhere().remap(BaseUtils.<Object, P, String, Object>merge(mapping, Collections.singletonMap("value", "value")));
+    }
+
+    public <I extends PropertyInterface> boolean mapIntersect(CalcPropertyMapImplement<I, T> implement) {
+        return property.intersectFull(implement.property, BaseUtils.rightCrossValues(implement.mapping, mapping));
+    }
+
 }

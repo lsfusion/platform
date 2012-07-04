@@ -1,11 +1,14 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
+import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
@@ -56,5 +59,14 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
                 throw new RuntimeException();
         }
         return new PropertyChange<T>(mapKeys, ValueExpr.get(where), Where.TRUE);
+    }
+
+    @Override
+    public ClassWhere<Object> getClassValueWhere() {
+        return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(false)));
+    }
+
+    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        return property.getInterfaceCommonClasses(null);
     }
 }

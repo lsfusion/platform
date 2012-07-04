@@ -6,6 +6,9 @@ import platform.server.caches.AbstractInnerContext;
 import platform.server.caches.InnerContext;
 import platform.server.caches.PackInterface;
 import platform.server.caches.TranslateValues;
+import platform.server.classes.BaseClass;
+import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -15,6 +18,8 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -64,6 +69,13 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public boolean isEmpty() {
         return getWhere().isFalse();
+    }
+
+    public void outSelect(SQLSession session) throws SQLException {
+        outSelect(session, QueryEnvironment.empty);
+    }
+    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+        compile(session.syntax).outSelect(session, env);
     }
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N

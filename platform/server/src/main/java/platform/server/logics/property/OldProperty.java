@@ -31,4 +31,13 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
 
         return property.getExpr(joinImplement); // возвращаем старое значение
     }
+
+    @Override
+    public ClassWhere<Object> getClassValueWhere() {
+        return property.getClassValueWhere();
+    }
+
+    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+        return property.getInterfaceCommonClasses(commonValue);
+    }
 }

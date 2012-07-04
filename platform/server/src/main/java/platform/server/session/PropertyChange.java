@@ -114,8 +114,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(new HashMap<T, DataObject>(), mapKeys, expr, where);
     }
 
-    public static <P extends PropertyInterface> PropertyChange<P> TRUE() {
-        return new PropertyChange<P>(new HashMap<P, KeyExpr>(), ValueExpr.TRUE, Where.TRUE);
+    public static <P extends PropertyInterface> PropertyChange<P> STATIC(boolean isTrue) {
+        return new PropertyChange<P>(new HashMap<P, KeyExpr>(), ValueExpr.TRUE, isTrue? Where.TRUE : Where.FALSE);
     }
     public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr) {
         this(mapKeys, expr, expr.getWhere());

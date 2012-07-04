@@ -323,7 +323,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Query<String, Object> q = new Query<String, Object>(Collections.singleton("key"));
             q.and(
                     LM.hostname.getExpr(
-                            session.modifier, q.mapKeys.get("key")
+                            session.getModifier(), q.mapKeys.get("key")
                     ).compare(new DataObject(strHostName), Compare.EQUALS)
             );
 
@@ -443,7 +443,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, Object> q = new Query<String, Object>(BaseUtils.toList("userId", "policyId"));
-            Expr orderExpr = LM.userPolicyOrder.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("policyId"));
+            Expr orderExpr = LM.userPolicyOrder.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("policyId"));
 
             q.properties.put("pOrder", orderExpr);
             q.and(orderExpr.getWhere());
@@ -474,11 +474,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, String> qf = new Query<String, String>(BaseUtils.toList("formId"));
-            Expr expr = LM.navigatorElementSID.getExpr(session.modifier, qf.mapKeys.get("formId"));
+            Expr expr = LM.navigatorElementSID.getExpr(session.getModifier(), qf.mapKeys.get("formId"));
             qf.and(expr.getWhere());
             qf.properties.put("sid", expr);
-            qf.properties.put("permit", LM.permitForm.getExpr(session.modifier, qf.mapKeys.get("formId")));
-            qf.properties.put("forbid", LM.forbidForm.getExpr(session.modifier, qf.mapKeys.get("formId")));
+            qf.properties.put("permit", LM.permitForm.getExpr(session.getModifier(), qf.mapKeys.get("formId")));
+            qf.properties.put("forbid", LM.forbidForm.getExpr(session.getModifier(), qf.mapKeys.get("formId")));
 
             Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
             for (Map<String, Object> valueMap : formValues) {
@@ -490,13 +490,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             Query<String, String> qp = new Query<String, String>(BaseUtils.toList("propertyId"));
-            Expr expr2 = LM.SIDProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId"));
+            Expr expr2 = LM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
             qp.and(expr2.getWhere());
             qp.properties.put("sid", expr2);
-            qp.properties.put("permitView", LM.permitViewProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidView", LM.forbidViewProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
-            qp.properties.put("permitChange", LM.permitChangeProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidChange", LM.forbidChangeProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitView", LM.permitViewProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidView", LM.forbidViewProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitChange", LM.permitChangeProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidChange", LM.forbidChangeProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
 
             Collection<Map<String, Object>> propertyValues = qp.execute(session.sql).values();
             for (Map<String, Object> valueMap : propertyValues) {
@@ -549,13 +549,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
             Query<String, String> qf = new Query<String, String>(BaseUtils.toList("userId", "formId"));
-            Expr formExpr = LM.navigatorElementSID.getExpr(session.modifier, qf.mapKeys.get("formId"));
+            Expr formExpr = LM.navigatorElementSID.getExpr(session.getModifier(), qf.mapKeys.get("formId"));
             qf.and(formExpr.getWhere());
             qf.and(qf.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
 
             qf.properties.put("sid", formExpr);
-            qf.properties.put("permit", LM.permitUserForm.getExpr(session.modifier, qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
-            qf.properties.put("forbid", LM.forbidUserForm.getExpr(session.modifier, qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
+            qf.properties.put("permit", LM.permitUserForm.getExpr(session.getModifier(), qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
+            qf.properties.put("forbid", LM.forbidUserForm.getExpr(session.getModifier(), qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
 
             Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
             for (Map<String, Object> valueMap : formValues) {
@@ -567,15 +567,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             Query<String, String> qp = new Query<String, String>(BaseUtils.toList("userId", "propertyId"));
-            Expr propExpr = LM.SIDProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId"));
+            Expr propExpr = LM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
             qp.and(propExpr.getWhere());
             qp.and(qp.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
 
             qp.properties.put("sid", propExpr);
-            qp.properties.put("permitView", LM.permitViewUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidView", LM.forbidViewUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
-            qp.properties.put("permitChange", LM.permitChangeUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidChange", LM.forbidChangeUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitView", LM.permitViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidView", LM.forbidViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitChange", LM.permitChangeUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidChange", LM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
 
             Collection<Map<String, Object>> propValues = qp.execute(session.sql).values();
             for (Map<String, Object> valueMap : propValues) {
@@ -613,12 +613,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, String> q = new Query<String, String>(BaseUtils.toList("userId", "formId"));
-            Expr expr = LM.userFormDefaultNumber.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId"));
+            Expr expr = LM.userFormDefaultNumber.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("formId"));
             q.and(expr.getWhere());
             q.and(q.mapKeys.get("userId").compare(user, Compare.EQUALS));
 
-            q.properties.put("sid", LM.navigatorElementSID.getExpr(session.modifier, q.mapKeys.get("formId")));
-            q.properties.put("number", LM.userFormDefaultNumber.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId")));
+            q.properties.put("sid", LM.navigatorElementSID.getExpr(session.getModifier(), q.mapKeys.get("formId")));
+            q.properties.put("number", LM.userFormDefaultNumber.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("formId")));
 
 
             Collection<Map<String, Object>> values = q.execute(session.sql).values();
@@ -886,7 +886,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         
         for(ExclusiveUnionProperty abstractUnion : abstractUnions)
-            assert abstractUnion.checkClasses();
+            abstractUnion.checkClasses();
     }
 
     protected void finishActions() { // потому как могут использовать abstract
@@ -987,7 +987,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 systemUserObject = (Integer) BaseUtils.single(rows).get("key");
 
             query = new Query<String, Object>(Collections.singleton("key"));
-            query.and(LM.hostname.getExpr(session.modifier, BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
+            query.and(LM.hostname.getExpr(session.getModifier(), BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
             rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
             if (rows.size() == 0) { // если нету добавим
                 DataObject computerObject = session.addObject(LM.computer);
@@ -1396,7 +1396,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     LM.connectionCurrentStatus.property.getExpr(LM.connectionCurrentStatus.getMapKeys())
                             .compare(LM.connectionStatus.getDataObject("connectedConnection").getExpr(), Compare.EQUALS));
 
-            new ExecutionEnvironment(session).change((CalcProperty) LM.connectionCurrentStatus.property, statusChanges);
+            session.change((CalcProperty) LM.connectionCurrentStatus.property, statusChanges);
 
             session.apply(this);
             session.close();
@@ -1809,15 +1809,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public Modifier getNoEventModifier() {
-        SimpleMap<CalcProperty, PropertyChange> changes = new SimpleMap<CalcProperty, PropertyChange>();
+    public List<CalcProperty> getDataChangeEvents() {
+        List<CalcProperty> result = new ArrayList<CalcProperty>();
         for(Property property : getPropertyList())
-            if(property instanceof DataProperty && ((DataProperty)property).event!=null) {
-                CalcProperty<?> where = (((DataProperty) property).event).getWhere();
-                changes.add(where, where.getNoChange());
-            }
-
-        return new ImmutableModifier(changes);
+            if(property instanceof DataProperty && ((DataProperty)property).event!=null)
+                result.add((((DataProperty) property).event).getWhere());
+        return result;
     }
 
     private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, Set<CalcProperty>> mapDepends) {
@@ -2483,8 +2480,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.modifier, key));
-        query.properties.put("userLoggableProperty", LM.userLoggableProperty.getExpr(session.modifier, key));
+        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.getModifier(), key));
+        query.properties.put("userLoggableProperty", LM.userLoggableProperty.getExpr(session.getModifier(), key));
         query.and(isProperty.getExpr(key).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -2505,13 +2502,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("isDerivedChange", LM.isEventNotification.getExpr(session.modifier, key));
-        query.properties.put("subject", LM.subjectNotification.getExpr(session.modifier, key));
-        query.properties.put("text", LM.textNotification.getExpr(session.modifier, key));
-        query.properties.put("emailFrom", LM.emailFromNotification.getExpr(session.modifier, key));
-        query.properties.put("emailTo", LM.emailToNotification.getExpr(session.modifier, key));
-        query.properties.put("emailToCC", LM.emailToCCNotification.getExpr(session.modifier, key));
-        query.properties.put("emailToBC", LM.emailToBCNotification.getExpr(session.modifier, key));
+        query.properties.put("isDerivedChange", LM.isEventNotification.getExpr(session.getModifier(), key));
+        query.properties.put("subject", LM.subjectNotification.getExpr(session.getModifier(), key));
+        query.properties.put("text", LM.textNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailFrom", LM.emailFromNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailTo", LM.emailToNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailToCC", LM.emailToCCNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailToBC", LM.emailToBCNotification.getExpr(session.getModifier(), key));
         query.and(isNotification.getExpr(key).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -2524,8 +2521,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             newKeys2.put("notification", notificationExpr2);
 
             Query<Object, Object> query2 = new Query<Object, Object>(newKeys2);
-            query2.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.modifier, propertyExpr2));
-            query2.and(LM.inNotificationProperty.getExpr(session.modifier, notificationExpr2, propertyExpr2).getWhere());
+            query2.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
+            query2.and(LM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
             List<LCP> listInNotificationProperty = new ArrayList();
@@ -2563,8 +2560,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.modifier, key));
-        query.properties.put("isSetNotNullProperty", LM.isSetNotNullProperty.getExpr(session.modifier, key));
+        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.getModifier(), key));
+        query.properties.put("isSetNotNullProperty", LM.isSetNotNullProperty.getExpr(session.getModifier(), key));
         query.and(isProperty.getExpr(key).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -2720,10 +2717,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 Expr roleExpr = keys.get("role");
 
                 Query<String, String> q = new Query<String, String>(keys);
-                q.and(LM.inUserMainRole.getExpr(session.modifier, userExpr, roleExpr).getWhere());
-                q.and(LM.userLogin.getExpr(session.modifier, userExpr).compare(new DataObject(username), Compare.EQUALS));
+                q.and(LM.inUserMainRole.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
+                q.and(LM.userLogin.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
 
-                q.properties.put("roleName", LM.userRoleSID.getExpr(session.modifier, roleExpr));
+                q.properties.put("roleName", LM.userRoleSID.getExpr(session.getModifier(), roleExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
 

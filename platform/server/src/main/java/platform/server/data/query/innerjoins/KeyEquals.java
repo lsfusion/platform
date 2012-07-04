@@ -9,6 +9,7 @@ import platform.server.Settings;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.Where;
 
@@ -219,5 +220,12 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
     
     public boolean isSimple() {
         return size==1 && getKey(0).isEmpty();
+    }
+
+    public KeyEquals translateOuter(MapTranslate translator) {
+        KeyEquals result = new KeyEquals();
+        for(int i=0;i<size;i++)
+            result.add(getKey(i).translateOuter(translator), getValue(i).translateOuter(translator));
+        return result;
     }
 }

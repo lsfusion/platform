@@ -11,6 +11,7 @@ import platform.server.data.type.Type;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.logics.BusinessLogics;
+import platform.server.session.Modifier;
 import platform.server.session.SessionTableUsage;
 
 import java.sql.SQLException;
@@ -73,43 +74,44 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             newQuery.and(parentTable.getWhere(newQuery.mapKeys));
         }
 
+        Modifier modifier = form.getModifier();
         for (GroupObjectInstance group : groups) {
-            newQuery.and(group.getWhere(newQuery.mapKeys, form));
+            newQuery.and(group.getWhere(newQuery.mapKeys, modifier));
 
             for(Map.Entry<OrderInstance, Boolean> order : BaseUtils.mergeOrders(group.orders, BaseUtils.toOrderedMap(new ArrayList<OrderInstance>(group.objects), false)).entrySet()) {
                 Pair<Object, PropertyType> orderObject = new Pair<Object, PropertyType>(order.getKey(), PropertyType.ORDER);
-                newQuery.properties.put(orderObject, order.getKey().getExpr(newQuery.mapKeys, form));
+                newQuery.properties.put(orderObject, order.getKey().getExpr(newQuery.mapKeys, modifier));
                 orders.put(orderObject, order.getValue());
                 types.put(orderObject, order.getKey().getType());
             }
 
             if (group.propertyBackground != null) {
                 Pair<Object, PropertyType> backgroundObject = new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND);
-                newQuery.properties.put(backgroundObject, group.propertyBackground.getExpr(newQuery.mapKeys, form));
+                newQuery.properties.put(backgroundObject, group.propertyBackground.getExpr(newQuery.mapKeys, modifier));
                 types.put(backgroundObject, group.propertyBackground.getType());
             }
 
             if (!gridGroupsId.contains(group.getID()))
                 for (ObjectInstance object : group.objects) {
-                    newQuery.and(object.getExpr(newQuery.mapKeys, form).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                    newQuery.and(object.getExpr(newQuery.mapKeys, modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                 }
         }
 
         for(PropertyDrawInstance<?> property : filterProperties(groups)) {
             if (property.columnGroupObjects.isEmpty()) {
                 Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, PropertyType.PLAIN);
-                newQuery.properties.put(propertyObject, property.getDrawInstance().getExpr(newQuery.mapKeys, form));
+                newQuery.properties.put(propertyObject, property.getDrawInstance().getExpr(newQuery.mapKeys, modifier));
                 types.put(propertyObject, property.propertyObject.getType());
 
                 if (property.propertyCaption != null) {
                     Pair<Object, PropertyType> captionObject = new Pair<Object, PropertyType>(property, PropertyType.CAPTION);
-                    newQuery.properties.put(captionObject, property.propertyCaption.getExpr(newQuery.mapKeys, form));
+                    newQuery.properties.put(captionObject, property.propertyCaption.getExpr(newQuery.mapKeys, modifier));
                     types.put(captionObject, property.propertyCaption.getType());
                 }
 
                 if (property.propertyFooter != null) {
                     Pair<Object, PropertyType> footerObject = new Pair<Object, PropertyType>(property, PropertyType.FOOTER);
-                    newQuery.properties.put(footerObject, property.propertyFooter.getExpr(newQuery.mapKeys, form));
+                    newQuery.properties.put(footerObject, property.propertyFooter.getExpr(newQuery.mapKeys, modifier));
                     types.put(footerObject, property.propertyFooter.getType());
                 }
             }
@@ -258,32 +260,33 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         Query<ObjectInstance, Object> query = new Query<ObjectInstance, Object>(objects);
         OrderedMap<Object, Boolean> queryOrders = new OrderedMap<Object, Boolean>();
 
+        Modifier modifier = form.getModifier();
         for (GroupObjectInstance group : groups) {
-            query.and(group.getWhere(query.mapKeys, form));
+            query.and(group.getWhere(query.mapKeys, modifier));
 
             for (Map.Entry<OrderInstance, Boolean> order : group.orders.entrySet()) {
-                query.properties.put(order.getKey(), order.getKey().getExpr(query.mapKeys, form));
+                query.properties.put(order.getKey(), order.getKey().getExpr(query.mapKeys, modifier));
                 queryOrders.put(order.getKey(), order.getValue());
             }
 
             for (ObjectInstance object : group.objects) {
-                query.properties.put(object, object.getExpr(query.mapKeys, form));
+                query.properties.put(object, object.getExpr(query.mapKeys, modifier));
                 queryOrders.put(object, false);
             }
 
             if (group.curClassView != ClassViewType.GRID) {
                 for (ObjectInstance object : group.objects) {
-                    query.and(object.getExpr(query.mapKeys, form).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                    query.and(object.getExpr(query.mapKeys, modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                 }
             }
         }
 
-        query.properties.put(property, property.getDrawInstance().getExpr(query.mapKeys, form));
+        query.properties.put(property, property.getDrawInstance().getExpr(query.mapKeys, modifier));
         if (property.propertyCaption != null) {
-            query.properties.put(property.propertyCaption, property.propertyCaption.getExpr(query.mapKeys, form));
+            query.properties.put(property.propertyCaption, property.propertyCaption.getExpr(query.mapKeys, modifier));
         }
         if (property.propertyFooter != null) {
-            query.properties.put(property.propertyFooter, property.propertyFooter.getExpr(query.mapKeys, form));
+            query.properties.put(property.propertyFooter, property.propertyFooter.getExpr(query.mapKeys, modifier));
         }
 
         return query.execute(form, queryOrders, 0);

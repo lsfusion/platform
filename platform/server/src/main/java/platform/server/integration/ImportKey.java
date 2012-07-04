@@ -94,7 +94,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
 
         Query<P, Object> noKeysQuery = new Query<P, Object>(implement.property);
         noKeysQuery.and(GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, noKeysQuery.mapKeys).getWhere()); // в импортируемой таблице
-        noKeysQuery.and(implement.property.getExpr(noKeysQuery.mapKeys, session.modifier).getWhere().not()); // для которых неопределился объект
+        noKeysQuery.and(implement.property.getExpr(noKeysQuery.mapKeys, session.getModifier()).getWhere().not()); // для которых неопределился объект
 
         for (Iterator<Map<P, DataObject>> iterator = noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet().iterator(); iterator.hasNext();) {
             Map<P, DataObject> noKeysRow = iterator.next();

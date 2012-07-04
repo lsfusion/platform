@@ -525,7 +525,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
-                ObjectValue changeValue = DataObject.getValue(deserializeObject(value), (ConcreteClass) propertyDraw.getEntity().propertyObject.property.getValueClass());
+                ObjectValue changeValue = DataObject.getValue(deserializeObject(value), (ConcreteClass) propertyDraw.getEntity().getChangeType(form.entity));
                 form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, changeValue);
             }
         });

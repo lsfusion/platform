@@ -265,8 +265,8 @@ META implementHeaderInputListRegister (concrete)
 END
 
 META implementHeaderInputListRegisterNumber (concrete)
-    numberListRegister (inputListRegister) += numberObject (inputListRegister);
-    seriesListRegister (inputListRegister) += seriesObject (inputListRegister);
+    numberListRegister (inputListRegister) += numberObject (inputListRegister) AND inputListRegister IS concrete;
+    seriesListRegister (inputListRegister) += seriesObject (inputListRegister) AND inputListRegister IS concrete;
 END
 
 META implementHeaderInputListRegisterNumberCustom (concrete, suffix)

@@ -2234,7 +2234,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
             String info = "failed to import project " + projectId + ". Constraint: " + sessionApply;
             pInfo.toLog += info;
             logger.error(info);
-            pInfo.session.restart(true);
+            pInfo.session.cancel();
         } else {
             logger.info(projectId + " project was imported successfully");
         }

@@ -108,14 +108,16 @@ public class ModifyQuery {
     }
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
+        return (new ModifyQuery(table, getInsertLeftQuery(),env)).getInsertSelect(syntax);
+    }
 
+    public Query<KeyField, PropertyField> getInsertLeftQuery() {
         // делаем для этого еще один запрос
         Query<KeyField, PropertyField> leftKeysQuery = new Query<KeyField, PropertyField>(change.getMapKeys());
         leftKeysQuery.and(change.getWhere());
         // исключим ключи которые есть
         leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());
-
-        return (new ModifyQuery(table,leftKeysQuery,env)).getInsertSelect(syntax);
+        return leftKeysQuery;
     }
 
     private static String getInsertCastSelect(CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {

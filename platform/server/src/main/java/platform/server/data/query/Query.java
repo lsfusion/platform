@@ -434,13 +434,6 @@ public class Query<K,V> extends IQuery<K,V> {
         return result;
     }
 
-    public void outSelect(SQLSession session) throws SQLException {
-        outSelect(session, QueryEnvironment.empty);
-    }
-    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
-        compile(session.syntax).outSelect(session, env);
-    }
-
     public void outClassesSelect(SQLSession session, BaseClass baseClass) throws SQLException {
         // выведем на экран
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = executeClasses(session, baseClass);

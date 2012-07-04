@@ -344,9 +344,6 @@ quantityBatch (batch) += quantityDeclarationDetail(batch);
 
 @implementSkuLedger(declaration, sku, customStore);
 
-isPostedSkuLedger (ledger) += TRUE IF ledger IS declarationDetail;
-quantityInAutoSkuLedger (ledger) += quantityDeclarationDetail(ledger);
-
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX
                       rateExchangeDeclarationDetail(declarationDetail) * sumNetWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),

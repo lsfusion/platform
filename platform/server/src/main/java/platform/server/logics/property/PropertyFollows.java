@@ -1,13 +1,5 @@
 package platform.server.logics.property;
 
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.where.WhereBuilder;
-import platform.server.session.DataSession;
-import platform.server.session.IncrementApply;
-
-import java.sql.SQLException;
-import java.util.Map;
-
 public class PropertyFollows<T extends PropertyInterface, L extends PropertyInterface> {
 
     public final static int RESOLVE_TRUE = 1;

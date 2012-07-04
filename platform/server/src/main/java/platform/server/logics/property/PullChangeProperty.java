@@ -9,7 +9,7 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
 
     // assert что constraint.isFalse
     protected final CalcProperty<T> onChange;
-    protected final CalcProperty<P> toChange;
+    public final CalcProperty<P> toChange;
 
     public PullChangeProperty(String SID, String caption, List<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
         super(SID, caption, interfaces);

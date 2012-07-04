@@ -23,13 +23,4 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
     public Set<SessionCalcProperty> getSessionCalcDepends() {
         return Collections.<SessionCalcProperty>singleton(this);
     }
-
-    @Override
-    public ClassWhere<Object> getClassValueWhere() {
-        return property.getClassValueWhere();
-    }
-
-    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
-        return property.getInterfaceCommonClasses(commonValue);
-    }
 }

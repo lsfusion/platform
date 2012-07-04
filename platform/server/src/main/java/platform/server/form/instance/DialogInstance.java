@@ -1,6 +1,9 @@
 package platform.server.form.instance;
 
 import org.apache.log4j.Logger;
+import platform.base.BaseUtils;
+import platform.base.FunctionSet;
+import platform.base.QuickSet;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.CalcPropertyObjectEntity;
@@ -74,17 +77,27 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
     }
 
     @Override
-    public boolean allowHintIncrement(CalcProperty property) {
-        if(pullProps!=null)
-            for(PullChangeProperty pullProp : pullProps)
-                if(pullProp.isChangeBetween(property))
-                    return false;
-        return super.allowHintIncrement(property);
-    }
+    protected FunctionSet<CalcProperty> getNoHints() {
+        FunctionSet<CalcProperty> result = super.getNoHints();
+        if(pullProps==null)
+            return result;
 
-    @Override
-    public boolean isDialog() {
-        return true;
+        return BaseUtils.merge(result, new FunctionSet<CalcProperty>() {
+            public boolean contains(CalcProperty element) {
+                for(PullChangeProperty pullProp : pullProps)
+                    if(pullProp.isChangeBetween(element))
+                        return true;
+                return false;
+            }
+
+            public boolean isEmpty() {
+                return false;
+            }
+
+            public boolean isFull() {
+                return false;
+            }
+        });
     }
 
     public ObjectValue getDialogObjectValue() {

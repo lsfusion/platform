@@ -2,7 +2,7 @@ package platform.base;
 
 import java.util.*;
 
-public class QuickSet<T> implements Iterable<T> {
+public class QuickSet<T> implements Iterable<T>, FunctionSet<T> {
     public int size;
     protected Object[] table;
     protected int[] htable;
@@ -102,6 +102,17 @@ public class QuickSet<T> implements Iterable<T> {
         for(int i=0;i<size;i++)
             if(set.contains(get(i),htable[indexes[i]]))
                 return true;
+        return false;
+    }
+
+    public boolean intersect(FunctionSet<T> set) {
+        for(int i=0;i<size;i++)
+            if(set.contains(get(i)))
+                return true;
+        return false;
+    }
+
+    public boolean isFull() {
         return false;
     }
 

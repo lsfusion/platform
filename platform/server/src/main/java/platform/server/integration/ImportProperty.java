@@ -72,12 +72,12 @@ public class ImportProperty <P extends PropertyInterface> {
 
         Expr importExpr;
         if (converter != null)
-            importExpr = converter.property.getExpr(getImplementExprs(converter.mapping, addedKeys, importExprs, session.modifier), session.modifier);
+            importExpr = converter.property.getExpr(getImplementExprs(converter.mapping, addedKeys, importExprs, session.getModifier()), session.getModifier());
         else
             importExpr = importField.getExpr(importExprs);
 
         Map<P, KeyExpr> mapKeys = implement.property.getMapKeys();
-        Map<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.modifier);
+        Map<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.getModifier());
 
         Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys);
 
@@ -91,6 +91,6 @@ public class ImportProperty <P extends PropertyInterface> {
             changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
         }
 
-        return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.modifier);
+        return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.getModifier());
     }
 }

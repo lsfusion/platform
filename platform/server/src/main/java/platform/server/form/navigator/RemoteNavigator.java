@@ -29,7 +29,6 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
-import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
@@ -111,9 +110,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
-        StructChanges userChange = new StructChanges(property);
         for (DataSession session : sessions)
-            session.updateProperties(userChange, true);
+            session.updateProperties(Collections.singleton(property), true);
     }
 
     public void relogin(String login) throws RemoteException {
@@ -768,7 +766,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 DataSession session = createSession();
-                property.execute(new HashMap<ClassPropertyInterface, DataObject>(), new ExecutionEnvironment(session), null);
+                property.execute(new HashMap<ClassPropertyInterface, DataObject>(), session, null);
                 session.apply(BL);
                 session.close();
                 return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);

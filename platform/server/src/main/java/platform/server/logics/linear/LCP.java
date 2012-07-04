@@ -2,8 +2,6 @@ package platform.server.logics.linear;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.base.Result;
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -65,7 +63,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public Object read(DataSession session, DataObject... objects) throws SQLException {
-        return read(session.sql, session.modifier, session.env, objects);
+        return read(session.sql, session.getModifier(), session.env, objects);
     }
 
     public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
@@ -78,12 +76,12 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException {
-        return readClasses(session, session.modifier, session.env, objects);
+        return readClasses(session, session.getModifier(), session.env, objects);
     }
 
     // execute'ы без Form'
     public void change(Object value, DataSession session, DataObject... objects) throws SQLException {
-        change(value, new ExecutionEnvironment(session), objects);
+        change(value, (ExecutionEnvironment)session, objects);
     }
 
     public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException {

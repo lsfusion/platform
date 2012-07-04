@@ -15,6 +15,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     public final boolean isFinal;
 
     public ModifyChange(PropertyChange<P> change, boolean isFinal) {
+        assert change!=null;
         this.change = change;
         this.isFinal = isFinal;
     }

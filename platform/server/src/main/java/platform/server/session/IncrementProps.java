@@ -1,73 +1,44 @@
 package platform.server.session;
 
-import platform.server.data.SQLSession;
+import platform.base.QuickSet;
+import platform.base.WeakIdentityHashSet;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
 
-import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-public class IncrementProps extends BaseMutableModifier {
+public abstract class IncrementProps {
 
-    public IncrementProps() {
+    private WeakIdentityHashSet<OverrideSessionModifier> modifiers = new WeakIdentityHashSet<OverrideSessionModifier>();
+    public void registerView(OverrideSessionModifier modifier) {
+        modifiers.add(modifier);
+        modifier.eventChanges(getProperties());
+    }
+    public void unregisterView(OverrideSessionModifier modifier) {
+        modifiers.remove(modifier);
     }
 
-    public <P extends PropertyInterface> IncrementProps(CalcProperty<P> property, SinglePropertyTableUsage<P> table) {
-        add(property, table);
+    private WeakIdentityHashSet<OverrideIncrementProps> increments = new WeakIdentityHashSet<OverrideIncrementProps>();
+    public void registerView(OverrideIncrementProps modifier) {
+        increments.add(modifier);
+    }
+    public void unregisterView(OverrideIncrementProps modifier) {
+        increments.remove(modifier);
     }
 
-    public <P extends PropertyInterface> IncrementProps(Map<? extends CalcProperty, ? extends SinglePropertyTableUsage> tables) {
-        for(Map.Entry<? extends CalcProperty, ? extends SinglePropertyTableUsage> table : tables.entrySet())
-            add(table.getKey(), table.getValue());
+    public void eventChange(CalcProperty property) {
+        for(OverrideIncrementProps increment : increments)
+            increment.eventChange(property);
+
+         for(OverrideSessionModifier modifier : modifiers)
+            modifier.eventIncrementChange(property);
     }
-
-    private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
-
-    public Collection<CalcProperty> getProperties() {
-        return tables.keySet();
+    public void eventChanges(Iterable<? extends CalcProperty> properties) {
+        for(CalcProperty property : properties)
+            eventChange(property);
     }
-
-    public <P extends PropertyInterface> SinglePropertyTableUsage<P> getTable(CalcProperty<P> property) {
-        return (SinglePropertyTableUsage<P>)tables.get(property);
-    }
-
-    protected boolean isFinal() {
-        return true;
-    }
-
-    protected <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
-        SinglePropertyTableUsage<P> table = getTable(property);
-        if(table!=null)
-            return SinglePropertyTableUsage.getChange(table);
-        return null;
-    }
-
-    public <P extends PropertyInterface> void add(CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
-        tables.put(property, (SinglePropertyTableUsage<PropertyInterface>) changeTable);
-
-        addChange(property);
-    }
-
-    public void remove(CalcProperty property, SQLSession session) throws SQLException {
-        SinglePropertyTableUsage<PropertyInterface> table = tables.remove(property);
-        if(table!=null) {
-            table.drop(session);
-            addChange(property);
-        }
-    }
-
-    public void cleanIncrementTables(SQLSession session) throws SQLException {
-        for (Map.Entry<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet()) {
-            addTable.getValue().drop(session);
-            addChange(addTable.getKey());
-        }
-        tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
-    }
-
-    protected Collection<CalcProperty> calculateProperties() {
-        return tables.keySet();
-    }
+    
+    public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);
+    public abstract QuickSet<CalcProperty> getProperties();
 }

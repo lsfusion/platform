@@ -11,11 +11,11 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.IQuery;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.form.instance.FormInstance;
 import platform.server.logics.property.*;
 import platform.server.logics.property.CalcProperty;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
+import platform.server.session.SessionModifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,12 +25,12 @@ import static platform.base.BaseUtils.max;
 @Aspect
 public class AutoHintsAspect {
 
-    public static ThreadLocal<FormInstance> catchAutoHint = new ThreadLocal<FormInstance>();
+    public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<SessionModifier>();
     
     public Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty property, Modifier modifier) throws Throwable {
-        if(!Settings.instance.isDisableAutoHints() && modifier instanceof FormInstance) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
-            FormInstance formInstance = (FormInstance) modifier;
-            catchAutoHint.set(formInstance);
+        if(!Settings.instance.isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
+            SessionModifier sessionModifier = (SessionModifier) modifier;
+            catchAutoHint.set(sessionModifier);
             Object result;
             try {
                 result = thisJoinPoint.proceed();
@@ -40,9 +40,9 @@ public class AutoHintsAspect {
                 assert catchAutoHint.get()==modifier;
                 catchAutoHint.set(null);
                 if(e.lowstat)
-                    formInstance.addHintIncrement(e.property);
+                    sessionModifier.addHintIncrement(e.property);
                 else
-                    formInstance.addHintNoUpdate(property);
+                    sessionModifier.addNoUpdate(property);
                 result = ((MethodSignature)thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
             }
             return result;
@@ -59,13 +59,6 @@ public class AutoHintsAspect {
         return callAutoHint(thisJoinPoint, property, modifier);
     }
 
-    private static boolean allowHint(CalcProperty property) {
-        FormInstance catchHint = catchAutoHint.get();
-        boolean allow = catchHint!=null && !catchHint.isHintIncrement(property) && catchHint.allowHintIncrement(property); // неправильно так как может быть не changed
-        if(allow && catchHint.forceHintIncrement(property)) // сразу кидаем exception
-            throw new AutoHintException(property, true);
-        return allow;
-    }
     @Around("execution(* platform.server.logics.property.CalcProperty.getQuery(boolean,platform.server.session.PropertyChanges,platform.server.logics.property.PropertyQueryType,java.util.Map)) && target(property) && args(propClasses, propChanges, queryType, interfaceValues)")
     public Object callGetQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map interfaceValues) throws Throwable {
         assert property.isFull();
@@ -74,7 +67,14 @@ public class AutoHintsAspect {
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
-        if(allowHint(property)) { // неправильно так как может быть не changed
+        SessionModifier catchHint = catchAutoHint.get();
+        if(catchHint != null && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
+            if(catchHint.forceHintIncrement(property)) // сразу кидаем exception
+                throw new AutoHintException(property, true);
+            boolean allowNoUpdate = catchHint.allowNoUpdate(property);
+            if(allowNoUpdate && catchHint.forceNoUpdate(property))
+                throw new AutoHintException(property, false);
+
             Expr expr = result.getExpr("value");
             long exprComplexity = expr.getComplexity(false);
 
@@ -92,7 +92,7 @@ public class AutoHintsAspect {
                     if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
                         if (changed.getStatKeys(mapKeys.values()).rows.lessEquals(new Stat(Settings.instance.getLimitHintIncrementStat())))
                             throw new AutoHintException(property, true);
-                        if(complexity > Settings.instance.getLimitHintNoUpdateComplexity()) {
+                        if(allowNoUpdate && complexity > Settings.instance.getLimitHintNoUpdateComplexity()) {
                             System.out.println("AUTO HINT NOUPDATE" + property);
                             throw new AutoHintException(property, false);
                         }
@@ -109,7 +109,12 @@ public class AutoHintsAspect {
             "&& target(property) && args(joinExprs,propClasses,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, boolean propClasses,  Map joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        if(!property.isFull() || !allowHint(property))
+
+        if(!property.isFull())
+            return thisJoinPoint.proceed();
+
+        SessionModifier catchHint = catchAutoHint.get();
+        if(catchHint == null || !catchHint.allowHintIncrement(property)) // неправильно так как может быть не changed
             return thisJoinPoint.proceed();
 
         WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);

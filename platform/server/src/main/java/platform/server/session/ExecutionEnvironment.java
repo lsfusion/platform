@@ -19,40 +19,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class ExecutionEnvironment {
+public abstract class ExecutionEnvironment {
 
-    private ExecutionEnvironmentInterface current;
     private ObjectValue lastUserInput;
     private boolean wasUserInput = false;
 
-    public ExecutionEnvironment(ExecutionEnvironmentInterface current) {
-        this.current = current;
-    }
+    public abstract DataSession getSession();
 
-    public DataSession getSession() {
-        return current.getSession();
-    }
-    public QueryEnvironment getQueryEnv() {
-        return current.getQueryEnv();
-    }
-    public Modifier getModifier() {
-        return current.getModifier();
-    }
-    public FormInstance getFormInstance() {
-        return current.getFormInstance();
-    }
+    public abstract QueryEnvironment getQueryEnv();
 
-    public boolean isInTransaction() {
-        return current.isInTransaction();
-    }
+    public abstract Modifier getModifier();
+
+    public abstract FormInstance getFormInstance();
+
+    public abstract boolean isInTransaction();
+
+    public abstract <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException;
 
     public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
-        current.fireChange(property, change);
+        fireChange(property, change);
 
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
             userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);
-        change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, current.getModifier()));
+        change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, getModifier()));
     }
 
     public <P extends PropertyInterface> void change(DataChanges mapChanges) throws SQLException {
@@ -84,21 +74,13 @@ public class ExecutionEnvironment {
         return property.execute(context);
     }
 
-    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        return current.addObject(cls);
-    }
+    public abstract DataObject addObject(ConcreteCustomClass cls) throws SQLException;
 
-    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException {
-        current.changeClass(objectInstance, object, cls, groupLast);
-    }
+    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException;
 
-    public void apply(BusinessLogics BL) throws SQLException {
-        current.apply(BL);
-    }
+    public abstract boolean apply(BusinessLogics BL) throws SQLException;
 
-    public void cancel() throws SQLException {
-        current = current.cancel();
-    }
+    public abstract void cancel() throws SQLException;
 
     public ObjectValue getLastUserInput() {
         return lastUserInput;

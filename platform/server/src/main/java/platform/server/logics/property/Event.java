@@ -41,12 +41,6 @@ public abstract class Event<C extends PropertyInterface, P extends Property<C>> 
         return result;
     }
 
-    public Set<ChangedProperty> getChangedDepends() {
-        Set<ChangedProperty> result = new HashSet<ChangedProperty>();
-        result.addAll(where.mapChangedDepends());
-        return result;
-    }
-
     @IdentityLazy
     private boolean isWhereFull() {
         return where.mapIsFull(writeTo.interfaces);

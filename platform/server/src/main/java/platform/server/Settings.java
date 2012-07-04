@@ -533,4 +533,14 @@ public class Settings {
     public void setDefaultOrdersNotNull(boolean defaultOrdersNotNull) {
         this.defaultOrdersNotNull = defaultOrdersNotNull;
     }
+
+    private int commandLengthVolatileStats = 100000000; // определяет при какой длине команды, включать работу с волатильной статистикой
+
+    public int getCommandLengthVolatileStats() {
+        return commandLengthVolatileStats;
+    }
+
+    public void setCommandLengthVolatileStats(int commandLengthVolatileStats) {
+        this.commandLengthVolatileStats = commandLengthVolatileStats;
+    }
 }

@@ -1,9 +1,6 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.Pair;
-import platform.base.QuickSet;
+import platform.base.*;
 import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.Settings;
@@ -56,8 +53,35 @@ import static platform.base.BaseUtils.merge;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> {
 
+    public static FunctionSet<CalcProperty> getDependsSet(final FunctionSet<CalcProperty> check) {
+        return new FunctionSet<CalcProperty>() {
+            public boolean contains(CalcProperty element) {
+                return depends(element, check);
+            }
+
+            public boolean isEmpty() {
+                return check.isEmpty();
+            }
+
+            public boolean isFull() {
+                return check.isFull();
+            }
+        };
+    }
     public static boolean depends(CalcProperty<?> property, CalcProperty check) {
         return property.getRecDepends().contains(check);
+    }
+
+    public static boolean depends(CalcProperty<?> property, FunctionSet<CalcProperty> check) {
+        return property.getRecDepends().intersect(check);
+    }
+
+    public static Set<CalcProperty> depends(Collection<CalcProperty> properties, QuickSet<CalcProperty> check) {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(CalcProperty property : properties)
+            if(depends(property, check))
+                result.add(property);
+        return result;
     }
 
     // используется если создаваемый WhereBuilder нужен только если задан changed
@@ -70,6 +94,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
         return (this instanceof DataProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
+    }
+
+    // по выражениям проверяет
+    public <P extends PropertyInterface> boolean intersectFull(CalcProperty<P> property, Map<P, T> map) {
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        return !getExpr(mapKeys).getWhere().and(property.getExpr(BaseUtils.join(map, mapKeys)).getWhere()).not().checkTrue();
     }
 
     protected CalcProperty(String sID, String caption, List<T> interfaces) {
@@ -152,7 +182,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new HashSet<CalcProperty>(getChangeProps()); // !notNull
     }
 
-    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, DataSession session) throws SQLException {
+    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         assert isStored();
 
         // оптимизация
@@ -167,12 +197,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Where classWhere = fieldClassWhere.getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
                 .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
 
-        SinglePropertyTableUsage<T> fit = readChangeTable(session.sql, change.and(classWhere), session.baseClass, session.env);
-        SinglePropertyTableUsage<T> notFit = readChangeTable(session.sql, change.and(classWhere.not()), session.baseClass, session.env);
+        SinglePropertyTableUsage<T> fit = readChangeTable(sql, change.and(classWhere), baseClass, env);
+        SinglePropertyTableUsage<T> notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
         assert DataSession.fitClasses(this, fit);
         assert DataSession.fitKeyClasses(this, fit);
         assert DataSession.notFitClasses(this, notFit); // из-за эвристики с not могут быть накладки
-        changeTable.drop(session.sql);
+        changeTable.drop(sql);
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
     }
 
@@ -334,6 +364,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getPullDataChanges(changes, toNull).add(changes);
     }
 
+    @IdentityLazy
     public QuickSet<CalcProperty> getRecDepends() {
         QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
         for(CalcProperty<?> depend : getDepends())
@@ -378,13 +409,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Set<OldProperty> result = new HashSet<OldProperty>();
         for(SessionCalcProperty sessionCalc : getSessionCalcDepends())
             result.add(sessionCalc.getOldProperty());
-        return result;
-    }
-
-    public Set<ChangedProperty> getChangedDepends() {
-        Set<ChangedProperty> result = new HashSet<ChangedProperty>();
-        for(CalcProperty<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
-            result.addAll(property.getChangedDepends());
         return result;
     }
 
@@ -521,7 +545,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public Object read(FormInstance form, Map<T, ? extends ObjectValue> keys) throws SQLException {
-        return read(form.session.sql, keys, form, form.getQueryEnv());
+        return read(form.session.sql, keys, form.getModifier(), form.getQueryEnv());
     }
 
     public ObjectValue readClasses(DataSession session, Map<T, DataObject> keys, Modifier modifier, QueryEnvironment env) throws SQLException {

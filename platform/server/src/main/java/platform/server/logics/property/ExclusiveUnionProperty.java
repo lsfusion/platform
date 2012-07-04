@@ -5,6 +5,7 @@ import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.Query;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.*;
@@ -111,14 +112,41 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
     }
 
     protected boolean checkFull() {
-        return true;
+        return false;
     }
 
-    public boolean checkClasses() {
+    private List<CalcPropertyMapImplement<?, Interface>> getPropertyOperands() {
+        List<CalcPropertyMapImplement<?, Interface>> result = new ArrayList<CalcPropertyMapImplement<?, Interface>>();
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands)
+            if(operand instanceof CalcPropertyMapImplement)
+                result.add((CalcPropertyMapImplement<?, Interface>)operand);
+        return result;
+    }
+    public void checkClasses() {
         assert isAbstract();
 
-        ClassWhere<Object> calcClassValueWhere = super.getClassValueWhere();
-        return calcClassValueWhere.means(classValueWhere) && (!checkFull() || classValueWhere.means(calcClassValueWhere));
+        List<CalcPropertyMapImplement<?, Interface>> listOperands = getPropertyOperands();
+        List<ClassWhere<Object>> listClasses = new ArrayList<ClassWhere<Object>>();
 
+        ClassWhere<Object> fullClassValueWhere = ClassWhere.STATIC(false);
+        for(CalcPropertyMapImplement<?, Interface> operand : listOperands) {
+            ClassWhere<Object> operandClassValueWhere = operand.mapClassValueWhere();
+            if(!operandClassValueWhere.means(classValueWhere))
+                throw new RuntimeException("Wrong Classes. Property : " + this + ", Operand : " + operand.property +  ", Calculated : " + operandClassValueWhere + ", Specified : " + classValueWhere);
+
+            listClasses.add(operandClassValueWhere);
+            fullClassValueWhere = fullClassValueWhere.or(operandClassValueWhere);
+        }
+        
+        for(int i=0;i<listOperands.size();i++)
+            for(int j=i+1;j<listOperands.size();j++) {
+                CalcPropertyMapImplement<?, Interface> op1 = listOperands.get(i);
+                CalcPropertyMapImplement<?, Interface> op2 = listOperands.get(j);
+                if(op1.mapIntersect(op2))
+                    throw new RuntimeException("Exclusive Intersect. Property : " + this + ", Operand 1 : " + op1.property +  ", Operand 2 : " + op2.property + ", Classes 1 : " + listClasses.get(i) + ", Classes 2 : " + listClasses.get(j));
+            }
+
+        if(checkFull() && classValueWhere.means(fullClassValueWhere))
+            throw new RuntimeException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere);
     }
 }

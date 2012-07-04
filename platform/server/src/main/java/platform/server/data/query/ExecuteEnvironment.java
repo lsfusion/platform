@@ -1,6 +1,7 @@
 package platform.server.data.query;
 
 import platform.base.TwinImmutableInterface;
+import platform.server.Settings;
 import platform.server.caches.AbstractTranslateValues;
 import platform.server.data.SQLSession;
 import platform.server.data.translator.MapValuesTranslate;
@@ -40,17 +41,17 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         volatileStats = true;
     }
 
-    public void before(SQLSession sqlSession, Connection connection) throws SQLException {
+    public void before(SQLSession sqlSession, Connection connection, String command) throws SQLException {
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection);
-        if(volatileStats)
+        if(volatileStats || command.length() > Settings.instance.getCommandLengthVolatileStats())
             sqlSession.pushVolatileStats(connection);
     }
 
-    public void after(SQLSession sqlSession, Connection connection) throws SQLException {
+    public void after(SQLSession sqlSession, Connection connection, String command) throws SQLException {
         if(noReadOnly)
             sqlSession.popNoReadOnly(connection);
-        if(volatileStats)
+        if(volatileStats || command.length() > Settings.instance.getCommandLengthVolatileStats())
             sqlSession.popVolatileStats(connection);
     }
 

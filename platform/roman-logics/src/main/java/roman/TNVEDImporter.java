@@ -7,7 +7,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.DataSession;
@@ -42,11 +41,11 @@ public abstract class TNVEDImporter {
     protected List<String> getFullCategory10() throws SQLException {
         List<String> list = new ArrayList<String>();
         Map<PropertyInterface, KeyExpr> keys = LM.sidCustomCategory10.getMapKeys();
-        Expr expr = LM.sidCustomCategory10.property.getExpr(keys, session.modifier);
+        Expr expr = LM.sidCustomCategory10.property.getExpr(keys, session.getModifier());
         Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
         query.properties.put("sid", expr);
         query.and(expr.getWhere());
-        query.and(LM.customCategory4CustomCategory10.getExpr(session.modifier, BaseUtils.singleValue(keys)).getWhere());
+        query.and(LM.customCategory4CustomCategory10.getExpr(session.getModifier(), BaseUtils.singleValue(keys)).getWhere());
         OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql);
         for (Map<PropertyInterface, Object> key : result.keySet()) {
             list.add(result.get(key).get("sid").toString());

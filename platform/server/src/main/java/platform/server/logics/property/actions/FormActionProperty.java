@@ -106,7 +106,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
             }
 
             for (ActionPropertyObjectEntity<?> startProperty : startProperties)
-                newFormInstance.instanceFactory.getInstance(startProperty).execute(new ExecutionEnvironment(newFormInstance));
+                newFormInstance.instanceFactory.getInstance(startProperty).execute(newFormInstance);
 
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
@@ -149,7 +149,7 @@ public class FormActionProperty extends CustomReadValueActionProperty {
             if (formResult == FormCloseType.CLOSE) {
                 for (ActionPropertyObjectEntity<?> property : closeProperties) {
                     try {
-                        newFormInstance.instanceFactory.getInstance(property).execute(new ExecutionEnvironment(newFormInstance));
+                        newFormInstance.instanceFactory.getInstance(property).execute(newFormInstance);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }

@@ -411,7 +411,7 @@ public class SQLSession extends MutableObject {
 
         logger.info(DDL);
 
-        env.before(this, connection);
+        env.before(this, connection, DDL);
 
         Statement statement = connection.createStatement();
         try {
@@ -422,7 +422,7 @@ public class SQLSession extends MutableObject {
         } finally {
             statement.close();
 
-            env.after(this, connection);
+            env.after(this, connection, DDL);
 
             returnConnection(connection);
         }
@@ -451,7 +451,7 @@ public class SQLSession extends MutableObject {
 
         logger.info(command);
 
-        env.before(this, connection);
+        env.before(this, connection, command);
 
         PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
 
@@ -472,7 +472,7 @@ public class SQLSession extends MutableObject {
         } finally {
             statement.close();
 
-            env.after(this, connection);
+            env.after(this, connection, command);
 
             returnConnection(connection);
         }
@@ -505,7 +505,7 @@ public class SQLSession extends MutableObject {
 
         logger.info(select);
 
-        env.before(this, connection);
+        env.before(this, connection, select);
 
         if(explainAnalyzeMode) {
             System.out.println(select);
@@ -537,7 +537,7 @@ public class SQLSession extends MutableObject {
         } finally {
             statement.close();
 
-            env.after(this, connection);
+            env.after(this, connection, select);
 
             returnConnection(connection);
         }

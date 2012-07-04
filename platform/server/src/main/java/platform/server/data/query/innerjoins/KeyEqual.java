@@ -11,6 +11,7 @@ import platform.server.data.query.ExprEqualsJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
@@ -99,5 +100,9 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
                     return keyStat.getKeyStat(key);
             }
         };
+    }
+
+    public KeyEqual translateOuter(MapTranslate translate) {
+        return new KeyEqual(translate.translateMap(keyExprs));
     }
 }

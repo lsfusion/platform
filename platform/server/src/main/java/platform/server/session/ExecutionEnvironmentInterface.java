@@ -23,22 +23,4 @@ import java.util.Map;
 
 public interface ExecutionEnvironmentInterface {
 
-    DataSession getSession();
-
-    QueryEnvironment getQueryEnv();
-
-    Modifier getModifier();
-
-    FormInstance getFormInstance();
-
-    boolean isInTransaction();
-
-    <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException;
-
-    DataObject addObject(ConcreteCustomClass cls) throws SQLException;
-
-    void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException;
-
-    boolean apply(BusinessLogics<?> BL) throws SQLException;
-    ExecutionEnvironmentInterface cancel() throws SQLException;
 }

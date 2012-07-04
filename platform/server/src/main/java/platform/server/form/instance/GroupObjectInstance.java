@@ -758,7 +758,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
 
         // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
-        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeOrders(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
+        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>
+        executeOrders(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
             assert !isInTree();
 
             Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();

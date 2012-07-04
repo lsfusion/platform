@@ -175,10 +175,10 @@ public final class AppManager {
 
         Query<String, String> q = new Query<String, String>(keys);
         q.and(
-                paasLM.moduleInProject.getExpr(session.modifier, projExpr, moduleExpr).getWhere()
+                paasLM.moduleInProject.getExpr(session.getModifier(), projExpr, moduleExpr).getWhere()
         );
-        q.properties.put("moduleOrder", paasLM.moduleOrder.getExpr(session.modifier, projExpr, moduleExpr));
-        q.properties.put("moduleSource", paasLM.moduleSource.getExpr(session.modifier, moduleExpr));
+        q.properties.put("moduleOrder", paasLM.moduleOrder.getExpr(session.getModifier(), projExpr, moduleExpr));
+        q.properties.put("moduleSource", paasLM.moduleSource.getExpr(session.getModifier(), moduleExpr));
 
         OrderedMap<String, Boolean> orders = new OrderedMap<String, Boolean>();
         orders.put("moduleOrder", false);

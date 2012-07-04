@@ -29,6 +29,7 @@ skuSfromSDetail 'Товар (ИД)' (SfromSDetail) = DATA sku (SfromSDetail)IN i
 nameSkuSfromSDetail 'Наименование товара' (SfromSDetail) = nameSku(skuSfromSDetail(SfromSDetail));
 
 @defineRBCorrespondingDocumentWithRetailPrices(SfromS, departmentStore, 'Отдел документа', sku, 'Приход на магазин из магазина', store, 'Магазин-отправитлеь');
+@implementBaseSkuDepartmentStoreLedger(SfromS, sku);
 @defineDocumentDetailPackWeightSku(SfromS);
 @defineDocumentHeaderSkuQuantity(SfromS);
 @defineUniqueDocumentComingByExpense(SfromS, StoS);

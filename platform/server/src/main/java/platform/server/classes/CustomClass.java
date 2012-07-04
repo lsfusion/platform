@@ -40,7 +40,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public final List<CustomClass> children;
 
     public String toString() {
-        return caption;
+        return caption + " (" + sID + ")";
     }
 
     public Integer ID;
