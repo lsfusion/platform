@@ -254,12 +254,3 @@ META defineDocumentDepartmentStore (object)
     @defineDocumentDetailDepartmentStore(object);
 END
 
-META defineDocumentHeaderAggregationDepartmentStore (primObject, aggrObject)
-    departmentStore###aggrObject (object) = departmentStore###primObject(primObject###aggrObject(object));
-    nameDepartmentStore###aggrObject 'Отдел документа' (object) = name(departmentStore###aggrObject(object));
-END
-
-META defineDocumentDetailAggregationDepartmentStore (primObject, aggrObject)
-    departmentStore###aggrObject##Detail (detail) = departmentStore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-END
-

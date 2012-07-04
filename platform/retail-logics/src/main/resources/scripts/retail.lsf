@@ -160,15 +160,6 @@ META defineDocumentHeaderItemSum (object)
     @defineDocumentHeaderItemSumCustom(object, object##Detail);
 END
 
-META defineDocumentDetailAggregationItemPrefix (primObject, aggrObject, prefix)
-    item###aggrObject##Detail (detail) = prefix###item###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    nameItem###aggrObject##Detail 'Товар' (detail) = nameAttributeItem(item###aggrObject##Detail(detail));
-    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(item###aggrObject##Detail(detail));
-END
-META defineDocumentDetailAggregationItem (primObject, aggrObject)
-    @defineDocumentDetailAggregationItemPrefix(primObject, aggrObject, );
-END
-
 // ----------------------------- количество упаковок и вес товаров ----------------------- //
 META defineDocumentDetailPackWeightItem (object)
     packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
@@ -3161,7 +3152,7 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 @defineDocumentPriceChangePrice(statement);
 @defineDocumentPriceChangeRetailPricePrefix(statement, cur, ' (тек.)');
 
-@implementPriceChangeDocument(priceChangeStatement, sku);
+@implementPriceChangeDocument(priceChangeStatement, item);
 @implementPriceChangeDocumentDetailRetailPrice(priceChangeStatement);
 
 // для накладной (шапка и хвост)
@@ -3390,7 +3381,7 @@ quantityPriceChangeShipmentDetail (priceChangeShipmentDetail) = balanceBeforeShi
 supplierPriceChangeShipment (priceChangeShipment) = supplierShipment(shipmentPriceChangeShipment(priceChangeShipment));
 nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = name(supplierPriceChangeShipment(priceChangeShipment));
 
-@implementPriceChangeDocument(priceChangeShipment, sku);
+@implementPriceChangeDocument(priceChangeShipment, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeShipment);
 
 //----------------------------------- Списание отходов по нормам -------------------------------------------------//
@@ -3413,12 +3404,12 @@ CLASS wastageDetail 'Строка документа': outAutoSkuLedger;
 @defineDocumentHeaderCount(wastage);
 
 @defineDocumentHeaderAggregation(shipment, wastage);
-@defineDocumentHeaderAggregationDepartmentStore(shipment, wastage);
+@defineDocumentHeaderAggregationStock(shipment, wastage, departmentStore);
 @defineDocumentHeaderAggregationNumber(shipment, wastage);
 
 @defineDocumentDetailAggregationHeader(shipment, wastage);
-@defineDocumentDetailAggregationDepartmentStore(shipment, wastage);
-@defineDocumentDetailAggregationItem(shipment, wastage);
+@defineDocumentDetailAggregationStock(shipment, wastage, departmentStore);
+@defineDocumentDetailAggregationSku(shipment, wastage, item);
 
 quantityItemWastageDetail 'Количество' (wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 quantityItemWastageDetailWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
@@ -3778,7 +3769,7 @@ quantityPriceChangeInnerArrivalDetail 'Остаток' (priceChangeInnerArrivalD
 senderDepartmentPriceChangeInnerArrival (priceChangeInnerArrival) = senderDepartmentInnerArrival(innerArrivalPriceChangeInnerArrival(priceChangeInnerArrival));
 nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' (priceChangeInnerArrival) = name(senderDepartmentPriceChangeInnerArrival(priceChangeInnerArrival));
 
-@implementPriceChangeDocument(priceChangeInnerArrival, sku);
+@implementPriceChangeDocument(priceChangeInnerArrival, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeInnerArrival);
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
@@ -3937,7 +3928,7 @@ needToPriceChangeReturnSupplierDetail (returnSupplierDetail) = retailPriceReturn
 supplierPriceChangeReturnSupplier (priceChangeReturnSupplier) = supplierReturnSupplier(returnSupplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSupplier) = name(supplierPriceChangeReturnSupplier(priceChangeReturnSupplier));
 
-@implementPriceChangeDocument(priceChangeReturnSupplier, sku);
+@implementPriceChangeDocument(priceChangeReturnSupplier, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeReturnSupplier);
 
 //------------------------------------------------- Z-отчем ---------------------------------------------------------------------//
@@ -4167,7 +4158,7 @@ TABLE saleDiscountDocument (saleDiscountDocument);
 
 @defineAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
 @defineDocumentHeaderAggregation(zReport, saleDiscountDocument);
-@defineDocumentHeaderAggregationDepartmentStore(zReport, saleDiscountDocument);
+@defineDocumentHeaderAggregationStock(zReport, saleDiscountDocument, departmentStore);
 
 numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 
@@ -4296,8 +4287,8 @@ needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetai
 @defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
 
 @defineDocumentDetailAggregationHeader(disparity, inputDisparity);
-@defineDocumentDetailAggregationDepartmentStore(disparity, inputDisparity);
-@defineDocumentDetailAggregationItemPrefix(disparity, inputDisparity, input);
+@defineDocumentDetailAggregationStock(disparity, inputDisparity, departmentStore);
+@defineDocumentDetailAggregationSkuPrefix(disparity, inputDisparity, item, input);
 quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
 
 @defineDocumentDetailAggregationPricePrefix(disparity, inputDisparity, input, , );
@@ -4340,11 +4331,11 @@ needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeIn
 
 @defineDocumentAggregation(disparity, priceChangeInputDisparity, needToPriceChangeInputDisparity);
 @defineDocumentHeaderAggregation(disparity, priceChangeInputDisparity);
-@defineDocumentHeaderAggregationDepartmentStore(disparity, priceChangeInputDisparity);
+@defineDocumentHeaderAggregationStock(disparity, priceChangeInputDisparity, departmentStore);
 @defineDocumentHeaderAggregationDescription(disparity, priceChangeInputDisparity);
 
 @defineDocumentDetailAggregationHeader(disparity, priceChangeInputDisparity);
-@defineDocumentDetailAggregationDepartmentStore(disparity, priceChangeInputDisparity);
+@defineDocumentDetailAggregationStock(disparity, priceChangeInputDisparity, departmentStore);
 @defineDocumentDetailAggregationSkuPrefix(disparity, priceChangeInputDisparity, item, input);
 quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = inputBalanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
@@ -4361,10 +4352,10 @@ seriesNumberPriceChangeInputDisparity 'Серия/номер документ' (
 
 isPriceChangeWrongPriceChangeInputDisparityDetail (priceChangeInputDisparityDetail) =
     retailPricePriceChangeInputDisparityDetail(priceChangeInputDisparityDetail) < curRetailPricePriceChangeInputDisparityDetail(priceChangeInputDisparityDetail)
-      AND banMarkdownItem(skuPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
+      AND banMarkdownItem(itemPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 CONSTRAINT isPriceChangeWrongPriceChangeInputDisparityDetail (priceChangeInputDisparityDetail) MESSAGE 'Уценка товара запрещена';
 
-@implementPriceChangeDocument(priceChangeInputDisparity, sku);
+@implementPriceChangeDocument(priceChangeInputDisparity, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeInputDisparity);
 
 // ---------------------------------- Переоценка при пересорте ------------------------------------------
@@ -4383,7 +4374,7 @@ quantityPriceChangeDisparityDetail 'Количество' (priceChangeDisparityD
 @defineDocumentPriceChangePricePrefix(disparity, , input, );
 @defineDocumentPriceChangePricePrefix(disparity, cur , , ' (тек.)');
 
-@implementPriceChangeDocument(priceChangeDisparity, sku);
+@implementPriceChangeDocument(priceChangeDisparity, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeDisparity);
 
 needPriceChangeDisparityDetail (disparityDetail) = UNION OVERRIDE needToPriceChangeInputDisparityDetail (disparityDetail), needToPriceChangeDisparityDetail (disparityDetail);
@@ -6134,7 +6125,7 @@ FORM wastagePrint 'Списания отходов' PRINT
                    markupSumWastageDetailWastage, retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, wastageCommitteeWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) SELECTOR indexWastageDetail, idBarcodeSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
+    PROPERTIES (d) SELECTOR indexWastageDetail, idBarcodeSkuWastageDetail, nameSkuWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
                    supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
 
     OBJECTS e=employee
@@ -6157,7 +6148,7 @@ FORM wastages 'Списания отходов'
                    retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, nameWastageCommitteeWastage
 
     OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY indexWastageDetail, idBarcodeSkuWastageDetail, nameItemWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
+    PROPERTIES (d) READONLY indexWastageDetail, idBarcodeSkuWastageDetail, nameSkuWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
                    supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
 
     PROPERTIES     FORCE PANEL toPrintWastage(w) TODRAW d

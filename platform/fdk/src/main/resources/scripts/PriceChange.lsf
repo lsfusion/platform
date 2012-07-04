@@ -298,11 +298,11 @@ META defineDocumentPriceChange (object)
     @defineDocumentAggregation(object, priceChange###object, needToPriceChange###object);
 
     @defineDocumentHeaderAggregation(object, priceChange###object);
-    @defineDocumentHeaderAggregationDepartmentStore(object, priceChange###object);
+    @defineDocumentHeaderAggregationStock(object, priceChange###object, departmentStore);
     @defineDocumentHeaderAggregationDescription(object, priceChange###object);
 
     @defineDocumentDetailAggregationHeader(object, priceChange###object);
-    @defineDocumentDetailAggregationDepartmentStore(object, priceChange###object);
+    @defineDocumentDetailAggregationStock(object, priceChange###object, departmentStore);
 
     numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
     priceChangeCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = priceChangeCommittee###object(object##PriceChange###object(object));

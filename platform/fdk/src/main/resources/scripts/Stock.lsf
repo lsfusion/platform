@@ -379,10 +379,21 @@ END
 
 // ---------------------------------------------- Макросы для документов ------------------------------------------------- //
 
+// ---------------------------------------------- Агрегированные документы -------------------------------------------- //
+
+META defineDocumentHeaderAggregationStock (primObject, aggrObject, stockProp)
+    stockProp###aggrObject (object) = stockProp###primObject(primObject###aggrObject(object));
+    name###stockProp###aggrObject 'Склад' (object) = name(stockProp###aggrObject(object));
+END
+
+META defineDocumentDetailAggregationStock (primObject, aggrObject, stockProp)
+    stockProp###aggrObject##Detail (detail) = stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
 META defineDocumentDetailAggregationSkuPrefix (primObject, aggrObject, skuProp, prefix)
-    sku###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(sku###aggrObject##Detail(detail));
-    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(sku###aggrObject##Detail(detail));
+    skuProp###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail));
+    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(skuProp###aggrObject##Detail(detail));
 END
 META defineDocumentDetailAggregationSku (primObject, aggrObject, skuProp)
     @defineDocumentDetailAggregationSkuPrefix(primObject, aggrObject, skuProp, );
