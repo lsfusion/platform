@@ -53,6 +53,19 @@ documentFlowWHfromWH 'Документ расхода' (WHfromWH) =
     [FORMULA STRING[500] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \', \' || CAST($3 AS TEXT)'] (
     seriesNumberObject(WHtoWHWHfromWH(WHfromWH)), dateWHtoWH(WHtoWHWHfromWH(WHfromWH)), name(warehouseWHtoWH(WHtoWHWHfromWH(WHfromWH)))) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
+contractSkuCompanyWHfromWH 'Договор ИД' (WHfromWH) = DATA contractSkuCompany(WHfromWH);
+numberContractSkuCompanyWHfromWH 'Номер договора' (WHfromWH) = numberContract(contractSkuCompanyWHfromWH(WHfromWH)) IN documentPrmGroup;
+
+isCompanyABWHfromWH (WHfromWH)= companyAContractSkuCompany(contractSkuCompanyWHfromWH(WHfromWH))== companyWarehouse(corrWarehouseWHfromWH(WHfromWH)) AND
+    companyBContractSkuCompany(contractSkuCompanyWHfromWH(WHfromWH))== companyWarehouse(warehouseWHfromWH(WHfromWH)) AND
+    activeContract(contractSkuCompanyWHfromWH(WHfromWH), dateWHfromWH(WHfromWH));
+
+CONSTRAINT contractSkuCompanyWHfromWH(WHfromWH) AND NOT isCompanyABWHfromWH(WHfromWH)
+    CHECKED BY contractSkuCompanyWHfromWH MESSAGE 'Договор не является договором между выбранными контрагентами или не действующий';
+
+CONSTRAINT contractSkuCompanyWHfromWH(WHfromWH) AND NOT contractSkuCompanyWHfromWH(WHfromWH) == contractSkuCompanyWHtoWH(WHtoWHWHfromWH(WHfromWH))
+  CHECKED BY contractSkuCompanyWHfromWH MESSAGE  'Договор из расхода и приход должны совпадать'; //  CHECKED BY WHtoWHWHfromWH
+
 toFillWHfromWHDetailsWHfromWH 'Заполнить документ из расхода' =  ACTION (WHfromWH) {
     FOR WHfromWHWHtoWH(WHtoWHWHtoWHDetail(WHtoWHDetail)) == WHfromWH DO {
         ADDOBJ WHfromWHDetail;
@@ -65,6 +78,7 @@ toFillWHfromWHDetailsWHfromWH 'Заполнить документ из расх
             SET supplierPriceWHfromWHDetail (d) <- supplierPriceWHtoWHDetail(WHtoWHDetail);
             SET supplierVATWHfromWHDetail (d) <- supplierVATWHtoWHDetail(WHtoWHDetail);
         };
+        SET contractSkuCompanyWHfromWH(WHfromWH) <- contractSkuCompanyWHtoWH(WHtoWHWHfromWH(WHfromWH));
     };
 } CONFIRM;
 
@@ -73,7 +87,7 @@ FORM WHfromWH 'Приход на склад со склада'
     OBJECTS w = WHfromWH FIXED PANEL
     PROPERTIES (w) numberObject, seriesObject, dateWHfromWH, timeWHfromWH, numberWHfromWH, nameWarehouseWHfromWH, nameCorrWarehouseWHfromWH,
                    quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH, invoiceVATSumWHfromWHDetailWHfromWH,
-                   invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH, toFillWHfromWHDetailsWHfromWH
+                   invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH, numberContractSkuCompanyWHfromWH, toFillWHfromWHDetailsWHfromWH
 
     OBJECTS d = WHfromWHDetail
     PROPERTIES(d) indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, shortNameUOMWHfromWHDetail, sidSizeWHfromWHDetail, nameBrandWHfromWHDetail,
@@ -147,7 +161,7 @@ DESIGN WHfromWH FROM DEFAULT {
 FORM WHfromWHs 'Приходы на склад со склада'
     OBJECTS w = WHfromWH
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromWH, timeWHfromWH, nameWarehouseWHfromWH, nameCorrWarehouseWHfromWH,
-                   documentFlowWHfromWH, countWHfromWHDetailWHfromWH, quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH,
+                   documentFlowWHfromWH, numberContractSkuCompanyWHfromWH, countWHfromWHDetailWHfromWH, quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH,
                    invoiceVATSumWHfromWHDetailWHfromWH, invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

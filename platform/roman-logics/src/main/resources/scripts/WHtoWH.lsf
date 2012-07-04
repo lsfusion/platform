@@ -33,12 +33,27 @@ quantityOutAutoSkuLedger (ledger) += quantityWHtoWHDetail (ledger);
 wholesalePriceWHtoWHDetail 'Оптовая цена' (WHtoWHDetail) =  priceWholesaleArticleDateTime(articleWHtoWHDetail(WHtoWHDetail), dateTimeWHtoWHDetail(WHtoWHDetail));
 supplierPriceWHtoWHDetail (WHtoWHDetail) <- wholesalePriceWHtoWHDetail(WHtoWHDetail) WHEN CHANGED(skuWHtoWHDetail(WHtoWHDetail)) OR CHANGED (dateTimeWHtoWHDetail(WHtoWHDetail));
 
+contractSkuCompanyWHtoWH 'Договор ИД' (WHtoWH) = DATA contractSkuCompany(WHtoWH);
+numberContractSkuCompanyWHtoWH 'Номер договора' (WHtoWH) = numberContract(contractSkuCompanyWHtoWH(WHtoWH)) IN documentPrmGroup;
+
+isCompanyABWHtoWH (WHtoWH)= companyAContractSkuCompany(contractSkuCompanyWHtoWH(WHtoWH))== companyWarehouse(warehouseWHtoWH(WHtoWH)) AND
+    companyBContractSkuCompany(contractSkuCompanyWHtoWH(WHtoWH))== companyWarehouse(corrWarehouseWHtoWH(WHtoWH)) AND
+    activeContract(contractSkuCompanyWHtoWH(WHtoWH), dateWHtoWH(WHtoWH));
+
+CONSTRAINT contractSkuCompanyWHtoWH(WHtoWH) AND NOT isCompanyABWHtoWH(WHtoWH)
+    CHECKED BY contractSkuCompanyWHtoWH MESSAGE 'Договор не является договором между выбранными контрагентами или не действующий';
+
+contractSkuCompanyWHtoWH(WHtoWH) <- contractSkuCompanyCompanyCompany(companyWarehouse(warehouseWHtoWH(WHtoWH)), companyWarehouse(corrWarehouseWHtoWH(WHtoWH)))
+    IF countContractPartyAPartyB(companyWarehouse(warehouseWHtoWH(WHtoWH)), companyWarehouse(corrWarehouseWHtoWH(WHtoWH))) == 1
+    WHEN CHANGED(warehouseWHtoWH(WHtoWH)) OR CHANGED(corrWarehouseWHtoWH(WHtoWH)) ;
+
+
 FORM WHtoWH 'Расход со склада на склад'
     OBJECTS w = WHtoWH FIXED PANEL
 
     PROPERTIES (w) numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
                    quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
-                   invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
+                   invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH, numberContractSkuCompanyWHtoWH
 
     OBJECTS d = WHtoWHDetail
 
@@ -93,7 +108,7 @@ DESIGN WHtoWH FROM DEFAULT {
 FORM WHtoWHs 'Расходы со склада на склад'
     OBJECTS w = WHtoWH
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
-                   quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
+                   numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH, quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
                    invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

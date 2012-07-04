@@ -14,7 +14,9 @@ numberContract 'Номер договора' = DATA STRING[30] (contract) IN con
 dateFromContract 'Дата начала договора' = DATA DATE (contract) IN contractGroup;
 dateToContract 'Дата окончания договора' = DATA DATE (contract) IN contractGroup;
 activeContract 'Действуюший' (contract, date) =
-    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
+//    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
+    (dateFromContract(contract) <= (date AS DATE)) AND NOT (dateToContract(contract) < (date AS DATE));
+
 
 GROUP partyGroup 'Контрагенты' : recognizeGroup;
 
