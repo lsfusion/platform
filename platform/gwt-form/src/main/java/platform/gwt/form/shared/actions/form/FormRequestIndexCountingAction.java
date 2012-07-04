@@ -7,4 +7,9 @@ public class FormRequestIndexCountingAction<R extends Result> extends FormBoundA
 
     public FormRequestIndexCountingAction() {
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + " [request#: " + requestIndex + "]";
+    }
 }

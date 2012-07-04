@@ -71,4 +71,6 @@
         <b:property name="businessLogicsProvider" ref="blLogicProvider" />
         <aop:scoped-proxy proxy-target-class="false"/>
     </b:bean>
+
+    <b:bean scope="session" id="formManaer" class="platform.gwt.base.server.FormSessionManager"></b:bean>
 </b:beans>

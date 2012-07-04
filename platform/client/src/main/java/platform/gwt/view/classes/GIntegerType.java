@@ -18,4 +18,9 @@ public class GIntegerType extends GIntegralType {
     public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         return new IntegerItem();
     }
+
+    @Override
+    public Object parseString(String strValue) {
+        return Integer.parseInt(strValue);
+    }
 }

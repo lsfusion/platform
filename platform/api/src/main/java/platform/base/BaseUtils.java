@@ -1308,11 +1308,24 @@ public class BaseUtils {
         return addElement(array, element, new GenericTypeInstancer<T>(elementClass));
     }
 
+    public static <T> T[] addElement(T element, T[] array, Class<T> elementClass) {
+        return addElement(element, array, new GenericTypeInstancer<T>(elementClass));
+    }
+
     public static <T> T[] addElement(T[] array, T element, ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(array.length + 1);
 
         System.arraycopy(array, 0, result, 0, array.length);
         result[array.length] = element;
+
+        return result;
+    }
+
+    public static <T> T[] addElement(T element, T[] array, ArrayInstancer<T> instancer) {
+        T[] result = instancer.newArray(array.length + 1);
+
+        result[0] = element;
+        System.arraycopy(array, 0, result, 1, array.length);
 
         return result;
     }

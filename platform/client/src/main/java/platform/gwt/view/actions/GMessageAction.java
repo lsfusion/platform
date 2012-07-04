@@ -11,6 +11,10 @@ public class GMessageAction extends GExecuteAction {
     public GMessageAction() {}
 
     public GMessageAction(String message, String caption) {
+        this(false, message, caption);
+    }
+
+    public GMessageAction(boolean failed, String message, String caption) {
         this.message = message;
         this.caption = caption;
     }

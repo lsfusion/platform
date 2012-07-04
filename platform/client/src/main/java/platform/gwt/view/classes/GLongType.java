@@ -18,4 +18,9 @@ public class GLongType extends GIntegralType {
     public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         return new IntegerItem();
     }
+
+    @Override
+    public Object parseString(String strValue) {
+        return Long.parseLong(strValue);
+    }
 }

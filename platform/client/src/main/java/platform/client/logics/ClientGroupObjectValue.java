@@ -1,7 +1,6 @@
 package platform.client.logics;
 
 import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
-import platform.gwt.view.changes.dto.ObjectDTO;
 
 import java.io.*;
 import java.util.Collection;
@@ -81,7 +80,7 @@ public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implem
         if (gwtGroupObjectValue == null) {
             gwtGroupObjectValue = new GGroupObjectValueDTO();
             for (Map.Entry<ClientObject, Object> keyPart : entrySet()) {
-                gwtGroupObjectValue.put(keyPart.getKey().ID, new ObjectDTO(keyPart.getValue()));
+                gwtGroupObjectValue.put(keyPart.getKey().ID, keyPart.getValue());
             }
         }
         return gwtGroupObjectValue;

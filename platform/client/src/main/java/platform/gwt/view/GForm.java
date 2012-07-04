@@ -35,7 +35,7 @@ public class GForm implements Serializable {
         return null;
     }
 
-    private HashMap<Integer, GPropertyDraw> idProps;
+    private transient HashMap<Integer, GPropertyDraw> idProps;
 
     private HashMap<Integer, GPropertyDraw> getIDProps() {
         if (idProps == null) {

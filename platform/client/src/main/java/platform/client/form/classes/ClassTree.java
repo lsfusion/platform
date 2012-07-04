@@ -15,6 +15,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 public abstract class ClassTree extends ClientTree {
 
@@ -136,9 +137,7 @@ public abstract class ClassTree extends ClientTree {
                 }
 
                 return super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-
             }
-
         });
     }
 
@@ -154,15 +153,15 @@ public abstract class ClassTree extends ClientTree {
 
         ClientObjectClass parentClass = (ClientObjectClass) nodeObject;
 
-        java.util.List<ClientClass> classes = parentClass.getChildren();
+        List<ClientObjectClass> classes = parentClass.getChildren();
 
-        for (ClientClass cls : classes) {
+        for (ClientObjectClass objectClass : classes) {
 
             DefaultMutableTreeNode node;
-            node = new ClientTreeNode(cls, cls.hasChildren());
+            node = new ClientTreeNode(objectClass, objectClass.hasChildren());
             parent.add(node);
 
-            if (cls.hasChildren())
+            if (objectClass.hasChildren())
                 node.add(new ExpandingTreeNode());
 
         }

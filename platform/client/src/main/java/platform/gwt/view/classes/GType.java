@@ -56,4 +56,8 @@ public abstract class GType implements Serializable {
     public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         return new TextItem();
     }
+
+    public Object parseString(String strValue) {
+        return strValue;
+    }
 }

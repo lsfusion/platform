@@ -43,6 +43,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                     GAction action = actions[i];
                     Object dispatchResult;
                     try {
+                        //для неподдерживаемых action'ов присылается null-ссылка, чтобы сохранить порядок результатов выполнения action'ов
                         dispatchResult = action == null ? null : action.dispatch(this);
                     } catch (Exception ex) {
                         Log.error("Error dispatching gwt client action: ", ex);
@@ -87,6 +88,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         dispatchingPaused = true;
     }
 
+    public void continueDispatching() {
+        continueDispatching(null);
+    }
+
     public void continueDispatching(Object currentActionResult) {
         currentActionResults[currentActionIndex] = currentActionResult;
         dispatchResponse(currentResponse);
@@ -94,9 +99,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GFormAction action) {
-        //todo:
-        SC.say("Form should be shown here.");
-
     }
 
     @Override
@@ -105,27 +107,19 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         SC.say("Report should be opened here.");
     }
 
-    @Override
     public void execute(GDialogAction action) {
-        //todo:
-        SC.say("Dialog should be shown here.");
     }
-
-    @Override
+        @Override
     public Object execute(GChooseClassAction action) {
-        //todo:
         return null;
     }
 
     @Override
     public void execute(GMessageAction action) {
-        //todo: !!! this will not be modal !!!
-        SC.say(action.caption, action.message);
     }
 
     @Override
     public int execute(GConfirmAction action) {
-        //todo:
         return 0;
     }
 

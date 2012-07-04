@@ -2,7 +2,6 @@ package platform.client.descriptor.filter;
 
 import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.IsClassFilterNode;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
@@ -14,7 +13,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
 
@@ -36,7 +34,7 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
         
-        outStream.writeInt(objectClass.ID);
+        outStream.writeInt(objectClass.getID());
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {

@@ -1,19 +1,20 @@
 package platform.gwt.view.actions;
 
-import platform.gwt.view.changes.dto.ObjectDTO;
 import platform.gwt.view.classes.GType;
+
+import java.io.Serializable;
 
 public class GRequestUserInputAction implements GAction {
     public GType readType;
-    public ObjectDTO oldValue;
+    public Serializable oldValue;
 
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GRequestUserInputAction() {}
 
-    public GRequestUserInputAction(GType readType, ObjectDTO oldValue) {
+    public GRequestUserInputAction(GType readType, Object oldValue) {
         this.readType = readType;
-        this.oldValue = oldValue;
+        this.oldValue = (Serializable) oldValue;
     }
 
     @Override

@@ -9,11 +9,11 @@ import java.io.IOException;
 
 public class ClientTypeSerializer {
 
-    public static ClientType deserialize(byte[] typeData) throws IOException {
-        return deserialize(new DataInputStream(new ByteArrayInputStream(typeData)));
+    public static ClientType deserializeClientType(byte[] typeData) throws IOException {
+        return deserializeClientType(new DataInputStream(new ByteArrayInputStream(typeData)));
     }
 
-    public static ClientType deserialize(DataInputStream inStream) throws IOException {
+    public static ClientType deserializeClientType(DataInputStream inStream) throws IOException {
         if (inStream.readBoolean()) {
             return ClientObjectClass.type;
         } else {
@@ -21,12 +21,16 @@ public class ClientTypeSerializer {
         }
     }
 
-    public static void serialize(DataOutputStream outStream, ClientType type) throws IOException {
+    public static void serializeClientType(DataOutputStream outStream, ClientType type) throws IOException {
         boolean objectClass = type instanceof ClientObjectType;
         outStream.writeBoolean(objectClass);
         if (!objectClass) {
             ((ClientClass) type).serialize(outStream);
         }
+    }
+
+    public static ClientObjectClass deserializeClientObjectClass(DataInputStream inStream) throws IOException {
+        return (ClientObjectClass) deserializeClientClass(inStream);
     }
 
     public static ClientClass deserializeClientClass(DataInputStream inStream) throws IOException {
@@ -39,7 +43,7 @@ public class ClientTypeSerializer {
 
         byte type = inStream.readByte();
 
-        if (type == Data.OBJECT) return ClientObjectClass.deserializeObject(inStream);
+        if (type == Data.OBJECT) return ClientObjectClass.deserialize(inStream);
         if (type == Data.INTEGER) return ClientIntegerClass.instance;
         if (type == Data.LONG) return ClientLongClass.instance;
         if (type == Data.DOUBLE) return ClientDoubleClass.instance;

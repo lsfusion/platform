@@ -11,10 +11,13 @@ public class DateCellFormatter implements CellFormatter {
 
     @Override
     public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
-        if (value != null) {
-            return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT).format((Date)value);
-        } else {
+        if (value == null) {
             return null;
+        }
+        try {
+            return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT).format((Date)value);
+        } catch (Exception e) {
+            return value.toString();
         }
     }
 }

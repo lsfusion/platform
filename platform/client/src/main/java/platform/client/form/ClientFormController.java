@@ -672,7 +672,7 @@ public class ClientFormController {
         syncProcessServerResponse(new RmiRequest<ServerResponse>() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
-                return remoteForm.changeGridClass(requestIndex, object.getID(), cls.ID);
+                return remoteForm.changeGridClass(requestIndex, object.getID(), cls.getID());
             }
         });
     }

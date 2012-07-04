@@ -2,12 +2,12 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class ChooseClassAction implements ClientAction {
+public class ChooseClassClientAction implements ClientAction {
 
     public final byte[] classes;
     public final boolean concrete;
 
-    public ChooseClassAction(byte[] classes, boolean concrete) {
+    public ChooseClassClientAction(byte[] classes, boolean concrete) {
         this.classes = classes;
         this.concrete = concrete;
     }

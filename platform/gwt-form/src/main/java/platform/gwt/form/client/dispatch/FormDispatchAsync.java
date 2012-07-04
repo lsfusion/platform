@@ -41,7 +41,7 @@ public class FormDispatchAsync extends StandardDispatchAsync {
     }
 
     private <A extends Action<R>, R extends Result> void queueAction(final A action, final AsyncCallback<R> callback) {
-        Log.debug("Executing action: " + action.getClass());
+        Log.debug("Executing action: " + action.toString());
 
         final QueuedAction queuedAction = new QueuedAction(action, callback);
         q.add(queuedAction);
@@ -51,7 +51,8 @@ public class FormDispatchAsync extends StandardDispatchAsync {
             @Override
             public void preProcess() {
                 long execTime = System.currentTimeMillis() - startExecTime;
-                Log.debug("Executed: " + action.getClass() + ", in " + execTime/1000 + " ms.");
+
+                Log.debug("Executed action: " + action.toString() + " in " + execTime/1000 + " ms.");
             }
 
             @Override

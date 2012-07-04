@@ -18,4 +18,9 @@ public class GDoubleType extends GIntegralType {
     public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         return new FloatItem();
     }
+
+    @Override
+    public Object parseString(String strValue) {
+        return Double.parseDouble(strValue);
+    }
 }

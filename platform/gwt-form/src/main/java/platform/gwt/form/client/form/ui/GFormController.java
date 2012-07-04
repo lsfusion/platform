@@ -1,8 +1,9 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
+import com.smartgwt.client.widgets.ViewLoader;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
@@ -14,6 +15,8 @@ import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form.client.dispatch.FormDispatchAsync;
+import platform.gwt.form.client.form.classes.ClassChosenHandler;
+import platform.gwt.form.client.form.classes.GClassDialog;
 import platform.gwt.form.client.form.dispatch.GwtFormActionDispatcher;
 import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;
@@ -24,10 +27,11 @@ import platform.gwt.view.*;
 import platform.gwt.view.changes.GFormChanges;
 import platform.gwt.view.changes.GGroupObjectValue;
 import platform.gwt.view.changes.dto.GFormChangesDTO;
-import platform.gwt.view.changes.dto.ObjectDTO;
+import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.view.classes.GObjectClass;
 import platform.gwt.view.logics.FormLogicsProvider;
-import platform.gwt.view.logics.SelectObjectCallback;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +40,8 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     @Override
     public boolean isEditingEnabled() {
         // пока отключаем редактирование в production
-        return !GWT.isScript();
+//        return !GWT.isScript();
+        return true;
     }
 
     private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
@@ -47,6 +52,9 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     private GFormLayout mainPane;
     private final boolean dialogMode;
 
+    private Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
+    private Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
+
     public GFormController(Map<String, String> params) {
         this(params.remove("formSID"), params);
     }
@@ -54,32 +62,34 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     public GFormController(String formSID) {
         this(formSID, null);
     }
+
     public GFormController(String formSID, Map<String, String> params) {
-        this(null, new GetForm(formSID, params), false);
+        this(new GetForm(formSID, params), false);
     }
 
-    public GFormController(FormDispatchAsync creationDispatcher, Action<GetFormResult> getFormAction, final boolean dialogMode) {
+    public GFormController(Action<GetFormResult> getFormAction, final boolean dialogMode) {
         this.dialogMode = dialogMode;
-        if (creationDispatcher == null) {
-            creationDispatcher = dispatcher;
-        }
 
-        creationDispatcher.execute(getFormAction, new AsyncCallback<GetFormResult>() {
+        final ViewLoader loader = new ViewLoader();
+        addMember(loader);
+
+        dispatcher.execute(getFormAction, new ErrorAsyncCallback<GetFormResult>() {
             @Override
-            public void onFailure(Throwable caught) {
-                GWT.log("Ошибка при инициализации формы: ", caught);
-                SC.warn("Ошибка при попытке открыть форму: " + caught.getMessage());
+            public void preProcess() {
+                removeMember(loader);
             }
 
             @Override
-            public void onSuccess(GetFormResult result) {
+            public void success(GetFormResult result) {
                 initialize(result.form);
             }
         });
     }
 
-    private Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
-    private Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
+    public GFormController(GForm gForm, final boolean dialogMode) {
+        this.dialogMode = dialogMode;
+        initialize(gForm);
+    }
 
     private void initialize(GForm form) {
         this.form = form;
@@ -88,8 +98,8 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
         mainPane = new GFormLayout(this, form.mainContainer) {
             public boolean isShowTypeInItsPlace(GGroupObject groupObject) {
-                GGroupObjectController goc = GFormController.this.controllers.get(groupObject);
-                return goc != null && !goc.isInGrid() && goc.getShowTypeView().needToBeVisible();
+                GGroupObjectController controller = controllers.get(groupObject);
+                return controller != null && !controller.isInGrid() && controller.getShowTypeView().needToBeVisible();
             }
         };
 
@@ -224,11 +234,37 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         mainPane.hideEmpty();
     }
 
-    @Override
-    public void selectObject(GPropertyDraw property, SelectObjectCallback selectObjectCallback) {
-        if (isEditingEnabled()) {
-            SelectObjectDialog.showObjectDialog(property.caption, dispatcher, new CreateEditorForm(property.ID), selectObjectCallback);
-        }
+    public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
+        disable();
+        GModalDialog.showDialog(form, new WindowHiddenHandler() {
+            @Override
+            public void onHidden() {
+                enable();
+                handler.onHidden();
+            }
+        });
+    }
+
+    public void showModalForm(GForm form, final WindowHiddenHandler handler) {
+        disable();
+        GModalForm.showForm(form, new WindowHiddenHandler() {
+            @Override
+            public void onHidden() {
+                enable();
+                handler.onHidden();
+            }
+        });
+    }
+
+    public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
+        disable();
+        GClassDialog.showDialog(baseClass, defaultClass, concreate, new ClassChosenHandler() {
+            @Override
+            public void onClassChosen(GObjectClass chosenClass) {
+                enable();
+                classChosenHandler.onClassChosen(chosenClass);
+            }
+        });
     }
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
@@ -249,7 +285,9 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue key, String actionSID, AsyncCallback<ServerResponseResult> callback) {
         if (isEditingEnabled()) {
-            dispatcher.execute(new ExecuteEditAction(property.ID, key.getValueDTO(), actionSID), callback);
+            //todo: columnKeys
+            syncDispatch(new ExecuteEditAction(property.ID, new GGroupObjectValueDTO(), actionSID), callback);
+//            syncDispatch(new ExecuteEditAction(property.ID, key.getValueDTO(), actionSID), callback);
         }
     }
 
@@ -271,14 +309,12 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         });
     }
 
-    public void changeProperty(GPropertyDraw property, ObjectDTO value) {
-        if (isEditingEnabled()) {
-            dispatcher.execute(new ChangeProperty(property.ID, value), new ServerResponseCallback());
-        }
+    public void changeProperty(GPropertyDraw property, Serializable value) {
+        dispatcher.execute(new ChangeProperty(property.ID, value), new ServerResponseCallback());
     }
 
-    public void changeClassView(GGroupObject groupObject, GClassViewType classView) {
-        dispatcher.execute(new ChangeClassView(groupObject.ID, classView.name()), new ServerResponseCallback());
+    public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
+        dispatcher.execute(new ChangeClassView(groupObject.ID, newClassView), new ServerResponseCallback());
     }
 
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
@@ -299,6 +335,52 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
     public List<GPropertyDraw> getPropertyDraws() {
         return form.propertyDraws;
+    }
+
+    public void hideForm() {
+        //do nothing by default
+    }
+
+    public void runOpenInExcel() {
+        //todo:
+    }
+
+    public void runPrintReport() {
+        //todo:
+
+    }
+
+    public void blockingConfirm(String caption, String message, final BooleanCallback callback) {
+        disable();
+        SC.confirm(caption, message, new BooleanCallback() {
+            @Override
+            public void execute(Boolean value) {
+                enable();
+                callback.execute(value);
+            }
+        });
+    }
+
+    public void blockingMessage(String caption, String message, final BooleanCallback callback) {
+        blockingMessage(false, caption, message, callback);
+    }
+
+    public void blockingMessage(boolean isWarn, String caption, String message, final BooleanCallback callback) {
+        disable();
+
+        BooleanCallback msgCallback = new BooleanCallback() {
+            @Override
+            public void execute(Boolean value) {
+                enable();
+                callback.execute(value);
+            }
+        };
+
+        if (isWarn) {
+            SC.warn(caption, message, msgCallback, null);
+        } else {
+            SC.say(caption, message, msgCallback);
+        }
     }
 
     private class ServerResponseCallback extends ErrorAsyncCallback<ServerResponseResult> {

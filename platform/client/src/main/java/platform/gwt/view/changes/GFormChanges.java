@@ -1,16 +1,19 @@
 package platform.gwt.view.changes;
 
-import platform.gwt.view.*;
+import platform.gwt.view.GForm;
+import platform.gwt.view.GGroupObject;
+import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.changes.dto.GFormChangesDTO;
 import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.view.changes.dto.GPropertyReaderDTO;
-import platform.gwt.view.changes.dto.ObjectDTO;
 import platform.gwt.view.reader.GPropertyReader;
 
-import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
-public class GFormChanges implements Serializable {
+public class GFormChanges {
     public final HashMap<GGroupObject, String> classViews = new HashMap<GGroupObject, String>(); 
     public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<GGroupObject, GGroupObjectValue>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
@@ -22,8 +25,8 @@ public class GFormChanges implements Serializable {
     public static GFormChanges remap(GForm form, GFormChangesDTO dto) {
         GFormChanges remapped = new GFormChanges();
         
-        for (Map.Entry<Integer, ObjectDTO> e : dto.classViews.entrySet()) {
-            remapped.classViews.put(form.getGroupObject(e.getKey()), (String) e.getValue().getValue());
+        for (Map.Entry<Integer, String> e : dto.classViews.entrySet()) {
+            remapped.classViews.put(form.getGroupObject(e.getKey()), e.getValue());
         }
         
         for (Map.Entry<Integer, ArrayList<GGroupObjectValueDTO>> e : dto.gridObjects.entrySet()) {
@@ -34,7 +37,7 @@ public class GFormChanges implements Serializable {
             remapped.parentObjects.put(form.getGroupObject(e.getKey()), remapGroupObjectValues(form, e.getValue()));
         }
 
-        for (Map.Entry<GPropertyReaderDTO, HashMap<GGroupObjectValueDTO, ObjectDTO>> e : dto.properties.entrySet()) {
+        for (Map.Entry<GPropertyReaderDTO, HashMap<GGroupObjectValueDTO, Object>> e : dto.properties.entrySet()) {
             remapped.properties.put(defineReader(form, e.getKey()), remapGroupObjectValueMap(form, e.getValue()));
         }
 
@@ -53,10 +56,10 @@ public class GFormChanges implements Serializable {
         return remapped;
     }
 
-    private static HashMap<GGroupObjectValue, Object> remapGroupObjectValueMap(GForm form, HashMap<GGroupObjectValueDTO, ObjectDTO> values) {
+    private static HashMap<GGroupObjectValue, Object> remapGroupObjectValueMap(GForm form, HashMap<GGroupObjectValueDTO, Object> values) {
         HashMap<GGroupObjectValue, Object> res = new HashMap<GGroupObjectValue, Object>();
-        for (Map.Entry<GGroupObjectValueDTO, ObjectDTO> e : values.entrySet()) {
-            res.put(remapGroupObjectValue(form, e.getKey()), e.getValue().getValue());
+        for (Map.Entry<GGroupObjectValueDTO, Object> e : values.entrySet()) {
+            res.put(remapGroupObjectValue(form, e.getKey()), e.getValue());
         }
         return res;
     }
@@ -71,8 +74,8 @@ public class GFormChanges implements Serializable {
 
     private static GGroupObjectValue remapGroupObjectValue(GForm form, GGroupObjectValueDTO key) {
         GGroupObjectValue remapped = new GGroupObjectValue();
-        for (Map.Entry<Integer, ObjectDTO> e : key.entrySet()) {
-            remapped.put(form.getObject(e.getKey()), e.getValue().getValue());
+        for (Map.Entry<Integer, Object> e : key.entrySet()) {
+            remapped.put(form.getObject(e.getKey()), e.getValue());
         }
         return remapped;
     }

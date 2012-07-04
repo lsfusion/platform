@@ -1,15 +1,15 @@
 package platform.gwt.form.shared.actions.form;
 
-import platform.gwt.view.changes.dto.ObjectDTO;
+import java.io.Serializable;
 
 public class ChangeProperty extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int propertyId;
-    public ObjectDTO value;
+    public Serializable value;
 
     public ChangeProperty() {
     }
 
-    public ChangeProperty(int propertyId, ObjectDTO value) {
+    public ChangeProperty(int propertyId, Serializable value) {
         this.propertyId = propertyId;
         this.value = value;
     }

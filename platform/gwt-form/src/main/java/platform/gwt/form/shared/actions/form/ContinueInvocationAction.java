@@ -1,17 +1,17 @@
 package platform.gwt.form.shared.actions.form;
 
-import platform.gwt.view.changes.dto.ObjectDTO;
+import java.io.Serializable;
 
 public class ContinueInvocationAction extends FormBoundAction<ServerResponseResult> {
-    public ObjectDTO[] actionResults;
+    public Serializable[] actionResults;
 
     public ContinueInvocationAction() {
     }
 
     public ContinueInvocationAction(Object[] actionResults) {
-        this.actionResults = new ObjectDTO[actionResults.length];
+        this.actionResults = new Serializable[actionResults.length];
         for (int i = 0; i < actionResults.length; i++) {
-            this.actionResults[i] = new ObjectDTO(actionResults[i]);
+            this.actionResults[i] = (Serializable) actionResults[i];
         }
     }
 }

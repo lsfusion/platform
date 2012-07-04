@@ -6,7 +6,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.interop.RemoteContextInterface;
-import platform.interop.action.ChooseClassAction;
+import platform.interop.action.ChooseClassClientAction;
 import platform.interop.action.ClientAction;
 import platform.interop.action.DialogClientAction;
 import platform.interop.action.RequestUserInputClientAction;
@@ -133,7 +133,7 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
             DataOutputStream dataStream = new DataOutputStream(outStream);
             baseClass.serialize(dataStream);
             defaultValue.serialize(dataStream);
-            Integer result = (Integer) requestUserInteraction(new ChooseClassAction(outStream.toByteArray(), concrete));
+            Integer result = (Integer) requestUserInteraction(new ChooseClassClientAction(outStream.toByteArray(), concrete));
             if(result==null)
                 return null;
             return new DataObject(result, baseClass.getBaseClass().objectClass);

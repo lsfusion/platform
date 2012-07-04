@@ -8,4 +8,9 @@ public class FormBoundAction<R extends Result> implements Action<R> {
 
     public FormBoundAction() {
     }
+
+    @Override
+    public String toString() {
+        return this.getClass() + "[form#: " + formSessionID + "]";
+    }
 }

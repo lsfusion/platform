@@ -344,9 +344,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
 
-        baseType = ClientTypeSerializer.deserialize(inStream);
+        baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if (inStream.readBoolean()) {
-            changeType = ClientTypeSerializer.deserialize(inStream);
+            changeType = ClientTypeSerializer.deserializeClientType(inStream);
         }
 
         sID = pool.readString(inStream);

@@ -4,6 +4,7 @@
     <inherits name="com.google.gwt.user.User"/>
     <inherits name="com.smartgwt.SmartGwtNoSmartClient"/>
     <inherits name="platform.gwt.Utils"/>
+    <inherits name="platform.gwt.UI"/>
 
     <source path='view'/>
 </module>

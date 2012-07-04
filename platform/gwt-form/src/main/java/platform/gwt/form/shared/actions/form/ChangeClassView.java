@@ -1,15 +1,15 @@
 package platform.gwt.form.shared.actions.form;
 
-import platform.gwt.view.changes.dto.ObjectDTO;
+import platform.gwt.base.shared.GClassViewType;
 
 public class ChangeClassView extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int groupObjectId;
-    public ObjectDTO value;
+    public GClassViewType newClassView;
 
     public ChangeClassView() {}
 
-    public ChangeClassView(int groupObjectId, Object value) {
+    public ChangeClassView(int groupObjectId, GClassViewType newClassView) {
         this.groupObjectId = groupObjectId;
-        this.value = new ObjectDTO(value);
+        this.newClassView = newClassView;
     }
 }

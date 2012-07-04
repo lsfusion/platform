@@ -7,7 +7,6 @@ import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.ExpandGroupObject;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
-import platform.gwt.view.changes.dto.ObjectDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -27,9 +26,9 @@ public class ExpandGroupObjectHandler extends ServerResponseActionHandler<Expand
         DataOutputStream outStream = new DataOutputStream(byteStream);
 
         outStream.writeInt(action.value.size());
-        for (Map.Entry<Integer, ObjectDTO> one : action.value.entrySet()) {
+        for (Map.Entry<Integer, Object> one : action.value.entrySet()) {
             outStream.writeInt(one.getKey());
-            BaseUtils.serializeObject(outStream, one.getValue().getValue());
+            BaseUtils.serializeObject(outStream, one.getValue());
         }
 
         return getServerResponseResult(form, form.remoteForm.expandGroupObject(action.requestIndex, action.groupObjectId, byteStream.toByteArray()));

@@ -6,7 +6,6 @@ import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.ExecuteEditAction;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
-import platform.gwt.view.changes.dto.ObjectDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -28,9 +27,9 @@ public class ExecuteEditActionHandler extends ServerResponseActionHandler<Execut
         DataOutputStream outStream = new DataOutputStream(byteStream);
 
         outStream.writeInt(action.key.size());
-        for (Map.Entry<Integer, ObjectDTO> entry : action.key.entrySet()) {
+        for (Map.Entry<Integer, Object> entry : action.key.entrySet()) {
             outStream.writeInt(entry.getKey());
-            serializeObject(outStream, entry.getValue().getValue());
+            serializeObject(outStream, entry.getValue());
         }
 
         return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, action.propertyId, byteStream.toByteArray(), action.actionSID));

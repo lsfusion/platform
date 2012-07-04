@@ -4,9 +4,8 @@ import java.io.IOException;
 
 public class LogMessageClientAction extends ExecuteClientAction {
 
-    public String message;
-
     public boolean failed;
+    public String message;
 
     public LogMessageClientAction(String message, boolean failed) {
         this.message = message;

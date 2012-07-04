@@ -6,7 +6,6 @@ import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.ChangeGroupObject;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
-import platform.gwt.view.changes.dto.ObjectDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -28,9 +27,9 @@ public class ChangeGroupObjectHandler extends ServerResponseActionHandler<Change
         DataOutputStream outStream = new DataOutputStream(byteStream);
 
         outStream.writeInt(action.keyValues.size());
-        for (Map.Entry<Integer, ObjectDTO> entry : action.keyValues.entrySet()) {
+        for (Map.Entry<Integer, Object> entry : action.keyValues.entrySet()) {
             outStream.writeInt(entry.getKey());
-            serializeObject(outStream, entry.getValue().getValue());
+            serializeObject(outStream, entry.getValue());
         }
 
         return getServerResponseResult(form, form.remoteForm.changeGroupObject(action.requestIndex, action.groupId, byteStream.toByteArray()));

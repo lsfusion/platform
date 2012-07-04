@@ -5,6 +5,7 @@ import org.springframework.web.HttpRequestHandler;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.ClientNavigatorForm;
+import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.server.spring.NavigatorProvider;
 
 import javax.servlet.ServletException;
@@ -17,9 +18,17 @@ public class NavigatorDSHandler implements HttpRequestHandler {
     @Autowired
     private NavigatorProvider navigatorProvider;
 
+    @Autowired
+    private BusinessLogicsProvider blProvider;
+
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        DeSerializer.deserializeListClientNavigatorElementWithChildren(navigatorProvider.getNavigator().getNavigatorTree());
+        try {
+            DeSerializer.deserializeListClientNavigatorElementWithChildren(navigatorProvider.getNavigator().getNavigatorTree());
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            blProvider.invalidate();
+        }
 
         ClientNavigatorElement node = ClientNavigatorElement.root;
 

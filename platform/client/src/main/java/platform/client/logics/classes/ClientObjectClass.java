@@ -8,17 +8,39 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ClientObjectClass extends ClientClass {
+public class ClientObjectClass extends ClientClass {
 
     public final static ClientObjectType type = new ClientObjectType();
 
-    public int ID;
-    
-    private String sID;
+    private final int ID;
+    private final String sID;
+
+    private final boolean concreate;
+    private final List<ClientObjectClass> children = new ArrayList<ClientObjectClass>();
+    private final String caption;
+
+    ClientObjectClass(DataInputStream inStream) throws IOException {
+        super(inStream);
+
+        concreate = inStream.readBoolean();
+        caption = inStream.readUTF();
+        ID = inStream.readInt();
+        sID = inStream.readUTF();
+
+        int count = inStream.readByte();
+        for (int i = 0; i < count; i++) {
+            children.add(ClientTypeSerializer.deserializeClientObjectClass(inStream));
+        }
+    }
 
     @Override
-    public String getCode() {
-        return sID;
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(Data.OBJECT);
+        outStream.writeInt(ID);
+    }
+
+    public int getID() {
+        return ID;
     }
 
     @Override
@@ -26,7 +48,31 @@ public abstract class ClientObjectClass extends ClientClass {
         return sID;
     }
 
+    public boolean isConcreate() {
+        return concreate;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
     @Override
+    public String getCode() {
+        return sID;
+    }
+
+    public List<ClientObjectClass> getChildren() {
+        return children;
+    }
+
+    public boolean hasChildren() {
+        return !children.isEmpty();
+    }
+
+    public ClientType getType() {
+        return type;
+    }
+
     public boolean equals(Object o) {
         return this == o || o instanceof ClientObjectClass && ID == ((ClientObjectClass) o).ID;
     }
@@ -36,45 +82,11 @@ public abstract class ClientObjectClass extends ClientClass {
         return ID;
     }
 
-    private String caption;
-    public String toString() { return caption; }
-
-    private List<ClientClass> children = new ArrayList<ClientClass>();
-    public List<ClientClass> getChildren() {
-        return children;
+    public String toString() {
+        return caption;
     }
 
-    ClientObjectClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-        caption = inStream.readUTF();
-        ID = inStream.readInt();
-        sID = inStream.readUTF(); 
-
-        int count = inStream.readByte();
-        for (int i = 0; i < count; i++) {
-            children.add(ClientTypeSerializer.deserializeClientClass(inStream));
-        }
-    }
-
-    public static ClientObjectClass deserializeObject(DataInputStream inStream) throws IOException {
-        boolean concrete = inStream.readBoolean();
-        if(concrete)
-            return new ClientConcreteClass(inStream);
-        else
-            return new ClientAbstractClass(inStream); 
-    }
-
-    public boolean hasChildren() {
-        return !children.isEmpty();
-    }
-
-    @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(Data.OBJECT);
-        outStream.writeInt(ID);
-    }
-
-    public ClientType getType() {
-        return type;
+    public static ClientObjectClass deserialize(DataInputStream inStream) throws IOException {
+        return new ClientObjectClass(inStream);
     }
 }

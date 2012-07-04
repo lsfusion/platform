@@ -1,6 +1,7 @@
 package platform.gwt.form.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
+import platform.gwt.view.GForm;
 
 public class OpenFormEvent extends GwtEvent<OpenFormHandler> {
     private static Type<OpenFormHandler> TYPE;
@@ -13,6 +14,12 @@ public class OpenFormEvent extends GwtEvent<OpenFormHandler> {
     }
 
 
+    public static void fireEvent(GForm form) {
+        if (TYPE != null) {
+            GlobalEventBus.fireEvent(new OpenFormEvent(form));
+        }
+    }
+
     public static void fireEvent(String formSID, String caption) {
         if (TYPE != null) {
             GlobalEventBus.fireEvent(new OpenFormEvent(formSID, caption));
@@ -21,10 +28,18 @@ public class OpenFormEvent extends GwtEvent<OpenFormHandler> {
 
     private final String caption;
     private final String formSID;
+    private final GForm form;
+
+    public OpenFormEvent(GForm form) {
+        this.formSID = null;
+        this.caption = null;
+        this.form = form;
+    }
 
     public OpenFormEvent(String formSID, String caption) {
         this.formSID = formSID;
         this.caption = caption;
+        this.form = null;
     }
 
     public String getFormSID() {

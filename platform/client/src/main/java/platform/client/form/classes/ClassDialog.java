@@ -3,7 +3,6 @@ package platform.client.form.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.logics.classes.ClientClass;
-import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.KeyStrokes;
 
@@ -74,7 +73,7 @@ public class ClassDialog extends JDialog {
     private void okPressed() {
         
         ClientClass selectedClass = tree.getSelectionClass();
-        if (!concrete || selectedClass instanceof ClientConcreteClass) {
+        if (!concrete || (selectedClass instanceof ClientObjectClass && ((ClientObjectClass) selectedClass).isConcreate())) {
             chosenClass = tree.getSelectionClass();
             ClassDialog.this.setVisible(false);
         }

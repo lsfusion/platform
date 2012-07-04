@@ -1,10 +1,7 @@
 package platform.client.form;
 
 import platform.client.form.classes.ClassController;
-import platform.client.form.classes.ClassDialog;
 import platform.client.logics.ClientObject;
-import platform.client.logics.classes.ClientConcreteClass;
-import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.ClassViewType;
 
 import java.io.IOException;

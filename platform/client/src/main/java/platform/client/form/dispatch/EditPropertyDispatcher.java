@@ -15,7 +15,7 @@ import platform.interop.form.UserInputResult;
 import java.io.IOException;
 
 import static platform.base.BaseUtils.deserializeObject;
-import static platform.client.logics.classes.ClientTypeSerializer.deserialize;
+import static platform.client.logics.classes.ClientTypeSerializer.deserializeClientType;
 
 public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     protected final EditPropertyHandler handler;
@@ -115,7 +115,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     public Object execute(RequestUserInputClientAction action) {
         try {
-            readType = deserialize(action.readType);
+            readType = deserializeClientType(action.readType);
             oldValue = deserializeObject(action.oldValue);
         } catch (IOException e) {
             throw Throwables.propagate(e);

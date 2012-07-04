@@ -1,10 +1,10 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view.changes.dto.GFormChangesDTO;
 import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.view.changes.dto.GPropertyReaderDTO;
-import platform.gwt.view.changes.dto.ObjectDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 
@@ -127,7 +127,7 @@ public class ClientFormChanges {
             gwtFormChanges = new GFormChangesDTO();
 
             for (Map.Entry<ClientGroupObject, ClassViewType> entry : classViews.entrySet()) {
-                gwtFormChanges.classViews.put(entry.getKey().getID(), new ObjectDTO(entry.getValue().name()));
+                gwtFormChanges.classViews.put(entry.getKey().getID(), entry.getValue().name());
             }
 
             for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : objects.entrySet()) {
@@ -155,9 +155,9 @@ public class ClientFormChanges {
             }
 
             for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : properties.entrySet()) {
-                HashMap<GGroupObjectValueDTO, ObjectDTO> propValues = new HashMap<GGroupObjectValueDTO, ObjectDTO>();
+                HashMap<GGroupObjectValueDTO, Object> propValues = new HashMap<GGroupObjectValueDTO, Object>();
                 for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
-                    propValues.put(clientValues.getKey().getGwtGroupObjectValueDTO(), new ObjectDTO(convertValue(clientValues.getValue())));
+                    propValues.put(clientValues.getKey().getGwtGroupObjectValueDTO(), convertValue(clientValues.getValue()));
                 }
                 ClientPropertyReader reader = entry.getKey();
                 gwtFormChanges.properties.put(new GPropertyReaderDTO(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType()), propValues);
@@ -179,6 +179,8 @@ public class ClientFormChanges {
     public Object convertValue(Object value) {
         if (value instanceof Color) {
             return "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
+        } else if (value instanceof String) {
+            return GwtSharedUtils.rtrim((String) value);
         } else {
             return value;
         }

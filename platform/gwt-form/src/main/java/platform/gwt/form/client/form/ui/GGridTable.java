@@ -1,11 +1,13 @@
 package platform.gwt.form.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.smartgwt.client.types.EditCompletionEvent;
 import com.smartgwt.client.types.ListGridEditEvent;
 import com.smartgwt.client.types.SelectionStyle;
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.form.fields.FormItem;
-import com.smartgwt.client.widgets.grid.*;
+import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.grid.ListGridField;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.*;
 import platform.gwt.form.client.form.dispatch.GwtEditPropertyActionDispatcher;
 import platform.gwt.utils.GwtSharedUtils;
@@ -68,34 +70,47 @@ public class GGridTable extends ListGrid {
 //        setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
 //        setPoolComponentsPerColumn(true);
 
+        setAutoSaveEdits(false);
+        setNeverValidate(true);
+
         addCellDoubleClickHandler(new CellDoubleClickHandler() {
             @Override
             public void onCellDoubleClick(CellDoubleClickEvent event) {
                 Log.debug("Cell dbl click, init editing...");
+                //пока начинаем редактирование по дабл-клику
                 editDispatcher.executePropertyEditAction(GGridTable.this, event);
             }
         });
 
-//        ListGridField f = getField(0);
-//        f.addChangedHandler(new ChangedHandler() {
-//            @Override
-//            public void onChanged(ChangedEvent event) {
-//                //todo:
-//
-//            }
-//        })
-
         addCellSavedHandler(new CellSavedHandler() {
             @Override
             public void onCellSaved(CellSavedEvent event) {
-                editDispatcher.commitValue(event.getNewValue());
+//                commitingValue = event.getNewValue();
+//                editDispatcher.commitValue(commitingValue);
             }
         });
 
-        setEditorCustomizer(new ListGridEditorCustomizer() {
+        addEditorExitHandler(new EditorExitHandler() {
             @Override
-            public FormItem getEditor(ListGridEditorContext context) {
-                return editType.createGridEditorItem(form, editProperty);
+            public void onEditorExit(EditorExitEvent event) {
+                Log.debug("grid's editor exit: " + event.getNewValue());
+                if (editType != null) {
+                    //пока коммитим только по Enter
+                    if (event.getEditCompletionEvent() == EditCompletionEvent.ENTER_KEYPRESS) {
+                        try {
+                            Object newValue = editType.parseString((String) event.getNewValue());
+                            editDispatcher.commitValue(newValue);
+                        } catch (Exception e) {
+                            event.cancel();
+                            return;
+                        }
+                    } else {
+                        editDispatcher.cancelEdit();
+                    }
+                    editType = null;
+                    event.cancel();
+                    GGridTable.this.cancelEditing();
+                }
             }
         });
 
@@ -131,6 +146,10 @@ public class GGridTable extends ListGrid {
         editType = type;
         editProperty = getProperty(column);
 
+        getField(column).setEditorType(
+                editType.createGridEditorItem(form, editProperty)
+        );
+
         startEditing(row, column, false);
     }
 
@@ -163,7 +182,7 @@ public class GGridTable extends ListGrid {
     @Override
     public Canvas updateRecordComponent(ListGridRecord record, Integer colNum, Canvas component, boolean recordChanged) {
         GPropertyDraw property = properties.get(colNum);
-        Canvas cellRenderer =  property.updateGridCellRenderer(component, (GridDataRecord) record);
+        Canvas cellRenderer = property.updateGridCellRenderer(component, (GridDataRecord) record);
         if (cellRenderer != null) {
             return cellRenderer;
         }
@@ -267,8 +286,9 @@ public class GGridTable extends ListGrid {
                 needsFieldsRefresh = true;
             }
         }
-        if (needsFieldsRefresh)
+        if (needsFieldsRefresh) {
             refreshFields();
+        }
     }
 
     @Override
@@ -277,7 +297,7 @@ public class GGridTable extends ListGrid {
 
         GPropertyDraw property = null;
         for (GPropertyDraw prop : properties) {
-            if (getFieldName(colNum).equals(prop.sID)){
+            if (getFieldName(colNum).equals(prop.sID)) {
                 property = prop;
             }
         }

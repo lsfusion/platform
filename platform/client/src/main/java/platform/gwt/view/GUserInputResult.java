@@ -1,14 +1,15 @@
 package platform.gwt.view;
 
-import platform.gwt.view.changes.dto.ObjectDTO;
-
 import java.io.Serializable;
 
 public class GUserInputResult implements Serializable {
     public static final GUserInputResult canceled = new GUserInputResult(true);
 
-    private final boolean editCanceled;
-    private final ObjectDTO value;
+    private boolean editCanceled;
+    private Serializable value;
+
+    @SuppressWarnings("UnusedDeclaration")
+    public GUserInputResult() {}
 
     public GUserInputResult(boolean canceled) {
         this(canceled, null);
@@ -20,14 +21,14 @@ public class GUserInputResult implements Serializable {
 
     public GUserInputResult(boolean canceled, Object value) {
         this.editCanceled = canceled;
-        this.value = new ObjectDTO(value);
+        this.value = (Serializable) value;
     }
 
     public boolean isCanceled() {
         return editCanceled;
     }
 
-    public ObjectDTO getValue() {
+    public Serializable getValue() {
         return value;
     }
 

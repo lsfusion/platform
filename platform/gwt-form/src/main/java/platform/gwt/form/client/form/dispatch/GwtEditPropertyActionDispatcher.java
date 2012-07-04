@@ -49,25 +49,13 @@ public class GwtEditPropertyActionDispatcher extends GwtFormActionDispatcher {
             return;
         }
 
-
-        form.disable();
         form.executeEditAction(property, record.key, "change", new ErrorAsyncCallback<ServerResponseResult>() {
             @Override
-            public void preProcess() {
-                Log.debug("Execute edit action response recieved...");
-                form.enable();
-            }
-
-            @Override
             public void success(ServerResponseResult response) {
+                Log.debug("Execute edit action response recieved...");
                 dispatchResponse(response);
-
-                if (readType != null) {
-                    startEdit(table, readType, oldValue);
-                }
             }
         });
-
     }
 
     @Override
@@ -75,22 +63,25 @@ public class GwtEditPropertyActionDispatcher extends GwtFormActionDispatcher {
         super.dispatchResponse(response);
 
         if (readType != null) {
-            startEdit(editTable, readType, oldValue);
+            GType editType = readType;
             readType = null;
+            startEdit(editTable, editType, oldValue);
         }
     }
 
     public void startEdit(GGridTable table, GType type, Object oldValue) {
+        Log.debug("Edit started.");
         valueRequested = true;
         table.editCellAt(type, oldValue, editRow, editCol);
     }
 
-
     public void cancelEdit() {
+        Log.debug("Edit canceled.");
         internalCommitValue(GUserInputResult.canceled);
     }
 
     public void commitValue(Object newValue) {
+        Log.debug("Edit commit:" + newValue);
         internalCommitValue(new GUserInputResult(newValue));
     }
 
@@ -112,7 +103,7 @@ public class GwtEditPropertyActionDispatcher extends GwtFormActionDispatcher {
     @Override
     public Object execute(GRequestUserInputAction action) {
         readType = action.readType;
-        oldValue = action.oldValue.getValue();
+        oldValue = action.oldValue;
 
         pauseDispatching();
 

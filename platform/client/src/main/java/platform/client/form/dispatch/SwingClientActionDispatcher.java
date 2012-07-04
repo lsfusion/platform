@@ -253,15 +253,13 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public Object execute(ChooseClassAction action) {
+    public Object execute(ChooseClassClientAction action) {
         try {
             DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(action.classes));
             ClientObjectClass baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inputStream);
             ClientObjectClass defaultClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inputStream);
             ClientObjectClass resultClass = ClassDialog.dialogObjectClass(getDialogParentContainer(), baseClass, defaultClass, action.concrete);
-            if(resultClass!=null)
-                return resultClass.ID;
-            return null;
+            return resultClass != null ? resultClass.getID() : null;
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
