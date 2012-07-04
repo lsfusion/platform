@@ -4112,6 +4112,20 @@ TABLE paymentType (paymentType);
 paymentMeansPaymentType (paymentType) = DATA paymentMeans (paymentType);
 namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
 
+addPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {
+    ADDOBJ paymentType;
+    FOR p == addedObject() DO {
+        SET name(p) <- string AS STRING[110];
+        SET paymentMeansPaymentType(p) <- paymentMeans AS paymentMeans;
+    }
+}
+
+fillPaymentTypeDefaultValues 'Заполнить значения типов платежей по умолчанию' = ACTION(){
+    EXEC addPaymentType('Наличные', paymentMeans.cash);
+    EXEC addPaymentType('Visa', paymentMeans.card);
+    EXEC addPaymentType('Mastercard', paymentMeans.card);
+}
+
 sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN baseGroup;
 sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
 
@@ -9296,6 +9310,45 @@ fillMachineryModelDefaultValues 'Заполнить значения модел�
     EXEC fillTerminalModelDefaultValues();
 }
 
+addedNumerator = SESSION DATA numerator();
+
+addNumerator 'Добавить нумератор' = ACTION(string1, string2, long1, long2, int) {
+    ADDOBJ numerator;
+    FOR n == addedObject() DO {
+        SET name(n) <- string1 AS STRING[110];
+        SET seriesNumerator(n) <- string2 AS STRING[2];
+        SET minValueNumerator(n) <-long1 AS LONG;
+        SET maxValueNumerator(n) <-long2 AS LONG;
+        SET stringLengthNumerator(n) <-int AS INTEGER;
+        SET addedNumerator() <- n AS numerator;
+    }
+}
+
+fillNumeratorDefaultValues 'Заполнить значения нумераторов по умолчанию' = ACTION() {
+    EXEC addNumerator('Документы', 'AA', 1, 10000, 4);
+    SET defaultNumeratorDocuments() <- addedNumerator();
+    EXEC addNumerator('Заказы', 'AA', 1, 10000, 4);
+    SET defaultNumeratorOrders() <- addedNumerator();
+    EXEC addNumerator('Дисконтные карты', 'AA', 1, 10000, 4);
+    SET defaultNumeratorDiscountCards() <- addedNumerator();
+    EXEC addNumerator('Инкассации', 'AA', 1, 10000, 4);
+    SET defaultNumeratorCollection() <- addedNumerator();
+}
+
+fillDatabaseDefaultValues 'Заполнить базу значениями по умолчанию' = ACTION() {
+    EXEC fillVATDefaultValues();
+    EXEC fillCountryDefaultValues();
+    EXEC fillUOMDefaultValues();
+    EXEC fillCurrencyDefaultValues();
+    EXEC fillStatisticGroupDefaultValues();
+    EXEC fillLossItemGroupDefaultValues();
+    EXEC fillMachineryModelDefaultValues();
+    EXEC fillDocumentTypeDefaultValues();
+    EXEC fillLabelTypeDefaultValues();
+    EXEC fillPaymentTypeDefaultValues();
+    EXEC fillNumeratorDefaultValues();
+}
+
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
@@ -9309,7 +9362,8 @@ FORM fillDataBase 'Заполнение БД'
 
     PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
                     fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
-                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues
+                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues, fillPaymentTypeDefaultValues,
+                    fillNumeratorDefaultValues, fillDatabaseDefaultValues
 
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
@@ -9393,6 +9447,9 @@ DESIGN fillDataBase FROM DEFAULT {
             ADD PROPERTY(fillStatisticGroupDefaultValues());
             ADD PROPERTY(fillLossItemGroupDefaultValues());
             ADD PROPERTY(fillLabelTypeDefaultValues());
+            ADD PROPERTY(fillPaymentTypeDefaultValues());
+            ADD PROPERTY(fillNumeratorDefaultValues());
+            ADD PROPERTY(fillDatabaseDefaultValues());
 
             NEW containerFillMachinery {
                 title = 'Заполнение оборудования по умолчанию';
