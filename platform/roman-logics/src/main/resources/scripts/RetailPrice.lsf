@@ -141,9 +141,11 @@ priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceReta
                                  CHANGED (priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (RRPRatePriceSetDocumentArticle(basePriceSetDocument, article));
 
-percentNDSPriceSetDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceSetDocument, article) IN baseGroup;
-sumNDSPriceSetDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article),
-                                                                      percentNDSPriceSetDocumentArticle(basePriceSetDocument, article));
+percentVATPriceSetDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceSetDocument, article) IN baseGroup;
+//---------------------------- НДС розничный для товара ----------------------------------------//
+
+sumVATPriceSetDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article),
+                                                                      percentVATPriceSetDocumentArticle(basePriceSetDocument, article));
 
 // для уценки
 priceInRateBBasePriceSetDocumentArticle 'Цена поставщика (руб.)' (discountPriceSetDocument, article) = ratePriceSetDocumentArticle (discountPriceSetDocument, article) *
@@ -209,7 +211,7 @@ FORM priceSetDocument 'Документ базовых цен'
                       RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
                       ratePriceSetDocumentArticle, RRPRatePriceSetDocumentArticle, priceOutRatePriceSetDocumentArticle,
                       priceBBasePriceSetDocumentArticle, nameMethodPriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                      priceDataBasePriceSetDocumentArticle, percentNDSPriceSetDocumentArticle, sumNDSPriceSetDocumentArticle
+                      priceDataBasePriceSetDocumentArticle, percentVATPriceSetDocumentArticle, sumVATPriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(p, a)
 
@@ -250,7 +252,7 @@ FORM priceBaseChangeDocuments 'Документы базовых цен'
                                RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
                                ratePriceSetDocumentArticle,
                                priceBBasePriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                               priceDataBasePriceSetDocumentArticle, percentNDSPriceSetDocumentArticle, sumNDSPriceSetDocumentArticle
+                               priceDataBasePriceSetDocumentArticle, percentVATPriceSetDocumentArticle, sumVATPriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(p, a)
 ;

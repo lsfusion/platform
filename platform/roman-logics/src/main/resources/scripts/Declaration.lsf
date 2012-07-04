@@ -643,7 +643,7 @@ FORM declaration 'Декларация'
                   dateRegistrationDeclaration, timeRegistrationDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices,
-                  exportDeclaration, toCreateDeclarationPriceSetDocument
+                  exportDeclaration
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -789,7 +789,7 @@ FORM declarations 'Декларации'
                            beginTimeDeclaration, endTimeDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
                            expenseCertificateDeclaration
-    PROPERTIES(d) toCreateDeclarationPriceSetDocument, ADDFORM, EDITFORM, delete
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail,
@@ -838,6 +838,13 @@ DESIGN declarations FROM DEFAULT {
     ADD functions.box;
 }
 
+
+
+FORM priceDeclaration 'Расценка деклараций'
+    OBJECTS d=declaration
+    PROPERTIES(d) READONLY sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration
+    PROPERTIES(d) toCreateDeclarationPriceSetDocument
+;
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice

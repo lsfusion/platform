@@ -3547,33 +3547,17 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement classifier = addNavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         classifier.window = leftToolbar;
-        //NavigatorElement classifierItem = addNavigatorElement(classifier, "classifierItem", "Для описания товаров");
+
         addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
 
         CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(classifier, "categoryForm", "Номенклатурные группы"));
         category.setDialogForm(categoryForm, categoryForm.objCategory);
-
-        addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
-        addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
-        addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
-
-        CustomCategory10FormEntity customCategory10Form = addFormEntity(new CustomCategory10FormEntity(classifier, "customCategory10Form", "ТН ВЭД"));
-        customCategory10.setDialogForm(customCategory10Form, customCategory10Form.objCustomCategory10);
-
         classifier.add(baseLM.country.getListForm(baseLM).form);
         classifier.add(unitOfMeasure.getListForm(baseLM).form);
         classifier.add(typeFabric.getListForm(baseLM).form);
-        classifier.add(commonSize.getListForm(baseLM).form);
-        addFormEntity(new CommonSizeEditFormEntity(classifier, "commonEditSizeForm", "Белорусские размеры"));
-        addFormEntity(new CommonSizeImportFormEntity(classifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
+
         classifier.add(seasonSupplier.getListForm(baseLM).form);
-//        classifier.add(importer.getListForm(baseLM).form);
-        classifier.add(exporter.getListForm(baseLM).form);
-        addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
         addFormEntity(new StoreFormEntity(classifier, "storeForm", "Магазины"));
-        //classifier.add(store.getListForm(baseLM));
-        classifier.add(freightType.getListForm(baseLM).form);
-        classifier.add(baseLM.dictionaryForm);
 
         ArticleCompositeEditFormEntity articleCompositeEditForm = new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)");
         articleComposite.setEditForm(articleCompositeEditForm, articleCompositeEditForm.objArticleComposite);
@@ -3631,8 +3615,16 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement purchase = addNavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         purchase.window = leftToolbar;
-        addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прикаты"));
 
+        NavigatorElement purchaseClassifier = addNavigatorElement(purchase, "purchaseClassifier", "Справочники");
+        addFormEntity(new ColorSizeSupplierFormEntity(purchaseClassifier, "сolorSizeSupplierForm", "Поставщики"));
+        addFormEntity(new ContractFormEntity(purchaseClassifier, "contractForm", "Договора"));
+
+
+        NavigatorElement purchaseDocument = addNavigatorElement(purchase, "purchaseDocument", "Документы");
+
+        NavigatorElement orders = addNavigatorElement(purchaseDocument, "orders", "Заказы");
+        addFormEntity(new PricatFormEntity(orders, "pricatForm", "Прикаты"));
 
         NavigatorElement purchaseCreate = addNavigatorElement(purchase, "purchaseCreate", "Создать");
         addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).showType = FormShowType.MODAL_FULLSCREEN;
@@ -3641,21 +3633,33 @@ public class RomanLogicsModule extends LogicsModule {
         purchaseCreate.window = generateToolbar;
 
         addFormEntity(new OrderEditFormEntity(null, "orderEditForm", "Редактировать заказ", true));
-        addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
+        addFormEntity(new OrderFormEntity(orders, "orderForm", "Заказы"));
+
+        NavigatorElement invoices = addNavigatorElement(purchaseDocument, "invoices", "Инвойсы");
 
         addFormEntity(new InvoiceEditFormEntity(null, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
         addFormEntity(new InvoiceEditFormEntity(null, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
-        addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
-        addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
-        addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
-        addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
-        addFormEntity(new ShipmentExportFormEntity(purchase, "shipmentExportForm", "Экспорт поставки"));
-        addFormEntity(new InvoiceShipmentFormEntity(purchase, "invoiceShipmentForm", "Сравнение по инвойсам"));
+        addFormEntity(new InvoiceFormEntity(invoices, "boxInvoiceForm", "Инвойсы по коробам", true));
+        addFormEntity(new InvoiceFormEntity(invoices, "simpleInvoiceForm", "Инвойсы без коробов", false));
+        addFormEntity(new InvoiceShipmentFormEntity(invoices, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
-        NavigatorElement distribution = addNavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
+        NavigatorElement shipments = addNavigatorElement(purchaseDocument, "shipments", "Поставки");
+        addFormEntity(new ShipmentListFormEntity(shipments, "boxShipmentListForm", "Поставки по коробам", true));
+        addFormEntity(new ShipmentListFormEntity(shipments, "simpleShipmentListForm", "Поставки без коробов", false));
+        addFormEntity(new ShipmentExportFormEntity(shipments, "shipmentExportForm", "Экспорт поставки"));
+
+
+        NavigatorElement distribution = addNavigatorElement(baseLM.baseElement, "distribution", "Sintitex");
         distribution.window = leftToolbar;
 
-        NavigatorElement generation = addNavigatorElement(distribution, "generation", "Генерация");
+        NavigatorElement distributionClassifier = addNavigatorElement(distribution, "distributionClassifier", "Справочники");
+        distributionClassifier.add(exporter.getListForm(baseLM).form);
+
+        NavigatorElement distributionDocument = addNavigatorElement(distribution, "distributionDocument", "Документы");
+
+        NavigatorElement preparation = addNavigatorElement(distributionDocument, "preparation", "Подготовка к приемке");
+
+        NavigatorElement generation = addNavigatorElement(preparation, "generation", "Генерация");
         generation.window = generateToolbar;
 
         FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
@@ -3667,52 +3671,77 @@ public class RomanLogicsModule extends LogicsModule {
         FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
         createStampFormAdd.showType = FormShowType.MODAL;
 
-        NavigatorElement preparation = addNavigatorElement(distribution, "preparation", "Подготовка к приемке");
-
         addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormList", "Паллеты", FormType.LIST));
         addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormList", "Короба", FormType.LIST));
         addFormEntity(new CreateSkuFormEntity(preparation, "createSkuFormList", "Товары", FormType.LIST));
         addFormEntity(new CreateStampFormEntity(preparation, "createStampFormList", "Марки", FormType.LIST));
 
-        NavigatorElement acceptance = addNavigatorElement(distribution, "acceptance", "Приемка");
+        NavigatorElement acceptance = addNavigatorElement(distributionDocument, "acceptance", "Приемка");
         addFormEntity(new ShipmentSpecFormEntity(acceptance, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(acceptance, "simpleShipmentSpecForm", "Прием товара без коробов", false));
 
-        NavigatorElement placing = addNavigatorElement(distribution, "placing", "Распределение");
+        NavigatorElement placing = addNavigatorElement(distributionDocument, "placing", "Распределение");
         addFormEntity(new BoxPalletStoreFormEntity(placing, "boxPalletStoreForm", "Распределение коробов по паллетам"));
         addFormEntity(new FreightShipmentStoreFormEntity(placing, "freightShipmentStoreForm", "Распределение паллет по фрахтам"));
 
-        NavigatorElement balance = addNavigatorElement(distribution, "balance", "Остатки по товарам");
-        addFormEntity(new BalanceBrandWarehouseFormEntity(balance, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
-        addFormEntity(new BalanceWarehouseFormEntity(balance, "balanceWarehouseForm", "Остатки на складе"));
-        addFormEntity(new BalanceWarehousePeriodFormEntity(balance, "balanceWarehousePeriodForm", "Движение товара за период"));
+        NavigatorElement distributionReport = addNavigatorElement(distribution, "distributionReport", "Сводная информация");
+        addFormEntity(new BalanceBrandWarehouseFormEntity(distributionReport, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
+        addFormEntity(new BalanceWarehouseFormEntity(distributionReport, "balanceWarehouseForm", "Остатки на складе"));
+        addFormEntity(new BalanceWarehousePeriodFormEntity(distributionReport, "balanceWarehousePeriodForm", "Движение товара за период"));
 
         NavigatorElement shipment = addNavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
         shipment.window = leftToolbar;
 
-        addFormEntity(new FreightContentFormEntity(shipment, "freightContentForm", "Содержимое фрахта"));
-        addFormEntity(new FreightReportFormEntity(shipment, "freightReporttForm", "Отчёт по фрахту"));
-        addFormEntity(new FreightBoxContentFormEntity(shipment, "freightBoxContentForm", "Содержимое короба"));
-        NavigatorElement actionFreight = addNavigatorElement(shipment, "actionFreight", "Действия");
-        addFormEntity(new FreightCreateFormEntity(actionFreight, "freightCreateForm", "Редактирование фрахта"));
-        addFormEntity(new FreightShipmentFormEntity(actionFreight, "freightShipmentForm", "Комплектация фрахта"));
-        addFormEntity(new FreightChangeFormEntity(actionFreight, "freightChangeForm", "Обработка фрахта"));
-        addFormEntity(new FreightInvoiceFormEntity(actionFreight, "freightInvoiceForm", "Расценка фрахта"));
+        NavigatorElement shipmentClassifier = addNavigatorElement(shipment, "shipmentClassifier", "Справочники");
+        shipmentClassifier.add(freightType.getListForm(baseLM).form);
+        shipmentClassifier.add(baseLM.dictionaryForm);
+
+
+        NavigatorElement shipmentDocument = addNavigatorElement(shipment, "shipmentDocument", "Документы");
 
         logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM, false);
         formLogFreight = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
         formLogFreight.setImage("history.png");
 
-        addFormEntity(new FreightListFormEntity(shipment, "freightListForm", "Список фрахтов"));
-        addFormEntity(new PrintDocumentFormEntity(shipment, "printDocumentForm", "Печать документов"));
+        //NavigatorElement actionFreight = addNavigatorElement(shipmentDocument, "actionFreight", "Действия");
+        addFormEntity(new FreightCreateFormEntity(null, "freightCreateForm", "Редактирование фрахта"));
+        addFormEntity(new FreightShipmentFormEntity(null, "freightShipmentForm", "Комплектация фрахта"));
+        addFormEntity(new FreightChangeFormEntity(null, "freightChangeForm", "Обработка фрахта"));
+        addFormEntity(new FreightInvoiceFormEntity(null, "freightInvoiceForm", "Расценка фрахта"));
 
-        shipment.add(actionFreight);
+        addFormEntity(new FreightListFormEntity(shipmentDocument, "freightListForm", "Список фрахтов"));
+        addFormEntity(new PrintDocumentFormEntity(shipmentDocument, "printDocumentForm", "Печать документов"));
+
+        //shipmentDocument.add(actionFreight);
+
+        NavigatorElement shipmentReport = addNavigatorElement(shipment, "shipmentReport", "Сводная информация");
+        addFormEntity(new FreightContentFormEntity(shipmentReport, "freightContentForm", "Содержимое фрахта"));
+        addFormEntity(new FreightReportFormEntity(shipmentReport, "freightReporttForm", "Отчёт по фрахту"));
+        addFormEntity(new FreightBoxContentFormEntity(shipmentReport, "freightBoxContentForm", "Содержимое короба"));
 
         NavigatorElement customs = addNavigatorElement(baseLM.baseElement, "customs", "Таможенное оформление");
         customs.window = leftToolbar;
 
+        NavigatorElement customClassifier = addNavigatorElement(customs, "customClassifier", "Справочники");
+        addFormEntity(new CustomCategoryFormEntity(customClassifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
+        addFormEntity(new CustomCategoryFormEntity(customClassifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
+        CustomCategory10FormEntity customCategory10Form = addFormEntity(new CustomCategory10FormEntity(customClassifier, "customCategory10Form", "ТН ВЭД"));
+        customCategory10.setDialogForm(customCategory10Form, customCategory10Form.objCustomCategory10);
+
+
         NavigatorElement prices = addNavigatorElement(baseLM.baseElement, "prices", "Ценообразование");
         prices.window = leftToolbar;
+
+        NavigatorElement merchandising = addNavigatorElement(baseLM.baseElement, "merchandising", "Управление складами");
+        merchandising.window = leftToolbar;
+
+        NavigatorElement merchandisingClassifier = addNavigatorElement(merchandising, "merchandisingClassifier", "Справочники");
+        merchandisingClassifier.add(commonSize.getListForm(baseLM).form);
+        addFormEntity(new CommonSizeEditFormEntity(merchandisingClassifier, "commonEditSizeForm", "Белорусские размеры"));
+        addFormEntity(new CommonSizeImportFormEntity(merchandisingClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
+
+        NavigatorElement merchandisingStore = addNavigatorElement(baseLM.baseElement, "merchandisingStore", "Управление магазинами");
+        merchandisingStore.window = leftToolbar;
 
         NavigatorElement accountInfo = addNavigatorElement(baseLM.baseElement, "accountInfo", "Сводная информация");
         accountInfo.window = leftToolbar;
@@ -7858,25 +7887,25 @@ public class RomanLogicsModule extends LogicsModule {
             addGroupObject(gobjDates);
             gobjDates.setSingleClassView(ClassViewType.PANEL);
 
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
-            addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
-            addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
+            //addPropertyDraw(objDateFrom, baseLM.objectValue);
+            //addPropertyDraw(objDateTo, baseLM.objectValue);
+            //addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
+            //addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
 
-            objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
-            setEditType(objShipment, PropertyEditType.READONLY);
-            addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
+            //objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
+            //setEditType(objShipment, PropertyEditType.READONLY);
+            //addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
-            objInvoice = addSingleGroupObject(invoice, "Инвойс");
-            objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
-            setEditType(objInvoice, PropertyEditType.READONLY);
-            addPropertyDraw(inInvoiceFreight, objInvoice, objFreight);
-            addPropertyDraw(objInvoice, baseLM.date, nameSupplierDocument, sidDocument, nameDestinationDestinationDocument, sumDocument, nameCurrencyDocument, netWeightDocument, quantityDocument);
+            //objInvoice = addSingleGroupObject(invoice, "Инвойс");
+            //objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
+            //setEditType(objInvoice, PropertyEditType.READONLY);
+            //addPropertyDraw(inInvoiceFreight, objInvoice, objFreight);
+            //addPropertyDraw(objInvoice, baseLM.date, nameSupplierDocument, sidDocument, nameDestinationDestinationDocument, sumDocument, nameCurrencyDocument, netWeightDocument, quantityDocument);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objInvoice), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objInvoice), Compare.LESS_EQUALS, objDateTo));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objInvoice), Compare.GREATER_EQUALS, objDateFrom));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objInvoice), Compare.LESS_EQUALS, objDateTo));
 
         }
 
@@ -7888,10 +7917,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
-            design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
-            design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
-            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
-            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
+            //design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
+            //design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
+            //design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
+            //design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
             return design;
         }
     }

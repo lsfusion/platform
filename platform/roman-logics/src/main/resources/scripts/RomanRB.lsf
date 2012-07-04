@@ -88,28 +88,46 @@ NAVIGATOR {
         ADD banks;
         ADD employees;
         ADD importers;
-        ADD warehouses;
         ADD stores;
         ADD companies;
         ADD contractsSkuCompany;
     }
     customs {
-        ADD customStores;
-        ADD certificates;
-        ADD declarations;
-        ADD innerInvoices;
-        ADD CStoWHs;
-        ADD WHfromCSIs;
+        customClassifier {
+            ADD customStores;
+            ADD certificates;
+        }
+
+        NEW customDocument 'Документы' TO leftToolbar {
+            ADD declarations;
+            ADD CStoWHs;
+        }
+
+        NEW customReport 'Сводная информация' TO leftToolbar {
+            ADD innerInvoices;
+        }
     }
 
     prices {
-        ADD priceBaseChangeDocuments;
-        ADD discountPriceSetDocuments;
-        ADD freights;
-        ADD coefficientRetails;
-        ADD wholesalePriceDocuments;
-        ADD priceChangeDocuments;
-        ADD priceChangeCommitteeDialog;
+        NEW pricesDocument 'Документы' {
+            NEW retailPriceBase 'Розничное ценообразование'{
+                ADD coefficientRetails;
+                ADD priceBaseChangeDocuments;
+                ADD freights;
+            }
+
+            NEW wholesalePrice 'Оптовое ценообразование' {
+                ADD wholesalePriceDocuments;
+                ADD priceDeclaration;
+            }
+
+            NEW discountPrice 'Распродажи' {
+                ADD discountPriceSetDocuments;
+            }
+
+            ADD priceChangeDocuments;
+            ADD priceChangeCommitteeDialog;
+        }
     }
 
     accountInfo {
@@ -134,16 +152,27 @@ NAVIGATOR {
       //  ADD printMarksWHfromCS;
     }
 
-    baseElement {
-        NEW merchandising 'Товародвижение' TO leftToolbar {
+    merchandising {
+
+        merchandisingClassifier 'Справочники' {
+            ADD warehouses;
+        }
+
+        NEW merchandisingDocument 'Документы' {
+            ADD WHfromCSs;
             ADD WHtoSs;
+            ADD WHfromSs;
+            ADD WHtoWHs;
+            ADD WHfromWHs;
+        }
+    }
+
+    merchandisingStore {
+        NEW merchandisingStoreDocument 'Документы' {
             ADD SfromWHs;
             ADD StoSs;
             ADD SfromSs;
             ADD StoWHs;
-            ADD WHfromSs;
-            ADD WHtoWHs;
-            ADD WHfromWHs;
         }
     }
 
