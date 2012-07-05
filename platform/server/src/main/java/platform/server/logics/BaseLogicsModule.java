@@ -634,6 +634,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         addTable("userTable", user);
+        addTable("contact", contact);
         addTable("customUser", customUser);
         addTable("userRole", userRole);
         addTable("policy", policy);
