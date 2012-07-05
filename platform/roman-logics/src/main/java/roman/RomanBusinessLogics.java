@@ -1,5 +1,6 @@
 package roman;
 
+import equ.srv.EquipmentServer;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.event.IDaemonTask;
 import platform.server.auth.SecurityPolicy;
@@ -24,6 +25,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Store;
     public RomanLogicsModule RomanLM;
     public ScriptingLogicsModule RomanRB;
+    EquipmentServer equipmentServer;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -73,6 +75,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
 
         RomanRB = addModuleFromResource("/scripts/RomanRB.lsf");
+
+        equipmentServer = new EquipmentServer(RomanRB);
     }
 
     @Override

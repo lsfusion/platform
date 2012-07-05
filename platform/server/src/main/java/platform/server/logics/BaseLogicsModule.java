@@ -65,6 +65,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public BaseClass baseClass;
     Logger logger;
 
+    public AbstractCustomClass contact;
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
@@ -239,6 +240,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP userPassword;
     public LCP userFirstName;
     public LCP userLastName;
+    public LCP userPhone;
     public LCP userMainRole;
     public LCP customUserMainRole;
     public LCP customUserSIDMainRole;
@@ -555,8 +557,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"SSL", "TLS"},
                 new String[]{"SSL", "TLS"});
 
+        contact = addAbstractClass("contact", getString("logics.user.contact"), emailObject);
         user = addAbstractClass("user", getString("logics.user"), baseClass);
-        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), user, barcodeObject, emailObject);
+        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), user, contact, barcodeObject);
         systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
         computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
         userRole = addConcreteClass("userRole", getString("logics.role"), baseClass.named);
@@ -856,11 +859,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
         userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
         userPassword.setEchoSymbols(true);
-        userFirstName = addDProp(publicGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), customUser);
+        userFirstName = addDProp(publicGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), contact);
         userFirstName.setMinimumCharWidth(10);
 
-        userLastName = addDProp(publicGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), customUser);
+        userLastName = addDProp(publicGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), contact);
         userLastName.setMinimumCharWidth(10);
+
+        userPhone = addDProp(publicGroup, "userPhone", getString("logics.user.phone"), StringClass.get(30), contact);
+        userPhone.setMinimumCharWidth(10);
 
         userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
         sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);
@@ -868,7 +874,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
         inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
 
-        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), emailObject);
+        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
         email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
         email.setRegexpMessage("<html>Неверный формат e-mail</html>");
 

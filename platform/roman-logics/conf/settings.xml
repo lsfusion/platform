@@ -5,8 +5,12 @@
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
     default-lazy-init="true">
 
+    <bean id="exportPort" class="java.lang.Integer">
+        <constructor-arg type="int" value="7652"/>
+    </bean>
+
     <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-        <constructor-arg value="roman"/>
+        <constructor-arg value="roman2"/>
         <constructor-arg value="localhost"/>
         <constructor-arg value="postgres"/>
         <constructor-arg value="11111"/>
@@ -14,7 +18,7 @@
 
     <bean id="businessLogics" class="roman.RomanBusinessLogics">
         <constructor-arg ref="dataAdapter"/>
-        <constructor-arg type="int" value="7652"/>
+        <constructor-arg ref="exportPort"/>
     </bean>
 
 </beans>
