@@ -101,20 +101,6 @@ META defineDocumentDetailItemExtra (object)
 
 END
 
-META defineDocumentBaseDepartmentStoreItem (object)
-    @defineDocumentBase(object);
-
-    @defineDocumentDepartmentStore(object);
-
-    @defineDocumentDetailItem(object);
-END
-
-META defineDocumentBasePostedDepartmentStoreItem (object)
-    @defineDocumentBaseDepartmentStoreItem(object);
-
-    @defineDocumentPosted(object);
-END
-
 META defineDocumentHeaderItemQuantityCustom (object, detail)
     quantity###detail##Item###object 'Кол-во товара в документе' (item, object) = GROUP SUM quantity###detail(idetail)
                                                                                       BY  item###detail(idetail),
@@ -2940,10 +2926,11 @@ TABLE objectiveAcquiring (objectiveAcquiring);
 CLASS specification 'Счет-фактура': historyObject, numeratedDocument;
 CLASS specificationDetail 'Строка счет-фактуры';
 
-@defineDocumentBaseDepartmentStoreItem(specification);
+@defineDocument(specification);
+@defineDocumentDepartmentStore(specification);
 
 @defineDocumentDetailNumbered(specification);
-
+@defineDocumentDetailItem(specification);
 @defineDocumentDetailQuantity(specification);
 
 @defineDocumentDetailRetailPrice(specification);
@@ -2953,6 +2940,10 @@ CLASS specificationDetail 'Строка счет-фактуры';
 
 @defineDocumentDetailCalcRange(specification);
 @defineDocumentDetailCalcVATSum(specification);
+
+@defineAddDetailDialogSkuStock(specification, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(specification, item);
+@defineAddDetailDialogTerminal(specification, item);
 
 @defineDocumentHeaderQuantity(specification);
 @defineDocumentHeaderItemQuantity(specification);
@@ -2965,10 +2956,6 @@ CLASS specificationDetail 'Строка счет-фактуры';
 
 descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '\'С-ф № \' || \' \' || CAST($1 AS TEXT) || \' от \' || \' \' || CAST($2 AS TEXT)']
             (seriesNumberSpecificationDetail(specificationDetail), dateSpecificationDetail(specificationDetail));
-
-@defineAddDetailDialogSkuStock(specification, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(specification, item);
-@defineAddDetailDialogTerminal(specification, item);
 
 customerSpecification(specification) = DATA customer (specification) IN idGroup;
 nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
@@ -3036,16 +3023,15 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
-GROUP specificationGroup 'Счет-фактуры' : publicGroup;
-
 CLASS statement 'Выписка из розницы' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
 CLASS statementDetail 'Строка выписки из розницы' : outAutoSkuLedger, salesLedger, consignmentDetail;
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem(statement);
+@defineDocument(statement);
+@defineDocumentDepartmentStore(statement);
+@defineDocumentPosted(statement);
 
-@defineDocumentHeaderPriceChange(statement);
-
+@defineDocumentDetailItem(statement);
 @defineDocumentDetailQuantity(statement);
 
 @defineDocumentDetailBasePrice(statement);
@@ -3060,6 +3046,12 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @derivePriceLedgerOnSkuChangePrefix(retailPrice, statement, cur, item);
 
 @defineDocumentDetailNote(statement);
+
+@defineAddDetailDialogSkuStock(statement, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(statement, item);
+@defineAddDetailDialogTerminal(statement, item);
+
+@defineDocumentHeaderPriceChange(statement);
 
 @defineDocumentHeaderQuantity(statement);
 @defineDocumentHeaderItemQuantity(statement);
@@ -3077,6 +3069,8 @@ UNPCustomerStatement 'УНП покупателя' (statement) = UNPLegalEntity(
 
 inStatementSpecification 'Включить в накладную' (statement, specification) = DATA BOOLEAN (statement, specification)
     IN idGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+
+GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
 specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(seriesNumberObject(specification))
     IF inStatementSpecification(statement, specification), ', ' BY statement IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -3101,10 +3095,6 @@ descriptionStatement 'Название документа' (statement) =
     (seriesNumberObject(statement), dateStatement(statement), nameCustomerStatement(statement));
 
 descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
-
-@defineAddDetailDialogSkuStock(statement, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(statement, item);
-@defineAddDetailDialogTerminal(statement, item);
 
 @implementSkuLedger(statement, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityStatementDetail(ledger);
@@ -3180,13 +3170,16 @@ CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, num
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger, listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem(shipment);
+@defineDocument(shipment);
+@defineDocumentDepartmentStore(shipment);
+@defineDocumentPosted(shipment);
 
 @defineDocumentHeaderSupplierContractDepartmentStore(shipment);
-@defineDocumentHeaderPriceChange(shipment);
 
-@defineDocumentDetailItemExtra(shipment);
 @defineDocumentDetailNumbered(shipment);
+
+@defineDocumentDetailItem(shipment);
+@defineDocumentDetailItemExtra(shipment);
 
 @defineDocumentDetailQuantity(shipment);
 
@@ -3199,6 +3192,10 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentDetailBasePricePrefix(shipment, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(shipment, cur, item);
 
+@defineAddDetailDialogSku(shipment, item, dialogSku);
+@defineAddDetailDialogBarcode(shipment, item);
+@defineAddDetailDialogTerminal(shipment, item);
+
 @defineDocumentHeaderQuantity(shipment);
 @defineDocumentHeaderItemQuantity(shipment);
 
@@ -3208,6 +3205,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentHeaderInvoiceSum(shipment);
 
 @defineDocumentHeaderListRegister(shipment);
+@defineDocumentHeaderPriceChange(shipment);
 
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 
@@ -3239,10 +3237,6 @@ descriptionShipment 'Название документа' (shipment) =
     seriesNumberObject(shipment), dateShipment(shipment), nameSupplierShipment(shipment));
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
-
-@defineAddDetailDialogSku(shipment, item, dialogSku);
-@defineAddDetailDialogBarcode(shipment, item);
-@defineAddDetailDialogTerminal(shipment, item);
 
 @implementSkuLedger(shipment, item, departmentStore);
 @implementBatch(shipment, item);
@@ -3474,7 +3468,11 @@ CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, num
 CLASS writeOffDetail 'Строка списания' : outAutoSkuLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem (writeOff);
+@defineDocument(writeOff);
+@defineDocumentDepartmentStore(writeOff);
+@defineDocumentPosted(writeOff);
+
+@defineDocumentDetailItem(writeOff);
 
 @defineDocumentDetailQuantity(writeOff);
 
@@ -3487,6 +3485,11 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 @derivePriceOnSkuChange(writeOff, item, departmentStore);
 
 @defineDocumentDetailSum(writeOff);
+
+@defineAddDetailDialogSkuStock(writeOff, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(writeOff, item);
+@defineAddDetailDialogTerminal(writeOff, item);
+
 @defineDocumentHeaderQuantity(writeOff);
 
 @defineDocumentHeaderSum(writeOff);
@@ -3504,10 +3507,6 @@ descriptionWriteOff 'Название документа' (writeOff) =
 
 descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
-@defineAddDetailDialogSkuStock(writeOff, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(writeOff, item);
-@defineAddDetailDialogTerminal(writeOff, item);
-
 @implementSkuLedger(writeOff, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
@@ -3523,7 +3522,11 @@ CLASS innerFlow 'Расход в отдел' : outAccountDocumentLedger, history
 CLASS innerFlowDetail 'Строка расхода в отдел' : outAutoSkuLedger, consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem (innerFlow);
+@defineDocument(innerFlow);
+@defineDocumentDepartmentStore(innerFlow);
+@defineDocumentPosted(innerFlow);
+
+@defineDocumentDetailItem(innerFlow);
 
 @defineDocumentDetailQuantity(innerFlow);
 
@@ -3531,6 +3534,10 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @deriveBasePriceLedgerOnSkuChange(innerFlow, item);
 
 @defineDocumentDetailBaseSum(innerFlow);
+
+@defineAddDetailDialogSkuStock(innerFlow, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(innerFlow, item);
+@defineAddDetailDialogTerminal(innerFlow, item);
 
 @defineDocumentHeaderQuantity(innerFlow);
 @defineDocumentHeaderItemQuantity(innerFlow);
@@ -3546,10 +3553,6 @@ descriptionInnerFlow 'Название документа' (innerFlow) =
     seriesNumberObject(innerFlow), dateInnerFlow(innerFlow), nameRecipientDepartmentInnerFlow(innerFlow));
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
-
-@defineAddDetailDialogSkuStock(innerFlow, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(innerFlow, item);
-@defineAddDetailDialogTerminal(innerFlow, item);
 
 @implementSkuLedger(innerFlow, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
@@ -3609,11 +3612,11 @@ CLASS innerArrival 'Приход в отдел' : incAccountDocumentLedger, hist
 CLASS innerArrivalDetail 'Строка прихода в отдел' : inTransferSkuLedger, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
+@defineDocument(innerArrival);
+@defineDocumentDepartmentStore(innerArrival);
+@defineDocumentPosted(innerArrival);
 
-@defineDocumentBasePostedDepartmentStoreItem(innerArrival);
-
-@defineDocumentHeaderPriceChange(innerArrival);
-@defineDocumentHeaderListRegister(innerArrival);
+@defineDocumentDetailItem(innerArrival);
 
 @defineDocumentDetailQuantity(innerArrival);
 @defineDocumentDetailBasePrice(innerArrival);
@@ -3622,11 +3625,18 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineDocumentDetailBasePricePrefix(innerArrival, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(innerArrival, cur, item);
 
+@defineAddDetailDialogSku(innerArrival, item, dialogSku);
+@defineAddDetailDialogBarcode(innerArrival, item);
+@defineAddDetailDialogTerminal(innerArrival, item);
+
 @defineDocumentHeaderQuantity(innerArrival);
 @defineDocumentHeaderItemQuantity(innerArrival);
 
 @defineDocumentHeaderBaseSum(innerArrival);
 @defineDocumentHeaderItemRetailSum(innerArrival);
+
+@defineDocumentHeaderPriceChange(innerArrival);
+@defineDocumentHeaderListRegister(innerArrival);
 
 innerFlowInnerArrival (innerArrival) = DATA innerFlowPosted (innerArrival);
 innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
@@ -3704,10 +3714,6 @@ descriptionInnerArrival 'Название документа' (innerArrival) =
 
 descriptionInnerArrivalDetail 'Название документа' (innerArrivalDetail) = descriptionInnerArrival(innerArrivalInnerArrivalDetail(innerArrivalDetail));
 
-@defineAddDetailDialogSku(innerArrival, item, dialogSku);
-@defineAddDetailDialogBarcode(innerArrival, item);
-@defineAddDetailDialogTerminal(innerArrival, item);
-
 // для расчета себестоимости
 
 quantityInnerFlowBatch (innerFlow, batch) = GROUP SUM costSkuLedgerBatch (innerFlowDetail, batch)
@@ -3778,11 +3784,13 @@ CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentL
 CLASS returnSupplierDetail 'Строка возврата поставщику' : outUserSkuLedger, consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem(returnSupplier);
+@defineDocument(returnSupplier);
+@defineDocumentDepartmentStore(returnSupplier);
+@defineDocumentPosted(returnSupplier);
 
 @defineDocumentHeaderSupplierContractDepartmentStore(returnSupplier);
-@defineDocumentHeaderPriceChange(returnSupplier);
 
+@defineDocumentDetailItem(returnSupplier);
 @defineDocumentDetailItemExtra(returnSupplier);
 
 @defineDocumentDetailQuantity(returnSupplier);
@@ -3796,12 +3804,18 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 @defineDocumentDetailBasePricePrefix(returnSupplier, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(returnSupplier, cur, item);
 
+@defineAddDetailDialogSkuStockSupplier(returnSupplier, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(returnSupplier, item);
+@defineAddDetailDialogTerminal(returnSupplier, item);
+
 @defineDocumentHeaderQuantity(returnSupplier);
 
 @defineDocumentHeaderBaseSum(returnSupplier);
 @defineDocumentHeaderItemRetailSum(returnSupplier);
 
 @defineDocumentHeaderInvoiceSum(returnSupplier);
+
+@defineDocumentHeaderPriceChange(returnSupplier);
 
 // количество/цены по строкам
 
@@ -3868,10 +3882,6 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
     seriesNumberObject(returnSupplier), dateReturnSupplier(returnSupplier), nameSupplierReturnSupplier(returnSupplier));
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
-
-@defineAddDetailDialogSkuStockSupplier(returnSupplier, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(returnSupplier, item);
-@defineAddDetailDialogTerminal(returnSupplier, item);
 
 @implementSkuLedger(returnSupplier, item, departmentStore);
 quantityOutUserSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
@@ -4193,10 +4203,14 @@ CLASS userPriceChange 'Переоценка товаров' : priceChangeDocumen
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem(userPriceChange);
+@defineDocument(userPriceChange);
+@defineDocumentDepartmentStore(userPriceChange);
+@defineDocumentPosted(userPriceChange);
 
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
+
+@defineDocumentDetailItem(userPriceChange);
 
 @defineDocumentDetailQuantity(userPriceChange);
 @defineDocumentDetailBasePrice(userPriceChange);
@@ -4240,8 +4254,11 @@ CLASS disparity 'Пересортица' : historyObject, numeratedDocument, pri
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы': outAutoSkuLedger;
 
-@defineDocumentBasePostedDepartmentStoreItem(disparity);
-@defineDocumentHeaderPriceChange(disparity);
+@defineDocument(disparity);
+@defineDocumentDepartmentStore(disparity);
+@defineDocumentPosted(disparity);
+
+@defineDocumentDetailItem(disparity);
 
 @defineDocumentDetailQuantity(disparity);
 
@@ -4250,16 +4267,18 @@ CLASS disparityDetail 'Строка пересортицы': outAutoSkuLedger;
 
 @defineDocumentDetailBaseSum(disparity);
 
+@defineAddDetailDialogSkuStock(disparity, item, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(disparity, item);
+@defineAddDetailDialogTerminal(disparity, item);
+
 @defineDocumentHeaderQuantity(disparity);
 @defineDocumentHeaderBaseSum(disparity);
+
+@defineDocumentHeaderPriceChange(disparity);
 
 descriptionDisparityDetail 'Название документа' (disparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
-
-@defineAddDetailDialogSkuStock(disparity, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(disparity, item);
-@defineAddDetailDialogTerminal(disparity, item);
 
 @implementSkuLedger(disparity, item, departmentStore);
 quantityOutAutoSkuLedger (ledger) += quantityDisparityDetail(ledger);
@@ -4401,13 +4420,16 @@ CLASS naturalLoss 'Ведомость естественной убыли' : his
 CLASS naturalLossDetail 'Строка ведомости естественной убыли': externalObject;
 CLASS naturalLossPosted 'Закрытая ведомость естественной убыли' : naturalLoss, postedObject;
 
-@defineDocumentBasePostedDepartmentStoreItem(naturalLoss);
+@defineDocument(naturalLoss);
+@defineDocumentDepartmentStore(naturalLoss);
+@defineDocumentPosted(naturalLoss);
+
+@defineDocumentDetailItem(naturalLoss);
+
 @defineDocumentDetailQuantity(naturalLoss);
 @defineDocumentDetailBasePrice(naturalLoss);
 
-//@defineDocumentDetailWareSum(naturalLoss);
-//@defineDocumentDetailInSum(naturalLoss);
-//@defineDocumentDetailOutSum(naturalLoss);
+@defineDocumentHeaderQuantity(naturalLoss);
 
 dateFromNaturalLoss 'с' = DATA DATE (naturalLoss) IN documentPrmGroup;
 dateToNaturalLoss 'по' = DATA DATE (naturalLoss) IN documentPrmGroup;
@@ -4454,6 +4476,8 @@ supplierSumLossNaturalLossDetail 'Сумма поставщика, руб.' (nat
 supplierSumNaturalLossDetail 'Сумма поставщика, руб.' (naturalLossDetail)  = round0(supplierPriceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail));
 retailSumNaturalLossDetail 'Розничная сумма, руб.' (naturalLossDetail) = round0(retailPriceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail));
 
+@defineDocumentHeaderRetailSum(naturalLoss);
+
 invoiceSumNaturalLossDetailNaturalLoss 'Сумма поставщика' (naturalLoss) =
     GROUP SUM supplierSumNaturalLossDetail(naturalLossDetail) BY naturalLossNaturalLossDetail(naturalLossDetail) IN documentSumGroup PERSISTENT;
 
@@ -4486,10 +4510,6 @@ toFillNaturalLossDetail 'Заполнить ведомость естестве�
         };
     };
 } IN documentPrmGroup CONFIRM;
-
-//@defineDocumentHeaderInvoiceSum(naturalLoss);
-@defineDocumentHeaderRetailSum(naturalLoss);
-@defineDocumentHeaderQuantity(naturalLoss);
 
 FORM naturalLossPrint 'Ведомость естественной убыли' PRINT
     OBJECTS s=naturalLoss FIXED PANEL

@@ -205,7 +205,7 @@ META defineDocumentDescription (object, caption)
     description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
 END
 
-META defineDocumentBase (object)
+META defineDocument (object)
     @defineDocumentTables(object);
 
     @defineDocumentRelation(object);
@@ -215,12 +215,6 @@ META defineDocumentBase (object)
     @defineDocumentHeaderNote(object);
 
     @defineDocumentDetailActions(object);
-END
-
-META defineDocumentBasePosted (object)
-    @defineDocumentBase(object);
-
-    @defineDocumentPosted(object);
 END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //

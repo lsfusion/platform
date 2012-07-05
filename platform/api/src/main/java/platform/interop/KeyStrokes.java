@@ -61,11 +61,11 @@ public class KeyStrokes {
     }
 
     public static KeyStroke getCancelKeyStroke() {
-        return getEscape(0);
+        return getEscape(InputEvent.SHIFT_DOWN_MASK);
     }
 
     public static KeyStroke getCloseKeyStroke() {
-        return getEscape(InputEvent.SHIFT_DOWN_MASK);
+        return getEscape(0);
     }
 
     public static KeyStroke getEditKeyStroke() {

@@ -4,7 +4,9 @@ REQUIRE Document, Stock, Barcode, StorePrice, Supplier;
 
 META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
-    @defineDocumentBasePosted(object);
+    @defineDocument(object);
+
+    @defineDocumentPosted(object);
 
     @defineDocumentStock(object, stock, stockCaption);
 
