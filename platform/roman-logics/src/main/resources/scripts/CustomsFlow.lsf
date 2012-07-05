@@ -1,4 +1,3 @@
-//From CustomStote to WareHouse
 MODULE CStoWH;
 
 REQUIRE System,
@@ -18,19 +17,34 @@ CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignme
 CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
-declarationDetailCStoWHDetail 'Партия (ИД)' = DATA declarationDetail (CStoWHDetail);
-declarationCStoWHDetail 'Декларация (ИД)' (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
-batchOutUserSkuLedger (outUserSkuLedger) += declarationDetailCStoWHDetail (outUserSkuLedger);
+@defineDocument(CStoWH);
 
-skuCStoWHDetail 'Товар (ИД)' (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
+@defineDocumentStock(CStoWH, customStore, 'СВХ');
+@defineDocumentStock(CStoWH, warehouse, 'Оптовый склад');
+
+@defineDocumentPosted(CStoWH);
+@defineDocumentDescription (CStoWH, 'Расход с СВХ');
+
+@defineDocumentDetailNumbered(CStoWH);
+
+declarationDetailCStoWHDetail = DATA declarationDetail (CStoWHDetail);
+skuCStoWHDetail (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
+declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
+
+@defineDocumentDetailProps (CStoWH);
+
+@defineDocumentQuantity(CStoWH);
+
+@defineAddDetailDialogSkuStock(CStoWH, sku, customStore, dialogSku);
+@defineAddDetailDialogBarcode(CStoWH, sku);
 
 freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
 nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
 
-@defineRBCorrespondingDocument(CStoWH, customStore, 'СВХ', sku, 'Расход с СВХ', warehouse, 'Оптовый склад');
-
+@implementSkuLedger (CStoWH, sku, customStore);
 quantityOutUserSkuLedger (outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
+batchOutUserSkuLedger (outUserSkuLedger) += declarationDetailCStoWHDetail (outUserSkuLedger);
 
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
@@ -39,11 +53,12 @@ sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
 
 priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
-totalSumCStoWHDetail 'Общая стоимость' (CStoWH) =
+sumCStoWHDetailCStoWH 'Общая стоимость' (CStoWH) =
     GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-quantityCStoWHBatch (customFlow, batch) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
-                                                      BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
+quantityCStoWHBatch (CStoWH, batch) =
+    GROUP SUM quantityCStoWHDetail(CStoWHDetail)
+    BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
 
 quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWH) =
     GROUP SUM quantityCStoWHDetail (CStoWHDetail)
@@ -72,7 +87,7 @@ isAvailableDeclarationCStoWH 'Декларация доступна для ра�
     currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH)>=dateTimeRegistrationDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
-    companyWarehouse(corrWarehouseCStoWH(CStoWH))==importerDeclaration(declaration);
+    companyWarehouse(warehouseCStoWH(CStoWH))==importerDeclaration(declaration);
 
 isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
@@ -179,8 +194,8 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
-    PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameCorrWarehouseCStoWH,
-                   quantityCStoWHDetailCStoWH, totalSumCStoWHDetail,
+    PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
+                   quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH,
                    inputDeclarationDetailCStoWH, deleteCStoWHDetailCStoWH, declarationsCStoWH,
                    innerInvoicesCStoWH, shortNameCurrencyCStoWH
 
@@ -206,7 +221,7 @@ DESIGN CStoWH FROM DEFAULT {
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
     PROPERTIES (c) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
-                            nameCorrWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, totalSumCStoWHDetail
+                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
     PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -281,7 +296,7 @@ DESIGN CStoWHs FROM DEFAULT {
 @implementConsignmentHeader(CStoWH, customStore);
 
 senderConsignment (consignment) += customStoreCStoWH(consignment);
-recipientConsignment (consignment) += companyWarehouse(corrWarehouseCStoWH(consignment));
+recipientConsignment (consignment) += companyWarehouse(warehouseCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

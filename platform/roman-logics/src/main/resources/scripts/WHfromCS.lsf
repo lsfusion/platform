@@ -20,35 +20,32 @@ CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject, number
 CLASS WHfromCSIPosted 'Закрытый приход с СВХ' : WHfromCSI, postedObject;
 CLASS WHfromCSIDetail 'Строка прихода на склад' : inTransferSkuLedger;
 
-CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject, numberedObject;
-CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
-CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
+@defineDocumentTables(WHfromCSI);
 
-CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
-CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
-CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inTransferSkuLedger;
+@defineDocumentAggregation(CStoWH, WHfromCSI, isPostedCStoWH);
 
-//документ прихода на склад с СВХ
-skuWHfromCSIDetail 'Товар (ИД)' (WHfromCSIDetail) = DATA sku(WHfromCSIDetail) IN idGroup;
-@defineRBCorrespondingDocument(WHfromCSI, warehouse, 'Оптовый склад', sku, 'Расход с СВХ', customStore, 'СВХ');
-//@defineUniqueDocumentComingByExpense(WHfromCSI, CStoWH);
+@defineDocumentAggregationStock(CStoWH, WHfromCSI, customStore, 'СВХ');
+@defineDocumentAggregationStock(CStoWH, WHfromCSI, warehouse, 'Оптовый склад');
 
-@defineAggregation(CStoWH, WHfromCSI, isPostedCStoWH);
-@defineAggregation(CStoWHDetail, WHfromCSIDetail, isPostedCStoWHDetail);
+@defineDocumentAggregationPosted(CStoWH, WHfromCSI);
+
+@defineDocumentAggregationDetailSku(CStoWH, WHfromCSI, sku);
+
+@defineDocumentAggregationDetailQuantity(CStoWH, WHfromCSI);
+
+@defineDocumentHeaderQuantity(WHfromCSI);
+
+@defineDocumentDetailIndex(WHfromCSI);
+@defineDocumentDescription(WHfromCSI, 'Приход с СВХ');
+
+@defineDocumentDetailProps(WHfromCSI);
 
 initValueNumberObject (WHfromCSI) += [PREV(numberObject(WHfromCSI))](CStoWHWHfromCSI(WHfromCSI));
 initValueSeriesObject (WHfromCSI) += [PREV(seriesObject(WHfromCSI))](CStoWHWHfromCSI(WHfromCSI));
 
 initWhenNumberedObject(WHfromCSI) += CHANGED(CStoWHWHfromCSI(WHfromCSI));
 
-// заполнение атрибутов бухгалтерского прихода
-warehouseWHfromCSI  (WHfromCSI) <- corrWarehouseCStoWH(CStoWHWHfromCSI(WHfromCSI)) WHEN ASSIGNED(CStoWHWHfromCSI(WHfromCSI));
-corrCustomStoreWHfromCSI (WHfromCSI) <- customStoreCStoWH(CStoWHWHfromCSI(WHfromCSI)) WHEN ASSIGNED(CStoWHWHfromCSI(WHfromCSI));
-
-WHfromCSIWHfromCSIDetail (WHfromCSIDetail) <- uniqueWHfromCSI(CStoWHCStoWHDetail(CStoWHDetailWHfromCSIDetail (WHfromCSIDetail))) WHEN ASSIGNED(CStoWHDetailWHfromCSIDetail (WHfromCSIDetail));
-skuWHfromCSIDetail (WHfromCSIDetail) <- skuCStoWHDetail (CStoWHDetailWHfromCSIDetail (WHfromCSIDetail)) WHEN ASSIGNED(CStoWHDetailWHfromCSIDetail (WHfromCSIDetail));
-quantityWHfromCSIDetail (WHfromCSIDetail) <- quantityCStoWHDetail (CStoWHDetailWHfromCSIDetail (WHfromCSIDetail)) WHEN ASSIGNED(CStoWHDetailWHfromCSIDetail (WHfromCSIDetail));
-
+@implementSkuLedger(WHfromCSI, sku, warehouse);
 quantityInTransferSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
 
 FORM WHfromCSI 'Приход на оптовый склад'
@@ -56,14 +53,14 @@ FORM WHfromCSI 'Приход на оптовый склад'
     OBJECTS w = WHfromCSI FIXED PANEL, d = WHfromCSIDetail
 
     PROPERTIES(w)          initValueNumberObject, initValueSeriesObject, dateWHfromCSI, timeWHfromCSI,
-                           nameWarehouseWHfromCSI, nameCorrCustomStoreWHfromCSI
+                           nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI
 
     PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
                            sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail
 
     PROPERTIES(d) quantityWHfromCSIDetail
 
-    FILTERS inWHfromCSIWHfromCSIDetail(w, d)
+    FILTERS WHfromCSIWHfromCSIDetail(d) == w
 
     EDIT WHfromCSI OBJECT w
 ;
@@ -92,7 +89,7 @@ DESIGN WHfromCSI FROM DEFAULT {
 FORM WHfromCSIs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCSI
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
-                            nameWarehouseWHfromCSI, nameCorrCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
+                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
 
     PROPERTIES (w) EDITFORM
 
@@ -101,8 +98,16 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
                            sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
                            quantityWHfromCSIDetail
 
-    FILTERS inWHfromCSIWHfromCSIDetail(w, d)
+    FILTERS WHfromCSIWHfromCSIDetail(d) == w
 ;
+
+CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject, numberedObject;
+CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
+CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
+
+CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
+CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
+CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inTransferSkuLedger;
 
 //приемка товара
 

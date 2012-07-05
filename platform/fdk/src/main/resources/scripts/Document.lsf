@@ -88,27 +88,6 @@ META defineDocumentTime (object)
     @defineDocumentDetailTime(object);
 END
 
-// Отдел магазина
-
-META defineDocumentHeaderStock (object, stockClass, stockCaption)
-    stockClass###object = DATA stockClass(object) AUTOSET;
-    name###stockClass###object stockCaption (object) = name(stockClass###object(object)) IN documentHeaderGroup
-            MINCHARWIDTH 20 PREFCHARWIDTH 40;;
-END
-
-META defineDocumentDetailStockCustom (object, detail, stockClass, stockCaption)
-    stockClass###detail (idetail) = stockClass###object(object###detail(idetail));
-    name###stockClass###detail stockCaption (idetail) = name(stockClass###detail(idetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
-END
-META defineDocumentDetailStock (object, stockClass, stockCaption)
-    @defineDocumentDetailStockCustom (object, object##Detail, stockClass, stockCaption);
-END
-
-META defineDocumentStock (object, stockClass, stockCaption)
-    @defineDocumentHeaderStock(object, stockClass, stockCaption);
-    @defineDocumentDetailStock(object, stockClass, stockCaption);
-END
-
 // Примечание
 
 META defineDocumentHeaderNote (object)
@@ -171,13 +150,6 @@ META defineDocumentDetailNumbered (object)
     seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
 END
 
-META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
-    @defineAggregation(primObject, aggrObject, aggrProperty);
-    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
-
-    aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
-END
-
 META defineDocumentDetailQuantityPrefix (object, prefix, caption)
     prefix###quantity###object##Detail 'Кол-во'###caption = DATA NUMERIC[14,3] (object##Detail);
 END
@@ -196,6 +168,11 @@ META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
 END
 META defineDocumentHeaderQuantity (object)
     @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
+END
+
+META defineDocumentQuantity(object)
+    @defineDocumentDetailQuantity(object);
+    @defineDocumentHeaderQuantity(object);
 END
 
 META defineDocumentDescription (object, caption)
@@ -219,31 +196,61 @@ END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
-META defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, suffix)
+META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
+    @defineAggregation(primObject, aggrObject, aggrProperty);
+    @defineDocumentAggregationHeader(primObject, aggrObject);
+
+    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
+    @defineDocumentAggregationDetail(primObject, aggrObject);
+
+    aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
+
+    @defineDocumentHeaderCount(aggrObject);
+END
+
+META defineDocumentAggregationHeader (primObject, aggrObject)
+    date###aggrObject 'Дата' (object) = date###primObject(primObject###aggrObject(object));
+    time###aggrObject 'Время' (object) = time###primObject(primObject###aggrObject(object));
+    dateTime###aggrObject 'Дата/время' (object) = dateTime###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentAggregationDetail (primObject, aggrObject)
+    date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    time###aggrObject##Detail 'Время' (detail) = time###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
+// Posted
+META defineDocumentAggregationHeaderPosted (primObject, aggrObject)
+    isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentAggregationDetailPosted (primObject, aggrObject)
+    isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
+META defineDocumentAggregationPosted (primObject, aggrObject)
+    @defineDocumentAggregationHeaderPosted(primObject, aggrObject);
+    @defineDocumentAggregationDetailPosted(primObject, aggrObject);
+END
+
+// Number
+META defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, suffix)
     number###aggrObject 'Номер документа' (object) = number###suffix(primObject###aggrObject(object));
     series###aggrObject 'Серия документа' (object) = series###suffix(primObject###aggrObject(object));
     seriesNumber###aggrObject 'Серия/номер документ' (object) = seriesNumber###suffix(primObject###aggrObject(object));
 END
 
-META defineDocumentHeaderAggregationNumber (primObject, aggrObject)
-    @defineDocumentHeaderAggregationNumberCustom (primObject, aggrObject, Object);
+META defineDocumentAggregationHeaderNumber (primObject, aggrObject)
+    @defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, Object);
 END
 
-META defineDocumentHeaderAggregationDescription (primObject, aggrObject)
+// Description
+META defineDocumentAggregationHeaderDescription (primObject, aggrObject)
     description###aggrObject 'Название документа' (object) = description###primObject(primObject###aggrObject(object));
 END
 
-META defineDocumentHeaderAggregation (primObject, aggrObject)
-    date###aggrObject 'Дата' (object) = date###primObject(primObject###aggrObject(object));
-    time###aggrObject 'Время' (object) = time###primObject(primObject###aggrObject(object));
-    dateTime###aggrObject 'Дата/время' (object) = dateTime###primObject(primObject###aggrObject(object));
-
-    isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
-END
-
-META defineDocumentDetailAggregationHeader (primObject, aggrObject)
-    isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-
-    date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+// Quantity
+META defineDocumentAggregationDetailQuantity (primObject, aggrObject)
+    quantity###aggrObject##Detail 'Кол-во' (detail) = quantity###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 END

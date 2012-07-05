@@ -310,7 +310,7 @@ END
 
 // ------------------------- Агрегации ---------------------------------- //
 
-META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP, prefixA, caption)
+META defineDocumentAggregationDetailPricePrefix (primObject, aggrObject, prefixP, prefixA, caption)
     prefixA###importerPrice###aggrObject##Detail 'Цена изготовителя'###caption (detail) = prefixP###importerPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     prefixA###supplierPrice###aggrObject##Detail 'Цена поставщика'###caption (detail) = prefixP###supplierPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 
@@ -326,8 +326,8 @@ META defineDocumentDetailAggregationPricePrefix (primObject, aggrObject, prefixP
 
     prefixA###retailPrice###aggrObject##Detail 'Розничная цена'###caption (detail) = prefixP###retailPrice###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 END
-META defineDocumentDetailAggregationPrice (primObject, aggrObject)
-    @defineDocumentDetailAggregationPricePrefix(primObject, aggrObject, , , );
+META defineDocumentAggregationDetailPrice (primObject, aggrObject)
+    @defineDocumentAggregationDetailPricePrefix(primObject, aggrObject, , , );
 END
 
 //---------------------------- Ценовые регистры ----------------------------------------//

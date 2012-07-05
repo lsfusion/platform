@@ -3391,19 +3391,17 @@ CLASS wastage 'Списание отходов' : outAccountDocumentLedger, hist
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа': outAutoSkuLedger;
 
-@defineDocumentAggregation (shipment, wastage, needToWasteShipment);
+@defineDocumentAggregation(shipment, wastage, needToWasteShipment);
+@defineDocumentAggregationStock(shipment, wastage, departmentStore, 'Отдел магазина');
+@defineDocumentAggregationPosted(shipment, wastage);
 
 @defineDocumentTables(wastage);
 @defineDocumentDetailIndex(wastage);
 @defineDocumentHeaderCount(wastage);
 
-@defineDocumentHeaderAggregation(shipment, wastage);
-@defineDocumentHeaderAggregationStock(shipment, wastage, departmentStore);
-@defineDocumentHeaderAggregationNumber(shipment, wastage);
+@defineDocumentAggregationHeaderNumber(shipment, wastage);
 
-@defineDocumentDetailAggregationHeader(shipment, wastage);
-@defineDocumentDetailAggregationStock(shipment, wastage, departmentStore);
-@defineDocumentDetailAggregationSku(shipment, wastage, item);
+@defineDocumentAggregationDetailSku(shipment, wastage, item);
 
 quantityItemWastageDetail 'Количество' (wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
 quantityItemWastageDetailWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
@@ -3413,7 +3411,7 @@ percentRateWasteWastageDetail 'Процент списания' (wastageDetail) 
 quantityWastageDetail 'Количество для списания '(wastageDetail) = [round3(X*Y/100)](
     quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
 
-@defineDocumentDetailAggregationPrice(shipment, wastage);
+@defineDocumentAggregationDetailPrice(shipment, wastage);
 
 @defineDocumentDetailBaseSum(wastage);
 
@@ -4181,8 +4179,9 @@ CLASS saleDiscountDocument 'Скидка по продаже через касс
 TABLE saleDiscountDocument (saleDiscountDocument);
 
 @defineAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
-@defineDocumentHeaderAggregation(zReport, saleDiscountDocument);
-@defineDocumentHeaderAggregationStock(zReport, saleDiscountDocument, departmentStore);
+@defineDocumentAggregationHeader(zReport, saleDiscountDocument);
+@defineDocumentAggregationHeaderStock(zReport, saleDiscountDocument, departmentStore, 'Отдел магазина');
+@defineDocumentAggregationHeaderPosted(zReport, saleDiscountDocument);
 
 numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
 
@@ -4319,12 +4318,13 @@ needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetai
 
 @defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
 
-@defineDocumentDetailAggregationHeader(disparity, inputDisparity);
-@defineDocumentDetailAggregationStock(disparity, inputDisparity, departmentStore);
-@defineDocumentDetailAggregationSkuPrefix(disparity, inputDisparity, item, input);
+@defineDocumentAggregationDetail(disparity, inputDisparity);
+@defineDocumentAggregationDetailPosted(disparity, inputDisparity);
+@defineDocumentAggregationDetailStock(disparity, inputDisparity, departmentStore, 'Отдел магазина');
+@defineDocumentAggregationDetailSkuPrefix(disparity, inputDisparity, item, input);
 quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
 
-@defineDocumentDetailAggregationPricePrefix(disparity, inputDisparity, input, , );
+@defineDocumentAggregationDetailPricePrefix(disparity, inputDisparity, input, , );
 @defineDocumentDetailBaseSum(inputDisparity);
 
 expiryDateInputDisparityDetail 'Годен до' (inputDisparityDetail) = DATA DATE(inputDisparityDetail) IN baseGroup;
@@ -4363,17 +4363,16 @@ needToPriceChangeInputDisparityDetail (disparityDetail) = inputCurRetailPriceDis
 needToPriceChangeInputDisparity (disparity) = GROUP SUM 1 IF needToPriceChangeInputDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
 
 @defineDocumentAggregation(disparity, priceChangeInputDisparity, needToPriceChangeInputDisparity);
-@defineDocumentHeaderAggregation(disparity, priceChangeInputDisparity);
-@defineDocumentHeaderAggregationStock(disparity, priceChangeInputDisparity, departmentStore);
-@defineDocumentHeaderAggregationDescription(disparity, priceChangeInputDisparity);
+@defineDocumentAggregationStock(disparity, priceChangeInputDisparity, departmentStore, 'Отдел магазина');
+@defineDocumentAggregationPosted(disparity, priceChangeInputDisparity);
 
-@defineDocumentDetailAggregationHeader(disparity, priceChangeInputDisparity);
-@defineDocumentDetailAggregationStock(disparity, priceChangeInputDisparity, departmentStore);
-@defineDocumentDetailAggregationSkuPrefix(disparity, priceChangeInputDisparity, item, input);
+@defineDocumentAggregationHeaderDescription(disparity, priceChangeInputDisparity);
+
+@defineDocumentAggregationDetailSkuPrefix(disparity, priceChangeInputDisparity, item, input);
 quantityPriceChangeInputDisparityDetail 'Количество' (priceChangeInputDisparityDetail) = inputBalanceBeforeDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
-@defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, input, , );
-@defineDocumentDetailAggregationPricePrefix(disparity, priceChangeInputDisparity, inputCur, cur, ' (тек.)');
+@defineDocumentAggregationDetailPricePrefix(disparity, priceChangeInputDisparity, input, , );
+@defineDocumentAggregationDetailPricePrefix(disparity, priceChangeInputDisparity, inputCur, cur, ' (тек.)');
 //curRetailPricePriceChangeInputDisparityDetail 'Розничная цена (тек.)' (priceChangeInputDisparityDetail) = inputCurRetailPriceDisparityDetail(disparityDetailPriceChangeInputDisparityDetail(priceChangeInputDisparityDetail));
 
 numberDisposalPriceChangeInputDisparity '№ распоряжения на переоценку' (priceChangeInputDisparity) = numberDisposalDisparity(disparityPriceChangeInputDisparity(priceChangeInputDisparity));

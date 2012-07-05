@@ -379,24 +379,49 @@ END
 
 // ---------------------------------------------- Макросы для документов ------------------------------------------------- //
 
-// ---------------------------------------------- Агрегированные документы -------------------------------------------- //
-
-META defineDocumentHeaderAggregationStock (primObject, aggrObject, stockProp)
-    stockProp###aggrObject (object) = stockProp###primObject(primObject###aggrObject(object));
-    name###stockProp###aggrObject 'Склад' (object) = name(stockProp###aggrObject(object));
+META defineDocumentHeaderStock (object, stockClass, stockCaption)
+    stockClass###object = DATA stockClass(object) AUTOSET;
+    name###stockClass###object stockCaption (object) = name(stockClass###object(object)) IN documentHeaderGroup
+            MINCHARWIDTH 20 PREFCHARWIDTH 40;;
 END
 
-META defineDocumentDetailAggregationStock (primObject, aggrObject, stockProp)
+META defineDocumentDetailStockCustom (object, detail, stockClass, stockCaption)
+    stockClass###detail (idetail) = stockClass###object(object###detail(idetail));
+    name###stockClass###detail stockCaption (idetail) = name(stockClass###detail(idetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+END
+META defineDocumentDetailStock (object, stockClass, stockCaption)
+    @defineDocumentDetailStockCustom (object, object##Detail, stockClass, stockCaption);
+END
+
+META defineDocumentStock (object, stockClass, stockCaption)
+    @defineDocumentHeaderStock(object, stockClass, stockCaption);
+    @defineDocumentDetailStock(object, stockClass, stockCaption);
+END
+
+// ---------------------------------------------- Агрегированные документы -------------------------------------------- //
+
+META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, stockCaption)
+    stockProp###aggrObject (object) = stockProp###primObject(primObject###aggrObject(object));
+    name###stockProp###aggrObject stockCaption (object) = name(stockProp###aggrObject(object));
+END
+
+META defineDocumentAggregationDetailStock (primObject, aggrObject, stockProp, stockCaption)
     stockProp###aggrObject##Detail (detail) = stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 END
 
-META defineDocumentDetailAggregationSkuPrefix (primObject, aggrObject, skuProp, prefix)
+META defineDocumentAggregationStock (primObject, aggrObject, stockProp, stockCaption)
+    @defineDocumentAggregationHeaderStock(primObject, aggrObject, stockProp, stockCaption);
+    @defineDocumentAggregationDetailStock(primObject, aggrObject, stockProp, stockCaption);
+END
+
+
+META defineDocumentAggregationDetailSkuPrefix (primObject, aggrObject, skuProp, prefix)
     skuProp###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail));
     idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(skuProp###aggrObject##Detail(detail));
 END
-META defineDocumentDetailAggregationSku (primObject, aggrObject, skuProp)
-    @defineDocumentDetailAggregationSkuPrefix(primObject, aggrObject, skuProp, );
+META defineDocumentAggregationDetailSku (primObject, aggrObject, skuProp)
+    @defineDocumentAggregationDetailSkuPrefix(primObject, aggrObject, skuProp, );
 END
 
 // ---------------------------------------------- Учетные суммы -------------------------------------------- //

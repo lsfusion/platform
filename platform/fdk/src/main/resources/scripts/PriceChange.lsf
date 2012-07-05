@@ -296,27 +296,24 @@ META defineDocumentPriceChange (object)
     needToPriceChange###object (object) = GROUP SUM 1 IF needToPriceChange###object##Detail(detail) BY object###object##Detail(detail);
 
     @defineDocumentAggregation(object, priceChange###object, needToPriceChange###object);
+    @defineDocumentAggregationStock(object, priceChange###object, departmentStore, 'Отдел магазина');
+    @defineDocumentAggregationPosted(object, priceChange###object);
 
-    @defineDocumentHeaderAggregation(object, priceChange###object);
-    @defineDocumentHeaderAggregationStock(object, priceChange###object, departmentStore);
-    @defineDocumentHeaderAggregationDescription(object, priceChange###object);
-
-    @defineDocumentDetailAggregationHeader(object, priceChange###object);
-    @defineDocumentDetailAggregationStock(object, priceChange###object, departmentStore);
+    @defineDocumentAggregationHeaderDescription(object, priceChange###object);
 
     numberDisposalPriceChange###object '№ распоряжения на переоценку' (object) = numberDisposal###object(object##PriceChange###object(object));
     priceChangeCommitteePriceChange###object 'Комиссия переоценки ИД' (object) = priceChangeCommittee###object(object##PriceChange###object(object));
 END
 
 META defineDocumentPriceChangeNumberCustom (object, suffix)
-    @defineDocumentHeaderAggregationNumberCustom(object, priceChange###object, suffix);
+    @defineDocumentAggregationHeaderNumberCustom(object, priceChange###object, suffix);
 END
 META defineDocumentPriceChangeNumber (object)
     @defineDocumentPriceChangeNumberCustom(object, Object);
 END
 
 META defineDocumentPriceChangeSkuPrefix (object, skuProp, prefix)
-    @defineDocumentDetailAggregationSkuPrefix(object, priceChange###object, skuProp, prefix);
+    @defineDocumentAggregationDetailSkuPrefix(object, priceChange###object, skuProp, prefix);
 END
 META defineDocumentPriceChangeSku (object, skuProp)
     @defineDocumentPriceChangeSkuPrefix(object, skuProp, );
@@ -327,7 +324,7 @@ META defineDocumentPriceChangeQuantity (object)
 END
 
 META defineDocumentPriceChangePricePrefix (object, prefixA, prefixP, caption)
-    @defineDocumentDetailAggregationPricePrefix(object, priceChange###object, prefixP, prefixA, caption);
+    @defineDocumentAggregationDetailPricePrefix(object, priceChange###object, prefixP, prefixA, caption);
 END
 META defineDocumentPriceChangePrice (object)
     @defineDocumentPriceChangePricePrefix (object, , , );
