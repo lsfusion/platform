@@ -192,9 +192,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 return false;
             isFullRunning.set(true);
 
+            try {
             isFull = calculateIsFull();
-
-            isFullRunning.set(null);
+            } finally {
+                isFullRunning.set(null);
+            }
         }
         return isFull;
     }

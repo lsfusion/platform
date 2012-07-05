@@ -42,7 +42,7 @@ public class AutoHintsAspect {
                 if(e.lowstat)
                     sessionModifier.addHintIncrement(e.property);
                 else
-                    sessionModifier.addNoUpdate(property);
+                    sessionModifier.addNoUpdate(e.property);
                 result = ((MethodSignature)thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
             }
             return result;

@@ -597,6 +597,7 @@ NAVIGATOR {
 
     ADD dictionariesForm 'Словари' AFTER daysOffForm;
     ADD storeArticle;
+    ADD documentArticle;
 }
 
 //////////////// DESIGN STATEMENT /////////////////
