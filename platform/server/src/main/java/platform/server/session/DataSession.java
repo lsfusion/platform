@@ -926,9 +926,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return sql.isInTransaction();
     }
 
-    public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
-    }
-
     public void cancel() throws SQLException {
         if(isInSessionEvent()) {
             inSessionEvent = false;

@@ -60,7 +60,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
         if (context.getSecurityPolicy().property.change.checkPermission(implement.property)) {
             Type changeType = getImplementType();
 
-            if (formInstance.entity.isActionOnChange(implement.property) || propertyValues.canBeChanged(modifier)) {
+            if (propertyValues.canBeChanged(modifier)) {
                 ObjectValue changeValue;
                 if (changeType instanceof DataClass) {
                     Object oldValue = null;

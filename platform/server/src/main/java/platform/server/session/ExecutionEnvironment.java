@@ -37,8 +37,6 @@ public abstract class ExecutionEnvironment {
     public abstract <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException;
 
     public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
-        fireChange(property, change);
-
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
             userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);

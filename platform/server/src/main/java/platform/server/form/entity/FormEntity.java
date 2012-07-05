@@ -967,12 +967,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return eventActions.get(eventObject);
     }
 
-    public boolean isActionOnChange(CalcProperty property) {
-        return false;
-    }
-    public <P extends PropertyInterface> void onChange(CalcProperty<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
-    }
-
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
         return deserialize(BL, new DataInputStream(new ByteArrayInputStream(formState)));
     }

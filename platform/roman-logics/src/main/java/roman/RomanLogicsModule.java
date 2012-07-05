@@ -7,6 +7,7 @@ import platform.interop.FormEventType;
 import platform.interop.PropertyEditType;
 import platform.interop.action.AudioClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.interop.form.ServerResponse;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.navigator.FormShowType;
@@ -16,6 +17,7 @@ import platform.server.daemons.ScannerDaemonTask;
 import platform.server.daemons.WeightDaemonTask;
 import platform.server.data.Time;
 import platform.server.data.Union;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.ObjectInstance;
@@ -46,8 +48,9 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -2425,6 +2428,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addCProp(NumericClass.get(14, 2), 9999999.0, list, sku), 1, 2,
                 2);
         quantityListArticleCompositeColorSize.property.setFixedCharWidth(2);
+        quantityListArticleCompositeColorSize.setEditAction(ServerResponse.CHANGE, new LAP(new ChangeQuantityListArticleCompositeColorSize()));
 
         itemArticleCompositeColorSize = addAGProp("itemArticleCompositeColorSize", "Item", true, articleCompositeItem, colorSupplierItem, sizeSupplierItem);
 
@@ -4243,19 +4247,33 @@ public class RomanLogicsModule extends LogicsModule {
 //            design.get(getPropertyDraw(cloneItem, objItem)).drawToToolbar = true;
             return design;
         }
+    }
+
+    private class ChangeQuantityListArticleCompositeColorSize extends CustomActionProperty {
+
+        private ChangeQuantityListArticleCompositeColorSize() {
+            super("CHANGE_" + quantityListArticleCompositeColorSize.property.getSID(), quantityListArticleCompositeColorSize.getInterfaceClasses());
+        }
+
+        protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            
+            List<DataObject> listKeys = BaseUtils.mapList(new ArrayList<ClassPropertyInterface>(interfaces), context.getKeys());
+            DataObject[] keys = listKeys.toArray(new DataObject[listKeys.size()]);
+            
+            ObjectValue value = context.requestUserData((DataClass) quantityListArticleCompositeColorSize.property.getValueClass(), quantityListArticleCompositeColorSize.read(context, keys));
+            
+            if(value instanceof DataObject) {
+                ((CalcProperty)itemArticleCompositeColorSize.property).setNotNull(
+                        BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, listKeys.subList(1, 4)),
+                        context.getEnv(), true, true);
+            }
+
+            quantityListArticleCompositeColorSize.change(value.getValue(), context, keys);
+        }
 
         @Override
-        public boolean isActionOnChange(CalcProperty property) {
-            return property.equals(quantityListArticleCompositeColorSize.property);
-        }
-        @Override
-        public <P extends PropertyInterface> void onChange(CalcProperty<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
-            if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
-                // смотрим изменения
-                ((CalcProperty)itemArticleCompositeColorSize.property).setJoinNotNull(
-                        BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.getMapExprs()),
-                        change.expr.getWhere().and(change.where), env, true);
-            }
+        public Type getSimpleRequestInputType() {
+            return (DataClass) quantityListArticleCompositeColorSize.property.getValueClass();
         }
     }
 
@@ -4535,20 +4553,6 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(nullArticleColor).design.setIconPath("delete.png");
 //            design.get(getPropertyDraw(cloneItem, objItem)).drawToToolbar = true;
             return design;
-        }
-
-        @Override
-        public boolean isActionOnChange(CalcProperty property) {
-            return property.equals(quantityListArticleCompositeColorSize.property);
-        }
-        @Override
-        public <P extends PropertyInterface> void onChange(CalcProperty<P> property, PropertyChange<P> change, ExecutionEnvironment env) throws SQLException {
-            if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
-                // смотрим изменения
-                Map mapKeys = BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.getMapExprs());
-                ((CalcProperty)itemArticleCompositeColorSize.property).setJoinNotNull(
-                        mapKeys, change.expr.getWhere().and(change.where), env, true);
-            }
         }
     }
 

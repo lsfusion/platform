@@ -1492,10 +1492,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
-        entity.onChange(property, change, this);
-    }
-
     private FormCloseType formResult = FormCloseType.NULL;
 
     public FormCloseType getFormResult() {
