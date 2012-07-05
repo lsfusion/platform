@@ -34,8 +34,6 @@ public abstract class ExecutionEnvironment {
 
     public abstract boolean isInTransaction();
 
-    public abstract <P extends PropertyInterface> void fireChange(CalcProperty<P> property, PropertyChange<P> change) throws SQLException;
-
     public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация

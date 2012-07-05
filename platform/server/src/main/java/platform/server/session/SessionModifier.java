@@ -203,4 +203,9 @@ public abstract class SessionModifier implements Modifier {
         }
         return result;
     }
+
+    public void clean(SQLSession sql) throws SQLException {
+        increment.clear(sql);
+        assert views.isEmpty();
+    }
 }

@@ -95,6 +95,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         
         private Transaction() {
             assert sessionEventChangedOld.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
+//            assert applyModifier.getHintProps().isEmpty(); // равно как и хинт'ов, не факт, потому как транзакция не сразу создается
 
             add = SessionTableUsage.saveData(DataSession.this.add);
             remove = SessionTableUsage.saveData(DataSession.this.remove);
@@ -108,7 +109,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
 
         private void rollback() throws SQLException {
-            dropTables(sql); // старые вернем
+            assert sessionEventChangedOld.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
+            assert applyModifier.getHintProps().isEmpty(); // равно как и хинт'ов
+
+            dropTables(sql); // старые вернем, таблицу удалятся (но если нужны будут, rollback откатит эти изменения)
 
             // assert что новые включают старые
             DataSession.this.add = SessionTableUsage.rollData(sql, DataSession.this.add, add);
@@ -673,7 +677,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
         savePropertyChanges(property.mapTable.table, Collections.singletonMap("value", (CalcProperty) property), property.mapTable.mapKeys, change);
         
-        modifier.clean();
+        modifier.clean(sql); // hint'ы и ссылки почистить
     }
 
     private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, CalcProperty> changeTable) throws SQLException {
@@ -934,6 +938,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(isInTransaction()) {
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
             apply.clear(sql);
+            dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
             rollbackTransaction();
             return;
         }

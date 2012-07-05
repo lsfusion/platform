@@ -99,7 +99,9 @@ public class OverrideSessionModifier extends SessionModifier {
                 eventHintIncrement(incrementProperty);
     }
 
-    public void clean() {
+    @Override
+    public void clean(SQLSession sql) throws SQLException {
+        super.clean(sql);
         override.unregisterView(this);
         modifier.unregisterView(this);
     }
