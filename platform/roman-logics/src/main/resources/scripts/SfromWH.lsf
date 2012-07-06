@@ -21,7 +21,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS SfromWH 'Приход со склада на магазин' : historyObject, numberedObject;
-CLASS SfromWHDetail 'Строка прихода со склада  на магазин' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS SfromWHDetail 'Строка прихода со склада  на магазин' : inFIFOSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS SfromWHPosted 'Закрытый приход со склада на магазин' : SfromWH, postedObject;
 
 skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) IN idGroup;
@@ -33,7 +33,7 @@ nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = n
 @defineUniqueDocumentComingByExpense(SfromWH, WHtoS);
 @defineDocumentHeaderOriginSkuQuantity(SfromWH, WHtoS);
 
-quantityInTransferSkuLedger (ledger) += quantitySfromWHDetail(ledger);
+quantityInFIFOSkuLedger (ledger) += quantitySfromWHDetail(ledger);
 
 companyCorrWarehouseSfromWH (SfromWH) = companyWarehouse(corrWarehouseSfromWH(SfromWH));
 nameCompanyCorrWarehouseSfromWH 'Поставщик' (SfromWH) = name(companyCorrWarehouseSfromWH(SfromWH));

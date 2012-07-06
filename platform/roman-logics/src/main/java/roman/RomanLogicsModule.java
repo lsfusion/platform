@@ -3554,7 +3554,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
 
-        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(classifier, "categoryForm", "Номенклатурные группы"));
+        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(classifier, "category", "Номенклатурные группы"));
         category.setDialogForm(categoryForm, categoryForm.objCategory);
         classifier.add(baseLM.country.getListForm(baseLM).form);
         classifier.add(unitOfMeasure.getListForm(baseLM).form);
@@ -3825,7 +3825,7 @@ public class RomanLogicsModule extends LogicsModule {
         private CategoryFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
+            objCategory = addSingleGroupObject("c", category, "Номенклатурная группа", baseGroup);
             setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objCategory);

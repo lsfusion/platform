@@ -14,7 +14,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
 
 CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
-CLASS CStoWHDetail 'Строка расхода с СВХ' : outUserSkuLedger, consignmentDetail;
+CLASS CStoWHDetail 'Строка расхода с СВХ' : outFIFOSkuLedger, consignmentDetail;
 CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
 
 @defineDocument(CStoWH);
@@ -43,8 +43,8 @@ barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) =
 nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
 
 @implementSkuLedger (CStoWH, sku, customStore);
-quantityOutUserSkuLedger (outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
-batchOutUserSkuLedger (outUserSkuLedger) += declarationDetailCStoWHDetail (outUserSkuLedger);
+quantityOutFIFOSkuLedger(outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
+limitOutFIFOSkuLedgerBatch(outUserSkuLedger, batch) += quantityCStoWHDetail(outUserSkuLedger) AND batch == declarationDetailCStoWHDetail (outUserSkuLedger);
 
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);

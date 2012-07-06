@@ -15,7 +15,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS StoWH 'Расход с магазина на склад' : historyObject, numberedObject, consignment;
-CLASS StoWHDetail 'Строка расхода с магазина на склад' : outAutoSkuLedger, consignmentDetail;
+CLASS StoWHDetail 'Строка расхода с магазина на склад' : outFIFOSkuLedger, consignmentDetail;
 CLASS StoWHPosted 'Закрытый расход с магазина на склад' : StoWH, postedObject, consignment;
 
 

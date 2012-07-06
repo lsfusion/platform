@@ -16,7 +16,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS WHtoS 'Расход со склада на магазин' : historyObject, numberedObject, consignment;
-CLASS WHtoSDetail 'Строка расхода со склада на магазин' : outAutoSkuLedger, consignmentDetail;
+CLASS WHtoSDetail 'Строка расхода со склада на магазин' : outFIFOSkuLedger, consignmentDetail;
 CLASS WHtoSPosted 'Закрытый расход со склада на магазин' : WHtoS, postedObject, consignment;
 
 skuWHtoSDetail 'Товар (ИД)' (WHtoSDetail) = DATA sku (WHtoSDetail)IN idGroup;
@@ -26,7 +26,9 @@ nameSkuWHtoSDetail 'Наименование товара' (WHtoSDetail) = nameS
 @defineDocumentDetailPackWeightSku(WHtoS);
 @defineDocumentHeaderSkuQuantity(WHtoS);
 
-quantityOutAutoSkuLedger (ledger) += quantityWHtoSDetail (ledger);
+
+quantityOutFIFOSkuLedger (ledger) += quantityWHtoSDetail (ledger);
+@implementSkuLedgerOutFIFOBalance(WHtoS, sku, warehouse);
 
 wholesalePriceWHtoSDetail 'Оптовая цена' (WHtoSDetail) =  priceWholesaleArticleDateTime(articleWHtoSDetail(WHtoSDetail), dateTimeWHtoSDetail(WHtoSDetail));
 supplierPriceWHtoSDetail (WHtoSDetail) <- wholesalePriceWHtoSDetail(WHtoSDetail) WHEN CHANGED(skuWHtoSDetail(WHtoSDetail)) OR CHANGED (dateTimeWHtoSDetail(WHtoSDetail));

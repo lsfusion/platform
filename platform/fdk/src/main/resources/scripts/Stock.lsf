@@ -60,16 +60,13 @@ TABLE skuLedger (skuLedger);
 CLASS ABSTRACT inSkuLedger 'Приход' : skuLedger;
 CLASS ABSTRACT outSkuLedger 'Расход' : skuLedger;
 
-CLASS ABSTRACT outUserSkuLedger 'Внешний расход с указанной партией' : outSkuLedger;
-CLASS ABSTRACT outAutoSkuLedger 'Внешний расход с автоматической себестоимостью' : outSkuLedger;
+CLASS ABSTRACT batch 'Партия' : inSkuLedger;
+CLASS ABSTRACT inFIFOSkuLedger 'Приход по FIFO' : inSkuLedger;
 
-CLASS ABSTRACT inAutoSkuLedger 'Внутренний приход с автоматической себестоимостью' : inSkuLedger;
-
-CLASS ABSTRACT inTransferSkuLedger 'Внутренний приход по перемещению' : inSkuLedger;
+CLASS ABSTRACT outFIFOSkuLedger 'Расход по FIFO' : outSkuLedger;
 
 // --------------------------------- Партии ------------------------------------------------ //
 
-CLASS ABSTRACT batch 'Партия' : inSkuLedger;
 TABLE batch(batch);
 TABLE skuLedgerBatch (skuLedger, batch);
 TABLE batchStock(batch, stock);
@@ -112,23 +109,18 @@ nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
 
 descriptionSkuLedger 'Название документа' = ABSTRACT STRING[200] (skuLedger);
 
+// -------------------------------- Количества ---------------------------- //
+
 quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (batch) PERSISTENT;
 
-quantityOutAutoSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outAutoSkuLedger);
-
-quantityOutUserSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outUserSkuLedger);
-batchOutUserSkuLedger 'Партия' = ABSTRACT batch (outUserSkuLedger);
-
-quantityOutSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutAutoSkuLedger(ledger),
-                                                         quantityOutUserSkuLedger(ledger) PERSISTENT;
-
-quantityInAutoSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inAutoSkuLedger);
-
-quantityInTransferSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inTransferSkuLedger);
+quantityInFIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inFIFOSkuLedger);
 
 quantityInSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
-                                                        quantityInAutoSkuLedger(ledger),
-                                                        quantityInTransferSkuLedger(ledger) PERSISTENT;
+                                                        quantityInFIFOSkuLedger(ledger) PERSISTENT;
+
+quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger);
+
+quantityOutSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
 quantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
                                                       quantityOutSkuLedger(ledger) PERSISTENT;
@@ -199,6 +191,8 @@ signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS outSkuLedger
 
 currentBalanceBatchStock 'Текущий остаток' (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger)
                                                                   BY batch, stockSkuLedger(ledger) PERSISTENT;
+
+currentBalanceBatch 'Остаток (всего)' (batch) = GROUP SUM currentBalanceBatchStock(batch, stock) BY batch PERSISTENT;
 
 expiryDateSkuStock 'Годен до (max.)' (sku, stock) = GROUP MAX expiryDateBatch(batch) IF currentBalanceBatchStock(batch, stock)
                                                           BY skuBatch(batch), stock PERSISTENT;
@@ -278,41 +272,31 @@ costedSkuLedger 'Расписано' (ledger) = GROUP SUM costSkuLedgerBatch (le
 needToCostSkuLedger 'Требуется расчет себестоимости' (ledger) = quantitySkuLedger(ledger) > 0 AND isPostedSkuLedger(ledger)
                                                                         AND NOT quantitySkuLedger(ledger) == costedSkuLedger(ledger);
 
+// -------------------------------------------- Расчет себестоимости -------------------------------------- //
+
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
-currentBalanceBatch 'Остаток (всего)' (batch) = GROUP SUM currentBalanceBatchStock(batch, stock) BY batch PERSISTENT;
+limitInFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inFIFOSkuLedger, batch);
 
-quantityOutUserSkuLedgerBatch (ledger, batch) = quantityOutUserSkuLedger(ledger) AND batch == batchOutUserSkuLedger(ledger);
-quantityOutAutoSkuLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityOutAutoSkuLedger
-                  LIMIT currentBalanceBatchStock(batch, stockSkuLedger(ledger)) AND skuBatch(batch) == skuSkuLedger(ledger)
+quantityInFIFOSkuLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityInFIFOSkuLedger
+                  LIMIT limitInFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
+                  BY ledger
+                  ORDER DESC orderBatch(batch);
+
+limitOutFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger, batch);
+
+quantityOutFIFOSkuLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityOutFIFOSkuLedger
+                  LIMIT limitOutFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
                   BY ledger
                   ORDER orderBatch(batch);
 
-quantityOutSkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityOutUserSkuLedgerBatch(ledger, batch),
-                                                            quantityOutAutoSkuLedgerBatch(ledger, batch);
-
-quantityInSkuLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityInAutoSkuLedger
-                  LIMIT (quantityBatch(batch) (-) currentBalanceBatch(batch))
-                    AND countLedgerSkuStock(skuSkuLedger(ledger), stockSkuLedger(ledger))
-                    AND skuBatch(batch) == skuSkuLedger(ledger)
-                  BY ledger
-                  ORDER DESC orderBatch(batch);
-
-limitInTransferSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inTransferSkuLedger, batch);
-
-quantityInTransferSkuLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityInTransferSkuLedger
-                  LIMIT limitInTransferSkuLedgerBatch(ledger, batch)
-                    AND skuBatch(batch) == skuSkuLedger(ledger)
-                  BY ledger
-                  ORDER DESC orderBatch(batch);
+quantityOutSkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityOutFIFOSkuLedgerBatch(ledger, batch);
 
 quantitySkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledger, batch),
-                                                         quantityOutSkuLedgerBatch(ledger, batch),
-                                                         quantityInSkuLedgerBatch(ledger, batch),
-                                                         quantityInTransferSkuLedgerBatch(ledger, batch);
+                                                         quantityInFIFOSkuLedgerBatch(ledger, batch),
+                                                         quantityOutFIFOSkuLedgerBatch(ledger, batch);
 
 supplierSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * supplierPriceBatch(batch);
 supplierSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM supplierSumSkuLedgerBatch(ledger, batch) BY ledger;
@@ -367,6 +351,15 @@ META implementSkuLedger(concrete, skuProp, stockProp)
     descriptionSkuLedger (ledger) += description###concrete##Detail(ledger);
     skuSkuLedger (ledger) += skuProp###concrete##Detail(ledger);
     stockSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
+END
+
+META implementSkuLedgerInFIFOBalance (concrete, skuProp, stockProp)
+    limitInFIFOSkuLedgerBatch(ledger, batch) += (quantityBatch(batch) (-) currentBalanceBatch(batch)) AND
+                                                countLedgerSkuStock(skuProp###concrete##Detail(ledger), stockProp###concrete##Detail(ledger));
+END
+
+META implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp)
+    limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockProp###concrete##Detail(ledger));
 END
 
 META implementBatch(concrete, skuProp)

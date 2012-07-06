@@ -17,6 +17,9 @@ descriptionSku 'Наименование товара' (sku) =
 nameSku(sku) += descriptionSku (sku);
 
 @defineHierarchy(category);
+EXTEND FORM category
+    PROPERTIES (c) nameParentCategory;
+;
 
 parentSkuGroup (skuGroup) += parentCategory(skuGroup);
 skuGroupSku (sku) += categoryArticleSku(sku);

@@ -15,7 +15,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS StoS 'Расход с магазина на магазин' : historyObject, numberedObject, consignment;
-CLASS StoSDetail 'Строка расхода с магазина на магазин' : outAutoSkuLedger, consignmentDetail;
+CLASS StoSDetail 'Строка расхода с магазина на магазин' : outFIFOSkuLedger, consignmentDetail;
 CLASS StoSPosted 'Закрытый расход с магазина на магазин' : StoS, postedObject, consignment;
 
 skuStoSDetail 'Товар (ИД)' (StoSDetail) = DATA sku (StoSDetail)IN idGroup;
@@ -31,8 +31,8 @@ nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku
 senderStoreStoS 'Магазин-отправитель (ИД)' (StoS) = storeDepartmentStore(departmentStoreStoS(StoS));
 nameSenderStoreStoSDetail 'Магазин-отправитель' (StoSDetail) = name(senderStoreStoS(StoSDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
-quantityOutAutoSkuLedger (ledger) += quantityStoSDetail (ledger);
-
+quantityOutFIFOSkuLedger (ledger) += quantityStoSDetail (ledger);
+@implementSkuLedgerOutFIFOBalance(StoS, sku, departmentStore);
 
 FORM StoS 'Расход с магазина на магазин'
     OBJECTS s = StoS FIXED PANEL

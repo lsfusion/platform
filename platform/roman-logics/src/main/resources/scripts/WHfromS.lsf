@@ -21,7 +21,7 @@ PRIORITY RomanLogicsModule, Stock;
 // Приход на склад
 CLASS WHfromS 'Приход на склад из магазина' : historyObject, numberedObject;
 CLASS WHfromSPosted 'Закрытый приход на склад из магазина' : WHfromS, postedObject;
-CLASS WHfromSDetail 'Строка прихода на склад из магазина' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS WHfromSDetail 'Строка прихода на склад из магазина' : inFIFOSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 
 skuWHfromSDetail 'Товар (ИД)' (WHfromSDetail) = DATA sku (WHfromSDetail)IN idGroup;
 nameSkuWHfromSDetail 'Наименование товара' (WHfromSDetail) = nameSku(skuWHfromSDetail(WHfromSDetail));
@@ -32,6 +32,9 @@ nameSkuWHfromSDetail 'Наименование товара' (WHfromSDetail) = n
 @defineDocumentHeaderSkuQuantity(WHfromS);
 @defineUniqueDocumentComingByExpense(WHfromS, StoWH);
 @defineDocumentHeaderOriginSkuQuantity (WHfromS, StoWH);
+
+quantityInFIFOSkuLedger (ledger) += quantityWHfromSDetail(ledger);
+@implementSkuLedgerInFIFOBalance(WHfromS, sku, warehouse);
 
 identityWHfromS (WHfromS) = corrStoreWHfromS(WHfromS) == storeDepartmentStore(departmentStoreStoWH(StoWHWHfromS(WHfromS))) AND warehouseWHfromS(WHfromS) == corrWarehouseStoWH(StoWHWHfromS(WHfromS));
 

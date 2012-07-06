@@ -21,7 +21,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS SfromS 'Приход на магазин из магазина' : historyObject, numberedObject;
-CLASS SfromSDetail 'Строка прихода на магазин из магазина' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS SfromSDetail 'Строка прихода на магазин из магазина' : inFIFOSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS SfromSPosted 'Закрытый приход на магазин из магазина' : SfromS, postedObject;
 
 

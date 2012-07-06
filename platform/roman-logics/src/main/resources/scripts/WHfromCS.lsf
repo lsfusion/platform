@@ -18,7 +18,7 @@ PRIORITY RomanLogicsModule, Stock;
 // Приход на склад (по схеме документ расхода - акт приемки - акт расхождений)
 CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSIPosted 'Закрытый приход с СВХ' : WHfromCSI, postedObject;
-CLASS WHfromCSIDetail 'Строка прихода на склад' : inTransferSkuLedger;
+CLASS WHfromCSIDetail 'Строка прихода на склад' : inFIFOSkuLedger;
 
 @defineDocumentTables(WHfromCSI);
 
@@ -46,7 +46,8 @@ initValueSeriesObject (WHfromCSI) += [PREV(seriesObject(WHfromCSI))](CStoWHWHfro
 initWhenNumberedObject(WHfromCSI) += CHANGED(CStoWHWHfromCSI(WHfromCSI));
 
 @implementSkuLedger(WHfromCSI, sku, warehouse);
-quantityInTransferSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
+quantityInFIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
+limitInFIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
 
 FORM WHfromCSI 'Приход на оптовый склад'
 
@@ -107,7 +108,7 @@ CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
 
 CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
-CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inTransferSkuLedger;
+CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inFIFOSkuLedger;
 
 //приемка товара
 
