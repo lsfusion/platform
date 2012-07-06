@@ -274,7 +274,8 @@ public class GridTable extends ClientPropertyTable {
         } else if (value instanceof Color) {
             value = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
         }
-        return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), createToolTip().getFont()) : null;
+        String formattedValue = (value instanceof Double)? getProperty(rowIndex, colIndex).getFormat().format(value) : BaseUtils.rtrim(String.valueOf(value));
+        return (value != null) ? SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont()) : null;
     }
 
     private void initializeActionMap() {
