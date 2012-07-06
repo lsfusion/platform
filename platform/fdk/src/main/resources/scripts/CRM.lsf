@@ -135,7 +135,7 @@ FORM discountCards 'Дисконтные карты'
 // todo: сделать генерацию штрих-кода для дисконтных карт
 //--------------------------Акции----------------------------------------//
 
-CLASS share 'Акция (применение условий в момент продажи)' : historyObject, numberedObject;
+CLASS share 'Акция (применение условий в момент продажи)' : historyObject, numberedObject, named;
 TABLE share (share);
 
 CLASS  shareGroup 'Группа акций' : named;
@@ -171,8 +171,8 @@ includeShareGroupSku 'В акции' = DATA BOOLEAN (shareGroup, sku);
 
 FORM share 'Акция'
     OBJECTS sh=share   FIXED PANEL
-    PROPERTIES(sh)     seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
-                      cumulativeSumShare, minSumBillShare
+    PROPERTIES(sh)     name, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
+                       cumulativeSumShare, minSumBillShare
     OBJECTS d= DOW
     PROPERTIES(d)     READONLY name
     PROPERTIES(sh, d)  includeShareDay
@@ -233,6 +233,12 @@ DESIGN share FROM DEFAULT {
                 ADD sh.box {
                     fillVertical = 1;
                     childConstraints = TO THE BOTTOM;
+                    NEW row01 {
+                        ADD PROPERTY(name(sh)) {
+                            preferredCharWidth = 30;
+
+                        }
+                    }
                     ADD sh.numberedGroup {
                         childConstraints = TO THE RIGHT;
                     }
@@ -300,7 +306,7 @@ DESIGN share FROM DEFAULT {
 
 FORM shares 'Акции'
     OBJECTS sh=share
-    PROPERTIES(sh)     READONLY seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
+    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
                        cumulativeSumShare, minSumBillShare
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
