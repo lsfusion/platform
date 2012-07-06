@@ -516,8 +516,7 @@ nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
 @metaCodeShowItemAttribute(country, 'Показывать страну', displayGroup);
 residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN headGroup;
 
-extSIDCountry 'Внешний код страны' = DATA STRING[60] (country);
-extSIDToCountry 'Страна по коду' (string) = GROUP UNIQUE country BY extSIDCountry (country) WHERE country IS country;
+countryNameCountry(string) = GROUP UNIQUE country BY name(country) AND country IS country WHERE country IS country;
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;

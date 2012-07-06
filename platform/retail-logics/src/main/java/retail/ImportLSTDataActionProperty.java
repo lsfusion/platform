@@ -220,7 +220,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField nameUOMField = new ImportField(getLCP("name"));
         ImportField brandIDField = new ImportField(getLCP("name"));
         ImportField nameBrandField = new ImportField(getLCP("name"));
-        ImportField countryIDField = new ImportField(getLCP("extSIDCountry"));
         ImportField nameCountryField = new ImportField(getLCP("name"));
         ImportField barcodeField = new ImportField(getLCP("idBarcode"));
         ImportField dateField = new ImportField(getLCP("date"));
@@ -251,7 +250,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 getLCP("extSIDToObject").getMapping(brandIDField));
 
         ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass) getClass("country"),
-                getLCP("extSIDToCountry").getMapping(countryIDField));
+                getLCP("countryNameCountry").getMapping(nameCountryField));
 
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) getClass("barcode"),
                 getLCP("barcodeIdDate").getMapping(barcodeField, dateField));
@@ -290,9 +289,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(brandIDField, getLCP("brandItem").getMapping(itemKey),
                 LM.object(getClass("brand")).getMapping(brandKey)));
 
-        props.add(new ImportProperty(countryIDField, getLCP("extSIDCountry").getMapping(countryKey)));
         props.add(new ImportProperty(nameCountryField, getLCP("name").getMapping(countryKey)));
-        props.add(new ImportProperty(countryIDField, getLCP("countryItem").getMapping(itemKey),
+        props.add(new ImportProperty(nameCountryField, getLCP("countryItem").getMapping(itemKey),
                 LM.object(getClass("country")).getMapping(countryKey)));
 
         props.add(new ImportProperty(barcodeField, getLCP("idBarcode").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
@@ -325,7 +323,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 LM.object(getClass("rateWaste")).getMapping(rateWasteKey)));
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
-                nameUOMField, nameBrandField, brandIDField, countryIDField, nameCountryField, barcodeField, dateField,
+                nameUOMField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
                 importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
                 compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, quantityPackItemField, wareIDField,
                 priceWareField, ndsWareField, rateWasteIDField), data);
@@ -1089,7 +1087,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String rateWasteID = "RW_" + new String(itemsImportFile.getField("K_VGRTOV").getBytes(), "Cp1251").trim();
 
                 if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
-                    data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + UOM, UOM, brand, "B_" + brand, "C_" + country, country, barcode,
+                    data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + UOM, UOM, brand, "B_" + brand, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
                             "".equals(composition) ? null : composition, suppliersRange, retailVAT, quantityPackItem, wareID,
                             wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
