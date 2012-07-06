@@ -28,6 +28,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -274,7 +275,8 @@ public class GridTable extends ClientPropertyTable {
         } else if (value instanceof Color) {
             value = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
         }
-        String formattedValue = (value instanceof Double)? getProperty(rowIndex, colIndex).getFormat().format(value) : BaseUtils.rtrim(String.valueOf(value));
+        Format format = (rowIndex != -1 && colIndex != -1 && value instanceof Double) ? getProperty(rowIndex, colIndex).getFormat() : NumberFormat.getInstance();
+        String formattedValue = (value instanceof Double)? format.format(value) : BaseUtils.rtrim(String.valueOf(value));
         return (value != null) ? SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont()) : null;
     }
 
