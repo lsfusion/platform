@@ -241,6 +241,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP userFirstName;
     public LCP userLastName;
     public LCP userPhone;
+    public LCP userPostAddress;
+    public LCP userBirthday;
     public LCP userMainRole;
     public LCP customUserMainRole;
     public LCP customUserSIDMainRole;
@@ -868,6 +870,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         userPhone = addDProp(publicGroup, "userPhone", getString("logics.user.phone"), StringClass.get(30), contact);
         userPhone.setMinimumCharWidth(10);
+
+        userPostAddress = addDProp(publicGroup, "userPostAddress", getString("logics.user.postAddress"), StringClass.get(100), contact);
+        userPostAddress.setMinimumCharWidth(20);
+
+        userBirthday = addDProp(publicGroup, "userBirthday", getString("logics.user.birthday"),  DateClass.instance, contact);
 
         userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
         sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);

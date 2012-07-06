@@ -23,6 +23,7 @@ REQUIRE System,
         WHfromWH,
         WholesalePrice,
         RetailPrice,
+        CRM,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -79,6 +80,10 @@ DESIGN store FROM DEFAULT {
     }
 }
 
+EXTEND FORM globalParamForm
+    PROPERTIES nameDefaultNumeratorDiscountCards()
+;
+
 
 NAVIGATOR {
     classifier {
@@ -91,6 +96,7 @@ NAVIGATOR {
         ADD stores;
         ADD companies;
         ADD contractsSkuCompany;
+        ADD clients;
     }
     customs {
         customClassifier {
@@ -123,6 +129,8 @@ NAVIGATOR {
 
             NEW discountPrice 'Распродажи' {
                 ADD discountPriceSetDocuments;
+                ADD shares;
+                ADD discountCards;
             }
 
             ADD priceChangeDocuments;
@@ -279,5 +287,9 @@ NAVIGATOR {
         ADD WHfromWH;
         ADD addSupplierVATCustomCategory10;
         ADD dialogSupplierVATCustomCategory10;
+        ADD generationDiscountCards;
+        ADD discountCard;
+        ADD share;
+        ADD client;
     }
 }

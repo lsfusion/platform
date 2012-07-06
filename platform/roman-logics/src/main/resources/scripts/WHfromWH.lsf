@@ -64,7 +64,7 @@ CONSTRAINT contractSkuCompanyWHfromWH(WHfromWH) AND NOT isCompanyABWHfromWH(WHfr
     CHECKED BY contractSkuCompanyWHfromWH MESSAGE 'Договор не является договором между выбранными контрагентами или не действующий';
 
 CONSTRAINT contractSkuCompanyWHfromWH(WHfromWH) AND NOT contractSkuCompanyWHfromWH(WHfromWH) == contractSkuCompanyWHtoWH(WHtoWHWHfromWH(WHfromWH))
-  CHECKED BY contractSkuCompanyWHfromWH MESSAGE  'Договор из расхода и приход должны совпадать'; //  CHECKED BY WHtoWHWHfromWH
+  CHECKED BY contractSkuCompanyWHfromWH MESSAGE  'Договор из расхода и приход должны совпадать';
 
 toFillWHfromWHDetailsWHfromWH 'Заполнить документ из расхода' =  ACTION (WHfromWH) {
     FOR WHfromWHWHtoWH(WHtoWHWHtoWHDetail(WHtoWHDetail)) == WHfromWH DO {

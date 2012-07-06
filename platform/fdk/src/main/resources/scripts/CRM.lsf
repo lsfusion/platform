@@ -1,0 +1,291 @@
+MODULE CRM;
+
+REQUIRE System,
+
+        Stock,
+        Store,
+        Numerator,
+        Document;
+
+PRIORITY Stock;
+
+
+// ------------------------------------- Физические лица -------------------------------------- //
+
+CLASS client 'Покупатель (Ф.Л.)' : contact;
+
+
+FORM client 'Покупатель (Ф.Л.)'
+    OBJECTS c=client FIXED PANEL
+    PROPERTIES(c)      userFirstName, userLastName, userPostAddress, userPhone,
+                       email, userBirthday
+
+    EDIT client OBJECT c
+;
+
+FORM clients 'Покупатели (Ф.Л.)'
+    OBJECTS c=client
+    PROPERTIES(c)      READONLY userFirstName, userLastName, userPostAddress, userPhone,
+                       email, userBirthday
+    PROPERTIES(c)      ADDFORM, EDITFORM, delete
+;
+
+// ---------------------------- Нумераторы по умолчанию --------------------------------- //
+
+defaultNumeratorDiscountCards = DATA numerator ();
+nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
+
+//--------------------------------------Дисконтные карточки------------------------------------------------------------------//
+CLASS discountCard 'Дисконтная карта' : numeratedObject, barcodeObject;
+TABLE discountCard (discountCard);
+
+CLASS ABSTRACT brandGroup 'Группа брендов' : named; //группы товаров для дисконтной карты
+
+discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
+
+clientDiscountCard (discountCard) = DATA client(discountCard) IN idGroup;
+nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard));
+
+dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard);
+dateToDiscountCard 'Дата окончания действия' (discountCard) = DATA DATE (discountCard);
+
+brandGroupDiscountCard 'Группа брендов (ИД)' (discountCard) = ABSTRACT brandGroup (discountCard);
+nameBrandGroupDiscountCard 'Группа брендов' (discountCard) = name(brandGroupDiscountCard(discountCard));
+
+blockDiscountCard 'Признак блокировки карты' (discountCard) = DATA STRING[100] (discountCard) IN baseGroup MINCHARWIDTH 40 PREFCHARWIDTH 40;
+
+//CLASS STATIC discountCardType 'Тип дисконтной карты' {
+//    cumulativeCard 'Накопительная',
+//    fixPercentCard 'С фиксированным процентом'
+//}
+//
+//typeDiscountCard 'Тип дисконтной карты (ИД)' (discountCard) = DATA discountCardType (discountCard);
+//nameTypeDiscountCard 'Тип дисконтной карты' (discountCard) = name(typeDiscountCard(discountCard));
+percentDiscountCard 'Процент скидки' (discountCard) = DATA NUMERIC[8,3] (discountCard);
+
+// накопительная сумма  : потом посчитать ее по карте
+
+FORM generationDiscountCards 'Генерация дисконтных карт'
+    OBJECTS n=numerator  FIXED PANEL
+    PROPERTIES(n) SELECTOR name
+
+    OBJECTS quantityCards=INTEGER FIXED PANEL
+    PROPERTIES(quantityCards) intValueQuantityCards = OBJVALUE;
+
+DESIGN generationDiscountCards FROM DEFAULT {
+    main{
+        PROPERTY(intValueQuantityCards) {
+            caption = 'Количество дисконтных карт';
+            }
+        }
+}
+
+generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
+    FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCards() MODAL CHECK;
+    IF formResult() == formResult.ok THEN {
+        LOCAL num = INTEGER();
+        SET num() <- 0;
+        WHILE num() < (chosenInt('quantityCards') AS INTEGER) DO {
+            ADDOBJ discountCard;
+            FOR d == addedObject() DO {
+                SET numeratorObject(d) <-chosenObject('n') AS numerator;
+                SET num() <- num() + 1;
+            }
+        }
+    }
+} TOOLBAR;
+
+FORM discountCard 'Дисконтная карта'
+    OBJECTS d=discountCard FIXED PANEL
+    PROPERTIES(d) seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard, nameBrandGroupDiscountCard,
+                  percentDiscountCard, blockDiscountCard
+    EDIT discountCard OBJECT d
+;
+
+FORM discountCards 'Дисконтные карты'
+    OBJECTS d=discountCard
+    PROPERTIES(d) READONLY seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard, nameBrandGroupDiscountCard,
+                  percentDiscountCard, blockDiscountCard
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+
+    ORDER BY seriesNumberObject
+
+    PROPERTIES() generateDiscountCards TODRAW d
+;
+
+// todo: сделать генерацию штрих-кода для дисконтных карт
+//--------------------------Акции----------------------------------------//
+
+CLASS share 'Акция (применение условий в момент продажи)' : historyObject, numberedObject;
+TABLE share (share);
+
+CLASS  shareGroup 'Группа акций' : named;
+
+GROUP CRMGroup 'Реквизиты' : recognizeGroup;
+
+dateFromShare 'ОТ:' = DATA DATE (share) IN CRMGroup;
+dateToShare 'ДО:' = DATA DATE (share) IN CRMGroup;
+
+timeFromShare 'ОТ:' = DATA DATE (share) IN CRMGroup;
+timeToShare 'ДО:' = DATA DATE (share) IN CRMGroup;
+
+includeShareDay 'В акции' = DATA BOOLEAN (share, DOW);
+includeShareStore 'В акции' = DATA BOOLEAN (share, store);
+includeShareDiscountCard 'В акции' = DATA BOOLEAN (share, discountCard);
+
+cumulativeSumShare 'Накоп. сумма' (share) = DATA NUMERIC[14,2] (share);
+minSumBillShare 'Сумма чека' (share) = DATA NUMERIC[14,2] (share);
+
+shareShareGroup = DATA share (shareGroup);
+
+minQuantityShareGroup 'Количество С' = DATA NUMERIC[14,3] (shareGroup);
+maxQuantityShareGroup 'Количество ПО' = DATA NUMERIC[14,3] (shareGroup);
+
+minSumShareGroup 'Диапазон сумм С' = DATA NUMERIC[16,2] (shareGroup);
+maxSumShareGroup 'Диапазон сумм ПО' = DATA NUMERIC[16,2] (shareGroup);
+
+percentShareGroup 'Процент скидки'  = DATA NUMERIC[8,3] (shareGroup);
+resultPriceShareGroup 'Цена со скидкой' = DATA NUMERIC[14,2] (shareGroup);
+
+includeShareGroupSku 'В акции' = DATA BOOLEAN (shareGroup, sku);
+
+
+FORM share 'Акция'
+    OBJECTS sh=share   FIXED PANEL
+    PROPERTIES(sh)     seriesObject, numberObject, dateFromShare, dateToShare, timeFromShare, timeToShare,
+                      cumulativeSumShare, minSumBillShare
+    OBJECTS d= DOW
+    PROPERTIES(d)     READONLY name
+    PROPERTIES(sh, d)  includeShareDay
+    FILTERGROUP filterDOW
+        FILTER 'Только отмеченные' 'F11' includeShareDay(sh, d) DEFAULT
+
+    OBJECTS sg= shareGroup
+    PROPERTIES(sg)     name, minQuantityShareGroup, maxQuantityShareGroup, minSumShareGroup, maxSumShareGroup, percentShareGroup,
+                       resultPriceShareGroup, ADDOBJ, delete
+
+    FILTERS            shareShareGroup(sg)==sh
+
+    TREE skuTree skg = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(skg)
+    ORDER BY skuTreeName
+
+    OBJECTS sk= sku
+    PROPERTIES(sk)    READONLY nameSku
+    PROPERTIES(sg, sk) includeShareGroupSku
+    FILTERS           isParentSkuGroupSku(skg, sk)
+
+    FILTERGROUP filterSku
+        FILTER 'Только отмеченные' 'F10' includeShareGroupSku(sg, sk)  DEFAULT
+
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType
+    PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
+
+    FILTERS stringEqualsAll(a)
+    FILTERS inChainStoresStoreType (t, st)
+
+    OBJECTS s=store
+    PROPERTIES(s) READONLY name, addressStore, nameCompanyStore
+
+    FILTERS inChainStoresStoreTypeStore(t, st, s)
+
+    PROPERTIES(sh, s) includeShareStore
+    FILTERGROUP filterStore
+        FILTER 'Только отмеченные' 'F9' includeShareStore(sh, s) DEFAULT
+
+    OBJECTS dis= discountCard
+    PROPERTIES(dis)    READONLY seriesNumberObject, barcode, nameClientDiscountCard
+    PROPERTIES(sh, dis) includeShareDiscountCard
+    FILTERGROUP filterDiscountCard
+        FILTER 'Только отмеченные' 'F8' includeShareDiscountCard(sh, dis) DEFAULT
+
+    EDIT share OBJECT sh
+;
+
+DESIGN share FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            fillVertical = 1;
+            childConstraints = TO THE RIGHT;
+
+                ADD sh.box {
+                    fillVertical = 1;
+                    childConstraints = TO THE BOTTOM;
+                    ADD sh.numberedGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
+                    NEW row11 {
+                        title = 'Диапозон дат';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(dateFromShare);
+                        ADD PROPERTY(dateToShare);
+                    }
+                    NEW row12 {
+                        title = 'Часы';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(timeFromShare);
+                        ADD PROPERTY(timeToShare);
+                    }
+                    NEW row13 {
+                        title = 'Суммы';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(cumulativeSumShare);
+                        ADD PROPERTY(minSumBillShare);
+                    }
+                }
+            ADD d.box {
+                fillVertical = 1;
+            };
+        }
+        ADD sg.box {
+            fillVertical = 1;
+        }
+        NEW row2 {
+            fillVertical = 2;
+            fillHorizontal = 3;
+            type = TABBED;
+            NEW row21 {
+                type = SPLITH;
+                title = 'Товары';
+                childConstraints = TO THE RIGHT;
+                ADD skuTree.tree.box {
+                    fillHorizontal = 1;
+                }
+                ADD sk.box {
+                    fillHorizontal = 2;
+                }
+            };
+
+            NEW row22 {
+                type = SPLITH;
+                title = 'Магазины';
+                childConstraints = TO THE RIGHT;
+                ADD treeStore.tree.box {
+                    fillHorizontal = 1;
+                }
+                ADD s.box {
+                    fillHorizontal = 2;
+                }
+            };
+            ADD dis.box;
+        }
+
+        ADD functions.box;
+    }
+}
+
+
+
+FORM shares 'Акции'
+    OBJECTS sh=share
+    PROPERTIES(sh)     READONLY seriesObject, numberObject, dateFromShare, dateToShare, timeFromShare, timeToShare,
+                       cumulativeSumShare, minSumBillShare
+    PROPERTIES(sh)     ADDFORM, EDITFORM, delete
+
+    PROPERTIES (sh) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated
+
+;
+

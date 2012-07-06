@@ -34,7 +34,9 @@ REQUIRE System,
         Terminal,
         Label,
         Default,
+        CRM,
         CashOperation;
+
 
 // подключаем формы подбора товаров (пока сделано здесь, поскольку есть проблемы с EXTEND DESIGN в рамках нескольких модулей
 // todo : перенести в stock
@@ -1704,66 +1706,66 @@ FORM customers 'Покупатели'
     PROPERTIES(cu)   ADDFORM, EDITFORM, delete
 ;
 
-// ---------------------------- Нумераторы по умолчанию --------------------------------- //
-
-defaultNumeratorDiscountCards = DATA numerator ();
-nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
-
-//--------------------------------------Дисконтные карточки------------------------------------------------------------------//
-CLASS discountCard 'Дисконтная карта' : numeratedObject;
-TABLE discountCard (discountCard);
-
-discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
-
-customerDiscountCard (discountCard) = DATA customer(discountCard);
-nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
-
-FORM generationDiscountCards 'Генерация дисконтных карт'
-    OBJECTS n=numerator  FIXED PANEL
-    PROPERTIES(n) SELECTOR name
-
-    OBJECTS quantityCards=INTEGER FIXED PANEL
-    PROPERTIES(quantityCards) intValueQuantityCards = OBJVALUE;
-
-DESIGN generationDiscountCards FROM DEFAULT {
-    main{
-        PROPERTY(intValueQuantityCards) {
-            caption = 'Количество дисконтных карт';
-            }
-        }
-}
-
-generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
-    FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCards() MODAL CHECK;
-    IF formResult() == formResult.ok THEN {
-        LOCAL num = INTEGER();
-        SET num() <- 0;
-        WHILE num() < (chosenInt('quantityCards') AS INTEGER) DO {
-            ADDOBJ discountCard;
-            FOR d == addedObject() DO {
-                SET numeratorObject(d) <-chosenObject('n') AS numerator;
-                SET num() <- num() + 1;
-            }
-        }
-    }
-} TOOLBAR;
-
-FORM discountCard 'Дисконтная карта'
-    OBJECTS d=discountCard FIXED PANEL
-    PROPERTIES(d) seriesNumberObject, nameCustomerDiscountCard
-
-    EDIT discountCard OBJECT d
-;
-
-FORM discountCards 'Дисконтные карты'
-    OBJECTS d=discountCard
-    PROPERTIES(d) READONLY seriesNumberObject, nameCustomerDiscountCard
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
-
-    ORDER BY seriesNumberObject
-
-    PROPERTIES() generateDiscountCards TODRAW d
-;
+//// ---------------------------- Нумераторы по умолчанию --------------------------------- //
+//
+//defaultNumeratorDiscountCards = DATA numerator ();
+//nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
+//
+//////--------------------------------------Дисконтные карточки------------------------------------------------------------------//
+//CLASS discountCard 'Дисконтная карта' : numeratedObject;
+//TABLE discountCard (discountCard);
+//
+//discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
+//
+//customerDiscountCard (discountCard) = DATA customer(discountCard);
+//nameCustomerDiscountCard 'Держатель дисконтной карты' (discountCard) = name(customerDiscountCard(discountCard));
+//
+//FORM generationDiscountCards 'Генерация дисконтных карт'
+//    OBJECTS n=numerator  FIXED PANEL
+//    PROPERTIES(n) SELECTOR name
+//
+//    OBJECTS quantityCards=INTEGER FIXED PANEL
+//    PROPERTIES(quantityCards) intValueQuantityCards = OBJVALUE;
+//
+//DESIGN generationDiscountCards FROM DEFAULT {
+//    main{
+//        PROPERTY(intValueQuantityCards) {
+//            caption = 'Количество дисконтных карт';
+//            }
+//        }
+//}
+//
+//generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
+//    FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCards() MODAL CHECK;
+//    IF formResult() == formResult.ok THEN {
+//        LOCAL num = INTEGER();
+//        SET num() <- 0;
+//        WHILE num() < (chosenInt('quantityCards') AS INTEGER) DO {
+//            ADDOBJ discountCard;
+//            FOR d == addedObject() DO {
+//                SET numeratorObject(d) <-chosenObject('n') AS numerator;
+//                SET num() <- num() + 1;
+//            }
+//        }
+//    }
+//} TOOLBAR;
+//
+//FORM discountCard 'Дисконтная карта'
+//    OBJECTS d=discountCard FIXED PANEL
+//    PROPERTIES(d) seriesNumberObject, nameCustomerDiscountCard
+//
+//    EDIT discountCard OBJECT d
+//;
+//
+//FORM discountCards 'Дисконтные карты'
+//    OBJECTS d=discountCard
+//    PROPERTIES(d) READONLY seriesNumberObject, nameCustomerDiscountCard
+//    PROPERTIES(d) ADDFORM, EDITFORM, delete
+//
+//    ORDER BY seriesNumberObject
+//
+//    PROPERTIES() generateDiscountCards TODRAW d
+//;
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -3397,7 +3399,7 @@ CLASS wastageDetail 'Строка документа': outAutoSkuLedger;
 
 @defineDocumentTables(wastage);
 @defineDocumentDetailIndex(wastage);
-@defineDocumentHeaderCount(wastage);
+//@defineDocumentHeaderCount(wastage);
 
 @defineDocumentAggregationHeaderNumber(shipment, wastage);
 
@@ -4027,7 +4029,7 @@ zReportBillToBill (zReport, bill, cashRegister) = GROUP UNIQUE bill BY numberZRe
 
 discountCardBill (bill) = DATA discountCard (bill);
 numberDiscountCardBill 'Номер дисконтной карты' (bill) = seriesNumberObject(discountCardBill(bill));
-nameCustomerDiscountCardBill 'Держатель дисконтной карты' (bill) = nameCustomerDiscountCard(discountCardBill(bill));
+nameClientDiscountCardBill 'Держатель дисконтной карты' (bill) = nameClientDiscountCard(discountCardBill(bill));
 
 zReportBillDetail (billDetail) = zReportBill(billBillDetail(billDetail));
 
@@ -8149,7 +8151,7 @@ FORM bill 'Z-отчет'
 
     OBJECTS b=bill, d=billDetail
     PROPERTIES(b) numberBill, dateBill, timeBill, nameDepartmentStoreBill READONLY,
-                  numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
+                  numberDiscountCardBill, nameClientDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
                   discountSumBill, countBillDetailBill, quantityBillDetailBill, ADDOBJ, delete
     FILTERS zReportBill(b)==z
 
@@ -8210,7 +8212,7 @@ FORM bills 'Чеки'
 
     OBJECTS b=bill
     PROPERTIES(b) READONLY  numberBill, dateBill, timeBill, nameDepartmentStoreBill,
-                            numberDiscountCardBill, nameCustomerDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
+                            numberDiscountCardBill, nameClientDiscountCardBill, retailSumBillDetailBill, discountSumBillDetailBill,
                             discountSumBill, countBillDetailBill, quantityBillDetailBill
 
     FILTERS zReportBill(b)==z
@@ -9602,6 +9604,7 @@ NAVIGATOR {
             ADD contractsSkuSupplier;
             ADD customers;
             ADD discountCards;
+            ADD clients;
             ADD banks;
         }
         NEW equipment 'Оборудование' {
@@ -9670,6 +9673,7 @@ NAVIGATOR {
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
+            ADD shares;
         }
         NEW mixturePatterns 'Пересортица' {
             ADD disparities;
@@ -9922,6 +9926,8 @@ NAVIGATOR {
             ADD naturalLoss;
             ADD consignment;
             ADD dialogSku;
+            ADD client;
+            ADD share;
             ADD generationDiscountCards;
         }
         ADD parameters;
