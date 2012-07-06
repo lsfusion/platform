@@ -145,8 +145,8 @@ GROUP CRMGroup 'Реквизиты' : recognizeGroup;
 dateFromShare 'ОТ:' = DATA DATE (share) IN CRMGroup;
 dateToShare 'ДО:' = DATA DATE (share) IN CRMGroup;
 
-timeFromShare 'ОТ:' =  DATA TIME (share) IN CRMGroup;
-timeToShare 'ДО:' =  DATA TIME (share) IN CRMGroup;
+timeOfFromShare 'ОТ:' =  DATA TIME (share) IN CRMGroup;
+timeOfToShare 'ДО:' =  DATA TIME (share) IN CRMGroup;
 
 includeShareDay 'В акции' = DATA BOOLEAN (share, DOW);
 includeShareStore 'В акции' = DATA BOOLEAN (share, store);
@@ -171,7 +171,7 @@ includeShareGroupSku 'В акции' = DATA BOOLEAN (shareGroup, sku);
 
 FORM share 'Акция'
     OBJECTS sh=share   FIXED PANEL
-    PROPERTIES(sh)     seriesObject, numberObject, dateFromShare, dateToShare, timeFromShare, timeToShare,
+    PROPERTIES(sh)     seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
                       cumulativeSumShare, minSumBillShare
     OBJECTS d= DOW
     PROPERTIES(d)     READONLY name
@@ -245,8 +245,8 @@ DESIGN share FROM DEFAULT {
                     NEW row12 {
                         title = 'Часы';
                         childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(timeFromShare);
-                        ADD PROPERTY(timeToShare);
+                        ADD PROPERTY(timeOfFromShare);
+                        ADD PROPERTY(timeOfToShare);
                     }
                     NEW row13 {
                         title = 'Суммы';
@@ -300,7 +300,7 @@ DESIGN share FROM DEFAULT {
 
 FORM shares 'Акции'
     OBJECTS sh=share
-    PROPERTIES(sh)     READONLY seriesObject, numberObject, dateFromShare, dateToShare, timeFromShare, timeToShare,
+    PROPERTIES(sh)     READONLY seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
                        cumulativeSumShare, minSumBillShare
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
