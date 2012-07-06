@@ -145,8 +145,8 @@ GROUP CRMGroup 'Реквизиты' : recognizeGroup;
 dateFromShare 'ОТ:' = DATA DATE (share) IN CRMGroup;
 dateToShare 'ДО:' = DATA DATE (share) IN CRMGroup;
 
-timeFromShare 'ОТ:' = DATA DATE (share) IN CRMGroup;
-timeToShare 'ДО:' = DATA DATE (share) IN CRMGroup;
+timeFromShare 'ОТ:' =  DATA TIME (share) IN CRMGroup;
+timeToShare 'ДО:' =  DATA TIME (share) IN CRMGroup;
 
 includeShareDay 'В акции' = DATA BOOLEAN (share, DOW);
 includeShareStore 'В акции' = DATA BOOLEAN (share, store);
