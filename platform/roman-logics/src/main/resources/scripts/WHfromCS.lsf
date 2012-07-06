@@ -106,10 +106,6 @@ CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject, numb
 CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
 CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
 
-CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
-CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
-CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inFIFOSkuLedger;
-
 @defineDocument(WHfromCSR);
 @defineDocumentStock(WHfromCSR, warehouse, 'Оптовый склад');
 @defineDocumentPosted(WHfromCSR);
@@ -296,7 +292,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     PROPERTIES(w)          numberObject, seriesObject,
                            dateWHfromCSR, timeWHfromCSR, nameWarehouseWHfromCSR,
-                           barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit, delete,
+                           barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit,
                            printMarksSkuWHfromCSR TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
@@ -323,7 +319,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 toSSSS (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
 
 toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI){
-    ADDOBJ WHfromCSR;
+    ADDOBJ WHfromCSRPosted;
     FOR w == addedObject() DO {
         SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
         SET warehouseWHfromCSR (w) <- warehouseWHfromCSI(WHfromCSI);
@@ -377,27 +373,6 @@ DESIGN WHfromCSR FROM DEFAULT {
     ADD functions.box;
 }
 
-//FORM WHfromCSs 'Приходы на оптовый склад'
-//    OBJECTS w = WHfromCS
-//    PROPERTIES (w) READONLY numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS
-//
-//    PROPERTIES (w) printMarksSkuWHfromCS, ADDFORM, EDITFORM SHOWIF isDraftWHfromCS(w), delete FORCE PANEL SHOWIF isDraftWHfromCS(w),
-//                   postWHfromCS SHOWIF isDraftWHfromCS(w), unpostWHfromCS SHOWIF isPostedWHfromCS(w)
-//
-//    OBJECTS d = WHfromCSDetail
-//    PROPERTIES(d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
-//                            sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail,
-//                           quantityOriginWHfromCSDetail, quantityWHfromCSDetail
-//
-//    FILTERS inWHfromCSWHfromCSDetail(w, d)
-//;
-//
-//DESIGN WHfromCSs FROM DEFAULT {
-//    PROPERTY (delete(w)) {
-//        panelLocation = TOOLBAR;
-//        askConfirm = TRUE;
-//    }
-//}
 
 FORM WHfromCSIs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCSI
@@ -414,3 +389,15 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
 
     FILTERS WHfromCSIWHfromCSIDetail(d)
 ;
+
+DESIGN WHfromCSIs FROM DEFAULT {
+    PROPERTY (toDeleteCStoWHWHfromCSR(w)) {
+//        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
+
+CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
+CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
+CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inFIFOSkuLedger;
+
