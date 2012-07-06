@@ -343,8 +343,8 @@ public class GridController {
         return table.getCurrentObject();
     }
 
-    public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        table.setColumnValues(property, values);
+    public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
+        table.setColumnValues(property, values, update);
         if (extViews.containsKey(property)) {
             Object value = getSelectedValue(property, null);
             extViews.get(property).setValue((value == null) ? "" : value.toString());

@@ -3,10 +3,7 @@ package platform.client.form;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.*;
-import platform.base.BaseUtils;
-import platform.base.Callback;
-import platform.base.EProvider;
-import platform.base.OrderedMap;
+import platform.base.*;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.Log;
@@ -394,7 +391,7 @@ public class ClientFormController {
 
     private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Optional<Object>> lastChangePropertyRequestValues = HashBasedTable.create();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
     public void applyFormChanges(byte[] bFormChanges) throws IOException {
         if (bFormChanges == null) {
             return;
@@ -454,15 +451,28 @@ public class ClientFormController {
             Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, Long> cell = iterator.next();
             if (cell.getValue() <= currentDispatchingRequestIndex) {
                 iterator.remove();
-                lastChangePropertyRequestValues.remove(cell.getRowKey(), cell.getColumnKey());
+
+                ClientPropertyDraw propertyDraw = cell.getRowKey();
+                ClientGroupObjectValue keys = cell.getColumnKey();
+                Pair<Object, Object> change = lastChangePropertyRequestValues.remove(propertyDraw, keys);
+
+                Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(propertyDraw);
+                if(propertyValues==null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
+                    propertyValues = new HashMap<ClientGroupObjectValue, Object>();
+                    formChanges.properties.put(propertyDraw, propertyValues);
+                    formChanges.updateProperties.add(propertyDraw);
+                }
+
+                if(formChanges.updateProperties.contains(propertyDraw) && !propertyValues.containsKey(keys))
+                    propertyValues.put(keys, change.second);
             }
         }
 
-        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Optional<Object>>> e : lastChangePropertyRequestValues.rowMap().entrySet()) {
+        for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Pair<Object, Object>>> e : lastChangePropertyRequestValues.rowMap().entrySet()) {
             Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(e.getKey());
             if (propertyValues != null) {
-                for (Map.Entry<ClientGroupObjectValue, Optional<Object>> keyValue : e.getValue().entrySet()) {
-                    propertyValues.put(keyValue.getKey(), keyValue.getValue().orNull());
+                for (Map.Entry<ClientGroupObjectValue, Pair<Object, Object>> keyValue : e.getValue().entrySet()) {
+                    propertyValues.put(keyValue.getKey(), keyValue.getValue().first);
                 }
             }
         }
@@ -525,7 +535,7 @@ public class ClientFormController {
         );
     }
 
-    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value) throws IOException {
+    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value, final Object oldValue) throws IOException {
         assert !isEditing();
 
         final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
@@ -540,10 +550,10 @@ public class ClientFormController {
             protected void preRequest(long requestIndex) {
                 GroupObjectController controller = controllers.get(property.groupObject);
 
-                propertyKey = controller != null ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey) : columnKey;
+                propertyKey = controller != null && !controller.panelProperties.contains(property) ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey) : columnKey;
 
                 lastChangePropertyRequestIndices.put(property, propertyKey, requestIndex);
-                lastChangePropertyRequestValues.put(property, propertyKey, Optional.fromNullable(value));
+                lastChangePropertyRequestValues.put(property, propertyKey, new Pair<Object, Object>(value, oldValue));
             }
 
             @Override

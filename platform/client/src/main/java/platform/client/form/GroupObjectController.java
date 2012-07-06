@@ -87,7 +87,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         {
             if (read instanceof ClientPropertyDraw) {
                 ClientPropertyDraw property = (ClientPropertyDraw) read;
-                if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
+                if (!fc.updateProperties.contains(property) && property.groupObject == groupObject && property.shouldBeDrawn(form)) {
                     addDrawProperty(property, fc.panelProperties.contains(property));
 
                     OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
@@ -129,7 +129,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
             ClientPropertyReader propertyRead = readProperty.getKey();
             if (propertyRead.getGroupObject() == groupObject && propertyRead.shouldBeDrawn(form)) {
-                propertyRead.update(readProperty.getValue(), this);
+                propertyRead.update(readProperty.getValue(), fc.updateProperties.contains(propertyRead), this);
             }
         }
 
@@ -290,11 +290,11 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         if (panelProperties.contains(property)) {
-            panel.updatePropertyValues(property, values);
+            panel.updatePropertyValues(property, values, update);
         } else {
-            grid.updatePropertyValues(property, values);
+            grid.updatePropertyValues(property, values, update);
         }
     }
 

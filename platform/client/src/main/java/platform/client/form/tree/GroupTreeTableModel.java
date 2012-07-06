@@ -226,8 +226,8 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         }
     }
 
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues) {
-        values.put(property, ivalues);
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues, boolean update) {
+        BaseUtils.putUpdate(values, property, ivalues, update);
     }
 
     public int addDrawProperty(ClientFormController form, ClientGroupObject group, ClientPropertyDraw property) {

@@ -6,7 +6,7 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import java.util.Map;
 
 public interface ClientPropertyReader {
-    void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller);
+    void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller);
 
     ClientGroupObject getGroupObject();
 

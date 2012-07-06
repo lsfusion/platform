@@ -808,8 +808,8 @@ public class GridTable extends ClientPropertyTable {
         this.cellForegroundValues.put(property, cellForegroundValues);
     }
 
-    public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        this.values.put(property, values);
+    public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
+        BaseUtils.putUpdate(this.values, property, values, update);
     }
 
     public void updateColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> columnKeys) {

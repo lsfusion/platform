@@ -408,8 +408,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
-        controller.updateDrawPropertyValues(this, readKeys);
+    public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+        controller.updateDrawPropertyValues(this, readKeys, updateKeys);
     }
 
     @Override
@@ -555,7 +555,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
             controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
 
@@ -577,7 +577,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return false;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
         }
 
         public int getID() {
@@ -598,7 +598,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
             controller.updateCellBackgroundValues(ClientPropertyDraw.this, readKeys);
         }
 
@@ -620,7 +620,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return ClientPropertyDraw.this.shouldBeDrawn(form);
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
             controller.updateCellForegroundValues(ClientPropertyDraw.this, readKeys);
         }
 

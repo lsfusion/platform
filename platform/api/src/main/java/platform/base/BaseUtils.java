@@ -2073,4 +2073,11 @@ public class BaseUtils {
         else
             return FullFunctionSet.instance();
     }
+    
+    public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
+        if(update)
+            keyValues.put(key, override(keyValues.get(key), values));
+        else
+            keyValues.put(key, values);
+    }
 }

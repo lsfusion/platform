@@ -29,6 +29,8 @@ public class ClientFormChanges {
     public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
 
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
+    public final Set<ClientPropertyDraw> updateProperties; // пришедшие значения не для всех ключей а только для отдельных
+    
     public final Set<ClientPropertyReader> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
@@ -71,6 +73,8 @@ public class ClientFormChanges {
 
             properties.put(clientPropertyRead, propertyValues);
         }
+        
+        updateProperties = new HashSet<ClientPropertyDraw>();
 
         //DropProperties
         dropProperties = new HashSet<ClientPropertyDraw>();

@@ -50,7 +50,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             if (actionSID.equals(ServerResponse.CHANGE) && property.changeType != null) {
                 editColumnKey = columnKey;
                 simpleChangeProperty = property;
-                return internalRequestValue(property.changeType, currentValue);
+                oldValue = currentValue;
+                return internalRequestValue(property.changeType);
             }
 
             editPerformed = true;
@@ -69,7 +70,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
         dispatchResponse(response);
         if (readType != null) {
-            if (!internalRequestValue(readType, oldValue)) {
+            if (!internalRequestValue(readType)) {
                 cancelEdit();
             }
             return true;
@@ -78,7 +79,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         return readType != null || response.resumeInvocation || editPerformed;
     }
 
-    private boolean internalRequestValue(ClientType readType, Object oldValue) throws IOException {
+    private boolean internalRequestValue(ClientType readType) throws IOException {
         valueRequested = true;
         return handler.requestValue(readType, oldValue);
     }
@@ -89,7 +90,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 try {
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue());
+                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

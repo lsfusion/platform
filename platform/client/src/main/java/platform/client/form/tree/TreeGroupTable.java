@@ -304,8 +304,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         manualExpand = false;
     }
 
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues) {
-        model.updateDrawPropertyValues(property, ivalues);
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues, boolean update) {
+        model.updateDrawPropertyValues(property, ivalues, update);
     }
 
     public boolean addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {

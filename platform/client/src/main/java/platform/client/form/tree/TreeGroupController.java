@@ -78,7 +78,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
             for (ClientPropertyReader read : fc.properties.keySet()) {
                 if (read instanceof ClientPropertyDraw) {
                     ClientPropertyDraw property = (ClientPropertyDraw) read;
-                    if (property.groupObject == group && property.shouldBeDrawn(form)) {
+                    if (!fc.updateProperties.contains(property) && property.groupObject == group && property.shouldBeDrawn(form)) {
                         addDrawProperty(group, property, fc.panelProperties.contains(property));
 
                         //пока не поддерживаем группы в колонках в дереве, поэтому делаем
@@ -99,18 +99,8 @@ public class TreeGroupController extends AbstractGroupObjectController {
             // обновляем значения свойств
             for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
                 ClientPropertyReader propertyRead = readProperty.getKey();
-                if (propertyRead instanceof ClientPropertyDraw) {
-                    ClientPropertyDraw propertyDraw = (ClientPropertyDraw) propertyRead;
-                    if (propertyDraw.groupObject == group) {
-                        if (panelProperties.contains(propertyDraw)) {
-                            panel.updatePropertyValues(propertyDraw, readProperty.getValue());
-                        } else {
-                            view.updateDrawPropertyValues(propertyDraw, readProperty.getValue());
-                        }
-                    }
-                }
                 if (propertyRead.getGroupObject() == group && propertyRead.shouldBeDrawn(form)) {
-                    propertyRead.update(readProperty.getValue(), this);
+                    propertyRead.update(readProperty.getValue(), fc.updateProperties.contains(propertyRead), this);
                 }
             }
 
@@ -213,10 +203,11 @@ public class TreeGroupController extends AbstractGroupObjectController {
         panel.updateRowForegroundValue((Color)BaseUtils.singleValue(rowForeground));
     }
 
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
         if (panelProperties.contains(property)) {
-            panel.updatePropertyValues(property, values);
-        }
+            panel.updatePropertyValues(property, values, update);
+        } else
+            view.updateDrawPropertyValues(property, values, update);
     }
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {

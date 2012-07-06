@@ -221,7 +221,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             return true;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
             controller.updateRowBackgroundValues(readKeys);
         }
 
@@ -243,7 +243,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
             return true;
         }
 
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectLogicsSupplier controller) {
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
             controller.updateRowForegroundValues(readKeys);
         }
 
