@@ -5,6 +5,7 @@ REQUIRE System,
         Store,
         LegalEntity,
         Barcode,
+        CRM,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -25,6 +26,15 @@ parentSkuGroup (skuGroup) += parentCategory(skuGroup);
 skuGroupSku (sku) += categoryArticleSku(sku);
 
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+
+
+//--------------------------------- Дисконтные группы -------------------------------------------//
+
+inDiscountCardBrandSupplier 'Вкл.' (discountCard, brandSupplier) = DATA BOOLEAN (discountCard, brandSupplier);
+
+inDiscountSkuGroupSku (discountSkuGroup, sku) += brandSupplierArticleSku(sku) == discountSkuGroup;
+inDiscountCardDiscountSkuGroup (discountCard, discountSkuGroup) += inDiscountCardBrandSupplier(discountCard, discountSkuGroup);
+
 
 // отбор артикулов
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;

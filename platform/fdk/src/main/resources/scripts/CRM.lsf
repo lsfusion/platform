@@ -39,7 +39,7 @@ nameDefaultNumeratorDiscountCards 'Нумератор для дисконтны�
 CLASS discountCard 'Дисконтная карта' : numeratedObject, barcodeObject;
 TABLE discountCard (discountCard);
 
-CLASS ABSTRACT brandGroup 'Группа брендов' : named; //группы товаров для дисконтной карты
+CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаров' : named;
 
 discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
 
@@ -49,18 +49,11 @@ nameClientDiscountCard 'Держатель дисконтной карты' (dis
 dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard);
 dateToDiscountCard 'Дата окончания действия' (discountCard) = DATA DATE (discountCard);
 
-brandGroupDiscountCard 'Группа брендов (ИД)' (discountCard) = ABSTRACT brandGroup (discountCard);
-nameBrandGroupDiscountCard 'Группа брендов' (discountCard) = name(brandGroupDiscountCard(discountCard));
+inDiscountCardDiscountSkuGroup 'Вкл.' (discountCard, discountSkuGroup) = ABSTRACT BOOLEAN (discountCard, discountSkuGroup);
+inDiscountSkuGroupSku 'Вкл' = ABSTRACT BOOLEAN (discountSkuGroup, sku);
 
 blockDiscountCard 'Признак блокировки карты' (discountCard) = DATA STRING[100] (discountCard) IN baseGroup MINCHARWIDTH 40 PREFCHARWIDTH 40;
 
-//CLASS STATIC discountCardType 'Тип дисконтной карты' {
-//    cumulativeCard 'Накопительная',
-//    fixPercentCard 'С фиксированным процентом'
-//}
-//
-//typeDiscountCard 'Тип дисконтной карты (ИД)' (discountCard) = DATA discountCardType (discountCard);
-//nameTypeDiscountCard 'Тип дисконтной карты' (discountCard) = name(typeDiscountCard(discountCard));
 percentDiscountCard 'Процент скидки' (discountCard) = DATA NUMERIC[8,3] (discountCard);
 
 // накопительная сумма  : потом посчитать ее по карте
@@ -97,18 +90,44 @@ generateDiscountCards 'Сгенерировать дисконтные карт�
 
 FORM discountCard 'Дисконтная карта'
     OBJECTS d=discountCard FIXED PANEL
-    PROPERTIES(d) seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard, nameBrandGroupDiscountCard,
+    PROPERTIES(d) seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
                   percentDiscountCard, blockDiscountCard
+
+    OBJECTS dg=discountSkuGroup
+    PROPERTIES(dg) READONLY name
+    PROPERTIES(d, dg) inDiscountCardDiscountSkuGroup
+
+    FILTERGROUP filterDiscountSkuGroup
+        FILTER 'Только отмеченные' 'F11' inDiscountCardDiscountSkuGroup(d, dg)  DEFAULT
+
     EDIT discountCard OBJECT d
 ;
 
+DESIGN discountCard FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+        ADD d.box {
+            childConstraints = TO THE BOTTOM;
+        };
+        ADD dg.box;
+        ADD functions.box;
+    }
+}
+
 FORM discountCards 'Дисконтные карты'
     OBJECTS d=discountCard
-    PROPERTIES(d) READONLY seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard, nameBrandGroupDiscountCard,
+    PROPERTIES(d) READONLY seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
                   percentDiscountCard, blockDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     ORDER BY seriesNumberObject
+
+    OBJECTS dg=discountSkuGroup
+    PROPERTIES(dg) READONLY name
+    PROPERTIES(d, dg) READONLY inDiscountCardDiscountSkuGroup
+
+    FILTERGROUP filterDiscountSkuGroup
+        FILTER 'Только отмеченные' 'F11' inDiscountCardDiscountSkuGroup(d, dg)  DEFAULT
 
     PROPERTIES() generateDiscountCards TODRAW d
 ;
