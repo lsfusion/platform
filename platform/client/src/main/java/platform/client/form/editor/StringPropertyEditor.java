@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
 
 import static platform.client.ClientResourceBundle.getString;
 
@@ -49,7 +49,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
             return false;
         }
 
-        if (matchRegexp && property.regexp != null && getText() != null) {
+        if (matchRegexp && property.regexp != null && getText() != null && !getText().isEmpty()) {
             if (!getText().matches(property.regexp)) {
                 showErrorTooltip();
                 return false;
@@ -64,21 +64,17 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
                        ? getString("form.editor.incorrect.value")
                        : property.regexpMessage;
 
-        ToolTipManager.sharedInstance().mouseMoved(
-                new MouseEvent(this, 0, 0, 0, 0, 0, 0, false)
-        );
+        setToolTipText(currentError);
+
+        showToolTip();
+
+        setToolTipText(null);
     }
 
-    @Override
-    public void removeNotify() {
-        ToolTipManager.sharedInstance().mousePressed(
-                new MouseEvent(this, 0, 0, 0, 0, 0, 0, false)
-        );
-        super.removeNotify();
-    }
-
-    @Override
-    public String getToolTipText(MouseEvent event) {
-        return currentError;
+    private void showToolTip() {
+        Action action = getActionMap().get("postTip");
+        if (action != null) {
+            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "postTip"));
+        }
     }
 }
