@@ -68,7 +68,7 @@ END
 
 
 META defineDocumentHeaderOriginSkuQuantity (object, objectFrom)
-    quantityOrigin###object##DetailSku###object 'Кол-во плановое' (sku, object) = quantity###objectFrom##DetailSku###objectFrom(sku, objectFrom##object(object));
+    quantityOrigin###object##DetailSku###object 'Кол-во ожидаемое' (sku, object) = quantity###objectFrom##DetailSku###objectFrom(sku, objectFrom##object(object));
 
     diffQuantity###object##DetailSku###object 'Разница' (sku, object) = quantity###object##DetailSku###object(sku, object) (-) quantityOrigin###object##DetailSku###object(sku, object);
 END

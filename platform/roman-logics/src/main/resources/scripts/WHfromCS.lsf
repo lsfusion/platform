@@ -87,20 +87,20 @@ DESIGN WHfromCSI FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM WHfromCSIs 'Приходы на оптовый склад'
-    OBJECTS w = WHfromCSI
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
-                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
-
-    PROPERTIES (w) EDITFORM
-
-    OBJECTS d = WHfromCSIDetail
-    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
-                           sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
-                           quantityWHfromCSIDetail
-
-    FILTERS WHfromCSIWHfromCSIDetail(d) == w
-;
+//FORM WHfromCSIs 'Приходы на оптовый склад'
+//    OBJECTS w = WHfromCSI
+//    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
+//                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
+//
+//    PROPERTIES (w) EDITFORM
+//
+//    OBJECTS d = WHfromCSIDetail
+//    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
+//                           sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
+//                           quantityWHfromCSIDetail
+//
+//    FILTERS WHfromCSIWHfromCSIDetail(d) == w
+//;
 
 CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
@@ -110,213 +110,270 @@ CLASS WHfromCSD 'Акт расхождений на приемке на скла
 CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
 CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inFIFOSkuLedger;
 
-//приемка товара
+skuWHfromCSRDetail 'Товар (ИД)' (WHfromCSRDetail) = DATA sku(WHfromCSRDetail) IN idGroup;
 
+@defineDocument(WHfromCSR);
+@defineDocumentPosted(WHfromCSR);
+@defineDocumentStock(WHfromCSR, warehouse, 'Оптовый склад');
+@defineDocumentDetailQuantity(WHfromCSR);
+@defineDocumentDetailNumbered(WHfromCSR);
+@defineDocumentHeaderQuantity(WHfromCSR);
+@defineDocumentDescription (WHfromCSR, 'Расход с СВХ');
+@defineDocumentDetailProps (WHfromCSR);
+@defineAddDetailDialogSkuStock(WHfromCSR, sku, warehouse, dialogSku);
+@defineAddDetailDialogBarcode(WHfromCSR, sku);
+
+corrCustomStoreWHfromCSR (WHfromCSR) = DATA customStore (WHfromCSR) IN idGroup;
+nameCorrCustomStoreWHfromCSR 'СВХ' (WHfromCSR) = name (corrCustomStoreWHfromCSR(WHfromCSR)) IN documentHeaderGroup;
+
+balanceBSkuWHfromCSRDetail 'Остаток до' (WHfromCSRDetail) = balanceBSkuStockDateTime(
+    skuWHfromCSRDetail(WHfromCSRDetail), warehouseWHfromCSRDetail(WHfromCSRDetail), dateTimeWHfromCSRDetail(WHfromCSRDetail));
+
+//связь расхода и приемки
+WHfromCSIWHfromCSR 'Документ приемки (ИД)' (WHfromCSR) = DATA WHfromCSI(WHfromCSR);
+WHfromCSRWHfromCSI 'Документ прихода (ИД)' (WHfromCSI) = GROUP UNIQUE WHfromCSR BY WHfromCSIWHfromCSR(WHfromCSR) WHERE WHfromCSR IS WHfromCSR;
+
+isAcceptedWHfromCSI 'Документ с приемкой' (WHfromCSI) =  WHfromCSI IS WHfromCSI AND WHfromCSRWHfromCSI(WHfromCSI);
+notAcceptedWHfromCSI 'Документ без приемки' (WHfromCSI) =  WHfromCSI IS WHfromCSI AND NOT WHfromCSRWHfromCSI(WHfromCSI);
+
+CStoWHWHfromCSR (WHfromCSR) = CStoWHWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR));
+
+
+initValueNumberObject (WHfromCSR) += [PREV(numberObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
+initValueSeriesObject (WHfromCSR) += [PREV(seriesObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
+
+initWhenNumberedObject (WHfromCSR) +=  WHfromCSR IS WHfromCSR AND initValueNumberObject (WHfromCSR);
 
 //для учета по коробам
-//freightUnitWHfromCSDetail 'Короб (ИД)' (WHfromCSDetail) = DATA freightUnit(WHfromCSDetail);
-//barcodeFreightUnitWHfromCSDetail 'Короб' (WHfromCSDetail) = barcode (freightUnitWHfromCSDetail(WHfromCSDetail));
-//
-//quantityWHfromCSDetailsSkuFreightUnit 'Количество принятое' (sku, freightUnit, WHfromCS) =
-//    GROUP SUM quantityWHfromCSDetail(WHfromCSDetail)
-//    BY skuWHfromCSDetail(WHfromCSDetail), freightUnitWHfromCSDetail(WHfromCSDetail), WHfromCSWHfromCSDetail(WHfromCSDetail);
-//
-//isNotShippedSkuFreightUnitWHfromCS (sku, freightUnit, WHfromCS) = quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWHWHfromCS(WHfromCS))
-//    AND NOT quantityWHfromCSDetailsSkuFreightUnit(sku, freightUnit, WHfromCS);
-//
-//
+freightUnitWHfromCSRDetail 'Короб (ИД)' (WHfromCSRDetail) = DATA freightUnit(WHfromCSRDetail);
+barcodeFreightUnitWHfromCSRDetail 'Короб' (WHfromCSRDetail) = barcode (freightUnitWHfromCSRDetail(WHfromCSRDetail));
+
+quantityWHfromCSRDetailsSkuFreightUnit 'Количество принятое' (sku, freightUnit, WHfromCSR) =
+    GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY skuWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+isNotShippedSkuFreightUnitWHfromCSR (sku, freightUnit, WHfromCSR) = quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWHWHfromCSR(WHfromCSR))
+    AND NOT quantityWHfromCSRDetailsSkuFreightUnit(sku, freightUnit, WHfromCSR);
+
 //quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
 //quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
 //
 //limitInTransferSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
 //
+@defineDocumentHeaderSkuQuantity (WHfromCSR);
+@defineDocumentHeaderOriginSkuQuantity (WHfromCSR, CStoWH);
+
 //quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
 //                                          BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
-//
-//quantityOriginWHfromCSDetail 'Кол-во плановое' (WHfromCSDetail) = DATA NUMERIC[14,2](WHfromCSDetail) IN baseGroup;
-//
-//diffQuantityWHfromCSDetail (WHfromCSDetail) = quantityOriginWHfromCSDetail(WHfromCSDetail)!= quantityWHfromCSDetail(WHfromCSDetail);
-//
-////приемка по коробам
-//
-//currentFreightUnit 'Тек. короб (ИД)' = SESSION DATA freightUnit (WHfromCS);
-//barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' = barcode(currentFreightUnit(WHfromCS));
-//
-//
-//addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCS) = ACTION (WHfromCS) {
-//
-//    FORM barcodeInput MODAL;
-//
-//        IF formResult() == formResult.ok THEN {
-//            LOCAL dialogBarcodeSku = sku();
-//          //  LOCAL dialogBarcodeFreightUnit = freightUnit();
-//
-//            IF skuBarcodeIdDate(chosenString('barcode'), dateWHfromCS (WHfromCS)) IS sku THEN {
-//
-//                SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), dateWHfromCS (WHfromCS));
-//
-//                LOCAL dialogBarcodeDetail = WHfromCSDetail();
-//                SET dialogBarcodeDetail() <- detailWHfromCSSku(WHfromCS, dialogBarcodeSku());
-//                IF dialogBarcodeDetail() IS WHfromCSDetail THEN {
-//                    SET quantityWHfromCSDetail(detail) IF detail == dialogBarcodeDetail() <-
-//                        quantityWHfromCSDetail(detail) (+) (1.0 IF detail IS WHfromCSDetail);
-//                } ELSE {
-//                    ADDOBJ WHfromCSDetail;
-//                    FOR w == addedObject() DO {
-//                        SET WHfromCSWHfromCSDetail(w) <- WHfromCS AS WHfromCS;
-//                        SET skuWHfromCSDetail(w) <- dialogBarcodeSku();
-//                        SET freightUnitWHfromCSDetail(w) <- currentFreightUnit(WHfromCS);
-//                        SET quantityWHfromCSDetail(w) <- 1.0;
-//                    }
-//                }
-//            } ELSE {
-//
-//            IF barcodeToObject(chosenString('barcode')) IS freightUnit THEN {
-//                SET currentFreightUnit (WHfromCS) <- barcodeToObject(chosenString('barcode'));
-//            } ELSE {
-//
-//            MESSAGE 'Не найден штрих-код'; }
-//          }
-//    }
-//} TOOLBAR EDITKEY 'F4';
-//
-//
-//fillWHfromCSDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromCS) = ACTION (WHfromCS) {
-//    FOR isNotShippedSkuFreightUnitWHfromCS (sku AS sku, currentFreightUnit(WHfromCS), WHfromCS AS WHfromCS) DO {
-//        ADDOBJ WHfromCSDetail;
-//        FOR w == addedObject() DO {
-//            SET skuWHfromCSDetail (w) <- sku AS sku;
-//            SET quantityWHfromCSDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS sku, currentFreightUnit(WHfromCS), CStoWHWHfromCS(WHfromCS));
-//            SET freightUnitWHfromCSDetail(w) <- currentFreightUnit(WHfromCS);
-//        }
-//    }
-//} EDITKEY 'F5' CONFIRM;
-//
-//shouldBePrintWHfromCS = SESSION DATA BOOLEAN (sku);
-//
-//priceBaseWHfromCSDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
-//priceDiscountWHfromCSDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
-//
-//quantityWHfromCSFreightUnitSku (WHfromCS, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCS(WHfromCS), freightUnit, sku);
-//
-//quantityPositionsSkuInWHFromCSFreightUnit 'Кол-во позиций в коробе' (WHfromCS, freightUnit) =
-//    GROUP SUM 1 IF quantityWHfromCSFreightUnitSku(WHfromCS, freightUnit, sku) BY WHfromCS, freightUnit;
-//quantityPositionsSkuInFreightUnitWHfromCS 'Кол-во позиций в коробе' (WHfromCS) = quantityPositionsSkuInWHFromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
-//
-//quantitySkuInWHFromCSFreightUnit 'Кол-во позиций в документе' (WHfromCS, freightUnit) =
-//    GROUP SUM quantityWHfromCSFreightUnitSku(WHfromCS, freightUnit, sku) BY WHfromCS, freightUnit;
-//quantitySkuInFreightUnitWHfromCS 'Кол-во позиций в документе' (WHfromCS) = quantitySkuInWHFromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
-//
-//quantityPositionsSkuWHfromCSFreightUnit 'Кол-во позиций в документе' (WHfromCS, freightUnit) =
-//    GROUP SUM 1 IF quantityWHfromCSDetail(WHfromCSDetail) BY WHfromCSWHfromCSDetail(WHfromCSDetail), freightUnitWHfromCSDetail(WHfromCSDetail);
-//quantityPositionsSkuWHfromCS 'Кол-во позиций в документе' (WHfromCS) =
-//    quantityPositionsSkuWHfromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
-//
-//quantitySkuWHfromCSFreightUnit 'Кол-во товара в документе' (WHfromCS, freightUnit) =
-//    GROUP SUM quantityWHfromCSDetail(WHfromCSDetail) BY WHfromCSWHfromCSDetail(WHfromCSDetail), freightUnitWHfromCSDetail(WHfromCSDetail);
-//quantitySkuWHfromCS 'Кол-во товара в документе' (WHfromCS) =
-//    quantitySkuWHfromCSFreightUnit(WHfromCS, currentFreightUnit(WHfromCS));
-//
-//quantityRemainedPositionSkuWHfromCS 'Кол-во оставшихся позиций в коробе' (WHfromCS) =
-//    UNION OVERRIDE 0 AND WHfromCS, quantityPositionsSkuInFreightUnitWHfromCS(WHfromCS) (-) quantityPositionsSkuWHfromCS(WHfromCS);
-//
-//quantityRemainedSkuWHfromCS 'Кол-во оставшегося товара в коробе' (WHfromCS) =
-//    UNION OVERRIDE 0 AND WHfromCS, quantitySkuInFreightUnitWHfromCS(WHfromCS) (-) quantitySkuWHfromCS(WHfromCS);
-//
-//quantitySkuInWHfromCS 'Кол-во товара' (WHfromCS, sku) = GROUP SUM quantityWHfromCSDetail(WHfromCSDetail)
-//    BY WHfromCSWHfromCSDetail(WHfromCSDetail), skuWHfromCSDetail(WHfromCSDetail);
-//
-//FORM printMarksWHfromCS 'Печать маркировок товара' PRINT
-//
-//    OBJECTS dt = DATETIME FIXED PANEL
-//    PROPERTIES(dt) OBJVALUE
-//
-//    OBJECTS s = sku
-//    PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
-//                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
-//                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku
-//
-//    PROPERTIES(s, dt)      priceBaseWHfromCSDateTimeSku, priceDiscountWHfromCSDateTimeSku
-//
-//    FILTERS shouldBePrintWHfromCS(s)
-//;
-//
-//printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCS) = ACTION (WHfromCS) {
-//
-//    SET shouldBePrintWHfromCS(sku) <- NULL;
-//    SET shouldBePrintWHfromCS(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCS), CStoWHWHfromCS(WHfromCS));
-//    FORM printMarksWHfromCS OBJECTS dt = dateTimeWHfromCS(WHfromCS) MODAL;
-//
-//} CONFIRM;
-//
-//printMarksSkuWHfromCS 'Печать маркировок товаров' (WHfromCS) = ACTION (WHfromCS) {
-//
-//    SET shouldBePrintWHfromCS(sku) <- NULL;
-//    SET shouldBePrintWHfromCS(sku) <- TRUE IF quantitySkuInWHfromCS(WHfromCS, sku);
-//    FORM printMarksWHfromCS OBJECTS dt = dateTimeWHfromCS(WHfromCS) MODAL;
-//
-//} CONFIRM TOOLBAR;
-//
-//FORM WHfromCS 'Приход на оптовый склад'
-//
-//    OBJECTS w = WHfromCS FIXED PANEL, d = WHfromCSDetail
-//
-//    PROPERTIES(w)          numberCStoWHWHfromCS, seriesCStoWHWHfromCS, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS,
-//                           barcodeCurrentFreightUnit, fillWHfromCSDetailsSkuFreightUnit, printMarksSkuFreightUnit,
-//                           printMarksSkuWHfromCS TODRAW d FORCE PANEL
-//    PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCS SHOWIF barcodeCurrentFreightUnit(w),
-//                           quantityRemainedSkuWHfromCS SHOWIF barcodeCurrentFreightUnit(w)
-//
-//    PROPERTIES(d) READONLY indexWHfromCSDetail, barcodeWHfromCSDetail, nameBrandWHfromCSDetail, sidArticleWHfromCSDetail,
-//                           sidColorWHfromCSDetail, nameColorWHfromCSDetail, sidSizeWHfromCSDetail, barcodeFreightUnitWHfromCSDetail
-//
-//    PROPERTIES(d) quantityOriginWHfromCSDetail, quantityWHfromCSDetail
-//    PROPERTIES(d) delete
-//
-//    PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSDetailWHfromCS
-//
-//    FILTERS inWHfromCSWHfromCSDetail(w, d)
-//
-//    FILTERGROUP filtersQuantity
-//        FILTER 'Показывать принятые' 'F9' quantityWHfromCSDetail(d) DEFAULT
-//
+
+//diffQuantityWHfromCSRDetail (WHfromCSRDetail) = quantityOriginWHfromCSRDetail(WHfromCSRDetail)!= quantityWHfromCSRDetail(WHfromCSRDetail);
+
+//приемка по коробам
+
+currentFreightUnit 'Тек. короб (ИД)' (WHfromCSR) = SESSION DATA freightUnit (WHfromCSR);
+barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromCSR) = barcode(currentFreightUnit(WHfromCSR));
+
+
+addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTION (WHfromCSR) {
+
+    FORM barcodeInput MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            LOCAL dialogBarcodeSku = sku();
+          //  LOCAL dialogBarcodeFreightUnit = freightUnit();
+
+            IF skuBarcodeIdDate(chosenString('barcode'), dateWHfromCSR (WHfromCSR)) IS sku THEN {
+
+                SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), dateWHfromCSR (WHfromCSR));
+
+                LOCAL dialogBarcodeDetail = WHfromCSRDetail();
+                SET dialogBarcodeDetail() <- detailWHfromCSRSku(WHfromCSR, dialogBarcodeSku());
+                IF dialogBarcodeDetail() IS WHfromCSRDetail THEN {
+                    SET quantityWHfromCSRDetail(detail) IF detail == dialogBarcodeDetail() <-
+                        quantityWHfromCSRDetail(detail) (+) (1.0 IF detail IS WHfromCSRDetail);
+                } ELSE {
+                    ADDOBJ WHfromCSRDetail;
+                    FOR w == addedObject() DO {
+                        SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
+                        SET skuWHfromCSRDetail(w) <- dialogBarcodeSku();
+                        SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
+                        SET quantityWHfromCSRDetail(w) <- 1.0;
+                    }
+                }
+            } ELSE {
+
+            IF barcodeToObject(chosenString('barcode')) IS freightUnit THEN {
+                SET currentFreightUnit (WHfromCSR) <- barcodeToObject(chosenString('barcode'));
+            } ELSE {
+
+            MESSAGE 'Не найден штрих-код'; }
+          }
+    }
+} TOOLBAR EDITKEY 'F4';
+
+fillWHfromCSRDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromCSR) = ACTION (WHfromCSR) {
+    FOR isNotShippedSkuFreightUnitWHfromCSR (sku AS sku, currentFreightUnit(WHfromCSR), WHfromCSR AS WHfromCSR) DO {
+        ADDOBJ WHfromCSRDetail;
+        FOR w == addedObject() DO {
+            SET skuWHfromCSRDetail (w) <- sku AS sku;
+            SET quantityWHfromCSRDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSR(WHfromCSR));
+            SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
+        }
+    }
+} EDITKEY 'F5' CONFIRM;
+
+shouldBePrintWHfromCSR = SESSION DATA BOOLEAN (sku);
+
+priceBaseWHfromCSRDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
+priceDiscountWHfromCSRDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
+
+quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSR(WHfromCSR), freightUnit, sku);
+
+quantityPositionsSkuInWHFromCSRFreightUnit 'Кол-во позиций в коробе' (WHfromCSR, freightUnit) =
+    GROUP SUM 1 IF quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, freightUnit;
+quantityPositionsSkuInFreightUnitWHfromCSR 'Кол-во позиций в коробе' (WHfromCSR) = quantityPositionsSkuInWHFromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantitySkuInWHFromCSRFreightUnit 'Кол-во товара в коробе' (WHfromCSR, freightUnit) =
+    GROUP SUM quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, freightUnit;
+quantitySkuInFreightUnitWHfromCSR 'Кол-во товара в коробе' (WHfromCSR) = quantitySkuInWHFromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantityPositionsSkuWHfromCSRFreightUnit 'Кол-во позиций в документе' (WHfromCSR, freightUnit) =
+    GROUP SUM 1 IF quantityWHfromCSRDetail(WHfromCSRDetail) BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail);
+quantityPositionsSkuWHfromCSR 'Кол-во позиций в документе' (WHfromCSR) =
+    quantityPositionsSkuWHfromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantitySkuWHfromCSRFreightUnit 'Кол-во товара в документе' (WHfromCSR, freightUnit) =
+    GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail);
+quantitySkuWHfromCSR 'Кол-во товара в документе' (WHfromCSR) =
+    quantitySkuWHfromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
+
+quantityRemainedPositionSkuWHfromCSR 'Кол-во оставшихся позиций в коробе' (WHfromCSR) =
+    UNION OVERRIDE 0 AND WHfromCSR, quantityPositionsSkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantityPositionsSkuWHfromCSR(WHfromCSR);
+
+quantityRemainedSkuWHfromCSR 'Кол-во оставшегося товара в коробе' (WHfromCSR) =
+    UNION OVERRIDE 0 AND WHfromCSR, quantitySkuInFreightUnitWHfromCSR(WHfromCSR) (-) quantitySkuWHfromCSR(WHfromCSR);
+
+quantitySkuInWHfromCSR 'Кол-во товара' (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
+FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
+
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
+                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
+                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku
+
+    PROPERTIES(s, dt)      priceBaseWHfromCSRDateTimeSku, priceDiscountWHfromCSRDateTimeSku
+
+    FILTERS shouldBePrintWHfromCSR(s)
+;
+
+printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
+
+    SET shouldBePrintWHfromCSR(sku) <- NULL;
+    SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSR(WHfromCSR));
+    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
+
+} CONFIRM;
+
+printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
+
+    SET shouldBePrintWHfromCSR(sku) <- NULL;
+    SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
+    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
+
+} CONFIRM TOOLBAR;
+
+FORM WHfromCSR 'Приемка на оптовый склад'
+
+    OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
+
+    PROPERTIES(w)          numberObject, seriesObject,
+                           dateWHfromCSR, timeWHfromCSR, nameWarehouseWHfromCSR,
+                           barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit, delete,
+                           printMarksSkuWHfromCSR TODRAW d FORCE PANEL
+    PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
+                           quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
+
+    PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
+                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail, quantityWHfromCSRDetail
+
+    //PROPERTIES(d) quantityOriginWHfromCSRDetailSkuWHfromCSR, quantityWHfromCSRDetail
+    PROPERTIES(d) delete
+
+    PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSRDetailWHfromCSR
+
+    FILTERS inWHfromCSRWHfromCSRDetail(w, d)
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantityWHfromCSRDetail(d) DEFAULT
+
 //    FILTERGROUP filtersDiff
-//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSDetail(d)
-//
-//    EDIT WHfromCS OBJECT w
-//;
-//
-//DESIGN WHfromCS FROM DEFAULT {
-//
-//    NEW topContainer {
-//        title = 'Приход на оптовый склад';
-//        childConstraints = TO THE BOTTOM;
-//
-//        NEW firstCase {
-//            title = 'Шапка документа';
-//            childConstraints = TO THE RIGHT;
-//            ADD PROPERTY(numberCStoWHWHfromCS);
-//            ADD PROPERTY(seriesCStoWHWHfromCS);
-//            ADD PROPERTY(dateWHfromCS);
-//            ADD PROPERTY(timeWHfromCS);
-//            ADD PROPERTY(nameWarehouseWHfromCS);
-//        }
-//
-//        NEW secondCase {
-//            title = 'Короб';
-//            childConstraints = TO THE RIGHT;
-//            ADD PROPERTY(quantityRemainedPositionSkuWHfromCS);
-//            ADD PROPERTY(quantityRemainedSkuWHfromCS);
-//            ADD PROPERTY(barcodeCurrentFreightUnit);
-//            ADD PROPERTY(fillWHfromCSDetailsSkuFreightUnit);
-//            ADD PROPERTY(printMarksSkuFreightUnit);
-//        }
+//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSRDetail(d)
+
+    EDIT WHfromCSR OBJECT w
+;
+
+toSSSS (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
+
+toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI){
+    ADDOBJ WHfromCSR;
+    FOR w == addedObject() DO {
+        SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
+        SET warehouseWHfromCSR (w) <- warehouseWHfromCSI(WHfromCSI);
+        EXEC toSSSS (w);
+    }
+};
+
+toModifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI){
+//    FOR w == addedObject() DO {
+        EXEC toSSSS (WHfromCSRWHfromCSI(WHfromCSI));
+        EXEC apply();
 //    }
-//
-//    ADD d.box;
-//    ADD functions.box;
-//}
-//
+} IMAGE 'edit.png';
+
+toDeleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI){
+    FOR w == WHfromCSRWHfromCSI(WHfromCSI) DO {
+        EXEC delete(w);
+        EXEC apply();
+    }
+} IMAGE 'delete.png';
+
+DESIGN WHfromCSR FROM DEFAULT {
+
+    NEW topContainer {
+        title = 'Приход на оптовый склад';
+        childConstraints = TO THE BOTTOM;
+
+        NEW firstCase {
+            title = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(dateWHfromCSR);
+            ADD PROPERTY(timeWHfromCSR);
+            ADD PROPERTY(nameWarehouseWHfromCSR);
+            ADD PROPERTY(delete);
+        }
+
+        NEW secondCase {
+            title = 'Короб';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
+            ADD PROPERTY(quantityRemainedSkuWHfromCSR);
+            ADD PROPERTY(barcodeCurrentFreightUnit);
+            ADD PROPERTY(fillWHfromCSRDetailsSkuFreightUnit);
+            ADD PROPERTY(printMarksSkuFreightUnit);
+        }
+    }
+
+    ADD d.box;
+    ADD functions.box;
+}
+
 //FORM WHfromCSs 'Приходы на оптовый склад'
 //    OBJECTS w = WHfromCS
 //    PROPERTIES (w) READONLY numberObject, seriesObject, dateWHfromCS, timeWHfromCS, nameWarehouseWHfromCS
@@ -338,3 +395,19 @@ CLASS WHfromCSDDetail 'Строка акта расхождений на при�
 //        askConfirm = TRUE;
 //    }
 //}
+
+FORM WHfromCSIs 'Приходы на оптовый склад'
+    OBJECTS w = WHfromCSI
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
+                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
+
+    PROPERTIES (w) FORCE PANEL toAcceptCStoWHWHfromCSR SHOWIF notAcceptedWHfromCSI(w), toModifyCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w),
+                               toDeleteCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w)
+
+    OBJECTS d = WHfromCSIDetail
+    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
+                           sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
+                           quantityWHfromCSIDetail
+
+    FILTERS WHfromCSIWHfromCSIDetail(d)
+;
