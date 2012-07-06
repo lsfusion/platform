@@ -85,15 +85,18 @@ toFillWHfromWHDetailsWHfromWH 'Заполнить документ из расх
 
 FORM WHfromWH 'Приход на склад со склада'
     OBJECTS w = WHfromWH FIXED PANEL
-    PROPERTIES (w) numberObject, seriesObject, dateWHfromWH, timeWHfromWH, numberWHfromWH, nameWarehouseWHfromWH, nameCorrWarehouseWHfromWH,
-                   quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH, invoiceVATSumWHfromWHDetailWHfromWH,
-                   invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH, numberContractSkuCompanyWHfromWH, toFillWHfromWHDetailsWHfromWH
+    PROPERTIES (w) numberObject, seriesObject, dateWHfromWH, timeWHfromWH, numberWHfromWH, nameWarehouseWHfromWH,
+                   nameCorrWarehouseWHfromWH, quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH,
+                   invoiceVATSumWHfromWHDetailWHfromWH, invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH,
+                   numberContractSkuCompanyWHfromWH, toFillWHfromWHDetailsWHfromWH
 
     OBJECTS d = WHfromWHDetail
-    PROPERTIES(d) indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, shortNameUOMWHfromWHDetail, sidSizeWHfromWHDetail, nameBrandWHfromWHDetail,
-                  sidArticleWHfromWHDetail, nameCategoryWHfromWHDetail, sidColorWHfromWHDetail, nameColorWHfromWHDetail, balanceBSkuWHfromWHDetail,
-                  quantityWHfromWHDetail, importerPriceWHfromWHDetail, supplierPriceWHfromWHDetail, supplierSumWHfromWHDetail, numberSupplierVATWHfromWHDetail,
-                  valueSupplierVATWHfromWHDetail, supplierVATISumWHfromWHDetail, invoiceSumWHfromWHDetail
+    PROPERTIES(d) indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, shortNameUOMWHfromWHDetail,
+                  sidSizeWHfromWHDetail, nameBrandWHfromWHDetail, sidArticleWHfromWHDetail, nameCategoryWHfromWHDetail,
+                  sidColorWHfromWHDetail, nameColorWHfromWHDetail, balanceBSkuWHfromWHDetail, quantityWHfromWHDetail,
+                  importerPriceWHfromWHDetail, supplierPriceWHfromWHDetail, supplierSumWHfromWHDetail,
+                  numberSupplierVATWHfromWHDetail, valueSupplierVATWHfromWHDetail, supplierVATSumWHfromWHDetail,
+                  invoiceSumWHfromWHDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHfromWHDetailWHfromWH, addDetailDialogBarcodeWHfromWHDetailWHfromWH,
                   deleteWHfromWHDetailWHfromWH
@@ -109,6 +112,9 @@ FORM WHfromWH 'Приход на склад со склада'
 
     FILTERGROUP filtersDiff
         FILTER 'Показать отличающиеся' 'F10' diffQuantityWHfromWHDetailSkuWHfromWH(i, w) !=0
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantityWHfromWHDetail(d) DEFAULT
 
     EDIT WHfromWH OBJECT w
 ;
@@ -160,21 +166,23 @@ DESIGN WHfromWH FROM DEFAULT {
 
 FORM WHfromWHs 'Приходы на склад со склада'
     OBJECTS w = WHfromWH
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromWH, timeWHfromWH, nameWarehouseWHfromWH, nameCorrWarehouseWHfromWH,
-                   documentFlowWHfromWH, numberContractSkuCompanyWHfromWH, countWHfromWHDetailWHfromWH, quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH,
-                   invoiceVATSumWHfromWHDetailWHfromWH, invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromWH, timeWHfromWH, nameWarehouseWHfromWH,
+                            nameCorrWarehouseWHfromWH, numberContractSkuCompanyWHfromWH, countWHfromWHDetailWHfromWH,
+                            quantityWHfromWHDetailWHfromWH, supplierSumWHfromWHDetailWHfromWH,
+                            invoiceVATSumWHfromWHDetailWHfromWH, invoiceSumWHfromWHDetailWHfromWH, noteWHfromWH
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHfromWH(w), delete FORCE PANEL SHOWIF isDraftWHfromWH(w),
                    postWHfromWH SHOWIF isDraftWHfromWH(w), unpostWHfromWH SHOWIF isPostedWHfromWH(w)
 
     OBJECTS d = WHfromWHDetail
-    PROPERTIES(d) READONLY indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, shortNameUOMWHfromWHDetail, sidSizeWHfromWHDetail, nameBrandWHfromWHDetail,
-                  sidArticleWHfromWHDetail, nameCategoryWHfromWHDetail, sidColorWHfromWHDetail, nameColorWHfromWHDetail, balanceBSkuWHfromWHDetail,
-                  quantityWHfromWHDetail, importerPriceWHfromWHDetail, supplierPriceWHfromWHDetail, supplierSumWHfromWHDetail, numberSupplierVATWHfromWHDetail,
-                  valueSupplierVATWHfromWHDetail, supplierVATISumWHfromWHDetail, invoiceSumWHfromWHDetail
+    PROPERTIES(d) READONLY indexWHfromWHDetail, barcodeWHfromWHDetail, nameSkuWHfromWHDetail, shortNameUOMWHfromWHDetail,
+                           sidSizeWHfromWHDetail, nameBrandWHfromWHDetail, sidArticleWHfromWHDetail, nameCategoryWHfromWHDetail,
+                           sidColorWHfromWHDetail, nameColorWHfromWHDetail, balanceBSkuWHfromWHDetail, quantityWHfromWHDetail,
+                           importerPriceWHfromWHDetail, supplierPriceWHfromWHDetail, supplierSumWHfromWHDetail,
+                           numberSupplierVATWHfromWHDetail, valueSupplierVATWHfromWHDetail, supplierVATSumWHfromWHDetail,
+                           invoiceSumWHfromWHDetail
 
     FILTERS inWHfromWHWHfromWHDetail(w, d)
 ;

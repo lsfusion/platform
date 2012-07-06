@@ -58,10 +58,11 @@ FORM WHtoWH 'Расход со склада на склад'
 
     OBJECTS d = WHtoWHDetail
 
-    PROPERTIES(d) indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail, sidSizeWHtoWHDetail, nameBrandWHtoWHDetail,
-                  sidArticleWHtoWHDetail, nameCategoryWHtoWHDetail, sidColorWHtoWHDetail, nameColorWHtoWHDetail, balanceBSkuWHtoWHDetail,
-                  quantityWHtoWHDetail, importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail,
-                  valueSupplierVATWHtoWHDetail, supplierVATISumWHtoWHDetail, invoiceSumWHtoWHDetail
+    PROPERTIES(d) indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail,
+                  sidSizeWHtoWHDetail, nameBrandWHtoWHDetail, sidArticleWHtoWHDetail, nameCategoryWHtoWHDetail,
+                  sidColorWHtoWHDetail, nameColorWHtoWHDetail, balanceBSkuWHtoWHDetail, quantityWHtoWHDetail,
+                  importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail,
+                  valueSupplierVATWHtoWHDetail, supplierVATSumWHtoWHDetail, invoiceSumWHtoWHDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoWHDetailWHtoWH, addDetailDialogBarcodeWHtoWHDetailWHtoWH,
                   deleteWHtoWHDetailWHtoWH
@@ -108,26 +109,22 @@ DESIGN WHtoWH FROM DEFAULT {
 
 FORM WHtoWHs 'Расходы со склада на склад'
     OBJECTS w = WHtoWH
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
-                   numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH, quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
-                   invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH,
+                            nameCorrWarehouseWHtoWH, numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH,
+                            quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
+                            invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHtoWH(w), delete FORCE PANEL SHOWIF isDraftWHtoWH(w),
                    postWHtoWH SHOWIF isDraftWHtoWH(w), unpostWHtoWH SHOWIF isPostedWHtoWH(w)
 
-    PROPERTIES (w ) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
-                   printConsignmentVerticalB, printConsignmentHorizontalB,
-                   printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
-                   printConsignmentSimpleVertical, printConsignmentSimpleAttach
-
     OBJECTS d = WHtoWHDetail
-    PROPERTIES(d) READONLY indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail, sidSizeWHtoWHDetail, nameBrandWHtoWHDetail,
-                  sidArticleWHtoWHDetail, nameCategoryWHtoWHDetail, sidColorWHtoWHDetail, nameColorWHtoWHDetail, balanceBSkuWHtoWHDetail,
-                  quantityWHtoWHDetail, importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail,
-                  valueSupplierVATWHtoWHDetail, supplierVATISumWHtoWHDetail, invoiceSumWHtoWHDetail
+    PROPERTIES(d) READONLY indexWHtoWHDetail, barcodeWHtoWHDetail, nameSkuWHtoWHDetail, shortNameUOMWHtoWHDetail,
+                           sidSizeWHtoWHDetail, nameBrandWHtoWHDetail, sidArticleWHtoWHDetail, nameCategoryWHtoWHDetail,
+                           sidColorWHtoWHDetail, nameColorWHtoWHDetail, balanceBSkuWHtoWHDetail, quantityWHtoWHDetail,
+                           importerPriceWHtoWHDetail, supplierPriceWHtoWHDetail, supplierSumWHtoWHDetail, numberSupplierVATWHtoWHDetail,
+                           valueSupplierVATWHtoWHDetail, supplierVATSumWHtoWHDetail, invoiceSumWHtoWHDetail
 
     FILTERS inWHtoWHWHtoWHDetail(w, d)
 ;
@@ -157,60 +154,40 @@ DESIGN WHtoWHs FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
             }
         }
-
-        ADD w.printGroup {
-            childConstraints = TO THE BOTTOM;
-            NEW case55{
-                childConstraints = TO THE RIGHT;
-
-                NEW contOne {
-                    title = 'Накладная';
-                    ADD PROPERTY(editConsignment);
-                }
-                NEW tn{
-                    childConstraints = TO THE RIGHT;
-                    title = 'ТН-2';
-                    ADD PROPERTY(printConsignmentSimpleVertical);
-                    ADD PROPERTY(printConsignmentSimpleHorizontal);
-                    ADD PROPERTY(printConsignmentSimpleAttach);
-                }
-            }
-            NEW ttn1{
-                childConstraints = TO THE RIGHT;
-                title = 'ТТН-1';
-                ADD PROPERTY(printConsignmentVerticalA);
-                ADD PROPERTY(printConsignmentHorizontalA);
-                ADD PROPERTY(printConsignmentVerticalB);
-                ADD PROPERTY(printConsignmentHorizontalB);
-                ADD PROPERTY(printConsignmentAttach);
-            }
-
-        }
-
     }
     ADD functions.box;
 }
 
-@defineConsignment(WHtoWH);
-@implementConsignmentHeader(WHtoWH, warehouse);
+FORM WHtoWHsDialog 'Расходы с магазина на склад'
+    OBJECTS w = WHtoWHPosted
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH,
+                            nameCorrWarehouseWHtoWH, numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH,
+                            quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
+                            invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
-senderConsignment (consignment) += companyWarehouse(warehouseWHtoWH(consignment));
-recipientConsignment (consignment) += companyStore(corrWarehouseWHtoWH(consignment));
+    DIALOG WHtoWHPosted OBJECT w
+;
 
-consignmentConsignmentDetail (consignmentDetail) += WHtoWHWHtoWHDetail (consignmentDetail);
-skuConsignmentDetail (consignmentDetail) += skuWHtoWHDetail (consignmentDetail);
-shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHtoWHDetail (consignmentDetail);
-quantityConsignmentDetail (consignmentDetail) += quantityWHtoWHDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += supplierPriceWHtoWHDetail (consignmentDetail);
-vatConsignmentDetail (consignmentDetail) += valueSupplierVATWHtoWHDetail (consignmentDetail);
-sumVATConsignmentDetail (consignmentDetail) += supplierVATISumWHtoWHDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += supplierSumWHtoWHDetail (consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumWHtoWHDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += grossWeightWHtoWHDetail (consignmentDetail);
-packQuantityConsignmentDetail (consignmentDetail) += packQuantityWHtoWHDetail(consignmentDetail);
+//@defineConsignment(WHtoWH);
+//@implementConsignmentHeader(WHtoWH, warehouse);
+
+//senderConsignment (consignment) += companyWarehouse(warehouseWHtoWH(consignment));
+//recipientConsignment (consignment) += companyStore(corrWarehouseWHtoWH(consignment));
+
+//consignmentConsignmentDetail (consignmentDetail) += WHtoWHWHtoWHDetail (consignmentDetail);
+//skuConsignmentDetail (consignmentDetail) += skuWHtoWHDetail (consignmentDetail);
+//shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMWHtoWHDetail (consignmentDetail);
+//quantityConsignmentDetail (consignmentDetail) += quantityWHtoWHDetail (consignmentDetail);
+//priceConsignmentDetail (consignmentDetail) += supplierPriceWHtoWHDetail (consignmentDetail);
+//vatConsignmentDetail (consignmentDetail) += valueSupplierVATWHtoWHDetail (consignmentDetail);
+//sumVATConsignmentDetail (consignmentDetail) += supplierVATISumWHtoWHDetail (consignmentDetail);
+//sumConsignmentDetail (consignmentDetail) += supplierSumWHtoWHDetail (consignmentDetail);
+//sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumWHtoWHDetail (consignmentDetail);
+//grossWeightConsignmentDetail (consignmentDetail) += grossWeightWHtoWHDetail (consignmentDetail);
+//packQuantityConsignmentDetail (consignmentDetail) += packQuantityWHtoWHDetail(consignmentDetail);
 //currencyConsignment(consignment) += currencyWHtoWH(consignment);
 //isCustomsFlowConsignment (consignment) += consignment IS WHtoWH;
-noteConsignment(consignment) += noteWHtoWH(consignment);
+//noteConsignment(consignment) += noteWHtoWH(consignment);
 
 //noteConsignmentDetail
 
