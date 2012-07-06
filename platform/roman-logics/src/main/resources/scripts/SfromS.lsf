@@ -44,6 +44,9 @@ initValueSeriesObject (SfromS) += [PREV(seriesObject(StoS))](StoSSfromS(SfromS))
 
 initWhenNumberedObject(SfromS) += CHANGED(StoSSfromS(SfromS));
 
+storeSfromS (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS));
+nameStoreSfromS 'Магазин-получатель' (SfromS) = name(storeSfromS(SfromS));
+
 numberSfromS 'Номер док-та расхода' (SfromS) = numberObject(StoSSfromS(SfromS));
 
 documentFlowSfromS 'Документ расхода' (SfromS) =
@@ -83,7 +86,7 @@ FORM SfromS 'Приход на магазин из магазина'
     PROPERTIES(d) indexSfromSDetail, barcodeSfromSDetail, nameSkuSfromSDetail, shortNameUOMSfromSDetail, sidSizeSfromSDetail, nameBrandSfromSDetail,
                   sidArticleSfromSDetail, nameCategorySfromSDetail, sidColorSfromSDetail, nameColorSfromSDetail, balanceBSkuSfromSDetail,
                   quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail, supplierSumSfromSDetail, numberSupplierVATSfromSDetail,
-                  valueSupplierVATSfromSDetail, supplierVATISumSfromSDetail, invoiceSumSfromSDetail, numberRetailVATSfromSDetail,
+                  valueSupplierVATSfromSDetail, supplierVATSumSfromSDetail, invoiceSumSfromSDetail, numberRetailVATSfromSDetail,
                   valueRetailVATSfromSDetail, retailPriceSfromSDetail, retailSumSfromSDetail, calcRetailMarkupSfromSDetail
 
     PROPERTIES(s) TODRAW d addDetailDialogBarcodeSfromSDetailSfromS, addDetailDialogSkuSfromSDetailSfromS, deleteSfromSDetailSfromS
@@ -99,6 +102,9 @@ FORM SfromS 'Приход на магазин из магазина'
 
     FILTERGROUP filtersDiff
         FILTER 'Показать отличающиеся' 'F10' diffQuantitySfromSDetailSkuSfromS(i,s) !=0
+
+    FILTERGROUP filtersQuantity
+        FILTER 'Показывать принятые' 'F9' quantitySfromSDetail(d) DEFAULT
 
     EDIT SfromS OBJECT s
 ;
@@ -151,9 +157,10 @@ DESIGN SfromS FROM DEFAULT {
 FORM SfromSs 'Приходы на магазин из магазина'
     OBJECTS s = SfromS
 
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateSfromS, timeSfromS, nameDepartmentStoreSfromS, nameCorrStoreSfromS,
-                   documentFlowSfromS, countSfromSDetailSfromS, quantitySfromSDetailSfromS, supplierSumSfromSDetailSfromS,
-                   invoiceVATSumSfromSDetailSfromS, invoiceSumSfromSDetailSfromS, retailSumSfromSDetailSfromS, noteSfromS
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateSfromS, timeSfromS, nameDepartmentStoreSfromS,
+                            nameStoreSfromS, nameCorrStoreSfromS, countSfromSDetailSfromS, quantitySfromSDetailSfromS,
+                            supplierSumSfromSDetailSfromS, invoiceVATSumSfromSDetailSfromS, invoiceSumSfromSDetailSfromS,
+                            retailSumSfromSDetailSfromS, noteSfromS
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -162,10 +169,10 @@ FORM SfromSs 'Приходы на магазин из магазина'
 
     OBJECTS d = SfromSDetail
     PROPERTIES(d) READONLY indexSfromSDetail, barcodeSfromSDetail, nameSkuSfromSDetail, shortNameUOMSfromSDetail, sidSizeSfromSDetail, nameBrandSfromSDetail,
-                  sidArticleSfromSDetail, nameCategorySfromSDetail, sidColorSfromSDetail, nameColorSfromSDetail, balanceBSkuSfromSDetail,
-                  quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail, supplierSumSfromSDetail, numberSupplierVATSfromSDetail,
-                  valueSupplierVATSfromSDetail, supplierVATISumSfromSDetail, invoiceSumSfromSDetail, numberRetailVATSfromSDetail,
-                  valueRetailVATSfromSDetail, retailPriceSfromSDetail, retailSumSfromSDetail, calcRetailMarkupSfromSDetail
+                           sidArticleSfromSDetail, nameCategorySfromSDetail, sidColorSfromSDetail, nameColorSfromSDetail, balanceBSkuSfromSDetail,
+                           quantitySfromSDetail, importerPriceSfromSDetail, supplierPriceSfromSDetail, supplierSumSfromSDetail, numberSupplierVATSfromSDetail,
+                           valueSupplierVATSfromSDetail, supplierVATSumSfromSDetail, invoiceSumSfromSDetail, numberRetailVATSfromSDetail,
+                           valueRetailVATSfromSDetail, retailPriceSfromSDetail, retailSumSfromSDetail, calcRetailMarkupSfromSDetail
 
     FILTERS inSfromSSfromSDetail(s, d)
 ;

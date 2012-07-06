@@ -38,7 +38,7 @@ quantityInFIFOSkuLedger (ledger) += quantitySfromWHDetail(ledger);
 companyCorrWarehouseSfromWH (SfromWH) = companyWarehouse(corrWarehouseSfromWH(SfromWH));
 nameCompanyCorrWarehouseSfromWH 'Поставщик' (SfromWH) = name(companyCorrWarehouseSfromWH(SfromWH));
 storeSfromWH (SfromWH) = storeDepartmentStore(departmentStoreSfromWH(SfromWH));
-nameStoreSfromWH 'Магазин' (SfromWH) = name(storeSfromWH(SfromWH));
+nameStoreSfromWH 'Магазин-получатель' (SfromWH) = name(storeSfromWH(SfromWH));
 
 identitySfromWH (SfromWH) =  storeSfromWH(SfromWH) == corrStoreWHtoS(WHtoSSfromWH(SfromWH)) AND corrWarehouseSfromWH(SfromWH) == warehouseWHtoS(WHtoSSfromWH(SfromWH));
 

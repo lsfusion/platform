@@ -40,9 +40,10 @@ FORM WHtoS 'Расход со склада на магазин'
                    invoiceSumWHtoSDetailWHtoS, noteWHtoS
 
     OBJECTS d = WHtoSDetail
-    PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail, sidSizeWHtoSDetail, nameBrandWHtoSDetail,
-                  sidArticleWHtoSDetail, nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, balanceBSkuWHtoSDetail,
-                  quantityWHtoSDetail, importerPriceWHtoSDetail, supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail,
+    PROPERTIES(d) indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail, sidSizeWHtoSDetail,
+                  nameBrandWHtoSDetail, sidArticleWHtoSDetail, nameCategoryWHtoSDetail, sidColorWHtoSDetail,
+                  nameColorWHtoSDetail, balanceBSkuWHtoSDetail, quantityWHtoSDetail, importerPriceWHtoSDetail,
+                  supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail,
                   valueSupplierVATWHtoSDetail, supplierVATSumWHtoSDetail, invoiceSumWHtoSDetail
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuWHtoSDetailWHtoS, addDetailDialogBarcodeWHtoSDetailWHtoS,
@@ -90,9 +91,9 @@ DESIGN WHtoS FROM DEFAULT {
 
 FORM WHtoSs 'Расходы со склада на магазин'
     OBJECTS w = WHtoS
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS, nameCorrStoreWHtoS,
-                            countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, supplierSumWHtoSDetailWHtoS, invoiceVATSumWHtoSDetailWHtoS,
-                            invoiceSumWHtoSDetailWHtoS, noteWHtoS
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS,
+                            nameCorrStoreWHtoS, countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, supplierSumWHtoSDetailWHtoS,
+                            invoiceVATSumWHtoSDetailWHtoS, invoiceSumWHtoSDetailWHtoS, noteWHtoS
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -100,9 +101,10 @@ FORM WHtoSs 'Расходы со склада на магазин'
                    postWHtoS SHOWIF isDraftWHtoS(w), unpostWHtoS SHOWIF isPostedWHtoS(w)
 
     OBJECTS d = WHtoSDetail
-    PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail, sidSizeWHtoSDetail, nameBrandWHtoSDetail,
-                           sidArticleWHtoSDetail, nameCategoryWHtoSDetail, sidColorWHtoSDetail, nameColorWHtoSDetail, balanceBSkuWHtoSDetail,
-                           quantityWHtoSDetail, importerPriceWHtoSDetail, supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail,
+    PROPERTIES(d) READONLY indexWHtoSDetail, barcodeWHtoSDetail, nameSkuWHtoSDetail, shortNameUOMWHtoSDetail, sidSizeWHtoSDetail,
+                           nameBrandWHtoSDetail, sidArticleWHtoSDetail, nameCategoryWHtoSDetail, sidColorWHtoSDetail,
+                           nameColorWHtoSDetail, balanceBSkuWHtoSDetail, quantityWHtoSDetail, importerPriceWHtoSDetail,
+                           supplierPriceWHtoSDetail, supplierSumWHtoSDetail, numberSupplierVATWHtoSDetail,
                            valueSupplierVATWHtoSDetail, supplierVATSumWHtoSDetail, invoiceSumWHtoSDetail
 
     FILTERS inWHtoSWHtoSDetail(w, d)
@@ -136,6 +138,15 @@ DESIGN WHtoSs FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+FORM WHtoSsDialog 'Расходы с магазина на склад'
+    OBJECTS w = WHtoSPosted
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoS, timeWHtoS, nameWarehouseWHtoS,
+                            nameCorrStoreWHtoS, countWHtoSDetailWHtoS, quantityWHtoSDetailWHtoS, supplierSumWHtoSDetailWHtoS,
+                            invoiceVATSumWHtoSDetailWHtoS, invoiceSumWHtoSDetailWHtoS, noteWHtoS
+
+    DIALOG WHtoSPosted OBJECT w
+;
 
 //@defineConsignment(WHtoS);
 //@implementConsignmentHeader(WHtoS, warehouse);
