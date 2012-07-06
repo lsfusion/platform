@@ -18,7 +18,6 @@ CLASS StoS 'Расход с магазина на магазин' : historyObjec
 CLASS StoSDetail 'Строка расхода с магазина на магазин' : outAutoSkuLedger, consignmentDetail;
 CLASS StoSPosted 'Закрытый расход с магазина на магазин' : StoS, postedObject, consignment;
 
-
 skuStoSDetail 'Товар (ИД)' (StoSDetail) = DATA sku (StoSDetail)IN idGroup;
 nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku(skuStoSDetail(StoSDetail));
 

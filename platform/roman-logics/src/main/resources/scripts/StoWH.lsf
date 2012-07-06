@@ -26,30 +26,22 @@ nameSkuStoWHDetail 'Наименование товара' (StoWHDetail) = nameS
 @defineDocumentDetailPackWeightSku(StoWH);
 @defineDocumentHeaderSkuQuantity(StoWH);
 
+senderStoreStoWH 'Магазин-отправитель (ИД)' (StoWH) = storeDepartmentStore(departmentStoreStoWH(StoWH));
+nameSenderStoreStoWHDetail 'Магазин-отправитель' (StoWHDetail) = name(senderStoreStoWH(StoWHDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 FORM StoWH 'Расход с магазина на склад'
     OBJECTS s = StoWH FIXED PANEL
-    PROPERTIES (s) numberObject, seriesObject, dateStoWH, timeStoWH, nameDepartmentStoreStoWH,
+    PROPERTIES (s) numberObject, seriesObject, dateStoWH, timeStoWH, nameDepartmentStoreStoWH, nameCorrWarehouseStoWH,
                    quantityStoWHDetailStoWH, invoiceVATSumStoWHDetailStoWH, invoiceSumStoWHDetailStoWH, retailSumStoWHDetailStoWH, noteStoWH
 
-
-
-//    PROPERTIES (s) numberObject, seriesObject, dateStoWH, timeStoWH, nameDepartmentStoreStoWH, nameRecipientStoreStoWH, nameTransitWarehouseStoWH,
-//                   quantityStoWHDetailStoWH, importerSumStoWHDetailStoWH, sumRetailVATStoWHDetailStoWH,
-//                   retailSumStoWHDetailStoWH, sumNetWeightStoWH, packQuantityStoWHDetailStoWH, noteStoWH
-
     OBJECTS d = StoWHDetail
-//    PROPERTIES(d) indexStoWHDetail, barcodeStoWHDetail, nameSkuStoWHDetail, nameBrandStoWHDetail, sidArticleStoWHDetail,
-//                  nameCategoryStoWHDetail, sidColorStoWHDetail, nameColorStoWHDetail, shortNameUOMStoWHDetail, balanceBSkuStoWHDetail,
-//                  quantityStoWHDetail, retailPriceStoWHDetail, importerSumStoWHDetail, numberRetailVATStoWHDetail, valueRetailVATStoWHDetail,
-//                  sumRetailVATStoWHDetail, retailSumStoWHDetail
-    PROPERTIES(d) indexStoWHDetail, barcodeStoWHDetail, nameSkuStoWHDetail, nameBrandStoWHDetail, sidArticleStoWHDetail,
-                  nameCategoryStoWHDetail, sidColorStoWHDetail, nameColorStoWHDetail, shortNameUOMStoWHDetail, balanceBSkuStoWHDetail,
-                  quantityStoWHDetail, importerPriceStoWHDetail, supplierPriceStoWHDetail,
-                  numberSupplierVATStoWHDetail, valueSupplierVATStoWHDetail,
-                  supplierVATISumStoWHDetail, invoiceISumStoWHDetail,
-                  numberRetailVATStoWHDetail, valueRetailVATStoWHDetail,
-                  retailPriceStoWHDetail
+
+    PROPERTIES(d) indexStoWHDetail, barcodeStoWHDetail, nameSkuStoWHDetail, shortNameUOMStoWHDetail, sidSizeStoWHDetail,
+                  nameBrandStoWHDetail, sidArticleStoWHDetail, nameCategoryStoWHDetail, sidColorStoWHDetail,
+                  nameColorStoWHDetail, balanceBSkuStoWHDetail, quantityStoWHDetail, importerPriceStoWHDetail,
+                  supplierPriceStoWHDetail, supplierSumStoWHDetail, numberSupplierVATStoWHDetail, valueSupplierVATStoWHDetail,
+                  supplierVATSumStoWHDetail, invoiceSumStoWHDetail, numberRetailVATStoWHDetail, valueRetailVATStoWHDetail,
+                  retailPriceStoWHDetail, retailSumStoWHDetail, calcRetailMarkupStoWHDetail
 
 
     PROPERTIES(s) TODRAW d addDetailDialogSkuStoWHDetailStoWH, addDetailDialogBarcodeStoWHDetailStoWH, deleteStoWHDetailStoWH
@@ -77,9 +69,10 @@ DESIGN StoWH FROM DEFAULT {
                     ADD PROPERTY (dateStoWH);
                     ADD PROPERTY (timeStoWH);
                 }
-                NEW case1 {
-                childConstraints = TO THE RIGHT;
-
+                NEW case {
+                childConstraints = TO THE BOTTOM;
+                    title = 'Контрагент';
+                    ADD PROPERTY (nameCorrWarehouseStoWH);
                 }
                 ADD s.documentPrmGroup;
             }
@@ -96,13 +89,11 @@ DESIGN StoWH FROM DEFAULT {
 
 FORM StoWHs 'Расходы с магазина на склад'
     OBJECTS s = StoWH
-//    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoWH, timeStoWH, nameDepartmentStoreStoWH, nameRecipientStoreStoWH,
-//                   countStoWHDetailStoWH, quantityStoWHDetailStoWH, importerSumStoWHDetailStoWH, sumRetailVATStoWHDetailStoWH,
-//                   retailSumStoWHDetailStoWH, sumNetWeightStoWH, packQuantityStoWHDetailStoWH
 
     PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoWH, timeStoWH, nameDepartmentStoreStoWH,
-                   countStoWHDetailStoWH, quantityStoWHDetailStoWH, invoiceVATSumStoWHDetailStoWH, invoiceSumStoWHDetailStoWH,
-                   retailSumStoWHDetailStoWH
+                            nameCorrWarehouseStoWH, countStoWHDetailStoWH, quantityStoWHDetailStoWH,
+                            supplierSumStoWHDetailStoWH, invoiceVATSumStoWHDetailStoWH, invoiceSumStoWHDetailStoWH,
+                            retailSumStoWHDetailStoWH, noteStoWH
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -110,21 +101,14 @@ FORM StoWHs 'Расходы с магазина на склад'
     PROPERTIES (s) ADDFORM, EDITFORM SHOWIF isDraftStoWH(s), delete FORCE PANEL SHOWIF isDraftStoWH(s),
                    postStoWH SHOWIF isDraftStoWH(s), unpostStoWH SHOWIF isPostedStoWH(s)
 
-    PROPERTIES (s) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
-                   printConsignmentVerticalB, printConsignmentHorizontalB,
-                   printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
-                   printConsignmentSimpleVertical, printConsignmentSimpleAttach
-
     OBJECTS d = StoWHDetail
-//    PROPERTIES(d) READONLY indexStoWHDetail, barcodeStoWHDetail, nameSkuStoWHDetail, shortNameUOMStoWHDetail,
-//                  quantityStoWHDetail, retailPriceStoWHDetail, importerSumStoWHDetail, numberRetailVATStoWHDetail, valueRetailVATStoWHDetail,
-//                  sumRetailVATStoWHDetail, retailSumStoWHDetail
-    PROPERTIES(d) READONLY  indexStoWHDetail, barcodeStoWHDetail, nameSkuStoWHDetail, shortNameUOMStoWHDetail, balanceBSkuStoWHDetail,
-                  quantityStoWHDetail, importerPriceStoWHDetail, supplierPriceStoWHDetail,
-                  numberSupplierVATStoWHDetail, valueSupplierVATStoWHDetail,
-                  supplierVATISumStoWHDetail, invoiceISumStoWHDetail,
-                  numberRetailVATStoWHDetail, valueRetailVATStoWHDetail,
-                  retailPriceStoWHDetail
+
+    PROPERTIES(d) READONLY  indexStoWHDetail, barcodeStoWHDetail, nameSkuStoWHDetail, shortNameUOMStoWHDetail, sidSizeStoWHDetail,
+                            nameBrandStoWHDetail, sidArticleStoWHDetail, nameCategoryStoWHDetail, sidColorStoWHDetail,
+                            nameColorStoWHDetail, balanceBSkuStoWHDetail, quantityStoWHDetail, importerPriceStoWHDetail,
+                            supplierPriceStoWHDetail, supplierSumStoWHDetail, numberSupplierVATStoWHDetail, valueSupplierVATStoWHDetail,
+                            supplierVATSumStoWHDetail, invoiceSumStoWHDetail, numberRetailVATStoWHDetail, valueRetailVATStoWHDetail,
+                            retailPriceStoWHDetail, retailSumStoWHDetail, calcRetailMarkupStoWHDetail
 
     FILTERS inStoWHStoWHDetail(s, d)
 ;
@@ -154,69 +138,39 @@ DESIGN StoWHs FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
             }
         }
-
-        ADD s.printGroup {
-            childConstraints = TO THE BOTTOM;
-            NEW case55{
-                childConstraints = TO THE RIGHT;
-
-                NEW contOne {
-                    title = 'Накладная';
-                    ADD PROPERTY(editConsignment);
-                }
-                NEW tn{
-                    childConstraints = TO THE RIGHT;
-                    title = 'ТН-2';
-                    ADD PROPERTY(printConsignmentSimpleVertical);
-                    ADD PROPERTY(printConsignmentSimpleHorizontal);
-                    ADD PROPERTY(printConsignmentSimpleAttach);
-                }
-            }
-            NEW ttn1{
-                childConstraints = TO THE RIGHT;
-                title = 'ТТН-1';
-                ADD PROPERTY(printConsignmentVerticalA);
-                ADD PROPERTY(printConsignmentHorizontalA);
-                ADD PROPERTY(printConsignmentVerticalB);
-                ADD PROPERTY(printConsignmentHorizontalB);
-                ADD PROPERTY(printConsignmentAttach);
-            }
-
-        }
-
     }
     ADD functions.box;
 }
 
 FORM StoWHsDialog 'Расходы с магазина на склад'
     OBJECTS s = StoWHPosted
-    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoWH, nameDepartmentStoreStoWH,
-                   countStoWHDetailStoWH, quantityStoWHDetailStoWH, invoiceVATSumStoWHDetailStoWH,
-                   invoiceSumStoWHDetailStoWH, retailSumStoWHDetailStoWH
+    PROPERTIES (s) READONLY objectClassName, numberObject, seriesObject, dateStoWH, timeStoWH, nameDepartmentStoreStoWH,
+                            nameCorrWarehouseStoWH, countStoWHDetailStoWH, quantityStoWHDetailStoWH,
+                            supplierSumStoWHDetailStoWH, invoiceVATSumStoWHDetailStoWH, invoiceSumStoWHDetailStoWH,
+                            retailSumStoWHDetailStoWH, noteStoWH
 
     DIALOG StoWHPosted OBJECT s
 ;
 
-@defineConsignment(StoWH);
-@implementConsignmentHeader(StoWH, departmentStore);
+//@defineConsignment(StoWH);
+//@implementConsignmentHeader(StoWH, departmentStore);
 
 //senderConsignment (consignment) += companyStore(senderStoreStoWH(consignment));
-//recipientConsignment (consignment) += companyStore(storeStoWH(consignment));
-
-consignmentConsignmentDetail (consignmentDetail) += StoWHStoWHDetail (consignmentDetail);
-skuConsignmentDetail (consignmentDetail) += skuStoWHDetail (consignmentDetail);
-shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMStoWHDetail (consignmentDetail);
-quantityConsignmentDetail (consignmentDetail) += quantityStoWHDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += retailPriceStoWHDetail (consignmentDetail);
-vatConsignmentDetail (consignmentDetail) += valueRetailVATStoWHDetail (consignmentDetail);
-sumVATConsignmentDetail (consignmentDetail) += supplierVATISumStoWHDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += supplierSumStoWHDetail (consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumStoWHDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += grossWeightStoWHDetail (consignmentDetail);
-packQuantityConsignmentDetail (consignmentDetail) += packQuantityStoWHDetail(consignmentDetail);
+//recipientConsignment (consignment) += companyStore(corrWarehouseStoWH(consignment));
+//consignmentConsignmentDetail (consignmentDetail) += StoWHStoWHDetail (consignmentDetail);
+//skuConsignmentDetail (consignmentDetail) += skuStoWHDetail (consignmentDetail);
+//shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMStoWHDetail (consignmentDetail);
+//quantityConsignmentDetail (consignmentDetail) += quantityStoWHDetail (consignmentDetail);
+//priceConsignmentDetail (consignmentDetail) += retailPriceStoWHDetail (consignmentDetail);
+//vatConsignmentDetail (consignmentDetail) += valueRetailVATStoWHDetail (consignmentDetail);
+//sumVATConsignmentDetail (consignmentDetail) += supplierVATISumStoWHDetail (consignmentDetail);
+//sumConsignmentDetail (consignmentDetail) += supplierSumStoWHDetail (consignmentDetail);
+//sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumStoWHDetail (consignmentDetail);
+//grossWeightConsignmentDetail (consignmentDetail) += grossWeightStoWHDetail (consignmentDetail);
+//packQuantityConsignmentDetail (consignmentDetail) += packQuantityStoWHDetail(consignmentDetail);
 //currencyConsignment(consignment) += currencyStoWH(consignment);
 //isCustomsFlowConsignment (consignment) += consignment IS StoWH;
-noteConsignment(consignment) += noteStoWH(consignment);
+//noteConsignment(consignment) += noteStoWH(consignment);
 
 //noteConsignmentDetail
 

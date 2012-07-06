@@ -7,80 +7,197 @@ REQUIRE System,
         Document,
         RomanDocument,
         Consignment,
-        StoWH,
-        Barcode,
+        AccountDocument,
+        PriceChange,
+        StorePrice,
+        Declaration,
+        RetailPrice,
+        WholesalePrice,
         MasterData,
+        StoWH,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Stock;
-
 // Приход на склад
 CLASS WHfromS 'Приход на склад из магазина' : historyObject, numberedObject;
 CLASS WHfromSPosted 'Закрытый приход на склад из магазина' : WHfromS, postedObject;
+CLASS WHfromSDetail 'Строка прихода на склад из магазина' : inTransferSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 
-CLASS WHfromSDetail 'Строка прихода на склад из магазина' : inTransferSkuLedger;
-
-//CLASS inWarehouseScan 'Сканирование';
+skuWHfromSDetail 'Товар (ИД)' (WHfromSDetail) = DATA sku (WHfromSDetail)IN idGroup;
+nameSkuWHfromSDetail 'Наименование товара' (WHfromSDetail) = nameSku(skuWHfromSDetail(WHfromSDetail));
 
 //создание документа через метакод
-skuWHfromSDetail 'Товар (ИД)' (WHfromSDetail) = DATA sku(WHfromSDetail) IN idGroup;
-@defineRBCorrespondingDocument(WHfromS, warehouse, 'Оптовый склад', sku, 'Приход на склад из магазина', store, 'Магазин-отправитель');
+@defineRBCorrespondingDocumentWithRetailPrices(WHfromS, warehouse, 'Склад-получатель', sku, 'Приход на склад из магазина', store, 'Магазин-отправитель');
+@defineDocumentDetailPackWeightSku(WHfromS);
+@defineDocumentHeaderSkuQuantity(WHfromS);
 @defineUniqueDocumentComingByExpense(WHfromS, StoWH);
+@defineDocumentHeaderOriginSkuQuantity (WHfromS, StoWH);
 
-quantityInTransferSkuLedger (ledger) += quantityWHfromSDetail(ledger);
+identityWHfromS (WHfromS) = corrStoreWHfromS(WHfromS) == storeDepartmentStore(departmentStoreStoWH(StoWHWHfromS(WHfromS))) AND warehouseWHfromS(WHfromS) == corrWarehouseStoWH(StoWHWHfromS(WHfromS));
 
-numberStoWHWHfromS 'Номер' (WHfromS) = numberObject(StoWHWHfromS(WHfromS)) IN baseGroup PERSISTENT;
-seriesStoWHWHfromS 'Серия' (WHfromS) = seriesObject(StoWHWHfromS(WHfromS)) IN baseGroup PERSISTENT;
-seriesNumberWHfromS 'Серия/Номер' (WHfromS) = seriesNumberObject(StoWHWHfromS(WHfromS)) PERSISTENT;
+CONSTRAINT WHfromS IS WHfromS AND NOT identityWHfromS(WHfromS) CHECKED BY StoWHWHfromS MESSAGE  'Магазин-отправитель и Склад-получатель из расхода и приход должны совпадать';
 
-//numberObject (WHfromS) <- PREV (numberStoWHWHfromS (WHfromS)) WHEN ASSIGNED (StoWHWHfromS(WHfromS));
+initValueNumberObject (WHfromS) += [PREV(numberObject(StoWH))](StoWHWHfromS(WHfromS));
+initValueSeriesObject (WHfromS) += [PREV(seriesObject(StoWH))](StoWHWHfromS(WHfromS));
+
+initWhenNumberedObject(WHfromS) += CHANGED(StoWHWHfromS(WHfromS));
+
+numberWHfromS 'Номер док-та расхода' (WHfromS) = numberObject(StoWHWHfromS(WHfromS));
 //
 //inStoWHWHfromS (WHfromS, StoWH) = StoWHWHfromS(WHfromS) == StoWH;
 
+documentFlowWHfromS 'Документ расхода' (WHfromS) =
+    [FORMULA STRING[500] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \', \' || CAST($3 AS TEXT)'] (
+    seriesNumberObject(StoWHWHfromS(WHfromS)), dateStoWH(StoWHWHfromS(WHfromS)), name(departmentStoreStoWH(StoWHWHfromS(WHfromS)))) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+
+toFillWHfromSDetailsWHfromS 'Заполнить документ из расхода' =  ACTION (WHfromS) {
+    FOR WHfromSStoWH(StoWHStoWHDetail(StoWHDetail)) == WHfromS DO {
+        ADDOBJ WHfromSDetail;
+        FOR d == addedObject() DO {
+            SET WHfromSWHfromSDetail(d) <- WHfromS AS WHfromS;
+            SET quantityWHfromSDetail (d) <- quantityStoWHDetail(StoWHDetail);
+            SET skuWHfromSDetail (d) <- skuStoWHDetail(StoWHDetail);
+            SET UOMWHfromSDetail (d) <- UOMStoWHDetail(StoWHDetail);
+            SET importerPriceWHfromSDetail (d) <- importerPriceStoWHDetail(StoWHDetail);
+            SET supplierPriceWHfromSDetail (d) <- supplierPriceStoWHDetail(StoWHDetail);
+            SET supplierVATWHfromSDetail (d) <- supplierVATStoWHDetail(StoWHDetail);
+        };
+    };
+} CONFIRM;
 
 FORM WHfromS 'Приход на склад из магазина'
 
     OBJECTS w = WHfromS FIXED PANEL
-    PROPERTIES (w) numberStoWHWHfromS, seriesStoWHWHfromS, dateWHfromS, timeWHfromS, nameWarehouseWHfromS
+    PROPERTIES (w) numberObject, seriesObject, dateWHfromS, timeWHfromS, numberWHfromS, nameWarehouseWHfromS, nameCorrStoreWHfromS,
+                   quantityWHfromSDetailWHfromS, supplierSumWHfromSDetailWHfromS, invoiceVATSumWHfromSDetailWHfromS,
+                   invoiceSumWHfromSDetailWHfromS, noteWHfromS, toFillWHfromSDetailsWHfromS
 
     OBJECTS d = WHfromSDetail
-    PROPERTIES (d) READONLY indexWHfromSDetail, barcodeWHfromSDetail, nameBrandWHfromSDetail, sidArticleWHfromSDetail,
-                            sidColorWHfromSDetail, nameColorWHfromSDetail, sidSizeWHfromSDetail
+    PROPERTIES (d) indexWHfromSDetail, barcodeWHfromSDetail, nameSkuWHfromSDetail, shortNameUOMWHfromSDetail,
+                   sidSizeWHfromSDetail, nameBrandWHfromSDetail, sidArticleWHfromSDetail, nameCategoryWHfromSDetail,
+                   sidColorWHfromSDetail, nameColorWHfromSDetail, balanceBSkuWHfromSDetail, quantityWHfromSDetail,
+                   importerPriceWHfromSDetail, supplierPriceWHfromSDetail, supplierSumWHfromSDetail,
+                   numberSupplierVATWHfromSDetail, valueSupplierVATWHfromSDetail, supplierVATSumWHfromSDetail,
+                   invoiceSumWHfromSDetail, numberRetailVATWHfromSDetail, valueRetailVATWHfromSDetail,
+                   retailPriceWHfromSDetail, retailSumWHfromSDetail, calcRetailMarkupWHfromSDetail
 
-    PROPERTIES(d) quantityWHfromSDetail
     PROPERTIES(d) ADDOBJ, delete
 
     PROPERTIES(w) TODRAW d ADDOBJ,deleteWHfromSDetailWHfromS
+
+    OBJECTS i=sku
+    PROPERTIES(i) nameSku
+    PROPERTIES(i,w) quantityWHfromSDetailSkuWHfromS, quantityOriginWHfromSDetailSkuWHfromS, diffQuantityWHfromSDetailSkuWHfromS
+    FILTERS inWHfromSWHfromSDetail(w, d)
+
+    FILTERS quantityOriginWHfromSDetailSkuWHfromS(i,w) OR quantityWHfromSDetailSkuWHfromS(i, w)
+
+    FILTERGROUP filtersDiff
+        FILTER 'Показать отличающиеся' 'F10' diffQuantityWHfromSDetailSkuWHfromS(i,w) !=0
 
     FILTERS inWHfromSWHfromSDetail(w, d)
 
     FILTERGROUP filtersQuantity
         FILTER 'Показывать принятые' 'F9' quantityWHfromSDetail(d) DEFAULT
 
-//    FILTERGROUP filtersDiff
-//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromSDetail(d)
-
     EDIT WHfromS OBJECT w
 ;
 
+DESIGN WHfromS FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        ADD w.box {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                ADD w.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameWarehouseWHfromS);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateWHfromS);
+                    ADD PROPERTY (timeWHfromS);
+                }
+                NEW row11 {
+                childConstraints = TO THE RIGHT;
+
+                    NEW row111 {
+                        title = 'Контрагент-поставщик';
+                        ADD PROPERTY (nameCorrStoreWHfromS);
+                    }
+                    NEW row112{
+                        title = 'Расход';
+                        ADD PROPERTY (numberWHfromS);
+                        ADD PROPERTY (toFillWHfromSDetailsWHfromS);
+                    }
+                }
+                ADD w.documentPrmGroup;
+            }
+            NEW row2 {
+                ADD w.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+        NEW row3 {
+            type = TABBED;
+            ADD d.box;
+            ADD i.box;
+        }
+        ADD functions.box;
+    }
+}
+
 FORM WHfromSs 'Приходы на склад из магазина'
     OBJECTS w = WHfromS
-    PROPERTIES (w) READONLY numberObject, seriesObject, dateWHfromS, timeWHfromS, nameWarehouseWHfromS
+
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromS, timeWHfromS, nameWarehouseWHfromS,
+                            nameCorrStoreWHfromS, countWHfromSDetailWHfromS, quantityWHfromSDetailWHfromS,
+                            supplierSumWHfromSDetailWHfromS, invoiceVATSumWHfromSDetailWHfromS,
+                            invoiceSumWHfromSDetailWHfromS, retailSumWHfromSDetailWHfromS, noteWHfromS
+
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWHfromS(w), delete FORCE PANEL SHOWIF isDraftWHfromS(w),
                    postWHfromS SHOWIF isDraftWHfromS(w), unpostWHfromS SHOWIF isPostedWHfromS(w)
 
     OBJECTS d = WHfromSDetail
-    PROPERTIES(d) READONLY indexWHfromSDetail, barcodeWHfromSDetail, nameBrandWHfromSDetail, sidArticleWHfromSDetail,
-                            sidColorWHfromSDetail, nameColorWHfromSDetail, sidSizeWHfromSDetail,
-                           quantityWHfromSDetail
+    PROPERTIES(d) READONLY indexWHfromSDetail, barcodeWHfromSDetail, nameSkuWHfromSDetail, shortNameUOMWHfromSDetail,
+                           sidSizeWHfromSDetail, nameBrandWHfromSDetail, sidArticleWHfromSDetail, nameCategoryWHfromSDetail,
+                           sidColorWHfromSDetail, nameColorWHfromSDetail, balanceBSkuWHfromSDetail, quantityWHfromSDetail,
+                           importerPriceWHfromSDetail, supplierPriceWHfromSDetail, supplierSumWHfromSDetail,
+                           numberSupplierVATWHfromSDetail, valueSupplierVATWHfromSDetail, supplierVATSumWHfromSDetail,
+                           invoiceSumWHfromSDetail, numberRetailVATWHfromSDetail, valueRetailVATWHfromSDetail,
+                           retailPriceWHfromSDetail, retailSumWHfromSDetail, calcRetailMarkupWHfromSDetail
 
     FILTERS inWHfromSWHfromSDetail(w, d)
 ;
 
 DESIGN WHfromSs FROM DEFAULT {
-    PROPERTY (delete(w)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
+    ADD w.box{
+        PROPERTY (delete(w)) {
+            panelLocation = TOOLBAR;
+            askConfirm = TRUE;
+        PROPERTY (objectClassName(w)) {
+            preferredCharWidth = 15;
+        }
+        }
     }
+    ADD d.box;
+
+    NEW footer.container {
+        childConstraints = TO THE BOTTOM;
+
+        NEW cont3 {
+            childConstraints = TO THE RIGHT;
+            ADD w.historyGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+
+            ADD w.postedGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+    ADD functions.box;
 }

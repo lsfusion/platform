@@ -126,6 +126,9 @@ META defineDocumentDetailInvoiceSum (object)
     supplierVATISum###object##Detail(detail) <- calcSupplierVATISum###object##Detail(detail)
                                                        WHEN CHANGED(calcSupplierVATISum###object##Detail(detail));
 
+    supplierVATSum###object##Detail 'Сумма НДС поставщика' (detail) =
+        supplierVATISum###object##Detail(detail) + wareVATSum###object##Detail(detail);
+
     calcInvoiceISum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
         supplierISum###object##Detail(detail) (+) supplierVATISum###object##Detail(detail);
 

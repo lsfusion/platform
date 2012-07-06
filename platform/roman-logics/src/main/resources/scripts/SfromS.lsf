@@ -29,15 +29,11 @@ skuSfromSDetail 'Товар (ИД)' (SfromSDetail) = DATA sku (SfromSDetail)IN i
 nameSkuSfromSDetail 'Наименование товара' (SfromSDetail) = nameSku(skuSfromSDetail(SfromSDetail));
 
 @defineRBCorrespondingDocumentWithRetailPrices(SfromS, departmentStore, 'Отдел документа', sku, 'Приход на магазин из магазина', store, 'Магазин-отправитлеь');
-@implementBaseSkuDepartmentStoreLedger(SfromS, sku);
+//@implementBaseSkuDepartmentStoreLedger(SfromS, sku);
 @defineDocumentDetailPackWeightSku(SfromS);
 @defineDocumentHeaderSkuQuantity(SfromS);
 @defineUniqueDocumentComingByExpense(SfromS, StoS);
 @defineDocumentHeaderOriginSkuQuantity (SfromS, StoS);
-
-recipientStoreSfromS 'Магазин документа (ИД)' (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS));
-nameRecipientStoreSfromS 'Магазин документа' (SfromS)  = name(recipientStoreSfromS(SfromS)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
 
 identitySfromS (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS)) == corrStoreStoS(StoSSfromS(SfromS)) AND corrStoreSfromS(SfromS) == storeDepartmentStore(departmentStoreStoS(StoSSfromS(SfromS)));
 
@@ -47,7 +43,6 @@ initValueNumberObject (SfromS) += [PREV(numberObject(StoS))](StoSSfromS(SfromS))
 initValueSeriesObject (SfromS) += [PREV(seriesObject(StoS))](StoSSfromS(SfromS));
 
 initWhenNumberedObject(SfromS) += CHANGED(StoSSfromS(SfromS));
-
 
 numberSfromS 'Номер док-та расхода' (SfromS) = numberObject(StoSSfromS(SfromS));
 
