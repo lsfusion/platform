@@ -175,7 +175,7 @@ numberDeclarationDetail 'Номер строки' (declarationDetail) =
         PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
         ORDER declarationDetail;
 
-@defineDocumentDetailProps (declaration);
+@defineDocumentDetailSkuArticle (declaration);
 
 inDeclarationDeclarationDetail (declaration, declarationDetail) = declarationDeclarationDetail(declarationDetail)==declaration;
 

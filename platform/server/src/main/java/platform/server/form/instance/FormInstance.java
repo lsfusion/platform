@@ -1525,7 +1525,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formClose() throws SQLException {
-        if (isNewSession && dataChanged) {
+        if (isNewSession && session.hasStoredChanges()) {
             int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
                 return;

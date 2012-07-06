@@ -20,7 +20,7 @@ META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
     @implementSkuLedger (object, skuProp, stock);
 
-    @defineDocumentDetailProps (object);
+    @defineDocumentDetailSkuArticle (object);
 
     @defineAddDetailDialogSkuStock(object, sku, stock, dialogSku);
 
@@ -95,7 +95,7 @@ END
 
 
 // для использования метакода должно быть определено свойство sku###object##Detail
-META defineDocumentDetailProps (object)
+META defineDocumentDetailSkuArticle (object)
 
     barcode###object##Detail 'Штрих-код' (object##Detail) = barcode(sku###object##Detail(object##Detail));
 

@@ -372,27 +372,46 @@ END
 
 // ---------------------------------------------- Макросы для документов ------------------------------------------------- //
 
+// Склады
+META defineDocumentHeaderStockPrefix (object, stockClass, stockCaption, prefix)
+    prefix###stockClass###object = DATA stockClass(object) AUTOSET;
+    name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
+            MINCHARWIDTH 20 PREFCHARWIDTH 40;
+END
 META defineDocumentHeaderStock (object, stockClass, stockCaption)
-    stockClass###object = DATA stockClass(object) AUTOSET;
-    name###stockClass###object stockCaption (object) = name(stockClass###object(object)) IN documentHeaderGroup
-            MINCHARWIDTH 20 PREFCHARWIDTH 40;;
+    @defineDocumentHeaderStockPrefix(object, stockClass, stockCaption, );
 END
 
-META defineDocumentDetailStockCustom (object, detail, stockClass, stockCaption)
-    stockClass###detail (idetail) = stockClass###object(object###detail(idetail));
-    name###stockClass###detail stockCaption (idetail) = name(stockClass###detail(idetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+META defineDocumentDetailStockCustom (object, detail, stockProp, stockCaption)
+    stockProp###detail (idetail) = stockProp###object(object###detail(idetail));
+    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
-META defineDocumentDetailStock (object, stockClass, stockCaption)
-    @defineDocumentDetailStockCustom (object, object##Detail, stockClass, stockCaption);
+META defineDocumentDetailStock (object, stockProp, stockCaption)
+    @defineDocumentDetailStockCustom (object, object##Detail, stockProp, stockCaption);
+END
+
+META defineDocumentStockPrefix (object, stockClass, stockCaption, prefix)
+    @defineDocumentHeaderStockPrefix(object, stockClass, stockCaption, prefix);
+    @defineDocumentDetailStock(object, prefix###stockClass, stockCaption);
 END
 
 META defineDocumentStock (object, stockClass, stockCaption)
-    @defineDocumentHeaderStock(object, stockClass, stockCaption);
-    @defineDocumentDetailStock(object, stockClass, stockCaption);
+    @defineDocumentStockPrefix(object, stockClass, stockCaption, );
+END
+
+// Sku
+META defineDocumentDetailSkuPrefix (object, skuClass, prefix, caption)
+    prefix###skuClass###object##Detail (detail) = DATA skuClass (object###Detail);
+    prefix###nameSku###object##Detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###object##Detail(detail));
+    prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###object##Detail(detail));
+END
+META defineDocumentDetailSku (object, skuClass)
+    @defineDocumentDetailSkuPrefix(object, skuClass, ,);
 END
 
 // ---------------------------------------------- Агрегированные документы -------------------------------------------- //
 
+// Склады
 META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, stockCaption)
     stockProp###aggrObject (object) = stockProp###primObject(primObject###aggrObject(object));
     name###stockProp###aggrObject stockCaption (object) = name(stockProp###aggrObject(object));
@@ -407,7 +426,7 @@ META defineDocumentAggregationStock (primObject, aggrObject, stockProp, stockCap
     @defineDocumentAggregationDetailStock(primObject, aggrObject, stockProp, stockCaption);
 END
 
-
+// Sku
 META defineDocumentAggregationDetailSkuPrefix (primObject, aggrObject, skuProp, prefix)
     skuProp###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail));
@@ -441,6 +460,13 @@ META derivePriceOnSkuChange(concrete, skuProp, stockProp)
     price###concrete##Detail (detail)  <- priceSkuStockDateTime(
                     skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
                     WHEN CHANGED(skuProp###concrete##Detail(detail));
+END
+
+// ---------------------------------------------- Остатки -------------------------------------------- //
+
+META defineDocumentDetailSkuBalance (object, skuProp, stockProp)
+    balanceBSku###object##Detail 'Остаток до' (object##Detail) = balanceBSkuStockDateTime(
+        skuProp###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));
 END
 
 // ----------------------------------------------- Формы --------------------------------------------------- //

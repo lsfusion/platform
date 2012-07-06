@@ -61,9 +61,8 @@ END
 
 GROUP itemDetailGroup 'Товар' : publicGroup;
 
-META defineDocumentDetailItemPrefix (object, prefix, caption)
-
-    prefix###item###object##Detail = DATA item (object##Detail);
+META defineDocumentDetailSkuItemPrefix (object, prefix, caption)
+    @defineDocumentDetailSkuPrefix(object, item, prefix, caption);
 
     prefix###nameAttributeItem###object##Detail 'Товар'###caption (detail) =
         nameAttributeItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
@@ -75,32 +74,27 @@ META defineDocumentDetailItemPrefix (object, prefix, caption)
 
     prefix###nameCountryItem###object##Detail 'Страна'###caption (detail) = nameCountryItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
-    prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) =
-        idBarcodeSku(prefix###item###object##Detail (detail)) IN itemDetailGroup;
+    prefix###inWare###object##Detail 'Товар в посуде'###caption (detail) = inWareItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
-    prefix###inWare###object##Detail 'Товар в посуде'###caption (detail) = inWareItem(prefix###item###object##Detail(detail));
+    prefix###controlExpiryItem###object##Detail 'Контролировать сроки годности товара?'###caption (detail) =
+        controlExpiryItem (prefix###item###object##Detail(detail)) IN itemDetailGroup;
+
+    prefix###isManufacturedItem###object##Detail 'Товар производится?'###caption (detail) = isManufacturedItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
+    prefix###isWeightItem###object##Detail 'Весовой товар?'###caption (detail) = isWeightItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
+
+    prefix###hintItem###object##Detail 'Подсказка по товару'###caption (detail) = hintItem(prefix###item###object##Detail(detail)) IN itemDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 
-META defineDocumentDetailItem (object)
-    @defineDocumentDetailItemPrefix(object, , );
+META defineDocumentDetailSkuItem (object)
+    @defineDocumentDetailSkuItemPrefix(object, , );
 END
 
-META defineDocumentDetailItemExtra (object)
-
-    controlExpiryItem###object##Detail 'Контролировать сроки годности товара?' (detail) =
-        controlExpiryItem (item###object##Detail(detail)) IN itemDetailGroup;
-
-    isManufacturedItem###object##Detail 'Товар производится?' (detail) = isManufacturedItem(item###object##Detail(detail)) IN itemDetailGroup;
-    isWeightItem###object##Detail 'Весовой товар?' (detail) = isWeightItem(item###object##Detail(detail)) IN itemDetailGroup;
-
+META defineDocumentDetailSkuItemDepartmentStore (object)
     nameInActionItemDepartment###object##Detail 'Товар акции?' (detail) = nameInActionItemDepartmentDate(item###object##Detail(detail),
         departmentStore###object##Detail(detail), date###object##Detail(detail)) IN itemDetailGroup FIXEDCHARWIDTH 3;
 
-    hintItem###object##Detail 'Подсказка по товару' (detail) = hintItem(item###object##Detail(detail)) IN itemDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
     nameBanPriceChangeItemDepartment###object##Detail 'Запрет на переоценку' (detail) = name(banPriceChangeItemDepartmentDate(item###object##Detail(detail),
         departmentStore###object##Detail(detail), date###object##Detail(detail))) IN itemDetailGroup FIXEDCHARWIDTH 3;
-
 END
 
 META defineDocumentHeaderItemQuantityCustom (object, detail)
@@ -2081,7 +2075,7 @@ percSweepsCutting 'Процент зачисток, %' = DATA NUMERIC[8,3] (cutt
 inDepartmentStoreCutting 'В каких подразделениях разрешено использовать карту' = DATA BOOLEAN (departmentStore, cutting) IN baseGroup;
 
 @defineDocumentRelation(cutting);
-@defineDocumentDetailItem(cutting);
+@defineDocumentDetailSkuItem(cutting);
 
 factorCuttingDetail 'Рассчетный коэффициент цены' = DATA NUMERIC[8,3] (cuttingDetail) IN cutGroup;
 percGoodsCuttingDetail '% выхода компонента (п/ф)' = DATA NUMERIC[8,3] (cuttingDetail) IN cutGroup;
@@ -2271,7 +2265,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 @defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyInputDetail);
 @defineDocumentDetailTimeCustom(actOfStudy, studyInputDetail);
 
-@defineDocumentDetailItem(studyInput);
+@defineDocumentDetailSkuItem(studyInput);
 
 @defineDocumentDetailQuantity(studyInput);
 
@@ -2320,7 +2314,7 @@ actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(stud
 @defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyOutputDetail);
 @defineDocumentDetailTimeCustom(actOfStudy, studyOutputDetail);
 
-@defineDocumentDetailItem(studyOutput);
+@defineDocumentDetailSkuItem(studyOutput);
 
 factorStudyOutputDetail 'Рассчетный коэффициент цены' = DATA NUMERIC[8,3] (studyOutputDetail) IN actGroup;
 percGoodsStudyOutputDetail '% выхода компонента (п/ф)' = DATA NUMERIC[10,5] (studyOutputDetail) IN actGroup;
@@ -2886,7 +2880,7 @@ CLASS specificationDetail 'Строка счет-фактуры';
 @defineDocumentDepartmentStore(specification);
 
 @defineDocumentDetailNumbered(specification);
-@defineDocumentDetailItem(specification);
+@defineDocumentDetailSkuItem(specification);
 @defineDocumentDetailQuantity(specification);
 
 @defineDocumentDetailRetailPrice(specification);
@@ -2987,7 +2981,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentDepartmentStore(statement);
 @defineDocumentPosted(statement);
 
-@defineDocumentDetailItem(statement);
+@defineDocumentDetailSkuItem(statement);
 @defineDocumentDetailQuantity(statement);
 
 @defineDocumentDetailBasePrice(statement);
@@ -3135,8 +3129,8 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 
 @defineDocumentDetailNumbered(shipment);
 
-@defineDocumentDetailItem(shipment);
-@defineDocumentDetailItemExtra(shipment);
+@defineDocumentDetailSkuItem(shipment);
+@defineDocumentDetailSkuItemDepartmentStore(shipment);
 
 @defineDocumentDetailQuantity(shipment);
 
@@ -3428,7 +3422,7 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 @defineDocumentDepartmentStore(writeOff);
 @defineDocumentPosted(writeOff);
 
-@defineDocumentDetailItem(writeOff);
+@defineDocumentDetailSkuItem(writeOff);
 
 @defineDocumentDetailQuantity(writeOff);
 
@@ -3483,7 +3477,7 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @defineDocumentDepartmentStore(innerFlow);
 @defineDocumentPosted(innerFlow);
 
-@defineDocumentDetailItem(innerFlow);
+@defineDocumentDetailSkuItem(innerFlow);
 
 @defineDocumentDetailQuantity(innerFlow);
 
@@ -3574,7 +3568,7 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineDocumentDepartmentStore(innerArrival);
 @defineDocumentPosted(innerArrival);
 
-@defineDocumentDetailItem(innerArrival);
+@defineDocumentDetailSkuItem(innerArrival);
 
 @defineDocumentDetailQuantity(innerArrival);
 @defineDocumentDetailBasePrice(innerArrival);
@@ -3747,8 +3741,8 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 
 @defineDocumentHeaderSupplierContractDepartmentStore(returnSupplier);
 
-@defineDocumentDetailItem(returnSupplier);
-@defineDocumentDetailItemExtra(returnSupplier);
+@defineDocumentDetailSkuItem(returnSupplier);
+@defineDocumentDetailSkuItemDepartmentStore(returnSupplier);
 
 @defineDocumentDetailQuantity(returnSupplier);
 
@@ -3976,8 +3970,8 @@ isPostedBillDetail 'Закрыт' (billDetail) = isPostedBillReturnDetail(billDe
 @defineDocumentDetailDepartmentStoreCustom(bill, billReturnDetail);
 departmentStoreBillDetail (billDetail) = departmentStoreBillReturnDetail(billDetail) OR departmentStoreBillSaleDetail(billDetail);
 
-@defineDocumentDetailItem(billSale);
-@defineDocumentDetailItem(billReturn);
+@defineDocumentDetailSkuItem(billSale);
+@defineDocumentDetailSkuItem(billReturn);
 itemBillDetail (billDetail) = itemBillReturnDetail(billDetail) OR itemBillSaleDetail(billDetail);
 nameAttributeItemBillDetail 'Товар' (billDetail) = nameAttributeItem(itemBillDetail(billDetail)) IN recognizeGroup;
 
@@ -4171,7 +4165,7 @@ CLASS userPriceChangePosted 'Закрытая переоценка товаро�
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
 
-@defineDocumentDetailItem(userPriceChange);
+@defineDocumentDetailSkuItem(userPriceChange);
 
 @defineDocumentDetailQuantity(userPriceChange);
 @defineDocumentDetailBasePrice(userPriceChange);
@@ -4219,7 +4213,7 @@ CLASS disparityDetail 'Строка пересортицы': outFIFOSkuLedger;
 @defineDocumentDepartmentStore(disparity);
 @defineDocumentPosted(disparity);
 
-@defineDocumentDetailItem(disparity);
+@defineDocumentDetailSkuItem(disparity);
 
 @defineDocumentDetailQuantity(disparity);
 
@@ -4248,7 +4242,7 @@ sumOutSkuLedger (ledger) += retailSumDisparityDetail(ledger);
 
                                   // Приход
 
-@defineDocumentDetailItemPrefix(disparity, input, ' (приход)');
+@defineDocumentDetailSkuItemPrefix(disparity, input, ' (приход)');
 
 @defineDocumentDetailQuantityPrefix(disparity, input, ' (приход)');
 
@@ -4387,7 +4381,7 @@ CLASS naturalLossPosted 'Закрытая ведомость естествен�
 @defineDocumentDepartmentStore(naturalLoss);
 @defineDocumentPosted(naturalLoss);
 
-@defineDocumentDetailItem(naturalLoss);
+@defineDocumentDetailSkuItem(naturalLoss);
 
 @defineDocumentDetailQuantity(naturalLoss);
 @defineDocumentDetailBasePrice(naturalLoss);

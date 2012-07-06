@@ -37,7 +37,7 @@ quantityInFIFOSkuLedger (ledger) += quantityWHfromWHDetail(ledger);
 companyCorrWarehouseWHfromWH (WHfromWH) = companyWarehouse(corrWarehouseWHfromWH(WHfromWH));
 nameCompanyCorrWarehouseWHfromWH 'Поставщик' (WHfromWH) = name(companyCorrWarehouseWHfromWH(WHfromWH));
 
-identityWHfromWH (WHfromWH) =  warehouseWHfromWH(WHfromWH) == corrWarehouseWHtoWH(WHtoWHWHfromWH(WHfromWH)) AND corrWarehouseWHfromWH(WHfromWH) == warehouseWHtoWH(WHtoWHWHfromWH(WHfromWH));
+identityWHfromWH (WHfromWH) =  warehouseWHfromWH(WHfromWH) == destinationWarehouseWHtoWH(WHtoWHWHfromWH(WHfromWH)) AND corrWarehouseWHfromWH(WHfromWH) == warehouseWHtoWH(WHtoWHWHfromWH(WHfromWH));
 
 CONSTRAINT WHfromWH IS WHfromWH AND NOT identityWHfromWH(WHfromWH) CHECKED BY WHtoWHWHfromWH MESSAGE  'Склад-отправитель и склад-получатель из расхода и приход должны совпадать';
 

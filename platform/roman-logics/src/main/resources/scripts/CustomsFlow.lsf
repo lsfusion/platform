@@ -31,7 +31,7 @@ declarationDetailCStoWHDetail = DATA declarationDetail (CStoWHDetail);
 skuCStoWHDetail (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 
-@defineDocumentDetailProps (CStoWH);
+@defineDocumentDetailSkuArticle (CStoWH);
 
 @defineDocumentQuantity(CStoWH);
 

@@ -38,7 +38,7 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inFIFOSkuL
 @defineDocumentDetailIndex(WHfromCSI);
 @defineDocumentDescription(WHfromCSI, 'Приход с СВХ');
 
-@defineDocumentDetailProps(WHfromCSI);
+@defineDocumentDetailSkuArticle(WHfromCSI);
 
 initValueNumberObject (WHfromCSI) += [PREV(numberObject(WHfromCSI))](CStoWHWHfromCSI(WHfromCSI));
 initValueSeriesObject (WHfromCSI) += [PREV(seriesObject(WHfromCSI))](CStoWHWHfromCSI(WHfromCSI));
@@ -110,24 +110,27 @@ CLASS WHfromCSD 'Акт расхождений на приемке на скла
 CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
 CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inFIFOSkuLedger;
 
-skuWHfromCSRDetail 'Товар (ИД)' (WHfromCSRDetail) = DATA sku(WHfromCSRDetail) IN idGroup;
-
 @defineDocument(WHfromCSR);
-@defineDocumentPosted(WHfromCSR);
 @defineDocumentStock(WHfromCSR, warehouse, 'Оптовый склад');
-@defineDocumentDetailQuantity(WHfromCSR);
+@defineDocumentPosted(WHfromCSR);
+
 @defineDocumentDetailNumbered(WHfromCSR);
+@defineDocumentDetailQuantity(WHfromCSR);
+
+@defineDocumentDetailSku(WHfromCSR, sku);
+@defineDocumentDetailSkuArticle(WHfromCSR);
+
+@defineDocumentDetailSkuBalance(WHfromCSR, sku, warehouse);
+
 @defineDocumentHeaderQuantity(WHfromCSR);
+
 @defineDocumentDescription (WHfromCSR, 'Расход с СВХ');
-@defineDocumentDetailProps (WHfromCSR);
+
 @defineAddDetailDialogSkuStock(WHfromCSR, sku, warehouse, dialogSku);
 @defineAddDetailDialogBarcode(WHfromCSR, sku);
 
-corrCustomStoreWHfromCSR (WHfromCSR) = DATA customStore (WHfromCSR) IN idGroup;
-nameCorrCustomStoreWHfromCSR 'СВХ' (WHfromCSR) = name (corrCustomStoreWHfromCSR(WHfromCSR)) IN documentHeaderGroup;
-
-balanceBSkuWHfromCSRDetail 'Остаток до' (WHfromCSRDetail) = balanceBSkuStockDateTime(
-    skuWHfromCSRDetail(WHfromCSRDetail), warehouseWHfromCSRDetail(WHfromCSRDetail), dateTimeWHfromCSRDetail(WHfromCSRDetail));
+customStoreWHfromCSR (WHfromCSR) = DATA customStore (WHfromCSR) IN idGroup;
+nameCustomStoreWHfromCSR 'СВХ' (WHfromCSR) = name (customStoreWHfromCSR(WHfromCSR)) IN documentHeaderGroup;
 
 //связь расхода и приемки
 WHfromCSIWHfromCSR 'Документ приемки (ИД)' (WHfromCSR) = DATA WHfromCSI(WHfromCSR);
@@ -142,7 +145,7 @@ CStoWHWHfromCSR (WHfromCSR) = CStoWHWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR));
 initValueNumberObject (WHfromCSR) += [PREV(numberObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
 initValueSeriesObject (WHfromCSR) += [PREV(seriesObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
 
-initWhenNumberedObject (WHfromCSR) +=  WHfromCSR IS WHfromCSR AND initValueNumberObject (WHfromCSR);
+initWhenNumberedObject (WHfromCSR) +=  CHANGED(WHfromCSIWHfromCSR(WHfromCSR));
 
 //для учета по коробам
 freightUnitWHfromCSRDetail 'Короб (ИД)' (WHfromCSRDetail) = DATA freightUnit(WHfromCSRDetail);

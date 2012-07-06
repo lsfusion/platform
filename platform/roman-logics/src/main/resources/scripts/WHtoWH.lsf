@@ -19,14 +19,40 @@ CLASS WHtoWH 'Расход со склада на склад' : historyObject, n
 CLASS WHtoWHDetail 'Строка расхода со склада на склад' : outFIFOSkuLedger, consignmentDetail;
 CLASS WHtoWHPosted 'Закрытый расход со склада на склад' : WHtoWH, postedObject, consignment;
 
+@defineDocument(WHtoWH);
 
-skuWHtoWHDetail 'Товар (ИД)' (WHtoWHDetail) = DATA sku (WHtoWHDetail)IN idGroup;
-nameSkuWHtoWHDetail 'Наименование товара' (WHtoWHDetail) = nameSku(skuWHtoWHDetail(WHtoWHDetail));
+@defineDocumentStock(WHtoWH, warehouse, 'Склад-отправитель');
+@defineDocumentStockPrefix(WHtoWH, warehouse, 'Склад-получатель', destination);
 
-@defineRBCorrespondingDocumentWithRetailPrices(WHtoWH, warehouse, 'Склад-отправитель', sku, 'Расход со склада на склад', warehouse, 'Склад-получатель');
+@defineDocumentPosted(WHtoWH);
+
+@defineDocumentDetailNumbered(WHtoWH);
+
+@defineDocumentDetailSku(WHtoWH, sku);
+@defineDocumentDetailSkuArticle(WHtoWH);
+
+@defineDocumentDetailQuantity(WHtoWH);
+
+@defineDocumentDetailBasePrice(WHtoWH);
+@defineDocumentDetailBaseSum(WHtoWH);
+
+@defineDocumentDetailInvoicePrice(WHtoWH);
+@defineDocumentDetailInvoiceSum(WHtoWH);
+
+@defineDocumentHeaderBaseSum(WHtoWH);
+@defineDocumentHeaderInvoiceSum(WHtoWH);
+
+@defineDocumentDescription (WHtoWH, 'Расход на другой склад');
+
 @defineDocumentDetailPackWeightSku(WHtoWH);
+
+@defineDocumentDetailSkuBalance(WHtoWH, sku, warehouse);
+
+@defineDocumentHeaderQuantity(WHtoWH);
 @defineDocumentHeaderSkuQuantity(WHtoWH);
 
+@defineAddDetailDialogSkuStock(WHtoWH, sku, warehouse, dialogSku);
+@defineAddDetailDialogBarcode(WHtoWH, sku);
 
 quantityOutFIFOSkuLedger (ledger) += quantityWHtoWHDetail (ledger);
 @implementSkuLedgerOutFIFOBalance(WHtoWH, sku, warehouse);
@@ -38,21 +64,21 @@ contractSkuCompanyWHtoWH 'Договор ИД' (WHtoWH) = DATA contractSkuCompan
 numberContractSkuCompanyWHtoWH 'Номер договора' (WHtoWH) = numberContract(contractSkuCompanyWHtoWH(WHtoWH)) IN documentPrmGroup;
 
 isCompanyABWHtoWH (WHtoWH)= companyAContractSkuCompany(contractSkuCompanyWHtoWH(WHtoWH))== companyWarehouse(warehouseWHtoWH(WHtoWH)) AND
-    companyBContractSkuCompany(contractSkuCompanyWHtoWH(WHtoWH))== companyWarehouse(corrWarehouseWHtoWH(WHtoWH)) AND
+    companyBContractSkuCompany(contractSkuCompanyWHtoWH(WHtoWH))== companyWarehouse(destinationWarehouseWHtoWH(WHtoWH)) AND
     activeContract(contractSkuCompanyWHtoWH(WHtoWH), dateWHtoWH(WHtoWH));
 
 CONSTRAINT contractSkuCompanyWHtoWH(WHtoWH) AND NOT isCompanyABWHtoWH(WHtoWH)
     CHECKED BY contractSkuCompanyWHtoWH MESSAGE 'Договор не является договором между выбранными контрагентами или не действующий';
 
-contractSkuCompanyWHtoWH(WHtoWH) <- contractSkuCompanyCompanyCompany(companyWarehouse(warehouseWHtoWH(WHtoWH)), companyWarehouse(corrWarehouseWHtoWH(WHtoWH)))
-    IF countContractPartyAPartyB(companyWarehouse(warehouseWHtoWH(WHtoWH)), companyWarehouse(corrWarehouseWHtoWH(WHtoWH))) == 1
-    WHEN CHANGED(warehouseWHtoWH(WHtoWH)) OR CHANGED(corrWarehouseWHtoWH(WHtoWH)) ;
+contractSkuCompanyWHtoWH(WHtoWH) <- contractSkuCompanyCompanyCompany(companyWarehouse(warehouseWHtoWH(WHtoWH)), companyWarehouse(destinationWarehouseWHtoWH(WHtoWH)))
+    IF countContractPartyAPartyB(companyWarehouse(warehouseWHtoWH(WHtoWH)), companyWarehouse(destinationWarehouseWHtoWH(WHtoWH))) == 1
+    WHEN CHANGED(warehouseWHtoWH(WHtoWH)) OR CHANGED(destinationWarehouseWHtoWH(WHtoWH)) ;
 
 
 FORM WHtoWH 'Расход со склада на склад'
     OBJECTS w = WHtoWH FIXED PANEL
 
-    PROPERTIES (w) numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameCorrWarehouseWHtoWH,
+    PROPERTIES (w) numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH, nameDestinationWarehouseWHtoWH,
                    quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
                    invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH, numberContractSkuCompanyWHtoWH
 
@@ -92,7 +118,7 @@ DESIGN WHtoWH FROM DEFAULT {
                 NEW case {
                 childConstraints = TO THE BOTTOM;
                     title = 'Контрагент';
-                    ADD PROPERTY (nameCorrWarehouseWHtoWH);
+                    ADD PROPERTY (nameDestinationWarehouseWHtoWH);
                 }
                 ADD w.documentPrmGroup;
             }
@@ -110,7 +136,7 @@ DESIGN WHtoWH FROM DEFAULT {
 FORM WHtoWHs 'Расходы со склада на склад'
     OBJECTS w = WHtoWH
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH,
-                            nameCorrWarehouseWHtoWH, numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH,
+                            nameDestinationWarehouseWHtoWH, numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH,
                             quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
                             invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
@@ -161,7 +187,7 @@ DESIGN WHtoWHs FROM DEFAULT {
 FORM WHtoWHsDialog 'Расходы с магазина на склад'
     OBJECTS w = WHtoWHPosted
     PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHtoWH, timeWHtoWH, nameWarehouseWHtoWH,
-                            nameCorrWarehouseWHtoWH, numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH,
+                            nameDestinationWarehouseWHtoWH, numberContractSkuCompanyWHtoWH, countWHtoWHDetailWHtoWH,
                             quantityWHtoWHDetailWHtoWH, supplierSumWHtoWHDetailWHtoWH, invoiceVATSumWHtoWHDetailWHtoWH,
                             invoiceSumWHtoWHDetailWHtoWH, noteWHtoWH
 
@@ -172,7 +198,7 @@ FORM WHtoWHsDialog 'Расходы с магазина на склад'
 //@implementConsignmentHeader(WHtoWH, warehouse);
 
 //senderConsignment (consignment) += companyWarehouse(warehouseWHtoWH(consignment));
-//recipientConsignment (consignment) += companyStore(corrWarehouseWHtoWH(consignment));
+//recipientConsignment (consignment) += companyStore(destinationWarehouseWHtoWH(consignment));
 
 //consignmentConsignmentDetail (consignmentDetail) += WHtoWHWHtoWHDetail (consignmentDetail);
 //skuConsignmentDetail (consignmentDetail) += skuWHtoWHDetail (consignmentDetail);
