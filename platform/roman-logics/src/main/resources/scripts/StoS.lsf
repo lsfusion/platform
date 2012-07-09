@@ -14,9 +14,9 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-CLASS StoS 'Расход с магазина на магазин' : historyObject, numberedObject, consignment;
-CLASS StoSDetail 'Строка расхода с магазина на магазин' : outFIFOSkuLedger, consignmentDetail;
-CLASS StoSPosted 'Закрытый расход с магазина на магазин' : StoS, postedObject, consignment;
+CLASS StoS 'Расход с магазина на магазин' : historyObject, numberedObject;
+CLASS StoSDetail 'Строка расхода с магазина на магазин' : outFIFOSkuLedger;
+CLASS StoSPosted 'Закрытый расход с магазина на магазин' : StoS, postedObject;
 
 skuStoSDetail 'Товар (ИД)' (StoSDetail) = DATA sku (StoSDetail)IN idGroup;
 nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku(skuStoSDetail(StoSDetail));
@@ -25,14 +25,12 @@ nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku
 @defineDocumentDetailPackWeightSku(StoS);
 @defineDocumentHeaderSkuQuantity(StoS);
 
-//wholesalePriceWHtoWHDetail 'Оптовая цена' (WHtoWHDetail) =  priceWholesaleArticleDateTime(articleWHtoWHDetail(WHtoWHDetail), dateTimeWHtoWHDetail(WHtoWHDetail));
-//supplierPriceWHtoWHDetail (WHtoWHDetail) <- wholesalePriceWHtoWHDetail(WHtoWHDetail) WHEN CHANGED(skuWHtoWHDetail(WHtoWHDetail)) OR CHANGED (dateTimeWHtoWHDetail(WHtoWHDetail));
+//@implementSkuLedger(StoS, sku, departmentStore);
+quantityOutFIFOSkuLedger (ledger) += quantityStoSDetail (ledger);
+@implementSkuLedgerOutFIFOBalance(StoS, sku, departmentStore);
 
 senderStoreStoS (StoS) = storeDepartmentStore(departmentStoreStoS(StoS));
 nameSenderStoreStoSDetail 'Магазин-отправитель' (StoS) = name(senderStoreStoS(StoS)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
-
-quantityOutFIFOSkuLedger (ledger) += quantityStoSDetail (ledger);
-@implementSkuLedgerOutFIFOBalance(StoS, sku, departmentStore);
 
 FORM StoS 'Расход с магазина на магазин'
     OBJECTS s = StoS FIXED PANEL

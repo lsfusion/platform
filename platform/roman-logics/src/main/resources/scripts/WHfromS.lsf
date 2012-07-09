@@ -33,6 +33,7 @@ nameSkuWHfromSDetail 'Наименование товара' (WHfromSDetail) = n
 @defineUniqueDocumentComingByExpense(WHfromS, StoWH);
 @defineDocumentHeaderOriginSkuQuantity (WHfromS, StoWH);
 
+//@implementSkuLedger(WHfromS, sku, warehouse);
 quantityInFIFOSkuLedger (ledger) += quantityWHfromSDetail(ledger);
 @implementSkuLedgerInFIFOBalance(WHfromS, sku, warehouse);
 

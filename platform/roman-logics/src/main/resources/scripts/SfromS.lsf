@@ -29,11 +29,15 @@ skuSfromSDetail 'Товар (ИД)' (SfromSDetail) = DATA sku (SfromSDetail)IN i
 nameSkuSfromSDetail 'Наименование товара' (SfromSDetail) = nameSku(skuSfromSDetail(SfromSDetail));
 
 @defineRBCorrespondingDocumentWithRetailPrices(SfromS, departmentStore, 'Отдел документа', sku, 'Приход на магазин из магазина', store, 'Магазин-отправитлеь');
-//@implementBaseSkuDepartmentStoreLedger(SfromS, sku);
 @defineDocumentDetailPackWeightSku(SfromS);
 @defineDocumentHeaderSkuQuantity(SfromS);
 @defineUniqueDocumentComingByExpense(SfromS, StoS);
 @defineDocumentHeaderOriginSkuQuantity (SfromS, StoS);
+
+//@implementSkuLedger(SfromS, sku, departmentStore);
+quantityInFIFOSkuLedger (ledger) += quantitySfromSDetail(ledger);
+@implementSkuLedgerInFIFOBalance(SfromS, sku, departmentStore);
+@implementBaseSkuDepartmentStoreLedger(SfromS, sku);
 
 identitySfromS (SfromS) = storeDepartmentStore(departmentStoreSfromS(SfromS)) == corrStoreStoS(StoSSfromS(SfromS)) AND corrStoreSfromS(SfromS) == storeDepartmentStore(departmentStoreStoS(StoSSfromS(SfromS)));
 

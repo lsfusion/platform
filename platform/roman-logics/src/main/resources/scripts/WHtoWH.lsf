@@ -15,9 +15,9 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-CLASS WHtoWH 'Расход со склада на склад' : historyObject, numberedObject, consignment;
-CLASS WHtoWHDetail 'Строка расхода со склада на склад' : outFIFOSkuLedger, consignmentDetail;
-CLASS WHtoWHPosted 'Закрытый расход со склада на склад' : WHtoWH, postedObject, consignment;
+CLASS WHtoWH 'Расход со склада на склад' : historyObject, numberedObject;
+CLASS WHtoWHDetail 'Строка расхода со склада на склад' : outFIFOSkuLedger;
+CLASS WHtoWHPosted 'Закрытый расход со склада на склад' : WHtoWH, postedObject;
 
 @defineDocument(WHtoWH);
 
@@ -54,6 +54,7 @@ CLASS WHtoWHPosted 'Закрытый расход со склада на скл�
 @defineAddDetailDialogSkuStock(WHtoWH, sku, warehouse, dialogSku);
 @defineAddDetailDialogBarcode(WHtoWH, sku);
 
+//@implementSkuLedger(WHtoWH, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityWHtoWHDetail (ledger);
 @implementSkuLedgerOutFIFOBalance(WHtoWH, sku, warehouse);
 

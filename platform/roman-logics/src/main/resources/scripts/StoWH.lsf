@@ -14,9 +14,9 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-CLASS StoWH 'Расход с магазина на склад' : historyObject, numberedObject, consignment;
-CLASS StoWHDetail 'Строка расхода с магазина на склад' : outFIFOSkuLedger, consignmentDetail;
-CLASS StoWHPosted 'Закрытый расход с магазина на склад' : StoWH, postedObject, consignment;
+CLASS StoWH 'Расход с магазина на склад' : historyObject, numberedObject;
+CLASS StoWHDetail 'Строка расхода с магазина на склад' : outFIFOSkuLedger;
+CLASS StoWHPosted 'Закрытый расход с магазина на склад' : StoWH, postedObject;
 
 
 skuStoWHDetail 'Товар (ИД)' (StoWHDetail) = DATA sku (StoWHDetail)IN idGroup;
@@ -25,6 +25,10 @@ nameSkuStoWHDetail 'Наименование товара' (StoWHDetail) = nameS
 @defineRBCorrespondingDocumentWithRetailPrices(StoWH, departmentStore, 'Отдел документа', sku, 'Расход с магазина на склад', warehouse, 'Склад-получатель');
 @defineDocumentDetailPackWeightSku(StoWH);
 @defineDocumentHeaderSkuQuantity(StoWH);
+
+//@implementSkuLedger(StoWH, sku, departmentStore);
+quantityOutFIFOSkuLedger (ledger) += quantityStoWHDetail (ledger);
+@implementSkuLedgerOutFIFOBalance(StoWH, sku, departmentStore);
 
 senderStoreStoWH (StoWH) = storeDepartmentStore(departmentStoreStoWH(StoWH));
 nameSenderStoreStoWHDetail 'Магазин-отправитель' (StoWH) = name(senderStoreStoWH(StoWH)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
