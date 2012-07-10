@@ -17,6 +17,8 @@ descriptionSku 'Наименование товара' (sku) =
 
 nameSku(sku) += descriptionSku (sku);
 
+@defineSkuLedgerBalanceProperties(A, ' (бухг.)');
+
 @defineHierarchy(category);
 EXTEND FORM category
     PROPERTIES (c) nameParentCategory;

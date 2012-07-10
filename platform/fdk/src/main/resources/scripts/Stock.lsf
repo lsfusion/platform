@@ -61,7 +61,7 @@ CLASS ABSTRACT inSkuLedger 'Приход' : skuLedger;
 CLASS ABSTRACT outSkuLedger 'Расход' : skuLedger;
 
 CLASS ABSTRACT batch 'Партия' : inSkuLedger;
-CLASS ABSTRACT inFIFOSkuLedger 'Приход по FIFO' : inSkuLedger;
+CLASS ABSTRACT inLIFOSkuLedger 'Приход по LIFO' : inSkuLedger;
 
 CLASS ABSTRACT outFIFOSkuLedger 'Расход по FIFO' : outSkuLedger;
 
@@ -113,10 +113,10 @@ descriptionSkuLedger 'Название документа' = ABSTRACT STRING[200
 
 quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (batch) PERSISTENT;
 
-quantityInFIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inFIFOSkuLedger);
+quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger);
 
 quantityInSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
-                                                        quantityInFIFOSkuLedger(ledger) PERSISTENT;
+                                                        quantityInLIFOSkuLedger(ledger) PERSISTENT;
 
 quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger);
 
@@ -127,6 +127,14 @@ quantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(l
 
 signedQuantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
                                                             -quantityOutSkuLedger(ledger) PERSISTENT;
+
+// ----------------------------- Себестоимость ------------------------------------ //
+
+costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = DATA NUMERIC[14,3] (skuLedger, batch);
+
+signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS outSkuLedger
+                                              THEN -costSkuLedgerBatch(ledger, batch)
+                                              ELSE costSkuLedgerBatch(ledger, batch);
 
 // ---------------------------- Учетные цены и суммы ------------------------------- //
 
@@ -144,55 +152,56 @@ priceSkuStockDateTime 'Цена' (sku, stock, dateTime) = ABSTRACT NUMERIC[14,2]
 
 TABLE stockSku(stock, sku);
 
-currentBalanceSkuStock 'Текущий остаток' (sku, stock) = GROUP SUM signedQuantitySkuLedger (ledger) AND isPostedSkuLedger(ledger)
-                                                          BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
-countLedgerSkuStock 'Кол-во движений' (sku, stock) = GROUP SUM 1 AND signedQuantitySkuLedger (ledger) AND isPostedSkuLedger(ledger)
-                                                          BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+META defineSkuLedgerBalanceProperties(postfix, caption)
+    skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;
 
-quantityInSkuStockDate (sku, stock, date) = GROUP SUM quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger)
-                                                  BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+    currentBalance##postfix##SkuStock 'Текущий остаток'###caption (sku, stock) = GROUP SUM signedQuantitySkuLedger (ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                              BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+    countLedger##postfix##SkuStock 'Кол-во движений'###caption (sku, stock) = GROUP SUM 1 AND signedQuantitySkuLedger (ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                              BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
-quantityOutSkuStockDate (sku, stock, date) = GROUP SUM quantityOutSkuLedger(ledger) AND isPostedSkuLedger(ledger)
-                                                   BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+    quantityIn##postfix##SkuStockDate (sku, stock, date) = GROUP SUM quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                      BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
 
-quantitySkuStockDate (sku, stock, date) = quantityInSkuStockDate(sku, stock, date)
-                                          (+)
-                                          quantityOutSkuStockDate(sku, stock, date) PERSISTENT;
+    quantityOut##postfix##SkuStockDate (sku, stock, date) = GROUP SUM quantityOutSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                       BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
 
-signedQuantitySkuStockDate (sku, stock, date) = quantityInSkuStockDate(sku, stock, date)
-                                                (-)
-                                                quantityOutSkuStockDate(sku, stock, date) PERSISTENT;
+    quantity##postfix##SkuStockDate (sku, stock, date) = quantityIn##postfix##SkuStockDate(sku, stock, date)
+                                                         (+)
+                                                         quantityOut##postfix##SkuStockDate(sku, stock, date) PERSISTENT;
 
-// без учета текущей даты/времени
-balanceBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = (currentBalanceSkuStock(sku, stock) AND date AS DATE)
-                                                                  (-) [GROUP SUM signedQuantitySkuStockDate (sku, stock, dateIn) AND dateIn >= (date AS DATE)
-                                                                             BY sku, stock, date](sku, stock, date);
+    signedQuantity##postfix##SkuStockDate (sku, stock, date) = quantityIn##postfix##SkuStockDate(sku, stock, date)
+                                                               (-)
+                                                               quantityOut##postfix##SkuStockDate(sku, stock, date) PERSISTENT;
 
-// с учетом текущей даты/времени
-balanceASkuStockDate 'Остаток на конец дня' (sku, stock, date) = (currentBalanceSkuStock(sku, stock) AND date AS DATE)
-                                                                 (-) [GROUP SUM signedQuantitySkuStockDate (sku, stock, dateIn) AND dateIn > (date AS DATE)
-                                                                            BY sku, stock, date](sku, stock, date);
+    // без учета текущей даты/времени
+    balanceB##postfix##SkuStockDate 'Остаток на начало дня'###caption (sku, stock, date) = (currentBalance##postfix##SkuStock(sku, stock) AND date AS DATE)
+                                                                      (-) [GROUP SUM signedQuantity##postfix##SkuStockDate (sku, stock, dateIn) AND dateIn >= (date AS DATE)
+                                                                                 BY sku, stock, date](sku, stock, date);
 
-// без учета текущей даты/времени
-balanceBSkuStockDateTime 'Остаток на начало дня' (sku, stock, dateTime) = (currentBalanceSkuStock(sku, stock) AND dateTime AS DATETIME)
-                                                                          (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME) AND isPostedSkuLedger(ledger)
-                                                                                     BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
+    // с учетом текущей даты/времени
+    balanceA##postfix##SkuStockDate 'Остаток на конец дня'###caption (sku, stock, date) = (currentBalance##postfix##SkuStock(sku, stock) AND date AS DATE)
+                                                                     (-) [GROUP SUM signedQuantity##postfix##SkuStockDate (sku, stock, dateIn) AND dateIn > (date AS DATE)
+                                                                                BY sku, stock, date](sku, stock, date);
 
-// с учетом текущей даты/времени
-balanceASkuStockDateTime 'Остаток на конец дня' (sku, stock, dateTime) = (currentBalanceSkuStock(sku, stock) AND dateTime AS DATETIME)
-                                                                         (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedSkuLedger(ledger)
-                                                                                    BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
+    // без учета текущей даты/времени
+    balanceB##postfix##SkuStockDateTime 'Остаток на начало дня'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
+                                                                              (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
-costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = DATA NUMERIC[14,3] (skuLedger, batch);
+    // с учетом текущей даты/времени
+    balanceA##postfix##SkuStockDateTime 'Остаток на конец дня'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
+                                                                             (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                                                        BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
-signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS outSkuLedger
-                                              THEN -costSkuLedgerBatch(ledger, batch)
-                                              ELSE costSkuLedgerBatch(ledger, batch);
+    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger)
+                                                                      BY batch, stockSkuLedger(ledger) PERSISTENT;
 
-currentBalanceBatchStock 'Текущий остаток' (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger)
-                                                                  BY batch, stockSkuLedger(ledger) PERSISTENT;
+    currentBalance##postfix##Batch 'Остаток (всего)' (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
 
-currentBalanceBatch 'Остаток (всего)' (batch) = GROUP SUM currentBalanceBatchStock(batch, stock) BY batch PERSISTENT;
+END
+
+@defineSkuLedgerBalanceProperties(,);
 
 expiryDateSkuStock 'Годен до (max.)' (sku, stock) = GROUP MAX expiryDateBatch(batch) IF currentBalanceBatchStock(batch, stock)
                                                           BY skuBatch(batch), stock PERSISTENT;
@@ -276,26 +285,28 @@ needToCostSkuLedger 'Требуется расчет себестоимости'
 
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
-limitInFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inFIFOSkuLedger, batch);
+limitInLIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger, batch);
+orderInLIFOSkuLedgerBatch = ABSTRACT LONG (inLIFOSkuLedger, batch);
 
-quantityInFIFOSkuLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityInFIFOSkuLedger
-                  LIMIT limitInFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
+quantityInLIFOSkuLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityInLIFOSkuLedger
+                  LIMIT limitInLIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
                   BY ledger
-                  ORDER DESC orderBatch(batch);
+                  ORDER DESC orderInLIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
 limitOutFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger, batch);
+orderOutFIFOSkuLedgerBatch = ABSTRACT LONG (outFIFOSkuLedger, batch);
 
 quantityOutFIFOSkuLedgerBatch (ledger, batch) =
         PARTITION UNGROUP quantityOutFIFOSkuLedger
                   LIMIT limitOutFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
                   BY ledger
-                  ORDER orderBatch(batch);
+                  ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
 quantityOutSkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityOutFIFOSkuLedgerBatch(ledger, batch);
 
 quantitySkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledger, batch),
-                                                         quantityInFIFOSkuLedgerBatch(ledger, batch),
+                                                         quantityInLIFOSkuLedgerBatch(ledger, batch),
                                                          quantityOutFIFOSkuLedgerBatch(ledger, batch);
 
 supplierSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * supplierPriceBatch(batch);
@@ -353,8 +364,8 @@ META implementSkuLedger(concrete, skuProp, stockProp)
     stockSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
 END
 
-META implementSkuLedgerInFIFOBalance (concrete, skuProp, stockProp)
-    limitInFIFOSkuLedgerBatch(ledger, batch) += (quantityBatch(batch) (-) currentBalanceBatch(batch)) AND
+META implementSkuLedgerInLIFOBalance (concrete, skuProp, stockProp)
+    limitInLIFOSkuLedgerBatch(ledger, batch) += (quantityBatch(batch) (-) currentBalanceBatch(batch)) AND
                                                 countLedgerSkuStock(skuProp###concrete##Detail(ledger), stockProp###concrete##Detail(ledger));
 END
 

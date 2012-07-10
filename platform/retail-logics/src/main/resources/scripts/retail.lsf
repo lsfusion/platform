@@ -2806,7 +2806,7 @@ CLASS ABSTRACT inventoryDetail 'Изменение остатка инвента
 TABLE inventoryDetail (inventoryDetail);
 
 CLASS outInventoryDetail 'Недостача инвентаризации' : inventoryDetail, outFIFOSkuLedger;
-CLASS inInventoryDetail 'Излишки инвентаризации' : inventoryDetail, inFIFOSkuLedger;
+CLASS inInventoryDetail 'Излишки инвентаризации' : inventoryDetail, inLIFOSkuLedger;
 
 needToOutLedgerCollationSheetItem (collationSheet, item) = quantityShortageCollationSheetItem(collationSheet, item) > 0
     AND includeCollationSheetItem(collationSheet, item) AND isPostedCollationSheet(collationSheet);
@@ -2861,8 +2861,8 @@ quantityOutFIFOSkuLedger (ledger) += quantityOutInventoryDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(outInventory, item, departmentStore);
 sumOutSkuLedger (ledger) += sumOutInventoryDetail(ledger);
 
-quantityInFIFOSkuLedger (ledger) += quantityInInventoryDetail(ledger);
-@implementSkuLedgerInFIFOBalance(inInventory, item, departmentStore);
+quantityInLIFOSkuLedger (ledger) += quantityInInventoryDetail(ledger);
+@implementSkuLedgerInLIFOBalance(inInventory, item, departmentStore);
 sumInSkuLedger (ledger) += sumInInventoryDetail(ledger);
 
 //---------------------------- Отгрузка по безналу(розница) ----------------------------//
@@ -3561,7 +3561,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 
 
 CLASS innerArrival 'Приход в отдел' : incAccountDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : inFIFOSkuLedger, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, inputListRegisterDetail;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : inLIFOSkuLedger, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
 @defineDocument(innerArrival);
@@ -3676,8 +3676,8 @@ quantityInnerArrivalBatch (innerArrival, batch) = quantityInnerFlowBatch (innerF
 quantityInnerArrivalDetailBatch (innerArrivalDetail, batch) = quantityInnerArrivalBatch(innerArrivalInnerArrivalDetail(innerArrivalDetail), batch);
 
 @implementSkuLedger(innerArrival, item, departmentStore);
-quantityInFIFOSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
-limitInFIFOSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
+quantityInLIFOSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
+limitInLIFOSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
 sumInSkuLedger (ledger) += retailSumInnerArrivalDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(innerArrival, item);
@@ -3941,7 +3941,7 @@ CLASS bill 'Чек' : historyObject;
 
 CLASS ABSTRACT billDetail 'Строка чека';
 CLASS billSaleDetail 'Строка продажи' : billDetail, outFIFOSkuLedger, salesLedger;
-CLASS billReturnDetail 'Строка возврата' : billDetail, inFIFOSkuLedger;
+CLASS billReturnDetail 'Строка возврата' : billDetail, inLIFOSkuLedger;
 
 TABLE bill (bill);
 TABLE billSaleDetail (billSaleDetail);
@@ -4055,8 +4055,8 @@ quantityOutFIFOSkuLedger (ledger) += quantityBillSaleDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(billSale, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumBillSaleDetail(ledger);
 
-quantityInFIFOSkuLedger (ledger) += quantityBillReturnDetail(ledger);
-@implementSkuLedgerInFIFOBalance(billReturn, item, departmentStore);
+quantityInLIFOSkuLedger (ledger) += quantityBillReturnDetail(ledger);
+@implementSkuLedgerInLIFOBalance(billReturn, item, departmentStore);
 sumInSkuLedger (ledger) += retailSumBillReturnDetail(ledger);
 
 @implementSalesLedgerStore(billSale);

@@ -18,7 +18,7 @@ PRIORITY RomanLogicsModule, Stock;
 // Приход на склад (по схеме документ расхода - акт приемки - акт расхождений)
 CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSIPosted 'Закрытый приход с СВХ' : WHfromCSI, postedObject;
-CLASS WHfromCSIDetail 'Строка прихода на склад' : inFIFOSkuLedger;
+CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuLedger;
 
 @defineDocumentTables(WHfromCSI);
 
@@ -46,8 +46,8 @@ initValueSeriesObject (WHfromCSI) += [PREV(seriesObject(WHfromCSI))](CStoWHWHfro
 initWhenNumberedObject(WHfromCSI) += CHANGED(CStoWHWHfromCSI(WHfromCSI));
 
 @implementSkuLedger(WHfromCSI, sku, warehouse);
-quantityInFIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
-limitInFIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
+quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
 
 FORM WHfromCSI 'Приход на оптовый склад'
 
@@ -399,5 +399,5 @@ DESIGN WHfromCSIs FROM DEFAULT {
 
 CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
-CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inFIFOSkuLedger;
+CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inLIFOSkuLedger;
 

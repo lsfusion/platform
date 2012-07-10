@@ -21,7 +21,7 @@ REQUIRE System,
 PRIORITY RomanLogicsModule, Stock;
 
 CLASS SfromWH 'Приход со склада на магазин' : historyObject, numberedObject;
-CLASS SfromWHDetail 'Строка прихода со склада  на магазин' : inFIFOSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS SfromWHDetail 'Строка прихода со склада  на магазин' : inLIFOSkuLedger, priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS SfromWHPosted 'Закрытый приход со склада на магазин' : SfromWH, postedObject;
 
 skuSfromWHDetail 'Товар (ИД)' (SfromWHDetail) = DATA sku(SfromWHDetail) IN idGroup;
@@ -34,8 +34,8 @@ nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = n
 @defineDocumentHeaderOriginSkuQuantity(SfromWH, WHtoS);
 
 //@implementSkuLedger(SfromWH, sku, departmentStore);
-quantityInFIFOSkuLedger (ledger) += quantitySfromWHDetail(ledger);
-@implementSkuLedgerInFIFOBalance(SfromWH, sku, departmentStore);
+quantityInLIFOSkuLedger (ledger) += quantitySfromWHDetail(ledger);
+@implementSkuLedgerInLIFOBalance(SfromWH, sku, departmentStore);
 @implementBaseSkuDepartmentStoreLedger(SfromWH, sku);
 
 companyCorrWarehouseSfromWH (SfromWH) = companyWarehouse(corrWarehouseSfromWH(SfromWH));
