@@ -169,7 +169,7 @@ isNotShippedSkuFreightUnitWHfromCSR (sku, freightUnit, WHfromCSR) = quantitySkuF
 
 //quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
 //                                          BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
-
+//
 //diffQuantityWHfromCSRDetail (WHfromCSRDetail) = quantityOriginWHfromCSRDetail(WHfromCSRDetail)!= quantityWHfromCSRDetail(WHfromCSRDetail);
 
 //приемка по коробам
@@ -372,8 +372,8 @@ FORM WHfromCSR 'Приемка на оптовый склад'
     FILTERGROUP filtersQuantity
         FILTER 'Показывать принятые' 'F9' quantityWHfromCSRDetail(d) DEFAULT
 
-    FILTERGROUP filtersDiff
-        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSRDetail(d)
+//    FILTERGROUP filtersDiff
+//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSRDetail(d)
 
     EDIT WHfromCSR OBJECT w
 ;
@@ -424,7 +424,7 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
                    sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                    quantityWHfromCSRDetail
 
-    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
+//    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
 
     OBJECTS df = WHfromCSDDetail
     PROPERTIES (df) indexWHfromCSDDetail, WHfromCSDWHfromCSDDetail, objectClassName, barcodeWHfromCSDDetail, quantityWHfromCSDDetail
