@@ -13,11 +13,11 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 
 public class RmiQueue {
+    public static final long FOREVER = 3L*24L*60L*60L*1000L;
+
     private RmiFuture currentDispatchingFuture;
 
     private final Queue<RmiFuture> rmiFutures = new ArrayDeque<RmiFuture>();
@@ -33,6 +33,48 @@ public class RmiQueue {
         this.tableManager = tableManager;
     }
 
+    public <T> void asyncRequest(RmiRequest<T> request) {
+        syncRequestWithTimeOut(0, request);
+    }
+
+    /**
+     * @param timeOut time to wait in milliseconds
+     * @param request rmi request
+     * @return <code>false</code> if timed out
+     */
+    public <T> boolean syncRequestWithTimeOut(long timeOut, final RmiRequest<T> request) {
+        long startTime = System.currentTimeMillis();
+
+        if (timeOut >= FOREVER) {
+            syncRequest(request);
+            return true;
+        }
+
+        execRmiRequestInternal(request, request);
+
+        boolean timedOut = true;
+        //если timeout <=0 то даже не ждём, сразу выходим, т.к. чисто асинхронный вызов
+        if (timeOut > 0) {
+            for (RmiFuture rmiFuture : rmiFutures) {
+                long currentExecutionTime = System.currentTimeMillis() - startTime;
+                try {
+                    rmiFuture.get(timeOut - currentExecutionTime, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    timedOut = true;
+                    break;
+                } catch (Exception e) {
+                    Throwables.propagate(e);
+                }
+            }
+        }
+
+        if (timedOut) {
+            request.onAsyncRequest();
+        }
+
+        return timedOut;
+    }
+
     public <T> T syncRequest(final RmiRequest<T> request) {
         //todo: надо бы переделать эту логику, либо вообще убрать...
 //        boolean screenBlock = false;
@@ -46,7 +88,8 @@ public class RmiQueue {
 
         try {
             final Result<T> result = new Result<T>();
-            asyncRequest(request, new Callback<T>() {
+
+            execRmiRequestInternal(request, new Callback<T>() {
                 @Override
                 public void done(T r) throws Exception {
                     result.set(r);
@@ -66,18 +109,13 @@ public class RmiQueue {
         }
     }
 
-    public <T> void asyncRequest(RmiRequest<T> request) {
-        asyncRequest(request, request);
-    }
-
-    public <T> void asyncRequest(RmiRequest<T> request, Callback<T> callback) {
+    private <T> void execRmiRequestInternal(RmiRequest<T> request, Callback<T> callback) {
 //        System.out.println("----Async request # " + nextRmiRequestIndex);
         SwingUtils.assertDispatchThread();
 
         request.setRequestIndex(nextRmiRequestIndex++);
 
         RmiFuture<T> rmiFuture = new RmiFuture<T>(request, callback);
-        request.preRequest();
 
         rmiFutures.add(rmiFuture);
         rmiExecutor.execute(rmiFuture);

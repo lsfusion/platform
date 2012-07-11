@@ -1,6 +1,5 @@
 package platform.client.form.tree;
 
-import com.google.common.base.Preconditions;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import platform.base.BaseUtils;
@@ -71,8 +70,13 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
     @Override
     public void setValueAt(Object value, Object node, int column) {
-        Preconditions.checkState(false, "setValueAt shouldn't be called");
-//        changeProperty(value, node, column, true);
+        if (column != 0 && node instanceof TreeGroupNode) {
+            ClientPropertyDraw property = getProperty(node, column);
+
+            if (property != null) {
+                values.get(property).put(((TreeGroupNode) node).key, value);
+            }
+        }
     }
 
     @Override

@@ -25,11 +25,11 @@ public abstract class RmiRequest<T> implements Callable<T>, Callback<T> {
         onResponse(requestIndex, result);
     }
 
-    final void preRequest() {
-        preRequest(requestIndex);
+    final void onAsyncRequest() {
+        onAsyncRequest(requestIndex);
     }
 
-    protected void preRequest(long requestIndex) {
+    protected void onAsyncRequest(long requestIndex) {
     }
 
     protected abstract T doRequest(long requestIndex) throws Exception;
