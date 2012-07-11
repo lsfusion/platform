@@ -11,6 +11,7 @@ REQUIRE System,
         Historizable,
         RetailPrice,
         MasterData,
+        RomanStock,
         RomanLogicsModule;
 
 PRIORITY Utils, Stock, RomanLogicsModule;
@@ -340,7 +341,7 @@ supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDecla
 
 @implementSkuLedger(declaration, sku, customStore);
 
-@implementBatch(declaration, sku);
+@implementABatch(declaration, sku);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
 
 // пошлины

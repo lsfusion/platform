@@ -9,6 +9,7 @@ REQUIRE System,
         Consignment,
         Declaration,
         MasterData,
+        RomanStock,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;

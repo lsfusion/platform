@@ -1,0 +1,66 @@
+MODULE RomanStock;
+
+REQUIRE Stock, Barcode, Supplier, RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// объявляем форму подбора товаров
+@defineDialogSku(dialogSku);
+@defineDialogSkuBarcode(dialogSku);
+@defineDialogSkuSupplier(dialogSku);
+
+// implement абстрактных свойств
+descriptionSku 'Наименование товара' (sku) =
+        [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+        sidArticleSku(sku), nameCategoryArticleSku(sku), nameArticleSku(sku));
+
+nameSku(sku) += descriptionSku (sku);
+
+// объявляем группы sku
+@defineHierarchy(category);
+EXTEND FORM category
+    PROPERTIES (c) nameParentCategory;
+;
+
+parentSkuGroup (skuGroup) += parentCategory(skuGroup);
+skuGroupSku (sku) += categoryArticleSku(sku);
+
+// добавляем еще один регистр (бухгалтерский)
+@defineSkuLedgerBalanceProperties(A, ' (бухг.)');
+
+// создаем разные типы партий (бухгалтерские, управленческие)
+CLASS STATIC batchType {
+    batchTypeA 'Бухгалтерская',
+    batchTypeB 'Управленческая'
+}
+
+orderABatchType (type) = IF type == batchType.batchTypeA THEN 0 IF type == batchType.batchTypeA ELSE 1 IF type IS batchType PERSISTENT;
+orderBBatchType (type) = IF type == batchType.batchTypeB THEN 0 IF type == batchType.batchTypeB ELSE 1 IF type IS batchType PERSISTENT;
+
+batchTypeBatch = ABSTRACT batchType (batch) PERSISTENT;
+nameBatchTypeBatch 'Тип партии' (batch) = name(batchTypeBatch(batch)) IN baseGroup;
+
+orderABatch (batch) = orderABatchType(batchTypeBatch(batch)) PERSISTENT;
+orderBBatch (batch) = orderBBatchType(batchTypeBatch(batch)) PERSISTENT;
+
+META implementABatch (concrete, skuProp)
+    @implementBatch(concrete, skuProp);
+    batchTypeBatch (batch) += batchType.batchTypeA IF batch IS concrete##Detail;
+END
+
+META implementBBatch (concrete, skuProp)
+    @implementBatch(concrete, skuProp);
+    batchTypeBatch (batch) += batchType.batchTypeB IF batch IS concrete##Detail;
+END
+
+META implementSkuLedgerOutFIFOBalanceA (concrete, skuProp, stockProp)
+    @implementSkuLedgerOutFIFOBalanceA (concrete, skuProp, stockProp);
+    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderABatch(batch) IF ledger IS concrete##Detail;
+END
+
+META implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp)
+    @implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp);
+    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS concrete##Detail;
+END
+
+quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);

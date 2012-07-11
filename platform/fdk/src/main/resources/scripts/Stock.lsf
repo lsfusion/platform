@@ -364,13 +364,21 @@ META implementSkuLedger(concrete, skuProp, stockProp)
     stockSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
 END
 
+META implementSkuLedgerInLIFOBalancePostfix (concrete, skuProp, stockProp, postfix)
+    limitInLIFOSkuLedgerBatch(ledger, batch) += (quantityBatch(batch) (-) currentBalance##postfix##Batch(batch)) AND
+                                                countLedger##postfix##SkuStock(skuProp###concrete##Detail(ledger), stockProp###concrete##Detail(ledger));
+END
+
 META implementSkuLedgerInLIFOBalance (concrete, skuProp, stockProp)
-    limitInLIFOSkuLedgerBatch(ledger, batch) += (quantityBatch(batch) (-) currentBalanceBatch(batch)) AND
-                                                countLedgerSkuStock(skuProp###concrete##Detail(ledger), stockProp###concrete##Detail(ledger));
+    @implementSkuLedgerInLIFOBalancePostfix(concrete, skuProp, stockProp, );
+END
+
+META implementSkuLedgerOutFIFOBalancePostfix (concrete, skuProp, stockProp, postfix)
+    limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalance##postfix##BatchStock(batch, stockProp###concrete##Detail(ledger));
 END
 
 META implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp)
-    limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockProp###concrete##Detail(ledger));
+    @implementSkuLedgerOutFIFOBalancePostfix(concrete, skuProp, stockProp, );
 END
 
 META implementBatch(concrete, skuProp)

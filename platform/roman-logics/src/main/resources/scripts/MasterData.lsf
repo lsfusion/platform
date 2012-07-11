@@ -10,26 +10,6 @@ REQUIRE System,
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
-//--------------------------------- Наименование товара -------------------------------------------//
-descriptionSku 'Наименование товара' (sku) =
-        [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
-        sidArticleSku(sku), nameCategoryArticleSku(sku), nameArticleSku(sku));
-
-nameSku(sku) += descriptionSku (sku);
-
-@defineSkuLedgerBalanceProperties(A, ' (бухг.)');
-
-@defineHierarchy(category);
-EXTEND FORM category
-    PROPERTIES (c) nameParentCategory;
-;
-
-parentSkuGroup (skuGroup) += parentCategory(skuGroup);
-skuGroupSku (sku) += categoryArticleSku(sku);
-
-quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
-
-
 //--------------------------------- Дисконтные группы -------------------------------------------//
 
 inDiscountCardBrandSupplier 'Вкл.' (discountCard, brandSupplier) = DATA BOOLEAN (discountCard, brandSupplier);

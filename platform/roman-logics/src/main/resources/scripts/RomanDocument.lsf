@@ -113,11 +113,3 @@ META defineDocumentDetailSkuArticle (object)
     UOM###object##Detail 'Единица измерения (ИД)' (object##Detail) = DATA UOM (object##Detail) IN idGroup;
     shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortName(UOM###object##Detail(object##Detail));
 END
-
-//-----------Для подбора товаров------------------//
-
-    @defineDialogSku(dialogSku);
-    @defineDialogSkuBarcode(dialogSku);
-    @defineDialogSkuSupplier(dialogSku);
-  //  @defineDialogSkuStorePrice(dialogSku);
-

@@ -11,6 +11,7 @@ REQUIRE System,
         Declaration,
         WholesalePrice,
         MasterData,
+        RomanStock,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Stock;

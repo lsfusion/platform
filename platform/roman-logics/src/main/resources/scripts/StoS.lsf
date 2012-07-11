@@ -2,7 +2,6 @@
 MODULE StoS;
 
 REQUIRE System,
-
         Stock,
         Numerator,
         Document,
@@ -10,6 +9,7 @@ REQUIRE System,
         Consignment,
         Declaration,
         MasterData,
+        RomanStock,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Stock;
