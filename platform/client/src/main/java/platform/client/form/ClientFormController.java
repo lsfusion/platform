@@ -588,7 +588,7 @@ public class ClientFormController {
 
         final byte[] fullCurrentKey = getFullCurrentKey(property, columnKey); // чтобы не изменился
 
-        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
+        rmiQueue.syncRequestWithTimeOut(0, new RmiRequest<ServerResponse>() {
             ClientGroupObjectValue propertyKey = null;
 
             @Override

@@ -55,6 +55,7 @@ public class RmiQueue {
         boolean timedOut = true;
         //если timeout <=0 то даже не ждём, сразу выходим, т.к. чисто асинхронный вызов
         if (timeOut > 0) {
+            timedOut = false;
             for (RmiFuture rmiFuture : rmiFutures) {
                 long currentExecutionTime = System.currentTimeMillis() - startTime;
                 try {
@@ -70,6 +71,8 @@ public class RmiQueue {
 
         if (timedOut) {
             request.onAsyncRequest();
+        } else {
+            forceProcessAllRequests();
         }
 
         return timedOut;
@@ -97,15 +100,23 @@ public class RmiQueue {
                 }
             });
 
-            while (!rmiFutures.isEmpty()) {
-                execNextFutureCallback();
-            }
+            forceProcessAllRequests();
 
             return result.result;
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
             busyDisplayer.stop();
+        }
+    }
+
+    private void forceProcessAllRequests() {
+        try {
+            while (!rmiFutures.isEmpty()) {
+                execNextFutureCallback();
+            }
+        } catch (Exception e) {
+            Throwables.propagate(e);
         }
     }
 
