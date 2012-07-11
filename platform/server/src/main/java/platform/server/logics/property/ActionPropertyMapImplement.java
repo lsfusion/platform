@@ -48,4 +48,11 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public void execute(PropertyChange<T> change, ExecutionEnvironment env, FormEnvironment<T> form) throws SQLException {
         env.execute(property, change.map(mapping), form==null ? null : form.map(mapping));
     }
+
+    public T mapSimpleDelete() {
+        P simpleDelete = property.getSimpleDelete();
+        if(simpleDelete!=null)
+            return mapping.get(simpleDelete);
+        return null;
+    }
 }

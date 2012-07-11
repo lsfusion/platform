@@ -311,6 +311,13 @@ public class GridController {
         table.setRowKeys(gridObjects);
     }
 
+    public void modifyGridObject(ClientGroupObjectValue gridObject, boolean add) {
+        table.modifyGroupObject(gridObject, add);
+
+//        table.updateTableRows();
+//        table.repaint();
+    }
+
     public void updateColumnKeys(ClientPropertyDraw drawProperty, List<ClientGroupObjectValue> groupColumnKeys) {
         table.updateColumnKeys(drawProperty, groupColumnKeys);
     }

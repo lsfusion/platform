@@ -1,5 +1,6 @@
 package platform.base;
 
+// !! может быть Mutable
 public class Pair<Class1, Class2> {
 
     public Class1 first;

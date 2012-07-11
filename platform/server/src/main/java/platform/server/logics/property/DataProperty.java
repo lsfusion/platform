@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -123,6 +124,14 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     @Override
     protected void fillDepends(Set<CalcProperty> depends, boolean events) { // для Action'а связь считается слабой
         if(events) depends.addAll(getEventDepends());
+    }
+
+    @Override
+    public QuickSet<CalcProperty> calculateRecDepends() { // именно в recdepends, потому как в depends "порушиться"
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>(super.calculateRecDepends());
+        for(ClassPropertyInterface remove : interfaces)
+            result.addAll(IsClassProperty.getParentProps(remove.interfaceClass));
+        return result;
     }
 
     @Override

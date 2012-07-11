@@ -50,6 +50,8 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
     boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException;
+    
+    int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
 }

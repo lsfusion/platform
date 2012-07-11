@@ -308,6 +308,17 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return null;
     }
 
+    public ObjectView getObject(ObjectEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        for (GroupObjectView groupObject : groupObjects)
+            for(ObjectView object : groupObject)
+                if (entity.equals(object.entity))
+                    return object;
+        return null;
+    }
+
     public TreeGroupView getTreeGroup(TreeGroupEntity entity) {
         if (entity == null) {
             return null;

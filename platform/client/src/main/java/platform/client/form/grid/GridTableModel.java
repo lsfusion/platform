@@ -21,45 +21,7 @@ public class GridTableModel extends AbstractTableModel {
     private Color[][] backgroundColor = new Color[0][];
     private Color[][] foregroundColor = new Color[0][];
 
-    public void update(ClientGroupObject groupObject,
-                       List<ClientPropertyDraw> columnProperties,
-                       List<ClientGroupObjectValue> rowKeys,
-                       Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
-                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
-                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
-                       Map<ClientGroupObjectValue, Object> mapRowBackgroundValues,
-                       Map<ClientGroupObjectValue, Object> mapRowForegroundValues,
-                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues,
-                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
-
-        List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
-        List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
-
-        for (ClientPropertyDraw property : columnProperties) {
-            if (mapColumnKeys.containsKey(property)) {
-                Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(property);
-                for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
-                    //не показываем колонку, если propertyCaption равно null
-                    Boolean needToHide = property.hideUser==null ? property.hide : property.hideUser;
-                    if ((columnCaption == null || columnCaption.get(key) != null) && !needToHide) {
-                        columnKeysList.add(key);
-                        columnPropsList.add(property);
-                    }
-                }
-            } else {
-                columnPropsList.add(property);
-                columnKeysList.add(ClientGroupObjectValue.EMPTY);
-            }
-        }
-
-        if (columnProps.length != columnPropsList.size()) {
-            columnProps = new ClientPropertyDraw[columnPropsList.size()];
-            columnKeys = new ClientGroupObjectValue[columnKeysList.size()];
-            columnNames = new String[columnKeysList.size()];
-        }
-        columnProps = columnPropsList.toArray(columnProps);
-        columnKeys = columnKeysList.toArray(columnKeys);
-
+    public void updateRows(List<ClientGroupObjectValue> rowKeys, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values, Map<ClientGroupObjectValue, Object> mapRowBackgroundValues, Map<ClientGroupObjectValue, Object> mapRowForegroundValues, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
         if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
             backgroundColor = new Color[rowKeys.size()][columnProps.length];
@@ -97,6 +59,36 @@ public class GridTableModel extends AbstractTableModel {
                 }
             }
         }
+    }
+
+    public void updateColumns(List<ClientPropertyDraw> columnProperties, Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions) {
+        List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
+        List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
+
+        for (ClientPropertyDraw property : columnProperties) {
+            if (mapColumnKeys.containsKey(property)) {
+                Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(property);
+                for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
+                    //не показываем колонку, если propertyCaption равно null
+                    Boolean needToHide = property.hideUser==null ? property.hide : property.hideUser;
+                    if ((columnCaption == null || columnCaption.get(key) != null) && !needToHide) {
+                        columnKeysList.add(key);
+                        columnPropsList.add(property);
+                    }
+                }
+            } else {
+                columnPropsList.add(property);
+                columnKeysList.add(ClientGroupObjectValue.EMPTY);
+            }
+        }
+
+        if (columnProps.length != columnPropsList.size()) {
+            columnProps = new ClientPropertyDraw[columnPropsList.size()];
+            columnKeys = new ClientGroupObjectValue[columnKeysList.size()];
+            columnNames = new String[columnKeysList.size()];
+        }
+        columnProps = columnPropsList.toArray(columnProps);
+        columnKeys = columnKeysList.toArray(columnKeys);
 
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {

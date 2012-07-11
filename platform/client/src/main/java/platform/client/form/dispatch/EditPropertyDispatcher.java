@@ -2,9 +2,12 @@ package platform.client.form.dispatch;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.EditPropertyHandler;
+import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;
 import platform.interop.action.EditNotPerformedClientAction;
@@ -12,6 +15,7 @@ import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.ServerResponse;
 import platform.interop.form.UserInputResult;
 
+import javax.swing.*;
 import java.io.IOException;
 
 import static platform.base.BaseUtils.deserializeObject;
@@ -47,15 +51,36 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             simpleChangeProperty = null;
             editColumnKey = null;
 
-            if (actionSID.equals(ServerResponse.CHANGE) && property.changeType != null) {
-                editColumnKey = columnKey;
-                simpleChangeProperty = property;
-                oldValue = currentValue;
-                return internalRequestValue(property.changeType);
+            ClientFormController form = getFormController();
+
+            if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
+                boolean asyncModifyObject = form.isAsyncModifyObject(property);
+                if(asyncModifyObject || property.changeType != null) {
+                    if(property.askConfirm) {
+                        String msg = property.askConfirmMessage;
+
+                        int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "LS Fusion", JOptionPane.QUESTION_MESSAGE);
+                        if (result != JOptionPane.YES_OPTION) {
+                            return true;
+                        }
+                    }
+
+                    if(asyncModifyObject) {
+                        form.modifyObject(property, columnKey);
+                        return true;
+                    }
+
+                    if (property.changeType != null) {
+                        editColumnKey = columnKey;
+                        simpleChangeProperty = property;
+                        oldValue = currentValue;
+                        return internalRequestValue(property.changeType);
+                    }
+                }
             }
 
             editPerformed = true;
-            ServerResponse response = handler.getForm().executeEditAction(property, columnKey, actionSID);
+            ServerResponse response = form.executeEditAction(property, columnKey, actionSID);
             return internalDispatchResponse(response);
         } catch (IOException ex) {
             throw Throwables.propagate(ex);

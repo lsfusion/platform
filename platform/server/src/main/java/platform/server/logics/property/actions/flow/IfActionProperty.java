@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
@@ -79,6 +80,16 @@ public class IfActionProperty extends KeepContextActionProperty {
                : falseType == null
                  ? trueType
                  : trueType.getCompatible(falseType);
+    }
+
+    @Override
+    public CustomClass getSimpleAdd() {
+        return null; // пока ничего не делаем, так как на клиенте придется, "отменять" изменения
+    }
+
+    @Override
+    public PropertyInterface getSimpleDelete() {
+        return null; // по аналогии с верхним
     }
 
     @Override

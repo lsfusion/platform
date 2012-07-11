@@ -515,13 +515,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // пометка что изменились данные
     public boolean dataChanged = true;
 
-    private DataObject createObject(ConcreteCustomClass cls) throws SQLException {
-
-        if (!securityPolicy.cls.edit.add.checkPermission(cls)) return null;
-
-        return session.addObject(cls);
-    }
-
     // временно
     private boolean checkFilters(GroupObjectInstance groupTo) {
         Set<FilterInstance> filters = new HashSet<FilterInstance>();
@@ -569,27 +562,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     // добавляет во все
-    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
 
-        DataObject addObject = createObject(cls);
-        if (addObject == null) return addObject;
+    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
+        return addObject(cls, true, null);
+    }
+
+    public DataObject addObject(ConcreteCustomClass cls, boolean groupLast, DataObject pushed) throws SQLException {
+
+        if (!securityPolicy.cls.edit.add.checkPermission(cls)) return null;
+
+        DataObject addObject = session.addObject(cls, groupLast, pushed);
 
         for (ObjectInstance object : getObjects()) {
             if (object instanceof CustomObjectInstance && cls.isChild(((CustomObjectInstance) object).baseClass)) {
                 resolveAdd((CustomObjectInstance) object, cls, addObject);
             }
         }
-
-        return addObject;
-    }
-
-    public DataObject addObject(CustomObjectInstance object, ConcreteCustomClass cls) throws SQLException {
-        // пока тупо в базу
-
-        DataObject addObject = createObject(cls);
-        if (addObject == null) return addObject;
-
-        resolveAdd(object, cls, addObject);
 
         return addObject;
     }
@@ -607,36 +595,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {
-        executeEditAction(property, editActionSID, keys, null);
+        executeEditAction(property, editActionSID, keys, null, null, false);
     }
 
-    public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue requestValue) throws SQLException {
+    public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException {
         if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
             Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
 
-        if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) {
-            //ask confirm logics...
+        if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
-            if (propertyDraw.askConfirm) {
-                String msg;
-                if (propertyDraw.askConfirmMessage != null) {
-                    msg = propertyDraw.askConfirmMessage;
-                } else {
-                    if (property.propertyObject.getType() instanceof ActionClass) {
-                        msg = getString("form.instance.do.you.really.want.to.take.action");
-                    } else {
-                        msg = getString("form.instance.do.you.really.want.to.edit.property");
-                    }
-                    PropertyDrawView propertyView = entity.getRichDesign().get(propertyDraw);
-                    String caption = propertyView.getSimpleCaption();
-                    if (caption != null) {
-                        msg += " \"" + caption + "\"?";
-                    }
-                }
-
-                int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", msg));
+            if (!pushConfirm && propertyDraw.askConfirm) {
+                int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion",
+                        entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
                 if (result != JOptionPane.YES_OPTION) {
                     return;
                 }
@@ -645,7 +617,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
         if (editAction != null) {
-            editAction.getRemappedPropertyObject(keys).execute(this, requestValue, property);
+            editAction.getRemappedPropertyObject(keys).execute(this, pushChange, pushAdd, property);
         } else {
             Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
         }
@@ -712,7 +684,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             assert new HashSet<ObjectInstance>(property.toDraw.objects).equals(pasteRows.keySet().iterator().next().keySet());
 
             for (Map.Entry<Map<ObjectInstance, DataObject>, ObjectValue> row : pasteRows.entrySet()) {
-                executeEditAction(property, ServerResponse.CHANGE_WYS, row.getKey(), row.getValue());
+                executeEditAction(property, ServerResponse.CHANGE_WYS, row.getKey(), row.getValue(), null, true);
             }
         }
     }

@@ -1,6 +1,5 @@
 package platform.server.session;
 
-import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.data.QueryEnvironment;
@@ -14,9 +13,7 @@ import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public abstract class ExecutionEnvironment {
@@ -52,25 +49,19 @@ public abstract class ExecutionEnvironment {
 
     public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
         for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(this).entrySet())
-            execute(property, row.getKey(), formEnv, row.getValue().get("value"));
+            execute(property, row.getKey(), formEnv, row.getValue().get("value"), null);
     }
 
     public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
         for(Map<P, DataObject> row : set.executeClasses(this))
-            execute(property, row, formEnv, null);
+            execute(property, row, formEnv, null, null);
     }
 
-    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue requestInput) throws SQLException {
-        ExecutionContext<P> context = new ExecutionContext<P>(change, null, this, formEnv, true);
-
-        if(requestInput != null) {
-            context = context.pushUserInput(requestInput);
-        }
-
-        return property.execute(context);
+    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
+        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv, true));
     }
 
-    public abstract DataObject addObject(ConcreteCustomClass cls) throws SQLException;
+    public abstract DataObject addObject(ConcreteCustomClass cls, boolean groupLast, DataObject pushed) throws SQLException;
 
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException;
 

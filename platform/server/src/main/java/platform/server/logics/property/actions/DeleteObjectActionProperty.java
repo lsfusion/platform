@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions;
 
+import platform.base.BaseUtils;
 import platform.interop.KeyStrokes;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
@@ -33,18 +34,8 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
         // после удаления выбираем соседний объект
         DataObject nearObject = null;
         PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
-        if (objectInstance != null) {
-            List<Map<ObjectInstance, DataObject>> keys = ((CustomObjectInstance) objectInstance).groupTo.keys.keyList();
-            for (Map<ObjectInstance, DataObject> key : keys) {
-                if (key.values().contains(context.getSingleKeyValue()) && nearObject == null) {
-                    int index = keys.indexOf(key);
-                    if (keys.size() == 1)
-                        continue;
-                    index = index == keys.size() - 1 ? index - 1 : index + 1;
-                    nearObject = keys.get(index).get(objectInstance);
-                }
-            }
-        }
+        if (objectInstance != null && objectInstance instanceof ObjectInstance)
+            nearObject = BaseUtils.getNearValue((ObjectInstance)objectInstance, context.getSingleKeyValue(), ((CustomObjectInstance) objectInstance).groupTo.keys.keyList());
 
         if (objectInstance != null) // если есть ObjectInstance формы, то используем его, иначе просто грохаем в сессии
             context.changeClass(objectInstance, context.getSingleKeyValue(), -1);
@@ -67,5 +58,10 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
         propertyView.editKey = KeyStrokes.getDeleteActionPropertyKeyStroke();
         propertyView.design.setIconPath("delete.png");
         propertyView.showEditKey = false;
+    }
+
+    @Override
+    public ClassPropertyInterface getSimpleDelete() {
+        return BaseUtils.single(interfaces);
     }
 }

@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.context.ApplicationContext;
 import platform.client.SwingUtils;
 import platform.client.descriptor.FormDescriptor;
@@ -47,10 +48,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
-    public ClientType changeType;
     public ClientClass[] interfacesTypes;
     public ClientClass returnClass;
 
+    // асинхронные интерфейсы
+    public ClientType changeType;
+    public Pair<ClientObject, Boolean> addRemove;
+    public boolean askConfirm;
+    public String askConfirmMessage;
+    
     public String[] interfacesCaptions;
 
     public String caption;
@@ -348,6 +354,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (inStream.readBoolean()) {
             changeType = ClientTypeSerializer.deserializeClientType(inStream);
         }
+
+        if(inStream.readBoolean()) {
+            addRemove = new Pair<ClientObject, Boolean>(pool.<ClientObject>deserializeObject(inStream), inStream.readBoolean());
+        }
+
+        askConfirm = inStream.readBoolean();
+        if(askConfirm)
+            askConfirmMessage = pool.readString(inStream);
 
         sID = pool.readString(inStream);
 

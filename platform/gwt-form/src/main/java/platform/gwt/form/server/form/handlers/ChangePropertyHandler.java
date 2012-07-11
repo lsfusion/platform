@@ -27,8 +27,8 @@ public class ChangePropertyHandler extends ServerResponseActionHandler<ChangePro
                         action.propertyId,
                         new ClientGroupObjectValue().serialize(),
                         //todo: convert color, etc...
-                        serializeObject(action.value)
-                )
+                        serializeObject(action.value),
+                        null)
         );
     }
 }

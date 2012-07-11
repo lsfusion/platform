@@ -1,13 +1,11 @@
 package tmc.integration.exp;
 
 import platform.interop.form.ServerResponse;
-import platform.server.classes.ActionClass;
 import platform.server.classes.LogicalClass;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotFilterInstance;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.logics.DataObject;
-import platform.server.session.ExecutionEnvironment;
 import tmc.VEDBusinessLogics;
 
 import java.sql.SQLException;
@@ -30,6 +28,6 @@ public class NewSaleExportTask extends AbstractSaleExportTask {
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
         formInstance.executeEditAction(formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported), ServerResponse.GROUP_CHANGE,
-                new HashMap<ObjectInstance, DataObject>(), new DataObject(true, LogicalClass.instance));
+                new HashMap<ObjectInstance, DataObject>(), new DataObject(true, LogicalClass.instance), null, true);
     }
 }

@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
@@ -11,6 +12,7 @@ import platform.server.classes.DataClass;
 import platform.server.data.type.Type;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
@@ -55,6 +57,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         assert type == null || type instanceof DataClass;
 
         return type;
+    }
+
+    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
+        ActionPropertyObjectEntity<A> changeAction = (ActionPropertyObjectEntity<A>) getEditAction(ServerResponse.CHANGE, form);
+        if(changeAction!=null)
+            return changeAction.getAddRemove(form);
+        return null;
     }
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {

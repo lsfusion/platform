@@ -1,16 +1,15 @@
 package platform.server.form.view;
 
+import platform.base.Pair;
 import platform.interop.form.ReportConstants;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
+import platform.server.classes.ActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.*;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
@@ -28,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -90,6 +91,10 @@ public class PropertyDrawView extends ComponentView {
 
     public Type getChangeType(FormEntity form) {
         return entity.getChangeType(form);
+    }
+    
+    public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
+        return entity.getAddRemove(form);        
     }
 
     public String getSID() {
@@ -203,11 +208,24 @@ public class PropertyDrawView extends ComponentView {
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
 
+        // асинхронные интерфейсы
+
         Type changeType = getChangeType(pool.context.view.entity);
         outStream.writeBoolean(changeType != null);
         if (changeType != null) {
             TypeSerializer.serializeType(outStream, changeType);
         }
+
+        Pair<ObjectEntity, Boolean> addRemove = getAddRemove(pool.context.view.entity);
+        outStream.writeBoolean(addRemove != null);
+        if(addRemove!=null) {
+            pool.serializeObject(outStream, pool.context.view.getObject(addRemove.first));
+            outStream.writeBoolean(addRemove.second);
+        }
+
+        outStream.writeBoolean(entity.askConfirm);
+        if(entity.askConfirm)
+            pool.writeString(outStream, getAskConfirmMessage());
 
         pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, entity.propertyObject.property.toolTip);
@@ -323,5 +341,24 @@ public class PropertyDrawView extends ComponentView {
 
     public void setPreferredCharWidth(int preferredCharWidth) {
         this.preferredCharWidth = preferredCharWidth;
+    }
+    
+    public String getAskConfirmMessage() {
+        assert entity.askConfirm;
+        if (entity.askConfirmMessage != null)
+            return entity.askConfirmMessage;
+        
+        String msg;
+        if (entity.propertyObject.property.getType() instanceof ActionClass) {
+            msg = getString("form.instance.do.you.really.want.to.take.action");
+        } else {
+            msg = getString("form.instance.do.you.really.want.to.edit.property");
+        }
+        String caption = getSimpleCaption();
+        if (caption != null) {
+            msg += " \"" + caption + "\"?";
+        }
+
+        return msg;
     }
 }

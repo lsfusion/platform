@@ -38,10 +38,7 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -519,14 +516,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public ServerResponse changeProperty(long requestIndex, final int propertyID, final byte[] fullKey, final byte[] value) throws RemoteException {
+    public ServerResponse changeProperty(long requestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final byte[] pushAdd) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
-                ObjectValue changeValue = DataObject.getValue(deserializeObject(value), (ConcreteClass) propertyDraw.getEntity().getChangeType(form.entity));
-                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, changeValue);
+                ObjectValue pushChangeObject = null;
+                if(pushChange!=null)
+                    pushChangeObject = DataObject.getValue(deserializeObject(pushChange), (ConcreteClass) propertyDraw.getEntity().getChangeType(form.entity));
+                DataObject pushAddObject = null;
+                if(pushAdd!=null)
+                    pushAddObject = new DataObject(deserializeObject(pushAdd), form.session.baseClass.unknown);
+                form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushAddObject, true);
             }
         });
     }

@@ -124,6 +124,13 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return result;
     }
 
+    public static Set<CalcProperty> getParentProps(ValueClass valueClass) {
+        if(valueClass instanceof CustomClass)
+            return getParentProps((CustomClass)valueClass);
+        else
+            return Collections.<CalcProperty>singleton(valueClass.getProperty());
+    }
+
     @Override
     public Set<CalcProperty> getSetChangeProps(boolean notNull, boolean add) {
         // предыдущий класс может быть любым кроме child's

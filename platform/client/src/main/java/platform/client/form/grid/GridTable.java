@@ -336,8 +336,14 @@ public class GridTable extends ClientPropertyTable {
         return o instanceof GridTable && ((GridTable) o).getID() == this.getID();
     }
 
+    public void updateTableRows() {
+        model.updateRows(rowKeys, values, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
+    }
+
     public void updateTable() {
-        model.update(groupObject, properties, rowKeys, columnKeys, captions, values, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
+        model.updateColumns(properties, columnKeys, captions);
+
+        updateTableRows();
 
         refreshColumnModel();
 
@@ -535,6 +541,17 @@ public class GridTable extends ClientPropertyTable {
         if (newIndex == -1) {
             selectionController.resetSelection();
             updateSelectionInfo();
+        }
+    }
+
+    public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add) {
+        if(add) {
+            rowKeys.add(rowKey);
+            setCurrentObject(rowKey);
+        } else {
+            if(currentObject.equals(rowKey))
+                setCurrentObject(BaseUtils.getNearObject(BaseUtils.singleValue(rowKey), rowKeys));
+            rowKeys.remove(rowKey);
         }
     }
 

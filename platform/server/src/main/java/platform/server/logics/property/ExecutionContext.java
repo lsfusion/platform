@@ -39,15 +39,18 @@ import static platform.base.BaseUtils.join;
 
 public class ExecutionContext<P extends PropertyInterface> {
     private final Map<P, DataObject> keys;
-    private final ObjectValue pushedUserInput;
     private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
+
+    private final ObjectValue pushedUserInput;
+    private final DataObject pushedAddObject;
 
     private final ExecutionEnvironment env;
     private final FormEnvironment<P> form;
 
-    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, ExecutionEnvironment env, FormEnvironment<P> form, boolean groupLast) {
+    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, boolean groupLast) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
+        this.pushedAddObject = pushedAddObject;
         this.env = env;
         this.form = form;
         this.groupLast = groupLast;
@@ -125,7 +128,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        return getEnv().addObject(cls);
+        return getEnv().addObject(cls, groupLast, pushedAddObject);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException {
@@ -155,7 +158,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, newEnv, form, groupLast);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, groupLast);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, Map<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -171,7 +174,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, env, form, groupLast);
+        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, groupLast);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal

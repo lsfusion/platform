@@ -75,6 +75,13 @@ public class AddObjectActionProperty extends CustomReadClassActionProperty {
         return new Read(valueClass, true);
     }
 
+    @Override
+    public CustomClass getSimpleAdd() {
+        if(!quantity && !valueClass.hasChildren())
+            return valueClass;
+        return null;
+    }
+
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, ObjectClass readClass) throws SQLException {
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке

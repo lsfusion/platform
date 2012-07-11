@@ -279,16 +279,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);
 
-    public Type getChangeType() {
-        ActionPropertyMapImplement<?, T> changeAction = getEditAction(ServerResponse.CHANGE);
-
-        Type type = changeAction.property.getSimpleRequestInputType();
-
-        assert type == null || type instanceof DataClass;
-
-        return type;
-    }
-
     public boolean checkEquals() {
         return this instanceof CalcProperty;
     }

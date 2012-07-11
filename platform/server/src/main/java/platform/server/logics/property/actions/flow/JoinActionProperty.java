@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -42,6 +43,20 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     @Override
     public Type getSimpleRequestInputType() {
         return action.property.getSimpleRequestInputType();
+    }
+
+    @Override
+    public CustomClass getSimpleAdd() {
+        return action.property.getSimpleAdd();
+    }
+
+    @Override
+    public PropertyInterface getSimpleDelete() {
+        T simpleRemove = action.property.getSimpleDelete();
+        CalcPropertyInterfaceImplement<PropertyInterface> mapRemove;
+        if(simpleRemove!=null && ((mapRemove = action.mapping.get(simpleRemove)) instanceof PropertyInterface))
+            return (PropertyInterface) mapRemove;
+        return null;
     }
 
     public Set<ActionProperty> getDependActions() {

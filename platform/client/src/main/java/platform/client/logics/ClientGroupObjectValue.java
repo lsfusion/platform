@@ -27,6 +27,10 @@ public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implem
         }
     };
 
+    public ClientGroupObjectValue(ClientObject object, Object value) {
+        put(object, value);
+    }
+    
     public ClientGroupObjectValue(ClientGroupObjectValue... clones) {
         super();
         for (ClientGroupObjectValue clone : clones) {

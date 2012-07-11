@@ -124,6 +124,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    public int generateID() throws RemoteException {
+        logRemoteMethodStartCall("getUserInfo");
+        int result = target.generateID();
+        logRemoteMethodEndCall("getUserInfo", result);
+        return result;
+    }
+
     public void remindPassword(String email, String localeLanguage) throws RemoteException {
         logRemoteMethodStartCall("remindPassword");
         target.remindPassword(email, localeLanguage);

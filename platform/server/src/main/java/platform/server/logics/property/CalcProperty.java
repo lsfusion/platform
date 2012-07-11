@@ -366,6 +366,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityLazy
     public QuickSet<CalcProperty> getRecDepends() {
+        return calculateRecDepends();
+    }
+
+    public QuickSet<CalcProperty> calculateRecDepends() {
         QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
         for(CalcProperty<?> depend : getDepends())
             result.addAll(depend.getRecDepends());

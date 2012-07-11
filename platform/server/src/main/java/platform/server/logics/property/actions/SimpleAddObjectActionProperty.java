@@ -48,10 +48,17 @@ public class SimpleAddObjectActionProperty extends CustomReadClassActionProperty
         return new Read(valueClass, true);
     }
 
+    @Override
+    public CustomClass getSimpleAdd() {
+        if(noDialog || !valueClass.hasChildren())
+            return valueClass;
+        return null;
+    }
+
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, ObjectClass readClass) throws SQLException {
         if(noDialog)
             readClass = valueClass;
-        
+
         DataObject object = context.addObject((ConcreteCustomClass) readClass);
 
         if (storeNewObjectProperty != null && object != null) {

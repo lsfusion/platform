@@ -250,6 +250,15 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
+    public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add) {
+        assert classView == ClassViewType.GRID;
+
+        grid.modifyGridObject(gridObject, add); // assert что grid!=null
+
+        assert !groupObject.grid.autoHide;
+        grid.update();
+    }
+
     public void setCurrentObject(ClientGroupObjectValue value) {
         grid.setCurrentObject(value);
     }

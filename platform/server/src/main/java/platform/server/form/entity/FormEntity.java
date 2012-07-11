@@ -11,12 +11,15 @@ import platform.interop.PropertyEditType;
 import platform.interop.navigator.FormShowType;
 import platform.server.Context;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ComponentView;
 import platform.server.form.view.DefaultFormView;
@@ -1209,5 +1212,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     @Override
     public ImageIcon getImage() {
         return image;
+    }
+
+    public Collection<ObjectEntity> getObjects() {
+        List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
+        for (GroupObjectEntity group : groups)
+            for (ObjectEntity object : group.objects)
+                objects.add(object);
+        return objects;
     }
 }

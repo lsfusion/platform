@@ -1,6 +1,8 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -74,4 +76,37 @@ public class ListActionProperty extends KeepContextActionProperty {
         }
         return type;
     }
+
+    @Override
+    public CustomClass getSimpleAdd() {
+        CustomClass result = null;
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+            CustomClass simpleAdd = action.property.getSimpleAdd();
+            if (simpleAdd != null) {
+                if (result == null) {
+                    result = simpleAdd;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public PropertyInterface getSimpleDelete() {
+        PropertyInterface result = null;
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+            PropertyInterface simpleDelete = action.mapSimpleDelete();
+            if (simpleDelete != null) {
+                if (result == null) {
+                    result = simpleDelete;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return result;
+    }
+
 }

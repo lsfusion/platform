@@ -121,6 +121,10 @@ public class MockPaasLogic implements PaasRemoteInterface {
         return null;
     }
 
+    public int generateID() throws RemoteException {
+        return 0;
+    }
+
     @Override
     public Object[] createAndExecute(MethodInvocation creator, MethodInvocation[] invocations) throws RemoteException {
         return new Object[0];

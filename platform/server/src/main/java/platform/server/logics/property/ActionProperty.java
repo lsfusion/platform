@@ -5,6 +5,7 @@ import platform.base.Pair;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ActionClass;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
@@ -108,7 +109,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public void execute(Map<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
-        env.execute(this, keys, formEnv, null);
+        env.execute(this, keys, formEnv, null, null);
     }
 
     public ValueClass getValueClass() {
@@ -131,6 +132,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
      * assert, что тип будет DataClass, т.к. для остальных такое редактирование невозможно...
      */
     public Type getSimpleRequestInputType() {
+        return null;
+    }
+
+    // по аналогии с верхним, assert что !hasChildren
+    public CustomClass getSimpleAdd() {
+        return null;
+    }
+
+    public P getSimpleDelete() {
         return null;
     }
 

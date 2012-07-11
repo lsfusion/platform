@@ -360,8 +360,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return addObject(customClass, true, true);
     }
 
+    public DataObject addObject(ConcreteCustomClass cls, boolean groupLast, DataObject pushed) throws SQLException {
+        return addObject(cls, true, groupLast, pushed);
+    }
+
     public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault, boolean groupLast) throws SQLException {
-        DataObject object = addObject();
+        return addObject(customClass, fillDefault, groupLast, null);
+    }
+
+    public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault, boolean groupLast, DataObject object) throws SQLException {
+        if(object==null)
+            object = addObject();
 
         // запишем объекты, которые надо будет сохранять
         changeClass(object, customClass, groupLast);
@@ -799,14 +808,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                     // иначе "pend'им" выполнение, но уже с новыми классами
                     pendingPropExecute.add(getCurrentObjects(executeRow));
                 else
-                    property.execute(new ExecutionContext(executeRow, null, this, null, !iterator.hasNext()));
+                    property.execute(new ExecutionContext(executeRow, null, null, this, null, !iterator.hasNext()));
             }
         }
     }
 
     @Message("message.session.apply.auto.execute")
     public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, boolean groupLast) throws SQLException {
-        property.execute(new ExecutionContext(context, null, this, null, groupLast));
+        property.execute(new ExecutionContext(context, null, null, this, null, groupLast));
     }
 
     protected SQLSession getSQL() {

@@ -1,6 +1,5 @@
 package platform.client.form;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.*;
 import platform.base.*;
@@ -392,6 +391,20 @@ public class ClientFormController {
     private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
     private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
+
+    private static class ModifyObject {
+        public final ClientObject object;
+        public final boolean add;
+        public final ClientGroupObjectValue value;
+
+        private ModifyObject(ClientObject object, boolean add, ClientGroupObjectValue value) {
+            this.object = object;
+            this.add = add;
+            this.value = value;
+        }
+    }
+    private final OrderedMap<Long, ModifyObject> lastModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
+
     public void applyFormChanges(byte[] bFormChanges) throws IOException {
         if (bFormChanges == null) {
             return;
@@ -406,6 +419,8 @@ public class ClientFormController {
             }
         }
         currentGridObjects.putAll(formChanges.gridObjects);
+
+        modifyFormChangesWithModifyObjectAsyncs(formChanges);
 
         modifyFormChangesWithChangeCurrentObjectAsyncs(formChanges);
 
@@ -433,10 +448,12 @@ public class ClientFormController {
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(ClientFormChanges formChanges) {
+        long currentDispatchingRequestIndex = rmiQueue.getCurrentDispatchingRequestIndex();
+
         for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<ClientGroupObject, Long> entry = iterator.next();
 
-            if (entry.getValue() > rmiQueue.getCurrentDispatchingRequestIndex()) {
+            if (entry.getValue() > currentDispatchingRequestIndex) {
                 formChanges.objects.remove(entry.getKey());
             } else {
                 iterator.remove();
@@ -476,6 +493,27 @@ public class ClientFormController {
                 }
             }
         }
+    }
+
+    private void modifyFormChangesWithModifyObjectAsyncs(ClientFormChanges formChanges) {
+        long currentDispatchingRequestIndex = rmiQueue.getCurrentDispatchingRequestIndex();
+
+        for (Iterator<Map.Entry<Long,ModifyObject>> iterator = lastModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<Long, ModifyObject> cell = iterator.next();
+            if(cell.getKey() <= currentDispatchingRequestIndex)
+                iterator.remove();
+        }
+
+        for (Map.Entry<Long, ModifyObject> e : lastModifyObjectRequests.entrySet()) {
+            List<ClientGroupObjectValue> gridObjects = formChanges.gridObjects.get(e.getValue().object.groupObject);
+            if(gridObjects!=null) {
+                if(e.getValue().add)
+                    gridObjects.add(e.getValue().value);
+                else
+                    gridObjects.remove(e.getValue().value);
+            }
+        }
+
     }
 
     public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
@@ -534,14 +572,20 @@ public class ClientFormController {
                 }
         );
     }
+    
+    private byte[] getFullCurrentKey(ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
+        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
+        fullCurrentKey.putAll(columnKey);
+
+        return fullCurrentKey.serialize();
+    }
 
     public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value, final Object oldValue) throws IOException {
         assert !isEditing();
 
-        final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
-        fullCurrentKey.putAll(columnKey);
-
         commitOrCancelCurrentEditing();
+
+        final byte[] fullCurrentKey = getFullCurrentKey(property, columnKey); // чтобы не изменился
 
         rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
             ClientGroupObjectValue propertyKey = null;
@@ -558,7 +602,55 @@ public class ClientFormController {
 
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
-                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey.serialize(), serializeObject(value));
+                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, serializeObject(value), null);
+            }
+
+            @Override
+            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                processServerResponse(result);
+            }
+        });
+    }
+
+    public boolean isAsyncModifyObject(ClientPropertyDraw property) {
+        return property.addRemove!=null && controllers.get(property.addRemove.first.groupObject).classView==ClassViewType.GRID;
+    }
+    public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
+        assert isAsyncModifyObject(property);
+
+        commitOrCancelCurrentEditing();
+        
+        final ClientObject object = property.addRemove.first;
+        final boolean add = property.addRemove.second;
+
+        final GroupObjectController controller = controllers.get(object.groupObject);
+
+        final int ID;
+        final ClientGroupObjectValue value;
+        if(add) {
+            ID = Main.remoteLogics.generateID();
+            value = new ClientGroupObjectValue(object, ID);
+        } else {
+            value = controller.getCurrentObject();
+            ID = (Integer) BaseUtils.singleValue(value);
+        }
+
+        final byte[] fullCurrentKey = getFullCurrentKey(property, columnKey); // чтобы не изменился
+
+        controller.modifyGroupObject(value, add); // сначала посылаем запрос, так как getFullCurrentKey может измениться
+
+        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
+            ClientGroupObjectValue propertyKey = null;
+
+            @Override
+            protected void preRequest(long requestIndex) {
+                lastChangeCurrentObjectsRequestIndices.put(object.groupObject, requestIndex); // так как по сути такой execute сам меняет groupObject
+                lastModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
+            }
+
+            @Override
+            protected ServerResponse doRequest(long requestIndex) throws Exception {
+                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, null, add ? serializeObject(ID) : null);
             }
 
             @Override
@@ -812,7 +904,7 @@ public class ClientFormController {
 
     public void changePageSize(final ClientGroupObject groupObject, final Integer pageSize) throws IOException {
         if (!tableManager.isEditing()) {
-            syncProcessServerResponse(new RmiRequest<ServerResponse>() {
+            asyncProcessServerResponse(new RmiRequest<ServerResponse>() {
                 @Override
                 protected ServerResponse doRequest(long requestIndex) throws Exception {
                     return remoteForm.changePageSize(requestIndex, groupObject.getID(), pageSize);

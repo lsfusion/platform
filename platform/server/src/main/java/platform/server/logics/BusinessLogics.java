@@ -53,6 +53,7 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.logics.table.DataTable;
+import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
@@ -2701,6 +2702,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         } catch (SQLException se) {
             throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
+        }
+    }
+
+    @Override
+    public int generateID() throws RemoteException {
+        try {
+            return IDTable.instance.generateID(getIDSql(), IDTable.OBJECT);
+        } catch (SQLException e) {
+            throw new RuntimeException(getString("logics.info.error.reading.user.data"), e);
         }
     }
 

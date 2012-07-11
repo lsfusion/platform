@@ -59,7 +59,9 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     // свойства
     ServerResponse executeEditAction(long requestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
 
-    ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] value) throws RemoteException;
+    // асинхронные вызовы
+
+    ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, byte[] pushAdd) throws RemoteException;
 
     // фильтры / порядки
 

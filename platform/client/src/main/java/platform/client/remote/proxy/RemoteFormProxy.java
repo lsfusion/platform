@@ -212,10 +212,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] value) throws RemoteException {
+    public ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, byte[] pushAdd) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
-        ServerResponse result = target.changeProperty(requestIndex, propertyID, fullKey, value);
-        logRemoteMethodEndCall("getPropertyChangeType", result);
+        ServerResponse result = target.changeProperty(requestIndex, propertyID, fullKey, pushChange, pushAdd);
+        logRemoteMethodEndCall("executeEditAction", result);
         return result;
     }
 
