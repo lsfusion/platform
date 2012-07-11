@@ -49,6 +49,9 @@ initWhenNumberedObject(WHfromCSI) += CHANGED(CStoWHWHfromCSI(WHfromCSI));
 quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
 
+quantitySkuInWHfromCSI 'Кол-во товара' (WHfromCSI, sku) = GROUP SUM quantityWHfromCSIDetail(WHfromCSIDetail)
+                                           BY WHfromCSIWHfromCSIDetail(WHfromCSIDetail), skuWHfromCSIDetail(WHfromCSIDetail);
+
 FORM WHfromCSI 'Приход на оптовый склад'
 
     OBJECTS w = WHfromCSI FIXED PANEL, d = WHfromCSIDetail
@@ -147,7 +150,9 @@ initWhenNumberedObject (WHfromCSR) +=  CHANGED(WHfromCSIWHfromCSR(WHfromCSR));
 freightUnitWHfromCSRDetail 'Короб (ИД)' (WHfromCSRDetail) = DATA freightUnit(WHfromCSRDetail);
 barcodeFreightUnitWHfromCSRDetail 'Короб' (WHfromCSRDetail) = barcode (freightUnitWHfromCSRDetail(WHfromCSRDetail));
 
-quantityWHfromCSRDetailsSkuFreightUnit 'Количество принятое' (sku, freightUnit, WHfromCSR) =
+
+
+quantityWHfromCSRDetailsSkuFreightUnit 'Количество принятое (в коробе)' (sku, freightUnit, WHfromCSR) =
     GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
     BY skuWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
 
@@ -286,6 +291,64 @@ printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfro
 
 } CONFIRM TOOLBAR;
 
+
+CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
+CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
+CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
+CLASS WHfromCSDODetail 'Строка акта расхождений (излишек) на приемке на склад с СВХ' : inLIFOSkuLedger, WHfromCSDDetail;
+CLASS WHfromCSDSDetail 'Строка акта расхождений (недостача) на приемке на склад с СВХ' : outFIFOSkuLedger, WHfromCSDDetail;
+
+@defineDocument(WHfromCSD);
+@defineDocumentStock(WHfromCSD, warehouse, 'Оптовый склад');
+@defineDocumentPosted(WHfromCSD);
+
+@defineDocumentDetailNumbered(WHfromCSD);
+@defineDocumentDetailQuantity(WHfromCSD);
+
+@defineDocumentDetailSku(WHfromCSD, sku);
+@defineDocumentDetailSkuArticle(WHfromCSD);
+
+@defineDocumentDetailSkuBalance(WHfromCSD, sku, warehouse);
+
+@defineDocumentHeaderQuantity(WHfromCSD);
+
+@defineDocumentDescription (WHfromCSD, 'Акт расхождений при приемке на склад');
+
+WHfromCSRWHfromCSD 'Акт расхождений по приемке (ИД)' (WHfromCSD) = DATA WHfromCSR (WHfromCSD);
+WHfromCSRWHfromCSDDetail (WHfromCSDDetail) = WHfromCSRWHfromCSD(WHfromCSDWHfromCSDDetail(WHfromCSDDetail));
+
+WHfromCSIWHfromCSD 'Акт расхождений по приходу (ИД)' (WHfromCSD) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSD (WHfromCSD));
+
+//строки излишек
+needDiffShortageSkuWHfromCSR 'Необходим акт расхождений (излишек)' (WHfromCSR, sku) =
+    sku IS sku AND WHfromCSR IS WHfromCSR AND (quantitySkuInWHfromCSR (WHfromCSR, sku) (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR), sku)) > 0;
+
+@defineAggregationDoubleCustom (WHfromCSRWHfromCSDDetail, skuWHfromCSDDetail, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
+
+quantityWHfromCSDDetail (WHfromCSDODetail) <-
+    (quantitySkuInWHfromCSR (WHfromCSRWHfromCSDDetail(WHfromCSDODetail), skuWHfromCSDDetail(WHfromCSDODetail))
+    (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDODetail)), skuWHfromCSDDetail(WHfromCSDODetail)))
+    WHEN (ASSIGNED(skuWHfromCSDDetail(WHfromCSDODetail)) OR ASSIGNED(WHfromCSRWHfromCSDDetail(WHfromCSDODetail)));
+
+// строки недостачи
+needDiffOverSkuWHfromCSR 'Необходим акт расхождений (недостача)' (WHfromCSR, sku) =
+    sku IS sku AND WHfromCSR IS WHfromCSR AND (quantitySkuInWHfromCSR (WHfromCSR, sku) (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR), sku)) < 0;
+
+@defineAggregationDoubleCustom (WHfromCSRWHfromCSDDetail, skuWHfromCSDDetail, WHfromCSDSDetail, needDiffOverSkuWHfromCSR);
+
+@defineDocumentDetailQuantity(WHfromCSDS);
+
+quantityWHfromCSDDetail (WHfromCSDSDetail) <-
+    (quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDSDetail)), skuWHfromCSDDetail(WHfromCSDSDetail))
+    (-) quantitySkuInWHfromCSR (WHfromCSRWHfromCSDDetail(WHfromCSDSDetail), skuWHfromCSDDetail(WHfromCSDSDetail)))
+    WHEN (ASSIGNED(skuWHfromCSDDetail(WHfromCSDSDetail)) OR ASSIGNED(WHfromCSRWHfromCSDDetail(WHfromCSDSDetail)));
+
+statusWHfromCSI 'Статус' (WHfromCSI) = CASE
+    WHEN (WHfromCSRWHfromCSI (WHfromCSI) IS WHfromCSRPosted) THEN ('Принят' IF WHfromCSI IS WHfromCSI)
+    WHEN (WHfromCSRWHfromCSI (WHfromCSI) IS WHfromCSR) THEN ('Принимается' IF WHfromCSI IS WHfromCSI)
+    DEFAULT 'К приемке' IF WHfromCSI IS WHfromCSI
+END PREFCHARWIDTH 15 MINCHARWIDTH 15;
+
 FORM WHfromCSR 'Приемка на оптовый склад'
 
     OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
@@ -298,10 +361,9 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                            quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
 
     PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
-                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail, quantityWHfromCSRDetail
+                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail
 
-    //PROPERTIES(d) quantityOriginWHfromCSRDetailSkuWHfromCSR, quantityWHfromCSRDetail
-    PROPERTIES(d) delete
+    PROPERTIES(d) quantityWHfromCSRDetail, delete
 
     PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSRDetailWHfromCSR
 
@@ -310,15 +372,15 @@ FORM WHfromCSR 'Приемка на оптовый склад'
     FILTERGROUP filtersQuantity
         FILTER 'Показывать принятые' 'F9' quantityWHfromCSRDetail(d) DEFAULT
 
-//    FILTERGROUP filtersDiff
-//        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSRDetail(d)
+    FILTERGROUP filtersDiff
+        FILTER 'Показывать отличающиеся' 'F10' diffQuantityWHfromCSRDetail(d)
 
     EDIT WHfromCSR OBJECT w
 ;
 
 toSSSS (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
 
-toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI){
+toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
     ADDOBJ WHfromCSRPosted;
     FOR w == addedObject() DO {
         SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
@@ -327,77 +389,108 @@ toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHf
     }
 };
 
-toModifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI){
+toModifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
 //    FOR w == addedObject() DO {
         EXEC toSSSS (WHfromCSRWHfromCSI(WHfromCSI));
         EXEC apply();
 //    }
 } IMAGE 'edit.png';
 
-toDeleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI){
+toDeleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI) {
     FOR w == WHfromCSRWHfromCSI(WHfromCSI) DO {
         EXEC delete(w);
         EXEC apply();
     }
 } IMAGE 'delete.png';
 
-DESIGN WHfromCSR FROM DEFAULT {
-
-    NEW topContainer {
-        title = 'Приход на оптовый склад';
-        childConstraints = TO THE BOTTOM;
-
-        NEW firstCase {
-            title = 'Шапка документа';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(seriesObject);
-            ADD PROPERTY(dateWHfromCSR);
-            ADD PROPERTY(timeWHfromCSR);
-            ADD PROPERTY(nameWarehouseWHfromCSR);
-            ADD PROPERTY(delete);
-        }
-
-        NEW secondCase {
-            title = 'Короб';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
-            ADD PROPERTY(quantityRemainedSkuWHfromCSR);
-            ADD PROPERTY(barcodeCurrentFreightUnit);
-            ADD PROPERTY(fillWHfromCSRDetailsSkuFreightUnit);
-            ADD PROPERTY(printMarksSkuFreightUnit);
-        }
-    }
-
-    ADD d.box;
-    ADD functions.box;
-}
-
 
 FORM WHfromCSIs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCSI
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
+    PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
 
     PROPERTIES (w) FORCE PANEL toAcceptCStoWHWHfromCSR SHOWIF notAcceptedWHfromCSI(w), toModifyCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w),
                                toDeleteCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w)
 
-    OBJECTS d = WHfromCSIDetail
-    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
+    OBJECTS di = WHfromCSIDetail
+    PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
                            sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
                            quantityWHfromCSIDetail
 
-    FILTERS WHfromCSIWHfromCSIDetail(d)
+    FILTERS WHfromCSIWHfromCSIDetail(di)
+
+    OBJECTS dr = WHfromCSRDetail
+    PROPERTIES(dr) indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
+                   sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
+                   quantityWHfromCSRDetail
+
+    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
+
+    OBJECTS df = WHfromCSDDetail
+    PROPERTIES (df) indexWHfromCSDDetail, WHfromCSDWHfromCSDDetail, objectClassName, barcodeWHfromCSDDetail, quantityWHfromCSDDetail
+//    FILTERS WHfromCSIWHfromCSD(WHfromCSDWHfromCSDDetail(df))==w
+
 ;
 
 DESIGN WHfromCSIs FROM DEFAULT {
-    PROPERTY (toDeleteCStoWHWHfromCSR(w)) {
-//        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
+    NEW docDetails.box BEFORE functions.box{
+        type=TABBED;
+        ADD di.box;
+        ADD dr.box {
+            title = 'Приемка';
+                ADD PROPERTY (toDeleteCStoWHWHfromCSR(w)) {
+//                    panelLocation = TOOLBAR;
+                    askConfirm = TRUE;
+                }
+                ADD PROPERTY (toAcceptCStoWHWHfromCSR(w)) {
+//                    panelLocation = TOOLBAR;
+                    askConfirm = TRUE;
+                }
+                ADD PROPERTY (toModifyCStoWHWHfromCSR(w)) {
+//                    panelLocation = TOOLBAR;
+                    askConfirm = TRUE;
+                }
+        };
+//        ADD do.box {
+//             title = 'Излишек';
+//        };
+//        ADD ds.box {
+//             title = 'Недостача';
+//        };
+        ADD df.box {
+             title = 'Акт расхождений';
+        };
     }
 }
 
-CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
-CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
-CLASS WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ' : inLIFOSkuLedger;
-
+//DESIGN WHfromCSR FROM DEFAULT {
+//
+//    NEW topContainer {
+//        title = 'Приход на оптовый склад';
+//        childConstraints = TO THE BOTTOM;
+//
+//        NEW firstCase {
+//            title = 'Шапка документа';
+//            childConstraints = TO THE RIGHT;
+//            ADD PROPERTY(numberObject);
+//            ADD PROPERTY(seriesObject);
+//            ADD PROPERTY(dateWHfromCSR);
+//            ADD PROPERTY(timeWHfromCSR);
+//            ADD PROPERTY(nameWarehouseWHfromCSR);
+//            ADD PROPERTY(delete);
+//        }
+//
+//        NEW secondCase {
+//            title = 'Короб';
+//            childConstraints = TO THE RIGHT;
+//            ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
+//            ADD PROPERTY(quantityRemainedSkuWHfromCSR);
+//            ADD PROPERTY(barcodeCurrentFreightUnit);
+//            ADD PROPERTY(fillWHfromCSRDetailsSkuFreightUnit);
+//            ADD PROPERTY(printMarksSkuFreightUnit);
+//        }
+//    }
+//
+//    ADD d.box;
+//    ADD functions.box;
+//}
