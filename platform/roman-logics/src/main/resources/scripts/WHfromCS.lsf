@@ -52,58 +52,6 @@ limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND
 quantitySkuInWHfromCSI 'Кол-во товара' (WHfromCSI, sku) = GROUP SUM quantityWHfromCSIDetail(WHfromCSIDetail)
                                            BY WHfromCSIWHfromCSIDetail(WHfromCSIDetail), skuWHfromCSIDetail(WHfromCSIDetail);
 
-FORM WHfromCSI 'Приход на оптовый склад'
-
-    OBJECTS w = WHfromCSI FIXED PANEL, d = WHfromCSIDetail
-
-    PROPERTIES(w)          initValueNumberObject, initValueSeriesObject, dateWHfromCSI, timeWHfromCSI,
-                           nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI
-
-    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
-                           sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail
-
-    PROPERTIES(d) quantityWHfromCSIDetail
-
-    FILTERS WHfromCSIWHfromCSIDetail(d) == w
-
-    EDIT WHfromCSI OBJECT w
-;
-
-DESIGN WHfromCSI FROM DEFAULT {
-
-    NEW topContainer {
-        title = 'Приход на оптовый склад';
-        childConstraints = TO THE BOTTOM;
-
-        NEW firstCase {
-            title = 'Шапка документа';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(initValueNumberObject);
-            ADD PROPERTY(initValueSeriesObject);
-            ADD PROPERTY(dateWHfromCSI);
-            ADD PROPERTY(timeWHfromCSI);
-            ADD PROPERTY(nameWarehouseWHfromCSI);
-        }
-    }
-
-    ADD d.box;
-    ADD functions.box;
-}
-
-//FORM WHfromCSIs 'Приходы на оптовый склад'
-//    OBJECTS w = WHfromCSI
-//    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
-//                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
-//
-//    PROPERTIES (w) EDITFORM
-//
-//    OBJECTS d = WHfromCSIDetail
-//    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
-//                           sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
-//                           quantityWHfromCSIDetail
-//
-//    FILTERS WHfromCSIWHfromCSIDetail(d) == w
-//;
 
 CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
@@ -359,14 +307,13 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
 
-    PROPERTIES(w)          WHfromCSIWHfromCSR, WHfromCSIWHfromCSR, numberObject, seriesObject,
-                           dateWHfromCSR, timeWHfromCSR, nameWarehouseWHfromCSR,
+    PROPERTIES(w)          numberObject, seriesObject, dateWHfromCSR, timeWHfromCSR, nameWarehouseWHfromCSR,
                            barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit,
                            printMarksSkuWHfromCSR TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
 
-    PROPERTIES(d) READONLY WHfromCSRWHfromCSRDetail, indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
+    PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
                            sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail
 
     PROPERTIES(d) quantityWHfromCSRDetail, delete
@@ -384,25 +331,23 @@ FORM WHfromCSR 'Приемка на оптовый склад'
     EDIT WHfromCSR OBJECT w
 ;
 
-toSSSS (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
+actionFormWHfromCSR (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
 
-toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
+acceptCStoWHWHfromCSI 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
     ADDOBJ WHfromCSRPosted;
     FOR w == addedObject() DO {
         SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
         SET warehouseWHfromCSR (w) <- warehouseWHfromCSI(WHfromCSI);
-        EXEC toSSSS (w);
+        EXEC actionFormWHfromCSR (w);
     }
 };
 
-toModifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
-//    FOR w == addedObject() DO {
-        EXEC toSSSS (WHfromCSRWHfromCSI(WHfromCSI));
+modifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
+        EXEC actionFormWHfromCSR (WHfromCSRWHfromCSI(WHfromCSI));
         EXEC apply();
-//    }
 } IMAGE 'edit.png';
 
-toDeleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI) {
+deleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI) {
     FOR w == WHfromCSRWHfromCSI(WHfromCSI) DO {
         EXEC delete(w);
         EXEC apply();
@@ -416,8 +361,8 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
     PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
 
-    PROPERTIES (w) FORCE PANEL toAcceptCStoWHWHfromCSR SHOWIF notAcceptedWHfromCSI(w), toModifyCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w),
-                               toDeleteCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w)
+    PROPERTIES (w) FORCE PANEL acceptCStoWHWHfromCSI SHOWIF notAcceptedWHfromCSI(w), modifyCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w),
+                               deleteCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w)
 
     OBJECTS di = WHfromCSIDetail
     PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
@@ -427,7 +372,7 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
     FILTERS WHfromCSIWHfromCSIDetail(di)
 
     OBJECTS dr = WHfromCSRDetail
-    PROPERTIES(dr) WHfromCSIWHfromCSRDetail, indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
+    PROPERTIES(dr) indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
                    sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                    quantityWHfromCSRDetail
 
@@ -445,18 +390,15 @@ DESIGN WHfromCSIs FROM DEFAULT {
         ADD di.box;
         ADD dr.box {
             title = 'Приемка';
-                ADD PROPERTY (toDeleteCStoWHWHfromCSR(w)) {
+                ADD PROPERTY (deleteCStoWHWHfromCSR(w)) {
 //                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
-                ADD PROPERTY (toAcceptCStoWHWHfromCSR(w)) {
+                ADD PROPERTY (acceptCStoWHWHfromCSI(w)) {
 //                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
-                ADD PROPERTY (toModifyCStoWHWHfromCSR(w)) {
-//                    panelLocation = TOOLBAR;
-                    askConfirm = TRUE;
-                }
+                ADD PROPERTY (modifyCStoWHWHfromCSR(w));
         };
 //        ADD do.box {
 //             title = 'Излишек';
