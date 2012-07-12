@@ -333,36 +333,42 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
 actionFormWHfromCSR (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
 
-acceptCStoWHWHfromCSI 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
-    ADDOBJ WHfromCSRPosted;
+acceptWHfromCSRWHfromCSI 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
+    ADDOBJ WHfromCSR;
     FOR w == addedObject() DO {
         SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
         SET warehouseWHfromCSR (w) <- warehouseWHfromCSI(WHfromCSI);
-        EXEC actionFormWHfromCSR (w);
+        FORM WHfromCSR OBJECTS w = w MODAL;
+        IF formResult() == formResult.ok THEN EXEC apply();
     }
 };
 
-modifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
-        EXEC actionFormWHfromCSR (WHfromCSRWHfromCSI(WHfromCSI));
-        EXEC apply();
+modifyWHfromCSRWHfromCSI 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
+        FORM WHfromCSR OBJECTS w = WHfromCSRWHfromCSI(WHfromCSI) MODAL;
+        IF formResult() == formResult.ok THEN EXEC apply();
 } IMAGE 'edit.png';
 
-deleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI) {
+deleteWHfromCSRWHfromCSI 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI) {
     FOR w == WHfromCSRWHfromCSI(WHfromCSI) DO {
         EXEC delete(w);
         EXEC apply();
     }
 } IMAGE 'delete.png';
 
-WHfromCSIWHfromCSRDetail (WHfromCSRDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+postWHfromCSRWHfromCSI 'Закрыть приемку' (WHfromCSI) = postWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+isDraftWHfromCSRWHfromCSI (WHfromCSI) = isDraftWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+
+unpostWHfromCSRWHfromCSI 'Открыть приемку' (WHfromCSI) = unpostWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+isPostedWHfromCSRWHfromCSI (WHfromCSI) = isPostedWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 
 FORM WHfromCSIs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCSI
     PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
 
-    PROPERTIES (w) FORCE PANEL acceptCStoWHWHfromCSI SHOWIF notAcceptedWHfromCSI(w), modifyCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w),
-                               deleteCStoWHWHfromCSR SHOWIF isAcceptedWHfromCSI(w)
+    PROPERTIES (w) FORCE PANEL acceptWHfromCSRWHfromCSI SHOWIF notAcceptedWHfromCSI(w), modifyWHfromCSRWHfromCSI SHOWIF isAcceptedWHfromCSI(w),
+                               deleteWHfromCSRWHfromCSI SHOWIF isAcceptedWHfromCSI(w), postWHfromCSRWHfromCSI SHOWIF isDraftWHfromCSRWHfromCSI(w),
+                               unpostWHfromCSRWHfromCSI SHOWIF isDraftWHfromCSRWHfromCSI(w)
 
     OBJECTS di = WHfromCSIDetail
     PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
@@ -379,7 +385,7 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
 //    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
 
     OBJECTS df = WHfromCSDDetail
-    PROPERTIES (df) indexWHfromCSDDetail, WHfromCSDWHfromCSDDetail, objectClassName, barcodeWHfromCSDDetail, quantityWHfromCSDDetail
+    PROPERTIES (df) indexWHfromCSDDetail, objectClassName, barcodeWHfromCSDDetail, quantityWHfromCSDDetail
 //    FILTERS WHfromCSIWHfromCSD(WHfromCSDWHfromCSDDetail(df))==w
 
 ;
@@ -390,22 +396,23 @@ DESIGN WHfromCSIs FROM DEFAULT {
         ADD di.box;
         ADD dr.box {
             title = 'Приемка';
-                ADD PROPERTY (deleteCStoWHWHfromCSR(w)) {
-//                    panelLocation = TOOLBAR;
+                ADD PROPERTY (deleteWHfromCSRWHfromCSI(w)) {
+                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
-                ADD PROPERTY (acceptCStoWHWHfromCSI(w)) {
-//                    panelLocation = TOOLBAR;
+                ADD PROPERTY (acceptWHfromCSRWHfromCSI(w)) {
+                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
-                ADD PROPERTY (modifyCStoWHWHfromCSR(w));
+                ADD PROPERTY (modifyWHfromCSRWHfromCSI(w)){
+                    panelLocation = TOOLBAR;
+//                    askConfirm = TRUE;
+                }
+                ADD PROPERTY (postWHfromCSRWHfromCSI(w)) {
+                    panelLocation = TOOLBAR;
+                    askConfirm = TRUE;
+                }
         };
-//        ADD do.box {
-//             title = 'Излишек';
-//        };
-//        ADD ds.box {
-//             title = 'Недостача';
-//        };
         ADD df.box {
              title = 'Акт расхождений';
         };
