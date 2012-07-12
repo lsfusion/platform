@@ -39,7 +39,7 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 @defineAddDetailDialogSkuStock(CStoWH, sku, customStore, dialogSku);
 @defineAddDetailDialogBarcode(CStoWH, sku);
 
-@defineDocumentHeaderSkuQuantity (CStoWH);
+@defineDocumentHeaderSkuQuantity(CStoWH, sku);
 
 freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));

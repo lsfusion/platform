@@ -29,7 +29,7 @@ nameSkuSfromWHDetail 'Наименование товара' (SfromWHDetail) = n
 
 @defineRBCorrespondingDocumentWithRetailPrices(SfromWH, departmentStore, 'Отдел документа', sku, 'Приход на магазин', warehouse, 'Оптовый склад');
 @defineDocumentDetailPackWeightSku(SfromWH);
-@defineDocumentHeaderSkuQuantity(SfromWH);
+@defineDocumentHeaderSkuQuantity(SfromWH, sku);
 @defineUniqueDocumentComingByExpense(SfromWH, WHtoS);
 @defineDocumentHeaderOriginSkuQuantity(SfromWH, WHtoS);
 

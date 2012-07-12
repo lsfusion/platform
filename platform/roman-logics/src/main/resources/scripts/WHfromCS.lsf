@@ -112,7 +112,7 @@ isNotShippedSkuFreightUnitWHfromCSR (sku, freightUnit, WHfromCSR) = quantitySkuF
 //
 //limitInTransferSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
 //
-@defineDocumentHeaderSkuQuantity (WHfromCSR);
+@defineDocumentHeaderSkuQuantity (WHfromCSR, sku);
 @defineDocumentHeaderOriginSkuQuantity (WHfromCSR, CStoWH);
 
 //quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
@@ -274,7 +274,7 @@ needDiffShortageSkuWHfromCSR 'Необходим акт расхождений (
 WHfromCSRWHfromCSDODetail (WHfromCSDODetail) = WHfromCSRWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
 skuWHfromCSDODetail (WHfromCSDODetail) = skuWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
 
-@defineAggregationDoubleCustom (WHfromCSRWHfromCSDDetail, skuWHfromCSDDetail, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
+@defineAggregationDoubleCustom (WHfromCSRWHfromCSDODetail, skuWHfromCSDDetail, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
 
 quantityWHfromCSDDetail (WHfromCSDODetail) <-
     (quantitySkuInWHfromCSR (WHfromCSRWHfromCSDDetail(WHfromCSDODetail), skuWHfromCSDDetail(WHfromCSDODetail))

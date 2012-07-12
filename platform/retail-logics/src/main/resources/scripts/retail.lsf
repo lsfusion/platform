@@ -97,16 +97,6 @@ META defineDocumentDetailSkuItemDepartmentStore (object)
         departmentStore###object##Detail(detail), date###object##Detail(detail))) IN itemDetailGroup FIXEDCHARWIDTH 3;
 END
 
-META defineDocumentHeaderItemQuantityCustom (object, detail)
-    quantity###detail##Item###object 'Кол-во товара в документе' (item, object) = GROUP SUM quantity###detail(idetail)
-                                                                                      BY  item###detail(idetail),
-                                                                                          object###detail(idetail);
-END
-
-META defineDocumentHeaderItemQuantity (object)
-    @defineDocumentHeaderItemQuantityCustom(object, object###detail);
-END
-
 META defineDocumentHeaderItemRetailSumCustomPrefix (object, detail, prefix, caption)
     prefix###retailSum###detail##Item###object 'Розничная сумма (окр.) товара в документе' (item, object) =
             GROUP SUM retailSum###detail(idetail)
@@ -2277,7 +2267,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 @defineDocumentDetailPostedCustom(actOfStudy, studyInputDetail);
 
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyInputDetail);
-@defineDocumentHeaderItemQuantityCustom(actOfStudy, studyInputDetail);
+@defineDocumentHeaderSkuQuantityCustom(actOfStudy, studyInputDetail, item);
 
 @defineDocumentHeaderBaseSumCustom(actOfStudy, studyInputDetail);
 
@@ -2339,7 +2329,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 @defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
 
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyOutputDetail);
-@defineDocumentHeaderItemQuantityCustom(actOfStudy, studyOutputDetail);
+@defineDocumentHeaderSkuQuantityCustom(actOfStudy, studyOutputDetail, item);
 
 @defineDocumentHeaderBaseSumCustom(actOfStudy, studyOutputDetail);
 
@@ -2896,7 +2886,7 @@ CLASS specificationDetail 'Строка счет-фактуры';
 @defineAddDetailDialogTerminal(specification, item);
 
 @defineDocumentHeaderQuantity(specification);
-@defineDocumentHeaderItemQuantity(specification);
+@defineDocumentHeaderSkuQuantity(specification, item);
 
 @defineDocumentHeaderRetailSum(specification);
 @defineDocumentHeaderCalcVATSum(specification);
@@ -3004,7 +2994,7 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentHeaderPriceChange(statement);
 
 @defineDocumentHeaderQuantity(statement);
-@defineDocumentHeaderItemQuantity(statement);
+@defineDocumentHeaderSkuQuantity(statement, item);
 
 @defineDocumentHeaderRetailSum(statement);
 @defineDocumentHeaderItemRetailSum(statement);
@@ -3148,7 +3138,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineAddDetailDialogTerminal(shipment, item);
 
 @defineDocumentHeaderQuantity(shipment);
-@defineDocumentHeaderItemQuantity(shipment);
+@defineDocumentHeaderSkuQuantity(shipment, item);
 
 @defineDocumentHeaderBaseSum(shipment);
 @defineDocumentHeaderItemRetailSum(shipment);
@@ -3491,7 +3481,7 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 @defineAddDetailDialogTerminal(innerFlow, item);
 
 @defineDocumentHeaderQuantity(innerFlow);
-@defineDocumentHeaderItemQuantity(innerFlow);
+@defineDocumentHeaderSkuQuantity(innerFlow, item);
 
 @defineDocumentHeaderBaseSum(innerFlow);
 @defineDocumentHeaderItemRetailSum(innerFlow);
@@ -3582,7 +3572,7 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineAddDetailDialogTerminal(innerArrival, item);
 
 @defineDocumentHeaderQuantity(innerArrival);
-@defineDocumentHeaderItemQuantity(innerArrival);
+@defineDocumentHeaderSkuQuantity(innerArrival, item);
 
 @defineDocumentHeaderBaseSum(innerArrival);
 @defineDocumentHeaderItemRetailSum(innerArrival);
@@ -4023,7 +4013,7 @@ discountSumBill 'Сумма скидки по чеку' (bill) = discountSumSale
 @defineDocumentHeaderCount(bill);
 
 @defineDocumentHeaderQuantity(bill);
-@defineDocumentHeaderItemQuantity(bill);
+@defineDocumentHeaderSkuQuantity(bill, item);
 
 retailVATBillSaleDetail = DATA range (billSaleDetail);
 retailVATBillReturnDetail = DATA range (billReturnDetail);
@@ -4135,7 +4125,7 @@ CLASS saleDiscountDocument 'Скидка по продаже через касс
 TABLE saleDiscountDocument (saleDiscountDocument);
 
 @defineAggregation(zReport, saleDiscountDocument, discountSumBillDetailZReport);
-@defineDocumentAggregationHeader(zReport, saleDiscountDocument);
+@defineDocumentAggregationHeaderTime(zReport, saleDiscountDocument);
 @defineDocumentAggregationHeaderStock(zReport, saleDiscountDocument, departmentStore, 'Отдел магазина');
 @defineDocumentAggregationHeaderPosted(zReport, saleDiscountDocument);
 
@@ -4173,7 +4163,7 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 @defineDocumentDetailBasePricePrefix(userPriceChange, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(userPriceChange, cur, item);
 
-@defineDocumentHeaderItemQuantity(userPriceChange);
+@defineDocumentHeaderSkuQuantity(userPriceChange, item);
 
 @defineDocumentHeaderPriceChange(userPriceChange);
 
@@ -4275,7 +4265,7 @@ needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetai
 
 @defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
 
-@defineDocumentAggregationDetail(disparity, inputDisparity);
+@defineDocumentAggregationDetailTime(disparity, inputDisparity);
 @defineDocumentAggregationDetailPosted(disparity, inputDisparity);
 @defineDocumentAggregationDetailStock(disparity, inputDisparity, departmentStore, 'Отдел магазина');
 @defineDocumentAggregationDetailSkuPrefix(disparity, inputDisparity, item, input);

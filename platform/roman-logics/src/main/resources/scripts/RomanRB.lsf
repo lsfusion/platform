@@ -21,6 +21,7 @@ REQUIRE System,
         WHfromS,
         WHtoWH,
         WHfromWH,
+        Transfer,
         WholesalePrice,
         RetailPrice,
         CRM,
@@ -172,6 +173,9 @@ NAVIGATOR {
             ADD WHfromSs;
             ADD WHtoWHs;
             ADD WHfromWHs;
+
+            ADD transferOuts;
+            ADD transferIns;
         }
     }
 
@@ -196,7 +200,6 @@ NAVIGATOR {
         ADD numerators;
         ADD numerator;
         ADD CStoWH;
-        ADD WHfromCSI;
         ADD WHtoS;
         ADD declarationDetailCStoWHInput;
         ADD unitsOfMeasure;

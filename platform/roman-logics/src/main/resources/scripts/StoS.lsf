@@ -23,7 +23,7 @@ nameSkuStoSDetail 'Наименование товара' (StoSDetail) = nameSku
 
 @defineRBCorrespondingDocumentWithRetailPrices(StoS, departmentStore, 'Отдел документа', sku, 'Расход с магазина на магазин', store, 'Магазин-получатель');
 @defineDocumentDetailPackWeightSku(StoS);
-@defineDocumentHeaderSkuQuantity(StoS);
+@defineDocumentHeaderSkuQuantity(StoS, sku);
 
 //@implementSkuLedger(StoS, sku, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityStoSDetail (ledger);

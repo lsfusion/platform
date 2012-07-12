@@ -54,12 +54,12 @@ META implementBBatch (concrete, skuProp)
 END
 
 META implementSkuLedgerOutFIFOBalanceA (concrete, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalanceA (concrete, skuProp, stockProp);
+    @implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp);
     orderOutFIFOSkuLedgerBatch (ledger, batch) += orderABatch(batch) IF ledger IS concrete##Detail;
 END
 
 META implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp);
+    @implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp);
     orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS concrete##Detail;
 END
 

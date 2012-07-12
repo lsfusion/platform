@@ -50,7 +50,7 @@ CLASS WHtoWHPosted 'Закрытый расход со склада на скл�
 @defineDocumentDetailSkuBalance(WHtoWH, sku, warehouse);
 
 @defineDocumentHeaderQuantity(WHtoWH);
-@defineDocumentHeaderSkuQuantity(WHtoWH);
+@defineDocumentHeaderSkuQuantity(WHtoWH, sku);
 
 @defineAddDetailDialogSkuStock(WHtoWH, sku, warehouse, dialogSku);
 @defineAddDetailDialogBarcode(WHtoWH, sku);

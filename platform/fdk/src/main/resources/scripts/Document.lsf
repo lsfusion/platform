@@ -182,6 +182,14 @@ META defineDocumentDescription (object, caption)
     description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
 END
 
+META defineDocumentIsCustom(object, detail)
+    is###object (iobject) = iobject IS object;
+    is###detail (idetail) = idetail IS detail;
+END
+META defineDocumentIs(object)
+    @defineDocumentIsCustom(object, object##Detail);
+END
+
 META defineDocument (object)
     @defineDocumentTables(object);
 
@@ -191,33 +199,48 @@ META defineDocument (object)
     @defineDocumentTime(object);
     @defineDocumentHeaderNote(object);
 
+    @defineDocumentIs(object);
+
     @defineDocumentDetailActions(object);
 END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
-META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
-    @defineAggregation(primObject, aggrObject, aggrProperty);
-    @defineDocumentAggregationHeader(primObject, aggrObject);
+META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
+    @defineAggregation (primObject, aggrObject, aggrProperty);
+    @defineDocumentAggregationHeaderNote(primObject, aggrObject);
+    @defineDocumentAggregationHeaderTime(primObject, aggrObject);
+END
 
+META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
     @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
-    @defineDocumentAggregationDetail(primObject, aggrObject);
-
     aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
 
+    @defineDocumentAggregationDetailTime(primObject, aggrObject);
+END
+
+META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
+    @defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty);
+    @defineDocumentAggregationDetail(primObject, aggrObject, aggrProperty);
     @defineDocumentHeaderCount(aggrObject);
 END
 
-META defineDocumentAggregationHeader (primObject, aggrObject)
+// Time
+META defineDocumentAggregationHeaderTime (primObject, aggrObject)
     date###aggrObject 'Дата' (object) = date###primObject(primObject###aggrObject(object));
     time###aggrObject 'Время' (object) = time###primObject(primObject###aggrObject(object));
     dateTime###aggrObject 'Дата/время' (object) = dateTime###primObject(primObject###aggrObject(object));
 END
 
-META defineDocumentAggregationDetail (primObject, aggrObject)
+META defineDocumentAggregationDetailTime (primObject, aggrObject)
     date###aggrObject##Detail 'Дата' (detail) = date###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     time###aggrObject##Detail 'Время' (detail) = time###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
     dateTime###aggrObject##Detail 'Дата/время' (detail) = dateTime###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
+META defineDocumentAggregationTime (primObject, aggrObject)
+    @defineDocumentAggregationHeaderTime(primObject, aggrObject);
+    @defineDocumentAggregationDetailTime(primObject, aggrObject);
 END
 
 // Posted
@@ -234,6 +257,11 @@ META defineDocumentAggregationPosted (primObject, aggrObject)
     @defineDocumentAggregationDetailPosted(primObject, aggrObject);
 END
 
+// Note
+META defineDocumentAggregationHeaderNote (primObject, aggrObject)
+    note###aggrObject 'Примечание' (object) = note###primObject(primObject###aggrObject(object));
+END
+
 // Number
 META defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, suffix)
     number###aggrObject 'Номер документа' (object) = number###suffix(primObject###aggrObject(object));
@@ -243,6 +271,13 @@ END
 
 META defineDocumentAggregationHeaderNumber (primObject, aggrObject)
     @defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, Object);
+END
+
+META deriveDocumentAggregationHeaderNumber (primObject, aggrObject)
+    initValueNumberObject (aggrObject) += [PREV(numberObject(aggrObject))](primObject###aggrObject(aggrObject));
+    initValueSeriesObject (aggrObject) += [PREV(seriesObject(aggrObject))](primObject###aggrObject(aggrObject));
+
+    initWhenNumberedObject(aggrObject) += CHANGED(primObject###aggrObject(aggrObject));
 END
 
 // Description

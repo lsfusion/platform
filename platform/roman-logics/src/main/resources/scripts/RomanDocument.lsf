@@ -83,17 +83,6 @@ META defineDocumentDetailPackWeightSku (object)
         netWeightSku(sku###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
 END
 
-META defineDocumentHeaderSkuQuantityCustom (object, detail)
-    quantity###detail##Sku###object 'Кол-во товара в документе' (sku, object) = GROUP SUM quantity###detail(idetail)
-                                                                                      BY  sku###detail(idetail),
-                                                                                          object###detail(idetail);
-END
-
-META defineDocumentHeaderSkuQuantity (object)
-    @defineDocumentHeaderSkuQuantityCustom(object, object###detail);
-END
-
-
 // для использования метакода должно быть определено свойство sku###object##Detail
 META defineDocumentDetailSkuArticle (object)
 

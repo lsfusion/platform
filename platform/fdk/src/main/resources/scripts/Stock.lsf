@@ -431,18 +431,27 @@ END
 // ---------------------------------------------- Агрегированные документы -------------------------------------------- //
 
 // Склады
+META defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
+    prefixA###stockProp###aggrObject (object) = prefixP###stockProp###primObject(primObject###aggrObject(object));
+    name###prefixA###stockProp###aggrObject stockCaption (object) = name(prefixA###stockProp###aggrObject(object));
+END
 META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, stockCaption)
-    stockProp###aggrObject (object) = stockProp###primObject(primObject###aggrObject(object));
-    name###stockProp###aggrObject stockCaption (object) = name(stockProp###aggrObject(object));
+    @defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, , );
 END
 
+META defineDocumentAggregationDetailStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP)
+    prefixA###stockProp###aggrObject##Detail (detail) = prefixP###stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
 META defineDocumentAggregationDetailStock (primObject, aggrObject, stockProp, stockCaption)
-    stockProp###aggrObject##Detail (detail) = stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    @defineDocumentAggregationDetailStockPrefix(primObject, aggrObject, stockProp, stockCaption, , );
 END
 
+META defineDocumentAggregationStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP)
+    @defineDocumentAggregationHeaderStockPrefix(primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP);
+    @defineDocumentAggregationDetailStockPrefix(primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP);
+END
 META defineDocumentAggregationStock (primObject, aggrObject, stockProp, stockCaption)
-    @defineDocumentAggregationHeaderStock(primObject, aggrObject, stockProp, stockCaption);
-    @defineDocumentAggregationDetailStock(primObject, aggrObject, stockProp, stockCaption);
+    @defineDocumentAggregationStockPrefix(primObject, aggrObject, stockProp, stockCaption, , );
 END
 
 // Sku
@@ -479,6 +488,17 @@ META derivePriceOnSkuChange(concrete, skuProp, stockProp)
     price###concrete##Detail (detail)  <- priceSkuStockDateTime(
                     skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
                     WHEN CHANGED(skuProp###concrete##Detail(detail));
+END
+
+// ------------------------------------------------ Кол-во в документе ------------------------------------ //
+META defineDocumentHeaderSkuQuantityCustom (object, detail, skuProp)
+    quantity###detail###skuProp###object 'Кол-во товара в документе' (sku, object) = GROUP SUM quantity###detail(idetail)
+                                                                                           BY  skuProp###detail(idetail),
+                                                                                               object###detail(idetail);
+END
+
+META defineDocumentHeaderSkuQuantity (object, skuProp)
+    @defineDocumentHeaderSkuQuantityCustom(object, object###detail, skuProp);
 END
 
 // ---------------------------------------------- Остатки -------------------------------------------- //
