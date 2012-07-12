@@ -323,6 +323,9 @@ WHfromCSIWHfromCSD 'Акт расхождений по приходу (ИД)' (W
 needDiffShortageSkuWHfromCSR 'Необходим акт расхождений (излишек)' (WHfromCSR, sku) =
     sku IS sku AND WHfromCSR IS WHfromCSR AND (quantitySkuInWHfromCSR (WHfromCSR, sku) (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR), sku)) > 0;
 
+WHfromCSRWHfromCSDODetail (WHfromCSDODetail) = WHfromCSRWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
+skuWHfromCSDODetail (WHfromCSDODetail) = skuWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
+
 @defineAggregationDoubleCustom (WHfromCSRWHfromCSDDetail, skuWHfromCSDDetail, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
 
 quantityWHfromCSDDetail (WHfromCSDODetail) <-
@@ -334,7 +337,10 @@ quantityWHfromCSDDetail (WHfromCSDODetail) <-
 needDiffOverSkuWHfromCSR 'Необходим акт расхождений (недостача)' (WHfromCSR, sku) =
     sku IS sku AND WHfromCSR IS WHfromCSR AND (quantitySkuInWHfromCSR (WHfromCSR, sku) (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR), sku)) < 0;
 
-@defineAggregationDoubleCustom (WHfromCSRWHfromCSDDetail, skuWHfromCSDDetail, WHfromCSDSDetail, needDiffOverSkuWHfromCSR);
+WHfromCSRWHfromCSDSDetail (WHfromCSDSDetail) = WHfromCSRWHfromCSDDetail(WHfromCSDSDetail) IF WHfromCSDSDetail IS WHfromCSDSDetail;
+skuWHfromCSDSDetail (WHfromCSDSDetail) = skuWHfromCSDDetail(WHfromCSDSDetail) IF WHfromCSDSDetail IS WHfromCSDSDetail;
+
+@defineAggregationDoubleCustom (WHfromCSRWHfromCSDSDetail, skuWHfromCSDSDetail, WHfromCSDSDetail, needDiffOverSkuWHfromCSR);
 
 @defineDocumentDetailQuantity(WHfromCSDS);
 
@@ -353,14 +359,14 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
 
-    PROPERTIES(w)          numberObject, seriesObject,
+    PROPERTIES(w)          WHfromCSIWHfromCSR, WHfromCSIWHfromCSR, numberObject, seriesObject,
                            dateWHfromCSR, timeWHfromCSR, nameWarehouseWHfromCSR,
                            barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit,
                            printMarksSkuWHfromCSR TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
 
-    PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
+    PROPERTIES(d) READONLY WHfromCSRWHfromCSRDetail, indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
                            sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail
 
     PROPERTIES(d) quantityWHfromCSRDetail, delete
@@ -380,7 +386,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
 toSSSS (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
 
-toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
+toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
     ADDOBJ WHfromCSRPosted;
     FOR w == addedObject() DO {
         SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
@@ -389,7 +395,7 @@ toAcceptCStoWHWHfromCSR 'Создать приемку' (WHfromCSI)= ACTION (WHf
     }
 };
 
-toModifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
+toModifyCStoWHWHfromCSR 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION AUTOAPPLY {
 //    FOR w == addedObject() DO {
         EXEC toSSSS (WHfromCSRWHfromCSI(WHfromCSI));
         EXEC apply();
@@ -403,6 +409,7 @@ toDeleteCStoWHWHfromCSR 'Удалить приемку' (WHfromCSI)= ACTION (WHf
     }
 } IMAGE 'delete.png';
 
+WHfromCSIWHfromCSRDetail (WHfromCSRDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
 
 FORM WHfromCSIs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCSI
@@ -420,7 +427,7 @@ FORM WHfromCSIs 'Приходы на оптовый склад'
     FILTERS WHfromCSIWHfromCSIDetail(di)
 
     OBJECTS dr = WHfromCSRDetail
-    PROPERTIES(dr) indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
+    PROPERTIES(dr) WHfromCSIWHfromCSRDetail, indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
                    sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                    quantityWHfromCSRDetail
 
