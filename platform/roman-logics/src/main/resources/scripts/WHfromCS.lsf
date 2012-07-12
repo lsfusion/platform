@@ -303,6 +303,14 @@ statusWHfromCSI 'Статус' (WHfromCSI) = CASE
     DEFAULT 'К приемке' IF WHfromCSI IS WHfromCSI
 END PREFCHARWIDTH 15 MINCHARWIDTH 15;
 
+sumQuantityOverWHfromCSD 'Количество излишка' (WHfromCSD) = GROUP SUM quantityWHfromCSDDetail(WHfromCSDODetail)
+                                                            BY WHfromCSDWHfromCSDDetail(WHfromCSDODetail) WHERE WHfromCSDODetail IS WHfromCSDODetail;
+
+sumQuantityShortageWHfromCSD 'Количество недостач' (WHfromCSD) = GROUP SUM quantityWHfromCSDDetail(WHfromCSDSDetail)
+                                                            BY WHfromCSDWHfromCSDDetail(WHfromCSDSDetail) WHERE WHfromCSDSDetail IS WHfromCSDSDetail;
+
+sumQuantityWHfromCSD 'Количество по акту расхождений' (WHfromCSD) = sumQuantityOverWHfromCSD(WHfromCSD) - sumQuantityShortageWHfromCSD(WHfromCSD);
+
 FORM WHfromCSR 'Приемка на оптовый склад'
 
     OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
