@@ -63,6 +63,10 @@ quantityCStoWHBatch (CStoWH, batch) =
     GROUP SUM quantityCStoWHDetail(CStoWHDetail)
     BY CStoWHCStoWHDetail(CStoWHDetail), declarationDetailCStoWHDetail(CStoWHDetail);
 
+quantitySkuCStoWH (sku, CStoWH) =
+    GROUP SUM quantityCStoWHDetail (CStoWHDetail)
+    BY skuCStoWHDetail(CStoWHDetail), CStoWHCStoWHDetail(CStoWHDetail);
+
 quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWH) =
     GROUP SUM quantityCStoWHDetail (CStoWHDetail)
     BY skuCStoWHDetail(CStoWHDetail), freightUnitCStoWHDetail(CStoWHDetail), CStoWHCStoWHDetail(CStoWHDetail);
