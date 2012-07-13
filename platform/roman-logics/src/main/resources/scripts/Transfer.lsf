@@ -5,6 +5,7 @@ REQUIRE System,
         RomanDocument,
         Stock,
         RomanStock,
+        DocumentTransfer,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -15,413 +16,60 @@ CLASS transferOut 'Перемещение товаров по накладным
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным' : outFIFOSkuLedger;
 
-@defineDocument(transferOut);
+@defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
+@defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
 
-@defineDocumentStock(transferOut, stock, 'Склад-отправитель');
-@defineDocumentStockPrefix(transferOut, stock, 'Склад-получатель', destination);
-
-@defineDocumentPosted(transferOut);
-
-@defineDocumentDescription (transferOut, 'Перемещение товаров по накладным');
-
-@defineDocumentDetailNumbered(transferOut);
-
-@defineDocumentDetailSku(transferOut, sku);
 @defineDocumentDetailSkuArticle(transferOut);
-
-@defineDocumentDetailQuantity(transferOut);
-
-@defineDocumentDetailPackWeightSku(transferOut);
-
-@defineDocumentDetailSkuBalance(transferOut, sku, stock);
-
-@defineDocumentHeaderQuantity(transferOut);
-@defineDocumentHeaderSkuQuantity(transferOut, sku);
-
-// Кнопки подбора
-@defineAddDetailDialogSkuStock(transferOut, sku, stock, dialogSku);
-@defineAddDetailDialogBarcode(transferOut, sku);
+@extendDocumentFormDetailSkuArticle(transferOut, d, transferOut);
+@extendDocumentFormDetailSkuArticleReadonly(transferOuts, d, transferOut);
 
 // Проводим по регистру
 @implementSkuLedger(transferOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
 @implementSkuLedgerOutFIFOBalanceA(transferOut, sku, stock);
 
-// Формы
-FORM transferOut 'Перемещение товаров по накладным'
-    OBJECTS t = transferOut FIXED PANEL
-
-    PROPERTIES (t) numberObject, seriesObject, dateTransferOut, timeTransferOut,
-                   nameStockTransferOut, nameDestinationStockTransferOut, noteTransferOut,
-                   countTransferOutDetailTransferOut, quantityTransferOutDetailTransferOut
-
-    OBJECTS d = transferOutDetail
-
-    PROPERTIES(d) indexTransferOutDetail, barcodeTransferOutDetail,
-                  nameCategoryTransferOutDetail, nameBrandTransferOutDetail,
-                  sidArticleTransferOutDetail, sidSizeTransferOutDetail,
-                  sidColorTransferOutDetail, nameColorTransferOutDetail,
-                  quantityTransferOutDetail, shortNameUOMTransferOutDetail,
-                  balanceBSkuTransferOutDetail
-
-    PROPERTIES(t) TODRAW d addDetailDialogSkuStockTransferOutDetailTransferOut, addDetailDialogBarcodeTransferOutDetailTransferOut,
-                           deleteTransferOutDetailTransferOut
-
-    PROPERTIES(d) ADDOBJ, delete
-
-    FILTERS transferOutTransferOutDetail(d) == t
-
-    EDIT transferOut OBJECT t
-;
-
-DESIGN transferOut FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-        t.box {
-            childConstraints = TO THE RIGHT;
-            NEW column1 {
-                childConstraints = TO THE BOTTOM;
-                ADD t.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY (nameStockTransferOut);
-                    ADD PROPERTY (nameDestinationStockTransferOut);
-                    ADD PROPERTY (numberObject);
-                    ADD PROPERTY (seriesObject);
-                    ADD PROPERTY (dateTransferOut);
-                    ADD PROPERTY (timeTransferOut);
-                }
-                ADD t.documentPrmGroup;
-            }
-            ADD t.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-    }
-}
-
-FORM transferOuts 'Перемещения товаров по накладным'
-    OBJECTS t = transferOut
-    PROPERTIES (t) READONLY isPostedTransferOut FORCE GRID, numberObject, seriesObject, dateTransferOut, timeTransferOut,
-                            nameStockTransferOut, nameDestinationStockTransferOut, noteTransferOut,
-                            countTransferOutDetailTransferOut, quantityTransferOutDetailTransferOut
-
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
-    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftTransferOut(t), delete FORCE PANEL SHOWIF isDraftTransferOut(t),
-                   postTransferOut SHOWIF isDraftTransferOut(t), unpostTransferOut SHOWIF isPostedTransferOut(t)
-
-    OBJECTS d = transferOutDetail
-    PROPERTIES(d) READONLY indexTransferOutDetail, barcodeTransferOutDetail,
-                           nameCategoryTransferOutDetail, nameBrandTransferOutDetail,
-                           sidArticleTransferOutDetail, sidSizeTransferOutDetail,
-                           sidColorTransferOutDetail, nameColorTransferOutDetail,
-                           quantityTransferOutDetail, shortNameUOMTransferOutDetail
-
-    FILTERS transferOutTransferOutDetail(d) == t
-;
-
-DESIGN transferOuts FROM DEFAULT {
-    PROPERTY (delete(t)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-
-    NEW documentContainer BEFORE functions.box {
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD t.box;
-
-        NEW documentDetail {
-            type = TABBED;
-
-            ADD d.box;
-            NEW documentHistory {
-                title = 'История';
-
-                ADD t.historyGroup;
-                ADD t.postedGroup;
-            }
-        }
-    }
-}
-
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS transferIn 'Поступление товаров по накладным' : historyObject;
 CLASS transferInDetail 'Строка поступления товаров по накладным' : inLIFOSkuLedger;
 
-@defineDocumentTables(transferIn);
+@defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
+@defineDocumentFormTransferIn(transfer, 'Поступление товаров по накладным');
 
-@defineDocumentAggregation(transferOut, transferIn, isTransferOut);
-
-@defineDocumentAggregationStockPrefix(transferOut, transferIn, stock, 'Склад-получатель', destination, );
-@defineDocumentAggregationStockPrefix(transferOut, transferIn, stock, 'Склад-отправитель', , destination);
-
-@defineDocumentAggregationPosted(transferOut, transferIn);
-
-@defineDocumentAggregationHeaderNumber(transferOut, transferIn);
-
-@defineDocumentDescriptionCustom(transferIn, transferInDetail, seriesNumberTransferIn, 'Поступление товаров по накладным');
-
-@defineDocumentDetailIndex(transferIn);
-
-@defineDocumentAggregationDetailSku(transferOut, transferIn, sku);
 @defineDocumentDetailSkuArticle(transferIn);
-
-@defineDocumentAggregationDetailQuantity(transferOut, transferIn);
-
-@defineDocumentHeaderQuantity(transferIn);
-@defineDocumentHeaderSkuQuantity(transferIn, sku);
+@extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
 
 @implementSkuLedger(transferIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
 
-costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch;
+// ---------------------------------------- Приемка ------------------------------------ //
 
-// Формы
-FORM transferIns 'Поступления товаров по накладным'
-    OBJECTS t = transferIn
-    PROPERTIES (t) READONLY isPostedTransferIn FORCE GRID, numberTransferIn, seriesTransferIn, dateTransferIn, timeTransferIn,
-                            nameStockTransferIn, nameDestinationStockTransferIn, noteTransferIn,
-                            countTransferInDetailTransferIn, quantityTransferInDetailTransferIn
+CLASS transferRec 'Приемка товаров по накладной' : historyObject;
+CLASS transferRecPosted 'Проведенная приемка товаров по накладной' : transferRec, postedObject;
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+CLASS transferRecDetail 'Строка приемки товаров по накладной';
 
-    OBJECTS d = transferInDetail
-    PROPERTIES(d) READONLY indexTransferInDetail, barcodeTransferInDetail,
-                           nameCategoryTransferInDetail, nameBrandTransferInDetail,
-                           sidArticleTransferInDetail, sidSizeTransferInDetail,
-                           sidColorTransferInDetail, nameColorTransferInDetail,
-                           quantityTransferInDetail, shortNameUOMTransferInDetail
+@defineDocumentTransferRec(transfer, 'Приемка товаров по накладным', sku, stock);
+@defineDocumentFormTransferRec(transfer, 'Приемка товаров по накладным');
 
-    FILTERS transferInTransferInDetail(d) == t
-;
-
-DESIGN transferIns FROM DEFAULT {
-    NEW documentContainer BEFORE functions.box {
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD t.box;
-
-        NEW documentDetail {
-            type = TABBED;
-
-            ADD d.box {
-                title = 'Спецификация';
-            }
-            NEW documentHistory {
-                title = 'История';
-
-                ADD t.historyGroup;
-                ADD t.postedGroup;
-            }
-        }
-    }
-}
-
-// Приемка
-CLASS transferRec 'Приемка товара по накладной' : historyObject;
-CLASS transferRecPosted 'Проведенная приемка товара по накладной' : transferRec, postedObject;
-
-CLASS transferRecDetail 'Строка приемки товара по накладной';
-
-@defineDocument(transferRec);
-
-transferInTransferRec = DATA transferIn (transferRec);
-transferRecTransferIn = GROUP UNIQUE transferRec BY transferInTransferRec(transferRec) WHERE transferRec IS transferRec;
-
-transferInTransferRecDetail (detail) = transferInTransferRec(transferRecTransferRecDetail(detail));
-
-@defineDocumentAggregationHeaderStock(transferIn, transferRec, stock, 'Склад-получатель');
-
-@defineDocumentPosted(transferRec);
-
-@defineDocumentAggregationHeaderNumberCustom(transferIn, transferRec, transferIn);
-
-@defineDocumentDetailSku(transferRec, sku);
 @defineDocumentDetailSkuArticle(transferRec);
+@extendDocumentFormDetailSkuArticle(transferRec, d, transferRec);
 
-@defineDocumentDetailQuantity(transferRec);
+@extendDocumentFormDetailSkuArticleReadonly(transferIns, r, transferRec);
 
-@defineAddDetailDialogSkuStock(transferRec, sku, stock, dialogSku);
-@defineAddDetailDialogBarcode(transferRec, sku);
-
-@defineDocumentHeaderQuantity(transferRec);
-@defineDocumentHeaderSkuQuantity(transferRec, sku);
-
-FORM transferRec 'Приемка товаров по накладным'
-    OBJECTS t = transferRec FIXED PANEL
-
-    PROPERTIES (t) numberTransferRec, seriesTransferRec, dateTransferRec, timeTransferRec,
-                   nameStockTransferRec, noteTransferRec,
-                   countTransferRecDetailTransferRec, quantityTransferRecDetailTransferRec
-
-    OBJECTS d = transferRecDetail
-
-    PROPERTIES(d) indexTransferRecDetail, barcodeTransferRecDetail,
-                  nameCategoryTransferRecDetail, nameBrandTransferRecDetail,
-                  sidArticleTransferRecDetail, sidSizeTransferRecDetail,
-                  sidColorTransferRecDetail, nameColorTransferRecDetail,
-                  quantityTransferRecDetail, shortNameUOMTransferRecDetail
-
-    PROPERTIES(t) TODRAW d addDetailDialogSkuStockTransferRecDetailTransferRec, addDetailDialogBarcodeTransferRecDetailTransferRec,
-                           deleteTransferRecDetailTransferRec
-
-    PROPERTIES(d) ADDOBJ, delete
-
-    FILTERS transferRecTransferRecDetail(d) == t
-
-    EDIT transferRec OBJECT t
-;
-
-DESIGN transferRec FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-        t.box {
-            childConstraints = TO THE RIGHT;
-            NEW column1 {
-                childConstraints = TO THE BOTTOM;
-                ADD t.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY (nameStockTransferRec);
-                    ADD PROPERTY (numberTransferRec);
-                    ADD PROPERTY (seriesTransferRec);
-                    ADD PROPERTY (dateTransferRec);
-                    ADD PROPERTY (timeTransferRec);
-                }
-                ADD t.documentPrmGroup;
-            }
-            ADD t.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-    }
-}
-
-// Действия
-receiveTransferIn 'Принять' (transferIn) = ACTION (transferIn) NEWSESSION {
-    IF transferRecTransferIn(transferIn) IS transferRec THEN {
-        FOR r == transferRecTransferIn(transferIn) DO {
-            IF r IS transferRecPosted THEN {
-                CHANGECLASS r TO transferRec;
-            }
-            FORM transferRec OBJECTS t = r MODAL;
-        }
-    } ELSE {
-        ADDOBJ transferRec;
-        FOR t == addedObject() DO {
-            SET transferInTransferRec (t) <- transferIn AS transferIn;
-            FORM transferRec OBJECTS t = t MODAL;
-        }
-    }
-    IF formResult() == formResult.ok THEN EXEC apply();
-} TOOLBAR;
-
-postRecTransferIn 'Пометить как принятое' (transferIn) = postTransferRec(transferRecTransferIn(transferIn)) TOOLBAR;
-isDraftRecTransferIn (transferIn) = isDraftTransferRec(transferRecTransferIn(transferIn));
-
-statusRecTransferIn 'Статус приемки' (transferIn) = CASE
-    WHEN (transferRecTransferIn (transferIn) IS transferRecPosted) THEN ('Принят' IF transferIn IS transferIn)
-    WHEN (transferRecTransferIn (transferIn) IS transferRec) THEN ('Принимается' IF transferIn IS transferIn)
-    DEFAULT 'Не принят' IF transferIn IS transferIn
-END PREFCHARWIDTH 15 MINCHARWIDTH 15;
-
-quantityTransferRecDetailTransferIn 'Кол-во принятое' (transferIn) = quantityTransferRecDetailTransferRec(transferRecTransferIn(transferIn));
-
-EXTEND FORM transferIns
-    PROPERTIES(t) quantityTransferRecDetailTransferIn, statusRecTransferIn,
-                  receiveTransferIn, postRecTransferIn SHOWIF isDraftRecTransferIn(t)
-
-    OBJECTS r = transferRecDetail
-    PROPERTIES(r) READONLY indexTransferRecDetail, barcodeTransferRecDetail,
-                           nameCategoryTransferRecDetail, nameBrandTransferRecDetail,
-                           sidArticleTransferRecDetail, sidSizeTransferRecDetail,
-                           sidColorTransferRecDetail, nameColorTransferRecDetail,
-                           quantityTransferRecDetail, shortNameUOMTransferRecDetail
-    FILTERS transferInTransferRecDetail(r) == t
-;
-
-EXTEND DESIGN transferIns {
-    documentDetail {
-        ADD r.box {
-            title = 'Приемка';
-        }
-    }
-}
-
-// Излишки / Недостачи
-
-diffSkuTransferRec(sku, transferRec) = (quantityTransferRecDetailSkuTransferRec(sku, transferRec) (-)
-                                        quantityTransferInDetailSkuTransferIn(sku, transferInTransferRec(transferRec)))
-                                        AND isPostedTransferRec(transferRec);
-
-hasDiffSkuTransferRec(sku, transferRec) = diffSkuTransferRec(sku, transferRec) != 0;
-
-countDiffTransferRec 'Расхождение (позиции)' (transferRec) = GROUP SUM 1 IF hasDiffSkuTransferRec(sku, transferRec) BY transferRec;
-quantityDiffTransferRec 'Расхождение (кол-во)' (transferRec) = GROUP SUM diffSkuTransferRec(sku, transferRec) BY transferRec;
-
-countDiffTransferIn 'Расхождение (позиции)' (transferIn) = countDiffTransferRec(transferRecTransferIn(transferIn));
-quantityDiffTransferIn 'Расхождение (кол-во)' (transferIn) = quantityDiffTransferRec(transferRecTransferIn(transferIn));
-
-hasShortageSkuTransferRec(sku, transferRec) = diffSkuTransferRec(sku, transferRec) < 0;
-hasExcessSkuTransferRec(sku, transferRec) = diffSkuTransferRec(sku, transferRec) > 0;
-
-// Создание документов
+// ---------------------------------------- Акт расхождений ------------------------------------ //
 CLASS transferDiff 'Акт расхождений приемки товаров по накладной' : historyObject;
 
 CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной';
 CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (излишек)' : transferDiffDetail, batch;
 CLASS transferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (недостача)' : transferDiffDetail, outFIFOSkuLedger;
 
-@defineDocumentTables(transferDiff);
-
-@defineAggregation(transferRec, transferDiff, countDiffTransferRec);
-
-@defineAggregationDouble(sku, transferRec, transferDiffEDetail, hasExcessSkuTransferRec);
-quantityTransferDiffEDetail 'Кол-во' (detail) = diffSkuTransferRec(skuTransferDiffEDetail(detail),
-                                                                   transferRecTransferDiffEDetail(detail)) PERSISTENT;
-
-@defineAggregationDouble(sku, transferRec, transferDiffSDetail, hasShortageSkuTransferRec);
-quantityTransferDiffSDetail 'Кол-во' (detail) =-diffSkuTransferRec(skuTransferDiffSDetail(detail),
-                                                                   transferRecTransferDiffSDetail(detail)) PERSISTENT;
-
-transferRecTransferDiffDetail (detail) = transferRecTransferDiffEDetail(detail) OR transferRecTransferDiffSDetail(detail) PERSISTENT;
-transferInTransferDiffDetail (detail) = transferInTransferRec(transferRecTransferDiffDetail(detail));
-transferDiffTransferDiffDetail (detail) = transferDiffTransferRec(transferRecTransferDiffDetail(detail));
-
-transferInTransferDiffSDetail (detail) = transferInTransferRec(transferRecTransferDiffSDetail(detail));
-
-transferDiffTransferDiffEDetail (detail) = transferDiffTransferRec(transferRecTransferDiffEDetail(detail));
-transferDiffTransferDiffSDetail (detail) = transferDiffTransferRec(transferRecTransferDiffSDetail(detail));
-
-@defineDocumentAggregationHeaderTime(transferRec, transferDiff);
-@defineDocumentDetailTimeCustom(transferDiff, transferDiffEDetail);
-@defineDocumentDetailTimeCustom(transferDiff, transferDiffSDetail);
-
-@defineDocumentAggregationHeaderNumberCustom(transferRec, transferDiff, transferRec);
-
-@defineDocumentDescriptionHeaderCustom(transferDiff, seriesNumberTransferDiff, 'Акт расхождений приемки товаров по накладной');
-@defineDocumentDescriptionDetailCustom(transferDiff, transferDiffEDetail);
-@defineDocumentDescriptionDetailCustom(transferDiff, transferDiffSDetail);
-
-@defineDocumentAggregationHeaderStock(transferRec, transferDiff, stock, 'Склад-получатель');
-@defineDocumentDetailStockCustom(transferDiff, transferDiffEDetail, stock, 'Склад-получатель');
-@defineDocumentDetailStockCustom(transferDiff, transferDiffSDetail, stock, 'Склад-получатель');
-
-@defineDocumentAggregationHeaderPosted(transferRec, transferDiff);
-@defineDocumentDetailPostedCustom(transferDiff, transferDiffEDetail);
-@defineDocumentDetailPostedCustom(transferDiff, transferDiffSDetail);
-
-skuTransferDiffDetail (detail) = skuTransferDiffEDetail(detail) OR skuTransferDiffSDetail(detail) PERSISTENT;
-quantityTransferDiffDetail 'Кол-во' (detail) = quantityTransferDiffEDetail(detail) OR quantityTransferDiffSDetail(detail) PERSISTENT;
-signedQuantityTransferDiffDetail 'Кол-во' (detail) = quantityTransferDiffEDetail(detail) OR -quantityTransferDiffSDetail(detail) PERSISTENT;
+@defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной', sku, stock);
+@defineDocumentFormTransferDiff(transfer);
 
 @defineDocumentDetailSkuArticle(transferDiff);
-
-@defineDocumentDetailIndex(transferDiff);
+@extendDocumentFormDetailSkuArticleReadonly(transferIns, r, transferDiff);
 
 @implementSkuLedger(transferDiffE, sku, stock);
 supplierPriceTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
@@ -433,23 +81,3 @@ skipASkuLedger (ledger) += ledger IS transferDiffEDetail;
 quantityOutFIFOSkuLedger (ledger) += quantityTransferDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTransferDiffSDetail(ledger), batch);
 skipASkuLedger (ledger) += ledger IS transferDiffSDetail;
-
-EXTEND FORM transferIns
-    PROPERTIES(t) countDiffTransferIn, quantityDiffTransferIn
-
-    OBJECTS f = transferDiffDetail
-    PROPERTIES(f) READONLY indexTransferDiffDetail, barcodeTransferDiffDetail,
-                           nameCategoryTransferDiffDetail, nameBrandTransferDiffDetail,
-                           sidArticleTransferDiffDetail, sidSizeTransferDiffDetail,
-                           sidColorTransferDiffDetail, nameColorTransferDiffDetail,
-                           signedQuantityTransferDiffDetail, shortNameUOMTransferDiffDetail
-    FILTERS transferInTransferDiffDetail(f) == t
-;
-
-EXTEND DESIGN transferIns {
-    documentDetail {
-        ADD f.box {
-            title = 'Акт расхождений';
-        }
-    }
-}

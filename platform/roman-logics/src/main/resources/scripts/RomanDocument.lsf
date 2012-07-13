@@ -102,3 +102,24 @@ META defineDocumentDetailSkuArticle (object)
     UOM###object##Detail 'Единица измерения (ИД)' (object##Detail) = DATA UOM (object##Detail) IN idGroup;
     shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortName(UOM###object##Detail(object##Detail));
 END
+
+META extendDocumentFormDetailSkuArticle (form, object, concrete)
+    EXTEND FORM form
+        PROPERTIES(object) index###concrete##Detail, barcode###concrete##Detail,
+                           nameCategory###concrete##Detail, nameBrand###concrete##Detail,
+                           sidArticle###concrete##Detail, sidSize###concrete##Detail,
+                           sidColor###concrete##Detail, nameColor###concrete##Detail,
+                           quantity###concrete##Detail, shortNameUOM###concrete##Detail,
+                           ADDOBJ, delete
+    ;
+END
+
+META extendDocumentFormDetailSkuArticleReadonly (form, object, concrete)
+    EXTEND FORM form
+        PROPERTIES(object) READONLY index###concrete##Detail, barcode###concrete##Detail,
+                                    nameCategory###concrete##Detail, nameBrand###concrete##Detail,
+                                    sidArticle###concrete##Detail, sidSize###concrete##Detail,
+                                    sidColor###concrete##Detail, nameColor###concrete##Detail,
+                                    quantity###concrete##Detail, shortNameUOM###concrete##Detail
+    ;
+END

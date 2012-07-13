@@ -10,7 +10,7 @@ PRIORITY Stock, RomanLogicsModule;
 @defineDialogSkuSupplier(dialogSku);
 
 EXTEND FORM dialogSku
-    PROPERTIES(s) FORCE GRID nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+    PROPERTIES(s) READONLY FORCE GRID nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                              sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
 ;
 
