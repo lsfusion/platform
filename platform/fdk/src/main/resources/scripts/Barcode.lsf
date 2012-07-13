@@ -96,3 +96,7 @@ META defineDialogSkuBarcode (form)
         PROPERTIES idBarcodeSku(s), idBarcodeSku(si)
     ;
 END
+
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(s) idBarcodeSku
+;

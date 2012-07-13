@@ -3736,6 +3736,11 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement prices = addNavigatorElement(baseLM.baseElement, "prices", "Ценообразование");
         prices.window = leftToolbar;
 
+        NavigatorElement logistics = addNavigatorElement(baseLM.baseElement, "logistics", "Логистика");
+        logistics.window = leftToolbar;
+
+        NavigatorElement logisticsClassifier = addNavigatorElement(logistics, "logisticsClassifier", "Справочники");
+
         NavigatorElement merchandising = addNavigatorElement(baseLM.baseElement, "merchandising", "Управление складами");
         merchandising.window = leftToolbar;
 
@@ -3746,9 +3751,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement merchandisingStore = addNavigatorElement(baseLM.baseElement, "merchandisingStore", "Управление магазинами");
         merchandisingStore.window = leftToolbar;
-
-        NavigatorElement accountInfo = addNavigatorElement(baseLM.baseElement, "accountInfo", "Сводная информация");
-        accountInfo.window = leftToolbar;
 
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;

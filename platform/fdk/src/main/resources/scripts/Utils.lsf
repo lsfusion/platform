@@ -71,12 +71,12 @@ DESIGN dialogDate FROM DEFAULT {
 
 // --------------------------- Агрегации --------------------------------- //
 
-META defineAggregationCustom (primProperty, aggrObject, aggrProperty)
-    unique###aggrObject 'Одиночная агрегация' (primObject) =
+META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
+    aggrObject###primObject (primObject) =
         GROUP UNIQUE aggrObject BY primProperty(aggrObject)
         WHERE aggrObject IS aggrObject;
 
-    aggrProperty(primObject) => unique###aggrObject(primObject) RESOLVE TRUE;
+    aggrProperty(primObject) => aggrObject###primObject(primObject) RESOLVE TRUE;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrObject;
     is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
@@ -85,15 +85,15 @@ END
 META defineAggregation (primObject, aggrObject, aggrProperty)
     primObject###aggrObject = DATA primObject (aggrObject);
 
-    @defineAggregationCustom (primObject###aggrObject, aggrObject, aggrProperty);
+    @defineAggregationCustom (primObject###aggrObject, primObject, aggrObject, aggrProperty);
 END
 
-META defineAggregationDoubleCustom (prim1Property, prim2Property, aggrObject, aggrProperty)
-    unique###aggrObject 'Двойная агрегация' (prim1Object, prim2Object) =
+META defineAggregationDoubleCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
+    aggrObject###prim1Object###prim2Object (prim1Object, prim2Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
         WHERE aggrObject IS aggrObject;
 
-    aggrProperty(prim1Object, prim2Object) => unique###aggrObject(prim1Object, prim2Object) RESOLVE TRUE;
+    aggrProperty(prim1Object, prim2Object) => aggrObject###prim1Object###prim2Object(prim1Object, prim2Object) RESOLVE TRUE;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrObject;
     is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
@@ -103,6 +103,6 @@ META defineAggregationDouble (prim1Object, prim2Object, aggrObject, aggrProperty
     prim1Object###aggrObject = DATA prim1Object (aggrObject);
     prim2Object###aggrObject = DATA prim2Object (aggrObject);
 
-    @defineAggregationDoubleCustom(prim1Object###aggrObject, prim2Object###aggrObject, aggrObject, aggrProperty);
+    @defineAggregationDoubleCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim2Object, aggrObject, aggrProperty);
 END
 

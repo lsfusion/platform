@@ -175,11 +175,27 @@ META defineDocumentQuantity(object)
     @defineDocumentHeaderQuantity(object);
 END
 
-META defineDocumentDescription (object, caption)
+META defineDocumentDescriptionHeaderCustom(object, numberProp, caption)
     description###object 'Название документа' (object) =
         [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
-        caption, seriesNumberObject(object), date###object(object));
-    description###object##Detail 'Название документа' (object) = description###object(object###object##Detail(object));
+        caption, numberProp(object), date###object(object));
+END
+
+META defineDocumentDescriptionHeader(object, caption)
+    @defineDocumentDescriptionHeaderCustom(object, seriesNumberObject, caption);
+END
+
+META defineDocumentDescriptionDetailCustom(object, detail)
+    description###detail 'Название документа' (object) = description###object(object###detail(object));
+END
+
+META defineDocumentDescriptionCustom(object, detail, numberProp, caption)
+    @defineDocumentDescriptionHeaderCustom(object, numberProp, caption);
+    @defineDocumentDescriptionDetailCustom(object, detail);
+END
+
+META defineDocumentDescription (object, caption)
+    @defineDocumentDescriptionCustom(object, object##Detail, seriesNumberObject, caption);
 END
 
 META defineDocumentIsCustom(object, detail)
@@ -214,7 +230,7 @@ END
 
 META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
     @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty##Detail);
-    aggrObject###aggrObject##Detail (detail) = unique###aggrObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
+    aggrObject###aggrObject##Detail (detail) = aggrObject###primObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
 
     @defineDocumentAggregationDetailTime(primObject, aggrObject);
 END

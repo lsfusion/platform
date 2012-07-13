@@ -9,12 +9,17 @@ PRIORITY Stock, RomanLogicsModule;
 @defineDialogSkuBarcode(dialogSku);
 @defineDialogSkuSupplier(dialogSku);
 
-// implement абстрактных свойств
-descriptionSku 'Наименование товара' (sku) =
-        [FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
-        sidArticleSku(sku), nameCategoryArticleSku(sku), nameArticleSku(sku));
+EXTEND FORM dialogSku
+    PROPERTIES(s) FORCE GRID nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                             sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
+;
 
-nameSku(sku) += descriptionSku (sku);
+// implement абстрактных свойств
+descriptionItem 'Наименование товара' (item) =
+        [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
+        sidArticleSku(item), sidSizeSupplierItem(item), sidColorSupplierItem(item), nameCategoryArticleSku(item), nameBrandSupplierArticleSku(item));
+
+nameSku(sku) += descriptionItem (sku);
 
 // объявляем группы sku
 @defineHierarchy(category);
@@ -27,6 +32,12 @@ skuGroupSku (sku) += categoryArticleSku(sku);
 
 // добавляем еще один регистр (бухгалтерский)
 @defineSkuLedgerBalanceProperties(A, ' (бухг.)');
+
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(s, st) currentBalanceASkuStock
+    PROPERTIES(bil) skipSkuLedger, skipASkuLedger
+    PROPERTIES(bt, st) currentBalanceABatchStock
+;
 
 // создаем разные типы партий (бухгалтерские, управленческие)
 CLASS STATIC batchType {

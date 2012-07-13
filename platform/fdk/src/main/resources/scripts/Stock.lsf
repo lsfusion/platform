@@ -194,8 +194,8 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
                                                                              (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
-    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger)
-                                                                      BY batch, stockSkuLedger(ledger) PERSISTENT;
+    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                                                           BY batch, stockSkuLedger(ledger) PERSISTENT;
 
     currentBalance##postfix##Batch 'Остаток (всего)' (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
 
@@ -594,8 +594,9 @@ DESIGN costSkuBatchLedger FROM DEFAULT {
 
 FORM currentBalanceSkuStock 'Текущие остатки'
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS isParentStockGroupStock(sg, ts)
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -604,7 +605,8 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isParentStockGroupStock(sg, st)
+                      st == ts AND sg IS stockGroup OR
+                      isParentStockGroupStock(sg, st) AND NOT ts
     ORDER BY          nameSku
 
 
@@ -865,6 +867,24 @@ DESIGN balanceBatchStock FROM DEFAULT {
         ADD functions.box;
     }
 }
+
+NAVIGATOR {
+    NEW stockCost 'Себестоимость' {
+        ADD costSkuLedger;
+        ADD costSkuBatchLedger;
+    }
+    NEW stockBalance 'Остатки' {
+        NEW balanceItem 'Остатки по товару' {
+            ADD currentBalanceSkuStock;
+            ADD balanceSkuStock;
+        }
+        NEW balanceBatch 'Остатки по партиям' {
+            ADD currentBalanceBatchStock;
+            ADD balanceBatchStock;
+        }
+    }
+}
+
 
 // -------------------------------------------- Подбор SKU --------------------------------------- //
 

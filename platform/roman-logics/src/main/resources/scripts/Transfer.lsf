@@ -148,7 +148,7 @@ DESIGN transferOuts FROM DEFAULT {
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS transferIn 'Поступление товаров по накладным' : historyObject, numberedObject;
+CLASS transferIn 'Поступление товаров по накладным' : historyObject;
 CLASS transferInDetail 'Строка поступления товаров по накладным' : inLIFOSkuLedger;
 
 @defineDocumentTables(transferIn);
@@ -160,9 +160,9 @@ CLASS transferInDetail 'Строка поступления товаров по 
 
 @defineDocumentAggregationPosted(transferOut, transferIn);
 
-@defineDocumentDescription(transferIn, 'Поступление товаров по накладным');
+@defineDocumentAggregationHeaderNumber(transferOut, transferIn);
 
-@deriveDocumentAggregationHeaderNumber(transferOut, transferIn);
+@defineDocumentDescriptionCustom(transferIn, transferInDetail, seriesNumberTransferIn, 'Поступление товаров по накладным');
 
 @defineDocumentDetailIndex(transferIn);
 
@@ -178,10 +178,12 @@ CLASS transferInDetail 'Строка поступления товаров по 
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
 
+costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch;
+
 // Формы
 FORM transferIns 'Поступления товаров по накладным'
     OBJECTS t = transferIn
-    PROPERTIES (t) READONLY isPostedTransferIn FORCE GRID, numberObject, seriesObject, dateTransferIn, timeTransferIn,
+    PROPERTIES (t) READONLY isPostedTransferIn FORCE GRID, numberTransferIn, seriesTransferIn, dateTransferIn, timeTransferIn,
                             nameStockTransferIn, nameDestinationStockTransferIn, noteTransferIn,
                             countTransferInDetailTransferIn, quantityTransferInDetailTransferIn
 
@@ -221,7 +223,7 @@ DESIGN transferIns FROM DEFAULT {
 }
 
 // Приемка
-CLASS transferRec 'Приемка товара по накладной' : historyObject, numberedObject;
+CLASS transferRec 'Приемка товара по накладной' : historyObject;
 CLASS transferRecPosted 'Проведенная приемка товара по накладной' : transferRec, postedObject;
 
 CLASS transferRecDetail 'Строка приемки товара по накладной';
@@ -237,9 +239,7 @@ transferInTransferRecDetail (detail) = transferInTransferRec(transferRecTransfer
 
 @defineDocumentPosted(transferRec);
 
-@deriveDocumentAggregationHeaderNumber(transferIn, transferRec);
-
-@defineDocumentDetailNumbered(transferRec);
+@defineDocumentAggregationHeaderNumberCustom(transferIn, transferRec, transferIn);
 
 @defineDocumentDetailSku(transferRec, sku);
 @defineDocumentDetailSkuArticle(transferRec);
@@ -255,7 +255,7 @@ transferInTransferRecDetail (detail) = transferInTransferRec(transferRecTransfer
 FORM transferRec 'Приемка товаров по накладным'
     OBJECTS t = transferRec FIXED PANEL
 
-    PROPERTIES (t) numberObject, seriesObject, dateTransferRec, timeTransferRec,
+    PROPERTIES (t) numberTransferRec, seriesTransferRec, dateTransferRec, timeTransferRec,
                    nameStockTransferRec, noteTransferRec,
                    countTransferRecDetailTransferRec, quantityTransferRecDetailTransferRec
 
@@ -287,8 +287,8 @@ DESIGN transferRec FROM DEFAULT {
                 ADD t.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameStockTransferRec);
-                    ADD PROPERTY (numberObject);
-                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (numberTransferRec);
+                    ADD PROPERTY (seriesTransferRec);
                     ADD PROPERTY (dateTransferRec);
                     ADD PROPERTY (timeTransferRec);
                 }
@@ -354,8 +354,9 @@ EXTEND DESIGN transferIns {
 
 // Излишки / Недостачи
 
-diffSkuTransferRec(sku, transferRec) = (quantityTransferInDetailSkuTransferIn(sku, transferInTransferRec(transferRec)) (-)
-                                        quantityTransferRecDetailSkuTransferRec(sku, transferRec)) AND isPostedTransferRec(transferRec);
+diffSkuTransferRec(sku, transferRec) = (quantityTransferRecDetailSkuTransferRec(sku, transferRec) (-)
+                                        quantityTransferInDetailSkuTransferIn(sku, transferInTransferRec(transferRec)))
+                                        AND isPostedTransferRec(transferRec);
 
 hasDiffSkuTransferRec(sku, transferRec) = diffSkuTransferRec(sku, transferRec) != 0;
 
@@ -369,11 +370,15 @@ hasShortageSkuTransferRec(sku, transferRec) = diffSkuTransferRec(sku, transferRe
 hasExcessSkuTransferRec(sku, transferRec) = diffSkuTransferRec(sku, transferRec) > 0;
 
 // Создание документов
-CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной';
-CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (излишек)' : transferDiffDetail;
-CLASS transferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (недостача)' : transferDiffDetail;
+CLASS transferDiff 'Акт расхождений приемки товаров по накладной' : historyObject;
 
-TABLE transferDiffDetail (transferDiffDetail);
+CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной';
+CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (излишек)' : transferDiffDetail, batch;
+CLASS transferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (недостача)' : transferDiffDetail, outFIFOSkuLedger;
+
+@defineDocumentTables(transferDiff);
+
+@defineAggregation(transferRec, transferDiff, countDiffTransferRec);
 
 @defineAggregationDouble(sku, transferRec, transferDiffEDetail, hasExcessSkuTransferRec);
 quantityTransferDiffEDetail 'Кол-во' (detail) = diffSkuTransferRec(skuTransferDiffEDetail(detail),
@@ -385,6 +390,30 @@ quantityTransferDiffSDetail 'Кол-во' (detail) =-diffSkuTransferRec(skuTrans
 
 transferRecTransferDiffDetail (detail) = transferRecTransferDiffEDetail(detail) OR transferRecTransferDiffSDetail(detail) PERSISTENT;
 transferInTransferDiffDetail (detail) = transferInTransferRec(transferRecTransferDiffDetail(detail));
+transferDiffTransferDiffDetail (detail) = transferDiffTransferRec(transferRecTransferDiffDetail(detail));
+
+transferInTransferDiffSDetail (detail) = transferInTransferRec(transferRecTransferDiffSDetail(detail));
+
+transferDiffTransferDiffEDetail (detail) = transferDiffTransferRec(transferRecTransferDiffEDetail(detail));
+transferDiffTransferDiffSDetail (detail) = transferDiffTransferRec(transferRecTransferDiffSDetail(detail));
+
+@defineDocumentAggregationHeaderTime(transferRec, transferDiff);
+@defineDocumentDetailTimeCustom(transferDiff, transferDiffEDetail);
+@defineDocumentDetailTimeCustom(transferDiff, transferDiffSDetail);
+
+@defineDocumentAggregationHeaderNumberCustom(transferRec, transferDiff, transferRec);
+
+@defineDocumentDescriptionHeaderCustom(transferDiff, seriesNumberTransferDiff, 'Акт расхождений приемки товаров по накладной');
+@defineDocumentDescriptionDetailCustom(transferDiff, transferDiffEDetail);
+@defineDocumentDescriptionDetailCustom(transferDiff, transferDiffSDetail);
+
+@defineDocumentAggregationHeaderStock(transferRec, transferDiff, stock, 'Склад-получатель');
+@defineDocumentDetailStockCustom(transferDiff, transferDiffEDetail, stock, 'Склад-получатель');
+@defineDocumentDetailStockCustom(transferDiff, transferDiffSDetail, stock, 'Склад-получатель');
+
+@defineDocumentAggregationHeaderPosted(transferRec, transferDiff);
+@defineDocumentDetailPostedCustom(transferDiff, transferDiffEDetail);
+@defineDocumentDetailPostedCustom(transferDiff, transferDiffSDetail);
 
 skuTransferDiffDetail (detail) = skuTransferDiffEDetail(detail) OR skuTransferDiffSDetail(detail) PERSISTENT;
 quantityTransferDiffDetail 'Кол-во' (detail) = quantityTransferDiffEDetail(detail) OR quantityTransferDiffSDetail(detail) PERSISTENT;
@@ -392,7 +421,18 @@ signedQuantityTransferDiffDetail 'Кол-во' (detail) = quantityTransferDiffED
 
 @defineDocumentDetailSkuArticle(transferDiff);
 
-@defineDocumentDetailIndexCustom(transferRec, transferDiffDetail);
+@defineDocumentDetailIndex(transferDiff);
+
+@implementSkuLedger(transferDiffE, sku, stock);
+supplierPriceTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
+@implementBBatch(transferDiffE, sku);
+quantityBatch (batch) += quantityTransferDiffEDetail(batch);
+skipASkuLedger (ledger) += ledger IS transferDiffEDetail;
+
+@implementSkuLedger(transferDiffS, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityTransferDiffSDetail(ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTransferDiffSDetail(ledger), batch);
+skipASkuLedger (ledger) += ledger IS transferDiffSDetail;
 
 EXTEND FORM transferIns
     PROPERTIES(t) countDiffTransferIn, quantityDiffTransferIn

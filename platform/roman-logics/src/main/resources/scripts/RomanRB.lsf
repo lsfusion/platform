@@ -139,43 +139,33 @@ NAVIGATOR {
         }
     }
 
-    accountInfo {
-        ADD currentBalanceSkuStock;
-        ADD costSkuLedger;
-        ADD costSkuBatchLedger;
-        ADD balanceSkuStock;
-        ADD currentBalanceBatchStock;
-        ADD balanceBatchStock;
-    }
+    logistics {
+        logisticsClassifier {
+            ADD warehouses;
+        }
 
-    printForms{
-        ADD consignmentVerticalA;
-        ADD consignmentHorizontalA;
-        ADD consignmentVerticalB;
-        ADD consignmentHorizontalB;
-        ADD consignmentAttach;
-        ADD consignmentSimpleHorizontal;
-        ADD consignmentSimpleVertical;
-        ADD consignmentSimpleAttach;
-        ADD consignment;
-      //  ADD printMarksWHfromCS;
+        NEW logisticsIncome 'Приходы' {
+            ADD WHfromCSIs;
+            ADD transferIns;
+        }
+
+        NEW logisticsOutcome 'Расходы' {
+            ADD transferOuts;
+        }
+
+        NEW logisticsAggregations 'Сводная информация' {
+            ADD stockCost;
+            ADD stockBalance;
+        }
     }
 
     merchandising {
 
-        merchandisingClassifier 'Справочники' {
-            ADD warehouses;
-        }
-
         NEW merchandisingDocument 'Документы' {
-            ADD WHfromCSIs;
             ADD WHtoSs;
             ADD WHfromSs;
             ADD WHtoWHs;
             ADD WHfromWHs;
-
-            ADD transferOuts;
-            ADD transferIns;
         }
     }
 
@@ -188,111 +178,15 @@ NAVIGATOR {
         }
     }
 
-    adminElement {
-        ADD certificate;
-        ADD declaration;
-        ADD priceSetDocument;
-        ADD discountPriceSetDocument;
-        ADD declarationInvoices;
-        ADD coefficientRetail;
-        ADD logPriceArticle;
-        ADD dialogDate;
-        ADD numerators;
-        ADD numerator;
-        ADD CStoWH;
-        ADD WHtoS;
-        ADD declarationDetailCStoWHInput;
-        ADD unitsOfMeasure;
-        ADD tax;
-        ADD ware;
-        ADD wares;
-        ADD ownership;
-        ADD addWarePrice;
-        ADD dialogWarePrice;
-        ADD addRangeWare;
-        ADD dialogRangeWare;
-        ADD addAddressBank;
-        ADD dialogAddressBank;
-        ADD bank;
-        ADD position;
-        ADD employee;
-        ADD employeeDialog;
-        ADD barcodeInput;
-        ADD importer;
-        ADD customStore;
-        ADD UOM;
-        ADD ware;
-        ADD barcodeInput;
-        ADD employee;
-        ADD employeeDialog;
-        ADD position;
-        ADD addTradingSquareDepartmentStore;
-        ADD dialogTradingSquareDepartmentStore;
-        ADD departmentStore;
-        ADD departmentStores;
-        ADD store;
-        ADD chainStores;
-        ADD bank;
-        ADD ownership;
-        ADD supplier;
-        ADD contract;
-        ADD tax;
-        ADD addAddressLegalEntity;
-        ADD dialogAddressLegalEntity;
-        ADD addPostAddressLegalEntity;
-        ADD dialogPostAddressLegalEntity;
-        ADD addManagerLegalEntity;
-        ADD dialogManagerLegalEntity;
-        ADD addAccountantLegalEntity;
-        ADD dialogAccountantLegalEntity;
-        ADD addPhoneLegalEntity;
-        ADD dialogPhoneLegalEntity;
-        ADD addControlSupplierStock;
-        ADD dialogControlSupplierStock;
-        ADD addSureSupplierStock;
-        ADD dialogSureSupplierStock;
-        ADD addAddressBank;
-        ADD sumAccountDocumentLedger;
-        ADD dialogAddressBank;
-        ADD addTypeContractSku;
-        ADD dialogTypeContractSku;
-        ADD addFormContractSku;
-        ADD dialogFormContractSku;
-        ADD addDelayContractSku;
-        ADD dialogDelayContractSku;
-        ADD contractSku;
-        ADD contractSkuSupplier;
-        ADD contractsSkuSupplier;
-        ADD contractSkuCompany;
-        ADD contractsSkuCompany;
-        ADD numerator;
-        ADD dialogDate;
-        ADD dialogSku;
-        ADD storeForm;
-        ADD suppliers;
-        ADD contractSkuCompany;
-        ADD wholesalePriceDocument;
-        ADD SfromWH;
-        ADD warehouse;
-        ADD WHtoS;
-        ADD StoS;
-        ADD SfromS;
-        ADD StoS;
-        ADD SfromS;
-        ADD syncBarcodeSkuForm;
-        ADD priceChangePrint;
-        ADD priceChangeCommittee;
-        ADD company;
-        ADD StoWH;
-        ADD StoWHsDialog;
-        ADD WHfromS;
-        ADD WHtoWH;
-        ADD WHfromWH;
-        ADD addSupplierVATCustomCategory10;
-        ADD dialogSupplierVATCustomCategory10;
-        ADD generationDiscountCards;
-        ADD discountCard;
-        ADD share;
-        ADD client;
+    printForms{
+        ADD consignmentVerticalA;
+        ADD consignmentHorizontalA;
+        ADD consignmentVerticalB;
+        ADD consignmentHorizontalB;
+        ADD consignmentAttach;
+        ADD consignmentSimpleHorizontal;
+        ADD consignmentSimpleVertical;
+        ADD consignmentSimpleAttach;
+        ADD consignment;
     }
 }

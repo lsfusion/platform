@@ -231,7 +231,7 @@ certificatedDataDeclarationDetail 'Необходимость сертифика
 certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = UNION OVERRIDE certificatedCategoryDeclarationDetail(declarationDetail),
                                                                                                 certificatedDataDeclarationDetail(declarationDetail);
 
-certificatedDeclarationSku 'Необходимость сертификации' (declaration, sku) = certificatedDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
+certificatedDeclarationSku 'Необходимость сертификации' (declaration, sku) = certificatedDeclarationDetail(declarationDetailDeclarationSku(declaration, sku));
 
 
 quantityCertificatedDeclarationFreightUnitSku 'Кол-во для экспертизы' = DATA NUMERIC[14,3] (declaration, freightUnit, sku);
@@ -483,8 +483,8 @@ priceManagerialBatch (batch) += priceManagerialCustomDeclarationDetail(batch);
 quantityDeclarationArticle 'Кол-во' (declaration, article) = GROUP SUM quantityDeclarationSku(declaration, sku) BY declaration, articleSku(sku);
 inDeclarationArticle (declaration, article) = TRUE IF quantityDeclarationArticle(declaration, article);
 
-priceCustomDeclarationSku 'Себестоимость (БУ)' (declaration, sku) = priceCustomDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
-priceManagerialDeclarationSku 'Себестоимость (УУ)' (declaration, sku) = priceManagerialDeclarationDetail(uniqueDeclarationDetail(declaration, sku));
+priceCustomDeclarationSku 'Себестоимость (БУ)' (declaration, sku) = priceCustomDeclarationDetail(declarationDetailDeclarationSku(declaration, sku));
+priceManagerialDeclarationSku 'Себестоимость (УУ)' (declaration, sku) = priceManagerialDeclarationDetail(declarationDetailDeclarationSku(declaration, sku));
 
 priceCustomDeclarationArticle 'Себестоимость (БУ)' (declaration, article) = GROUP MAX priceCustomDeclarationSku(declaration, sku)
                                                                                    BY declaration, articleSku(sku);
@@ -533,11 +533,11 @@ VATGroupDeclaration 'НДС' = DATA NUMERIC[14,2](groupDeclaration) IN baseGroup
 
 TABLE groupstring (object, object, object, object, STRING[200]);
 
-uniqueGroupDeclaration() = GROUP UNIQUE groupDeclaration BY declarationGroupDeclaration(groupDeclaration),
-                                                            articleGroupDeclaration(groupDeclaration),
-                                                            customCategory10GroupDeclaration(groupDeclaration),
-                                                            mainCompositionGroupDeclaration(groupDeclaration),
-                                                            countryGroupDeclaration(groupDeclaration)
+uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY declarationGroupDeclaration(groupDeclaration),
+                                                          articleGroupDeclaration(groupDeclaration),
+                                                          customCategory10GroupDeclaration(groupDeclaration),
+                                                          mainCompositionGroupDeclaration(groupDeclaration),
+                                                          countryGroupDeclaration(groupDeclaration)
                                                       WHERE groupDeclaration IS groupDeclaration PERSISTENT;
 
 quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;

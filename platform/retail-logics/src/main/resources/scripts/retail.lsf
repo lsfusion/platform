@@ -2405,7 +2405,7 @@ descriptionParish 'Название документа' (parish) =
     [FORMULA STRING[200] '\'Акт разруба приход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberParish(parish), dateParish(parish), nameContractorDepartmentStoreParish(parish)) PERSISTENT;
 
-descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(uniqueParish(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
+descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(parishActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
 @implementSkuLedger(studyOutput, item, departmentStore);
 sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
@@ -2443,7 +2443,7 @@ descriptionConsumption 'Название документа' (consumption) =
     [FORMULA STRING[200] '\'Акт разруба расход \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberConsumption(consumption), dateConsumption(consumption), nameContractorDepartmentStoreConsumption(consumption));
 
-descriptionStudyInputDetail 'Название документа' (studyInputDetail) = descriptionConsumption(uniqueConsumption(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
+descriptionStudyInputDetail 'Название документа' (studyInputDetail) = descriptionConsumption(consumptionActOfStudy(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
 
 @implementSkuLedger(studyInput, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityStudyInputDetail(ledger);
@@ -2610,9 +2610,9 @@ nameCollationSheet 'Внутренний номер' (collationSheet) = [FORMULA
         seriesNumberObject(inventoryCollationSheet(collationSheet)),
         indexCollationSheet(collationSheet)) IN collationSheetGroup;
 
-uniqueCollationSheetDepartmentStoreInventory 'Сличительная ведомость по складу и инвентаризации' (departmentStore, inventory) =
+collationSheetDepartmentStoreInventory 'Сличительная ведомость по складу и инвентаризации' (departmentStore, inventory) =
     GROUP UNIQUE collationSheet BY departmentStoreCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
-collationSheetListInventory(listInventory) = uniqueCollationSheetDepartmentStoreInventory(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory));
+collationSheetListInventory(listInventory) = collationSheetDepartmentStoreInventory(departmentStoreListInventory(listInventory), inventoryListInventory(listInventory));
 nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory)) IN listInventoryGroup;
 
 collationSheetPageInventoryDetail (pageInventoryDetail) = collationSheetListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
@@ -2776,19 +2776,19 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
 
-@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, registerCollationSheet, includeRegisterDepartmentStoreInventory);
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, registerCollationSheet, includeRegisterDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по остаткам) //
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
 
-@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 includeManyDepartmentStoreInventory(departmentStore, inventory) =
     includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
 
-@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, manyCollationSheet, includeManyDepartmentStoreInventory);
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, manyCollationSheet, includeManyDepartmentStoreInventory);
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
@@ -4644,7 +4644,7 @@ preliminaryOrderOrderSupplier 'Предварительный заказ зак�
 preliminaryOrderToOrderSupplier 'Заказ по предварительному заказу' (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
 dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = seriesNumberObject(preliminaryOrderToOrderSupplier(preliminaryOrder));
 
-uniquePreliminaryOrder (date1, date2, departmentStore, supplier) = GROUP UNIQUE preliminaryOrder
+preliminaryOrderDateFromToDepartmentStoreSupplier (date1, date2, departmentStore, supplier) = GROUP UNIQUE preliminaryOrder
                                                                    BY dateOrderPreliminaryOrder(preliminaryOrder),
                                                                       dateSupplyPreliminaryOrder(preliminaryOrder),
                                                                       departmentStorePreliminaryOrder(preliminaryOrder),
@@ -5734,8 +5734,8 @@ quantityDisparityDetailItemDisparity 'Кол-во для закачки в об�
 @metaCodeDocumentMachineryPriceTransaction(disparity, departmentStore);
 @metaCodeDocumentLabelTransaction(disparity);
 
-printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(uniquePriceChangeDisparity(disparity)) IN printGroup;
-printPriceChangeInputDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(uniquePriceChangeInputDisparity(disparity)) IN printGroup;
+printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(priceChangeDisparityDisparity(disparity)) IN printGroup;
+printPriceChangeInputDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(priceChangeInputDisparityDisparity(disparity)) IN printGroup;
 
 FORM disparity 'Пересортица'
 
@@ -5910,7 +5910,7 @@ DESIGN disparities FROM DEFAULT {
 
 //------------------------------------------- Приход товара----------------------------------------------------//
 
-printPriceChangeShipment 'Акт переоценки' (shipment) = printPriceChange(uniquePriceChangeShipment(shipment)) IN printGroup;
+printPriceChangeShipment 'Акт переоценки' (shipment) = printPriceChange(priceChangeShipmentShipment(shipment)) IN printGroup;
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
@@ -6153,7 +6153,7 @@ DESIGN wastages FROM DEFAULT {
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
-printPriceChangeReturnSupplier 'Акт переоценки' (returnSupplier) = printPriceChange(uniquePriceChangeReturnSupplier(returnSupplier)) IN printGroup;
+printPriceChangeReturnSupplier 'Акт переоценки' (returnSupplier) = printPriceChange(priceChangeReturnSupplierReturnSupplier(returnSupplier)) IN printGroup;
 
 FORM commonInfoBatchReturnSupplierDetail 'Партии'
     OBJECTS b=shipmentDetail    //
@@ -7522,7 +7522,7 @@ DESIGN innerFlowPosted FROM DEFAULT {
     ADD functions.box;
 }
 
-printPriceChangeInnerArrival 'Акт переоценки' (innerArrival) = printPriceChange(uniquePriceChangeInnerArrival(innerArrival)) IN printGroup;
+printPriceChangeInnerArrival 'Акт переоценки' (innerArrival) = printPriceChange(priceChangeInnerArrivalInnerArrival(innerArrival)) IN printGroup;
 
 
 FORM innerArrival 'Приход из другого отдела'
@@ -7891,7 +7891,7 @@ FORM specificationsStatement 'Счета'
 
 dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
-printPriceChangeStatement 'Акт переоценки' (statement) = printPriceChange(uniquePriceChangeStatement(statement)) IN printGroup;
+printPriceChangeStatement 'Акт переоценки' (statement) = printPriceChange(priceChangeStatementStatement(statement)) IN printGroup;
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
@@ -9638,20 +9638,8 @@ NAVIGATOR {
     NEW accountInfo 'Сводная информация' TO formsToolbar{
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
-        NEW costLedger 'Себестоимость' {
-            ADD costSkuLedger;
-            ADD costSkuBatchLedger;
-        }
-        NEW balance 'Остатки' {
-            NEW balanceItem 'Остатки по товару' {
-                ADD currentBalanceSkuStock;
-                ADD balanceSkuStock;
-            }
-            NEW balanceBatch 'Остатки по партиям' {
-                ADD currentBalanceBatchStock;
-                ADD balanceBatchStock;
-            }
-        }
+        ADD stockCost;
+        ADD stockBalance;
         NEW sales 'Продажи' {
             ADD salesLedger;
             ADD salesSkuStock;
@@ -9687,197 +9675,6 @@ NAVIGATOR {
     }
 
     ADD adminElement TO formsTree {
-        NEW objects 'Карточки' {
-            ADD itemGroup;
-            ADD itemGroupDialog;
-            ADD statisticGroup;
-            ADD statisticGroupDialog;
-            ADD UOM;
-            ADD item;
-            ADD ware;
-            ADD barcodeInput;
-            ADD employee;
-            ADD employeeDialog;
-//            ADD country;
-//            ADD currency;
-            ADD position;
-            ADD addTradingSquareDepartmentStore;
-            ADD dialogTradingSquareDepartmentStore;
-            ADD departmentStore;
-            ADD departmentStores;
-            ADD store;
-            ADD chainStores;
-            ADD registerCommittee;
-            ADD priceChangeCommittee;
-            ADD inventoryCommittee;
-            ADD wastageCommittee;
-            ADD bank;
-            ADD ownership;
-            ADD supplier;
-            ADD customer;
-            ADD company;
-            ADD contract;
-            ADD contractSku;
-            ADD contractSkuSupplier;
-            ADD contractsSkuSupplier;
-            ADD contractSkuCompany;
-            ADD contractsSkuCompany;
-            ADD cashRegisterModel;
-            ADD scalesModel;
-            ADD priceCheckerModel;
-            ADD terminalModel;
-            ADD typeItem;
-            ADD rowTorg1;
-            ADD color;
-            ADD taste;
-            ADD pack;
-            ADD sort;
-            ADD size;
-            ADD specialty;
-            ADD coolingDegree;
-            ADD formItem;
-            ADD naturalLossItems;
-            ADD innerFlowPosted;
-        //    ADD numberInPack;
-            ADD rateWaste;
-            ADD addIsPortionBarItem;
-            ADD dialogIsPortionBarItem;
-            ADD addBanDiscountItem;
-            ADD dialogBanDiscountItem;
-            ADD addInactiveItem;
-            ADD dialogInactiveItem;
-            ADD addCoefficientNetGrossItem;
-            ADD dialogCoefficientNetGrossItem;
-            ADD addCollection;
-            ADD editCollection;
-        //    ADD addrateNaturalLossItem;
-        //    ADD rateNaturalLossItem;
-            ADD genTimeTables;
-            ADD addWarePrice;
-            ADD dialogWarePrice;
-            ADD addRangeWare;
-            ADD dialogRangeWare;
-            ADD addSupplierVATItem;
-            ADD dialogSupplierVATItem;
-            ADD addRetailVATItem;
-            ADD dialogRetailVATItem;
-            ADD addImporterPriceItem;
-            ADD dialogImporterPriceItem;
-            ADD addMaxTradeAllowanceItem;
-            ADD dialogMaxTradeAllowanceItem;
-            ADD addMinTradeAllowanceItem;
-            ADD dialogMinTradeAllowanceItem;
-            ADD addMaxReserveItemDepartment;
-            ADD dialogMaxReserveItemDepartment;
-            ADD addMinReserveItemDepartment;
-            ADD dialogMinReserveItemDepartment;
-            ADD addBanPriceChangeItemDepartment;
-            ADD dialogBanPriceChangeItemDepartment;
-            ADD addInActionItemDepartment;
-            ADD dialogInActionItemDepartment;
-            ADD addMarginProductionItemDepartment;
-            ADD dialogMarginProductionItemDepartment;
-            ADD addRetailPriceItemDepartment;
-            ADD dialogRetailPriceItemDepartment;
-            ADD addDiscountItemDepartment;
-            ADD dialogDiscountItemDepartment;
-            ADD addLabelItemDepartment;
-            ADD dialogLabelItemDepartment;
-            ADD addMultiplierItemDepartment;
-            ADD dialogMultiplierItemDepartment;
-            ADD addOldPriceItemDepartment;
-            ADD dialogOldPriceItemDepartment;
-            ADD addIsSupplierItemDepartment;
-            ADD dialogIsSupplierItemDepartment;
-            ADD addPriceSupplierItemDepartment;
-            ADD dialogPriceSupplierItemDepartment;
-            ADD addMarkupItemDepartment;
-            ADD dialogMarkupItemDepartment;
-            ADD addBanSupplierItemDepartment;
-            ADD dialogBanSupplierItemDepartment;
-            ADD terminalDocument;
-            ADD preliminaryOrder;
-            ADD cashRegister;
-            ADD scales;
-            ADD priceChecker;
-            ADD terminal;
-            ADD tax;
-            ADD cutting;
-            ADD recipe;
-            ADD groupCashRegister;
-            ADD groupScales;
-            ADD groupPriceChecker;
-            ADD groupTerminal;
-            ADD groupTerminalDocumentType;
-            ADD component;
-            ADD addAddressLegalEntity;
-            ADD dialogAddressLegalEntity;
-            ADD addPostAddressLegalEntity;
-            ADD dialogPostAddressLegalEntity;
-            ADD addManagerLegalEntity;
-            ADD dialogManagerLegalEntity;
-            ADD addAccountantLegalEntity;
-            ADD dialogAccountantLegalEntity;
-            ADD addPhoneLegalEntity;
-            ADD dialogPhoneLegalEntity;
-            ADD addControlSupplierStock;
-            ADD dialogControlSupplierStock;
-            ADD addSureSupplierStock;
-            ADD dialogSureSupplierStock;
-            ADD addAddressBank;
-            ADD dialogAddressBank;
-            ADD addTypeContractSku;
-            ADD dialogTypeContractSku;
-            ADD addFormContractSku;
-            ADD dialogFormContractSku;
-            ADD addDelayContractSku;
-            ADD dialogDelayContractSku;
-            ADD genTimeTable;
-            ADD addTimeTable;
-            ADD dialogTimeTable;
-            ADD orderSupplier;
-            ADD rateWaste;
-            ADD ordersShipment;
-            ADD shipment;
-            ADD inventory;
-            ADD reasonOff;
-            ADD writeOff;
-            ADD listInventory;
-            ADD nameDepartmentInventory;
-            ADD collationSheetItem;
-            ADD innerFlow;
-            ADD innerArrival;
-            ADD specification;
-            ADD specificationsStatement;
-            ADD specificationForm;
-            ADD statement;
-            ADD numerator;
-            ADD userPriceChange;
-            ADD disparity;
-            ADD addPercDiscountUserPriceChange;
-            ADD addPercMarkupUserPriceChange;
-            ADD returnSupplier;
-            ADD barcodeForm;
-            ADD bill;
-            ADD commonInfoBatchReturnSupplierDetail;
-            ADD discountCard;
-            ADD actOfStudy;
-            ADD seriesNumberCuttingStudyInputDetail;
-            ADD machineryPriceTransaction;
-            ADD groupMachineryInput;
-            ADD filterSkuGroupMachinery;
-            ADD labelType;
-            ADD printLabelTransaction;
-            ADD customLabelTransaction;
-            ADD paper;
-            ADD dialogDate;
-            ADD naturalLoss;
-            ADD consignment;
-            ADD dialogSku;
-            ADD client;
-            ADD share;
-            ADD generationDiscountCards;
-        }
         ADD parameters;
         ADD fillDataBase;
         ADD importData;

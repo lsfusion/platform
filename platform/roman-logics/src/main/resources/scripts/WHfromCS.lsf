@@ -36,7 +36,7 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 @defineDocumentHeaderQuantity(WHfromCSI);
 
 @defineDocumentDetailIndex(WHfromCSI);
-@defineDocumentDescription(WHfromCSI, 'Приход с СВХ');
+@defineDocumentDescription(WHfromCSI, 'Поступление товара с СВХ');
 
 @defineDocumentDetailSkuArticle(WHfromCSI);
 
@@ -348,7 +348,7 @@ needDiffShortageSkuWHfromCSR 'Необходим акт расхождений (
 WHfromCSRWHfromCSDODetail (WHfromCSDODetail) = WHfromCSRWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
 skuWHfromCSDODetail (WHfromCSDODetail) = skuWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
 
-@defineAggregationDoubleCustom (WHfromCSRWHfromCSDODetail, skuWHfromCSDDetail, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
+@defineAggregationDoubleCustom (WHfromCSRWHfromCSDODetail, skuWHfromCSDDetail, WHfromCSR, sku, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
 
 quantityWHfromCSDDetail (WHfromCSDODetail) <-
     (quantitySkuInWHfromCSR (WHfromCSRWHfromCSDDetail(WHfromCSDODetail), skuWHfromCSDDetail(WHfromCSDODetail))
@@ -362,7 +362,7 @@ needDiffOverSkuWHfromCSR 'Необходим акт расхождений (не
 WHfromCSRWHfromCSDSDetail (WHfromCSDSDetail) = WHfromCSRWHfromCSDDetail(WHfromCSDSDetail) IF WHfromCSDSDetail IS WHfromCSDSDetail;
 skuWHfromCSDSDetail (WHfromCSDSDetail) = skuWHfromCSDDetail(WHfromCSDSDetail) IF WHfromCSDSDetail IS WHfromCSDSDetail;
 
-@defineAggregationDoubleCustom (WHfromCSRWHfromCSDSDetail, skuWHfromCSDSDetail, WHfromCSDSDetail, needDiffOverSkuWHfromCSR);
+@defineAggregationDoubleCustom (WHfromCSRWHfromCSDSDetail, skuWHfromCSDSDetail, WHfromCSR, sku, WHfromCSDSDetail, needDiffOverSkuWHfromCSR);
 
 @defineDocumentDetailQuantity(WHfromCSDS);
 
@@ -510,7 +510,7 @@ isDraftWHfromCSRWHfromCSI (WHfromCSI) = isDraftWHfromCSR(WHfromCSRWHfromCSI(WHfr
 unpostWHfromCSRWHfromCSI 'Открыть приемку' (WHfromCSI) = unpostWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 isPostedWHfromCSRWHfromCSI (WHfromCSI) = isPostedWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 
-FORM WHfromCSIs 'Приходы на оптовый склад'
+FORM WHfromCSIs 'Поступления товара с СВХ'
     OBJECTS w = WHfromCSI
     PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
