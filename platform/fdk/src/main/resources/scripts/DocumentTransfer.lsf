@@ -125,16 +125,16 @@ META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentTables(object##In);
 
-    @defineDocumentAggregation(object##Out, object##In, isTransferOut);
+    @defineDocumentAggregation(object##Out, object##In, is###object##Out);
 
-    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-получатель', destination, );
-    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-отправитель', , destination);
+    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-получатель', , destination);
+    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-отправитель', destination, );
 
     @defineDocumentAggregationPosted(object##Out, object##In);
 
     @defineDocumentAggregationHeaderNumber(object##Out, object##In);
 
-    @defineDocumentDescriptionCustom(object##In, object##InDetail, seriesNumberTransferIn, caption);
+    @defineDocumentDescriptionCustom(object##In, object##InDetail, seriesNumber###object##In, caption);
 
     @defineDocumentDetailIndex(object##In);
 
@@ -144,8 +144,6 @@ META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentHeaderQuantity(object##In);
     @defineDocumentHeaderSkuQuantity(object##In, skuProp);
-
-    costTransferInBatch(object##In, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY object##InTransferInDetail(ledger), batch;
 
 END
 
@@ -353,9 +351,9 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
 
     @defineDocumentAggregationHeaderNumberCustom(object##Rec, object##Diff, object##Rec);
 
-    @defineDocumentDescriptionHeaderCustom(object##Diff, seriesNumber###object##Diff, caption);
-    @defineDocumentDescriptionDetailCustom(object##Diff, object##DiffEDetail);
-    @defineDocumentDescriptionDetailCustom(object##Diff, object##DiffSDetail);
+    @defineDocumentHeaderDescriptionCustom(object##Diff, seriesNumber###object##Diff, caption);
+    @defineDocumentDetailDescriptionCustom(object##Diff, object##DiffEDetail);
+    @defineDocumentDetailDescriptionCustom(object##Diff, object##DiffSDetail);
 
     @defineDocumentAggregationHeaderStock(object##Rec, object##Diff, stockProp, 'Склад-получатель');
     @defineDocumentDetailStockCustom(object##Diff, object##DiffEDetail, stockProp, 'Склад-получатель');

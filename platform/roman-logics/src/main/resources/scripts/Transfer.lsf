@@ -39,6 +39,8 @@ CLASS transferInDetail 'Строка поступления товаров по 
 @defineDocumentDetailSkuArticle(transferIn);
 @extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
 
+costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch;
+
 @implementSkuLedger(transferIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);

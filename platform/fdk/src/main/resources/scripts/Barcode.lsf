@@ -93,10 +93,10 @@ END
 
 META defineDialogSkuBarcode (form)
     EXTEND FORM form
-        PROPERTIES idBarcodeSku(s), idBarcodeSku(si)
+        PROPERTIES READONLY idBarcodeSku(s), idBarcodeSku(si)
     ;
 END
 
 EXTEND FORM currentBalanceSkuStock
-    PROPERTIES(s) idBarcodeSku
+    PROPERTIES(s) READONLY idBarcodeSku
 ;

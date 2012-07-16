@@ -119,12 +119,11 @@ END
 
 META extendDocumentFormDetailSkuArticleReadonlyQuantity (form, object, concrete, quantityProp)
     EXTEND FORM form
-        PROPERTIES(object) index###concrete##Detail, barcode###concrete##Detail,
-                           nameCategory###concrete##Detail, nameBrand###concrete##Detail,
-                           sidArticle###concrete##Detail, sidSize###concrete##Detail,
-                           sidColor###concrete##Detail, nameColor###concrete##Detail,
-                           quantityProp, shortNameUOM###concrete##Detail,
-                           ADDOBJ, delete
+        PROPERTIES(object) READONLY index###concrete##Detail, barcode###concrete##Detail,
+                                    nameCategory###concrete##Detail, nameBrand###concrete##Detail,
+                                    sidArticle###concrete##Detail, sidSize###concrete##Detail,
+                                    sidColor###concrete##Detail, nameColor###concrete##Detail,
+                                    quantityProp, shortNameUOM###concrete##Detail
     ;
 END
 META extendDocumentFormDetailSkuArticleReadonly (form, object, concrete)

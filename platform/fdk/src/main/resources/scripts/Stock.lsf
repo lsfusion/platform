@@ -439,16 +439,16 @@ META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, st
     @defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, , );
 END
 
-META defineDocumentAggregationDetailStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP)
+META defineDocumentAggregationDetailStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
     prefixA###stockProp###aggrObject##Detail (detail) = prefixP###stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 END
 META defineDocumentAggregationDetailStock (primObject, aggrObject, stockProp, stockCaption)
     @defineDocumentAggregationDetailStockPrefix(primObject, aggrObject, stockProp, stockCaption, , );
 END
 
-META defineDocumentAggregationStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP)
-    @defineDocumentAggregationHeaderStockPrefix(primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP);
-    @defineDocumentAggregationDetailStockPrefix(primObject, aggrObject, stockProp, stockCaption, prefixA, prefixP);
+META defineDocumentAggregationStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
+    @defineDocumentAggregationHeaderStockPrefix(primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA);
+    @defineDocumentAggregationDetailStockPrefix(primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA);
 END
 META defineDocumentAggregationStock (primObject, aggrObject, stockProp, stockCaption)
     @defineDocumentAggregationStockPrefix(primObject, aggrObject, stockProp, stockCaption, , );

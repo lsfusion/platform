@@ -175,23 +175,23 @@ META defineDocumentQuantity(object)
     @defineDocumentHeaderQuantity(object);
 END
 
-META defineDocumentDescriptionHeaderCustom(object, numberProp, caption)
+META defineDocumentHeaderDescriptionCustom(object, numberProp, caption)
     description###object 'Название документа' (object) =
         [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
         caption, numberProp(object), date###object(object));
 END
 
 META defineDocumentDescriptionHeader(object, caption)
-    @defineDocumentDescriptionHeaderCustom(object, seriesNumberObject, caption);
+    @defineDocumentHeaderDescriptionCustom(object, seriesNumberObject, caption);
 END
 
-META defineDocumentDescriptionDetailCustom(object, detail)
+META defineDocumentDetailDescriptionCustom(object, detail)
     description###detail 'Название документа' (object) = description###object(object###detail(object));
 END
 
 META defineDocumentDescriptionCustom(object, detail, numberProp, caption)
-    @defineDocumentDescriptionHeaderCustom(object, numberProp, caption);
-    @defineDocumentDescriptionDetailCustom(object, detail);
+    @defineDocumentHeaderDescriptionCustom(object, numberProp, caption);
+    @defineDocumentDetailDescriptionCustom(object, detail);
 END
 
 META defineDocumentDescription (object, caption)
