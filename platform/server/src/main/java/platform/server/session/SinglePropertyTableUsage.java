@@ -21,6 +21,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.sql.SQLException;
 
+import static platform.base.BaseUtils.merge;
+import static platform.base.BaseUtils.reverse;
+
 public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
     public SinglePropertyTableUsage(List<K> keys, Type.Getter<K> keyType, final Type propertyType) {
@@ -47,5 +50,9 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
     public <B> ClassWhere<B> getClassWhere(Map<K, ? extends B> remapKeys, B mapProp) {
         return getClassWhere("value", remapKeys, mapProp);
+    }
+
+    public void fixKeyClasses(ClassWhere<K> classes) {
+        table = table.fixKeyClasses(classes.remap(reverse(mapKeys)));
     }
 }

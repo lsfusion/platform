@@ -530,7 +530,7 @@ public class ClientFormController {
 
     public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
+        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
                 return remoteForm.collapseGroupObject(requestIndex, group.getID(), objectValue.serialize());
@@ -639,7 +639,7 @@ public class ClientFormController {
 
         final byte[] fullCurrentKey = getFullCurrentKey(property, columnKey); // чтобы не изменился
 
-        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
+        rmiQueue.syncRequestWithTimeOut(Main.asyncTimeOut, new RmiRequest<ServerResponse>() {
             @Override
             protected void onAsyncRequest(long requestIndex) {
                 controller.modifyGroupObject(value, add); // сначала посылаем запрос, так как getFullCurrentKey может измениться
@@ -726,7 +726,7 @@ public class ClientFormController {
     }
 
     public void setTabVisible(final ClientContainer container, final ClientComponent component) throws IOException {
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
+        rmiQueue.syncRequestWithTimeOut(Main.asyncTimeOut, new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
                 return remoteForm.setTabVisible(requestIndex, container.getID(), component.getID());

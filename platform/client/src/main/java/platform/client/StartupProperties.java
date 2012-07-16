@@ -40,6 +40,8 @@ public class StartupProperties {
 
     public static final String PLATFORM_CLIENT_ISDEBUG = "platform.client.isdebug";
 
+    public static final String PLATFORM_CLIENT_ASYNC_TIMEOUT = "platform.client.async.timeout";
+
     public final static boolean autoReconnect = System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_AUTORECONNECT) != null;
 
     public final static boolean preventBlockerActivation = autoReconnect || System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF) != null;

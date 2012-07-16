@@ -66,6 +66,8 @@ public class Main {
     public static TimeZone timeZone;
 
     public static MainFrame frame;
+    
+    public static int asyncTimeOut;
 
     private static ThreadGroup bootstrapThreadGroup;
     private static ExceptionThreadGroup mainThreadGroup;
@@ -90,6 +92,8 @@ public class Main {
 
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
         System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
+
+        asyncTimeOut = Integer.parseInt(System.getProperty(PLATFORM_CLIENT_ASYNC_TIMEOUT, "50"));
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable e) {

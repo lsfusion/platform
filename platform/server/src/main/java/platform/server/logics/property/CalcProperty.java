@@ -135,14 +135,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if((options & PropertyFollows.RESOLVE_TRUE)!=0 && ((CalcProperty)implement.property).hasSet(true)) { // оптимизационная проверка
             assert interfaces.size() == implement.mapping.size(); // assert что количество
 //            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-//            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), ActionEvent.RESOLVE);
+//            setAction.property.caption = "RESOLVE TRUE : " + this + " => " + implement.property;
+//            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), session, ActionEvent.RESOLVE);
             ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
             setAction.mapEventAction(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)), session, ActionEvent.RESOLVE);
             lm.addProp(setAction.property);
         }
         if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
 //            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-//            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), ActionEvent.RESOLVE);
+//            setAction.property.caption = "RESOLVE FALSE : " + this + " => " + implement.property;
+//            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), session, ActionEvent.RESOLVE);
             ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
             setAction.mapEventAction(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)), session, ActionEvent.RESOLVE);
             lm.addProp(setAction.property);
@@ -269,6 +271,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
+    // есть assertion, что не должен возвращать изменение null -> null, то есть или старое или новое не null, для подр. см usage
     public PropertyChange<T> getIncrementChange(Modifier modifier) {
         return getIncrementChange(modifier.getPropertyChanges());
     }
@@ -329,7 +332,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @Message("message.increment.read.properties")
     @ThisMessage
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        return readChangeTable(session, getIncrementChange(modifier), baseClass, env);
+        SinglePropertyTableUsage<T> readTable = readChangeTable(session, getIncrementChange(modifier), baseClass, env);
+
+        // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
+        // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
+        readTable.fixKeyClasses(getClassWhere());
+
+        return readTable;
     }
 
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException {

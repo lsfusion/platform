@@ -171,6 +171,10 @@ public class SessionRows extends SessionData<SessionRows> {
             return getClasses().second.get(property);
     }
 
+    public SessionRows fixKeyClasses(ClassWhere<KeyField> fixClasses) {
+        return this;
+    }
+
     public boolean isEmpty() {
         return rows.size()==0;
     }

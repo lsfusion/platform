@@ -9,6 +9,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.IQuery;
+import platform.server.data.query.QueryException;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
@@ -128,7 +129,7 @@ public class AutoHintsAspect {
         return result;
     }
 
-    public static class AutoHintException extends RuntimeException {
+    public static class AutoHintException extends QueryException {
 
         public final CalcProperty property;
         public final boolean lowstat; 

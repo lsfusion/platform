@@ -15,6 +15,7 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
@@ -185,6 +186,17 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         else
             propClasses = table.getClassWhere(property);
         return propClasses.and(BaseUtils.<ClassWhere<Field>>immutableCast(getKeyValueClasses()));
+    }
+
+    // см. usage
+    public SessionDataTable fixKeyClasses(ClassWhere<KeyField> fixClasses) {
+        assert getProperties().size()==1;
+        SessionTable fixTable;
+        if(propertyValues.size()>0 && BaseUtils.singleValue(propertyValues) instanceof NullValue &&
+                !hashEquals(table, fixTable = table.fixKeyClasses(fixClasses))) {
+            return new SessionDataTable(fixTable, keys, keyValues, propertyValues);
+        } else
+            return this;
     }
 
     public boolean isEmpty() {

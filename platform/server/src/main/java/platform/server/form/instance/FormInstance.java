@@ -1098,17 +1098,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         assert interactive;
 
-        session.executeSessionEvents();
-
         QueryEnvironment queryEnv = getQueryEnv();
 
         final FormChanges result = new FormChanges();
 
         // если изменились данные, применяем изменения
         Collection<CalcProperty> changedProps;
-        if (dataChanged)
+        if (dataChanged) {
+            session.executeSessionEvents();
             changedProps = session.update(this);
-        else
+        } else
             changedProps = new ArrayList<CalcProperty>();
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group

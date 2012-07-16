@@ -322,7 +322,7 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map<K, ? extends Expr> interfaceValues, Map<Integer, Collection<CacheResult<QueryInterfaceImplement<K>, IQuery<K, String>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, Map<K, ? extends Expr> interfaceValues, Map<Integer, Collection<CacheResult<QueryInterfaceImplement<K>, ValuesContext>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
 
         if(disableCaches)
@@ -332,23 +332,24 @@ public class MapCacheAspect {
 
         QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<K>(property,propClasses,propChanges,queryType,interfaceValues);
 
-        Collection<CacheResult<QueryInterfaceImplement<K>, IQuery<K, String>>> hashCaches;
+        Collection<CacheResult<QueryInterfaceImplement<K>, ValuesContext>> hashCaches;
         synchronized(exprCaches) {
             int hashImplement = implement.getValueComponents().hash;
             hashCaches = exprCaches.get(hashImplement);
             if(hashCaches==null) {
-                hashCaches = new ArrayList<CacheResult<QueryInterfaceImplement<K>, IQuery<K, String>>>();
+                hashCaches = new ArrayList<CacheResult<QueryInterfaceImplement<K>, ValuesContext>>();
                 exprCaches.put(hashImplement, hashCaches);
             }
         }
 
-        IQuery<K, String> query = null;
-        IQuery<K, String> cacheQuery = null;
+        ValuesContext query = null;
+        ValuesContext cacheQuery = null;
         synchronized(hashCaches) {
-            for(CacheResult<QueryInterfaceImplement<K>, IQuery<K, String>> cache : hashCaches) {
+            for(CacheResult<QueryInterfaceImplement<K>, ValuesContext> cache : hashCaches) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
-                        cacheQuery = cache.result.translateValues(mapValues.filter(cache.result.getInnerValues())); // так как могут не использоваться values в Query
+                        ValuesContext<?> cacheResult = (ValuesContext<?>) cache.result;
+                        cacheQuery = cacheResult.translateValues(mapValues.filter(cacheResult.getContextValues())); // так как могут не использоваться values в Query
                         break;
                     }
                 }
@@ -356,7 +357,7 @@ public class MapCacheAspect {
             if(cacheQuery==null || checkCaches) {
                 query = (IQuery<K, String>) thisJoinPoint.proceed();
 
-                assert implement.getContextValues().containsAll(ValueExpr.removeStatic(query.getInnerValues().getSet())); // в query не должно быть элементов не из implement.getContextValues
+                assert implement.getContextValues().containsAll(ValueExpr.removeStatic(query.getContextValues().getSet())); // в query не должно быть элементов не из implement.getContextValues
 
                 if(!(checkCaches && cacheQuery!=null))
                     cacheNoBig(implement, hashCaches, query);
@@ -371,7 +372,7 @@ public class MapCacheAspect {
 
         if (checkCaches && cacheQuery!=null && !BaseUtils.hashEquals(query, cacheQuery))
             query = query;
-        return query;
+        return (IQuery<K, String>)query;
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши

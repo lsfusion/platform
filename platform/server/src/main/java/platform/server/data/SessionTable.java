@@ -29,7 +29,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static java.util.Collections.singletonMap;
+import static platform.base.BaseUtils.hashEquals;
 import static platform.base.BaseUtils.merge;
+import static platform.base.BaseUtils.singleValue;
 
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
 
@@ -369,5 +371,15 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
     public void rollDrop(SQLSession session, Object owner) throws SQLException {
         session.rollReturnTemporaryTable(this, owner);
+    }
+
+    // см. usage
+    public SessionTable fixKeyClasses(ClassWhere<KeyField> fixClasses) {
+        assert propertyClasses.isEmpty();
+        ClassWhere<KeyField> fixedClasses = classes.and(fixClasses);
+        if(hashEquals(fixedClasses, classes))
+            return this;
+        else
+            return new SessionTable(name, keys, properties, count, fixedClasses, propertyClasses);
     }
 }
