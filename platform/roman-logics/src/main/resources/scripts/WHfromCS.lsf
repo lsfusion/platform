@@ -88,7 +88,6 @@ notAcceptedWHfromCSI 'Документ без приемки' (WHfromCSI) =  WHf
 
 CStoWHWHfromCSR (WHfromCSR) = CStoWHWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR));
 
-
 initValueNumberObject (WHfromCSR) += [PREV(numberObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
 initValueSeriesObject (WHfromCSR) += [PREV(seriesObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
 
@@ -97,8 +96,6 @@ initWhenNumberedObject (WHfromCSR) +=  CHANGED(WHfromCSIWHfromCSR(WHfromCSR));
 //для учета по коробам
 freightUnitWHfromCSRDetail 'Короб (ИД)' (WHfromCSRDetail) = DATA freightUnit(WHfromCSRDetail);
 barcodeFreightUnitWHfromCSRDetail 'Короб' (WHfromCSRDetail) = barcode (freightUnitWHfromCSRDetail(WHfromCSRDetail));
-
-
 
 quantityWHfromCSRDetailsSkuFreightUnit 'Количество принятое (в коробе)' (sku, freightUnit, WHfromCSR) =
     GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
@@ -282,6 +279,8 @@ quantityRemainedSkuWHfromCSR 'Кол-во оставшегося товара в
 quantitySkuInWHfromCSR 'Кол-во товара' (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
     BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
 
+CONSTRAINT currentFreightUnit(WHfromCSR) IS freightUnit AND NOT quantitySkuInFreightUnitWHfromCSR(WHfromCSR) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
+
 FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
 
     OBJECTS dt = DATETIME FIXED PANEL
@@ -417,10 +416,15 @@ FORM WHfromCSR 'Приемка на оптовый склад'
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w)
 
-    PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
-                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail
+    PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
+                           nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail, sidSizeWHfromCSRDetail,
+                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail
 
-    PROPERTIES(d) quantityWHfromCSRDetail, delete
+    PROPERTIES(d) quantityWHfromCSRDetail
+
+    PROPERTIES(d) READONLY nameUnitOfMeasureArticleSkuWHfromCSRDetail
+
+    PROPERTIES(d) delete
 
     PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromCSRDetailWHfromCSR
 
@@ -429,9 +433,9 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
     PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               netWeightSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
@@ -453,6 +457,32 @@ DESIGN WHfromCSR FROM DEFAULT {
 
     main {
 
+        NEW top {
+            childConstraints =  TO THE BOTTOM;
+
+            w.box{
+                NEW head{
+                    caption = 'Шапка документа';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateWHfromCSR);
+                    ADD PROPERTY(timeWHfromCSR);
+                    ADD PROPERTY(nameWarehouseWHfromCSR);
+                }
+
+                NEW freightUnit{
+                    caption = 'Короб';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
+                    ADD PROPERTY(quantityRemainedSkuWHfromCSR);
+                    ADD PROPERTY(barcodeCurrentFreightUnit);
+                    ADD PROPERTY(fillWHfromCSRDetailsSkuFreightUnit);
+                    ADD PROPERTY(printMarksSkuFreightUnit);
+                }
+            }
+        }
+
         preferredSize = (1024, 768);
         NEW firstCase {
             caption = 'Атрибуты поставщика';
@@ -466,9 +496,9 @@ DESIGN WHfromCSR FROM DEFAULT {
         NEW secondCase {
             caption = 'Внутренние атрибуты';
             ADD PROPERTY(sidGenderArticleSkuWHfromCSRDetail);
-            ADD PROPERTY(nameCategoryArticleSkuWHfromCSRDetail);
+            ADD PROPERTY(c);
             ADD PROPERTY(nameTypeFabricArticleSkuWHfromCSRDetail);
-            ADD PROPERTY(nameUnitOfMeasureArticleSkuWHfromCSRDetail);
+            ADD PROPERTY(u);
             ADD PROPERTY(netWeightSkuWHfromCSRDetail);
             ADD PROPERTY(nameCountryOfOriginSkuWHfromCSRDetail);
             ADD PROPERTY(mainCompositionOriginSkuWHfromCSRDetail);
@@ -510,7 +540,11 @@ isDraftWHfromCSRWHfromCSI (WHfromCSI) = isDraftWHfromCSR(WHfromCSRWHfromCSI(WHfr
 unpostWHfromCSRWHfromCSI 'Открыть приемку' (WHfromCSI) = unpostWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 isPostedWHfromCSRWHfromCSI (WHfromCSI) = isPostedWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 
-FORM WHfromCSIs 'Поступления товара с СВХ'
+nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа' (WHfromCSIDetail) = nameCategoryArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
+nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
+barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
+
+FORM WHfromCSIs 'Приходы на оптовый склад'
     OBJECTS w = WHfromCSI
     PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
@@ -520,16 +554,18 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                                unpostWHfromCSRWHfromCSI SHOWIF isDraftWHfromCSRWHfromCSI(w)
 
     OBJECTS di = WHfromCSIDetail
-    PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail,
-                           sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, sidSizeWHfromCSIDetail,
-                           quantityWHfromCSIDetail
+    PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
+                            nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail, sidSizeWHfromCSIDetail,
+                            sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, barcodeFreightUnitWHfromCSIDetail,
+                            quantityWHfromCSIDetail, nameUnitOfMeasureArticleSkuWHfromCSIDetail
 
-    FILTERS WHfromCSIWHfromCSIDetail(di)
+    FILTERS WHfromCSIWHfromCSIDetail(di) == w
 
     OBJECTS dr = WHfromCSRDetail
-    PROPERTIES(dr) indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail,
-                   sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, sidSizeWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
-                   quantityWHfromCSRDetail
+    PROPERTIES(dr) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
+                            nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail, sidSizeWHfromCSRDetail,
+                            sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
+                            quantityWHfromCSRDetail, nameUnitOfMeasureArticleSkuWHfromCSRDetail
 
 //    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
 
@@ -567,35 +603,3 @@ DESIGN WHfromCSIs FROM DEFAULT {
         };
     }
 }
-
-//DESIGN WHfromCSR FROM DEFAULT {
-//
-//    NEW topContainer {
-//        title = 'Приход на оптовый склад';
-//        childConstraints = TO THE BOTTOM;
-//
-//        NEW firstCase {
-//            title = 'Шапка документа';
-//            childConstraints = TO THE RIGHT;
-//            ADD PROPERTY(numberObject);
-//            ADD PROPERTY(seriesObject);
-//            ADD PROPERTY(dateWHfromCSR);
-//            ADD PROPERTY(timeWHfromCSR);
-//            ADD PROPERTY(nameWarehouseWHfromCSR);
-//            ADD PROPERTY(delete);
-//        }
-//
-//        NEW secondCase {
-//            title = 'Короб';
-//            childConstraints = TO THE RIGHT;
-//            ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
-//            ADD PROPERTY(quantityRemainedSkuWHfromCSR);
-//            ADD PROPERTY(barcodeCurrentFreightUnit);
-//            ADD PROPERTY(fillWHfromCSRDetailsSkuFreightUnit);
-//            ADD PROPERTY(printMarksSkuFreightUnit);
-//        }
-//    }
-//
-//    ADD d.box;
-//    ADD functions.box;
-//}
