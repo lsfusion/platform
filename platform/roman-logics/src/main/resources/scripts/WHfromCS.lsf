@@ -544,7 +544,7 @@ nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа
 nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
 barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
 
-FORM WHfromCSIs 'Приходы на оптовый склад'
+FORM WHfromCSIs 'Поступления товара с СВХ'
     OBJECTS w = WHfromCSI
     PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
