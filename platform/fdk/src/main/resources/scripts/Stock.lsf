@@ -97,8 +97,6 @@ isParentSkuGroupBatch (skuGroup, batch) = isParentSkuGroupSku(skuGroup, skuBatch
 dateTimeSkuLedger 'Дата/время' = ABSTRACT DATETIME (skuLedger) PERSISTENT INDEXED;
 dateSkuLedger 'Дата' (ledger) = dateInTime(dateTimeSkuLedger(ledger)) PERSISTENT;
 
-orderSkuLedger (ledger) = LIST(dateTimeSkuLedger(ledger), ledger);
-
 isPostedSkuLedger 'Закрыт' = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;
 
 skuSkuLedger = ABSTRACT sku (skuLedger) PERSISTENT INDEXED;
@@ -285,6 +283,8 @@ needToCostSkuLedger 'Требуется расчет себестоимости'
 
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
+orderSkuLedger (ledger) = LIST(dateTimeSkuLedger(ledger), ledger);
+
 limitInLIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger, batch);
 orderInLIFOSkuLedgerBatch = ABSTRACT LONG (inLIFOSkuLedger, batch);
 
@@ -312,16 +312,16 @@ quantitySkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledg
 supplierSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * supplierPriceBatch(batch);
 supplierSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM supplierSumSkuLedgerBatch(ledger, batch) BY ledger;
 
-resetCostSkuLedgerBatch 'Перерассчитать себестоимость' = ACTION (ledger) NEWSESSION AUTOAPPLY {
+resetCostSkuLedger 'Перерассчитать себестоимость' = ACTION (ledger) { //NEWSESSION AUTOAPPLY {
     IF costedSkuLedger(ledger) THEN {
         SET costSkuLedgerBatch(ledger, batch) <- NULL;
-        EXEC apply(); // todo : здесь apply не нужен, но без этого следующая команда повиснет
+//        EXEC apply(); // todo : здесь apply не нужен, но без этого следующая команда повиснет
     }
     SET costSkuLedgerBatch(ledger, batch) <- quantitySkuLedgerBatch(ledger, batch);
 }
 
 // мгновенный расчет себестоимости
-resetCostSkuLedgerBatch (ledger) WHEN ASSIGNED(isPostedSkuLedger(ledger));
+resetCostSkuLedger (ledger) WHEN ASSIGNED(isPostedSkuLedger(ledger)) ORDER orderSkuLedger(ledger);
 
 setSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
 
@@ -514,7 +514,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bil = skuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameSkuSkuLedger, nameStockSkuLedger,
                              quantitySkuLedger, costedSkuLedger
-    PROPERTIES(bil)          resetCostSkuLedgerBatch
+    PROPERTIES(bil)          resetCostSkuLedger
     ORDER BY dateTimeSkuLedger
 
     FILTERGROUP needToCostSkuLedger
@@ -562,7 +562,7 @@ FORM costSkuBatchLedger 'Себестоимость (партии)'
     OBJECTS bil = skuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameStockSkuLedger,
                              quantitySkuLedger, costedSkuLedger
-//    PROPERTIES(bil)          resetCostSkuLedgerBatch
+//    PROPERTIES(bil)          resetCostSkuLedger
     ORDER BY dateTimeSkuLedger
 
     FILTERGROUP needToCostSkuLedger

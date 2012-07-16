@@ -45,13 +45,13 @@ limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetai
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS transferRec 'Приемка товаров по накладной' : historyObject;
-CLASS transferRecPosted 'Проведенная приемка товаров по накладной' : transferRec, postedObject;
+CLASS transferRec 'Приемка товаров по накладной (перемещение)' : historyObject;
+CLASS transferRecPosted 'Проведенная приемка товаров по накладной (перемещение)' : transferRec, postedObject;
 
-CLASS transferRecDetail 'Строка приемки товаров по накладной';
+CLASS transferRecDetail 'Строка приемки товаров по накладной (перемещение)';
 
-@defineDocumentTransferRec(transfer, 'Приемка товаров по накладным', sku, stock);
-@defineDocumentFormTransferRec(transfer, 'Приемка товаров по накладным');
+@defineDocumentTransferRec(transfer, 'Приемка товаров по накладным (перемещение)', sku, stock);
+@defineDocumentFormTransferRec(transfer, 'Приемка товаров по накладным (перемещение)');
 
 @defineDocumentDetailSkuArticle(transferRec);
 @extendDocumentFormDetailSkuArticle(transferRec, d, transferRec);
@@ -59,17 +59,17 @@ CLASS transferRecDetail 'Строка приемки товаров по нак�
 @extendDocumentFormDetailSkuArticleReadonly(transferIns, r, transferRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
-CLASS transferDiff 'Акт расхождений приемки товаров по накладной' : historyObject;
+CLASS transferDiff 'Акт расхождений приемки товаров по накладной (перемещение)' : historyObject;
 
-CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной';
-CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (излишек)' : transferDiffDetail, batch;
-CLASS transferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (недостача)' : transferDiffDetail, outFIFOSkuLedger;
+CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной (перемещение)';
+CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, излишек)' : transferDiffDetail, batch;
+CLASS transferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, недостача)' : transferDiffDetail, outFIFOSkuLedger;
 
-@defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной', sku, stock);
+@defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной (перемещение)', sku, stock);
 @defineDocumentFormTransferDiff(transfer);
 
 @defineDocumentDetailSkuArticle(transferDiff);
-@extendDocumentFormDetailSkuArticleReadonly(transferIns, r, transferDiff);
+@extendDocumentFormDetailSkuArticleReadonlyQuantity(transferIns, f, transferDiff, signedQuantityTransferDiffDetail);
 
 @implementSkuLedger(transferDiffE, sku, stock);
 supplierPriceTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
