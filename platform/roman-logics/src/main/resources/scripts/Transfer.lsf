@@ -19,6 +19,9 @@ CLASS transferOutDetail 'Строка перемещения товаров по
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
 
+CONSTRAINT companyStock(stockTransferOut(saleOut)) != companyStock(destinationStockTransferOut(saleOut)) CHECKED BY stockTransferOut, destinationStockTransferOut
+    MESSAGE 'Перемещение товаров должна идти между складами одной компании';
+
 @defineDocumentDetailSkuArticle(transferOut);
 @extendDocumentFormDetailSkuArticle(transferOut, d, transferOut);
 @extendDocumentFormDetailSkuArticleReadonly(transferOuts, d, transferOut);
@@ -64,7 +67,7 @@ CLASS transferRecDetail 'Строка приемки товаров по нак�
 CLASS transferDiff 'Акт расхождений приемки товаров по накладной (перемещение)' : historyObject;
 
 CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной (перемещение)';
-CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, излишек)' : transferDiffDetail, batch;
+CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, излишек)' : transferDiffDetail, batchB;
 CLASS transferDiffSDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, недостача)' : transferDiffDetail, outFIFOSkuLedger;
 
 @defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной (перемещение)', sku, stock);
@@ -75,11 +78,13 @@ CLASS transferDiffSDetail 'Строка расхождений акта прие
 
 @implementSkuLedger(transferDiffE, sku, stock);
 supplierPriceTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
-@implementBBatch(transferDiffE, sku);
+@implementBatch(transferDiffE, sku);
 quantityBatch (batch) += quantityTransferDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS transferDiffEDetail;
 
 @implementSkuLedger(transferDiffS, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTransferDiffSDetail(ledger), batch);
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS transferDiffSDetail;
+
 skipASkuLedger (ledger) += ledger IS transferDiffSDetail;

@@ -230,6 +230,7 @@ public class DefaultFormView extends FormView {
     }
 
     private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {
+        boolean addChild = true;
         while (groupAbstract != null) {
 
             while (groupAbstract != null && !groupAbstract.createContainer) {
@@ -239,20 +240,26 @@ public class DefaultFormView extends FormView {
             if (groupAbstract == null) break;
 
             ContainerView groupPropertyContainer = groupPropertyContainers.get(Optional.fromNullable(groupObject), groupAbstract);
-            if (groupPropertyContainer == null) {
+            boolean createContainer = groupPropertyContainer == null;
+            if (createContainer) {
                 groupPropertyContainer = createContainer(groupAbstract.caption, null, getPropertyGroupContainerSID(groupObject, groupAbstract));
                 groupPropertyContainers.put(Optional.fromNullable(groupObject), groupAbstract, groupPropertyContainer);
             }
 
-            groupPropertyContainer.add(childComponent);
+            if (addChild) // здесь важно не трогать уже созданные контейнеры, чтобы при extend формы не происходило "перетасовывания" контейнеров
+                groupPropertyContainer.add(childComponent);
+
+            addChild = createContainer;
             childComponent = groupPropertyContainer;
 
             groupAbstract = groupAbstract.getParent();
         }
 
-        // проверка на null нужна для глобальных свойств без groupObject'ов вообще
-        ContainerView groupContainer = panelContainers.get(groupObject);
-        ((groupContainer == null) ? mainContainer : groupContainer).add(childComponent);
+        if (addChild) {
+            // проверка на null нужна для глобальных свойств без groupObject'ов вообще
+            ContainerView groupContainer = panelContainers.get(groupObject);
+            ((groupContainer == null) ? mainContainer : groupContainer).add(childComponent);
+        }
     }
 
     private static String getPropertyGroupContainerSID(GroupObjectView group, AbstractGroup propertyGroup) {

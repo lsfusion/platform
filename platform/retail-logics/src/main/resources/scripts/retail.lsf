@@ -146,8 +146,7 @@ END
 META defineDocumentHeaderSupplierContractDepartmentStore(object)
     @defineDocumentHeaderSupplierContract(object);
 
-    contract###object (object) <- contractSkuSupplierSupplierCompany(supplier###object(object), companyDepartmentStore(departmentStore###object(object)))
-                                  IF countContractPartyAPartyB(supplier###object(object), companyDepartmentStore(departmentStore###object(object))) == 1
+    contract###object (object) <- singleContractSkuSupplierSupplierCompany(supplier###object(object), companyDepartmentStore(departmentStore###object(object)))
                                   WHEN CHANGED(supplier###object(object));
     CONSTRAINT contract###object(object) AND NOT companyDepartmentStore(departmentStore###object(object)) == companyContractSkuSupplier(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';

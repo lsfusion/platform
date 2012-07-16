@@ -97,8 +97,9 @@ CLASS groupWarehouse 'Группа складов' : stockGroup;
 @defineHierarchy(groupWarehouse);
 parentStockGroup (stockGroup) += parentGroupWarehouse (stockGroup);
 
-companyWarehouse 'Импортер ИД' (warehouse) = DATA company(warehouse);
+companyWarehouse (warehouse) = DATA company(warehouse);
 nameCompanyWarehouse 'Импортер ' (warehouse) = name(companyWarehouse(warehouse)) IN baseGroup;
+companyStock (stock) += companyWarehouse(stock);
 
 groupWarehouseWarehouse (warehouse) = DATA groupWarehouse(warehouse);
 nameGroupWarehouseWarehouse 'Группа складов' (warehouse) = name(groupWarehouseWarehouse(warehouse)) IN baseGroup;

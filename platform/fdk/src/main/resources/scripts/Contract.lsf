@@ -57,7 +57,25 @@ META defineContractDefaultCustom (contract, partyA, partyB, prefixA, prefixB)
                                                   data###contract###partyA###partyB(pA, pB);
     number###contract###partyA###partyB 'Основной договор' (pA, pB) = numberContract(contract###partyA###partyB(pA, pB));
 
+    singleContract###partyA###partyB (pA, pB) = contract###partyA###partyB(pA, pB) IF countContractPartyAPartyB(pA, pB);
+
     is###partyA###partyB###contract 'Основной' (pA, pB, contract) = contract###partyA###partyB (pA, pB) == contract;
+END
+
+META defineDocumentContract (concrete, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
+    contractType###concrete = DATA contractType (concrete);
+    number###contractType###concrete 'Номер договора' (object) = numberContract(contractType###concrete(object)) IN documentPrmGroup;
+
+    contractType###concrete(object) <- singleContractProp(partyAProp(object), partyBProp(object))
+                                          WHEN CHANGED(partyAProp(object)) OR CHANGED(partyBProp(object));
+
+    CONSTRAINT contractType###concrete(saleOut) AND NOT partyAProp(saleOut) == companyAContractSkuCompany(contractType###concrete(saleOut))
+        CHECKED BY contractType###concrete MESSAGE partyAMessage;
+
+    CONSTRAINT contractType###concrete(saleOut) AND NOT partyBProp(saleOut) == companyBContractSkuCompany(contractType###concrete(saleOut))
+        CHECKED BY contractType###concrete MESSAGE partyBMessage;
+
+    isCommission###concrete 'Продажа на комиссию' (object) = typeContractSkuDate(contractType###concrete(object), date###concrete(object)) == contractSkuType.commission;
 END
 
 // Формы

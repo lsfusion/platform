@@ -112,7 +112,7 @@ CLASS declaration 'Таможенная декларация' : transaction;
 CLASS preparedDeclaration 'Подготовленная декларация' : declaration;
 CLASS registeredDeclaration 'Зарегистрованная декларация' : preparedDeclaration;
 
-CLASS declarationDetail 'Позиция декларации' : batch;
+CLASS declarationDetail 'Позиция декларации' : batchA;
 
 TABLE declarationSku (declaration, sku);
 TABLE declarationDetail (declarationDetail);
@@ -341,8 +341,9 @@ supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDecla
 
 @implementSkuLedger(declaration, sku, customStore);
 
-@implementABatch(declaration, sku);
+@implementBatch(declaration, sku);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
+ownerBatchA (batch) += importerDeclarationDetail(batch);
 
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX

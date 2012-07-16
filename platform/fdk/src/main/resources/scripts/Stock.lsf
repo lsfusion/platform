@@ -11,8 +11,10 @@ CLASS ABSTRACT stock 'Склад' : named;
 TABLE stock(stock);
 
 stockGroupStock (stock) = ABSTRACT stockGroup (stock);
-//legalEntityStock (stock) = ABSTRACT legalEntity (stock);
-//nameLegalEntityStock 'Юр. лицо' (stock) = name(legalEntityStock(stock));
+
+companyStock (stock) = ABSTRACT company (stock);
+nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
+
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;

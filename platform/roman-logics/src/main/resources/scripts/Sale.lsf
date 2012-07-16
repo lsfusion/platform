@@ -6,6 +6,7 @@ REQUIRE System,
         Stock,
         RomanStock,
         DocumentTransfer,
+        Contract,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -19,6 +20,9 @@ CLASS saleOutDetail 'Строка продажи товаров по накла�
 @defineDocumentTransferOut(sale, 'Продажа товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(sale, 'Продажа товаров по накладным');
 
+CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockSaleOut(saleOut)) CHECKED BY stockSaleOut, destinationStockSaleOut
+    MESSAGE 'Продажа товаров должна идти между складами разных компаний';
+
 @defineDocumentDetailSkuArticle(saleOut);
 @extendDocumentFormDetailSkuArticle(saleOut, d, saleOut);
 @extendDocumentFormDetailSkuArticleReadonly(saleOuts, d, saleOut);
@@ -28,11 +32,26 @@ CLASS saleOutDetail 'Строка продажи товаров по накла�
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 @implementSkuLedgerOutFIFOBalanceA(saleOut, sku, stock);
 
+companySaleOut (saleOut) = companyStock(stockSaleOut(saleOut));
+destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOut));
+
+@defineDocumentContract(saleOut, contractSkuCompany, singleContractCompanyCompany, companySaleOut, destinationCompanySaleOut,
+                        'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
+                        'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
+
+EXTEND FORM saleOut
+    PROPERTIES(t) numberContractSkuCompanySaleOut
+;
+
+EXTEND FORM saleOuts
+    PROPERTIES(t) isCommissionSaleOut
+;
+
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS saleIn 'Покупка товаров по накладным' : historyObject;
 CLASS saleInDetail 'Строка покупки товаров по накладным';
-CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)' : inBatch;
+CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)' : inBatchA;
 
 @defineDocumentTransferIn(sale, 'Покупка товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(sale, 'Покупка товаров по накладным');
@@ -47,6 +66,7 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleOutDetail(saleOutDet
 
 @defineDocumentAggregationDetailTime(saleOut, saleInBatch);
 @defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-получатель', destination, );
+@defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-отправитель', , destination);
 @defineDocumentAggregationDetailPosted(saleOut, saleInBatch);
 @defineDocumentAggregationDetailSku(saleOut, saleInBatch, sku);
 @defineDocumentDetailDescriptionCustom(saleIn, saleInBatchDetail);
@@ -58,8 +78,11 @@ supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](bat
 
 @implementSkuLedger(saleInBatch, sku, stock);
 
-@implementABatch(saleInBatch, sku);
+@implementBatch(saleInBatch, sku);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
+
+commissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail)));
+ownerBatchA (batch) += IF commissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
 
 costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch);
 
@@ -82,7 +105,7 @@ CLASS saleRecDetail 'Строка приемки товаров по накла�
 CLASS saleDiff 'Акт расхождений приемки товаров по накладной (продажа)' : historyObject;
 
 CLASS ABSTRACT saleDiffDetail 'Строка расхождений акта приемки товаров по накладной (продажа)';
-CLASS saleDiffEDetail 'Строка расхождений акта приемки товаров по накладной (продажа, излишек)' : saleDiffDetail, batch;
+CLASS saleDiffEDetail 'Строка расхождений акта приемки товаров по накладной (продажа, излишек)' : saleDiffDetail, batchB;
 CLASS saleDiffSDetail 'Строка расхождений акта приемки товаров по накладной (продажа, недостача)' : saleDiffDetail, outFIFOSkuLedger;
 
 @defineDocumentTransferDiff(sale, 'Акт расхождений приемки товаров по накладной (продажа)', sku, stock);
@@ -93,11 +116,13 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 
 @implementSkuLedger(saleDiffE, sku, stock);
 supplierPriceSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
-@implementBBatch(saleDiffE, sku);
+@implementBatch(saleDiffE, sku);
 quantityBatch (batch) += quantitySaleDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS saleDiffEDetail;
 
 @implementSkuLedger(saleDiffS, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costSaleInBatch(saleInSaleDiffSDetail(ledger), batch);
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS saleDiffSDetail;
+
 skipASkuLedger (ledger) += ledger IS saleDiffSDetail;
