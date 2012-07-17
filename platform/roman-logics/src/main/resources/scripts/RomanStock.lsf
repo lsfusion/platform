@@ -81,24 +81,25 @@ META implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp)
 END
 
 // ------------------------------------------------- Внутренние партии ----------------------------------------- //
-ownerBatchA = ABSTRACT company(batchA);
+ownerBatchA = ABSTRACT company(batchA) PERSISTENT;
 nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN baseGroup;
 
-EXTEND FORM currentBalanceSkuStock
-    PROPERTIES(bt) nameOwnerBatchA FORCE GRID
-;
+importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
+supplierPriceBatchA 'Цена поставщика' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
 
-quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
-
-importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA);
-
-rangeVATBatchA 'Шкала НДС (ИД)' (batchA) = ABSTRACT range (batchA);
+rangeVATBatchA (batchA) = ABSTRACT range (batchA) PERSISTENT;
 numberSupplierVATBatchA 'НДС, номер' (batchA) = numberRange(rangeVATBatchA(batchA));
 valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
     (rangeVATBatchA(batchA), dateBatch(batchA));
 
 CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT CHECKED BY rangeVATBatchA MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-EXTEND FORM costSkuLedger
-    PROPERTIES(bt) READONLY importerPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
+EXTEND FORM currentBalanceSkuStock
+    PROPERTIES(bt) nameOwnerBatchA FORCE GRID
 ;
+
+EXTEND FORM costSkuLedger
+    PROPERTIES(bt) READONLY importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
+;
+
+quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);

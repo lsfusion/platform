@@ -152,7 +152,7 @@ departmentStorePriceActDetail (priceActDetail) =
 importerPricePriceActDetail 'Цена импортера' (priceActDetail) = DATA NUMERIC[14,2] (priceActDetail);
 importerPricePriceActDetail (detail) <- [PREV(importerPriceBatchA(batch))](batchPriceActDetail(detail)) WHEN ASSIGNED(isPostedPriceActDetail(detail));
 
-rangeVATPriceActDetail 'Цена импортера' (priceActDetail) = DATA range (priceActDetail);
+rangeVATPriceActDetail (priceActDetail) = DATA range (priceActDetail);
 rangeVATPriceActDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchPriceActDetail(detail)) WHEN ASSIGNED(isPostedPriceActDetail(detail));
 
 numberVATPriceActDetail 'НДС, номер' (priceActDetail) = numberRange(rangeVATPriceActDetail(priceActDetail));

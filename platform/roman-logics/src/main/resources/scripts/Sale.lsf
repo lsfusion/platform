@@ -39,12 +39,16 @@ destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOu
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
+supplierPriceSaleOutDetail 'Цена оптовая' = DATA NUMERIC[14,2] (saleOutDetail);
+
 EXTEND FORM saleOut
     PROPERTIES(t) numberContractSkuCompanySaleOut
+    PROPERTIES(d) supplierPriceSaleOutDetail
 ;
 
 EXTEND FORM saleOuts
     PROPERTIES(t) isCommissionSaleOut
+    PROPERTIES(d) supplierPriceSaleOutDetail
 ;
 
 // ---------------------------------------- Поступление ------------------------------------ //
@@ -79,18 +83,32 @@ quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOu
 supplierPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
 supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
-@implementBatch(saleInBatch, sku, stock);
-quantityBatch(batch) += quantitySaleInBatchDetail(batch);
+importerPriceASaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
+importerPriceASaleInBatchDetail (detail) <- IF batchSaleInBatchDetail(detail) IS saleInBatchDetail THEN
+                                                [PREV(importerPriceBatchA(batch))](batchSaleInBatchDetail(detail)) ELSE
+                                                supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
+                                            WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
+
+supplierPriceASaleInBatchDetail (detail) = supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
+
+rangeVATASaleInBatchDetail (detail) = DATA range (saleInBatchDetail);
+rangeVATASaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
 commissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
+
+@implementBatch(saleInBatch, sku, stock);
+quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 ownerBatchA (batch) += IF commissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
+importerPriceBatchA(batch) += importerPriceASaleInBatchDetail(batch);
+supplierPriceBatchA(batch) += supplierPriceASaleInBatchDetail(batch);
+rangeVATBatchA(batch) += rangeVATASaleInBatchDetail(batch);
+
 contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 
 costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch);
 
 EXTEND FORM saleIns
     OBJECTS b = saleInBatchDetail
-    PROPERTIES(b) descriptionBatch
     FILTERS saleInSaleInBatchDetail(b) == t
 ;
 
@@ -104,6 +122,10 @@ EXTEND DESIGN saleIns {
 
 @defineDocumentDetailSkuArticle(saleInBatch);
 @extendDocumentFormDetailSkuArticleReadonly(saleIns, b, saleInBatch);
+
+EXTEND FORM saleIns
+    PROPERTIES(b) READONLY descriptionBatch, importerPriceBatchA, supplierPriceBatchA, valueSupplierVATBatchA
+;
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

@@ -339,11 +339,6 @@ supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = UNION OV
 
 supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail) IN baseGroup;
 
-@implementBatch(declaration, sku, customStore);
-quantityBatch (batch) += quantityDeclarationDetail(batch);
-ownerBatchA (batch) += importerDeclarationDetail(batch);
-importerPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
-
 // пошлины
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX
                       rateExchangeDeclarationDetail(declarationDetail) * sumNetWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),
@@ -364,6 +359,12 @@ CONSTRAINT taxRange(dataSupplierVATCustomCategory10Date(customCategory10, date))
 dataValueSupplierVATCustomCategory10Date 'НДС поставщика, %' (customCategory10, date) = valueRateRangeDate(dataSupplierVATCustomCategory10Date(customCategory10, date), date);
 valueCurrentRateSupplierVATCustomCategory10 'НДС поставщика, %' (customCategory10) = valueCurrentRateRange(supplierVATCustomCategory10(customCategory10));
 
+@implementBatch(declaration, sku, customStore);
+quantityBatch (batch) += quantityDeclarationDetail(batch);
+ownerBatchA (batch) += importerDeclarationDetail(batch);
+importerPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
+supplierPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
+// todo : так нельзя делать - изменится НДС по ТНВЭД и будут чудеса
 rangeVATBatchA (batch) += supplierVATCustomCategory10(customCategory10DeclarationDetail(batch));
 
 EXTEND FORM addSupplierVATCustomCategory10
