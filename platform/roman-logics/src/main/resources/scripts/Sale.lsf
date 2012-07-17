@@ -35,7 +35,7 @@ quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 companySaleOut (saleOut) = companyStock(stockSaleOut(saleOut));
 destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOut));
 
-@defineDocumentContract(saleOut, contractSkuCompany, singleContractCompanyCompany, companySaleOut, destinationCompanySaleOut,
+@defineDocumentContract(saleOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, companySaleOut, destinationCompanySaleOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -59,7 +59,7 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 @defineDocumentDetailSkuArticle(saleIn);
 @extendDocumentFormDetailSkuArticleReadonly(saleIns, d, saleIn);
 
-costSaleOutDetailBatch (ledger, batch) = costSkuLedgerBatch(ledger, batch) AND ledger IS saleOutDetail;
+costSaleOutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS saleOutDetail;
 @defineAggregationDouble(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
 
 saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail)));
@@ -71,14 +71,12 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleOutDetail(saleOutDet
 @defineDocumentAggregationDetailSku(saleOut, saleInBatch, sku);
 @defineDocumentDetailDescriptionCustom(saleIn, saleInBatchDetail);
 
-quantitySaleInBatchDetail (detail) = costSaleOutDetailBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
+quantitySaleInBatchDetail (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
 supplierPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
 supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSkuLedger(detail) AND detail IS saleInBatchDetail);
 
-@implementSkuLedger(saleInBatch, sku, stock);
-
-@implementBatch(saleInBatch, sku);
+@implementBatch(saleInBatch, sku, stock);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 
 commissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail)));
@@ -114,9 +112,8 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 @defineDocumentDetailSkuArticle(saleDiff);
 @extendDocumentFormDetailSkuArticleReadonlyQuantity(saleIns, f, saleDiff, signedQuantitySaleDiffDetail);
 
-@implementSkuLedger(saleDiffE, sku, stock);
 supplierPriceSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
-@implementBatch(saleDiffE, sku);
+@implementBatch(saleDiffE, sku, stock);
 quantityBatch (batch) += quantitySaleDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS saleDiffEDetail;
 

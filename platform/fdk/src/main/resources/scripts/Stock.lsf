@@ -63,9 +63,11 @@ CLASS ABSTRACT inSkuLedger 'Приход' : skuLedger;
 CLASS ABSTRACT outSkuLedger 'Расход' : skuLedger;
 
 CLASS ABSTRACT batch 'Партия' : inSkuLedger;
-CLASS ABSTRACT inLIFOSkuLedger 'Приход по LIFO' : inSkuLedger;
 
-CLASS ABSTRACT outFIFOSkuLedger 'Расход по FIFO' : outSkuLedger;
+CLASS ABSTRACT dataSkuLedger 'Изменение остатка с первичной себестоимостью' : skuLedger;
+
+CLASS ABSTRACT inLIFOSkuLedger 'Приход по LIFO' : inSkuLedger, dataSkuLedger;
+CLASS ABSTRACT outFIFOSkuLedger 'Расход по FIFO' : outSkuLedger, dataSkuLedger;
 
 // --------------------------------- Партии ------------------------------------------------ //
 
@@ -80,6 +82,9 @@ isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 
 skuBatch (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
 nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch));
+
+stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED;
+nameStockBatch 'Склад' (batch) = name(stockBatch(batch));
 
 supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
@@ -96,18 +101,31 @@ isParentSkuGroupBatch (skuGroup, batch) = isParentSkuGroupSku(skuGroup, skuBatch
 
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
-dateTimeSkuLedger 'Дата/время' = ABSTRACT DATETIME (skuLedger) PERSISTENT INDEXED;
+dateTimeDataSkuLedger 'Дата/время' = ABSTRACT DATETIME (dataSkuLedger) PERSISTENT INDEXED;
+dateDataSkuLedger 'Дата' (ledger) = dateInTime(dateTimeDataSkuLedger(ledger)) PERSISTENT;
+
+isPostedDataSkuLedger 'Закрыт' = ABSTRACT BOOLEAN (dataSkuLedger) PERSISTENT;
+
+skuDataSkuLedger = ABSTRACT sku (dataSkuLedger) PERSISTENT INDEXED;
+
+stockDataSkuLedger = ABSTRACT stock(dataSkuLedger) PERSISTENT INDEXED;
+
+descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING[200] (skuLedger) PERSISTENT;
+
+// -------------------------------- Для всего ledger'а -------------------- //
+
+dateTimeSkuLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
 dateSkuLedger 'Дата' (ledger) = dateInTime(dateTimeSkuLedger(ledger)) PERSISTENT;
 
-isPostedSkuLedger 'Закрыт' = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;
+isPostedSkuLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
 
-skuSkuLedger = ABSTRACT sku (skuLedger) PERSISTENT INDEXED;
+skuSkuLedger (ledger) = UNION EXCLUSIVE skuDataSkuLedger (ledger), skuBatch (ledger) PERSISTENT INDEXED;
 nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 
-stockSkuLedger = ABSTRACT stock(skuLedger) PERSISTENT INDEXED;
+stockSkuLedger (ledger) = UNION EXCLUSIVE stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
 nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
 
-descriptionSkuLedger 'Название документа' = ABSTRACT STRING[200] (skuLedger);
+descriptionSkuLedger 'Закрыт' (ledger) = UNION EXCLUSIVE descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
 
 // -------------------------------- Количества ---------------------------- //
 
@@ -128,13 +146,97 @@ quantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(l
 signedQuantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
                                                             -quantityOutSkuLedger(ledger) PERSISTENT;
 
-// ----------------------------- Себестоимость ------------------------------------ //
+// -------------------------------------------- Расчет себестоимости -------------------------------------- //
 
-costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = DATA NUMERIC[14,3] (skuLedger, batch);
+orderDataSkuLedger (ledger) = LIST(dateTimeDataSkuLedger(ledger), ledger);
+
+// Формулы для расчета
+quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
+
+limitInLIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger, batch);
+orderInLIFOSkuLedgerBatch = ABSTRACT LONG (inLIFOSkuLedger, batch);
+
+quantityInLIFOSkuLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityInLIFOSkuLedger
+                  LIMIT limitInLIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuDataSkuLedger(ledger)
+                  BY ledger
+                  ORDER DESC orderInLIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
+
+limitOutFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger, batch);
+orderOutFIFOSkuLedgerBatch = ABSTRACT LONG (outFIFOSkuLedger, batch);
+
+quantityOutFIFOSkuLedgerBatch (ledger, batch) =
+        PARTITION UNGROUP quantityOutFIFOSkuLedger
+                  LIMIT limitOutFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuDataSkuLedger(ledger)
+                  BY ledger
+                  ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
+
+quantityDataSkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityInLIFOSkuLedgerBatch(ledger, batch),
+                                                             quantityOutFIFOSkuLedgerBatch(ledger, batch);
+
+// Свойства для расчета себестоимости
+
+costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (skuLedger, batch);
+
+costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledger, batch), costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
 
 signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS outSkuLedger
                                               THEN -costSkuLedgerBatch(ledger, batch)
                                               ELSE costSkuLedgerBatch(ledger, batch);
+
+// Расчет себестоимости по Action
+costedDataSkuLedger 'Расписано' (ledger) = GROUP SUM costDataSkuLedgerBatch (ledger, batch) BY ledger PERSISTENT;
+costedSkuLedger 'Расписано' (ledger) = GROUP SUM costSkuLedgerBatch (ledger, batch) BY ledger PERSISTENT;
+
+needToCostDataSkuLedger 'Требуется расчет себестоимости' (ledger) = quantitySkuLedger(ledger) > 0 AND isPostedDataSkuLedger(ledger)
+                                                                        AND NOT quantitySkuLedger(ledger) == costedDataSkuLedger(ledger);
+
+resetCostDataSkuLedger 'Перерассчитать себестоимость' = ACTION (ledger) { //NEWSESSION AUTOAPPLY {
+    IF costedDataSkuLedger(ledger) THEN {
+        SET costDataSkuLedgerBatch(ledger, batch) <- NULL;
+//        EXEC apply(); // todo : здесь apply не нужен, но без этого следующая команда повиснет
+    }
+    SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
+}
+
+// мгновенный расчет себестоимости
+resetCostDataSkuLedger (ledger) WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) ORDER orderDataSkuLedger(ledger);
+
+setDataSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
+
+    SET costDataSkuLedgerBatch(ledger, batch) AND needToCostDataSkuLedger(ledger) <- NULL;
+    EXEC apply();
+
+    FOR needToCostDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger) DO {
+        SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
+        EXEC apply();
+    }
+} CONFIRM;
+
+resetDataSkuLedgerBatchCost 'Перерассчитать себестоимость' = ACTION () NEWSESSION {
+    FORM dialogDate MODAL;
+    IF formResult() == formResult.ok THEN {
+
+        FOR d == chosenDate('d') DO {
+            SET costDataSkuLedgerBatch(ledger, batch) AND dateDataSkuLedger(ledger) >= (d AS DATE) <- NULL;
+            EXEC apply();
+
+            FOR dateSkuLedger(ledger) >= (d AS DATE) AND isPostedDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger) DO {
+                SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
+                EXEC apply();
+            }
+        }
+    }
+} CONFIRM;
+
+clearDataSkuLedgerBatchCost 'Сбросить всю себестоимость' = ACTION() NEWSESSION AUTOAPPLY {
+    SET costDataSkuLedgerBatch(ledger, batch) <- NULL;
+} CONFIRM;
+
+// Суммы
+
+supplierSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * supplierPriceBatch(batch);
+supplierSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM supplierSumSkuLedgerBatch(ledger, batch) BY ledger;
 
 // ---------------------------- Учетные цены и суммы ------------------------------- //
 
@@ -276,94 +378,14 @@ costOutBalanceBatchStockDateFromTo 'Расход' (batch, stock, dateFrom, dateT
 supplierSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
     supplierPriceBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
-costedSkuLedger 'Расписано' (ledger) = GROUP SUM costSkuLedgerBatch (ledger, batch) BY ledger PERSISTENT;
-
-needToCostSkuLedger 'Требуется расчет себестоимости' (ledger) = quantitySkuLedger(ledger) > 0 AND isPostedSkuLedger(ledger)
-                                                                        AND NOT quantitySkuLedger(ledger) == costedSkuLedger(ledger);
-
-// -------------------------------------------- Расчет себестоимости -------------------------------------- //
-
-quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
-
-orderSkuLedger (ledger) = LIST(dateTimeSkuLedger(ledger), ledger);
-
-limitInLIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger, batch);
-orderInLIFOSkuLedgerBatch = ABSTRACT LONG (inLIFOSkuLedger, batch);
-
-quantityInLIFOSkuLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityInLIFOSkuLedger
-                  LIMIT limitInLIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
-                  BY ledger
-                  ORDER DESC orderInLIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
-
-limitOutFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger, batch);
-orderOutFIFOSkuLedgerBatch = ABSTRACT LONG (outFIFOSkuLedger, batch);
-
-quantityOutFIFOSkuLedgerBatch (ledger, batch) =
-        PARTITION UNGROUP quantityOutFIFOSkuLedger
-                  LIMIT limitOutFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuSkuLedger(ledger)
-                  BY ledger
-                  ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
-
-quantityOutSkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityOutFIFOSkuLedgerBatch(ledger, batch);
-
-quantitySkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledger, batch),
-                                                         quantityInLIFOSkuLedgerBatch(ledger, batch),
-                                                         quantityOutFIFOSkuLedgerBatch(ledger, batch);
-
-supplierSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * supplierPriceBatch(batch);
-supplierSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM supplierSumSkuLedgerBatch(ledger, batch) BY ledger;
-
-resetCostSkuLedger 'Перерассчитать себестоимость' = ACTION (ledger) { //NEWSESSION AUTOAPPLY {
-    IF costedSkuLedger(ledger) THEN {
-        SET costSkuLedgerBatch(ledger, batch) <- NULL;
-//        EXEC apply(); // todo : здесь apply не нужен, но без этого следующая команда повиснет
-    }
-    SET costSkuLedgerBatch(ledger, batch) <- quantitySkuLedgerBatch(ledger, batch);
-}
-
-// мгновенный расчет себестоимости
-resetCostSkuLedger (ledger) WHEN ASSIGNED(isPostedSkuLedger(ledger)) ORDER orderSkuLedger(ledger);
-
-setSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
-
-    SET costSkuLedgerBatch(ledger, batch) AND needToCostSkuLedger(ledger) <- NULL;
-    EXEC apply();
-
-    FOR needToCostSkuLedger(ledger) ORDER orderSkuLedger(ledger) DO {
-        SET costSkuLedgerBatch(ledger, batch) <- quantitySkuLedgerBatch(ledger, batch);
-        EXEC apply();
-    }
-} CONFIRM;
-
-resetSkuLedgerBatchCost 'Перерассчитать себестоимость' = ACTION () NEWSESSION {
-    FORM dialogDate MODAL;
-    IF formResult() == formResult.ok THEN {
-
-        FOR d == chosenDate('d') DO {
-            SET costSkuLedgerBatch(ledger, batch) AND dateSkuLedger(ledger) >= (d AS DATE) <- NULL;
-            EXEC apply();
-
-            FOR dateSkuLedger(ledger) >= (d AS DATE) AND isPostedSkuLedger(ledger) ORDER orderSkuLedger(ledger) DO {
-                SET costSkuLedgerBatch(ledger, batch) <- quantitySkuLedgerBatch(ledger, batch);
-                EXEC apply();
-            }
-        }
-    }
-} CONFIRM;
-
-clearSkuLedgerBatchCost 'Сбросить всю себестоимость' = ACTION() NEWSESSION AUTOAPPLY {
-    SET costSkuLedgerBatch(ledger, batch) <- NULL;
-} CONFIRM;
-
 // ---------------------------------------------- Макросы ------------------------------------------------- //
 
 META implementSkuLedger(concrete, skuProp, stockProp)
-    dateTimeSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
-    isPostedSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
-    descriptionSkuLedger (ledger) += description###concrete##Detail(ledger);
-    skuSkuLedger (ledger) += skuProp###concrete##Detail(ledger);
-    stockSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
+    dateTimeDataSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
+    isPostedDataSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
+    skuDataSkuLedger (ledger) += skuProp###concrete##Detail(ledger);
+    stockDataSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
+    descriptionDataSkuLedger (ledger) += description###concrete##Detail(ledger);
 END
 
 META implementSkuLedgerInLIFOBalancePostfix (concrete, skuProp, stockProp, postfix)
@@ -383,11 +405,12 @@ META implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp)
     @implementSkuLedgerOutFIFOBalancePostfix(concrete, skuProp, stockProp, );
 END
 
-META implementBatch(concrete, skuProp)
+META implementBatch(concrete, skuProp, stockProp)
     dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
     isPostedBatch (batch) += isPosted###concrete##Detail(batch);
-    descriptionBatch (batch) += description###concrete##Detail(batch);
     skuBatch (batch) += skuProp###concrete##Detail(batch);
+    stockBatch (batch) += stockProp###concrete##Detail(batch);
+    descriptionBatch (batch) += description###concrete##Detail(batch);
     supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
 END
 
@@ -516,11 +539,11 @@ FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bil = skuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameSkuSkuLedger, nameStockSkuLedger,
                              quantitySkuLedger, costedSkuLedger
-    PROPERTIES(bil)          resetCostSkuLedger
+    PROPERTIES(bil)          resetCostDataSkuLedger FORCE GRID
     ORDER BY dateTimeSkuLedger
 
-    FILTERGROUP needToCostSkuLedger
-        FILTER 'Нерасписанные строки' 'F9' needToCostSkuLedger(bil)
+    FILTERGROUP needToCostDataSkuLedger
+        FILTER 'Нерасписанные строки' 'F9' needToCostDataSkuLedger(bil)
 
     OBJECTS bt = batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
@@ -531,7 +554,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
     FILTERGROUP inSkuLedgerBatch
         FILTER 'Только расписанные партии' 'F10' costSkuLedgerBatch (bil, bt) DEFAULT
 
-    PROPERTIES() setSkuLedgerBatchCost, resetSkuLedgerBatchCost, clearSkuLedgerBatchCost
+    PROPERTIES() setDataSkuLedgerBatchCost, resetDataSkuLedgerBatchCost, clearDataSkuLedgerBatchCost
 ;
 
 
@@ -546,9 +569,9 @@ DESIGN costSkuLedger FROM DEFAULT {
 
     NEW buttonContainer {
         childConstraints = TO THE RIGHT;
-        ADD PROPERTY(setSkuLedgerBatchCost);
-        ADD PROPERTY(resetSkuLedgerBatchCost);
-        ADD PROPERTY(clearSkuLedgerBatchCost);
+        ADD PROPERTY(setDataSkuLedgerBatchCost);
+        ADD PROPERTY(resetDataSkuLedgerBatchCost);
+        ADD PROPERTY(clearDataSkuLedgerBatchCost);
     }
 
     ADD functions.box;
@@ -568,7 +591,7 @@ FORM costSkuBatchLedger 'Себестоимость (партии)'
     ORDER BY dateTimeSkuLedger
 
     FILTERGROUP needToCostSkuLedger
-        FILTER 'Нерасписанные строки' 'F9' needToCostSkuLedger(bil)
+        FILTER 'Нерасписанные строки' 'F9' needToCostDataSkuLedger(bil)
 
 
     PROPERTIES(bil, bt)     READONLY costSkuLedgerBatch FORCE GRID

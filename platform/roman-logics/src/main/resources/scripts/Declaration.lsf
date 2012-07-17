@@ -339,9 +339,7 @@ supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = UNION OV
 
 supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail) IN baseGroup;
 
-@implementSkuLedger(declaration, sku, customStore);
-
-@implementBatch(declaration, sku);
+@implementBatch(declaration, sku, customStore);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 

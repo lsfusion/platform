@@ -2406,12 +2406,10 @@ descriptionParish 'Название документа' (parish) =
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(parishActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
-@implementSkuLedger(studyOutput, item, departmentStore);
-sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
-
-@implementBatch(studyOutput, item);
+@implementBatch(studyOutput, item, departmentStore);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 expiryDateBatch (ledger) += expiryDateStudyOutputDetail(ledger);
+sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(studyOutput, item);
 
@@ -3178,13 +3176,11 @@ descriptionShipment 'Название документа' (shipment) =
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
-@implementSkuLedger(shipment, item, departmentStore);
-sumInSkuLedger (ledger) += retailSumShipmentDetail(ledger);
-
-@implementBatch(shipment, item);
+@implementBatch(shipment, item, departmentStore);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 expiryDateBatch (ledger) += expiryDateShipmentDetail(ledger);
 supplierBatch (ledger) += supplierShipmentDetail(ledger);
+sumInSkuLedger (ledger) += retailSumShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
@@ -4279,12 +4275,10 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
 
-@implementSkuLedger(inputDisparity, item, departmentStore);
-sumInSkuLedger (ledger) += retailSumInputDisparityDetail(ledger);
-
-@implementBatch(inputDisparity, item);
+@implementBatch(inputDisparity, item, departmentStore);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateInputDisparityDetail(ledger);
+sumInSkuLedger (ledger) += retailSumInputDisparityDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(inputDisparity, item);
 

@@ -57,7 +57,7 @@ META defineContractDefaultCustom (contract, partyA, partyB, prefixA, prefixB)
                                                   data###contract###partyA###partyB(pA, pB);
     number###contract###partyA###partyB 'Основной договор' (pA, pB) = numberContract(contract###partyA###partyB(pA, pB));
 
-    singleContract###partyA###partyB (pA, pB) = contract###partyA###partyB(pA, pB) IF countContractPartyAPartyB(pA, pB);
+    single###contract###partyA###partyB (pA, pB) = contract###partyA###partyB(pA, pB) IF countContractPartyAPartyB(pA, pB);
 
     is###partyA###partyB###contract 'Основной' (pA, pB, contract) = contract###partyA###partyB (pA, pB) == contract;
 END
