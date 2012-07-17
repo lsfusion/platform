@@ -23,6 +23,7 @@ REQUIRE System,
         WHfromWH,
         Transfer,
         Sale,
+        Return,
         WholesalePrice,
         RetailPrice,
         CRM,
@@ -149,11 +150,13 @@ NAVIGATOR {
             ADD WHfromCSIs;
             ADD transferIns;
             ADD saleIns;
+            ADD returnIns;
         }
 
         NEW logisticsOutcome 'Расходы' {
             ADD transferOuts;
             ADD saleOuts;
+            ADD returnOuts;
         }
 
         NEW logisticsAggregations 'Сводная информация' {

@@ -81,13 +81,13 @@ dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
 isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 
 skuBatch (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
-nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch));
+nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN recognizeGroup;
 
-stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED;
-nameStockBatch 'Склад' (batch) = name(stockBatch(batch));
+stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED ;
+nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognizeGroup;
 
 supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
-descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT;
+descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognizeGroup;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
 expiresBatchDateTime(batch, dateTime, period) = expiryDateBatch(batch) < sumDate(dateInTime(dateTime), period);

@@ -21,7 +21,7 @@ CLASS transferOutDetail 'Строка перемещения товаров по
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
 
-CONSTRAINT companyStock(stockTransferOut(saleOut)) != companyStock(destinationStockTransferOut(saleOut)) CHECKED BY stockTransferOut, destinationStockTransferOut
+CONSTRAINT companyStock(stockTransferOut(saleOut)) != companyStock(destinationStockTransferOut(saleOut)) CHECKED BY destinationStockTransferOut
     MESSAGE 'Перемещение товаров должна идти между складами одной компании';
 
 @defineDocumentDetailSkuArticle(transferOut);

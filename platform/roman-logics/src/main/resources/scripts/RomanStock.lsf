@@ -88,6 +88,4 @@ EXTEND FORM currentBalanceSkuStock
     PROPERTIES(bt) nameOwnerBatchA FORCE GRID
 ;
 
-CLASS ABSTRACT inBatchA 'Внутренняя бухгалтерская партия' : batchA;
-
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);

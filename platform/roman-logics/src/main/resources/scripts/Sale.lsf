@@ -20,7 +20,7 @@ CLASS saleOutDetail 'Строка продажи товаров по накла�
 @defineDocumentTransferOut(sale, 'Продажа товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(sale, 'Продажа товаров по накладным');
 
-CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockSaleOut(saleOut)) CHECKED BY stockSaleOut, destinationStockSaleOut
+CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockSaleOut(saleOut)) CHECKED BY destinationStockSaleOut
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(saleOut);
@@ -51,7 +51,7 @@ EXTEND FORM saleOuts
 
 CLASS saleIn 'Покупка товаров по накладным' : historyObject;
 CLASS saleInDetail 'Строка покупки товаров по накладным';
-CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)' : inBatchA;
+CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)' : batchA;
 
 @defineDocumentTransferIn(sale, 'Покупка товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(sale, 'Покупка товаров по накладным');
@@ -62,7 +62,10 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 costSaleOutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS saleOutDetail;
 @defineAggregationDouble(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
 
-saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail)));
+saleOutSaleInBatchDetail (detail) = saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
+saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail));
+
+@defineDocumentDetailIndexCustom(saleIn, saleInBatchDetail);
 
 @defineDocumentAggregationDetailTime(saleOut, saleInBatch);
 @defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-получатель', destination, );
@@ -71,7 +74,7 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleOutDetail(saleOutDet
 @defineDocumentAggregationDetailSku(saleOut, saleInBatch, sku);
 @defineDocumentDetailDescriptionCustom(saleIn, saleInBatchDetail);
 
-quantitySaleInBatchDetail (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
+quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
 supplierPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
 supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSkuLedger(detail) AND detail IS saleInBatchDetail);
@@ -79,10 +82,28 @@ supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](bat
 @implementBatch(saleInBatch, sku, stock);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 
-commissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail)));
+commissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
 ownerBatchA (batch) += IF commissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
+contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 
 costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch);
+
+EXTEND FORM saleIns
+    OBJECTS b = saleInBatchDetail
+    PROPERTIES(b) descriptionBatch
+    FILTERS saleInSaleInBatchDetail(b) == t
+;
+
+EXTEND DESIGN saleIns {
+    documentDetail {
+        ADD b.box {
+            title = 'Партии';
+        }
+    }
+}
+
+@defineDocumentDetailSkuArticle(saleInBatch);
+@extendDocumentFormDetailSkuArticleReadonly(saleIns, b, saleInBatch);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
