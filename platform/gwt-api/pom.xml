@@ -75,6 +75,11 @@
             <artifactId>gwt-dispatch</artifactId>
             <version>1.2.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.googlecode.gwtupload</groupId>
+            <artifactId>gwtupload</artifactId>
+            <version>0.6.3-compat</version>
+        </dependency>
 
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

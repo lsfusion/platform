@@ -112,12 +112,12 @@ public class GwtFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GRunPrintReportAction action) {
-        form.runPrintReport();
+        form.printReport(action.getReportSID());
     }
 
     @Override
     public void execute(GRunOpenInExcelAction action) {
-        form.runOpenInExcel();
+        form.openInExcel(action.getReportSID());
     }
 
     @Override

@@ -343,18 +343,7 @@ public class ReportGenerator {
 
     public static void exportToExcelAndOpen(ReportGenerationData generationData, TimeZone timeZone) {
         try {
-            File tempFile = File.createTempFile("lsf", ".xls");
-
-            JExcelApiExporter xlsExporter = new JExcelApiExporter();
-
-            ReportGenerator report = new ReportGenerator(generationData, timeZone);
-
-            JasperPrint print = report.createReport(true, null);
-            print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
-
-            xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-            xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-            xlsExporter.exportReport();
+            File tempFile = exportToExcel(generationData, timeZone);
 
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(tempFile);
@@ -362,6 +351,35 @@ public class ReportGenerator {
 
             tempFile.deleteOnExit();
 
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при экспорте в Excel", e);
+        }
+    }
+
+    private static File exportToExcel(ReportGenerationData generationData, TimeZone timeZone) throws IOException, ClassNotFoundException, JRException {
+        File tempFile = File.createTempFile("lsf", ".xls");
+
+        JExcelApiExporter xlsExporter = new JExcelApiExporter();
+
+        ReportGenerator report = new ReportGenerator(generationData, timeZone);
+
+        JasperPrint print = report.createReport(true, null);
+        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+
+        xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+        xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+        xlsExporter.exportReport();
+
+        return tempFile;
+    }
+
+    public static byte[] exportToExcelByteArray(ReportGenerationData generationData, TimeZone timeZone) {
+        try {
+            File tempFile = exportToExcel(generationData, timeZone);
+            FileInputStream fis = new FileInputStream(tempFile);
+            byte[] array = new byte[(int) tempFile.length()];
+            fis.read(array);
+            return array;
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при экспорте в Excel", e);
         }

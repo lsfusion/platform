@@ -1,5 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
@@ -331,6 +333,19 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
         dispatcher.execute(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
+    }
+
+    public void printReport(String reportSID) {
+        openReportWindow(reportSID, "pdf");
+    }
+
+    public void openInExcel(String reportSID) {
+        openReportWindow(reportSID, "xls");
+    }
+
+    private void openReportWindow(String reportSID, String type) {
+        String url = GWT.getHostPageBaseURL() + "report?file=" + reportSID + "&type=" + type;
+        Window.open(url, "Report", "");
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

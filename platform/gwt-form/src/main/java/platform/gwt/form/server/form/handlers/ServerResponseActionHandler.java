@@ -24,7 +24,7 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
         List<GAction> resultActions = new ArrayList<GAction>();
 
         for (ClientAction action : serverResponse.actions) {
-            resultActions.add(clientConverter.convertAction(action, form, servlet));
+            resultActions.add(clientConverter.convertAction(getSession(), action, form, servlet));
         }
 
         return new ServerResponseResult(resultActions.toArray(new GAction[resultActions.size()]), serverResponse.resumeInvocation);

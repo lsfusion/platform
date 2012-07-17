@@ -6,6 +6,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.security.SecureRandom;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
@@ -2066,21 +2067,21 @@ public class BaseUtils {
             return set1;
         return new MergeFunctionSet<K>(set1, set2);
     }
-    
+
     public static <T> FunctionSet<T> universal(boolean empty) {
         if(empty)
             return EmptyFunctionSet.instance();
         else
             return FullFunctionSet.instance();
     }
-    
+
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
         if(update)
             keyValues.put(key, override(keyValues.get(key), values));
         else
             keyValues.put(key, values);
     }
-    
+
     public static <K, V, M extends Map<K,V>> M getNearObject(V findValue, List<M> keys) {
         M nearObject = null;
         for (M key : keys) {
@@ -2094,11 +2095,21 @@ public class BaseUtils {
         }
         return nearObject;
     }
-    
+
     public static <K, V, M extends Map<K,V>> V getNearValue(K findKey, V findValue, List<M> keys) {
         M nearObject = getNearObject(findValue, keys);
         if(nearObject!=null)
             return nearObject.get(findKey);
         return null;
+    }
+
+    private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    private final static SecureRandom random = new SecureRandom();
+    public static String randomString(int len) {
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            sb.append(randomsymbols[random.nextInt(randomsymbols.length)]);
+        }
+        return sb.toString();
     }
 }

@@ -1,5 +1,9 @@
 package platform.gwt.form.server;
 
+import com.google.common.base.Throwables;
+import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.JasperExportManager;
+import platform.base.BaseUtils;
 import platform.client.logics.ClientFormChanges;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
@@ -8,18 +12,22 @@ import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.view.actions.*;
 import platform.gwt.view.classes.GObjectClass;
 import platform.interop.action.*;
+import platform.interop.form.ReportGenerationData;
 
+import javax.servlet.http.HttpSession;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientToGwtConverter extends ObjectConverter {
     private static final class InstanceHolder {
         private static final ClientToGwtConverter instance = new ClientToGwtConverter();
     }
+
+    private HttpSession session;
 
     public static ClientToGwtConverter getInstance() {
         return InstanceHolder.instance;
@@ -28,7 +36,8 @@ public class ClientToGwtConverter extends ObjectConverter {
     private ClientToGwtConverter() {
     }
 
-    public GAction convertAction(ClientAction clientAction, Object... context) {
+    public GAction convertAction(HttpSession session, ClientAction clientAction, Object... context) {
+        this.session = session;
         return convertOrNull(clientAction, context);
     }
 
@@ -93,14 +102,42 @@ public class ClientToGwtConverter extends ObjectConverter {
         return new GRequestUserInputAction(ClientTypeSerializer.deserializeClientType(action.readType).getGwtType(), action.oldValue);
     }
 
-    @Converter(from = RunOpenInExcelClientAction.class)
-    public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        return new GRunOpenInExcelAction();
+    @Converter(from = RunPrintReportClientAction.class)
+    public GRunPrintReportAction convertAction(RunPrintReportClientAction action, FormSessionObject form) throws IOException {
+        return new GRunPrintReportAction(generateReport(form, true));
     }
 
-    @Converter(from = RunPrintReportClientAction.class)
-    public GRunPrintReportAction convertAction(RunPrintReportClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        return new GRunPrintReportAction();
+    @Converter(from = RunOpenInExcelClientAction.class)
+    public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, FormSessionObject form) throws IOException {
+        return new GRunOpenInExcelAction(generateReport(form, false));
+    }
+
+    private String generateReport(FormSessionObject form, boolean isPdf) {
+        try {
+            TimeZone zone = Calendar.getInstance().getTimeZone();
+            ReportGenerationData data = form.remoteForm.getReportData(-1, null, !isPdf, null);
+            ReportGenerator generator = new ReportGenerator(data, zone);
+            byte[] report = isPdf ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(data, zone);
+            File file = File.createTempFile("lsfReport", "");
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(report);
+
+            String reportSID = generateReportSID();
+            session.setAttribute(reportSID, file.getAbsolutePath());
+            return reportSID;
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+        String s = BaseUtils.lineSeparator;
+        return null;
+    }
+
+    private String generateReportSID() {
+        String sid = "";
+        do {
+            sid = BaseUtils.randomString(20);
+        } while (session.getAttribute(sid) != null);
+        return sid;
     }
 
     @Converter(from = ClientObjectClass.class)
