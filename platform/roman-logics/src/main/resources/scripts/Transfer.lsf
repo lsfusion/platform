@@ -6,6 +6,8 @@ REQUIRE System,
         Stock,
         RomanStock,
         DocumentTransfer,
+        ListRegister,
+        RetailPrice,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -88,3 +90,75 @@ limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTran
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS transferDiffSDetail;
 
 skipASkuLedger (ledger) += ledger IS transferDiffSDetail;
+
+// ---------------------------------------- Акт расценки ------------------------------------ //
+
+CLASS priceAct 'Акт расценки' : listRegister, historyObject;
+CLASS priceActPosted 'Закрытый акт расценки' : priceAct;
+CLASS priceActDetail 'Строка акта расценки': inputListRegisterDetail,  importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
+
+@defineDocumentTables (priceAct);
+
+isStoreDestinationStockTransferOut 'Перемещение на магазин' (transferOut) = TRUE IF destinationStockTransferOut(transferOut) IS departmentStore;
+
+@defineAggregation (transferOut, priceAct, isStoreDestinationStockTransferOut);
+@defineDocumentAggregationHeaderNumber(transferOut, priceAct);
+@defineDocumentAggregationHeaderNote(transferOut, priceAct);
+
+costTransferOutDetailBatch (transferOutDetail, batch) = costSkuLedgerBatch(transferOutDetail, batch)
+    IF (transferOutDetail IS transferOutDetail AND batch IS batch) ;
+
+needPriceActDetailTransferOutDetailBatch (transferOutDetail, batch) = costTransferOutDetailBatch (transferOutDetail, batch)
+    AND destinationStockTransferOut(transferOutTransferOutDetail(transferOutDetail)) IS departmentStore;
+
+@defineAggregationDouble(transferOutDetail, batch, priceActDetail, needPriceActDetailTransferOutDetailBatch);
+@defineDocumentAggregationDetailQuantity (transferOut, priceAct);
+
+priceActPriceActDetail (priceActDetail) = priceActTransferOut(transferOutTransferOutDetail(transferOutDetailPriceActDetail(priceActDetail)));
+@defineDocumentDetailIndex(priceAct);
+
+@defineDocumentAggregationDetailSku(transferOut, priceAct, sku);
+
+@defineDocumentHeaderQuantity(priceAct);
+@defineDocumentHeaderSkuQuantity(priceAct, sku);
+
+@defineDocumentAggregationTime(transferOut, priceAct);
+@defineDocumentAggregationPosted(transferOut, priceAct);
+@defineDocumentDescriptionCustom(priceAct, priceActDetail, seriesNumberPriceAct, 'Акт расценки');
+
+@defineDocumentDetailBasePrice(priceAct);
+@defineDocumentDetailBaseSum(priceAct);
+
+@defineDocumentDetailInvoicePrice(priceAct);
+@defineDocumentDetailInvoiceSum(priceAct);
+
+departmentStorePriceActDetail (priceActDetail) =
+    destinationStockTransferOut(transferOutPriceAct(priceActPriceActDetail(priceActDetail)))
+    IF destinationStockTransferOut(transferOutPriceAct(priceActPriceActDetail(priceActDetail))) IS departmentStore;
+
+@implementBaseSkuDepartmentStoreLedger(priceAct, sku);
+
+retailPriceChangePriceActDetail(priceActDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuPriceActDetail(priceActDetail)), dateTimePriceActDetail(priceActDetail)),
+                                                               priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuPriceActDetail(priceActDetail)), dateTimePriceActDetail(priceActDetail));
+
+retailPricePriceActDetail(priceActDetail) <- retailPriceChangePriceActDetail(priceActDetail) WHEN ASSIGNED (dateTimePriceActDetail(priceActDetail))
+                                                                                           OR ASSIGNED (skuPriceActDetail(priceActDetail));
+
+EXTEND FORM transferIns
+
+    OBJECTS pd=priceActDetail
+    PROPERTIES (pd) READONLY indexPriceActDetail, nameSkuPriceActDetail, quantityPriceActDetail,
+                    importerPricePriceActDetail, numberRetailVATPriceActDetail, //retailMarkupPriceActDetail,
+                    valueRetailVATPriceActDetail, retailPricePriceActDetail
+
+    FILTERS transferInTransferOut(transferOutTransferOutDetail(transferOutDetailPriceActDetail(pd)))==t
+;
+
+EXTEND DESIGN transferIns {
+    documentDetail {
+        ADD pd.box {
+            title = 'Расценка';
+        }
+    }
+}
+
