@@ -24,6 +24,7 @@ REQUIRE System,
         Transfer,
         Sale,
         Return,
+        Move,
         WholesalePrice,
         RetailPrice,
         CRM,
@@ -151,12 +152,14 @@ NAVIGATOR {
             ADD transferIns;
             ADD saleIns;
             ADD returnIns;
+            ADD moveIns;
         }
 
         NEW logisticsOutcome 'Расходы' {
             ADD transferOuts;
             ADD saleOuts;
             ADD returnOuts;
+            ADD moveOuts;
         }
 
         NEW logisticsAggregations 'Сводная информация' {
