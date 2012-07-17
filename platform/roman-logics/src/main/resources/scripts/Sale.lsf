@@ -77,7 +77,7 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
 supplierPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
-supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSkuLedger(detail) AND detail IS saleInBatchDetail);
+supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
 @implementBatch(saleInBatch, sku, stock);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);

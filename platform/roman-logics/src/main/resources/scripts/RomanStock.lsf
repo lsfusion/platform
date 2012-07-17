@@ -89,3 +89,16 @@ EXTEND FORM currentBalanceSkuStock
 ;
 
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+
+importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA);
+
+rangeVATBatchA 'Шкала НДС (ИД)' (batchA) = ABSTRACT range (batchA);
+numberSupplierVATBatchA 'НДС, номер' (batchA) = numberRange(rangeVATBatchA(batchA));
+valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
+    (rangeVATBatchA(batchA), dateBatch(batchA));
+
+CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT CHECKED BY rangeVATBatchA MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+EXTEND FORM costSkuLedger
+    PROPERTIES(bt) READONLY importerPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
+;
