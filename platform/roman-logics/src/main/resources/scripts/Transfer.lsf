@@ -112,9 +112,10 @@ needPriceActDetailTransferOutDetailBatch (transferOutDetail, batch) = costTransf
     AND destinationStockTransferOut(transferOutTransferOutDetail(transferOutDetail)) IS departmentStore;
 
 @defineAggregationDouble(transferOutDetail, batch, priceActDetail, needPriceActDetailTransferOutDetailBatch);
-@defineDocumentAggregationDetailQuantity (transferOut, priceAct);
 
 priceActPriceActDetail (priceActDetail) = priceActTransferOut(transferOutTransferOutDetail(transferOutDetailPriceActDetail(priceActDetail)));
+quantityPriceActDetail 'Количество' (priceActDetail) = costTransferOutDetailBatch(transferOutDetailPriceActDetail(priceActDetail), batchPriceActDetail(priceActDetail));
+
 @defineDocumentDetailIndex(priceAct);
 
 @defineDocumentAggregationDetailSku(transferOut, priceAct, sku);
@@ -129,8 +130,8 @@ priceActPriceActDetail (priceActDetail) = priceActTransferOut(transferOutTransfe
 @defineDocumentDetailBasePrice(priceAct);
 @defineDocumentDetailBaseSum(priceAct);
 
-@defineDocumentDetailInvoicePrice(priceAct);
-@defineDocumentDetailInvoiceSum(priceAct);
+//@defineDocumentDetailInvoicePrice(priceAct);
+//@defineDocumentDetailInvoiceSum(priceAct);
 
 departmentStorePriceActDetail (priceActDetail) =
     destinationStockTransferOut(transferOutPriceAct(priceActPriceActDetail(priceActDetail)))
@@ -144,10 +145,17 @@ retailPriceChangePriceActDetail(priceActDetail) = UNION OVERRIDE priceBasePriceS
 retailPricePriceActDetail(priceActDetail) <- retailPriceChangePriceActDetail(priceActDetail) WHEN ASSIGNED (dateTimePriceActDetail(priceActDetail))
                                                                                            OR ASSIGNED (skuPriceActDetail(priceActDetail));
 
+@defineDocumentDetailSkuArticle(priceAct);
+//@extendDocumentFormDetailSkuArticleReadonly(transferIns, pd, priceAct);
+
 EXTEND FORM transferIns
 
     OBJECTS pd=priceActDetail
-    PROPERTIES (pd) READONLY indexPriceActDetail, nameSkuPriceActDetail, quantityPriceActDetail,
+    PROPERTIES (pd) READONLY indexPriceActDetail, barcodePriceActDetail,
+                    nameCategoryPriceActDetail, nameBrandPriceActDetail,
+                    sidArticlePriceActDetail, sidSizePriceActDetail,
+                    sidColorPriceActDetail, nameColorPriceActDetail,
+                    quantityPriceActDetail, shortNameUOMPriceActDetail,
                     importerPricePriceActDetail, numberRetailVATPriceActDetail, //retailMarkupPriceActDetail,
                     valueRetailVATPriceActDetail, retailPricePriceActDetail
 
