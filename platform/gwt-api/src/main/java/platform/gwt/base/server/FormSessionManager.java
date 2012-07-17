@@ -3,7 +3,7 @@ package platform.gwt.base.server;
 import org.springframework.beans.factory.annotation.Autowired;
 import platform.client.logics.ClientForm;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GForm;
+import platform.gwt.view2.GForm;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.servlet.http.HttpSession;

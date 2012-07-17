@@ -1,7 +1,7 @@
 package platform.client.logics.classes;
 
-import platform.gwt.view.classes.GInsensitiveStringType;
-import platform.gwt.view.classes.GType;
+import platform.gwt.view2.classes.GInsensitiveStringType;
+import platform.gwt.view2.classes.GType;
 import platform.client.ClientResourceBundle;
 import platform.interop.Data;
 

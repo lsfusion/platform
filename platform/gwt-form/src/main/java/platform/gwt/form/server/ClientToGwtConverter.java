@@ -27,8 +27,6 @@ public class ClientToGwtConverter extends ObjectConverter {
         private static final ClientToGwtConverter instance = new ClientToGwtConverter();
     }
 
-    private HttpSession session;
-
     public static ClientToGwtConverter getInstance() {
         return InstanceHolder.instance;
     }
@@ -36,8 +34,7 @@ public class ClientToGwtConverter extends ObjectConverter {
     private ClientToGwtConverter() {
     }
 
-    public GAction convertAction(HttpSession session, ClientAction clientAction, Object... context) {
-        this.session = session;
+    public GAction convertAction(ClientAction clientAction, Object... context) {
         return convertOrNull(clientAction, context);
     }
 
@@ -62,12 +59,14 @@ public class ClientToGwtConverter extends ObjectConverter {
 
     @Converter(from = DialogClientAction.class)
     public GDialogAction convertAction(DialogClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        return new GDialogAction(servlet.getFormSessionManager().createFormAndPutInSession(action.dialog));
+//        return new GDialogAction(servlet.getFormSessionManager().createFormAndPutInSession(action.dialog));
+        return null;
     }
 
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        return new GFormAction(action.isModal, servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
+//        return new GFormAction(action.isModal, servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
+        return null;
     }
 
     @Converter(from = HideFormClientAction.class)
@@ -88,7 +87,8 @@ public class ClientToGwtConverter extends ObjectConverter {
     @Converter(from = ProcessFormChangesClientAction.class)
     public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
-        return new GProcessFormChangesAction(changes.getGwtFormChangesDTO());
+//        return new GProcessFormChangesAction(changes.getGwtFormChangesDTO());
+        return null;
     }
 
     @Converter(from = ReportClientAction.class)
@@ -99,20 +99,21 @@ public class ClientToGwtConverter extends ObjectConverter {
 
     @Converter(from = RequestUserInputClientAction.class)
     public GRequestUserInputAction convertAction(RequestUserInputClientAction action) throws IOException {
-        return new GRequestUserInputAction(ClientTypeSerializer.deserializeClientType(action.readType).getGwtType(), action.oldValue);
+//        return new GRequestUserInputAction(ClientTypeSerializer.deserializeClientType(action.readType).getGwtType(), action.oldValue);
+        return null;
     }
 
     @Converter(from = RunPrintReportClientAction.class)
-    public GRunPrintReportAction convertAction(RunPrintReportClientAction action, FormSessionObject form) throws IOException {
-        return new GRunPrintReportAction(generateReport(form, true));
+    public GRunPrintReportAction convertAction(RunPrintReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
+        return new GRunPrintReportAction(generateReport(session, form, true));
     }
 
     @Converter(from = RunOpenInExcelClientAction.class)
-    public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, FormSessionObject form) throws IOException {
-        return new GRunOpenInExcelAction(generateReport(form, false));
+    public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, HttpSession session, FormSessionObject form) throws IOException {
+        return new GRunOpenInExcelAction(generateReport(session, form, false));
     }
 
-    private String generateReport(FormSessionObject form, boolean isPdf) {
+    private String generateReport(HttpSession session, FormSessionObject form, boolean isPdf) {
         try {
             TimeZone zone = Calendar.getInstance().getTimeZone();
             ReportGenerationData data = form.remoteForm.getReportData(-1, null, !isPdf, null);
@@ -122,7 +123,7 @@ public class ClientToGwtConverter extends ObjectConverter {
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(report);
 
-            String reportSID = generateReportSID();
+            String reportSID = generateReportSID(session);
             session.setAttribute(reportSID, file.getAbsolutePath());
             return reportSID;
         } catch (Exception e) {
@@ -132,7 +133,7 @@ public class ClientToGwtConverter extends ObjectConverter {
         return null;
     }
 
-    private String generateReportSID() {
+    private String generateReportSID(HttpSession session) {
         String sid = "";
         do {
             sid = BaseUtils.randomString(20);

@@ -1,0 +1,32 @@
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.0//EN"
+        "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
+<module>
+    <inherits name='com.google.gwt.user.User'/>
+    <!--<inherits name="platform.gwt.sgwtbase.SGWTBase"/>-->
+    <inherits name="platform.gwt.base.Base"/>
+    <inherits name="platform.gwt.View2"/>
+    <inherits name="platform.gwt.Resources"/>
+
+    <!-- GWT theme -->
+    <!--<inherits name='com.google.gwt.user.theme.standard.Standard'/>-->
+    <!--<inherits name="com.google.gwt.user.theme.chrome.Chrome"/>-->
+    <!--<inherits name='com.google.gwt.user.theme.dark.Dark'/>-->
+    <inherits name='com.google.gwt.user.theme.clean.Clean'/>
+
+    <!--&lt;!&ndash; GWT Mosaic &ndash;&gt;-->
+    <!--<inherits name='org.gwt.mosaic.Mosaic' />-->
+
+    <!--&lt;!&ndash; GWT Mosaic theme &ndash;&gt;-->
+    <!--<inherits name='org.gwt.mosaic.theme.standard.Standard' />-->
+    <!--&lt;!&ndash; <inherits name="org.gwt.mosaic.chrome.Chrome"/>            &ndash;&gt;-->
+    <!--&lt;!&ndash; <inherits name="org.gwt.mosaic.dark.Dark"/>                &ndash;&gt;-->
+    <!--&lt;!&ndash; <inherits name='org.gwt.mosaic.theme.aegean.Aegean' />     &ndash;&gt;-->
+
+    <!--  GWT dispatch -->
+    <inherits name='net.customware.gwt.dispatch.Dispatch' />
+
+    <entry-point class='platform.gwt.form2.client.MainFrame'/>
+
+    <source path='client'/>
+    <source path='shared'/>
+</module>

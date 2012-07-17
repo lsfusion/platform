@@ -3,7 +3,6 @@ package platform.gwt.form.server.navigator.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.client.logics.DeSerializer;
-import platform.client.navigator.ClientNavigatorElement;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.navigator.GetNavigatorElements;
@@ -21,6 +20,7 @@ public class GetNavigatorElementsHandler extends SimpleActionHandlerEx<GetNaviga
     public GetNavigatorElementsResult executeEx(GetNavigatorElements action, ExecutionContext context) throws DispatchException, IOException {
         DeSerializer.deserializeListClientNavigatorElementWithChildren(servlet.getNavigator().getNavigatorTree());
 
-        return new GetNavigatorElementsResult(ClientNavigatorElement.root.getGwtElement());
+//        return new GetNavigatorElementsResult(ClientNavigatorElement.root.getGwtElement());
+        return null;
     }
 }

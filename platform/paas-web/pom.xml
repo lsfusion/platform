@@ -12,10 +12,6 @@
     <packaging>jar</packaging>
     <name>Paas Web</name>
 
-    <properties>
-        <gwtp.version>0.6</gwtp.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
@@ -57,7 +53,6 @@
         <dependency>
             <groupId>com.google.code.gwt-log</groupId>
             <artifactId>gwt-log</artifactId>
-            <version>3.1.2</version>
         </dependency>
 
         <dependency>
@@ -71,7 +66,6 @@
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
-            <version>2.2.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -85,34 +79,28 @@
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.0-801.jdbc4</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.gwtplatform</groupId>
             <artifactId>gwtp-dispatch-server-spring</artifactId>
-            <version>${gwtp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.gwtplatform</groupId>
             <artifactId>gwtp-mvp-client</artifactId>
-            <version>${gwtp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.gwtplatform</groupId>
             <artifactId>gwtp-clients-common</artifactId>
-            <version>${gwtp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.gwtplatform</groupId>
             <artifactId>gwtp-dispatch-client</artifactId>
-            <version>${gwtp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt.inject</groupId>
             <artifactId>gin</artifactId>
-            <version>1.5.0</version>
         </dependency>
     </dependencies>
 

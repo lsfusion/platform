@@ -85,12 +85,10 @@
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.0-801.jdbc4</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jtds</groupId>
             <artifactId>jtds</artifactId>
-            <version>1.2.4</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -109,82 +107,66 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>3.0.5.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>3.0.5.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>
             <artifactId>jxl</artifactId>
-            <version>2.6.12</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
-            <version>3.2.1.Final</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
-            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-bridge</artifactId>
-            <version>1.7</version>
         </dependency>
         <dependency>
             <groupId>net.sf.barcode4j</groupId>
             <artifactId>barcode4j</artifactId>
-            <version>2.0</version>
         </dependency>
         <dependency>
             <groupId>org.supercsv</groupId>
             <artifactId>supercsv</artifactId>
-            <version>1.52</version>
         </dependency>
         <dependency>
             <groupId>commons-daemon</groupId>
             <artifactId>commons-daemon</artifactId>
-            <version>1.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.berryworks.edireader</groupId>
             <artifactId>edireader</artifactId>
-            <version>4.7.3</version>
         </dependency>
         <dependency>
             <groupId>jssc</groupId>
             <artifactId>jssc</artifactId>
-            <version>0.7.1b</version>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr</artifactId>
-            <version>3.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.7</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml-schemas</artifactId>
-            <version>3.6-f</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
-            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.thavam</groupId>
             <artifactId>blocking-map</artifactId>
-            <version>1.0-patched</version>
         </dependency>
     </dependencies>
 </project>

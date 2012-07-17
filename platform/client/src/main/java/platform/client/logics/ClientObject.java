@@ -8,7 +8,7 @@ import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GObject;
+import platform.gwt.view2.GObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

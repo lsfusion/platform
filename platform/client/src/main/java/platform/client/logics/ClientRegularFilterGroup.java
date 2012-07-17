@@ -3,7 +3,7 @@ package platform.client.logics;
 import platform.base.context.ApplicationContext;
 import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GRegularFilterGroup;
+import platform.gwt.view2.GRegularFilterGroup;
 import platform.interop.form.layout.SimplexConstraints;
 
 import java.io.DataInputStream;

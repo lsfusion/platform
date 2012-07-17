@@ -1,7 +1,7 @@
 package platform.gwt.paas.client.login;
 
-import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.GwtEvent;
+import com.google.web.bindery.event.shared.EventBus;
 
 public class LogoutAuthenticatedEvent extends GwtEvent<LogoutAuthenticatedEventHandler> {
 

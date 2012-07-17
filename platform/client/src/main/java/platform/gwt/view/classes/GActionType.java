@@ -9,9 +9,7 @@ import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.events.ShowValueEvent;
 import com.smartgwt.client.widgets.form.fields.events.ShowValueHandler;
-import com.smartgwt.client.widgets.grid.CellFormatter;
 import com.smartgwt.client.widgets.grid.ListGridField;
-import com.smartgwt.client.widgets.grid.ListGridRecord;
 import platform.gwt.view.GGroupObject;
 import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.GridDataRecord;
@@ -25,13 +23,13 @@ public class GActionType extends GDataType {
         ListGridField field = super.createGridField(formLogics, property);
         field.setAlign(Alignment.CENTER);
         field.setCellAlign(Alignment.CENTER);
-        field.setCellFormatter(new CellFormatter() {
-            @Override
-            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
-//                убираем рендеринг по умолчанию, а то наблюдаются странные эффекты с наложением кнопки на чекбокс
-                return null;
-            }
-        });
+//        field.setCellFormatter(new CellFormatter() {
+//            @Override
+//            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+////                убираем рендеринг по умолчанию, а то наблюдаются странные эффекты с наложением кнопки на чекбокс
+//                return null;
+//            }
+//        });
         return field;
     }
 

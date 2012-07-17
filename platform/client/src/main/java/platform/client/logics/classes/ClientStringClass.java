@@ -8,8 +8,8 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view.classes.GStringType;
-import platform.gwt.view.classes.GType;
+import platform.gwt.view2.classes.GStringType;
+import platform.gwt.view2.classes.GType;
 import platform.interop.Compare;
 import platform.interop.Data;
 

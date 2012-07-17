@@ -8,11 +8,10 @@ import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.form.panel.location.ClientPanelLocation;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GComponent;
+import platform.gwt.view2.GComponent;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;

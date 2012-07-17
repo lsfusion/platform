@@ -1,6 +1,6 @@
 package platform.client.navigator;
 
-import platform.gwt.view.GNavigatorElement;
+import platform.gwt.view2.GNavigatorElement;
 
 import java.io.DataInputStream;
 import java.io.IOException;

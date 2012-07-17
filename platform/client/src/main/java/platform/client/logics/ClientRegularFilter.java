@@ -4,7 +4,7 @@ import platform.base.identity.IdentityObject;
 import platform.client.SwingUtils;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GRegularFilter;
+import platform.gwt.view2.GRegularFilter;
 
 import javax.swing.*;
 import java.io.DataInputStream;

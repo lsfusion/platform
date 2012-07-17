@@ -8,7 +8,8 @@ import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GContainer;
+import platform.gwt.view2.GContainer;
+import platform.gwt.view2.GContainerType;
 import platform.interop.form.layout.AbstractContainer;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.SimplexConstraints;
@@ -20,6 +21,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static platform.interop.form.layout.ContainerType.*;
 
 public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
 
@@ -178,7 +181,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     }
 
     public boolean isSplitPane() {
-        return type == ContainerType.SPLIT_PANE_HORIZONTAL || type == ContainerType.SPLIT_PANE_VERTICAL;
+        return type == ContainerType.SPLIT_PANE_HORIZONTAL || type == SPLIT_PANE_VERTICAL;
     }
 
     @Override
@@ -223,10 +226,22 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public void initGwtComponent(GContainer container) {
         super.initGwtComponent(container);
         container.title = title;
-        container.type = type;
+        switch (type) {
+            case CONTAINER:
+                container.type = GContainerType.CONTAINER;
+                break;
+            case SPLIT_PANE_VERTICAL:
+                container.type = GContainerType.VERTICAL_SPLIT_PANEL;
+                break;
+            case SPLIT_PANE_HORIZONTAL:
+                container.type = GContainerType.HORIZONTAL_SPLIT_PANEL;
+                break;
+            case TABBED_PANE:
+                container.type = GContainerType.TABBED_PANEL;
+                break;
+        }
 
-        container.gwtVertical = isSplitPane() ? type == ContainerType.SPLIT_PANE_VERTICAL : !getConstraints().childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
-
+        container.gwtVertical = isSplitPane() ? type == SPLIT_PANE_VERTICAL : !getConstraints().childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
         container.gwtIsLayout = container.gwtVertical ? getConstraints().fillVertical != 0 : getConstraints().fillHorizontal != 0;
     }
 

@@ -5,7 +5,7 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
-import platform.gwt.view.GShowType;
+import platform.gwt.view2.GShowType;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;

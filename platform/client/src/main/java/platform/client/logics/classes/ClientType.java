@@ -6,7 +6,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.PanelView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view.classes.GType;
+import platform.gwt.view2.classes.GType;
 import platform.interop.Compare;
 
 import java.awt.*;

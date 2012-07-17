@@ -1,6 +1,6 @@
 package platform.client.logics;
 
-import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.view2.changes.dto.GGroupObjectValueDTO;
 
 import java.io.*;
 import java.util.Collection;

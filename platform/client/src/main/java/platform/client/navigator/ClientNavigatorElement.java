@@ -1,7 +1,7 @@
 package platform.client.navigator;
 
 import platform.base.IOUtils;
-import platform.gwt.view.GNavigatorElement;
+import platform.gwt.view2.GNavigatorElement;
 
 import javax.swing.*;
 import java.io.DataInputStream;

@@ -77,22 +77,18 @@
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCore</artifactId>
-            <version>1.1.1_p2</version>
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCommon</artifactId>
-            <version>1.1.1_p2</version>
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>paint</artifactId>
-            <version>1.1.1_p2</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>
             <artifactId>jxl</artifactId>
-            <version>2.6.10</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -101,22 +97,18 @@
         <dependency>
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
-            <version>3.2.1.Final</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-bridge</artifactId>
-            <version>1.7</version>
         </dependency>
         <dependency>
             <groupId>net.sf.barcode4j</groupId>
             <artifactId>barcode4j</artifactId>
-            <version>2.0</version>
         </dependency>
         <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swingx</artifactId>
-            <version>1.6.1</version>
         </dependency>
     </dependencies>
 </project>

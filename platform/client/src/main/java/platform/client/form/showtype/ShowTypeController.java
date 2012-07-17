@@ -16,16 +16,14 @@ public abstract class ShowTypeController {
     private ClassViewType classView = ClassViewType.HIDE;
 
     private List<ClassViewType> banClassView;
-    public final ClientShowType showTypeKey;
+    public final ClientShowType clientShowType;
 
-    public ShowTypeController(ClientShowType showTypeKey, final GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
-        this.showTypeKey = showTypeKey;
+    public ShowTypeController(ClientShowType clientShowType, final GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
+        this.clientShowType = clientShowType;
+
         view = new ShowTypeView() {
-
-            protected void buttonPressed(String action) {
-
+            protected void setNewClassView(ClassViewType newClassView) {
                 try {
-                    ClassViewType newClassView = ClassViewType.valueOf(action.toUpperCase());
                     if (!classView.equals(newClassView)) {
                         form.changeClassView(logicsSupplier.getGroupObject(), newClassView);
                     }
@@ -36,13 +34,12 @@ public abstract class ShowTypeController {
         };
     }
 
-    public void changeClassView(ClassViewType classView) {
-        if (!classView.equals(this.classView)) {
+    public void changeClassView(ClassViewType newClassView) {
+        if (!newClassView.equals(classView)) {
+            classView = newClassView;
+            view.changeClassView(newClassView, banClassView);
 
-            this.classView = classView;
-            view.changeClassView(classView, banClassView);
-
-            if (classView.equals(ClassViewType.HIDE)) {
+            if (newClassView == ClassViewType.HIDE) {
                 needToBeHidden();
             } else {
                 needToBeShown();

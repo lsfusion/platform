@@ -27,6 +27,7 @@ public class MainFrame extends VLayout implements EntryPoint {
         setHeight100();
 
         navigatorPanel = new NavigatorPanel(this);
+        navigatorPanel.setShowResizeBar(true);
 
         HLayout main = new HLayout(20);
         main.addMember(navigatorPanel);

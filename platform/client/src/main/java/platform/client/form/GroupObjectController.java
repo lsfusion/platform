@@ -427,7 +427,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
                     control.getPanelView().changeViewType(classView);
                 }
 
-                formLayout.add(showType.showTypeKey, showType.view);
+                formLayout.add(showType.clientShowType, showType.view);
             }
         }
     }

@@ -34,7 +34,6 @@ public class NavigatorPanel extends VLayout {
         treeGrid.setShowHeaderMenuButton(false);
         treeGrid.setShowOpenIcons(false);
         treeGrid.setShowDropIcons(false);
-        treeGrid.setShowResizeBar(true);
 
         treeGrid.setDataSource(NavigatorTreeDS.getInstance());
 

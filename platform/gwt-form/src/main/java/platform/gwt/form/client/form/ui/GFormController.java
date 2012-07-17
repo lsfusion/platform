@@ -24,7 +24,7 @@ import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;
 import platform.gwt.form.shared.actions.form.*;
 import platform.gwt.sgwtbase.client.ErrorAsyncCallback;
-import platform.gwt.sgwtbase.client.WrapperAsyncCallbackEx;
+import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.view.*;
 import platform.gwt.view.changes.GFormChanges;
 import platform.gwt.view.changes.GGroupObjectValue;

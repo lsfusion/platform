@@ -4,8 +4,8 @@ import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view.classes.GDoubleType;
-import platform.gwt.view.classes.GType;
+import platform.gwt.view2.classes.GDoubleType;
+import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.io.DataInputStream;

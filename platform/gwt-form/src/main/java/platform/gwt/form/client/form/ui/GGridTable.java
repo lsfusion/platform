@@ -52,7 +52,6 @@ public class GGridTable extends ListGrid {
         this.editDispatcher = new GwtEditPropertyActionDispatcher(form);
 
         setSelectionType(SelectionStyle.SINGLE);
-        setShowAllRecords(true);
         setModalEditing(true);
         setShowRollOver(false);
         setCanResizeFields(true);
@@ -64,14 +63,14 @@ public class GGridTable extends ListGrid {
         setCanEdit(this.form.isEditingEnabled());
         setEditEvent(ListGridEditEvent.NONE);
         setEditByCell(true);
+        setAutoSaveEdits(false);
+        setNeverValidate(true);
 
+        setShowAllRecords(true);
         setShowRecordComponents(true);
         setShowRecordComponentsByCell(true);
 //        setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
 //        setPoolComponentsPerColumn(true);
-
-        setAutoSaveEdits(false);
-        setNeverValidate(true);
 
         addCellDoubleClickHandler(new CellDoubleClickHandler() {
             @Override

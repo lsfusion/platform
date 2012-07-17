@@ -8,7 +8,7 @@ import platform.base.context.ApplicationContextHolder;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GForm;
+import platform.gwt.view2.GForm;
 import platform.interop.form.layout.AbstractForm;
 
 import javax.swing.*;

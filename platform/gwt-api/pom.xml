@@ -48,14 +48,13 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
             <classifier>sources</classifier>
         </dependency>
+
         <dependency>
             <groupId>com.smartgwt</groupId>
             <artifactId>smartgwt</artifactId>
@@ -63,22 +62,18 @@
         <dependency>
             <groupId>com.google.code.gwt-log</groupId>
             <artifactId>gwt-log</artifactId>
-            <version>3.1.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt.inject</groupId>
             <artifactId>gin</artifactId>
-            <version>1.5.0</version>
         </dependency>
         <dependency>
             <groupId>net.customware.gwt.dispatch</groupId>
             <artifactId>gwt-dispatch</artifactId>
-            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.gwtupload</groupId>
             <artifactId>gwtupload</artifactId>
-            <version>0.6.3-compat</version>
         </dependency>
 
         <dependency>
@@ -112,7 +107,6 @@
         <dependency>
             <groupId>com.octo.captcha</groupId>
             <artifactId>jcaptcha</artifactId>
-            <version>1.0</version>
         </dependency>
     </dependencies>
 </project>

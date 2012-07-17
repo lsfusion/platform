@@ -5,7 +5,7 @@ import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.GridEditor;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GGrid;
+import platform.gwt.view2.GGrid;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;

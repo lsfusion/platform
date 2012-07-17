@@ -2,9 +2,9 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.gwt.utils.GwtSharedUtils;
-import platform.gwt.view.changes.dto.GFormChangesDTO;
-import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
-import platform.gwt.view.changes.dto.GPropertyReaderDTO;
+import platform.gwt.view2.changes.dto.GFormChangesDTO;
+import platform.gwt.view2.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.view2.changes.dto.GPropertyReaderDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 

@@ -4,7 +4,7 @@ import platform.base.context.ApplicationContext;
 import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view.GTreeGroup;
+import platform.gwt.view2.GTreeGroup;
 import platform.interop.form.layout.AbstractTreeGroup;
 
 import java.io.DataInputStream;

@@ -20,11 +20,12 @@ public class GetFormHandler extends FormActionHandler<GetForm, GetFormResult> {
             throw new IllegalStateException("Form's SID shouldn't be emptry");
         }
 
-        return new GetFormResult(
-                servlet.getFormSessionManager().createFormAndPutInSession(
-                        servlet.getNavigator().createForm(action.sid, action.initialObjects, false, false, true)
-                )
-        );
+//        return new GetFormResult(
+//                servlet.getFormSessionManager().createFormAndPutInSession(
+//                        servlet.getNavigator().createForm(action.sid, action.initialObjects, false, false, true)
+//                )
+//        );
+        return null;
     }
 }
 

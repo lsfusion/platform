@@ -1,7 +1,6 @@
-package platform.gwt.sgwtbase.client;
+package platform.gwt.base.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import platform.gwt.base.client.AsyncCallbackEx;
 
 public class WrapperAsyncCallbackEx<T> extends AsyncCallbackEx<T> {
     private final AsyncCallback<T> wrapped;

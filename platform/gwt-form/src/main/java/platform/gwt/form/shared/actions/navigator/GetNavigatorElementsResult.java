@@ -6,7 +6,6 @@ import platform.gwt.view.GNavigatorElement;
 public class GetNavigatorElementsResult implements Result {
     public GNavigatorElement root;
 
-
     public GetNavigatorElementsResult() {
     }
 
