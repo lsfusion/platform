@@ -43,7 +43,7 @@ META defineDocumentTables (object)
 END
 
 META defineDocumentRelationCustom (object, detail)
-    object###detail = DATA object (detail) IN idGroup;
+    object###detail = DATA object (detail) IN idGroup NOT NULL DELETE;
     in###object###detail(iobject, idetail) = object###detail(idetail) == iobject;
 
     @defineDocumentHeaderCountCustom(object, detail);

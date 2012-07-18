@@ -129,3 +129,44 @@ END
 META extendDocumentFormDetailSkuArticleReadonly (form, object, concrete)
     @extendDocumentFormDetailSkuArticleReadonlyQuantity(form, object, concrete, quantity###concrete##Detail);
 END
+
+// ---------------------------------------------------- Трансферы -------------------------------------------- //
+
+META defineDocumentTransferRetail (concrete)
+
+    retailPrice###concrete##Detail 'Цена розничная' = DATA NUMERIC[14,2] (concrete##Detail);
+    retailSum###concrete##Detail 'Сумма розничная' (detail) = quantity###concrete##Detail(detail) * retailPrice###concrete##Detail(detail);
+
+    retailPriceChange###concrete##Detail(concrete##Detail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(sku###concrete##Detail(concrete##Detail)), dateTime###concrete##Detail(concrete##Detail)),
+                                                                            priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku###concrete##Detail(concrete##Detail)), dateTime###concrete##Detail(concrete##Detail));
+
+    retailPrice###concrete##Detail(concrete##Detail) <- retailPriceChange###concrete##Detail(concrete##Detail) WHEN ASSIGNED (dateTime###concrete##Detail(concrete##Detail))
+                                                                                               OR ASSIGNED (sku###concrete##Detail(concrete##Detail));
+
+    EXTEND FORM concrete##s
+        PROPERTIES (d) READONLY retailPrice###concrete##Detail
+    ;
+
+    EXTEND FORM concrete
+        PROPERTIES (d) retailPrice###concrete##Detail
+    ;
+
+END
+
+META defineDocumentTransferAccountCustom(concrete, detail, object)
+
+    // Учетные суммы
+    accountSum###detail 'Сумма учетная' (idetail) = IF stock###detail(idetail) IS departmentStore THEN retailSum###detail(idetail)
+                                                                                                  ELSE (accountSumSkuLedger(idetail) AND idetail IS detail);
+    accountSum###concrete 'Сумма учетная' (iconcrete) = GROUP SUM accountSum###detail(idetail) BY concrete###detail(idetail) IN documentSumGroup;
+
+    EXTEND FORM concrete##s
+        PROPERTIES(t) READONLY accountSum###concrete
+        PROPERTIES(object) READONLY accountSum###detail
+    ;
+
+END
+
+META defineDocumentTransferAccount(concrete)
+    @defineDocumentTransferAccountCustom(concrete, concrete##Detail, d);
+END

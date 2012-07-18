@@ -7,6 +7,7 @@ REQUIRE System,
         RomanStock,
         DocumentTransfer,
         Contract,
+        RetailPrice,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -53,9 +54,12 @@ EXTEND FORM saleOut
 ;
 
 EXTEND FORM saleOuts
-    PROPERTIES(t) isCommissionSaleOut
-    PROPERTIES(d) supplierPriceSaleOutDetail
+    PROPERTIES(t) READONLY isCommissionSaleOut
+    PROPERTIES(d) READONLY supplierPriceSaleOutDetail
 ;
+
+@defineDocumentTransferRetail(saleOut);
+@defineDocumentTransferAccount(saleOut);
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
@@ -85,6 +89,8 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail
 
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
+isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
+
 costSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
 costSaleInBatchDetail (detail) <- [PREV(costBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
@@ -99,7 +105,8 @@ supplierPriceSaleInBatchDetail (detail) = supplierPriceSaleOutDetail(saleOutDeta
 rangeVATSaleInBatchDetail (detail) = DATA range (saleInBatchDetail);
 rangeVATSaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
-isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
+accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail) THEN retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
+                                                                                  ELSE supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
 @implementBatch(saleInBatch, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
@@ -108,6 +115,7 @@ isCommissionBatchA(batch) += isCommissionSaleInBatchDetail(batch);
 importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
 supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
 rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
+accountPriceBatchA(batch) += accountPriceSaleInBatchDetail(batch);
 
 contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 
@@ -132,6 +140,11 @@ EXTEND DESIGN saleIns {
 EXTEND FORM saleIns
     PROPERTIES(b) READONLY descriptionBatch, importerPriceBatchA, supplierPriceBatchA, valueSupplierVATBatchA
 ;
+
+retailPriceSaleInBatchDetail 'Цена розничная' (detail) = retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
+retailSumSaleInBatchDetail 'Сумма розничная' (detail) = quantitySaleInBatchDetail(detail) * retailPriceSaleInBatchDetail(detail);
+
+@defineDocumentTransferAccountCustom(saleIn, saleInBatchDetail, b);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

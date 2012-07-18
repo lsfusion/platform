@@ -96,6 +96,9 @@ valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
 
 CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT CHECKED BY rangeVATBatchA MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
+accountPriceBatchA 'Цена учетная' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
+accountSumSkuLedger 'Сумма учетная' (ledger) = GROUP SUM costSkuLedgerBatch(ledger, batch) * accountPriceBatchA(batch) BY ledger;
+
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(bt) nameOwnerBatchA FORCE GRID
 ;

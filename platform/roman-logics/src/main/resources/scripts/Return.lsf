@@ -64,6 +64,10 @@ EXTEND FORM returnOuts
     PROPERTIES(d) descriptionBatchReturnOutDetail
 ;
 
+@defineDocumentTransferRetail(returnOut);
+
+@defineDocumentTransferAccount(returnOut);
+
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS returnIn 'Получение товаров по накладным' : historyObject;
@@ -87,6 +91,11 @@ limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND 
 EXTEND FORM returnIns
     PROPERTIES(d) descriptionBatchReturnInDetail
 ;
+
+retailPriceReturnInDetail 'Цена розничная' (detail) = retailPriceReturnOutDetail(returnOutDetailReturnInDetail(detail));
+retailSumReturnInDetail 'Сумма розничная' (detail) = quantityReturnInDetail(detail) * retailPriceReturnInDetail(detail);
+
+@defineDocumentTransferAccount(returnIn);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

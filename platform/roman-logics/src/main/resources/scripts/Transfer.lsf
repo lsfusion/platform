@@ -40,22 +40,9 @@ CONSTRAINT companyStock(stockTransferOut(saleOut)) != companyStock(destinationSt
 quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
 @implementSkuLedgerOutFIFOBalanceA(transferOut, sku, stock);
 
-// Фиксируем розничную цену
-retailPriceTransferOutDetail 'Розничная цена' (transferOutDetail) = DATA NUMERIC[14,2] (transferOutDetail);
+@defineDocumentTransferRetail(transferOut);
 
-retailPriceChangeTransferOutDetail(transferOutDetail) = UNION OVERRIDE priceBasePriceSetDocumentArticleDateTime(articleSku(skuTransferOutDetail(transferOutDetail)), dateTimeTransferOutDetail(transferOutDetail)),
-                                                               priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuTransferOutDetail(transferOutDetail)), dateTimeTransferOutDetail(transferOutDetail));
-
-retailPriceTransferOutDetail(transferOutDetail) <- retailPriceChangeTransferOutDetail(transferOutDetail) WHEN ASSIGNED (dateTimeTransferOutDetail(transferOutDetail))
-                                                                                           OR ASSIGNED (skuTransferOutDetail(transferOutDetail));
-
-EXTEND FORM transferOuts
-    PROPERTIES (d) READONLY retailPriceTransferOutDetail
-;
-
-EXTEND FORM transferOut
-    PROPERTIES (d) retailPriceTransferOutDetail
-;
+@defineDocumentTransferAccount(transferOut);
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
@@ -73,6 +60,11 @@ costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, ba
 @implementSkuLedger(transferIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
+
+retailPriceTransferInDetail 'Цена розничная' (detail) = retailPriceTransferOutDetail(transferOutDetailTransferInDetail(detail));
+retailSumTransferInDetail 'Сумма розничная' (detail) = quantityTransferInDetail(detail) * retailPriceTransferInDetail(detail);
+
+@defineDocumentTransferAccount(transferIn);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
