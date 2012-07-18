@@ -232,6 +232,7 @@ printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegiste
 printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup;
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
+GROUP committeeGroup 'Комиссия' : publicGroup;
 
 META defineDocumentHeaderListRegister(object)
     registerCommittee###object (object) = DATA registerCommittee(object) IN idGroup;

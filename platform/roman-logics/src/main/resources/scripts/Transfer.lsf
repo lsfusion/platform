@@ -8,6 +8,7 @@ REQUIRE System,
         DocumentTransfer,
         ListRegister,
         RetailPrice,
+        Employee,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -120,8 +121,8 @@ isStoreDestinationStockTransferOut 'Перемещение на магазин' 
 needPriceActDetailTransferOutDetailBatch (transferOutDetail, batch) = costSkuLedgerBatch(transferOutDetail, batch)
     AND destinationStockTransferOut(transferOutTransferOutDetail(transferOutDetail)) IS departmentStore;
 
-CLASS priceAct 'Акт расценки' : listRegister, historyObject;
-CLASS priceActDetail 'Строка акта расценки': inputListRegisterDetail,  importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
+CLASS priceAct 'Акт расценки' : inputListRegister, historyObject;
+CLASS priceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
 
 @defineDocumentTables (priceAct);
 
@@ -149,6 +150,8 @@ quantityPriceActDetail 'Количество' (priceActDetail) = costSkuLedgerBa
 @defineDocumentHeaderQuantity(priceAct);
 @defineDocumentHeaderSkuQuantity(priceAct, sku);
 
+departmentStorePriceAct (priceAct) = destinationStockTransferOut(transferOutPriceAct(priceAct)) AS departmentStore;
+
 departmentStorePriceActDetail (priceActDetail) =
     destinationStockTransferOut(transferOutTransferOutDetail(transferOutDetailPriceActDetail(priceActDetail))) AS departmentStore;
 
@@ -157,14 +160,66 @@ departmentStorePriceActDetail (priceActDetail) =
 importerPricePriceActDetail 'Цена импортера' (priceActDetail) = DATA NUMERIC[14,2] (priceActDetail);
 importerPricePriceActDetail (detail) <- [PREV(importerPriceBatchA(batch))](batchPriceActDetail(detail)) WHEN ASSIGNED(isPostedPriceActDetail(detail));
 
-rangeVATPriceActDetail (priceActDetail) = DATA range (priceActDetail);
-rangeVATPriceActDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchPriceActDetail(detail)) WHEN ASSIGNED(isPostedPriceActDetail(detail));
+rangeRetailVATPriceActDetail (priceActDetail) = DATA range (priceActDetail);
+rangeRetailVATPriceActDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchPriceActDetail(detail)) WHEN ASSIGNED(isPostedPriceActDetail(detail));
 
-numberVATPriceActDetail 'НДС, номер' (priceActDetail) = numberRange(rangeVATPriceActDetail(priceActDetail));
-valueVATPriceActDetail 'НДС,%' (priceActDetail) = valueRateRangeDate
-    (rangeVATPriceActDetail(priceActDetail), datePriceActDetail(priceActDetail));
+numberRetailVATPriceActDetail 'НДС, номер' (priceActDetail) = numberRange(rangeRetailVATPriceActDetail(priceActDetail));
+valueRetailVATPriceActDetail 'НДС,%' (priceActDetail) = valueRateRangeDate
+    (rangeRetailVATPriceActDetail(priceActDetail), datePriceActDetail(priceActDetail));
 
 retailPricePriceActDetail 'Цена розничная' (priceActDetail) = retailPriceTransferOutDetail(transferOutDetailPriceActDetail(priceActDetail));
+
+printInputListRegisterTransferIn 'Реестр цен' (transferIn) = printInputListRegister(priceActTransferOut(transferOutTransferIn(transferIn))) TOOLBAR;
+
+// Расчет сумм и показателей для реестра цен
+importerSumPriceActDetail (priceActDetail) = importerPricePriceActDetail(priceActDetail) * quantityPriceActDetail(priceActDetail);
+retailSumPriceActDetail (priceActDetail) = retailPricePriceActDetail(priceActDetail) * quantityPriceActDetail(priceActDetail);
+retailVATSumPriceActDetail (priceActDetail) = [X*Y/(100+Y)] (retailSumPriceActDetail(priceActDetail), valueRetailVATPriceActDetail(priceActDetail));
+markupSumPriceActDetail (priceActDetail) = retailSumPriceActDetail(priceActDetail) (-) importerSumPriceActDetail(priceActDetail) (-) retailVATSumPriceActDetail(priceActDetail);
+
+markupSumPriceActDetailPriceAct (priceAct) = GROUP SUM markupSumPriceActDetail(priceActDetail) BY priceActPriceActDetail(priceActDetail);
+retailVATSumPriceActDetailPriceAct (priceAct) = GROUP SUM retailVATSumPriceActDetail(priceActDetail) BY priceActPriceActDetail(priceActDetail);
+retailSumPriceActDetailPriceAct (priceAct) = GROUP SUM retailSumPriceActDetail(priceActDetail) BY priceActPriceActDetail(priceActDetail);
+
+importerMarkupPriceActDetail (priceActDetail) = round2 (markupSumPriceActDetail(priceActDetail)*100/retailSumPriceActDetail(priceActDetail));
+
+// Свойства реестра цен
+@defineDocumentHeaderListRegister (priceAct);
+registerCommitteeTransferIn (transferIn) = registerCommitteePriceAct(priceActTransferOut(transferOutTransferIn(transferIn)));
+registerCommitteeListRegister (inputListRegister) += registerCommitteePriceAct(inputListRegister);
+
+dateListRegister (inputListRegister) += datePriceAct (inputListRegister);
+departmentStoreListRegister (inputListRegister) += departmentStorePriceAct (inputListRegister);
+senderListRegister (inputListRegister) += companyStock (stockTransferOut(transferOutPriceAct(inputListRegister)));
+shipperListRegister (inputListRegister) += nameStockTransferOut(transferOutPriceAct(inputListRegister));
+
+quantityListRegisterDetailListRegister (inputListRegister) += quantityPriceActDetailPriceAct (inputListRegister);
+wareSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS priceAct;
+wareVATSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS priceAct;
+markupSumListRegisterDetailListRegister (inputListRegister) +=  markupSumPriceActDetailPriceAct (inputListRegister);
+retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSumPriceActDetailPriceAct (inputListRegister);
+retailSumListRegisterDetailListRegister (inputListRegister) += retailSumPriceActDetailPriceAct (inputListRegister);
+
+numberListRegister (inputListRegister) += numberObject (transferOutPriceAct(inputListRegister));
+seriesListRegister (inputListRegister) += seriesObject (transferOutPriceAct(inputListRegister));
+
+listRegisterListRegisterDetail(inputListRegisterDetail) += priceActPriceActDetail (inputListRegisterDetail);
+indexListRegisterDetail (inputListRegisterDetail) += indexPriceActDetail (inputListRegisterDetail);
+skuListRegisterDetail  (inputListRegisterDetail) += skuPriceActDetail (inputListRegisterDetail);
+quantityListRegisterDetail (inputListRegisterDetail) += quantityPriceActDetail (inputListRegisterDetail);
+importerPriceListRegisterDetail (inputListRegisterDetail) += importerPricePriceActDetail (inputListRegisterDetail);
+supplierMarkupListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS priceActDetail;
+wareSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS priceActDetail;
+warePriceListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS priceActDetail;
+wareVATSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS priceActDetail;
+valueWareRangeListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS priceActDetail;
+importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkupPriceActDetail (inputListRegisterDetail);
+markupSumListRegisterDetail (inputListRegisterDetail) += markupSumPriceActDetail (inputListRegisterDetail);
+valueRetailVATListRegisterDetail (inputListRegisterDetail) += valueRetailVATPriceActDetail (inputListRegisterDetail);
+retailVATSumListRegisterDetail (inputListRegisterDetail) += retailVATSumPriceActDetail (inputListRegisterDetail);
+retailPriceListRegisterDetail (inputListRegisterDetail) += retailPricePriceActDetail (inputListRegisterDetail);
+retailSumListRegisterDetail (inputListRegisterDetail) += retailSumPriceActDetail (inputListRegisterDetail);
+
 
 EXTEND FORM transferIns
 
@@ -174,10 +229,12 @@ EXTEND FORM transferIns
                     sidArticlePriceActDetail, sidSizePriceActDetail,
                     sidColorPriceActDetail, nameColorPriceActDetail,
                     quantityPriceActDetail, shortNameUOMPriceActDetail,
-                    importerPricePriceActDetail, numberVATPriceActDetail, //retailMarkupPriceActDetail,
-                    valueVATPriceActDetail, retailPricePriceActDetail
+                    importerPricePriceActDetail, numberRetailVATPriceActDetail, //retailMarkupPriceActDetail,
+                    valueRetailVATPriceActDetail, retailPricePriceActDetail
 
     FILTERS transferInTransferOut(transferOutTransferOutDetail(transferOutDetailPriceActDetail(pd)))==t
+
+    PROPERTIES (t) printInputListRegisterTransferIn//, registerCommitteeTransferIn TODRAW pd FORCE PANEL
 ;
 
 EXTEND DESIGN transferIns {
