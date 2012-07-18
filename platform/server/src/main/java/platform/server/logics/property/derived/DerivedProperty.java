@@ -9,6 +9,7 @@ import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.ForActionProperty;
 import platform.server.logics.property.actions.flow.IfActionProperty;
 import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.actions.flow.SetActionProperty;
@@ -664,4 +665,10 @@ public class DerivedProperty {
         ListActionProperty actionProperty = new ListActionProperty(genID(), "sys", listInterfaces, actions);
         return actionProperty.getImplement(listInterfaces);
     }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, List<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive) {
+        ForActionProperty<L> actionProperty = new ForActionProperty<L>(genID(), "sys", innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, recursive);
+        return actionProperty.getMapImplement();
+    }
+
 }

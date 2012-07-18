@@ -20,7 +20,7 @@ public class ReturnActionProperty extends KeepContextActionProperty {
         return new HashSet<ActionProperty>();
     }
 
-    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         return FlowResult.RETURN;
     }
 

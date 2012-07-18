@@ -1,9 +1,6 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
-import platform.base.FunctionSet;
-import platform.base.Pair;
-import platform.base.QuickSet;
+import platform.base.*;
 import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
@@ -468,7 +465,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private Set<OldProperty> getSessionEventOldDepends() {
         Set<OldProperty> result = new HashSet<OldProperty>();
         for(ActionProperty action : sessionEvents)
-            result.addAll(action.event.getOldDepends());
+            result.addAll(action.getOldDepends());
         return result;
     }
 
@@ -477,7 +474,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private Set<SessionCalcProperty> getSessionEventCalcDepends() {
         Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
         for(ActionProperty action : sessionEvents)
-            result.addAll(action.event.getSessionCalcDepends());
+            result.addAll(action.getSessionCalcDepends());
         return result;
     }
 
@@ -500,7 +497,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(sessionEventChangedOld.getProperties().size > 0) { // оптимизационная проверка
             inSessionEvent = true;
             for(ActionProperty<?> action : sessionEvents) {
-                executeEventAction(action, null);
+                action.execute(this);
                 if(!isInSessionEvent())
                     return;
             }
@@ -511,6 +508,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 sessionEventNotChangedOld.add(changedOld, ((OldProperty<PropertyInterface>)changedOld).property.getIncrementChange(getModifier()));
             sessionEventChangedOld.clear(sql);
         }
+    }
+
+
+    private OverrideSessionModifier resolveModifier = null;
+
+    public <T extends PropertyInterface> void resolve(ActionProperty<?> action) throws SQLException {
+        IncrementChangeProps changes = new IncrementChangeProps();
+        for(SessionCalcProperty sessionCalcProperty : action.getSessionCalcDepends())
+            if(sessionCalcProperty instanceof ChangedProperty) // именно так, OldProperty нельзя подменять, так как предполагается что SET и DROPPED требуют разные значения PREV
+                changes.add(sessionCalcProperty, ((ChangedProperty)sessionCalcProperty).getFullChange(getModifier()));
+        resolveModifier = new OverrideSessionModifier(changes, FullFunctionSet.<CalcProperty>instance(), dataModifier);
+
+        action.execute(this);
+
+        resolveModifier.clean(sql);
+        resolveModifier = null;
     }
 
     // для оптимизации
@@ -709,6 +722,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     @Override
     public SessionModifier getModifier() {
+        if(resolveModifier != null)
+            return resolveModifier;
+
         if(isInSessionEvent())
             return sessionEventModifier;
 
@@ -736,11 +752,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 //        assert !isInTransaction();
         startTransaction();
 
-        Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecutes = new HashMap<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>>();
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
             if(property instanceof ActionProperty) {
-                executeEventAction((ActionProperty) property, pendingExecutes);
+                ((ActionProperty)property).execute(this);
                 if(!isInTransaction()) // если ушли из транзакции вываливаемся
                     return false;
             }
@@ -769,12 +784,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         commitTransaction();
         restart(false);
 
-        for(Map.Entry<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute : pendingExecutes.entrySet())
-            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = pendingExecute.getValue().iterator(); iterator.hasNext(); ) {
-                Map<ClassPropertyInterface, DataObject> context = iterator.next();
-                executePending(pendingExecute.getKey(), context, !iterator.hasNext());
-            }
-
         return true;
     }
 
@@ -789,27 +798,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
             applySingleStored(property, result.first, BL);
             apply.add(property, result.second);
-        }
-    }
-
-    public void executeEventAction(ActionProperty property, Map<ActionProperty, List<Map<ClassPropertyInterface, DataObject>>> pendingExecute) throws SQLException {
-        PropertySet<ClassPropertyInterface> propertyChange = property.getEventAction(getModifier());
-        if(propertyChange!=null && !propertyChange.isEmpty()) {
-            List<Map<ClassPropertyInterface, DataObject>> pendingPropExecute = null;
-            if(pendingExecute!=null && property.pendingEventExecute()) {
-                pendingPropExecute = new ArrayList<Map<ClassPropertyInterface, DataObject>>();
-                pendingExecute.put(property, pendingPropExecute);
-            }
-
-            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = propertyChange.executeClasses(this).iterator(); iterator.hasNext();) {
-                Map<ClassPropertyInterface, DataObject> executeRow = iterator.next();
-
-                if(pendingPropExecute!=null)
-                    // иначе "pend'им" выполнение, но уже с новыми классами
-                    pendingPropExecute.add(getCurrentObjects(executeRow));
-                else
-                    property.execute(new ExecutionContext(executeRow, null, null, this, null, !iterator.hasNext()));
-            }
         }
     }
 

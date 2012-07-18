@@ -4,8 +4,10 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.ExecutionEnvironment;
 import platform.server.session.PropertyChange;
 
@@ -29,8 +31,8 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new ActionPropertyMapImplement<P, K>(property, BaseUtils.join(mapping, remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(CalcPropertyMapImplement<L, T> where, boolean session, int options) {
-        property.setEventAction(where.map(BaseUtils.reverse(mapping)), new OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean>(), false, session, options);
+    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, boolean session, boolean resolve) {
+        lm.addEventAction(property, where.map(BaseUtils.reverse(mapping)), new OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean>(), false, session, resolve);
     }
 
     public ActionPropertyObjectEntity<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {
@@ -47,6 +49,10 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     
     public void execute(PropertyChange<T> change, ExecutionEnvironment env, FormEnvironment<T> form) throws SQLException {
         env.execute(property, change.map(mapping), form==null ? null : form.map(mapping));
+    }
+
+    public FlowResult execute(ExecutionContext<T> context) throws SQLException {
+        return property.execute(context.map(mapping));
     }
 
     public T mapSimpleDelete() {

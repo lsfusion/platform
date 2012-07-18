@@ -1,8 +1,6 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.server.classes.LogicalClass;
 import platform.server.logics.property.*;
-import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -10,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import static platform.base.BaseUtils.reverse;
-import static platform.base.BaseUtils.toListNoNull;
 
 public abstract class AroundAspectActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> aspectActionImplement;
@@ -25,7 +22,7 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
         return Collections.singleton((ActionProperty)aspectActionImplement.property);
     }
 
-    public final FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public final FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         return aroundAspect(context);
     }
 
@@ -44,7 +41,7 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
     }
 
     protected FlowResult proceed(ExecutionContext<PropertyInterface> innerContext) throws SQLException {
-        return execute(innerContext, aspectActionImplement);
+        return aspectActionImplement.execute(innerContext);
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {

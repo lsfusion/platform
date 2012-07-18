@@ -1,8 +1,6 @@
 package platform.server.logics.property;
 
-import platform.base.OrderedMap;
 import platform.base.Pair;
-import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ActionClass;
 import platform.server.classes.CustomClass;
@@ -10,15 +8,11 @@ import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
-import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.actions.ActionEvent;
+import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.ExecutionEnvironment;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChanges;
-import platform.server.session.PropertySet;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -51,20 +45,17 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             hasCancel = hasCancel || dependAction.hasCancel();
         return hasCancel;
     }
+    @IdentityLazy
+    public Set<SessionCalcProperty> getSessionCalcDepends() {
+        Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
+        for(CalcProperty property : getUsedProps())
+            result.addAll(property.getSessionCalcDepends());
+        for(CalcProperty property : getChangeProps())
+            result.addAll(property.getSessionCalcDepends());
+        return result;
+    }
 
     public abstract Set<ActionProperty> getDependActions();
-
-    public boolean pendingEventExecute() {
-        return getChangeProps().size()==0 && !hasCancel();
-    }
-
-    public PropertySet<P> getEventAction(Modifier modifier) {
-        return getEventAction(modifier.getPropertyChanges());
-    }
-
-    public PropertySet<P> getEventAction(PropertyChanges changes) {
-        return event.getChange(changes);
-    }
 
     public Map<P, ValueClass> getInterfaceClasses(boolean full) {
         return getWhereProperty().mapInterfaceClasses(full);
@@ -77,17 +68,19 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
-        if(event==null) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+        if(events.isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
             return new ArrayList<Pair<Property<?>, LinkType>>();
 
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
         for(CalcProperty depend : getUsedProps())
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.USEDACTION));
         result.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, LinkType.USEDACTION));
-        for(CalcProperty depend : getEventDepends())
+        for(CalcProperty depend : strongUsed)
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.EVENTACTION));
         return result;
     }
+    
+    public final Set<CalcProperty> strongUsed = new HashSet<CalcProperty>();
 
     // не сильно структурно поэтому вынесено в метод
     public <V> Map<P, V> getMapInterfaces(List<V> list) {
@@ -102,10 +95,35 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyMapImplement<P, V>(this, getMapInterfaces(list));
     }
 
-    public abstract FlowResult execute(ExecutionContext<P> context) throws SQLException;
+    public Set<BaseEvent> events = new HashSet<BaseEvent>();
+    public boolean resolve = false;
+    public Collection<ActionPropertyMapImplement<?, P>> beforeAspects = new ArrayList<ActionPropertyMapImplement<?, P>>();
+    public Collection<ActionPropertyMapImplement<?, P>> afterAspects = new ArrayList<ActionPropertyMapImplement<?, P>>();
+
+    public FlowResult execute(ExecutionContext<P> context) throws SQLException {
+        for(ActionPropertyMapImplement<?, P> aspect : beforeAspects) {
+            FlowResult beforeResult = aspect.execute(context);
+            if(beforeResult != FlowResult.FINISH)
+                return beforeResult;
+        }
+
+        FlowResult result = aspectExecute(context);
+
+        for(ActionPropertyMapImplement<?, P> aspect : afterAspects)
+            aspect.execute(context);
+
+        return result;
+    }
+
+    protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException;
 
     public ActionPropertyMapImplement<P, P> getImplement() {
         return new ActionPropertyMapImplement<P, P>(this, getIdentityInterfaces());
+    }
+
+    public void execute(ExecutionEnvironment env) throws SQLException {
+        assert interfaces.size()==0;
+        execute(new HashMap<P, DataObject>(), env, null);
     }
 
     public void execute(Map<P, DataObject> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
@@ -114,12 +132,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public ValueClass getValueClass() {
         return ActionClass.instance;
-    }
-
-    public ActionEvent<P> event = null;
-
-    protected Set<CalcProperty> getEventDepends() {
-        return event !=null ? event.getDepends() : new HashSet<CalcProperty>();
     }
 
     @Override
@@ -146,15 +158,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     protected ActionPropertyClassImplement<P> createClassImplement(List<ValueClassWrapper> classes, List<P> mapping) {
         return new ActionPropertyClassImplement<P>(this, classes, mapping);
-    }
-
-    public <D extends PropertyInterface> void setEventAction(CalcPropertyMapImplement<?, P> whereImplement, OrderedMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, boolean session, int options) {
-        if(!((CalcProperty)whereImplement.property).noDB())
-            whereImplement = whereImplement.mapChanged(IncrementType.SET);
-
-        if(Settings.instance.isCheckUniqueEvent() && event!=null)
-            throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", this));
-        event = new ActionEvent<P>(this, whereImplement, orders, ordersNotNull, session, options);
     }
 
     @IdentityLazy

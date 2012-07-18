@@ -4,8 +4,14 @@ import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.where.cases.CaseExpr;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 
 import java.util.*;
@@ -39,5 +45,9 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
 
     public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         return property.getInterfaceCommonClasses(commonValue);
+    }
+
+    public PropertyChange<T> getFullChange() {
+        return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL, Where.TRUE);
     }
 }

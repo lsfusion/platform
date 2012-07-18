@@ -27,11 +27,7 @@ public abstract class FlowActionProperty extends ActionProperty<PropertyInterfac
     }
 
     @Override
-    public abstract FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException;
-
-    public static <P extends PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, PropertyInterface> implement) throws SQLException {
-        return implement.property.execute(context.map(implement.mapping));
-    }
+    public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException;
 
     public static <P extends PropertyInterface, M> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyImplement<P, M> implement, Map<M, DataObject> keys, Map<PropertyInterface, M> mapInterfaces) throws SQLException {
         return implement.property.execute(context.override(join(implement.mapping, keys),

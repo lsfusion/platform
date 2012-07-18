@@ -2,7 +2,6 @@ package platform.server.logics.property.actions.flow;
 
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
@@ -44,11 +43,11 @@ public class ListActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
         for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
-            FlowResult actionResult = execute(context, action);
+            FlowResult actionResult = action.execute(context);
             if (actionResult != FlowResult.FINISH) {
                 result =  actionResult;
                 break;

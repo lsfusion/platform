@@ -27,4 +27,9 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
                 getGroupWhereProperty().mapInterfaceCommonClasses(null)));
     }
     protected abstract CalcPropertyMapImplement<?, I> getGroupWhereProperty();
+
+    public ActionPropertyMapImplement<PropertyInterface, I> getMapImplement() {
+        return new ActionPropertyMapImplement<PropertyInterface, I>(this, mapInterfaces);
+    }
+
 }

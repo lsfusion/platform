@@ -93,14 +93,14 @@ public class IfActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         if (readIf(context)) {
             if (trueAction != null) {
-                return execute(context, trueAction);
+                return trueAction.execute(context);
             }
         } else {
             if (falseAction != null) {
-                return execute(context, falseAction);
+                return falseAction.execute(context);
             }
         }
         return FlowResult.FINISH;

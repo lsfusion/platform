@@ -121,8 +121,12 @@ public class OverrideSessionModifier extends SessionModifier {
         modifier.registerView(this);
     }
 
+    public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+        this(override, forceDisableHintIncrement, EmptyFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), modifier);
+    }
+
     public OverrideSessionModifier(IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, EmptyFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), modifier);
+        this(override, EmptyFunctionSet.<CalcProperty>instance(), modifier);
     }
 
     @Override

@@ -57,7 +57,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
         boolean execElse = elseAction != null;

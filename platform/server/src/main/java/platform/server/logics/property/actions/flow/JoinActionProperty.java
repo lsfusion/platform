@@ -26,7 +26,7 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         finalizeInit();
     }
 
-    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         Map<T, DataObject> readValues = new HashMap<T, DataObject>();
         for (Map.Entry<T, CalcPropertyInterfaceImplement<PropertyInterface>> mapProp : action.mapping.entrySet()) {
             ObjectValue value = mapProp.getValue().readClasses(context, context.getKeys());

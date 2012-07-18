@@ -45,9 +45,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.ActionEvent;
-import platform.server.logics.property.actions.CustomActionProperty;
-import platform.server.logics.property.actions.FormActionProperty;
+import platform.server.logics.property.actions.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
@@ -1781,12 +1779,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @IdentityLazy
     public LinkedHashSet<OldProperty> getApplyEventDependProps() {
         LinkedHashSet<OldProperty> result = new LinkedHashSet<OldProperty>();
-        for (Property property : getPropertyList()) {
-            if (property instanceof ActionProperty) {
-                ActionEvent event = ((ActionProperty) property).event;
-                if(event!=null && !event.session)
-                    result.addAll(event.getOldDepends());
-            }
+        for (Property<?> property : getPropertyList()) {
+            if (property instanceof ActionProperty && ((ActionProperty) property).events.contains(SystemEvent.APPLY))
+                result.addAll(property.getOldDepends());
             if (property instanceof DataProperty && ((DataProperty) property).event!=null)
                 result.addAll(((DataProperty)property).event.getOldDepends());
         }
@@ -1800,11 +1795,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (Property property : getPropertyList(onlyCheck)) {
             if (property instanceof CalcProperty && ((CalcProperty)property).isStored())
                 result.add(property);
-            if (property instanceof ActionProperty) {
-                ActionEvent event = ((ActionProperty) property).event;
-                if(event!=null && !event.session)
-                    result.add(property);
-            }
+            if (property instanceof ActionProperty && ((ActionProperty) property).events.contains(SystemEvent.APPLY))
+                result.add(property);
         }
         return result;
     }
@@ -1830,11 +1822,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<ActionProperty> getSessionEvents() {
         List<ActionProperty> result = new ArrayList<ActionProperty>();
         for(Property property : getPropertyList())
-            if(property instanceof ActionProperty) {
-                ActionEvent event = ((ActionProperty) property).event;
-                if(event !=null && event.session)
-                    result.add((ActionProperty)property);
-            }
+            if (property instanceof ActionProperty && ((ActionProperty) property).events.contains(SystemEvent.SESSION))
+                result.add((ActionProperty)property);
         return result;
     }
 
@@ -2221,9 +2210,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void recalculateFollows(DataSession session) throws SQLException {
         for(Property property : getPropertyList())
             if(property instanceof ActionProperty) {
-                ActionEvent event = ((ActionProperty) property).event;
-                if(event!=null)
-                    event.resolve(session);
+                ActionProperty<?> action = (ActionProperty) property;
+                if(action.events.contains(SystemEvent.APPLY) && action.resolve)
+                    session.resolve(action);
             }
     }
 
@@ -2546,9 +2535,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 for (int i = 0; i < prop.listInterfaces.size(); i++)
                     params[i] = i+1;
                 if (isDerivedChange)
-                    emailNotificationProperty.setEventAction(prop, params);
+                    emailNotificationProperty.setEventAction(LM, prop, params);
                 else
-                    emailNotificationProperty.setEventSetAction(prop, params);
+                    emailNotificationProperty.setEventSetAction(LM, prop, params);
             }
         }
     }

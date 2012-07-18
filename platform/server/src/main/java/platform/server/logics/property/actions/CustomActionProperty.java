@@ -20,7 +20,7 @@ public abstract class CustomActionProperty extends ActionProperty<ClassPropertyI
 
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException;
 
-    public final FlowResult execute(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(context.getKeys()))) // если подходит по классам выполнем
             executeCustom(context);
         return FlowResult.FINISH;

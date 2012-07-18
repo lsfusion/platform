@@ -28,13 +28,10 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.actions.ActionEvent;
 import platform.server.logics.property.actions.ChangeEvent;
-import platform.server.logics.property.actions.LogPropertyActionProperty;
 import platform.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
@@ -124,59 +121,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         getImplement().change(keys, env, value);
     }
 
-    public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, int options, boolean session, LogicsModule lm) {
-        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, session, lm);
-    }
-
-    public <L extends PropertyInterface> Collection<Property> addFollows(CalcPropertyMapImplement<L, T> implement, String caption, int options, boolean session, LogicsModule lm) {
-//        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
-
-        Collection<Property> props = new ArrayList<Property>();
-        if((options & PropertyFollows.RESOLVE_TRUE)!=0 && ((CalcProperty)implement.property).hasSet(true)) { // оптимизационная проверка
-            assert interfaces.size() == implement.mapping.size(); // assert что количество
-//            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-//            setAction.property.caption = "RESOLVE TRUE : " + this + " => " + implement.property;
-//            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), session, ActionEvent.RESOLVE);
-            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
-            setAction.mapEventAction(DerivedProperty.createAndNot(getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)), session, ActionEvent.RESOLVE);
-            lm.addProp(setAction.property);
-        }
-        if((options & PropertyFollows.RESOLVE_FALSE)!=0 && hasSet(false)) {
-//            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-//            setAction.property.caption = "RESOLVE FALSE : " + this + " => " + implement.property;
-//            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), session, ActionEvent.RESOLVE);
-            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, false);
-            setAction.mapEventAction(DerivedProperty.createAnd(this, implement.mapChanged(IncrementType.DROP)), session, ActionEvent.RESOLVE);
-            lm.addProp(setAction.property);
-        }
-
-        CalcProperty constraint = DerivedProperty.createAndNot(this, implement).property;
-        constraint.caption = caption;
-        lm.addConstraint(constraint, false);
-
-        return props;
-    }
-
-    public void setConstraint(CheckType type, List<CalcProperty<?>> checkProperties, LogicsModule lm) {
-        assert type != CheckType.CHECK_SOME || checkProperties != null;
-        assert noDB();
-
-        this.checkChange = type;
-        this.checkProperties = checkProperties;
-
-        ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
-                DerivedProperty.createListAction(
-                        new ArrayList<ClassPropertyInterface>(),
-                        BaseUtils.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
-                                lm.baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>()),
-                                new LogPropertyActionProperty<T>(this).getImplement()
-                        )
-                );
-        constraintAction.mapEventAction(DerivedProperty.createAnyGProp(this).getImplement(), false, 0);
-        lm.addProp(constraintAction.property);
-    }
-
-    protected boolean hasSet(boolean notNull) {
+    public boolean hasSet(boolean notNull) {
         return !getSetChangeProps(notNull, false).isEmpty();
     }
 
@@ -415,13 +360,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
         for(CalcProperty<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
             result.addAll(property.getSessionCalcDepends());
-        return result;
-    }
-
-    public Set<OldProperty> getOldDepends() {
-        Set<OldProperty> result = new HashSet<OldProperty>();
-        for(SessionCalcProperty sessionCalc : getSessionCalcDepends())
-            result.add(sessionCalc.getOldProperty());
         return result;
     }
 

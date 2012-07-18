@@ -472,4 +472,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
         return links;
     }
+
+    public abstract Set<SessionCalcProperty> getSessionCalcDepends();
+
+    public Set<OldProperty> getOldDepends() {
+        Set<OldProperty> result = new HashSet<OldProperty>();
+        for(SessionCalcProperty sessionCalc : getSessionCalcDepends())
+            result.add(sessionCalc.getOldProperty());
+        return result;
+    }
+
 }

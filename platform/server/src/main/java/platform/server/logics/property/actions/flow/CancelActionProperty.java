@@ -22,7 +22,7 @@ public class CancelActionProperty extends KeepContextActionProperty {
         return true;
     }
 
-    public FlowResult execute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         context.cancel();
         return FlowResult.FINISH;
     }

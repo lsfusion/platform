@@ -96,6 +96,14 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env.getFormInstance();
     }
 
+    BusinessLogics<?> BL;
+    public BusinessLogics<?> getBL() {
+        if(BL==null) {
+            BL = Context.context.get().getBL();
+        }
+        return BL;
+    }
+
     public GroupObjectInstance getGroupObjectInstance() {
         PropertyDrawInstance drawInstance = form.getDrawInstance();
         if(drawInstance==null)

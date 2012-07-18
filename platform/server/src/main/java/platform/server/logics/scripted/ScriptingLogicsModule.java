@@ -1421,7 +1421,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkActionProperty(mainProp);
             boolean ordersNotNull = doesExtendContext(asList(whenProp), orders);
             params = getParamsPlainList(asList(whenProp), orders);
-            ((LAP<?>)mainProp).setEventAction(session, descending, ordersNotNull, params.toArray());
+            ((LAP<?>)mainProp).setEventAction(this, session, descending, ordersNotNull, params.toArray());
         }
     }
 
