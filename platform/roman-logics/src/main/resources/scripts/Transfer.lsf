@@ -17,6 +17,7 @@ PRIORITY Stock, RomanLogicsModule;
 CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject;
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным' : outFIFOSkuLedger;
+CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)';
 
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
@@ -27,6 +28,11 @@ CONSTRAINT companyStock(stockTransferOut(saleOut)) != companyStock(destinationSt
 @defineDocumentDetailSkuArticle(transferOut);
 @extendDocumentFormDetailSkuArticle(transferOut, d, transferOut);
 @extendDocumentFormDetailSkuArticleReadonly(transferOuts, d, transferOut);
+
+@defineDocumentTransferOutBatch(transfer, sku);
+@defineDocumentFormTransferOutBatch(transfer);
+
+@extendDocumentFormDetailSkuArticleReadonly(transferOuts, o, transferOutBatch);
 
 // Проводим по регистру
 @implementSkuLedger(transferOut, sku, stock);

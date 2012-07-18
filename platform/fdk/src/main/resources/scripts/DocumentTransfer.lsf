@@ -109,7 +109,9 @@ META defineDocumentFormTransferOut(object, caption)
             NEW documentDetail {
                 type = TABBED;
 
-                ADD d.box;
+                ADD d.box {
+                    title = 'Спецификация';
+                }
                 NEW documentHistory {
                     title = 'История';
 
@@ -119,6 +121,40 @@ META defineDocumentFormTransferOut(object, caption)
             }
         }
     }
+END
+
+META defineDocumentTransferOutBatch(object, skuProp)
+
+    cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS object##OutDetail;
+    @defineAggregationDouble(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
+
+    object##Out###object##OutBatchDetail (detail) = object##Out###object##OutDetail(object##OutDetail###object##OutBatchDetail(detail));
+    @defineDocumentDetailIndexCustom(object##Out, object##OutBatchDetail);
+
+    @defineDocumentAggregationDetailSku(object##Out, object##OutBatch, sku);
+    @defineDocumentDetailSkuArticle(object##OutBatch);
+
+    descriptionBatch###object##OutBatchDetail 'Партия' (detail) = descriptionBatch(batch###object##OutBatchDetail(detail));
+    quantity###object##OutBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(object##OutDetail###object##OutBatchDetail(detail), batch###object##OutBatchDetail(detail));
+
+END
+
+META defineDocumentFormTransferOutBatch(object)
+
+    EXTEND FORM object##Outs
+        OBJECTS o = object##OutBatchDetail
+        PROPERTIES(o) READONLY descriptionBatch###object##OutBatchDetail
+        FILTERS object##Out###object##OutBatchDetail(o) == t
+    ;
+
+    EXTEND DESIGN object##Outs {
+        documentDetail {
+            ADD o.box {
+                title = 'Партии';
+            }
+        }
+    }
+
 END
 
 META defineDocumentTransferIn(object, caption, skuProp, stockProp)

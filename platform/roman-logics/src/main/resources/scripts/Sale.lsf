@@ -16,9 +16,15 @@ PRIORITY Stock, RomanLogicsModule;
 CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject;
 CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
 CLASS saleOutDetail 'Строка продажи товаров по накладным' : outFIFOSkuLedger;
+CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)';
 
 @defineDocumentTransferOut(sale, 'Продажа товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(sale, 'Продажа товаров по накладным');
+
+@defineDocumentTransferOutBatch(sale, sku);
+@defineDocumentFormTransferOutBatch(sale);
+
+@extendDocumentFormDetailSkuArticleReadonly(saleOuts, o, saleOutBatch);
 
 CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockSaleOut(saleOut)) CHECKED BY destinationStockSaleOut
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
@@ -63,7 +69,6 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 @defineDocumentDetailSkuArticle(saleIn);
 @extendDocumentFormDetailSkuArticleReadonly(saleIns, d, saleIn);
 
-costSaleOutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS saleOutDetail;
 @defineAggregationDouble(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
 
 saleOutSaleInBatchDetail (detail) = saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
