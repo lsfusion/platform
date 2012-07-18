@@ -359,7 +359,7 @@ CONSTRAINT taxRange(dataSupplierVATCustomCategory10Date(customCategory10, date))
 dataValueSupplierVATCustomCategory10Date 'НДС поставщика, %' (customCategory10, date) = valueRateRangeDate(dataSupplierVATCustomCategory10Date(customCategory10, date), date);
 valueCurrentRateSupplierVATCustomCategory10 'НДС поставщика, %' (customCategory10) = valueCurrentRateRange(supplierVATCustomCategory10(customCategory10));
 
-@implementBatch(declaration, sku, customStore);
+@implementBatch(declaration, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 importerPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);

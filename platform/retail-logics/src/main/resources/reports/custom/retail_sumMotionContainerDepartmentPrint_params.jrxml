@@ -35,20 +35,20 @@
 	<field name="name" class="java.lang.String"/>
 	<field name="nameStoreDepartmentStore" class="java.lang.String"/>
 	<field name="nameCompanyDepartmentStore" class="java.lang.String"/>
-	<field name="supplierSumContainerStockDateFrom" class="java.lang.Double"/>
-	<field name="supplierSumContainerStockDateTo" class="java.lang.Double"/>
+	<field name="costSumContainerStockDateFrom" class="java.lang.Double"/>
+	<field name="costSumContainerStockDateTo" class="java.lang.Double"/>
 	<field name="bt" class="java.lang.Integer"/>
 	<field name="idBarcodeSkuBatch" class="java.lang.String"/>
 	<field name="nameAttributeItemBatch" class="java.lang.String"/>
-	<field name="supplierPriceBatch" class="java.lang.Double"/>
+	<field name="costBatch" class="java.lang.Double"/>
 	<field name="balanceBBatchStockDate" class="java.lang.Double"/>
-	<field name="supplierSumBatchStockDateFrom" class="java.lang.Double"/>
+	<field name="costSumBatchStockDateFrom" class="java.lang.Double"/>
 	<field name="balanceABatchStockDate" class="java.lang.Double"/>
-	<field name="supplierSumBatchStockDateTo" class="java.lang.Double"/>
+	<field name="costSumBatchStockDateTo" class="java.lang.Double"/>
 	<field name="costInBalanceBatchStockDateFromTo" class="java.lang.Double"/>
-	<field name="supplierSumInBalanceBatchStockDateFromTo" class="java.lang.Double"/>
+	<field name="costSumInBalanceBatchStockDateFromTo" class="java.lang.Double"/>
 	<field name="costOutBalanceBatchStockDateFromTo" class="java.lang.Double"/>
-	<field name="supplierSumOutBalanceBatchStockDateFromTo" class="java.lang.Double"/>
+	<field name="costSumOutBalanceBatchStockDateFromTo" class="java.lang.Double"/>
 	<group name="designGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{dFrom})+" "+String.valueOf($F{dTo})]]></groupExpression>
 	</group>
@@ -70,7 +70,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="10" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Остаток по таре на конец: "+($F{supplierSumContainerStockDateTo}!=null?$F{supplierSumContainerStockDateTo}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Остаток по таре на конец: "+($F{costSumContainerStockDateTo}!=null?$F{costSumContainerStockDateTo}:"")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -166,7 +166,7 @@
 				<textElement verticalAlignment="Middle">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Остаток по таре на начало: "+($F{supplierSumContainerStockDateFrom}!=null?$F{supplierSumContainerStockDateFrom}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Остаток по таре на начало: "+($F{costSumContainerStockDateFrom}!=null?$F{costSumContainerStockDateFrom}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="137" y="95" width="40" height="32"/>
@@ -314,7 +314,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierPriceBatch},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costBatch},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="177" y="0" width="30" height="10"/>
@@ -328,7 +328,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumBatchStockDateFrom},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costSumBatchStockDateFrom},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="447" y="0" width="30" height="10"/>
@@ -342,7 +342,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumBatchStockDateTo},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costSumBatchStockDateTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="267" y="0" width="30" height="10"/>
@@ -356,7 +356,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumInBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costSumInBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="30" height="10"/>
@@ -370,7 +370,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{supplierSumOutBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{costSumOutBalanceBatchStockDateFromTo},0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -77,9 +77,9 @@ CLASS moveDiffSDetail 'Строка расхождений акта приемк
 @defineDocumentDetailSkuArticle(moveDiff);
 @extendDocumentFormDetailSkuArticleReadonlyQuantity(moveIns, f, moveDiff, signedQuantityMoveDiffDetail);
 
-supplierPriceMoveDiffEDetail(detail) = 0.0 IF detail IS moveDiffEDetail;
+costMoveDiffEDetail(detail) = 0.0 IF detail IS moveDiffEDetail;
 
-@implementBatch(moveDiffE, sku, stock);
+@implementBatch(moveDiffE, sku, stock, cost);
 quantityBatch (batch) += quantityMoveDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS moveDiffEDetail;
 

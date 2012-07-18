@@ -86,7 +86,7 @@ nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN re
 stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED ;
 nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognizeGroup;
 
-supplierPriceBatch 'Цена поставщика' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognizeGroup;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
@@ -235,8 +235,8 @@ clearDataSkuLedgerBatchCost 'Сбросить всю себестоимость'
 
 // Суммы
 
-supplierSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * supplierPriceBatch(batch);
-supplierSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM supplierSumSkuLedgerBatch(ledger, batch) BY ledger;
+costSumSkuLedgerBatch 'Сумма поставщика без НДС' (ledger, batch) = costSkuLedgerBatch(ledger, batch) * costBatch(batch);
+costSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM costSumSkuLedgerBatch(ledger, batch) BY ledger;
 
 // ---------------------------- Учетные цены и суммы ------------------------------- //
 
@@ -356,9 +356,9 @@ balanceABatchStockDate 'Остаток на конец дня' (batch, stock, da
 
 // --------------------------------------- Суммы ----------------------------------------------------- //
 
-supplierSumBatchStockDateFrom 'Сумма на начало' (batch, stock, dateFrom) = supplierPriceBatch(batch) * balanceBBatchStockDate(batch, stock, dateFrom);
+costSumBatchStockDateFrom 'Сумма на начало' (batch, stock, dateFrom) = costBatch(batch) * balanceBBatchStockDate(batch, stock, dateFrom);
 
-supplierSumBatchStockDateTo 'Сумма на конец' (batch, stock, dateTo) = supplierPriceBatch(batch) * balanceABatchStockDate(batch, stock, dateTo);
+costSumBatchStockDateTo 'Сумма на конец' (batch, stock, dateTo) = costBatch(batch) * balanceABatchStockDate(batch, stock, dateTo);
 
 //---------------------------------------------- За период ------------------------------------------//
 
@@ -367,16 +367,16 @@ costInBalanceBatchStockDateFromTo 'Приход' (batch, stock, dateFrom, dateTo
     AND dateSkuLedger(ledger) >= (dateFrom AS DATE)  AND dateSkuLedger(ledger)<= (dateTo AS DATE)
     BY batch, stockSkuLedger(ledger), dateFrom, dateTo;
 
-supplierSumInBalanceBatchStockDateFromTo 'Сумма прихода' (batch, stock, dateFrom, dateTo) =
-    supplierPriceBatch(batch) * costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+costSumInBalanceBatchStockDateFromTo 'Сумма прихода' (batch, stock, dateFrom, dateTo) =
+    costBatch(batch) * costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
 costOutBalanceBatchStockDateFromTo 'Расход' (batch, stock, dateFrom, dateTo) = GROUP SUM costSkuLedgerBatch (ledger, batch)
     IF ledger IS outSkuLedger AND isPostedSkuLedger(ledger)
     AND dateSkuLedger(ledger) >= (dateFrom AS DATE)  AND dateSkuLedger(ledger)<= (dateTo AS DATE)
     BY batch, stockSkuLedger(ledger), dateFrom, dateTo;
 
-supplierSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
-    supplierPriceBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
+    costBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
 // ---------------------------------------------- Макросы ------------------------------------------------- //
 
@@ -405,13 +405,13 @@ META implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp)
     @implementSkuLedgerOutFIFOBalancePostfix(concrete, skuProp, stockProp, );
 END
 
-META implementBatch(concrete, skuProp, stockProp)
+META implementBatch(concrete, skuProp, stockProp, costProp)
     dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
     isPostedBatch (batch) += isPosted###concrete##Detail(batch);
     skuBatch (batch) += skuProp###concrete##Detail(batch);
     stockBatch (batch) += stockProp###concrete##Detail(batch);
     descriptionBatch (batch) += description###concrete##Detail(batch);
-    supplierPriceBatch (batch) += supplierPrice###concrete##Detail(batch);
+    costBatch (batch) += costProp###concrete##Detail(batch);
 END
 
 // ---------------------------------------------- Макросы для документов ------------------------------------------------- //
@@ -546,7 +546,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
         FILTER 'Нерасписанные строки' 'F9' needToCostDataSkuLedger(bil)
 
     OBJECTS bt = batch
-    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
     PROPERTIES(bil, bt)     costSkuLedgerBatch FORCE GRID
     FILTERS skuBatch(bt) == skuSkuLedger(bil)
     ORDER BY dateTimeBatch DESC
@@ -582,7 +582,7 @@ FORM costSkuBatchLedger 'Себестоимость (партии)'
     PROPERTIES(i) SELECTOR nameSku//, idBarcodeSku
 
     OBJECTS bt = batch
-    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, currentBalanceBatch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
 
     OBJECTS bil = skuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameStockSkuLedger,
@@ -649,7 +649,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY dateTimeSkuLedger DESC
 
     OBJECTS bt=batch
-    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, costBatch
     PROPERTIES(bt, st) READONLY  currentBalanceBatchStock
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC
@@ -774,7 +774,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     OBJECTS           stb=(st=stock, bt=batch)
     PROPERTIES        READONLY stockName = name(st), nameSkuBatch(bt)
     PROPERTIES        currentBalanceBatchStock(bt, st)
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, expiryDateBatch
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
                       isParentStockGroupStock(sg, st)
     ORDER BY          dateTimeBatch
@@ -845,7 +845,7 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     OBJECTS           stb=(st=stock, bt=batch)
     PROPERTIES        READONLY stockName = name(st), nameSkuBatch(bt)
     PROPERTIES        balanceBStockBatchDateTime(bt, st, t)
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, supplierPriceBatch, expiryDateBatch
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
                       isParentStockGroupStock(sg, st)
     ORDER BY          dateTimeBatch

@@ -95,9 +95,8 @@ CLASS transferDiffSDetail 'Строка расхождений акта прие
 @defineDocumentDetailSkuArticle(transferDiff);
 @extendDocumentFormDetailSkuArticleReadonlyQuantity(transferIns, f, transferDiff, signedQuantityTransferDiffDetail);
 
-supplierPriceTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
-
-@implementBatch(transferDiffE, sku, stock);
+costTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
+@implementBatch(transferDiffE, sku, stock, cost);
 quantityBatch (batch) += quantityTransferDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS transferDiffEDetail;
 

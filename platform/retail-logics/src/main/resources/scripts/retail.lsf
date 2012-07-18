@@ -2406,7 +2406,7 @@ descriptionParish 'Название документа' (parish) =
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(parishActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
-@implementBatch(studyOutput, item, departmentStore);
+@implementBatch(studyOutput, item, departmentStore, supplierPrice);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 expiryDateBatch (ledger) += expiryDateStudyOutputDetail(ledger);
 sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
@@ -3176,7 +3176,7 @@ descriptionShipment 'Название документа' (shipment) =
 
 descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail));
 
-@implementBatch(shipment, item, departmentStore);
+@implementBatch(shipment, item, departmentStore, supplierPrice);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 expiryDateBatch (ledger) += expiryDateShipmentDetail(ledger);
 supplierBatch (ledger) += supplierShipmentDetail(ledger);
@@ -4275,7 +4275,7 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
 
-@implementBatch(inputDisparity, item, departmentStore);
+@implementBatch(inputDisparity, item, departmentStore, supplierPrice);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateInputDisparityDetail(ledger);
 sumInSkuLedger (ledger) += retailSumInputDisparityDetail(ledger);
@@ -8161,7 +8161,7 @@ FORM bills 'Чеки'
 
     OBJECTS d=billDetail
     PROPERTIES(d) READONLY  objectClassName, idBarcodeBillDetail, nameAttributeItemBillDetail, quantityBillDetail, retailPriceBillDetail,
-                            supplierSumSkuLedger, retailSumBillDetail, discountSumBillDetail
+                            costSumSkuLedger, retailSumBillDetail, discountSumBillDetail
 
     FILTERS billBillDetail(d)==b
 
@@ -8385,10 +8385,10 @@ inChainStoresStoreTypeStoreDepartmentDepartment (chainStores, storeType, store, 
 
 isContainerBatch 'Тара' (batch) = isContainerItem(skuBatch(batch));
 
-supplierSumContainerStockDateFrom 'Остаток на начало по складу' (stock, dateFrom) = GROUP SUM supplierSumBatchStockDateFrom(batch, stock, dateFrom)
+costSumContainerStockDateFrom 'Остаток на начало по складу' (stock, dateFrom) = GROUP SUM costSumBatchStockDateFrom(batch, stock, dateFrom)
     IF isContainerItem(skuBatch(batch)) BY stock, dateFrom;
 
-supplierSumContainerStockDateTo 'Остаток на конец по складу' (stock, dateTo) = GROUP SUM supplierSumBatchStockDateTo(batch, stock, dateTo)
+costSumContainerStockDateTo 'Остаток на конец по складу' (stock, dateTo) = GROUP SUM costSumBatchStockDateTo(batch, stock, dateTo)
     IF isContainerItem(skuBatch(batch)) BY stock, dateTo;
 
 overMotionContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) = UNION OVERRIDE
@@ -8407,12 +8407,12 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
 
     OBJECTS bt=batch
 
-    PROPERTIES READONLY supplierSumContainerStockDateFrom(dep, dFrom), supplierSumContainerStockDateTo(dep, dTo)
-    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameSkuBatch, supplierPriceBatch
-    PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, supplierSumBatchStockDateFrom
-    PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, supplierSumBatchStockDateTo
-    PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, supplierSumInBalanceBatchStockDateFromTo,
-               costOutBalanceBatchStockDateFromTo, supplierSumOutBalanceBatchStockDateFromTo
+    PROPERTIES READONLY costSumContainerStockDateFrom(dep, dFrom), costSumContainerStockDateTo(dep, dTo)
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameSkuBatch, costBatch
+    PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, costSumBatchStockDateFrom
+    PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, costSumBatchStockDateTo
+    PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, costSumInBalanceBatchStockDateFromTo,
+               costOutBalanceBatchStockDateFromTo, costSumOutBalanceBatchStockDateFromTo
 
     FILTERS isPostedBatch(bt),
             isContainerBatch(bt),

@@ -84,6 +84,8 @@ END
 ownerBatchA = ABSTRACT company(batchA) PERSISTENT;
 nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN baseGroup;
 
+isCommissionBatchA 'На комиссии' (batch) = ABSTRACT BOOLEAN (batchA) IN baseGroup PERSISTENT;
+
 importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
 supplierPriceBatchA 'Цена поставщика' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
 

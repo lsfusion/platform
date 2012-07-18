@@ -28,7 +28,7 @@ valueVATSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSalesLedger(led
 sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         sumSalesLedger(ledger), valueVATSalesLedger(ledger));
 
-markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - supplierSumSkuLedger(ledger);
+markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - costSumSkuLedger(ledger);
 
 quantitySoldSkuStockDateFromTo 'Продано за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
@@ -73,7 +73,7 @@ FORM salesLedger 'Продажи по позициям'
 
     OBJECTS s = salesLedger
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, supplierSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger
+                           quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger
     FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;

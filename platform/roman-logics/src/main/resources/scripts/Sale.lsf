@@ -80,28 +80,29 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail
 
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
-supplierPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
-supplierPriceSaleInBatchDetail (detail) <- [PREV(supplierPriceBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
+costSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
+costSaleInBatchDetail (detail) <- [PREV(costBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
-importerPriceASaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
-importerPriceASaleInBatchDetail (detail) <- IF batchSaleInBatchDetail(detail) IS saleInBatchDetail THEN
+importerPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
+importerPriceSaleInBatchDetail (detail) <- IF batchSaleInBatchDetail(detail) IS saleInBatchDetail THEN
                                                 [PREV(importerPriceBatchA(batch))](batchSaleInBatchDetail(detail)) ELSE
                                                 supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
                                             WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
-supplierPriceASaleInBatchDetail (detail) = supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
+supplierPriceSaleInBatchDetail (detail) = supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
-rangeVATASaleInBatchDetail (detail) = DATA range (saleInBatchDetail);
-rangeVATASaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
+rangeVATSaleInBatchDetail (detail) = DATA range (saleInBatchDetail);
+rangeVATSaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
-commissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
+isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
 
-@implementBatch(saleInBatch, sku, stock);
+@implementBatch(saleInBatch, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
-ownerBatchA (batch) += IF commissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
-importerPriceBatchA(batch) += importerPriceASaleInBatchDetail(batch);
-supplierPriceBatchA(batch) += supplierPriceASaleInBatchDetail(batch);
-rangeVATBatchA(batch) += rangeVATASaleInBatchDetail(batch);
+ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
+isCommissionBatchA(batch) += isCommissionSaleInBatchDetail(batch);
+importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
+supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
+rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
 
 contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 
@@ -155,8 +156,8 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 @defineDocumentDetailSkuArticle(saleDiff);
 @extendDocumentFormDetailSkuArticleReadonlyQuantity(saleIns, f, saleDiff, signedQuantitySaleDiffDetail);
 
-supplierPriceSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
-@implementBatch(saleDiffE, sku, stock);
+costSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
+@implementBatch(saleDiffE, sku, stock, cost);
 quantityBatch (batch) += quantitySaleDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS saleDiffEDetail;
 

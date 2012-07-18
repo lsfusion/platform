@@ -116,9 +116,9 @@ CLASS returnDiffSDetail 'Строка расхождений акта прием
 @defineDocumentDetailSkuArticle(returnDiff);
 @extendDocumentFormDetailSkuArticleReadonlyQuantity(returnIns, f, returnDiff, signedQuantityReturnDiffDetail);
 
-supplierPriceReturnDiffEDetail(detail) = 0.0 IF detail IS returnDiffEDetail;
+costReturnDiffEDetail(detail) = 0.0 IF detail IS returnDiffEDetail;
 
-@implementBatch(returnDiffE, sku, stock);
+@implementBatch(returnDiffE, sku, stock, cost);
 quantityBatch (batch) += quantityReturnDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS returnDiffEDetail;
 
