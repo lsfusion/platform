@@ -44,12 +44,15 @@ import static platform.interop.Order.*;
 public class ClientFormController {
 
     private final TableManager tableManager = new TableManager(this);
-    private final RmiQueue rmiQueue = new RmiQueue(tableManager, new EProvider<String>() {
+
+    private final EProvider<String> serverMessageProvider = new EProvider<String>() {
         @Override
         public String getExceptionally() throws Exception {
             return remoteForm.getRemoteActionMessage();
         }
-    });
+    };
+
+    private final RmiQueue rmiQueue = new RmiQueue(tableManager, serverMessageProvider);
     private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
 //    private RemoteFormInterface remoteForm;
@@ -693,12 +696,24 @@ public class ClientFormController {
         });
     }
 
-    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
-        return remoteForm.continueServerInvocation(actionResults);
+    public ServerResponse continueServerInvocation(final Object[] actionResults) throws RemoteException {
+        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+        busyDisplayer.start();
+        try {
+            return remoteForm.continueServerInvocation(actionResults);
+        } finally {
+            busyDisplayer.stop();
+        }
     }
 
     public ServerResponse throwInServerInvocation(Exception ex) throws RemoteException {
-        return remoteForm.throwInServerInvocation(ex);
+        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+        busyDisplayer.start();
+        try {
+            return remoteForm.throwInServerInvocation(ex);
+        } finally {
+            busyDisplayer.stop();
+        }
     }
 
     public void gainedFocus() {
