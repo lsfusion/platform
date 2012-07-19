@@ -13,15 +13,6 @@
     <!--<inherits name='com.google.gwt.user.theme.dark.Dark'/>-->
     <inherits name='com.google.gwt.user.theme.clean.Clean'/>
 
-    <!--&lt;!&ndash; GWT Mosaic &ndash;&gt;-->
-    <!--<inherits name='org.gwt.mosaic.Mosaic' />-->
-
-    <!--&lt;!&ndash; GWT Mosaic theme &ndash;&gt;-->
-    <!--<inherits name='org.gwt.mosaic.theme.standard.Standard' />-->
-    <!--&lt;!&ndash; <inherits name="org.gwt.mosaic.chrome.Chrome"/>            &ndash;&gt;-->
-    <!--&lt;!&ndash; <inherits name="org.gwt.mosaic.dark.Dark"/>                &ndash;&gt;-->
-    <!--&lt;!&ndash; <inherits name='org.gwt.mosaic.theme.aegean.Aegean' />     &ndash;&gt;-->
-
     <!--  GWT dispatch -->
     <inherits name='net.customware.gwt.dispatch.Dispatch' />
 

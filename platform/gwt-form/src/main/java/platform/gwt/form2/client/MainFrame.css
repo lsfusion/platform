@@ -1,10 +1,12 @@
-.gwt-DecoratorPanel-titled .topCenter {
-    border-top: 0px;
-}
-.gwt-DecoratorPanel-titled .topCenterInner {
-    font-size: 11px;
+.gwt-Button {
+    margin: 2px;
+    height: 32px;
 }
 
+.gwt-TextBox {
+    margin: 2px;
+    height: 20px;
+}
 
 /*.formController {*/
     /*border: 2px solid black;*/

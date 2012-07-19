@@ -28,22 +28,6 @@
             <groupId>com.smartgwt</groupId>
             <artifactId>smartgwt</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.googlecode.gwtmosaic</groupId>-->
-            <!--<artifactId>gwt-mosaic</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.googlecode.gwtmosaic</groupId>-->
-            <!--<artifactId>gwt-dnd</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.googlecode.gwtmosaic</groupId>-->
-            <!--<artifactId>gwtx</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.googlecode.gwtmosaic</groupId>-->
-            <!--<artifactId>gwt-beans-binding</artifactId>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

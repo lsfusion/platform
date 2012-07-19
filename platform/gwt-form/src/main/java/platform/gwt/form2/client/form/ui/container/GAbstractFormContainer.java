@@ -1,8 +1,9 @@
 package platform.gwt.form2.client.form.ui.container;
 
+import com.google.gwt.user.client.ui.CaptionPanel;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.client.TitledDecoratorPanel;
 import platform.gwt.view2.GComponent;
 import platform.gwt.view2.GContainer;
 
@@ -58,9 +59,9 @@ public abstract class GAbstractFormContainer {
         if (containerView == null) {
             containerView = getUndecoratedView();
             if (key.title != null && !key.container.type.isTabbed()) {
-                TitledDecoratorPanel decoratorPanel = new TitledDecoratorPanel(key.title);
-                decoratorPanel.setWidget(containerView);
-                containerView = decoratorPanel;
+                CaptionPanel captionedPanel = new CaptionPanel(key.title);
+                captionedPanel.add(containerView);
+                containerView = new SimplePanel(captionedPanel);
             }
         }
         return containerView;
