@@ -8,6 +8,7 @@ REQUIRE System,
         DocumentTransfer,
         Contract,
         RetailPrice,
+        StorePriceTransfer,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -185,3 +186,12 @@ limitOutFIFOSkuLedgerBatch (ledger, batch) += costSaleInBatch(saleInSaleDiffSDet
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS saleDiffSDetail;
 
 skipASkuLedger (ledger) += ledger IS saleDiffSDetail;
+
+// ---------------------------------------- Акт расценки ------------------------------------ //
+CLASS transferPriceActSale 'Акт расценки' : transferPriceAct;
+CLASS transferPriceActSaleDetail 'Строка акта расценки': transferPriceActDetail;
+
+importerPricePropBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
+rangeVATPropBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
+
+@defineTransferPriceActObject (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, importerPricePropBatch, rangeVATPropBatch);
