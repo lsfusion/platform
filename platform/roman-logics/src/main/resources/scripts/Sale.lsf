@@ -35,11 +35,6 @@ CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockS
 @extendDocumentFormDetailSkuArticle(saleOut, d, saleOut);
 @extendDocumentFormDetailSkuArticleReadonly(saleOuts, d, saleOut);
 
-// Проводим по регистру
-@implementSkuLedger(saleOut, sku, stock);
-quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
-@implementSkuLedgerOutFIFOBalanceA(saleOut, sku, stock);
-
 companySaleOut (saleOut) = companyStock(stockSaleOut(saleOut));
 destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOut));
 
@@ -60,7 +55,15 @@ EXTEND FORM saleOuts
 ;
 
 @defineDocumentTransferRetail(saleOut);
-@defineDocumentTransferAccount(saleOut);
+
+useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentStore;
+@defineDocumentTransferAccount(saleOut, useRetailPriceSaleOutDetail);
+
+// Проводим по регистру
+@implementSkuLedger(saleOut, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch);
+sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
@@ -90,6 +93,7 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail
 
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
+contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
 
 costSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
@@ -108,17 +112,6 @@ rangeVATSaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInB
 
 accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail) THEN retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
                                                                                   ELSE supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
-
-@implementBatch(saleInBatch, sku, stock, cost);
-quantityBatch(batch) += quantitySaleInBatchDetail(batch);
-ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
-isCommissionBatchA(batch) += isCommissionSaleInBatchDetail(batch);
-importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
-supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
-rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
-accountPriceBatchA(batch) += accountPriceSaleInBatchDetail(batch);
-
-contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 
 costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch);
 
@@ -145,7 +138,17 @@ EXTEND FORM saleIns
 retailPriceSaleInBatchDetail 'Цена розничная' (detail) = retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 retailSumSaleInBatchDetail 'Сумма розничная' (detail) = quantitySaleInBatchDetail(detail) * retailPriceSaleInBatchDetail(detail);
 
-@defineDocumentTransferAccountCustom(saleIn, saleInBatchDetail, b);
+useRetailPriceSaleInBatchDetail(detail) = stockSaleInDetail(detail) IS departmentStore OR isCommissionSaleInBatchDetail(detail);
+@defineDocumentTransferAccountCustom(saleIn, useRetailPriceSaleInBatchDetail, saleInBatchDetail, b);
+
+@implementBatch(saleInBatch, sku, stock, cost);
+quantityBatch(batch) += quantitySaleInBatchDetail(batch);
+ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
+commissionContractSkuBatchA (batch) += contractSkuCompanySaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
+importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
+supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
+rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
+sumInSkuLedger(batch) += accountSumSaleInBatchDetail(batch);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
@@ -194,4 +197,4 @@ CLASS transferPriceActSaleDetail 'Строка акта расценки': trans
 importerPricePropBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
 rangeVATPropBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
-@defineTransferPriceActObject (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, importerPricePropBatch, rangeVATPropBatch);
+@defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, importerPricePropBatch, rangeVATPropBatch);

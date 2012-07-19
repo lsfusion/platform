@@ -84,10 +84,13 @@ END
 ownerBatchA = ABSTRACT company(batchA) PERSISTENT;
 nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN baseGroup;
 
-isCommissionBatchA 'На комиссии' (batch) = ABSTRACT BOOLEAN (batchA) IN baseGroup PERSISTENT;
+commissionContractSkuBatchA = ABSTRACT contractSku (batchA) PERSISTENT;
+numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN baseGroup;
 
 importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
+
 supplierPriceBatchA 'Цена поставщика' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
+supplierSumSkuLedger 'Сумма поставщика' (ledger) = GROUP SUM costSkuLedgerBatch(ledger, batch) * supplierPriceBatchA(batch) BY ledger;
 
 rangeVATBatchA (batchA) = ABSTRACT range (batchA) PERSISTENT;
 numberSupplierVATBatchA 'НДС, номер' (batchA) = numberRange(rangeVATBatchA(batchA));
@@ -95,9 +98,6 @@ valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
     (rangeVATBatchA(batchA), dateBatch(batchA));
 
 CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT CHECKED BY rangeVATBatchA MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-accountPriceBatchA 'Цена учетная' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
-accountSumSkuLedger 'Сумма учетная' (ledger) = GROUP SUM costSkuLedgerBatch(ledger, batch) * accountPriceBatchA(batch) BY ledger;
 
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(bt) nameOwnerBatchA FORCE GRID

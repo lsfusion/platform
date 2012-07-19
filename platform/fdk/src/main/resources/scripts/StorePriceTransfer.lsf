@@ -11,7 +11,7 @@ REQUIRE System,
 CLASS transferPriceAct 'Акт расценки' : inputListRegister, historyObject;
 CLASS transferPriceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
 
-META defineTransferPriceActObject (object, caption, captionDetail, skuProp, stockProp, importerPriceProp, VATProp)
+META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, stockProp, importerPriceProp, VATProp)
 
     isStoreDestinationStock###object##Out 'Перемещение на магазин' (object##Out) = destinationStock###object##Out(object##Out) IS departmentStore;
 

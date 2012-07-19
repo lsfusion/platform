@@ -29,6 +29,7 @@ CLASS moveOutDetail 'Строка перемещения товаров' : outFI
 @implementSkuLedger(moveOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityMoveOutDetail (ledger);
 @implementSkuLedgerOutFIFOBalanceB(moveOut, sku, stock);
+sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveOutDetail;
 skipASkuLedger (ledger) += ledger IS moveOutDetail;
 
 // ---------------------------------------- Поступление ------------------------------------ //
@@ -47,6 +48,7 @@ costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY 
 @implementSkuLedger(moveIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityMoveInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(moveOutDetailMoveInDetail(ledger), batch);
+sumInSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveInDetail;
 skipASkuLedger (ledger) += ledger IS moveInDetail;
 
 // ---------------------------------------- Приемка ------------------------------------ //
@@ -87,5 +89,5 @@ skipASkuLedger (ledger) += ledger IS moveDiffEDetail;
 quantityOutFIFOSkuLedger (ledger) += quantityMoveDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costMoveInBatch(moveInMoveDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS moveDiffSDetail;
-
+sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveDiffSDetail;
 skipASkuLedger (ledger) += ledger IS moveDiffSDetail;

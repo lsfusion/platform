@@ -45,10 +45,6 @@ freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGro
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
 nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
 
-@implementSkuLedger (CStoWH, sku, customStore);
-quantityOutFIFOSkuLedger(outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
-limitOutFIFOSkuLedgerBatch(outUserSkuLedger, batch) += quantityCStoWHDetail(outUserSkuLedger) AND batch == declarationDetailCStoWHDetail (outUserSkuLedger);
-
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
 sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
@@ -58,6 +54,11 @@ priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (de
 sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
 sumCStoWHDetailCStoWH 'Общая стоимость' (CStoWH) =
     GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+@implementSkuLedger (CStoWH, sku, customStore);
+quantityOutFIFOSkuLedger(outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
+limitOutFIFOSkuLedgerBatch(outUserSkuLedger, batch) += quantityCStoWHDetail(outUserSkuLedger) AND batch == declarationDetailCStoWHDetail (outUserSkuLedger);
+sumOutSkuLedger(outUserSkuLedger) += sumCStoWHDetail(outUserSkuLedger);
 
 quantityCStoWHBatch (CStoWH, batch) =
     GROUP SUM quantityCStoWHDetail(CStoWHDetail)

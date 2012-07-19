@@ -51,11 +51,6 @@ CONSTRAINT skuBatch(saleInBatchDetailReturnOutDetail(detail)) != skuReturnOutDet
 CONSTRAINT contractSkuCompanyReturnOut(returnOutReturnOutDetail(detail)) != contractSkuCompanySaleInBatchDetail(saleInBatchDetailReturnOutDetail(detail)) CHECKED BY saleInBatchDetailReturnOutDetail
     MESSAGE 'Договор партии строки возврата должен соответствовать договору возврата';
 
-// Проводим по регистру
-@implementSkuLedger(returnOut, sku, stock);
-quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
-limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
-
 EXTEND FORM returnOut
     PROPERTIES(d) descriptionBatchReturnOutDetail
 ;
@@ -66,7 +61,16 @@ EXTEND FORM returnOuts
 
 @defineDocumentTransferRetail(returnOut);
 
-@defineDocumentTransferAccount(returnOut);
+isCommissionReturnOutDetail(detail) = isCommissionReturnOut(returnOutReturnOutDetail(detail));
+
+useRetailPriceReturnOutDetail(detail) = stockReturnOutDetail(detail) IS departmentStore OR isCommissionReturnOutDetail(detail);
+@defineDocumentTransferAccount(returnOut, useRetailPriceReturnOutDetail);
+
+// Проводим по регистру
+@implementSkuLedger(returnOut, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
+sumOutSkuLedger(ledger) += accountSumReturnOutDetail(ledger);
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
@@ -84,10 +88,6 @@ descriptionBatchReturnInDetail 'Партия' (detail) = descriptionBatch(batchR
 
 costReturnInBatch(returnIn, batch) = GROUP SUM quantityReturnInDetail(detail) BY returnInReturnInDetail(detail), batchReturnInDetail(detail);
 
-@implementSkuLedger(returnIn, sku, stock);
-quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
-
 EXTEND FORM returnIns
     PROPERTIES(d) descriptionBatchReturnInDetail
 ;
@@ -95,7 +95,15 @@ EXTEND FORM returnIns
 retailPriceReturnInDetail 'Цена розничная' (detail) = retailPriceReturnOutDetail(returnOutDetailReturnInDetail(detail));
 retailSumReturnInDetail 'Сумма розничная' (detail) = quantityReturnInDetail(detail) * retailPriceReturnInDetail(detail);
 
-@defineDocumentTransferAccount(returnIn);
+isCommissionReturnInDetail(detail) = isCommissionReturnOutDetail(returnOutDetailReturnInDetail(detail));
+
+useRetailPriceReturnInDetail(detail) = stockReturnInDetail(detail) IS departmentStore OR isCommissionReturnInDetail(detail);
+@defineDocumentTransferAccount(returnIn, useRetailPriceReturnInDetail);
+
+@implementSkuLedger(returnIn, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
+sumInSkuLedger(ledger) += accountSumReturnInDetail(ledger);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

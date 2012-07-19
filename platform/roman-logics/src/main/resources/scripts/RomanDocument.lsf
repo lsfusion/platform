@@ -153,11 +153,11 @@ META defineDocumentTransferRetail (concrete)
 
 END
 
-META defineDocumentTransferAccountCustom(concrete, detail, object)
+META defineDocumentTransferAccountCustom(concrete, retailProp, detail, object)
 
     // Учетные суммы
-    accountSum###detail 'Сумма учетная' (idetail) = IF stock###detail(idetail) IS departmentStore THEN retailSum###detail(idetail)
-                                                                                                  ELSE (accountSumSkuLedger(idetail) AND idetail IS detail);
+    accountSum###detail 'Сумма учетная' (idetail) = IF retailProp(idetail)  THEN retailSum###detail(idetail)
+                                                                            ELSE (supplierSumSkuLedger(idetail) AND idetail IS detail);
     accountSum###concrete 'Сумма учетная' (iconcrete) = GROUP SUM accountSum###detail(idetail) BY concrete###detail(idetail) IN documentSumGroup;
 
     EXTEND FORM concrete##s
@@ -167,6 +167,6 @@ META defineDocumentTransferAccountCustom(concrete, detail, object)
 
 END
 
-META defineDocumentTransferAccount(concrete)
-    @defineDocumentTransferAccountCustom(concrete, concrete##Detail, d);
+META defineDocumentTransferAccount(concrete, retailProp)
+    @defineDocumentTransferAccountCustom(concrete, retailProp, concrete##Detail, d);
 END

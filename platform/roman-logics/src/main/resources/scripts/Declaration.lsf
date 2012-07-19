@@ -366,7 +366,7 @@ importerPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
 supplierPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
 // todo : так нельзя делать - изменится НДС по ТНВЭД и будут чудеса
 rangeVATBatchA (batch) += supplierVATCustomCategory10(customCategory10DeclarationDetail(batch));
-accountPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
+sumInSkuLedger(batch) += supplierSumDeclarationDetail(batch);
 
 EXTEND FORM addSupplierVATCustomCategory10
     PROPERTIES READONLY FORCE GRID dataValueSupplierVATCustomCategory10Date(a, d)
