@@ -14,6 +14,11 @@ dateTimeWholesalePriceDocument(wholesalePriceDocument) <- currentDateTime() WHEN
 
 declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
 
+quantityPriceSetDocumentDeclaration (declaration) = GROUP SUM 1 IF declarationWholesalePriceDocument(wholesalePriceDocument)
+                                                           BY declarationWholesalePriceDocument(wholesalePriceDocument);
+isPriceSetDocumentDeclaration (declaration) = TRUE IF NOT quantityPriceSetDocumentDeclaration(declaration) AND declaration IS declaration;
+
+
 inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
 priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
@@ -123,8 +128,19 @@ toCreateWholesalePriceDocument 'Прайс по декларации' =  ACTION 
             EXEC apply();
         };
     };
-} CONFIRM;
+} TOOLBAR CONFIRM;
 
 EXTEND FORM declarations
-     PROPERTIES(d) toCreateWholesalePriceDocument
+     //PROPERTIES(d) sidDeclaration BACKGROUND isPriceSetDocumentDeclaration(d)
+     PROPERTIES(d) toCreateWholesalePriceDocument SHOWIF isPriceSetDocumentDeclaration(d)
+;
+
+FORM priceDeclaration 'Расценка деклараций'
+    OBJECTS d=declaration
+    PROPERTIES(d) READONLY sidDeclaration BACKGROUND isPriceSetDocumentDeclaration(d), objectClassName,
+                  dateTimeRegistrationDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration
+    PROPERTIES(d) toCreateWholesalePriceDocument SHOWIF isPriceSetDocumentDeclaration(d)
+
+    FILTERGROUP filtersDocument
+        FILTER 'Показывать нерасценённые декларации' 'F11' isPriceSetDocumentDeclaration(d) DEFAULT
 ;

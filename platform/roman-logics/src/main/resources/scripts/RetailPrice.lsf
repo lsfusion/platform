@@ -351,11 +351,12 @@ toCreatePriceSetDocument 'Расценка фрахта' =  ACTION (freight) NEW
 FORM freights 'Ценообразование по фрахтам'
 
     OBJECTS f=freight
-    PROPERTIES(f) READONLY date BACKGROUND isPriceSetDocumentFreight(f), objectClassName, dateArrivalFreight, nameCustomStoreFreight, nameRouteFreight, nameExporterFreight
+    PROPERTIES(f) READONLY date BACKGROUND isPriceSetDocumentFreight(f), dateArrivalFreight, nameCustomStoreFreight,
+                           descriptionFreight, nameRouteFreight, nameExporterFreight, freightGrossWeight
     PROPERTIES(f) FORCE PANEL toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument
-        FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f)
+        FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f) DEFAULT
 ;
 
 

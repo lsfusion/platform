@@ -120,19 +120,20 @@ TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 
 CLASS correction 'КТС' : transaction;
 
-GROUP sumGroup 'Суммы' : baseGroup;;
-GROUP docGroup 'Описание' : baseGroup;;
+GROUP sumGroup 'Суммы' : baseGroup;
+GROUP docGroup 'Описание' : baseGroup;
+GROUP datetimeGroup '' : baseGroup;
 
 customStoreDeclaration 'СВХ (ИД)' = DATA customStore(declaration) IN idGroup;
 nameCustomStoreDeclaration 'СВХ' (declaration) = name(customStoreDeclaration(declaration)) IN docGroup;
 
 sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN docGroup MINCHARWIDTH 10;
-beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN docGroup;
-endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN docGroup;
+beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN datetimeGroup;
+endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
-dateRegistrationDeclaration 'Дата регистрации' = DATA DATE(declaration) IN docGroup;
-timeRegistrationDeclaration 'Время регистрации' = DATA TIME(declaration) IN docGroup;
-dateTimeRegistrationDeclaration 'Дата/время' (declaration) = toDateTime(dateRegistrationDeclaration(declaration), timeRegistrationDeclaration(declaration));
+dateRegistrationDeclaration 'Дата регистрации' = DATA DATE(declaration) IN datetimeGroup;
+timeRegistrationDeclaration 'Время регистрации' = DATA TIME(declaration) IN datetimeGroup;
+dateTimeRegistrationDeclaration 'Дата/время регистрации' (declaration) = toDateTime(dateRegistrationDeclaration(declaration), timeRegistrationDeclaration(declaration));
 
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
@@ -643,11 +644,10 @@ toCreateDeclarationPriceSetDocument 'Расценка декларации' =  A
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration, sidDeclaration, beginTimeDeclaration, endTimeDeclaration,
+    PROPERTIES(d) sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   dateRegistrationDeclaration, timeRegistrationDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion,
-                  diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices,
-                  exportDeclaration
+                  diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -659,7 +659,7 @@ FORM declaration 'Декларация'
     FILTERS quantityFreightDeclaration (f, d)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
+    PROPERTIES (dd) READONLY objectClassName, numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
                     nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
@@ -722,8 +722,18 @@ DESIGN declaration FROM DEFAULT{
                     childConstraints = TO THE RIGHT;
                     fillHorizontal = 2;
 
-                    ADD d.docGroup {
+                    NEW descrContainer {
+
                         childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(objectClassName);
+
+                        ADD d.docGroup {
+                            childConstraints = TO THE BOTTOM;
+                        }
+
+                        ADD d.datetimeGroup {
+                            childConstraints = TO THE BOTTOM;
+                        }
                     }
 
                     ADD d.sumGroup {
@@ -789,10 +799,10 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration, sidDeclaration,
+    PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration,
                            beginTimeDeclaration, endTimeDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
-                           expenseCertificateDeclaration
+                           expenseCertificateDeclaration, exportDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
@@ -842,13 +852,6 @@ DESIGN declarations FROM DEFAULT {
     ADD functions.box;
 }
 
-
-
-FORM priceDeclaration 'Расценка деклараций'
-    OBJECTS d=declaration
-    PROPERTIES(d) READONLY sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration
-    PROPERTIES(d) toCreateDeclarationPriceSetDocument
-;
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
