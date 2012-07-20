@@ -5892,7 +5892,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
-            objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, sidGenderArticle, nameCategoryArticle, nameTypeFabricArticle, nameArticle);
+            objArticle = addSingleGroupObject("article", article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, sidGenderArticle, nameCategoryArticle, nameTypeFabricArticle, nameArticle);
             addObjectActions(this, objArticle);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku, sidGenderArticleSku, sidSeasonSupplierArticleSku,

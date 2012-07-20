@@ -360,13 +360,16 @@ CONSTRAINT taxRange(dataSupplierVATCustomCategory10Date(customCategory10, date))
 dataValueSupplierVATCustomCategory10Date 'НДС поставщика, %' (customCategory10, date) = valueRateRangeDate(dataSupplierVATCustomCategory10Date(customCategory10, date), date);
 valueCurrentRateSupplierVATCustomCategory10 'НДС поставщика, %' (customCategory10) = valueCurrentRateRange(supplierVATCustomCategory10(customCategory10));
 
+supplierVATRangeDeclarationDetail 'НДС' = DATA range(declarationDetail) IN baseGroup;
+supplierVATRangeDeclarationDetail(declarationDetail) <- supplierVATCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) WHEN CHANGED (dateRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)));
+
 @implementBatch(declaration, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
-importerPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
-supplierPriceBatchA (batch) +=  supplierPriceDeclarationDetail(batch);
+importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
+supplierPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
 // todo : так нельзя делать - изменится НДС по ТНВЭД и будут чудеса
-rangeVATBatchA (batch) += supplierVATCustomCategory10(customCategory10DeclarationDetail(batch));
+rangeVATBatchA (batch) += supplierVATRangeDeclarationDetail(batch);
 sumInSkuLedger(batch) += supplierSumDeclarationDetail(batch);
 
 EXTEND FORM addSupplierVATCustomCategory10
@@ -385,9 +388,9 @@ EXTEND FORM customCategoryForm
 sumDutyDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = UNION SUM declarationSumRateDeclarationDetail(declarationDetail),
                                                                                 dutyDataDeclarationDetail(declarationDetail);
 
-VATPercentOriginDeclarationDetail 'НДС (%)' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyNDS());
-VATPercentCategoryDeclarationDetail 'НДС (%)' (declarationDetail) =  valueCurrentRateSupplierVATCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
 VATPercentCustomDeclarationDetail 'НДС (%)' (declarationDetail) = NDSPercentCustom() AND declarationDetail IS declarationDetail;
+VATPercentOriginDeclarationDetail 'НДС (%)' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyNDS());
+VATPercentCategoryDeclarationDetail 'НДС (%)' (declarationDetail) = valueCurrentRateRange(supplierVATRangeDeclarationDetail(declarationDetail));
 VATPercentDeclarationDetail 'НДС (%)' (declarationDetail) = UNION OVERRIDE VATPercentCustomDeclarationDetail(declarationDetail),
                                                                            VATPercentOriginDeclarationDetail(declarationDetail),
                                                                            VATPercentCategoryDeclarationDetail(declarationDetail);
@@ -644,7 +647,7 @@ toCreateDeclarationPriceSetDocument 'Расценка декларации' =  A
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, beginTimeDeclaration, endTimeDeclaration,
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   dateRegistrationDeclaration, timeRegistrationDeclaration, rateExchangeDeclaration, rateSumRegistrationDeclaration,
                   dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion,
                   diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices
@@ -659,11 +662,11 @@ FORM declaration 'Декларация'
     FILTERS quantityFreightDeclaration (f, d)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY objectClassName, numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
+    PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
                     nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
                     nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                     netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
-                    quantityDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail, supplierPriceDeclarationDetail,
+                    quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail, supplierPriceDeclarationDetail,
                     declarationSumRateDeclarationDetail, dutyDeclarationDetail, dutyDataDeclarationDetail,
                     VATDeclarationDetail, VATDataDeclarationDetail
     PROPERTIES (dd) certificatedDeclarationDetail,
@@ -809,7 +812,7 @@ FORM declarations 'Декларации'
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameBrandDeclarationDetail,
                             sidArticleDeclarationDetail, nameCategoryDeclarationDetail, sidGenderGroupDeclaration,
                             nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
-                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, shortNameUOMDeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                             quantityDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail, supplierPriceDeclarationDetail,
                             dutyDeclarationDetail, dutyDataDeclarationDetail, VATDeclarationDetail, VATDataDeclarationDetail,

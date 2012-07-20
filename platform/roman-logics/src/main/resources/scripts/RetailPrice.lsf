@@ -141,8 +141,29 @@ priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceReta
                                  CHANGED (priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (RRPRatePriceSetDocumentArticle(basePriceSetDocument, article));
 
-percentVATPriceSetDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceSetDocument, article) IN baseGroup;
 //---------------------------- НДС розничный для товара ----------------------------------------//
+TABLE articleDate(article, DATE);
+
+@defineHistorizableCustom(retailVATArticle, 'НДС розницы', range, numberRange, article, sidArticle, baseGroup);
+
+CONSTRAINT taxRange(dataRetailVATArticleDate(article, date)) != tax.taxVAT CHECKED BY dataRetailVATArticleDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+
+dataValueRetailVATArticleDate 'НДС, %' (article, date) = valueRateRangeDate(dataRetailVATArticleDate(article, date), date);
+valueCurrentRateRetailVATArticle 'НДС, %' (article) = valueCurrentRateRange(retailVATArticle(article));
+
+EXTEND FORM addRetailVATArticle
+    PROPERTIES READONLY FORCE GRID dataValueRetailVATArticleDate(a, d)
+;
+EXTEND FORM dialogRetailVATArticle
+    PROPERTIES dataValueRetailVATArticleDate(a, d)
+;
+
+EXTEND FORM nomenclatureForm
+    PROPERTIES numberRangeRetailVATArticle(article), dialogRetailVATArticle(article), valueCurrentRateRetailVATArticle(article)
+;
+
+percentVATPriceSetDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceSetDocument, article) IN baseGroup;
+percentVATPriceSetDocumentArticle(basePriceSetDocument, article) <- valueCurrentRateRetailVATArticle(article) WHEN CHANGED (date(basePriceSetDocument));
 
 sumVATPriceSetDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article),
                                                                       percentVATPriceSetDocumentArticle(basePriceSetDocument, article));
