@@ -123,8 +123,8 @@ FORM tax 'Налог'
     FILTERS           stringEqualsAll(a)
 
     OBJECTS           u=taxUnit
-    PROPERTIES(u)     descriptionTaxUnit
-    PROPERTIES(ra, u) inRangeTaxUnit SHOWIF isUnitsTypeRange(ra)
+    PROPERTIES(u) READONLY objectClassName, descriptionTaxUnit
+    PROPERTIES(ra, u)      inRangeTaxUnit SHOWIF isUnitsTypeRange(ra)
     FILTERS           taxUnitGroupTaxUnit(u) == ug OR u IS taxUnit AND NOT ug
 
     FILTERGROUP filters

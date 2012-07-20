@@ -119,7 +119,7 @@ descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING
 // -------------------------------- Для всего ledger'а -------------------- //
 
 dateTimeSkuLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
-dateSkuLedger 'Дата' (ledger) = dateInTime(dateTimeSkuLedger(ledger)) PERSISTENT;
+dateSkuLedger 'Дата' (ledger) = dateInTime(dateTimeSkuLedger(ledger)) PERSISTENT INDEXED;
 
 isPostedSkuLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
 
@@ -135,12 +135,12 @@ descriptionSkuLedger 'Закрыт' (ledger) = UNION EXCLUSIVE descriptionDataSk
 
 quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (batch) PERSISTENT;
 
-quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger);
+quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger) PERSISTENT;
 
 quantityInSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
                                                         quantityInLIFOSkuLedger(ledger) PERSISTENT;
 
-quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger);
+quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger) PERSISTENT;
 
 quantityOutSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 

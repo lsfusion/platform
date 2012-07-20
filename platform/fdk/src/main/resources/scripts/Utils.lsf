@@ -30,7 +30,7 @@ round3 (number) = round(number, 3);
 
 CLASS doubleNamed 'Объект с кратким наименованием' : named;
 
-shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) IN baseGroup;
+shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) MINCHARWIDTH 4 PREFCHARWIDTH 4 MAXCHARWIDTH 5 IN baseGroup;
 
 CLASS language 'Язык' : doubleNamed;
 

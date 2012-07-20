@@ -99,8 +99,7 @@ META defineDocumentDetailSkuArticle (object)
     category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
     nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail)) MINCHARWIDTH 15;
 
-    UOM###object##Detail 'Единица измерения (ИД)' (object##Detail) = DATA UOM (object##Detail) IN idGroup;
-    shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortName(UOM###object##Detail(object##Detail));
+    shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortNameUOMSku(sku###object##Detail(object##Detail));
 END
 
 META extendDocumentFormDetailSkuArticleQuantity (form, object, concrete, quantityProp)

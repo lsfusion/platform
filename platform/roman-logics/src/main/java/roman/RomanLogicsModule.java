@@ -1426,7 +1426,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         transfer = addConcreteClass("transfer", "Внутреннее перемещение", baseClass);
 
-        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", secondNameClass, baseClass.named);
+        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", secondNameClass, baseClass.named, (CustomClass) BL.Stock.getClassByName("UOM"));
 
         brandSupplier = addConcreteClass("brandSupplier", "Бренд поставщика", (CustomClass) BL.CRM.getClassByName("discountSkuGroup"));  //baseClass.named,
 
@@ -3560,9 +3560,6 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement contragentClassifier = addNavigatorElement(classifier, "contragentClassifier", "Контрагенты");
 
         NavigatorElement taxClassifier = addNavigatorElement(classifier, "taxClassifier", "Налоги");
-
-        NavigatorElement archiveClassifier = addNavigatorElement(classifier, "archiveClassifier", "Архив");
-        archiveClassifier.add(unitOfMeasure.getListForm(baseLM).form);
 
         ArticleCompositeEditFormEntity articleCompositeEditForm = new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)");
         articleComposite.setEditForm(articleCompositeEditForm, articleCompositeEditForm.objArticleComposite);

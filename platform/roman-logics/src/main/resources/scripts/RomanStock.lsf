@@ -21,6 +21,17 @@ descriptionItem 'Наименование товара' (item) =
 
 nameSku(sku) += descriptionItem (sku);
 
+// Единицы измерения
+UOMSku (sku) += unitOfMeasureArticleSku (sku);
+
+EXTEND FORM UOM
+    PROPERTIES(u) nameOrigin, sidUnitOfMeasure
+;
+
+EXTEND FORM UOMs
+    PROPERTIES(u) READONLY FORCE GRID nameOrigin, sidUnitOfMeasure
+;
+
 // объявляем группы sku
 @defineHierarchy(category);
 EXTEND FORM category
