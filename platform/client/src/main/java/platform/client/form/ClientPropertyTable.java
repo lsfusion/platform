@@ -164,7 +164,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             Object value = editor.getCellEditorValue();
 
             if (getProperty(editRow, editCol).changeType != null) {
-                setValueAt(value, editRow, editCol);
+                updateEditValue(value);
             }
 
             internalRemoveEditor();

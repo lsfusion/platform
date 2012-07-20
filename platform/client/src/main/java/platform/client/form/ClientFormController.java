@@ -89,7 +89,7 @@ public class ClientFormController implements AsyncView {
     private Icon prevIcon;
     public void onAsyncStarted() {
         if(drawAsync!=null) {
-            timer = new Timer(20, new ActionListener() {
+            timer = new Timer(Main.asyncTimeOut, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     prevIcon = drawAsync.getIcon();
                     drawAsync.setIcon(loadingIcon);
