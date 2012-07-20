@@ -37,6 +37,8 @@ CONSTRAINT companyTransferOut(saleOut) != companyStock(destinationStockTransferO
 commissionContractSkuTransferOut = DATA contractSku (transferOut);
 numberCommissionContractSkuTransferOut 'Номер договора комиссии' (transferOut) = numberContract(commissionContractSkuTransferOut(transferOut)) IN documentPrmGroup;
 
+isCommissionTransferOut 'Продажа на комиссию' (transferOut) = TRUE IF commissionContractSkuTransferOut(transferOut);
+
 CONSTRAINT typeContractSkuDate(commissionContractSkuTransferOut(transferOut), dateTransferOut(transferOut)) != contractSkuType.commission
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор, который не является договором комиссии';
 
@@ -44,7 +46,7 @@ CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != comp
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор комиссии, у которого покупатель не совпадает с компанией склада';
 
 EXTEND FORM transferOut
-    PROPERTIES(t) READONLY numberCommissionContractSkuTransferOut
+    PROPERTIES(t) numberCommissionContractSkuTransferOut
 ;
 
 EXTEND FORM transferOuts
