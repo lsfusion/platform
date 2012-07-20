@@ -144,4 +144,8 @@ quantityOutFIFOSkuLedger (ledger) += quantityReturnDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costReturnInBatch(returnInReturnDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS returnDiffSDetail;
 
+accountPriceReturnRecBatchA (returnRec, batchA) = GROUP MAX accountPriceReturnInDetailBatchA(detail, batchA) BY returnRecReturnInDetail(detail), batchA;
+accountSumReturnDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceReturnRecBatchA(returnRecReturnDiffSDetail(detail), batch) BY detail PERSISTENT;
+sumOutSkuLedger(ledger) += accountSumReturnDiffSDetail(ledger);
+
 skipASkuLedger (ledger) += ledger IS returnDiffSDetail;

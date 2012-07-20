@@ -34,7 +34,7 @@ skuGroupSku (sku) += categoryArticleSku(sku);
 @defineSkuLedgerBalanceProperties(A, ' (бухг.)');
 
 EXTEND FORM currentBalanceSkuStock
-    PROPERTIES(s, st) currentBalanceASkuStock
+    PROPERTIES(s, st) currentBalanceASkuStock, averagePriceASkuStock, currentSumASkuStock
     PROPERTIES(bil) skipSkuLedger, skipASkuLedger
     PROPERTIES(bt, st) currentBalanceABatchStock
 ;

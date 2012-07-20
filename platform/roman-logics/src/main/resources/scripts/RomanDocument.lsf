@@ -158,6 +158,10 @@ META defineDocumentTransferAccountCustom(concrete, retailProp, detail, object)
     // Учетные суммы
     accountSum###detail 'Сумма учетная' (idetail) = IF retailProp(idetail)  THEN retailSum###detail(idetail)
                                                                             ELSE (supplierSumSkuLedger(idetail) AND idetail IS detail);
+
+    accountPrice###detail##BatchA (idetail, batch) = IF retailProp(idetail) THEN retailPrice###detail(idetail) AND batch IS batchA
+                                                                            ELSE supplierPriceBatchA(batch) AND idetail IS detail;
+
     accountSum###concrete 'Сумма учетная' (iconcrete) = GROUP SUM accountSum###detail(idetail) BY concrete###detail(idetail) IN documentSumGroup;
 
     EXTEND FORM concrete##s

@@ -165,6 +165,8 @@ CLASS saleRecDetail 'Строка приемки товаров по накла�
 
 @extendDocumentFormDetailSkuArticleReadonly(saleIns, r, saleRec);
 
+saleRecSaleInBatchDetail (detail) = saleRecSaleIn(saleInSaleInBatchDetail(detail));
+
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 CLASS saleDiff 'Акт расхождений приемки товаров по накладной (продажа)' : historyObject;
 
@@ -188,13 +190,17 @@ quantityOutFIFOSkuLedger (ledger) += quantitySaleDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costSaleInBatch(saleInSaleDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS saleDiffSDetail;
 
+accountPriceSaleRecBatchA (saleRec, batchA) = GROUP MAX accountPriceSaleInBatchDetailBatchA(detail, batchA) BY saleRecSaleInBatchDetail(detail), batchA;
+accountSumSaleDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceSaleRecBatchA(saleRecSaleDiffSDetail(detail), batch) BY detail PERSISTENT;
+sumOutSkuLedger(ledger) += accountSumSaleDiffSDetail(ledger);
+
 skipASkuLedger (ledger) += ledger IS saleDiffSDetail;
 
 // ---------------------------------------- Акт расценки ------------------------------------ //
 CLASS transferPriceActSale 'Акт расценки' : transferPriceAct;
 CLASS transferPriceActSaleDetail 'Строка акта расценки': transferPriceActDetail;
 
-importerPricePropBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
-rangeVATPropBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
+prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
+prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
-@defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, importerPricePropBatch, rangeVATPropBatch);
+@defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, prevImporterPriceBatch, prevRangeVATBatch);

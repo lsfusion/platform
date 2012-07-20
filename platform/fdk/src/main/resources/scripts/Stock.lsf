@@ -299,7 +299,14 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
                                                                                            BY batch, stockSkuLedger(ledger) PERSISTENT;
 
-    currentBalance##postfix##Batch 'Остаток (всего)' (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
+    currentBalance##postfix##Batch 'Остаток (всего)'###caption (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
+
+    // ---------------------------- Суммы по товару -------------------------------- //
+
+    currentSum##postfix##SkuStock 'Сумма остатка'###caption (sku, stock) = GROUP SUM signedSumSkuLedger (ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                            BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+
+    averagePrice##postfix##SkuStock 'Цена (средневзв.)'###caption (sku, stock) = currentSum##postfix##SkuStock(sku, stock) / currentBalance##postfix##SkuStock(sku, stock); // IF NOT currentBalance##postfix##SkuStock(sku, stock) == 0; (возможно не нужно, так как 0 не может быть в GROUP SUM )
 
 END
 
@@ -307,13 +314,6 @@ END
 
 expiryDateSkuStock 'Годен до (max.)' (sku, stock) = GROUP MAX expiryDateBatch(batch) IF currentBalanceBatchStock(batch, stock)
                                                           BY skuBatch(batch), stock PERSISTENT;
-
-// ---------------------------- Суммы по товару -------------------------------- //
-
-currentSumSkuStock 'Сумма остатка' (sku, stock) = GROUP SUM signedSumSkuLedger (ledger) AND isPostedSkuLedger(ledger)
-                                                        BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
-
-averagePriceSkuStock 'Цена (средневзв.)' (sku, stock) = currentSumSkuStock(sku, stock) / currentBalanceSkuStock(sku, stock) IF NOT currentBalanceSkuStock(sku, stock) == 0;
 
 // -------------------------------------- Последнее движение ---------------------------------- //
 
@@ -644,7 +644,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
         FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDatePeriod(s, st, currentDate(), 30)
 
     OBJECTS bil=skuLedger
-    PROPERTIES(bil) descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger READONLY
+    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 
@@ -715,7 +715,7 @@ FORM balanceSkuStock 'Остатки на дату'
         FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDateTimePeriod(s, st, t, 30)
 
     OBJECTS bil=skuLedger
-    PROPERTIES(bil) descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger READONLY
+    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 ;

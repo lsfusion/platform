@@ -138,13 +138,17 @@ quantityOutFIFOSkuLedger (ledger) += quantityTransferDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTransferDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS transferDiffSDetail;
 
+accountPriceTransferRecBatchA (transferRec, batchA) = GROUP MAX accountPriceTransferInDetailBatchA(detail, batchA) BY transferRecTransferInDetail(detail), batchA;
+accountSumTransferDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceTransferRecBatchA(transferRecTransferDiffSDetail(detail), batch) BY detail PERSISTENT;
+sumOutSkuLedger(ledger) += accountSumTransferDiffSDetail(ledger);
+
 skipASkuLedger (ledger) += ledger IS transferDiffSDetail;
 
 // ---------------------------------------- Акт расценки ------------------------------------ //
 CLASS transferPriceActTransfer 'Акт расценки' : transferPriceAct;
 CLASS transferPriceActTransferDetail 'Строка акта расценки': transferPriceActDetail;
 
-importerPricePropBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
-rangeVATPropBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
+prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
+prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
-@defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, importerPricePropBatch, rangeVATPropBatch);
+@defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevRangeVATBatch);

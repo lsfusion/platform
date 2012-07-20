@@ -231,6 +231,7 @@ META defineDocumentTransferRec(object, caption, skuProp, stockProp)
     object##Rec###object##In = GROUP UNIQUE object##Rec BY object##In###object##Rec(object##Rec) WHERE object##Rec IS object##Rec;
 
     object##In###object##RecDetail (detail) = object##In###object##Rec(object##Rec###object##RecDetail(detail));
+    object##Rec###object##InDetail (detail) = object##Rec###object##In(object##In###object##InDetail(detail));
 
     @defineDocumentAggregationHeaderStock(object##In, object##Rec, stockProp, 'Склад-получатель');
 
