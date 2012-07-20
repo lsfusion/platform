@@ -191,73 +191,21 @@ FORM customStores 'Склады временного хранения'
 
 ;
 
-FORM importer 'Компания'
-    OBJECTS co=company FIXED PANEL
-    PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
-                   dialogAddressLegalEntity, postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity,
-                   dialogManagerLegalEntity, accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
-                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity,
-                   nameOrigin, addressOriginSubject, addressSubject, contractImporter, sidImporter
-
-    OBJECTS c=contract
-
-    PROPERTIES(c)  READONLY sidContract, dateContract, nameSellerContract, nameCurrencyContract, conditionShipmentContract, conditionPaymentContract
-    PROPERTIES(c)  ADDFORM, EDITFORM, delete
-    ORDER BY       nameSellerContract
-
-    OBJECTS a=account
-    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-    FILTERS legalEntityAccount(a) == co
-
-    FILTERS subjectContract(c) == co
-
-    EDIT company OBJECT co
+EXTEND FORM company
+    PROPERTIES(co) nameOrigin, addressOriginSubject, addressSubject, contractImporter, sidImporter
 ;
 
-DESIGN importer FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-        co.box {
+EXTEND DESIGN company {
+    co.box {
+        NEW column3 {
+            title = 'Данные для Sintitex';
             childConstraints = TO THE BOTTOM;
 
-            NEW row1 {
-                childConstraints = TO THE RIGHT;
-                ADD co.lawGroup{
-                    childConstraints = TO THE BOTTOM;
-                }
-
-                NEW row11 {
-                    title = 'Оригинал';
-                    childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY (nameOrigin(co));
-                    ADD PROPERTY (addressOriginSubject(co));
-                    ADD PROPERTY (addressSubject(co));
-                    ADD PROPERTY (contractImporter(co));
-                    ADD PROPERTY (sidImporter(co));
-                }
-            }
-            NEW row2{
-                childConstraints = TO THE RIGHT;
-                ADD co.contactGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-                ADD co.managementGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-                ADD co.docGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-            }
+            ADD PROPERTY (nameOrigin(co));
+            ADD PROPERTY (addressOriginSubject(co));
+            ADD PROPERTY (addressSubject(co));
+            ADD PROPERTY (contractImporter(co));
+            ADD PROPERTY (sidImporter(co));
         }
-        ADD c.box;
-        ADD a.box;
-        ADD functions.box;
-
     }
 }
-
-FORM importers 'Компании'
-    OBJECTS co=company
-    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
-    PROPERTIES(co) ADDFORM, EDITFORM, delete
-;

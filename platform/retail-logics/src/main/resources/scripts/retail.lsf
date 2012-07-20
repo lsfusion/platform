@@ -9519,7 +9519,7 @@ NAVIGATOR {
             ADD components;
             ADD itemGroups;
             ADD statisticGroups;
-            ADD unitsOfMeasure;
+            ADD UOMs;
             ADD countries;
             ADD currencies;
             ADD naturalLossItem;

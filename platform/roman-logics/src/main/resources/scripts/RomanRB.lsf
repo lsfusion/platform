@@ -11,16 +11,7 @@ REQUIRE System,
         Consignment,
         PriceChange,
         Declaration,
-        CStoWH,
         WHfromCS,
-        WHtoS,
-        StoS,
-        StoWH,
-        SfromS,
-        SfromWH,
-        WHfromS,
-        WHtoWH,
-        WHfromWH,
         Transfer,
         Sale,
         Return,
@@ -90,18 +81,20 @@ EXTEND FORM globalParamForm
 
 
 NAVIGATOR {
-    classifier {
-      //  ADD stores;
-        ADD UOM;
-        ADD taxes;
-        ADD banks;
-        ADD employees;
-        ADD importers;
-        ADD stores;
-        ADD companies;
-        ADD contractsSkuCompany;
-        ADD clients;
+    itemClassifier {
+        ADD UOMs;
     }
+
+    contragentClassifier {
+        ADD companies;
+        ADD employees;
+        ADD banks;
+    }
+
+    taxClassifier {
+        ADD taxes;
+    }
+
     customs {
         customClassifier {
             ADD customStores;
@@ -168,23 +161,12 @@ NAVIGATOR {
         }
     }
 
-    merchandising {
-
-        NEW merchandisingDocument 'Документы' {
-            ADD WHtoSs;
-            ADD WHfromSs;
-            ADD WHtoWHs;
-            ADD WHfromWHs;
-        }
+    retailClassifier {
+        ADD stores;
     }
 
-    merchandisingStore {
-        NEW merchandisingStoreDocument 'Документы' {
-            ADD SfromWHs;
-            ADD StoSs;
-            ADD SfromSs;
-            ADD StoWHs;
-        }
+    CRM {
+        ADD clients;
     }
 
     printForms{

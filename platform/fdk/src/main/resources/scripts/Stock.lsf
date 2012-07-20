@@ -29,14 +29,16 @@ shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) I
 factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN baseGroup;
 
 FORM UOM 'Единица измерения'
-OBJECTS u=UOM FIXED PANEL
-PROPERTIES(u) name, shortName, shortNameBaseUOM, factorUOM
-EDIT UOM OBJECT u;
+    OBJECTS u=UOM FIXED PANEL
+    PROPERTIES(u) name, shortName, shortNameBaseUOM, factorUOM
+    EDIT UOM OBJECT u
+;
 
-FORM unitsOfMeasure 'Единицы измерений'
-OBJECTS u=UOM
-PROPERTIES(u) READONLY name, shortName, shortNameBaseUOM, factorUOM
-PROPERTIES(u) ADDFORM, EDITFORM, delete;
+FORM UOMs 'Единицы измерений'
+    OBJECTS u=UOM
+    PROPERTIES(u) READONLY name, shortName, shortNameBaseUOM, factorUOM
+    PROPERTIES(u) ADDFORM, EDITFORM, delete
+;
 
 // ----------------------------------- Sku ------------------------------------------ //
 

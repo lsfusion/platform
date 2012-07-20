@@ -9,6 +9,7 @@ REQUIRE System,
         Contract,
         RetailPrice,
         StorePriceTransfer,
+        WholesalePrice,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -43,6 +44,8 @@ destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOu
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
 supplierPriceSaleOutDetail 'Цена оптовая' = DATA NUMERIC[14,2] (saleOutDetail);
+supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuSaleOutDetail(saleOutDetail)), dateTimeSaleOutDetail(saleOutDetail))
+    WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail));
 
 EXTEND FORM saleOut
     PROPERTIES(t) numberContractSkuCompanySaleOut

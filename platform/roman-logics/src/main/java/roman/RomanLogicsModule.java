@@ -40,8 +40,6 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.PropertyChange;
 
 import javax.swing.*;
 import java.awt.*;
@@ -3552,16 +3550,19 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement classifier = addNavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         classifier.window = leftToolbar;
 
-        addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
+        NavigatorElement itemClassifier = addNavigatorElement(classifier, "itemClassifier", "Номенклатура");
 
-        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(classifier, "category", "Номенклатурные группы"));
+        addFormEntity(new NomenclatureFormEntity(itemClassifier, "nomenclatureForm", "Товары"));
+
+        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(itemClassifier, "category", "Товарные группы"));
         category.setDialogForm(categoryForm, categoryForm.objCategory);
-        classifier.add(baseLM.country.getListForm(baseLM).form);
-        classifier.add(unitOfMeasure.getListForm(baseLM).form);
-        classifier.add(typeFabric.getListForm(baseLM).form);
 
-        classifier.add(seasonSupplier.getListForm(baseLM).form);
-        addFormEntity(new StoreFormEntity(classifier, "storeForm", "Магазины"));
+        NavigatorElement contragentClassifier = addNavigatorElement(classifier, "contragentClassifier", "Контрагенты");
+
+        NavigatorElement taxClassifier = addNavigatorElement(classifier, "taxClassifier", "Налоги");
+
+        NavigatorElement archiveClassifier = addNavigatorElement(classifier, "archiveClassifier", "Архив");
+        archiveClassifier.add(unitOfMeasure.getListForm(baseLM).form);
 
         ArticleCompositeEditFormEntity articleCompositeEditForm = new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)");
         articleComposite.setEditForm(articleCompositeEditForm, articleCompositeEditForm.objArticleComposite);
@@ -3741,16 +3742,16 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement logisticsClassifier = addNavigatorElement(logistics, "logisticsClassifier", "Справочники");
 
-        NavigatorElement merchandising = addNavigatorElement(baseLM.baseElement, "merchandising", "Управление складами");
-        merchandising.window = leftToolbar;
+        NavigatorElement retail = addNavigatorElement(baseLM.baseElement, "retail", "Розница");
+        retail.window = leftToolbar;
 
-        NavigatorElement merchandisingClassifier = addNavigatorElement(merchandising, "merchandisingClassifier", "Справочники");
-        merchandisingClassifier.add(commonSize.getListForm(baseLM).form);
-        addFormEntity(new CommonSizeEditFormEntity(merchandisingClassifier, "commonEditSizeForm", "Белорусские размеры"));
-        addFormEntity(new CommonSizeImportFormEntity(merchandisingClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
+        NavigatorElement retailClassifier = addNavigatorElement(retail, "retailClassifier", "Справочники");
+        retailClassifier.add(commonSize.getListForm(baseLM).form);
+        addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
+        addFormEntity(new CommonSizeImportFormEntity(retailClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
 
-        NavigatorElement merchandisingStore = addNavigatorElement(baseLM.baseElement, "merchandisingStore", "Управление магазинами");
-        merchandisingStore.window = leftToolbar;
+        NavigatorElement CRM = addNavigatorElement(baseLM.baseElement, "CRM", "CRM");
+        CRM.window = leftToolbar;
 
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
@@ -4043,41 +4044,6 @@ public class RomanLogicsModule extends LogicsModule {
             return design;
         }
     }
-
-    private class StoreFormEntity extends FormEntity<RomanBusinessLogics> {
-
-        private ObjectEntity objStore;
-        private ObjectEntity objSupplier;
-
-
-        private StoreFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            objStore = addSingleGroupObject(store, "Магазин", baseLM.name, sidDestination);
-            addObjectActions(this, objStore);
-
-            objStore.groupTo.initClassView = ClassViewType.GRID;
-
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
-            objSupplier.groupTo.initClassView = ClassViewType.GRID;
-
-            addPropertyDraw(relationStoreSupplier, objStore, objSupplier);
-            addPropertyDraw(sidDestinationSupplier, objStore, objSupplier);
-            setEditType(objSupplier, PropertyEditType.READONLY);
-            setEditType(relationStoreSupplier, PropertyEditType.EDITABLE);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.get(objStore.groupTo).grid.constraints.fillVertical = 3;
-            design.get(objSupplier.groupTo).grid.constraints.fillVertical = 2;
-
-            return design;
-        }
-    }
-
 
     private class PackingListBoxFormEntity extends FormEntity<RomanBusinessLogics> {
 
