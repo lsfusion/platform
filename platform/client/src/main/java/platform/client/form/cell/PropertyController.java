@@ -49,6 +49,9 @@ public class PropertyController {
             view.getComponent().setFocusable(false);
         }
 
+        if(key.drawAsync)
+            form.drawAsync = view;
+
         if (key.editKey != null) {
             form.getComponent().addKeyBinding(key.editKey, key.groupObject, new KeyAdapter() {
                 @Override

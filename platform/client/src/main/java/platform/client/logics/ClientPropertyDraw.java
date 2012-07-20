@@ -67,6 +67,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public KeyStroke editKey;
     public boolean showEditKey;
 
+    public boolean drawAsync; // рисовать асинхронность на этой кнопке
+
     public EditBindingMap editBindingMap;
 
     public Boolean focusable;
@@ -331,6 +333,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();
+        drawAsync = inStream.readBoolean();
 
         format = pool.readObject(inStream);
 

@@ -1,5 +1,7 @@
 package platform.server.logics.property.actions.edit;
 
+import platform.base.BaseUtils;
+import platform.interop.action.AsyncResultClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.DataClass;
@@ -16,6 +18,7 @@ import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +32,8 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
 
     public DefaultChangeActionProperty(String sID, String caption, CalcProperty<P> property, List<P> listInterfaces, List<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
         super(sID, caption, valueClasses.toArray(new ValueClass[valueClasses.size()]));
+        
+        assert filterProperty==null || filterProperty.interfaces.size()==1;
 
         this.implement = new CalcPropertyMapImplement<P, ClassPropertyInterface>(property, reverse(getMapInterfaces(listInterfaces)));
         this.editActionSID = editActionSID;
@@ -83,6 +88,12 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
                                 return formInstance.createChangeEditorDialog(propertyValues, context.getGroupObjectInstance(), filterProperty);
                             }
                         });
+                    }
+
+                    if(filterProperty!=null && changeValue!=null) {
+                        context.delayUserInteraction(new AsyncResultClientAction(filterProperty.read(context.getSession().sql,
+                                Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), changeValue), modifier, context.getQueryEnv())));
+                        context.delayRemoteChanges();
                     }
                 } else {
                     throw new RuntimeException("not supported");

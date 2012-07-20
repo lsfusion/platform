@@ -5,11 +5,10 @@ import com.google.common.base.Throwables;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.EditPropertyHandler;
-import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
-import platform.client.logics.ClientObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;
+import platform.interop.action.AsyncResultClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.ServerResponse;
@@ -156,4 +155,9 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     public void execute(EditNotPerformedClientAction action) {
         editPerformed = false;
     }
+
+    @Override
+    public void execute(AsyncResultClientAction action) {
+        handler.updateEditValue(action.value);
+   }
 }

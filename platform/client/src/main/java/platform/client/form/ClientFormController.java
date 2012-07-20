@@ -10,6 +10,7 @@ import platform.base.identity.IDGenerator;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
+import platform.client.form.cell.PanelView;
 import platform.client.form.dispatch.ClientFormActionDispatcher;
 import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.form.tree.TreeGroupController;
@@ -24,11 +25,9 @@ import platform.interop.Scroll;
 import platform.interop.form.*;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -41,7 +40,7 @@ import static platform.base.BaseUtils.serializeObject;
 import static platform.client.ClientResourceBundle.getString;
 import static platform.interop.Order.*;
 
-public class ClientFormController {
+public class ClientFormController implements AsyncView {
 
     private final TableManager tableManager = new TableManager(this);
 
@@ -52,7 +51,7 @@ public class ClientFormController {
         }
     };
 
-    private final RmiQueue rmiQueue = new RmiQueue(tableManager, serverMessageProvider);
+    private final RmiQueue rmiQueue = new RmiQueue(tableManager, serverMessageProvider, this);
     private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
 //    private RemoteFormInterface remoteForm;
@@ -82,6 +81,33 @@ public class ClientFormController {
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+
+    private static final ImageIcon loadingIcon = new ImageIcon(Main.class.getResource("/images/loading.gif"));
+
+    public PanelView drawAsync;
+    private Timer timer;
+    private Icon prevIcon;
+    public void onAsyncStarted() {
+        if(drawAsync!=null) {
+            timer = new Timer(20, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    prevIcon = drawAsync.getIcon();
+                    drawAsync.setIcon(loadingIcon);
+                    timer = null;
+                }
+            });
+            timer.setRepeats(false);
+            timer.start();
+        }
+    }
+    public void onAsyncFinished() {
+        if(drawAsync!=null) {
+            if(timer!=null)
+                timer.stop();
+            else
+                drawAsync.setIcon(prevIcon);
+        }
+    }
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
         this(remoteForm, clientNavigator, false);
@@ -151,7 +177,7 @@ public class ClientFormController {
 
         initializeDefaultOrders();
 
-        applyRemoteChanges();
+        processRemoteChanges(false);
     }
 
     public List<ClientPropertyDraw> getPropertyDraws() {
@@ -345,7 +371,7 @@ public class ClientFormController {
 
     private void initializeDefaultOrders() throws IOException {
         //сначала получаем изменения, чтобы был первоначальный список свойств в таблице
-        applyRemoteChanges();
+        processRemoteChanges(false);
         try {
             // Применяем порядки по умолчанию
             applyOrders(form.defaultOrders);
@@ -384,8 +410,8 @@ public class ClientFormController {
         }
     }
 
-    public void applyRemoteChanges() throws IOException {
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
+    public void processRemoteChanges(boolean async) throws IOException {
+        rmiQueue.syncRequestWithTimeOut(async ? 0 : RmiQueue.FOREVER, new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
                 return remoteForm.getRemoteChanges(requestIndex);
@@ -696,24 +722,12 @@ public class ClientFormController {
         });
     }
 
-    public ServerResponse continueServerInvocation(final Object[] actionResults) throws RemoteException {
-        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
-        busyDisplayer.start();
-        try {
-            return remoteForm.continueServerInvocation(actionResults);
-        } finally {
-            busyDisplayer.stop();
-        }
+    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
+        return remoteForm.continueServerInvocation(actionResults);
     }
 
     public ServerResponse throwInServerInvocation(Exception ex) throws RemoteException {
-        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
-        busyDisplayer.start();
-        try {
-            return remoteForm.throwInServerInvocation(ex);
-        } finally {
-            busyDisplayer.stop();
-        }
+        return remoteForm.throwInServerInvocation(ex);
     }
 
     public void gainedFocus() {

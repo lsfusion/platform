@@ -14,4 +14,7 @@ public interface PanelView {
     void setBackgroundColor(Color background);
     void setForegroundColor(Color foreground);
     void changeViewType(ClassViewType type);
+    
+    Icon getIcon();
+    void setIcon(Icon icon);
 }

@@ -238,7 +238,7 @@ public class GridController {
                             try {
                                 dialog = new HideSettingsButton.HideSettingsDialog(Main.frame, table, form);
                                 dialog.setVisible(true);
-                                form.applyRemoteChanges();
+                                form.processRemoteChanges(false);
                             } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }

@@ -166,10 +166,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions) {
-        if (numberOfFormChangesRequests.get() > 1) {
+    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions, boolean pendRemoteChanges) {
+        if (numberOfFormChangesRequests.get() > 1 || pendRemoteChanges) {
             //todo: возможно стоит сохранять количество пропущенных изменений, и высылать таки их, если пропустили слишком много
-            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false, pendRemoteChanges);
         }
 
         byte[] formChanges = getFormChangesByteArray();
@@ -587,7 +587,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
-                return prepareRemoteChangesResponse(delayedActions);
+                return prepareRemoteChangesResponse(delayedActions, delayRemoteChanges);
             }
 
             @Override
@@ -623,8 +623,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return currentInvocation.getLogMessage();
     }
 
+    public void delayRemoteChanges() {
+        currentInvocation.delayRemoteChanges();
+    }
+
     public void delayUserInteraction(ClientAction action) {
-        currentInvocation.delayUserInterfaction(action);
+        currentInvocation.delayUserInteraction(action);
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {

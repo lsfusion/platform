@@ -147,4 +147,8 @@ public class ActionCellView extends JButton implements PanelView, EditPropertyHa
     public ClientFormController getForm() {
         return form;
     }
+
+    public void updateEditValue(Object value) {
+        // по идее не может быть
+    }
 }

@@ -172,6 +172,10 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         }
     }
 
+    public void updateEditValue(Object value) {
+        setValueAt(value, editRow, editCol);
+    }
+
     @Override
     public void editingCanceled(ChangeEvent e) {
         internalRemoveEditor();

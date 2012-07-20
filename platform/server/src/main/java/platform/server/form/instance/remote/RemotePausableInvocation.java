@@ -33,6 +33,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     private ServerResponse invocationResult = null;
 
     protected List<ClientAction> delayedActions = new ArrayList<ClientAction>();
+    protected boolean delayRemoteChanges = false;
     private int neededActionResultsCnt = -1;
 
     private Object[] actionResults;
@@ -51,11 +52,21 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     /**
      * рабочий поток
      */
-    public final void delayUserInterfaction(ClientAction action) {
+    public final void delayUserInteraction(ClientAction action) {
         if (logger.isDebugEnabled()) {
             logger.debug("Interaction " + sid + " called delayUserInteraction: " + action);
         }
         delayedActions.add(action);
+    }
+
+    /**
+     * рабочий поток
+     */
+    public final void delayRemoteChanges() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Interaction " + sid + " called delayRemoteChanges");
+        }
+        delayRemoteChanges = true;
     }
 
     /**

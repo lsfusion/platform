@@ -769,6 +769,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 property.execute(new HashMap<ClassPropertyInterface, DataObject>(), session, null);
                 session.apply(BL);
                 session.close();
+                assert !delayRemoteChanges; // тут не должно быть никаких delayRemote
                 return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
         };
@@ -791,7 +792,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     public void delayUserInteraction(ClientAction action) {
-        currentInvocation.delayUserInterfaction(action);
+        currentInvocation.delayUserInteraction(action);
     }
 
     @Override

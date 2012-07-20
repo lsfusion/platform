@@ -102,6 +102,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
+        assert !serverResponse.resumeInvocation && !serverResponse.pendingRemoteChanges;
     }
 
 
@@ -436,5 +437,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(EditNotPerformedClientAction action) {
+    }
+
+    public void execute(AsyncResultClientAction action) {
     }
 }

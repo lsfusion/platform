@@ -120,6 +120,7 @@ public class DefaultFormView extends FormView {
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
         setupFormButton(refreshFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getRefreshKeyStroke(), "refresh.png");
+        refreshFunction.drawAsync = true;
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
         applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);

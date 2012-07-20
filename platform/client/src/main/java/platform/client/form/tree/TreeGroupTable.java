@@ -671,6 +671,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
+    public void updateEditValue(Object value) {
+        setValueAt(value, editRow, editCol);
+    }
+
     @Override
     public void editingCanceled(ChangeEvent e) {
         internalRemoveEditor();

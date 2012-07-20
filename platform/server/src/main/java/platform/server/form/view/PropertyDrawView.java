@@ -58,6 +58,8 @@ public class PropertyDrawView extends ComponentView {
     public KeyStroke editKey;
     public boolean showEditKey = true;
 
+    public boolean drawAsync = false;
+
     public Format format;
 
     public Boolean focusable;
@@ -187,6 +189,8 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, editKey);
 
         outStream.writeBoolean(showEditKey);
+
+        outStream.writeBoolean(drawAsync);
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);

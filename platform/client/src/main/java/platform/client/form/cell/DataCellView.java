@@ -165,4 +165,12 @@ public class DataCellView extends JPanel implements PanelView {
     public void changeViewType(ClassViewType type) {
         //пока тут ничего не делаем
     }
+
+    public Icon getIcon() {
+        throw new RuntimeException("not supported");
+    }
+
+    public void setIcon(Icon icon) {
+        throw new RuntimeException("not supported");
+    }
 }
