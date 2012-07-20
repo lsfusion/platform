@@ -43,7 +43,7 @@ CLASS moveInDetail 'Строка поступления товаров' : inLIFO
 @defineDocumentDetailSkuArticle(moveIn);
 @extendDocumentFormDetailSkuArticleReadonly(moveIns, d, moveIn);
 
-costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY moveInMoveInDetail(ledger), batch;
+costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY moveInMoveInDetail(ledger), batch PERSISTENT;
 
 @implementSkuLedger(moveIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityMoveInDetail(ledger);

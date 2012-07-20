@@ -80,6 +80,8 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 @defineDocumentDetailSkuArticle(saleIn);
 @extendDocumentFormDetailSkuArticleReadonly(saleIns, d, saleIn);
 
+TABLE saleInBatchDetail(saleInBatchDetail);
+
 @defineAggregationDouble(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
 
 saleOutSaleInBatchDetail (detail) = saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
@@ -116,7 +118,7 @@ rangeVATSaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInB
 accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail) THEN retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
                                                                                   ELSE supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
-costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch);
+costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch) PERSISTENT;
 
 EXTEND FORM saleIns
     OBJECTS b = saleInBatchDetail

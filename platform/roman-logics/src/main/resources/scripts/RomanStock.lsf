@@ -84,7 +84,7 @@ END
 ownerBatchA = ABSTRACT company(batchA) PERSISTENT;
 nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN baseGroup;
 
-commissionContractSkuBatchA = ABSTRACT contractSku (batchA) PERSISTENT;
+commissionContractSkuBatchA = ABSTRACT contractSku (batchA) PERSISTENT INDEXED;
 numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN baseGroup;
 
 importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;

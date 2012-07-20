@@ -17,6 +17,7 @@ nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
 
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
+TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
@@ -54,6 +55,7 @@ nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT
 UOMSku (sku) = ABSTRACT UOM (sku);
 shortNameUOMSku (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
 
+TABLE skuGroupSku(skuGroup, sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
 // ----------------------------------- Ledger ------------------------------------------ //
@@ -459,7 +461,7 @@ END
 
 // Склады
 META defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
-    prefixA###stockProp###aggrObject (object) = prefixP###stockProp###primObject(primObject###aggrObject(object));
+    prefixA###stockProp###aggrObject (object) = prefixP###stockProp###primObject(primObject###aggrObject(object)) PERSISTENT;
     name###prefixA###stockProp###aggrObject stockCaption (object) = name(prefixA###stockProp###aggrObject(object));
 END
 META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, stockCaption)
@@ -467,7 +469,7 @@ META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, st
 END
 
 META defineDocumentAggregationDetailStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
-    prefixA###stockProp###aggrObject##Detail (detail) = prefixP###stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    prefixA###stockProp###aggrObject##Detail (detail) = prefixP###stockProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
 END
 META defineDocumentAggregationDetailStock (primObject, aggrObject, stockProp, stockCaption)
     @defineDocumentAggregationDetailStockPrefix(primObject, aggrObject, stockProp, stockCaption, , );

@@ -9,7 +9,6 @@ REQUIRE System,
         Document,
         Historizable,
         Consignment,
-        PriceChange,
         Declaration,
         WHfromCS,
         Transfer,
@@ -129,9 +128,6 @@ NAVIGATOR {
                 ADD shares;
                 ADD discountCards;
             }
-
-            ADD priceChangeDocuments;
-            ADD priceChangeCommitteeDialog;
         }
     }
 

@@ -303,5 +303,5 @@ END
 
 // Quantity
 META defineDocumentAggregationDetailQuantity (primObject, aggrObject)
-    quantity###aggrObject##Detail 'Кол-во' (detail) = quantity###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    quantity###aggrObject##Detail 'Кол-во' (detail) = quantity###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
 END

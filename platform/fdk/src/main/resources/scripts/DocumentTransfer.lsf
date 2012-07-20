@@ -125,6 +125,8 @@ END
 
 META defineDocumentTransferOutBatch(object, skuProp)
 
+    TABLE object##OutBatchDetail(object##OutBatchDetail);
+
     cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS object##OutDetail;
     @defineAggregationDouble(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
 
@@ -160,6 +162,7 @@ END
 META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentTables(object##In);
+    TABLE object##InBatch (object##In, batch);
 
     @defineDocumentAggregation(object##Out, object##In, is###object##Out);
 
@@ -362,6 +365,8 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     // Создание документов
 
     @defineDocumentTables(object##Diff);
+    TABLE object##DiffSDetail (object##DiffSDetail);
+    TABLE object##DiffEDetail (object##DiffEDetail);
 
     @defineAggregation(object##Rec, object##Diff, countDiff###object##Rec);
 
@@ -375,9 +380,9 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
 
     object##Rec###object##DiffDetail (detail) = object##Rec###object##DiffEDetail(detail) OR object##Rec###object##DiffSDetail(detail) PERSISTENT;
     object##In###object##DiffDetail (detail) = object##In###object##Rec(object##Rec###object##DiffDetail(detail));
-    object##Diff###object##DiffDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffDetail(detail));
+    object##Diff###object##DiffDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffDetail(detail)) PERSISTENT;
 
-    object##In###object##DiffSDetail (detail) = object##In###object##Rec(object##Rec###object##DiffSDetail(detail));
+    object##In###object##DiffSDetail (detail) = object##In###object##Rec(object##Rec###object##DiffSDetail(detail)) PERSISTENT;
 
     object##Diff###object##DiffEDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffEDetail(detail));
     object##Diff###object##DiffSDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffSDetail(detail));

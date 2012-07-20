@@ -74,7 +74,7 @@ DESIGN dialogDate FROM DEFAULT {
 META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
     aggrObject###primObject (primObject) =
         GROUP UNIQUE aggrObject BY primProperty(aggrObject)
-        WHERE aggrObject IS aggrObject;
+        WHERE aggrObject IS aggrObject PERSISTENT INDEXED;
 
     aggrProperty(primObject) => aggrObject###primObject(primObject) RESOLVE TRUE;
 
@@ -83,7 +83,7 @@ META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty
 END
 
 META defineAggregation (primObject, aggrObject, aggrProperty)
-    primObject###aggrObject = DATA primObject (aggrObject);
+    primObject###aggrObject = DATA primObject (aggrObject) INDEXED;
 
     @defineAggregationCustom (primObject###aggrObject, primObject, aggrObject, aggrProperty);
 END
@@ -100,8 +100,8 @@ META defineAggregationDoubleCustom (prim1Property, prim2Property, prim1Object, p
 END
 
 META defineAggregationDouble (prim1Object, prim2Object, aggrObject, aggrProperty)
-    prim1Object###aggrObject = DATA prim1Object (aggrObject);
-    prim2Object###aggrObject = DATA prim2Object (aggrObject);
+    prim1Object###aggrObject = DATA prim1Object (aggrObject) INDEXED;
+    prim2Object###aggrObject = DATA prim2Object (aggrObject) INDEXED;
 
     @defineAggregationDoubleCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim2Object, aggrObject, aggrProperty);
 END
@@ -109,7 +109,7 @@ END
 META defineAggregationTripleCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
     aggrObject###prim1Object###prim2Object###prim3Object (prim1Object, prim2Object, prim3Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
-        WHERE aggrObject IS aggrObject;
+        WHERE aggrObject IS aggrObject PERSISTENT INDEXED;
 
     aggrProperty(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE TRUE;
 

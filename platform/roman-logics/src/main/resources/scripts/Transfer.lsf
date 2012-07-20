@@ -85,7 +85,7 @@ CLASS transferInDetail 'Строка поступления товаров по 
 @defineDocumentDetailSkuArticle(transferIn);
 @extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
 
-costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch;
+costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch PERSISTENT;
 
 retailPriceTransferInDetail 'Цена розничная' (detail) = retailPriceTransferOutDetail(transferOutDetailTransferInDetail(detail));
 retailSumTransferInDetail 'Сумма розничная' (detail) = quantityTransferInDetail(detail) * retailPriceTransferInDetail(detail);

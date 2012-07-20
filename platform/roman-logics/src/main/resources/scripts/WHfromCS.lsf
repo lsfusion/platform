@@ -316,8 +316,11 @@ printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfro
 CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
 CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
 CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
+
 CLASS WHfromCSDODetail 'Строка акта расхождений (излишек) на приемке на склад с СВХ' : inLIFOSkuLedger, WHfromCSDDetail;
 CLASS WHfromCSDSDetail 'Строка акта расхождений (недостача) на приемке на склад с СВХ' : outFIFOSkuLedger, WHfromCSDDetail;
+TABLE WHfromCSDODetail (WHfromCSDODetail);
+TABLE WHfromCSDSDetail (WHfromCSDSDetail);
 
 @defineDocument(WHfromCSD);
 @defineDocumentStock(WHfromCSD, warehouse, 'Оптовый склад');

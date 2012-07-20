@@ -86,7 +86,7 @@ CLASS returnInDetail 'Строка получения товаров по нак
 batchReturnInDetail (detail) = batchSaleInBatchDetail(saleInBatchDetailReturnOutDetail(returnOutDetailReturnInDetail(detail))) PERSISTENT;
 descriptionBatchReturnInDetail 'Партия' (detail) = descriptionBatch(batchReturnInDetail(detail));
 
-costReturnInBatch(returnIn, batch) = GROUP SUM quantityReturnInDetail(detail) BY returnInReturnInDetail(detail), batchReturnInDetail(detail);
+costReturnInBatch(returnIn, batch) = GROUP SUM quantityReturnInDetail(detail) BY returnInReturnInDetail(detail), batchReturnInDetail(detail) PERSISTENT;
 
 EXTEND FORM returnIns
     PROPERTIES(d) descriptionBatchReturnInDetail
