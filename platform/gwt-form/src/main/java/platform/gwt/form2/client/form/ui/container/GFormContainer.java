@@ -10,25 +10,16 @@ import platform.gwt.view2.GContainer;
 public class GFormContainer extends GAbstractFormContainer {
     private Panel panel;
 
-    public static long nextid = 0;
     public GFormContainer(GContainer key) {
         this.key = key;
 
-        if (key.title != null) {
-            //todo:
-//            CaptionLayoutPanel
-//            containerComponent = new Ca
-        }
-
         if (key.gwtVertical) {
             panel = new VerticalPanel();
-            panel.addStyleName("vlayout");
+            panel.addStyleName("gwtVertical");
         } else {
             panel = new HorizontalPanel();
-            panel.addStyleName("hlayout");
+            panel.addStyleName("getHorizontal");
         }
-
-        panel.getElement().setAttribute("layoutid", "" + nextid++);
     }
 
     @Override

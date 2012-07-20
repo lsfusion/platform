@@ -14,25 +14,24 @@ public class MessageBox {
     public static void showMessageBox(boolean isError, String caption, String message, final CloseCallback closeCallback) {
         final DialogBox box = new DialogBox();
 
-        final VerticalPanel panel = new VerticalPanel();
-        panel.add(new HTML(message));
-        final Button buttonClose = new Button("Close",new ClickHandler() {
+        final Button buttonClose = new Button("Close", new ClickHandler() {
             @Override
             public void onClick(final ClickEvent event) {
                 box.hide();
             }
         });
+        buttonClose.addStyleName("messageBox-button");
 
-        final HTML emptyLabel = new HTML("");
-        emptyLabel.setSize("auto","25px");
-        panel.add(emptyLabel);
-        panel.add(emptyLabel);
-        buttonClose.setWidth("90px");
+        HTML messageLabel = new HTML(message);
+        messageLabel.addStyleName("messageBox-message");
+
+        final VerticalPanel panel = new VerticalPanel();
+        panel.add(messageLabel);
         panel.add(buttonClose);
         panel.setCellHorizontalAlignment(buttonClose, HasAlignment.ALIGN_RIGHT);
 
         box.setText(caption);
-        box.add(panel);
+        box.setWidget(panel);
         box.addCloseHandler(new CloseHandler<PopupPanel>() {
             @Override
             public void onClose(CloseEvent<PopupPanel> popupPanelCloseEvent) {
@@ -43,6 +42,8 @@ public class MessageBox {
         });
 
         box.center();
+
+        buttonClose.getElement().focus();
     }
 
     public static void showConfirmBox(String caption, String message, final CloseCallback closeCallback) {

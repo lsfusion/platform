@@ -18,7 +18,7 @@ public class GGridController {
         table = new GGridTable(iformController, igroupObject);
 
         ResizeLayoutPanel panel = new ResizeLayoutPanel();
-        panel.setPixelSize(200, 200);
+        panel.setPixelSize(700, 200);
         panel.setWidget(table);
         gridView.add(panel);
 

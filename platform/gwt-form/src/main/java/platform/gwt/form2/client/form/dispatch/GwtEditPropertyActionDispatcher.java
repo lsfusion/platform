@@ -1,17 +1,22 @@
 package platform.gwt.form2.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.cell.client.Cell;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.client.form.ui.GGridTable;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.view2.GPropertyDraw;
 import platform.gwt.view2.GUserInputResult;
+import platform.gwt.view2.GridDataRecord;
 import platform.gwt.view2.actions.GRequestUserInputAction;
 import platform.gwt.view2.changes.GGroupObjectValue;
 import platform.gwt.view2.classes.GType;
 
 public class GwtEditPropertyActionDispatcher extends GwtFormActionDispatcher {
+
+    private GGridTable editTable;
+
     private GType readType;
     private Object oldValue;
     private GPropertyDraw simpleChangeProperty;
@@ -19,37 +24,29 @@ public class GwtEditPropertyActionDispatcher extends GwtFormActionDispatcher {
 
     private boolean valueRequested;
 
-    private GGridTable editTable;
-    private int editRow;
-    private int editCol;
-
 
     public GwtEditPropertyActionDispatcher(GFormController form) {
         super(form);
     }
 
-//    public void executePropertyEditAction(final GGridTable table, CellDoubleClickEvent event) {
-    public void executePropertyEditAction(final GGridTable table) {
+    public void executePropertyEditAction(final GGridTable table, Object oldValue, Cell.Context context) {
         editTable = table;
-//        editRow = event.getRowNum();
-//        editCol = event.getColNum();
-//        final GridDataRecord record = (GridDataRecord) event.getRecord();
-        final GPropertyDraw property = table.getProperty(editCol);
+        final GridDataRecord record = (GridDataRecord) context.getKey();
 
         valueRequested = false;
         simpleChangeProperty = null;
         readType = null;
         editColumnKey = null;
+        final GPropertyDraw property = table.getProperty(context.getColumn());
 
         if (property.changeType != null) {
-//            editColumnKey = record.key;
+            editColumnKey = record.key;
             simpleChangeProperty = property;
-            startEdit(table, simpleChangeProperty.changeType, table.getValueAt(editRow, editCol));
+            startEdit(simpleChangeProperty.changeType, oldValue);
             return;
         }
 
-//        form.executeEditAction(property, record.key, "change", new ErrorAsyncCallback<ServerResponseResult>() {
-        form.executeEditAction(property, null, "change", new ErrorAsyncCallback<ServerResponseResult>() {
+        form.executeEditAction(property, record.key, "change", new ErrorAsyncCallback<ServerResponseResult>() {
             @Override
             public void success(ServerResponseResult response) {
                 Log.debug("Execute edit action response recieved...");
@@ -65,14 +62,14 @@ public class GwtEditPropertyActionDispatcher extends GwtFormActionDispatcher {
         if (readType != null) {
             GType editType = readType;
             readType = null;
-            startEdit(editTable, editType, oldValue);
+            startEdit(editType, oldValue);
         }
     }
 
-    public void startEdit(GGridTable table, GType type, Object oldValue) {
+    public void startEdit(GType type, Object oldValue) {
         Log.debug("Edit started.");
         valueRequested = true;
-        table.editCellAt(type, oldValue, editRow, editCol);
+        editTable.startEditing(type, oldValue);
     }
 
     public void cancelEdit() {

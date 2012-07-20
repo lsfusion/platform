@@ -52,7 +52,7 @@ public class NavigatorPanel extends ScrollPanel {
                 for (GNavigatorElement child : element.children) {
                     addNavigatorElement(node, child);
                 }
-                if (element.sid != null && element.sid.endsWith("userPolicyForm")) {
+                if ("userPolicyForm".equals(element.sid) || "storeArticleForm".equals(element.sid)) {
                     openNode(node);
                 }
             }

@@ -1,9 +1,9 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.user.client.ui.Button;
 import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view2.GPropertyDraw;
 import platform.gwt.view2.changes.GGroupObjectValue;
+import platform.gwt.view2.panel.PanelRenderer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,8 +15,7 @@ public class GPanelController {
     private GFormLayout formLayout;
 
     private List<GPropertyDraw> orderedProperties = new ArrayList<GPropertyDraw>();
-//    private Map<GPropertyDraw, GTypeRenderer> properties = new HashMap<GPropertyDraw, GTypeRenderer>();
-    private Map<GPropertyDraw, Button> properties = new HashMap<GPropertyDraw, Button>();
+    private Map<GPropertyDraw, PanelRenderer> properties = new HashMap<GPropertyDraw, PanelRenderer>();
     private HashMap<GPropertyDraw, Object> values = new HashMap<GPropertyDraw, Object>();
 
     private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
@@ -58,21 +57,21 @@ public class GPanelController {
     public void update() {
         List<GPropertyDraw> toDraw = new ArrayList<GPropertyDraw>();
         for (GPropertyDraw property : orderedProperties) {
-//            GTypeRenderer renderer = null;
-            Button renderer = null;
+            PanelRenderer renderer = null;
             if (!(propertyCaptions.get(property) != null && propertyCaptions.get(property).values().iterator().next() == null)) {
                 renderer = properties.get(property);
                 if (renderer == null) {
-                    renderer = new Button(property.caption == null || property.caption.isEmpty() ? "[" + property.sID + "]" : property.caption);
+                    renderer = property.createPanelRenderer(form);
                     properties.put(property, renderer);
-                    formLayout.add(property, renderer, property.container.children.indexOf(property));
+                    formLayout.add(property, renderer.getComponent(), property.container.children.indexOf(property));
                 }
                 toDraw.add(property);
             }
 
             Object propValue = values.get(property);
-//            if (renderer != null)
-//                renderer.setValue(propValue);
+            if (renderer != null) {
+                renderer.setValue(propValue);
+            }
         }
 
         for (GPropertyDraw property : orderedProperties) {
@@ -82,7 +81,7 @@ public class GPanelController {
         }
 
         for (GPropertyDraw property : orderedProperties) {
-            Button renderer = properties.get(property);
+            PanelRenderer renderer = properties.get(property);
 
             if (renderer != null) {
                 Map<GGroupObjectValue, Object> caption = propertyCaptions.get(property);
@@ -91,50 +90,33 @@ public class GPanelController {
                 }
 
                 Object background = rowBackground != null ? rowBackground : null;
-                if (background == null && cellBackgroundValues.get(property) != null)  {
+                if (background == null && cellBackgroundValues.get(property) != null) {
                     background = cellBackgroundValues.get(property).values().iterator().next();
                 }
-//                renderer.updateCellBackgroundValue(background);
+                renderer.updateCellBackgroundValue(background);
 
                 Object foreground = rowForeground != null ? rowForeground : null;
                 if (foreground == null && cellForegroundValues.get(property) != null) {
                     foreground = cellForegroundValues.get(property).values().iterator().next();
                 }
-//                renderer.updateCellForegroundValue(foreground);
+                renderer.updateCellForegroundValue(foreground);
             }
         }
     }
 
-//    private GTypeRenderer createPropertyRenderer(GPropertyDraw property) {
-//        GTypeRenderer renderer = property.createPanelRenderer(form);
-//        renderer.setChangedHandler(new PropertyChangedHandler() {
-//            @Override
-//            public void onChanged(GPropertyDraw property, Object value) {
-//                if (property.checkEquals && values.get(property).equals(value)) {
-//                    return;
-//                }
-//
-//                //todo:
-////                form.changePropertyDraw(property, value);
-//                form.changeProperty(property, null);
-//            }
-//        });
-//        return renderer;
-//    }
-//
     public boolean isEmpty() {
         return orderedProperties.size() == 0;
     }
 
     public void hide() {
-        for (Map.Entry<GPropertyDraw, Button> e : properties.entrySet()) {
-            e.getValue().setVisible(false);
+        for (Map.Entry<GPropertyDraw, PanelRenderer> e : properties.entrySet()) {
+            e.getValue().getComponent().setVisible(false);
         }
     }
 
     public void show() {
-        for (Map.Entry<GPropertyDraw, Button> e : properties.entrySet()) {
-            e.getValue().setVisible(true);
+        for (Map.Entry<GPropertyDraw, PanelRenderer> e : properties.entrySet()) {
+            e.getValue().getComponent().setVisible(true);
         }
     }
 

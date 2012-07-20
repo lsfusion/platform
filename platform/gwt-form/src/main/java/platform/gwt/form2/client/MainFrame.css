@@ -8,7 +8,17 @@
     height: 20px;
 }
 
-/*.formController {*/
+.messageBox-button {
+    width: 90px;
+}
+
+.messageBox-message {
+    height: auto;
+    width: 200px;
+    margin-bottom: 10px;
+}
+
+    /*.formController {*/
     /*border: 2px solid black;*/
 /*}*/
 
@@ -32,11 +42,11 @@
     /*border: 2px solid blue;*/
 /*}*/
 
-/*.vlayout {*/
+/*.gwtVertical {*/
     /*border: 2px solid black;*/
 /*}*/
 
-/*.hlayout {*/
+/*.getHorizontal {*/
     /*border: 2px solid orange;*/
 /*}*/
 

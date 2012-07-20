@@ -1,0 +1,128 @@
+/* modifed copy com/google/gwt/user/cellview/client/DataGrid.css */
+
+.dataGridWidget {
+
+}
+
+.dataGridFirstColumn {
+
+}
+
+.dataGridLastColumn {
+
+}
+
+.dataGridFooter {
+    border-top: 2px solid #6f7277;
+    padding: 3px 15px;
+    text-align: left;
+    color: #4b4a4a;
+    text-shadow: #ddf 1px 1px 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.dataGridHeader {
+    border-bottom: 2px solid #6f7277;
+    padding: 3px 15px;
+    text-align: left;
+    color: #4b4a4a;
+    text-shadow: #ddf 1px 1px 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.dataGridCell {
+    padding: 2px 15px;
+    overflow: hidden;
+}
+
+.dataGridFirstColumnFooter {
+
+}
+
+.dataGridFirstColumnHeader {
+
+}
+
+.dataGridLastColumnFooter {
+
+}
+
+.dataGridLastColumnHeader {
+
+}
+
+.dataGridSortableHeader {
+    cursor: pointer;
+    cursor: hand;
+}
+
+.dataGridSortableHeader:hover {
+    color: #6c6b6b;
+}
+
+.dataGridSortedHeaderAscending {
+
+}
+
+.dataGridSortedHeaderDescending {
+
+}
+
+.dataGridEvenRow {
+    background: #ffffff;
+}
+
+.dataGridEvenRowCell {
+    border: 2px solid #ffffff;
+}
+
+/* убираем чередующиеся ряды */
+.dataGridOddRow {
+    background: #ffffff;
+    /*background: #f3f7fb;*/
+}
+
+.dataGridOddRowCell {
+    border: 2px solid #ffffff;
+    /*border: 2px solid #f3f7fb;*/
+}
+
+.dataGridHoveredRow {
+    /*background: #eee;*/
+}
+
+.dataGridHoveredRowCell {
+    /*border: 2px solid #eee;*/
+}
+
+.dataGridKeyboardSelectedRow {
+    background: #ffc;
+}
+
+.dataGridKeyboardSelectedRowCell {
+    border: 2px solid #ffc;
+}
+
+/* стайлим выделенный ряд, так же как ряд с клавиатурным выделением,
+   чтобы спокойно совместить понятия выделенного и текущего ряда */
+.dataGridSelectedRow {
+    background: #ffc;
+    /*background: #628cd5;*/
+    /*color: white;*/
+    /*height: auto;*/
+    /*overflow: auto;*/
+}
+
+.dataGridSelectedRowCell {
+    border: 2px solid #ffc;
+    /*border: 2px solid #628cd5;*/
+}
+
+    /**
+    * The keyboard selected cell is visible over selection.
+    */
+.dataGridKeyboardSelectedCell {
+    border: 2px solid #d7dde8;
+}

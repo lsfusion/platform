@@ -1,5 +1,8 @@
 package platform.gwt.utils;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
+
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -23,4 +26,12 @@ public class GwtSharedUtils {
         return string.substring(0, len);
     }
 
+
+    public static DateTimeFormat getDefaultDateFormat() {
+        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+    }
+
+    public static String formatDate(Date date) {
+        return getDefaultDateFormat().format(date);
+    }
 }

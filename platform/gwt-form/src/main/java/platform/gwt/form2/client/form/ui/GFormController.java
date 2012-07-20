@@ -20,7 +20,6 @@ import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
 import platform.gwt.form2.client.form.classes.ClassChosenHandler;
 import platform.gwt.form2.client.form.dispatch.GwtFormActionDispatcher;
-import platform.gwt.form2.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form2.client.form.ui.dialog.MessageBox;
 import platform.gwt.form2.shared.actions.GetForm;
 import platform.gwt.form2.shared.actions.GetFormResult;
@@ -73,15 +72,7 @@ public class GFormController extends ScrollPanel implements FormLogicsProvider {
     public GFormController(Action<GetFormResult> getFormAction, final boolean dialogMode) {
         this.dialogMode = dialogMode;
 
-//        final ViewLoader loader = new ViewLoader();
-//        addMember(loader);
-
         dispatcher.execute(getFormAction, new ErrorAsyncCallback<GetFormResult>() {
-            @Override
-            public void preProcess() {
-//                removeMember(loader);
-            }
-
             @Override
             public void success(GetFormResult result) {
                 initialize(result.form);
@@ -377,53 +368,6 @@ public class GFormController extends ScrollPanel implements FormLogicsProvider {
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);
-            ComponentWithMembers mainTree = getContainerWithMembers(formLayout.getMainKey());
-            System.out.println("-----------------------");
-            mainTree.output(0);
-            System.out.println("-----------------------");
         }
-    }
-
-    private static class ComponentWithMembers {
-        GComponent component;
-        GAbstractFormContainer gContainer;
-        ComponentWithMembers[] members;
-
-        private ComponentWithMembers(GComponent component, GAbstractFormContainer gContainer, ComponentWithMembers[] members) {
-            this.component = component;
-            this.gContainer = gContainer;
-            this.members = members;
-        }
-
-        public void output(int indent) {
-            for (int i = 0; i < indent; ++i) {
-                System.out.print("  ");
-            }
-
-            System.out.println(component);
-
-            if (members != null) {
-                for (ComponentWithMembers member : members) {
-                    member.output(indent + 1);
-                }
-            }
-        }
-    }
-
-    private ComponentWithMembers getContainerWithMembers(GContainer container) {
-        GAbstractFormContainer gCont = formLayout.getFormContainer(container);
-
-        ComponentWithMembers[] members = new ComponentWithMembers[gCont.childrenViews.size()];
-
-        int i = 0;
-        for (GComponent child : gCont.childrenViews.keySet()) {
-            if (child instanceof GContainer) {
-                members[i++] = getContainerWithMembers((GContainer) child);
-            } else {
-                members[i++] = new ComponentWithMembers(child, null, null);
-            }
-        }
-
-        return new ComponentWithMembers(container, gCont, members);
     }
 }
