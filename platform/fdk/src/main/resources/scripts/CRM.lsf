@@ -232,46 +232,39 @@ DESIGN share FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
 
-        NEW topContainer {
-            type = SPLITH;
-            fillVertical = 1;
+        ADD sh.box {
+
             childConstraints = TO THE RIGHT;
+            NEW row01 {
+                title = 'Название';
+                ADD PROPERTY(name(sh)) {
+                    preferredCharWidth = 30;
 
-                ADD sh.box {
-                    fillVertical = 1;
-                    childConstraints = TO THE BOTTOM;
-                    NEW row01 {
-                        ADD PROPERTY(name(sh)) {
-                            preferredCharWidth = 30;
-
-                        }
-                    }
-                    ADD sh.numberedGroup {
-                        childConstraints = TO THE RIGHT;
-                    }
-                    NEW row11 {
-                        title = 'Диапозон дат';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(dateFromShare);
-                        ADD PROPERTY(dateToShare);
-                    }
-                    NEW row12 {
-                        title = 'Часы';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(timeOfFromShare);
-                        ADD PROPERTY(timeOfToShare);
-                    }
-                    NEW row13 {
-                        title = 'Суммы';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(cumulativeSumShare);
-                        ADD PROPERTY(minSumBillShare);
-                    }
                 }
-            ADD d.box {
-                fillVertical = 1;
-            };
+            }
+            ADD sh.numberedGroup {
+                childConstraints = TO THE RIGHT;
+            }
+            NEW row11 {
+                title = 'Диапозон дат';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(dateFromShare);
+                ADD PROPERTY(dateToShare);
+            }
+            NEW row12 {
+                title = 'Часы';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(timeOfFromShare);
+                ADD PROPERTY(timeOfToShare);
+            }
+            NEW row13 {
+                title = 'Суммы';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(cumulativeSumShare);
+                ADD PROPERTY(minSumBillShare);
+            }
         }
+
         ADD sg.box {
             fillVertical = 1;
         }
@@ -303,6 +296,8 @@ DESIGN share FROM DEFAULT {
                 }
             };
             ADD dis.box;
+            ADD d.box {
+            };
         }
 
         ADD functions.box;
