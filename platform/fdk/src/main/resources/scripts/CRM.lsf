@@ -138,6 +138,12 @@ FORM discountCards 'Дисконтные карты'
 CLASS share 'Акция (применение условий в момент продажи)' : historyObject, numberedObject, named;
 TABLE share (share);
 
+CLASS shareTeam 'Группа акций' : named;
+TABLE shareTeam (shareTeam);
+
+shareTeamShare 'Группы акций ИД' (share) = DATA shareTeam(share) IN idGroup AUTOSET;
+nameShareTeamShare 'Группа акций' (share) = name(shareTeamShare(share)) IN baseGroup;
+
 CLASS  shareGroup 'Условия акций' : named;
 
 GROUP CRMGroup 'Реквизиты' : recognizeGroup;
@@ -176,7 +182,7 @@ includeShareGroupSkuGroupSku 'В акции' (shareGroup, skuGroup, sku) = UNION
 
 FORM share 'Акция'
     OBJECTS sh=share   FIXED PANEL
-    PROPERTIES(sh)     name, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
+    PROPERTIES(sh)     name, nameShareTeamShare, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
                        cumulativeSumShare, minSumBillShare
     OBJECTS d= DOW
     PROPERTIES(d)     READONLY name
@@ -237,29 +243,31 @@ DESIGN share FROM DEFAULT {
             childConstraints = TO THE RIGHT;
             NEW row01 {
                 title = 'Название';
+                childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(name(sh)) {
                     preferredCharWidth = 30;
 
                 }
+                ADD PROPERTY(nameShareTeamShare(sh));
             }
             ADD sh.numberedGroup {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE BOTTOM;
             }
             NEW row11 {
                 title = 'Диапозон дат';
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(dateFromShare);
                 ADD PROPERTY(dateToShare);
             }
             NEW row12 {
                 title = 'Часы';
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(timeOfFromShare);
                 ADD PROPERTY(timeOfToShare);
             }
             NEW row13 {
                 title = 'Суммы';
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(cumulativeSumShare);
                 ADD PROPERTY(minSumBillShare);
             }
@@ -316,3 +324,23 @@ FORM shares 'Акции'
 
 ;
 
+FORM shareTeam 'Группа акций'
+    OBJECTS st=shareTeam FIXED PANEL
+    PROPERTIES(st)     name
+    EDIT shareTeam OBJECT st
+
+;
+
+FORM shareTeams 'Группы акций'
+    OBJECTS st=shareTeam
+    PROPERTIES(st)     READONLY name
+    PROPERTIES(st)     ADDFORM, EDITFORM, delete
+
+    OBJECTS sh=share
+    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
+                       cumulativeSumShare, minSumBillShare
+    PROPERTIES(sh)     ADDFORM, EDITFORM, delete
+
+    FILTERS shareTeamShare(sh)==st
+
+;

@@ -125,6 +125,7 @@ NAVIGATOR {
 
             NEW discountPrice 'Распродажи' {
                 ADD discountPriceSetDocuments;
+                ADD shareTeams;
                 ADD shares;
                 ADD discountCards;
             }
