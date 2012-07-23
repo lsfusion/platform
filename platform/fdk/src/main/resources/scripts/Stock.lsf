@@ -694,13 +694,38 @@ DESIGN currentBalanceSkuStock FROM DEFAULT {
 
 FORM stockDialog 'Склад'
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    TREE stockTree  a=STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    FILTERS stringEqualsAll(a)
+
+    OBJECTS ts = stock
+    PROPERTIES READONLY tsTreeName = name(ts)
     FILTERS isParentStockGroupStock(sg, ts)
 
     DIALOG stock OBJECT ts
 
 ;
+
+DESIGN stockDialog FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD stockTree.tree.box {
+                title = 'Склады';
+            }
+
+            ADD ts.box;
+
+        }
+
+        ADD functions.box;
+    }
+}
+
 
 FORM balanceSkuStock 'Остатки на дату'
 
