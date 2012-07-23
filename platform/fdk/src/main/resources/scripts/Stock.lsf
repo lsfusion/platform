@@ -204,7 +204,7 @@ resetCostDataSkuLedger 'Перерассчитать себестоимость'
 }
 
 // мгновенный расчет себестоимости
-resetCostDataSkuLedger (ledger) WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) ORDER orderDataSkuLedger(ledger);
+WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
 
 setDataSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
 

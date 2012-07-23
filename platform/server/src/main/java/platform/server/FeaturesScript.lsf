@@ -343,9 +343,14 @@ CONSTRAINT foo(store, article) > 1000 CHECKED MESSAGE 'ошибка: >1000';
 
 ////////////////WRITEWHEN STATEMENT//////////////
 // Syntax:
-// propertyName(param1, ..., paramN) <- valuePropertyExpression WHEN changePropertyExpression
-// or
-// actionPropertyName(param1, ..., paramN) WHEN changePropertyExpression [ORDER [DESC] orderExpression1, ..., orderExpressionN] [SESSION]
+// propertyName(param1, ..., paramN) <- valuePropertyExpression WHEN changePropertyExpression;
+
+// inQuantity(document, article) <- 15 WHEN CHANGED(foo(store(document), article));
+
+
+///////////////////EVENT STATEMENT//////////////
+// Syntax:
+// WHEN expression DO action [ORDER [DESC] expr1, ..., exprN] [SESSION];
 
 constraintAction (store, article) = ACTION (store, article) {
 //    EXEC cancel();
@@ -353,10 +358,14 @@ constraintAction (store, article) = ACTION (store, article) {
         MESSAGE name(article);
     }
 };
-constraintAction(store, article) WHEN foo(store,article)>10000 ORDER name(article) SESSION;
 
-// inQuantity(document, article) <- 15 WHEN CHANGED(foo(store(document), article));
+WHEN foo(store,article)>10000 DO EXEC constraintAction(store, article) ORDER name(article) SESSION;
 
+///////////////////ASPECT STATEMENT//////////////
+// Syntax:
+// BEFORE | AFTER propertyName(param1, ..., paramN) DO action;
+
+BEFORE constraintAction(store, article) DO MESSAGE 'Before Aspect';
 
 //////////////// FORM STATEMENT /////////////////
 // Syntax:

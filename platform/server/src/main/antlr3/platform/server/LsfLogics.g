@@ -191,6 +191,8 @@ statement
 		|	constraintStatement
 		|	followsStatement
 		|	writeWhenStatement
+		|	eventStatement
+		|	aspectStatement
 		|	tableStatement
 		|	loggableStatement
 		|	indexStatement
@@ -1435,19 +1437,6 @@ keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParam
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
 	;
 	
-terminalFlowActionPropertyDefinitionBody returns [LPWithParams property]
-@init {
-	boolean isBreak = true;
-}
-@after {
-	if (inPropParseState()) {
-		$property =	self.getTerminalFlowActionProperty(isBreak);
-	}
-}
-	:	'BREAK'
-	|	'RETURN' { isBreak = false; }
-	;
-
 customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
@@ -1731,6 +1720,20 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
 	;
 
+terminalFlowActionPropertyDefinitionBody returns [LPWithParams property]
+@init {
+	boolean isBreak = true;
+}
+@after {
+	if (inPropParseState()) {
+		$property =	self.getTerminalFlowActionProperty(isBreak);
+	}
+}
+	:	'BREAK'
+	|	'RETURN' { isBreak = false; }
+	;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////OVERRIDE STATEMENT/////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1825,35 +1828,68 @@ followsResolveType returns [Integer type]
 ////////////////////////////////// WRITE STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-sessionType returns [boolean session = false]
-	:	('SESSION'	{ $session = true; })?
+writeWhenStatement
+@after {
+	if (inPropParseState()) {
+		self.addScriptedWriteWhen($mainProp.name, $mainProp.params, $valueExpr.property, $whenExpr.property);
+	}
+}
+	:	mainProp=propertyWithNamedParams 
+		'<-'
+		valueExpr=propertyExpression[$mainProp.params, false] 
+		'WHEN'
+		whenExpr=propertyExpression[$mainProp.params, false]
+		';'
 	;
 
-writeWhenStatement
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// EVENT STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+eventStatement
 @init {
-	List<String> context;
-	LPWithParams value = null;
+	List<String> context = new ArrayList<String>();
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	boolean descending = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, context, value, $whenExpr.property, orderProps, descending, $st.session);
+		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $st.session);
 	}
 }
-	:	mainProp=propertyWithNamedParams { context = $mainProp.params; }
-		(
-			'<-'
-			valueExpr=propertyExpression[context, false] { value = $valueExpr.property; }
-		)?
-		'WHEN'
-		whenExpr=propertyExpression[context, false]
+	:	'WHEN'
+		whenExpr=propertyExpression[context, true] 
+		'DO'
+		action=actionPropertyDefinitionBody[context, false]
 		(	'ORDER' ('DESC' { descending = true; })?
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
 		st=sessionType
 		';'
 	;
+
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// ASPECT STATEMENT //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+aspectStatement
+@init {
+	List<String> context = new ArrayList<String>();
+	boolean before = true;
+}
+@after {
+	if (inPropParseState()) {
+		self.addScriptedAspect($mainProp.name, $mainProp.params, $action.property, before);
+	}
+}
+	:	(	'BEFORE' 
+		| 	'AFTER' { before = false; }
+		)
+		mainProp=propertyWithNamedParams 'DO' action=actionPropertyDefinitionBody[$mainProp.params, false]
+		';'
+	;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// TABLE STATEMENT /////////////////////////////
@@ -2527,6 +2563,10 @@ emailAttachFormat returns [AttachmentFormat val]
 	|	'DOCX'	{ $val = AttachmentFormat.DOCX; }
 	|	'HTML'	{ $val = AttachmentFormat.HTML; }
 	|	'RTF'	{ $val = AttachmentFormat.RTF; }
+	;
+
+sessionType returns [boolean session = false]
+	:	('SESSION'	{ $session = true; })?
 	;
 	
 udoubleLiteral returns [double val]

@@ -78,4 +78,4 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
     EXEC incrementValueNumerator(numeratorObject(numeratedObject));
 } IN numberedGroup SHORTCUT numberObject;
 
-setValueNumeratedObject(numeratedObject) WHEN CHANGED(numeratorObject(numeratedObject));
+WHEN CHANGED(numeratorObject(numeratedObject)) DO EXEC setValueNumeratedObject(numeratedObject) ;

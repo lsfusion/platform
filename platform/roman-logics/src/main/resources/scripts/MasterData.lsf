@@ -59,7 +59,7 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
     SET idBarcode(barcode) IF barcode == syncBarcode() <- barcode(sku AS RomanLogicsModule.sku);
 } IN baseGroup;
 
-syncBarcodeSku(sku) WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku);
+WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku) DO EXEC syncBarcodeSku(sku);
 
 FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
 

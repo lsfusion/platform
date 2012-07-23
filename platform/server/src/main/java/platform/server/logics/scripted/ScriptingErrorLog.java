@@ -233,7 +233,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitLeftSideMustBeAProperty(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "left side of set property action must be a property");
+        emitSimpleError(parser, "left side of SET action must be a property");
     }
 
     public void emitMustBeAnActionCall(LsfLogicsParser parser) throws SemanticErrorException {
@@ -308,8 +308,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "error occurred during creation of " + className + " instance");
     }
 
-    public void emitNotActionExecutedPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "executed property should be an action");
+    public void emitNotActionPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "property should be an action");
     }
 
     public void emitNotCalculationPropertyError(LsfLogicsParser parser) throws SemanticErrorException {

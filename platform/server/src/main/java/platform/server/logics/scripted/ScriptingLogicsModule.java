@@ -58,6 +58,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.getIntNum;
+import static platform.server.logics.PropertyUtils.readActionImplements;
 import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
@@ -397,7 +398,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addImplementationToAbstract(String propName, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addImplementationToAbstract(" + propName + ", " + implement + ");");
 
-        LCP mainProperty = (LCP) findLPByCompoundName(propName);
+        LP lp = findLPByCompoundName(propName);
+        checkCalculationProperty(lp);
+        LCP mainProperty = (LCP) lp;
         checkAbstractProperty(mainProperty, propName);
 
         mainProperty.addOperand(getParamsPlainList(asList(implement)).toArray());
@@ -1405,24 +1408,35 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp, List<LPWithParams> orders, boolean descending, boolean session) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWriteWhen(String mainPropName, List<String> namedParams, LPWithParams valueProp, LPWithParams whenProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedWriteWhen(" + mainPropName + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
         LP mainProp = findLPByCompoundName(mainPropName);
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(namedParams);
+        checkCalculationProperty(mainProp);
 
-        // todo [dale]: надо подумать разделять ли синтаксически два варианта и нужно ли выдавать ошибку в случае ненужного ORDER
-        List<Object> params;
-        if (valueProp != null) {
-            checkCalculationProperty(mainProp);
-            params = getParamsPlainList(asList(valueProp, whenProp));
-            ((LCP)mainProp).setEventChange(params.toArray());
-        } else {
-            checkActionProperty(mainProp);
-            boolean ordersNotNull = doesExtendContext(asList(whenProp), orders);
-            params = getParamsPlainList(asList(whenProp), orders);
-            ((LAP<?>)mainProp).setEventAction(this, session, descending, ordersNotNull, params.toArray());
-        }
+        List<Object> params = getParamsPlainList(asList(valueProp, whenProp));
+        ((LCP)mainProp).setEventChange(params.toArray());
+    }
+
+    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, boolean session) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + session + ");");
+        checkActionProperty(event.property);
+        List<Object> params = getParamsPlainList(asList(whenProp), orders);
+        ((LAP<?>)event.property).setEventAction(this, session, descending, false, params.toArray());
+    }
+
+    public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAspect(" + mainPropName + ", " + mainPropParams + ", " + actionProp + ", " + before + ");");
+        LP mainProp = findLPByCompoundName(mainPropName);
+        checkParamCount(mainProp, mainPropParams.size());
+        checkDistinctParameters(mainPropParams); // todo [dale]: надо, наверное, это вынести в отдельный метод
+        checkActionProperty(actionProp.property);
+        checkActionProperty(mainProp);
+
+        List<Object> params = getParamsPlainList(Arrays.asList(actionProp));
+        List<ActionPropertyMapImplement> actionImplements = readActionImplements(mainProp.listInterfaces, params.toArray());
+        addAspectEvent((ActionProperty) mainProp.property, actionImplements.get(0), before);
     }
 
     public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {
@@ -1907,7 +1921,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property instanceof LAP<?>)) {
-            errLog.emitNotActionExecutedPropertyError(parser);
+            errLog.emitNotActionPropertyError(parser);
         }
     }
 
