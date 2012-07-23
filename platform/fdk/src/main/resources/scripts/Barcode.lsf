@@ -97,6 +97,8 @@ META defineDialogSkuBarcode (form)
     ;
 END
 
+@defineDialogSkuBarcode(dialogSku);
+
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s) READONLY idBarcodeSku
 ;

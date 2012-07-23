@@ -1056,3 +1056,5 @@ META defineAddDetailDialogSkuCustom (object, detail, caption, skuProp, form)
         SET form###quantity(sku) <- NULL;
     } TOOLBAR;
 END
+
+@defineDialogSku(dialogSku);

@@ -4,11 +4,6 @@ REQUIRE Stock, Barcode, Supplier, RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
-// объявляем форму подбора товаров
-@defineDialogSku(dialogSku);
-@defineDialogSkuBarcode(dialogSku);
-@defineDialogSkuSupplier(dialogSku);
-
 EXTEND FORM dialogSku
     PROPERTIES(s) READONLY FORCE GRID nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                              sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem

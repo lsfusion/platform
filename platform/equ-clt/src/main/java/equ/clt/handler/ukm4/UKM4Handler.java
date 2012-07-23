@@ -187,12 +187,12 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
 
                             String cashRegisterNumber = new String(importDiscFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
                             String zNumber = new String(importDiscFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
-                            Integer billNumber = new Integer(new String(importDiscFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
-                            Integer numberBillDetail = new Integer(new String(importDiscFile.getField("ID").getBytes(), "Cp1251").trim());
+                            Integer receiptNumber = new Integer(new String(importDiscFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
+                            Integer numberReceiptDetail = new Integer(new String(importDiscFile.getField("ID").getBytes(), "Cp1251").trim());
                             Integer type = new Integer(new String(importDiscFile.getField("DISCOUNTIN").getBytes(), "Cp1251").trim());
                             Double discountSum = new Double(new String(importDiscFile.getField("DISCOUNTRU").getBytes(), "Cp1251").trim());
 
-                            String sid = cashRegisterNumber + "_" + zNumber + "_" + billNumber + "_" + numberBillDetail;
+                            String sid = cashRegisterNumber + "_" + zNumber + "_" + receiptNumber + "_" + numberReceiptDetail;
                             if (type.equals(4)) {
                                 Double tempSum = discountMap.get(sid);
                                 discountMap.put(sid, discountSum + (tempSum == null ? 0 : tempSum));
@@ -211,11 +211,11 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
 
                             String cashRegisterNumber = new String(importCardFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
                             String zNumber = new String(importCardFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
-                            Integer billNumber = new Integer(new String(importCardFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
+                            Integer receiptNumber = new Integer(new String(importCardFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
                             String cardNumber = new String(importCardFile.getField("CARDNUMBER").getBytes(), "Cp1251").trim();
                             //Integer cardNumber = new Integer(cardNumberString.substring(cardNumberString.length()-4, cardNumberString.length()));
 
-                            String sid = cashRegisterNumber + "_" + zNumber + "_" + billNumber;
+                            String sid = cashRegisterNumber + "_" + zNumber + "_" + receiptNumber;
                             discountCardMap.put(sid, cardNumber);
                         }
                         importCardFile.close();
@@ -226,7 +226,7 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
                         importSailFile = new DBF(fileSailPath);
                         readFiles.add(fileSailPath);
                         int recordSailCount = importSailFile.getRecordCount();
-                        Map<Integer, Double[]> billNumberSumBill = new HashMap<Integer, Double[]>();
+                        Map<Integer, Double[]> receiptNumberSumReceipt = new HashMap<Integer, Double[]>();
 
                         for (int i = 0; i < /*recordSailCount*/87; i++) {
                             importSailFile.read();
@@ -236,31 +236,31 @@ public class UKM4Handler extends CashRegisterHandler<UKM4SalesBatch> {
 
                             String cashRegisterNumber = new String(importSailFile.getField("CASHNUMBER").getBytes(), "Cp1251").trim();
                             String zNumber = new String(importSailFile.getField("ZNUMBER").getBytes(), "Cp1251").trim();
-                            Integer billNumber = new Integer(new String(importSailFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
-                            Integer numberBillDetail = new Integer(new String(importSailFile.getField("ID").getBytes(), "Cp1251").trim());
+                            Integer receiptNumber = new Integer(new String(importSailFile.getField("CHECKNUMBE").getBytes(), "Cp1251").trim());
+                            Integer numberReceiptDetail = new Integer(new String(importSailFile.getField("ID").getBytes(), "Cp1251").trim());
                             java.sql.Date date = new java.sql.Date(new SimpleDateFormat("yyyymmdd").parse(new String(importSailFile.getField("DATE").getBytes(), "Cp1251").trim()).getTime());
                             String timeString = new String(importSailFile.getField("TIME").getBytes(), "Cp1251").trim();
                             timeString = timeString.length() == 3 ? ("0" + timeString) : timeString;
                             java.sql.Time time = new java.sql.Time(DateUtils.parseDate(timeString, new String[]{"hhmm"}).getTime());
-                            String barcodeBillDetail = new String(importSailFile.getField("CARDARTICU").getBytes(), "Cp1251").trim();
-                            Double quantityBillDetail = new Double(new String(importSailFile.getField("QUANTITY").getBytes(), "Cp1251").trim());
-                            Double priceBillDetail = new Double(new String(importSailFile.getField("PRICERUB").getBytes(), "Cp1251").trim());
-                            Double sumBillDetail = new Double(new String(importSailFile.getField("TOTALRUB").getBytes(), "Cp1251").trim());
-                            Double discountSumBillDetail = discountMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber + "_" + numberBillDetail);
-                            String discountCardNumber = discountCardMap.get(cashRegisterNumber + "_" + zNumber + "_" + billNumber);
+                            String barcodeReceiptDetail = new String(importSailFile.getField("CARDARTICU").getBytes(), "Cp1251").trim();
+                            Double quantityReceiptDetail = new Double(new String(importSailFile.getField("QUANTITY").getBytes(), "Cp1251").trim());
+                            Double priceReceiptDetail = new Double(new String(importSailFile.getField("PRICERUB").getBytes(), "Cp1251").trim());
+                            Double sumReceiptDetail = new Double(new String(importSailFile.getField("TOTALRUB").getBytes(), "Cp1251").trim());
+                            Double discountSumReceiptDetail = discountMap.get(cashRegisterNumber + "_" + zNumber + "_" + receiptNumber + "_" + numberReceiptDetail);
+                            String discountCardNumber = discountCardMap.get(cashRegisterNumber + "_" + zNumber + "_" + receiptNumber);
                             
-                            Double[] tempSumBill = billNumberSumBill.get(billNumber);
-                            billNumberSumBill.put(billNumber, new Double[]{(tempSumBill != null ? tempSumBill[0] : 0) + (operation <= 1 ? sumBillDetail : 0),
-                                    (tempSumBill != null ? tempSumBill[1] : 0) + (operation > 1 ? sumBillDetail : 0)});
+                            Double[] tempSumReceipt = receiptNumberSumReceipt.get(receiptNumber);
+                            receiptNumberSumReceipt.put(receiptNumber, new Double[]{(tempSumReceipt != null ? tempSumReceipt[0] : 0) + (operation <= 1 ? sumReceiptDetail : 0),
+                                    (tempSumReceipt != null ? tempSumReceipt[1] : 0) + (operation > 1 ? sumReceiptDetail : 0)});
 
-                            salesInfoList.add(new SalesInfo(cashRegisterNumber, zNumber, billNumber, date, time, 0.0, 0.0, 0.0,
-                                    barcodeBillDetail, quantityBillDetail * (operation % 2 == 1 ? 1 : -1), priceBillDetail, sumBillDetail * (operation % 2 == 1 ? 1 : -1),
-                                    discountSumBillDetail, null, discountCardNumber, numberBillDetail, null));
+                            salesInfoList.add(new SalesInfo(cashRegisterNumber, zNumber, receiptNumber, date, time, 0.0, 0.0, 0.0,
+                                    barcodeReceiptDetail, quantityReceiptDetail * (operation % 2 == 1 ? 1 : -1), priceReceiptDetail, sumReceiptDetail * (operation % 2 == 1 ? 1 : -1),
+                                    discountSumReceiptDetail, null, discountCardNumber, numberReceiptDetail, null));
                         }
                         for (SalesInfo salesInfo : salesInfoList) {
-                            salesInfo.sumCash = billNumberSumBill.get(salesInfo.billNumber)[0];
-                            salesInfo.sumCard = billNumberSumBill.get(salesInfo.billNumber)[1];
-                            salesInfo.sumBill = salesInfo.sumCash + salesInfo.sumCard;
+                            salesInfo.sumCash = receiptNumberSumReceipt.get(salesInfo.receiptNumber)[0];
+                            salesInfo.sumCard = receiptNumberSumReceipt.get(salesInfo.receiptNumber)[1];
+                            salesInfo.sumReceipt = salesInfo.sumCash + salesInfo.sumCard;
                         }
                     }
                 }

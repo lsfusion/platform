@@ -10,16 +10,20 @@ TABLE cashDocument (cashDocument);
 dateCashDocument 'Дата документа' = ABSTRACT DATE (cashDocument) IN documentHeaderGroup;
 timeCashDocument 'Время документа' = ABSTRACT TIME (cashDocument) IN documentHeaderGroup;
 dateTimeCashDocument 'Дата/время документа' = ABSTRACT DATETIME (cashDocument) IN documentHeaderGroup;
+
 numberCashDocument 'Номер' (cashDocument) = ABSTRACT STRING[21] (cashDocument) IN documentPrmGroup;
+
 departmentStoreCashDocument (cashDocument) = ABSTRACT departmentStore (cashDocument);
 nameDepartmentStoreCashDocument 'Подразделение' (cashDocument) =
     name(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
 nameCompanyCashDocument 'Компания' (cashDocument) = nameCompanyDepartmentStore(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
+
 basisCashDocument 'Основание' = ABSTRACT STRING[100] (cashDocument) IN documentPrmGroup;
+
 cashRegisterCashDocument = ABSTRACT cashRegister(cashDocument);
 numberCashRegisterCashDocument 'Касса' (cashDocument) = numberCashRegister(cashRegisterCashDocument(cashDocument)) IN documentPrmGroup;
 
-CLASS ABSTRACT  incomeCashOrder 'ПКО': cashDocument;
+CLASS ABSTRACT incomeCashOrder 'ПКО': cashDocument;
 CLASS ABSTRACT outcomeCashOrder 'РКО': cashDocument;
 
 sumCashIncomeCashOrder 'Сумма' = ABSTRACT NUMERIC[16,2] (incomeCashOrder) IN documentSumGroup;

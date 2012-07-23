@@ -130,31 +130,31 @@ public class MaxishopHandler extends CashRegisterHandler<MaxishopSalesBatch> {
                             importFile = new DBF(filePath);
                             readFiles.add(filePath);
                             int recordCount = importFile.getRecordCount();
-                            int numberBillDetail = 1;
-                            Integer oldBillNumber = -1;
+                            int numberReceiptDetail = 1;
+                            Integer oldReceiptNumber = -1;
                             for (int i = 0; i < recordCount; i++) {
                                 importFile.read();
                                 String postType = new String(importFile.getField("JFPOSTYPE").getBytes(), "Cp1251").trim();
                                 if ("P".equals(postType)) {
                                     String zReportNumber = new String(importFile.getField("JFZNO").getBytes(), "Cp1251").trim();
-                                    Integer billNumber = new Integer(new String(importFile.getField("JFCHECKNO").getBytes(), "Cp1251").trim());
+                                    Integer receiptNumber = new Integer(new String(importFile.getField("JFCHECKNO").getBytes(), "Cp1251").trim());
                                     java.sql.Date date = new java.sql.Date(new SimpleDateFormat("yyyymmdd").parse(new String(importFile.getField("JFDATE").getBytes(), "Cp1251").trim()).getTime());
                                     String timeString = new String(importFile.getField("JFTIME").getBytes(), "Cp1251").trim();
                                     Time time = Time.valueOf(timeString.substring(0, 2) + ":" + timeString.substring(2, 4) + ":" + timeString.substring(4, 6));
-                                    Double sumBill = new Double(new String(importFile.getField("JFTOTSUM").getBytes(), "Cp1251").trim());
-                                    String barcodeBillDetail = new String(importFile.getField("JFPLUCODE").getBytes(), "Cp1251").trim().replace("E", "");
-                                    Double quantityBillDetail = new Double(new String(importFile.getField("JFQUANT").getBytes(), "Cp1251").trim());
-                                    Double priceBillDetail = new Double(new String(importFile.getField("JFPRICE").getBytes(), "Cp1251").trim());
-                                    Double discountSumBillDetail = new Double(new String(importFile.getField("JFDISCSUM").getBytes(), "Cp1251").trim());
-                                    Double sumBillDetail = roundSales(priceBillDetail * quantityBillDetail - discountSumBillDetail, cashRegisterRoundSales.get(entry.getKey()));
+                                    Double sumReceipt = new Double(new String(importFile.getField("JFTOTSUM").getBytes(), "Cp1251").trim());
+                                    String barcodeReceiptDetail = new String(importFile.getField("JFPLUCODE").getBytes(), "Cp1251").trim().replace("E", "");
+                                    Double quantityReceiptDetail = new Double(new String(importFile.getField("JFQUANT").getBytes(), "Cp1251").trim());
+                                    Double priceReceiptDetail = new Double(new String(importFile.getField("JFPRICE").getBytes(), "Cp1251").trim());
+                                    Double discountSumReceiptDetail = new Double(new String(importFile.getField("JFDISCSUM").getBytes(), "Cp1251").trim());
+                                    Double sumReceiptDetail = roundSales(priceReceiptDetail * quantityReceiptDetail - discountSumReceiptDetail, cashRegisterRoundSales.get(entry.getKey()));
 
-                                    if (!oldBillNumber.equals(billNumber)) {
-                                        numberBillDetail = 1;
-                                        oldBillNumber = billNumber;
+                                    if (!oldReceiptNumber.equals(receiptNumber)) {
+                                        numberReceiptDetail = 1;
+                                        oldReceiptNumber = receiptNumber;
                                     }
-                                    salesInfoList.add(new SalesInfo(entry.getKey(), zReportNumber, billNumber, date, time, sumBill, 0.0, sumBill, barcodeBillDetail,
-                                            quantityBillDetail, priceBillDetail, sumBillDetail, discountSumBillDetail, null, null, numberBillDetail, fileName));
-                                    numberBillDetail++;
+                                    salesInfoList.add(new SalesInfo(entry.getKey(), zReportNumber, receiptNumber, date, time, sumReceipt, 0.0, sumReceipt, barcodeReceiptDetail,
+                                            quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountSumReceiptDetail, null, null, numberReceiptDetail, fileName));
+                                    numberReceiptDetail++;
                                 }
                             }
                         }

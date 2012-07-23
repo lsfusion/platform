@@ -199,9 +199,10 @@ public class SQLSession extends MutableObject {
     }
 
     static String getIndexName(String table, OrderedMap<String, Boolean> fields) {
-        String name = table + "_idx";
+        String name = table;
         for (String indexField : fields.keySet())
             name = name + "_" + indexField;
+        name += "_idx";
         return name;
     }
 

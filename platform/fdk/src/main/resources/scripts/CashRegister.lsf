@@ -46,10 +46,15 @@ dateCashRegister 'Дата фискализации кассового аппа�
 
 directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
 
+computerCashRegister = DATA computer (cashRegister);
+hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN baseGroup;
+
+cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS cashRegister PERSISTENT;
+
 FORM cashRegister 'Касса'
     OBJECTS c=cashRegister FIXED PANEL
     PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
-                  dateCashRegister
+                  dateCashRegister, hostnameComputerCashRegister
     EDIT cashRegister OBJECT c
 ;
 
@@ -61,7 +66,7 @@ FORM groupCashRegister 'Группа касс'
 
     OBJECTS c=cashRegister
     PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
-                    dateCashRegister, ADDOBJ, delete
+                    dateCashRegister, hostnameComputerCashRegister, ADDOBJ, delete
 
     FILTERGROUP filters2
         FILTER 'Показывать только для данной группы' 'F10' groupCashRegisterCashRegister(c) == grc DEFAULT

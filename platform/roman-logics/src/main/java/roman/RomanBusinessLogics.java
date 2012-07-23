@@ -70,7 +70,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Move.lsf",
             "/scripts/DocumentTransfer.lsf",
             "/scripts/ListRegister.lsf",
-            "/scripts/StorePriceTransfer.lsf"
+            "/scripts/StorePriceTransfer.lsf",
+            "/scripts/CashOperation.lsf",
+            "/scripts/POS.lsf",
+            "/scripts/Sales.lsf",
+            "/scripts/Machinery.lsf",
+            "/scripts/CashRegister.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
         RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));

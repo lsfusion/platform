@@ -37,8 +37,8 @@ public class GenerateZReport extends ScriptingActionProperty {
         try {
             Random r = new Random();
             Integer zReportCount = addDeviation((Integer) getLCP("averageZReportCountGenerateZReport").read(context), 0.25, r);
-            Integer billCount = (Integer) getLCP("averageBillCountGenerateZReport").read(context);
-            Integer billDetailCount = (Integer) getLCP("averageBillDetailCountGenerateZReport").read(context);
+            Integer receiptCount = (Integer) getLCP("averageReceiptCountGenerateZReport").read(context);
+            Integer receiptDetailCount = (Integer) getLCP("averageReceiptDetailCountGenerateZReport").read(context);
             Date dateFrom = (Date) getLCP("dateFromGenerateZReport").read(context);
             dateFrom = dateFrom == null ? new Date(System.currentTimeMillis()) : dateFrom;
             Date dateTo = (Date) getLCP("dateToGenerateZReport").read(context);
@@ -135,42 +135,42 @@ public class GenerateZReport extends ScriptingActionProperty {
                     if (!numberZReportCashRegisterMap.containsKey(numberZReport))
                         numberZReportCashRegisterMap.put(numberZReport, numberCashRegister);
                     java.sql.Date date = new java.sql.Date(dateFrom.getTime() + Math.abs(r.nextLong() % (dateTo.getTime() - dateFrom.getTime())));
-                    for (int billNumber = 1; billNumber <= addDeviation(billCount, 0.25, r); billNumber++) {
+                    for (int receiptNumber = 1; receiptNumber <= addDeviation(receiptCount, 0.25, r); receiptNumber++) {
 
-                        Integer numberBillDetail = 0;
-                        Double sumBill = 0.0;
-                        List<SalesInfo> billSalesInfoList = new ArrayList<SalesInfo>();
+                        Integer numberReceiptDetail = 0;
+                        Double sumReceipt = 0.0;
+                        List<SalesInfo> receiptSalesInfoList = new ArrayList<SalesInfo>();
 
                         Time time = new Time(r.nextLong() % date.getTime());
-                        Integer currentBillDetailCount = addDeviation(billDetailCount, 0.25, r);
+                        Integer currentReceiptDetailCount = addDeviation(receiptDetailCount, 0.25, r);
                         for (ItemZReportInfo itemZReportInfo : itemZReportInfoList) {
                             Double currentBalanceSkuStock = itemZReportInfo.count;
                             if ((currentBalanceSkuStock > 0) && (departmentStore.equals(itemZReportInfo.departmentStore))) {
-                                Double quantityBillDetail;
+                                Double quantityReceiptDetail;
                                 if (itemZReportInfo.isWeightItem)
-                                    quantityBillDetail = currentBalanceSkuStock <= 0.005 ? currentBalanceSkuStock : ((double) Math.round(r.nextDouble() * currentBalanceSkuStock / 5 * 1000) / 1000);
+                                    quantityReceiptDetail = currentBalanceSkuStock <= 0.005 ? currentBalanceSkuStock : ((double) Math.round(r.nextDouble() * currentBalanceSkuStock / 5 * 1000) / 1000);
                                 else
-                                    quantityBillDetail = Math.ceil(currentBalanceSkuStock / 5) == 1 ? 1.0 : r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
-                                if ((quantityBillDetail > 0) && (currentBillDetailCount >= numberBillDetail)) {
-                                    Double sumBillDetail = quantityBillDetail * (itemZReportInfo.price == null ? 0 : itemZReportInfo.price);
-                                    numberBillDetail++;
-                                    sumBill += sumBillDetail;
-                                    Double discountSumBillDetail = r.nextDouble() > 0.8 ? (sumBillDetail * r.nextInt(10) / 100) : 0;
+                                    quantityReceiptDetail = Math.ceil(currentBalanceSkuStock / 5) == 1 ? 1.0 : r.nextInt((int) Math.ceil(currentBalanceSkuStock / 5));
+                                if ((quantityReceiptDetail > 0) && (currentReceiptDetailCount >= numberReceiptDetail)) {
+                                    Double sumReceiptDetail = quantityReceiptDetail * (itemZReportInfo.price == null ? 0 : itemZReportInfo.price);
+                                    numberReceiptDetail++;
+                                    sumReceipt += sumReceiptDetail;
+                                    Double discountSumReceiptDetail = r.nextDouble() > 0.8 ? (sumReceiptDetail * r.nextInt(10) / 100) : 0;
                                     SalesInfo salesInfo = new SalesInfo(numberCashRegister, numberZReport,
-                                            billNumber, date, time, 0.0, 0.0, 0.0, itemZReportInfo.barcode == null ? null : itemZReportInfo.barcode.trim(),
-                                            quantityBillDetail, itemZReportInfo.price, sumBillDetail, discountSumBillDetail, null, null, numberBillDetail, null);
-                                    billSalesInfoList.add(salesInfo);
-                                    itemZReportInfo.count -= quantityBillDetail;
-                                    billSalesInfoList.add(salesInfo);
-                                    itemZReportInfo.count -= quantityBillDetail;
+                                            receiptNumber, date, time, 0.0, 0.0, 0.0, itemZReportInfo.barcode == null ? null : itemZReportInfo.barcode.trim(),
+                                            quantityReceiptDetail, itemZReportInfo.price, sumReceiptDetail, discountSumReceiptDetail, null, null, numberReceiptDetail, null);
+                                    receiptSalesInfoList.add(salesInfo);
+                                    itemZReportInfo.count -= quantityReceiptDetail;
+                                    receiptSalesInfoList.add(salesInfo);
+                                    itemZReportInfo.count -= quantityReceiptDetail;
                                 }
                             }
                         }
-                        for (SalesInfo s : billSalesInfoList) {
-                            s.sumBill = sumBill;
-                            s.sumCash = sumBill;
+                        for (SalesInfo s : receiptSalesInfoList) {
+                            s.sumReceipt = sumReceipt;
+                            s.sumCash = sumReceipt;
                         }
-                        salesInfoList.addAll(billSalesInfoList);
+                        salesInfoList.addAll(receiptSalesInfoList);
                     }
                 }
             }

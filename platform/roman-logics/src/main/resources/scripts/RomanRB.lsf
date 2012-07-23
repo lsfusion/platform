@@ -18,6 +18,7 @@ REQUIRE System,
         WholesalePrice,
         RetailPrice,
         CRM,
+        POS,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -160,6 +161,14 @@ NAVIGATOR {
 
     retailClassifier {
         ADD stores;
+        ADD groupsCashRegister;
+    }
+
+    retail {
+        NEW POSSales 'Розничные продажи' {
+            ADD receipts;
+            ADD operationCashRegister;
+        }
     }
 
     CRM {

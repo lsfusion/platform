@@ -276,3 +276,5 @@ META defineAddDetailDialogSkuStockSupplierCustom (object, detail, caption, skuPr
         EXEC addDetailDialogSkuStock###detail###object(object AS object);
     } TOOLBAR;
 END
+
+@defineDialogSkuSupplier(dialogSku);

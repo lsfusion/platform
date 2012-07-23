@@ -400,53 +400,46 @@ priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateT
 
 // ------------------------------------- Заполнение текущих параметров --------------------------------- //
 
-META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, prefixS)
-    prefixP###ledger###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
-                    prefixS###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(prefixS###concrete##Detail(detail));
+META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
+    prefixP###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
+                    skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail));
 END
 
-META derivePriceLedgerOnSkuChange (ledger, concrete, prefixS)
-    @derivePriceLedgerOnSkuChangePrefix(ledger, concrete, , prefixS);
+META derivePriceLedgerOnSkuChange (ledger, concrete, skuProp)
+    @derivePriceLedgerOnSkuChangePrefix(ledger, concrete, ledger, skuProp);
 END
 
-META deriveBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, prefixS)
-    @derivePriceLedgerOnSkuChangePrefix(ware, concrete, prefixP, prefixS);
-    @derivePriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP, prefixS);
-    @derivePriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP, prefixS);
-    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP, prefixS);
-    @derivePriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP, prefixS);
-    @derivePriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP, prefixS);
+META deriveBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, skuProp)
+    @derivePriceLedgerOnSkuChangePrefix(ware, concrete, prefixP###ware, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP###warePrice, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP###importerPrice, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP###supplierPrice, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP###retailVAT, skuProp);
+    @derivePriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP###retailPrice, skuProp);
 END
 
-META deriveBasePriceLedgerOnSkuChange (concrete, prefixS)
-    @deriveBasePriceLedgerOnSkuChangePrefix(concrete, , prefixS);
+META deriveBasePriceLedgerOnSkuChange (concrete, skuProp)
+    @deriveBasePriceLedgerOnSkuChangePrefix(concrete, , skuProp);
 END
 
-META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, prefixS)
-    prefixP###ledger###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(sku, departmentStore, dateTime))](
-                    prefixS###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(prefixS###concrete##Detail(detail));
+META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
+    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(sku, departmentStore, dateTime))](
+                    skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail));
 END
 
-META derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, prefixS)
-    @derivePrevPriceLedgerOnSkuChangePrefix(ware, concrete, prefixP, prefixS);
-    @derivePrevPriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP, prefixS);
-    @derivePrevPriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP, prefixS);
-    @derivePrevPriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP, prefixS);
-    @derivePrevPriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP, prefixS);
-    @derivePrevPriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP, prefixS);
+META derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, skuProp)
+    @derivePrevPriceLedgerOnSkuChangePrefix(ware, concrete, prefixP###ware, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(warePrice, concrete, prefixP###warePrice, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(importerPrice, concrete, prefixP###importerPrice, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(supplierPrice, concrete, prefixP###supplierPrice, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(retailVAT, concrete, prefixP###retailVAT, skuProp);
+    @derivePrevPriceLedgerOnSkuChangePrefix(retailPrice, concrete, prefixP###retailPrice, skuProp);
 END
 
-META derivePrevBasePriceLedgerOnSkuChange (concrete, prefixS)
-    @derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, , prefixS);
-END
-
-META implementSalesLedgerStore(concrete)
-    @implementSalesLedger(concrete, item, departmentStore);
-    quantitySalesLedger (ledger) += quantity###concrete##Detail(ledger);
-    VATSalesLedger (ledger) += retailVAT###concrete##Detail(ledger);
-    sumSalesLedger (ledger) += retailSum###concrete##Detail(ledger);
+META derivePrevBasePriceLedgerOnSkuChange (concrete, skuProp)
+    @derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, , skuProp);
 END
 
 // ----------------------------------------- Расширяем формы остатков ценами ----------------------------------- //
@@ -547,3 +540,5 @@ META defineDialogSkuStorePrice (form)
         PROPERTIES(si) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailVAT, form###retailPrice
     ;
 END
+
+@defineDialogSkuStorePrice(dialogSku);
