@@ -378,7 +378,7 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     quantity###object##DiffSDetail 'Кол-во' (detail) =-diffSku###object##Rec(sku###object##DiffSDetail(detail),
                                                                        object##Rec###object##DiffSDetail(detail)) PERSISTENT;
 
-    object##Rec###object##DiffDetail (detail) = object##Rec###object##DiffEDetail(detail) OR object##Rec###object##DiffSDetail(detail) PERSISTENT;
+    object##Rec###object##DiffDetail (detail) = UNION EXCLUSIVE object##Rec###object##DiffEDetail(detail), object##Rec###object##DiffSDetail(detail) PERSISTENT;
     object##In###object##DiffDetail (detail) = object##In###object##Rec(object##Rec###object##DiffDetail(detail));
     object##Diff###object##DiffDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffDetail(detail)) PERSISTENT;
 
@@ -405,9 +405,9 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     @defineDocumentDetailPostedCustom(object##Diff, object##DiffEDetail);
     @defineDocumentDetailPostedCustom(object##Diff, object##DiffSDetail);
 
-    skuProp###object##DiffDetail (detail) = skuProp###object##DiffEDetail(detail) OR skuProp###object##DiffSDetail(detail) PERSISTENT;
-    quantity###object##DiffDetail 'Кол-во' (detail) = quantity###object##DiffEDetail(detail) OR quantity###object##DiffSDetail(detail) PERSISTENT;
-    signedQuantity###object##DiffDetail 'Кол-во' (detail) = quantity###object##DiffEDetail(detail) OR -quantity###object##DiffSDetail(detail) PERSISTENT;
+    skuProp###object##DiffDetail (detail) = UNION EXCLUSIVE skuProp###object##DiffEDetail(detail), skuProp###object##DiffSDetail(detail) PERSISTENT;
+    quantity###object##DiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantity###object##DiffEDetail(detail), quantity###object##DiffSDetail(detail) PERSISTENT;
+    signedQuantity###object##DiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantity###object##DiffEDetail(detail), -quantity###object##DiffSDetail(detail) PERSISTENT;
 
     @defineDocumentDetailIndex(object##Diff);
 

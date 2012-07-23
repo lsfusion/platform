@@ -186,7 +186,7 @@ META defineDocumentDescriptionHeader(object, caption)
 END
 
 META defineDocumentDetailDescriptionCustom(object, detail)
-    description###detail 'Название документа' (object) = description###object(object###detail(object));
+    description###detail 'Название документа' (detail) = description###object(object###detail(detail));
 END
 
 META defineDocumentDescriptionCustom(object, detail, numberProp, caption)

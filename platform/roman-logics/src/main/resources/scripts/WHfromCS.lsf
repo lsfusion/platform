@@ -15,9 +15,9 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-// Приход на склад (по схеме документ расхода - акт приемки - акт расхождений)
-CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject, numberedObject;
-CLASS WHfromCSIPosted 'Закрытый приход с СВХ' : WHfromCSI, postedObject;
+//--------------------------------------------- Поступление ---------------------------------------------------------- //
+
+CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject;
 CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuLedger;
 
 @defineDocumentTables(WHfromCSI);
@@ -29,69 +29,58 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 
 @defineDocumentAggregationPosted(CStoWH, WHfromCSI);
 
-@defineDocumentAggregationDetailSku(CStoWH, WHfromCSI, sku);
+@defineDocumentAggregationHeaderNumber(CStoWH, WHfromCSI);
 
+@defineDocumentDescriptionCustom(WHfromCSI, WHfromCSIDetail, seriesNumberWHfromCSI, 'Поступление товара с СВХ');
+
+@defineDocumentDetailIndex(WHfromCSI);
+
+@defineDocumentAggregationDetailSku(CStoWH, WHfromCSI, sku);
 @defineDocumentAggregationDetailQuantity(CStoWH, WHfromCSI);
 
 @defineDocumentHeaderQuantity(WHfromCSI);
-
-@defineDocumentDetailIndex(WHfromCSI);
-@defineDocumentDescription(WHfromCSI, 'Поступление товара с СВХ');
+@defineDocumentHeaderSkuQuantity(WHfromCSI, sku);
 
 @defineDocumentDetailSkuArticle(WHfromCSI);
 
-initValueNumberObject (WHfromCSI) += [PREV(numberObject(WHfromCSI))](CStoWHWHfromCSI(WHfromCSI));
-initValueSeriesObject (WHfromCSI) += [PREV(seriesObject(WHfromCSI))](CStoWHWHfromCSI(WHfromCSI));
-
-initWhenNumberedObject(WHfromCSI) += CHANGED(CStoWHWHfromCSI(WHfromCSI));
+costWHfromCSIBatch(WHfromCSI, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY WHfromCSIWHfromCSIDetail(ledger), batch;
 
 @implementSkuLedger(WHfromCSI, sku, warehouse);
 quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
 
-quantitySkuInWHfromCSI 'Кол-во товара' (WHfromCSI, sku) = GROUP SUM quantityWHfromCSIDetail(WHfromCSIDetail)
-                                           BY WHfromCSIWHfromCSIDetail(WHfromCSIDetail), skuWHfromCSIDetail(WHfromCSIDetail);
+nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа' (WHfromCSIDetail) = nameCategoryArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
+nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
+barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
 
-
-CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject, numberedObject;
+CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject;
 CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
 CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
 
 @defineDocument(WHfromCSR);
-@defineDocumentStock(WHfromCSR, warehouse, 'Оптовый склад');
+
+WHfromCSIWHfromCSR = DATA WHfromCSI (WHfromCSR);
+WHfromCSRWHfromCSI(WHfrom) = GROUP UNIQUE WHfromCSR BY WHfromCSIWHfromCSR(WHfromCSR) WHERE WHfromCSR IS WHfromCSR;
+
+WHfromCSIWHfromCSRDetail (WHfromCSRDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+@defineDocumentAggregationHeaderStock(WHfromCSI, WHfromCSR, warehouse, 'Оптовый склад');
+
 @defineDocumentPosted(WHfromCSR);
 
-@defineDocumentDetailNumbered(WHfromCSR);
-@defineDocumentDetailQuantity(WHfromCSR);
+@defineDocumentAggregationHeaderNumberCustom(WHfromCSI, WHfromCSR, WHfromCSI);
 
 @defineDocumentDetailSku(WHfromCSR, sku);
-@defineDocumentDetailSkuArticle(WHfromCSR);
 
-@defineDocumentDetailSkuBalance(WHfromCSR, sku, warehouse);
-
-@defineDocumentHeaderQuantity(WHfromCSR);
-
-@defineDocumentDescription (WHfromCSR, 'Расход с СВХ');
+@defineDocumentDetailQuantity(WHfromCSR);
 
 @defineAddDetailDialogSkuStock(WHfromCSR, sku, warehouse, dialogSku);
 @defineAddDetailDialogBarcode(WHfromCSR, sku);
 
-customStoreWHfromCSR (WHfromCSR) = DATA customStore (WHfromCSR) IN idGroup;
-nameCustomStoreWHfromCSR 'СВХ' (WHfromCSR) = name (customStoreWHfromCSR(WHfromCSR)) IN documentHeaderGroup;
+@defineDocumentHeaderQuantity(WHfromCSR);
+@defineDocumentHeaderSkuQuantity(WHfromCSR, sku);
 
-//связь расхода и приемки
-WHfromCSIWHfromCSR 'Документ приемки (ИД)' (WHfromCSR) = DATA WHfromCSI(WHfromCSR);
-WHfromCSRWHfromCSI 'Документ прихода (ИД)' (WHfromCSI) = GROUP UNIQUE WHfromCSR BY WHfromCSIWHfromCSR(WHfromCSR) WHERE WHfromCSR IS WHfromCSR;
-
-isAcceptedWHfromCSI 'Документ с приемкой' (WHfromCSI) =  WHfromCSI IS WHfromCSI AND WHfromCSRWHfromCSI(WHfromCSI);
-notAcceptedWHfromCSI 'Документ без приемки' (WHfromCSI) =  WHfromCSI IS WHfromCSI AND NOT WHfromCSRWHfromCSI(WHfromCSI);
-
-CStoWHWHfromCSR (WHfromCSR) = CStoWHWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR));
-
-initValueNumberObject (WHfromCSR) += [PREV(numberObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
-initValueSeriesObject (WHfromCSR) += [PREV(seriesObject(WHfromCSR))](WHfromCSIWHfromCSR(WHfromCSR));
-
-initWhenNumberedObject (WHfromCSR) +=  CHANGED(WHfromCSIWHfromCSR(WHfromCSR));
+@defineDocumentDetailSkuArticle(WHfromCSR);
 
 //для учета по коробам
 freightUnitWHfromCSRDetail 'Короб (ИД)' (WHfromCSRDetail) = DATA freightUnit(WHfromCSRDetail);
@@ -101,21 +90,8 @@ quantityWHfromCSRDetailsSkuFreightUnit 'Количество принятое (�
     GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
     BY skuWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
 
-isNotShippedSkuFreightUnitWHfromCSR (sku, freightUnit, WHfromCSR) = quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWHWHfromCSR(WHfromCSR))
+isNotShippedSkuFreightUnitWHfromCSR (sku, freightUnit, WHfromCSR) = quantitySkuFreightUnitCStoWH (sku, freightUnit, CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)))
     AND NOT quantityWHfromCSRDetailsSkuFreightUnit(sku, freightUnit, WHfromCSR);
-
-//quantityWHfromCSBatch (WHfromCS, batch) = quantityCStoWHBatch(CStoWHWHfromCS(WHfromCS), batch);
-//quantityWHfromCSDetailBatch (WHfromCSDetail, batch) = quantityWHfromCSBatch(WHfromCSWHfromCSDetail(WHfromCSDetail), batch);
-//
-//limitInTransferSkuLedgerBatch (WHfromCSDetail, batch) += quantityWHfromCSDetailBatch (WHfromCSDetail, batch);
-//
-@defineDocumentHeaderSkuQuantity (WHfromCSR, sku);
-@defineDocumentHeaderOriginSkuQuantity (WHfromCSR, CStoWH);
-
-//quantityDCStoWHSku (CStoWH, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
-//                                          BY CStoWHCStoWHDetail(CStoWHDetail), skuCStoWHDetail(CStoWHDetail);
-//
-//diffQuantityWHfromCSRDetail (WHfromCSRDetail) = quantityOriginWHfromCSRDetail(WHfromCSRDetail)!= quantityWHfromCSRDetail(WHfromCSRDetail);
 
 //приемка по коробам
 
@@ -134,13 +110,13 @@ FORM addBarcodeWHfromCSRSku 'Поиск товара(с коробами и вы
     OBJECTS s = RomanLogicsModule.item
     PROPERTIES(s) READONLY sidArticleSku, barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
 
-    FILTERS quantitySkuCStoWH (s, CStoWHWHfromCSR(w)) > 0
+    FILTERS quantitySkuCStoWH (s, CStoWHWHfromCSI(WHfromCSIWHfromCSR(w))) > 0
 
     FILTERGROUP filters1
         FILTER 'Товар без шрих-кода' 'F9' withOutBarcodeSku(s) DEFAULT
 
     FILTERGROUP filters2
-        FILTER 'Только из текущего короба' 'F10' quantitySkuFreightUnitCStoWH(s, f, CStoWHWHfromCSR(w)) > 0
+        FILTER 'Только из текущего короба' 'F10' quantitySkuFreightUnitCStoWH(s, f, CStoWHWHfromCSI(WHfromCSIWHfromCSR(w))) > 0
 
 ;
 
@@ -239,7 +215,7 @@ fillWHfromCSRDetailsSkuFreightUnit 'Заполнить строки из кор�
         ADDOBJ WHfromCSRDetail;
         FOR w == addedObject() DO {
             SET skuWHfromCSRDetail (w) <- sku AS sku;
-            SET quantityWHfromCSRDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSR(WHfromCSR));
+            SET quantityWHfromCSRDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
             SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
         }
     }
@@ -250,7 +226,7 @@ shouldBePrintWHfromCSR = SESSION DATA BOOLEAN (sku);
 priceBaseWHfromCSRDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
 priceDiscountWHfromCSRDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
 
-quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSR(WHfromCSR), freightUnit, sku);
+quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)), freightUnit, sku);
 
 quantityPositionsSkuInWHFromCSRFreightUnit 'Кол-во позиций в коробе' (WHfromCSR, freightUnit) =
     GROUP SUM 1 IF quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, freightUnit;
@@ -299,7 +275,7 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
 printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
 
     SET shouldBePrintWHfromCSR(sku) <- NULL;
-    SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSR(WHfromCSR));
+    SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
     FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
 
 } CONFIRM;
@@ -311,81 +287,6 @@ printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfro
     FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
 
 } CONFIRM TOOLBAR;
-
-
-CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
-CLASS WHfromCSDPosted 'Закрытый акт расхождений на приемке на склад с СВХ' : WHfromCSD, postedObject;
-CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
-
-CLASS WHfromCSDODetail 'Строка акта расхождений (излишек) на приемке на склад с СВХ' : inLIFOSkuLedger, WHfromCSDDetail;
-CLASS WHfromCSDSDetail 'Строка акта расхождений (недостача) на приемке на склад с СВХ' : outFIFOSkuLedger, WHfromCSDDetail;
-TABLE WHfromCSDODetail (WHfromCSDODetail);
-TABLE WHfromCSDSDetail (WHfromCSDSDetail);
-
-@defineDocument(WHfromCSD);
-@defineDocumentStock(WHfromCSD, warehouse, 'Оптовый склад');
-@defineDocumentPosted(WHfromCSD);
-
-@defineDocumentDetailNumbered(WHfromCSD);
-@defineDocumentDetailQuantity(WHfromCSD);
-
-@defineDocumentDetailSku(WHfromCSD, sku);
-@defineDocumentDetailSkuArticle(WHfromCSD);
-
-@defineDocumentDetailSkuBalance(WHfromCSD, sku, warehouse);
-
-@defineDocumentHeaderQuantity(WHfromCSD);
-
-@defineDocumentDescription (WHfromCSD, 'Акт расхождений при приемке на склад');
-
-WHfromCSRWHfromCSD 'Акт расхождений по приемке (ИД)' (WHfromCSD) = DATA WHfromCSR (WHfromCSD);
-WHfromCSRWHfromCSDDetail (WHfromCSDDetail) = WHfromCSRWHfromCSD(WHfromCSDWHfromCSDDetail(WHfromCSDDetail));
-
-WHfromCSIWHfromCSD 'Акт расхождений по приходу (ИД)' (WHfromCSD) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSD (WHfromCSD));
-
-//строки излишек
-needDiffShortageSkuWHfromCSR 'Необходим акт расхождений (излишек)' (WHfromCSR, sku) =
-    sku IS sku AND WHfromCSR IS WHfromCSR AND (quantitySkuInWHfromCSR (WHfromCSR, sku) (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR), sku)) > 0;
-
-WHfromCSRWHfromCSDODetail (WHfromCSDODetail) = WHfromCSRWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
-skuWHfromCSDODetail (WHfromCSDODetail) = skuWHfromCSDDetail(WHfromCSDODetail) IF WHfromCSDODetail IS WHfromCSDODetail;
-
-@defineAggregationDoubleCustom (WHfromCSRWHfromCSDODetail, skuWHfromCSDDetail, WHfromCSR, sku, WHfromCSDODetail, needDiffShortageSkuWHfromCSR);
-
-quantityWHfromCSDDetail (WHfromCSDODetail) <-
-    (quantitySkuInWHfromCSR (WHfromCSRWHfromCSDDetail(WHfromCSDODetail), skuWHfromCSDDetail(WHfromCSDODetail))
-    (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDODetail)), skuWHfromCSDDetail(WHfromCSDODetail)))
-    WHEN (ASSIGNED(skuWHfromCSDDetail(WHfromCSDODetail)) OR ASSIGNED(WHfromCSRWHfromCSDDetail(WHfromCSDODetail)));
-
-// строки недостачи
-needDiffOverSkuWHfromCSR 'Необходим акт расхождений (недостача)' (WHfromCSR, sku) =
-    sku IS sku AND WHfromCSR IS WHfromCSR AND (quantitySkuInWHfromCSR (WHfromCSR, sku) (-) quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSR), sku)) < 0;
-
-WHfromCSRWHfromCSDSDetail (WHfromCSDSDetail) = WHfromCSRWHfromCSDDetail(WHfromCSDSDetail) IF WHfromCSDSDetail IS WHfromCSDSDetail;
-skuWHfromCSDSDetail (WHfromCSDSDetail) = skuWHfromCSDDetail(WHfromCSDSDetail) IF WHfromCSDSDetail IS WHfromCSDSDetail;
-
-@defineAggregationDoubleCustom (WHfromCSRWHfromCSDSDetail, skuWHfromCSDSDetail, WHfromCSR, sku, WHfromCSDSDetail, needDiffOverSkuWHfromCSR);
-
-@defineDocumentDetailQuantity(WHfromCSDS);
-
-quantityWHfromCSDDetail (WHfromCSDSDetail) <-
-    (quantitySkuInWHfromCSI (WHfromCSIWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDSDetail)), skuWHfromCSDDetail(WHfromCSDSDetail))
-    (-) quantitySkuInWHfromCSR (WHfromCSRWHfromCSDDetail(WHfromCSDSDetail), skuWHfromCSDDetail(WHfromCSDSDetail)))
-    WHEN (ASSIGNED(skuWHfromCSDDetail(WHfromCSDSDetail)) OR ASSIGNED(WHfromCSRWHfromCSDDetail(WHfromCSDSDetail)));
-
-statusWHfromCSI 'Статус' (WHfromCSI) = CASE
-    WHEN (WHfromCSRWHfromCSI (WHfromCSI) IS WHfromCSRPosted) THEN ('Принят' IF WHfromCSI IS WHfromCSI)
-    WHEN (WHfromCSRWHfromCSI (WHfromCSI) IS WHfromCSR) THEN ('Принимается' IF WHfromCSI IS WHfromCSI)
-    DEFAULT 'К приемке' IF WHfromCSI IS WHfromCSI
-END PREFCHARWIDTH 15 MINCHARWIDTH 15;
-
-sumQuantityOverWHfromCSD 'Количество излишка' (WHfromCSD) = GROUP SUM quantityWHfromCSDDetail(WHfromCSDODetail)
-                                                            BY WHfromCSDWHfromCSDDetail(WHfromCSDODetail) WHERE WHfromCSDODetail IS WHfromCSDODetail;
-
-sumQuantityShortageWHfromCSD 'Количество недостач' (WHfromCSD) = GROUP SUM quantityWHfromCSDDetail(WHfromCSDSDetail)
-                                                            BY WHfromCSDWHfromCSDDetail(WHfromCSDSDetail) WHERE WHfromCSDSDetail IS WHfromCSDSDetail;
-
-sumQuantityWHfromCSD 'Количество по акту расхождений' (WHfromCSD) = sumQuantityOverWHfromCSD(WHfromCSD) - sumQuantityShortageWHfromCSD(WHfromCSD);
 
 // Атрибуты поставщика
 
@@ -513,48 +414,137 @@ DESIGN WHfromCSR FROM DEFAULT {
     }
 }
 
-actionFormWHfromCSR (WHfromCSR) = ACTION FORM WHfromCSR OBJECTS w = WHfromCSR MODAL;
+// прием приемки)
 
-acceptWHfromCSRWHfromCSI 'Создать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
-    ADDOBJ WHfromCSR;
-    FOR w == addedObject() DO {
-        SET WHfromCSIWHfromCSR (w) <- WHfromCSI AS WHfromCSI;
-        SET warehouseWHfromCSR (w) <- warehouseWHfromCSI(WHfromCSI);
-        FORM WHfromCSR OBJECTS w = w MODAL;
-        IF formResult() == formResult.ok THEN EXEC apply();
+receiveWHfromCSI 'Принять' (WHfromCSI) = ACTION (WHfromCSI) NEWSESSION {
+    IF WHfromCSRWHfromCSI(WHfromCSI) IS WHfromCSR THEN {
+        FOR r == WHfromCSRWHfromCSI(WHfromCSI) DO {
+            IF r IS WHfromCSRPosted THEN {
+                CHANGECLASS r TO WHfromCSR;
+            }
+            FORM WHfromCSR OBJECTS w = r MODAL;
+        }
+    } ELSE {
+        ADDOBJ WHfromCSR;
+        FOR t == addedObject() DO {
+            SET WHfromCSIWHfromCSR (t) <- WHfromCSI AS WHfromCSI;
+            FORM WHfromCSR OBJECTS w = t MODAL;
+        }
     }
-};
+    IF formResult() == formResult.ok THEN EXEC apply();
+} TOOLBAR;
 
-modifyWHfromCSRWHfromCSI 'Редактировать приемку' (WHfromCSI)= ACTION (WHfromCSI) NEWSESSION {
-        FORM WHfromCSR OBJECTS w = WHfromCSRWHfromCSI(WHfromCSI) MODAL;
-        IF formResult() == formResult.ok THEN EXEC apply();
-} IMAGE 'edit.png';
+postRecWHfromCSI 'Пометить как принятое' (WHfromCSI) = postWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI)) TOOLBAR;
+isDraftRecWHfromCSI (WHfromCSI) = isDraftWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 
-deleteWHfromCSRWHfromCSI 'Удалить приемку' (WHfromCSI)= ACTION (WHfromCSI) {
-    FOR w == WHfromCSRWHfromCSI(WHfromCSI) DO {
-        EXEC delete(w);
-        EXEC apply();
-    }
-} IMAGE 'delete.png';
+statusRecWHfromCSI 'Статус приемки' (WHfromCSI) =
+    IF WHfromCSRWHfromCSI(WHfromCSI) IS WHfromCSRPosted THEN 'Принят' IF WHfromCSI IS WHfromCSI ELSE
+    IF WHfromCSRWHfromCSI(WHfromCSI) IS WHfromCSR THEN 'Принимается' IF WHfromCSI IS WHfromCSI ELSE
+    'Не принят' IF WHfromCSI IS WHfromCSI PREFCHARWIDTH 15 MINCHARWIDTH 15;
 
-postWHfromCSRWHfromCSI 'Закрыть приемку' (WHfromCSI) = postWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
-isDraftWHfromCSRWHfromCSI (WHfromCSI) = isDraftWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+quantityWHfromCSRDetailWHfromCSI 'Кол-во принятое' (WHfromCSI) = quantityWHfromCSRDetailWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
 
-unpostWHfromCSRWHfromCSI 'Открыть приемку' (WHfromCSI) = unpostWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
-isPostedWHfromCSRWHfromCSI (WHfromCSI) = isPostedWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+// Излишки / Недостачи
 
-nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа' (WHfromCSIDetail) = nameCategoryArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
-nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
-barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
+CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
+CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
+
+CLASS WHfromCSDEDetail 'Строка акта расхождений на приемке на склад с СВХ (излишек)' : batchB, WHfromCSDDetail;
+CLASS WHfromCSDSDetail 'Строка акта расхождений на приемке на склад с СВХ (недостача)' : outFIFOSkuLedger, WHfromCSDDetail;
+TABLE WHfromCSDEDetail (WHfromCSDEDetail);
+TABLE WHfromCSDSDetail (WHfromCSDSDetail);
+
+diffSkuWHfromCSR(sku, WHfromCSR) = (quantityWHfromCSRDetailSkuWHfromCSR(sku, WHfromCSR) (-)
+                                            quantityWHfromCSIDetailSkuWHfromCSI(sku, WHfromCSIWHfromCSR(WHfromCSR)))
+                                            AND isPostedWHfromCSR(WHfromCSR);
+
+hasDiffSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) != 0;
+
+countDiffWHfromCSR 'Расхождение (позиции)' (WHfromCSR) = GROUP SUM 1 IF hasDiffSkuWHfromCSR(sku, WHfromCSR) BY WHfromCSR;
+quantityDiffWHfromCSR 'Расхождение (кол-во)' (WHfromCSR) = GROUP SUM diffSkuWHfromCSR(sku, WHfromCSR) BY WHfromCSR;
+
+countDiffWHfromCSI 'Расхождение (позиции)' (WHfromCSI) = countDiffWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+quantityDiffWHfromCSI 'Расхождение (кол-во)' (WHfromCSI) = quantityDiffWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI));
+
+hasShortageSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) < 0;
+hasExcessSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) > 0;
+
+// Непосредственное определение самого документа
+
+@defineDocumentTables(WHfromCSD);
+
+@defineAggregation(WHfromCSR, WHfromCSD, countDiffWHfromCSR);
+
+@defineAggregationDouble(sku, WHfromCSR, WHfromCSDEDetail, hasExcessSkuWHfromCSR);
+quantityWHfromCSDEDetail 'Кол-во' (WHfromCSDDetail) = diffSkuWHfromCSR(skuWHfromCSDEDetail(WHfromCSDDetail),
+                                                                       WHfromCSRWHfromCSDEDetail(WHfromCSDDetail)) PERSISTENT;
+
+@defineAggregationDouble(sku, WHfromCSR, WHfromCSDSDetail, hasShortageSkuWHfromCSR);
+quantityWHfromCSDSDetail 'Кол-во' (WHfromCSDDetail) =-diffSkuWHfromCSR(skuWHfromCSDSDetail(WHfromCSDDetail),
+                                                                       WHfromCSRWHfromCSDSDetail(WHfromCSDDetail)) PERSISTENT;
+
+WHfromCSRWHfromCSDDetail (WHfromCSDDetail) = UNION EXCLUSIVE WHfromCSRWHfromCSDEDetail(WHfromCSDDetail), WHfromCSRWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+WHfromCSIWHfromCSDDetail (WHfromCSDDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDDetail));
+WHfromCSDWHfromCSDDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDDetail(WHfromCSDDetail));
+
+WHfromCSIWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSDSDetail(WHfromCSDDetail));
+
+WHfromCSDWHfromCSDEDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDEDetail(WHfromCSDDetail));
+WHfromCSDWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDSDetail(WHfromCSDDetail));
+
+@defineDocumentAggregationHeaderTime(WHfromCSR, WHfromCSD);
+@defineDocumentDetailTimeCustom(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailTimeCustom(WHfromCSD, WHfromCSDSDetail);
+
+@defineDocumentAggregationHeaderNumberCustom(WHfromCSR, WHfromCSD, WHfromCSR);
+
+@defineDocumentHeaderDescriptionCustom(WHfromCSD, seriesNumberWHfromCSD, 'Акт расхождений на приемке на склад с СВХ');
+@defineDocumentDetailDescriptionCustom(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailDescriptionCustom(WHfromCSD, WHfromCSDSDetail);
+
+@defineDocumentAggregationHeaderStock(WHfromCSR, WHfromCSD, warehouse, 'Оптовый склад');
+@defineDocumentDetailStockCustom(WHfromCSD, WHfromCSDEDetail, warehouse, 'Оптовый склад');
+@defineDocumentDetailStockCustom(WHfromCSD, WHfromCSDSDetail, warehouse, 'Оптовый склад');
+
+@defineDocumentAggregationHeaderPosted(WHfromCSR, WHfromCSD);
+@defineDocumentDetailPostedCustom(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailPostedCustom(WHfromCSD, WHfromCSDSDetail);
+
+skuWHfromCSDDetail (WHfromCSDDetail) = UNION EXCLUSIVE skuWHfromCSDEDetail(WHfromCSDDetail), skuWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+quantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+signedQuantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), -quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
+
+@defineDocumentDetailIndex(WHfromCSD);
+
+@defineDocumentDetailSkuArticle(WHfromCSD);
+
+costWHfromCSDEDetail(WHfromCSDDetail) = 0.0 IF WHfromCSDDetail IS WHfromCSDEDetail;
+@implementBatch(WHfromCSDE, sku, warehouse, cost);
+quantityBatch (batch) += quantityWHfromCSDEDetail(batch);
+skipASkuLedger (ledger) += ledger IS WHfromCSDEDetail;
+
+@implementSkuLedger(WHfromCSDS, sku, warehouse);
+quantityOutFIFOSkuLedger (ledger) += quantityWHfromCSDSDetail(ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += costWHfromCSIBatch(WHfromCSIWHfromCSDSDetail(ledger), batch);
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS WHfromCSDSDetail;
+
+skipASkuLedger (ledger) += ledger IS WHfromCSDSDetail;
+
+// Внутренние аттрибуты
+
+nameCategoryArticleSkuWHfromCSDDetail 'Номенклатурная группа' (WHfromCSDDetail) = nameCategoryArticleSku(skuWHfromCSDDetail(WHfromCSDDetail));
+nameUnitOfMeasureArticleSkuWHfromCSDDetail 'Ед. измерения товара' (WHfromCSDDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSDDetail(WHfromCSDDetail));
 
 FORM WHfromCSIs 'Поступления товара с СВХ'
     OBJECTS w = WHfromCSI
-    PROPERTIES (w) READONLY objectClassName, statusWHfromCSI, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
-                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI, quantityWHfromCSIDetailWHfromCSI
+    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
+                            nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI,
+                            quantityWHfromCSIDetailWHfromCSI, quantityWHfromCSRDetailWHfromCSI,
+                            statusRecWHfromCSI, countDiffWHfromCSI, quantityDiffWHfromCSI
 
-    PROPERTIES (w) FORCE PANEL acceptWHfromCSRWHfromCSI SHOWIF notAcceptedWHfromCSI(w), modifyWHfromCSRWHfromCSI SHOWIF isAcceptedWHfromCSI(w),
-                               deleteWHfromCSRWHfromCSI SHOWIF isAcceptedWHfromCSI(w), postWHfromCSRWHfromCSI SHOWIF isDraftWHfromCSRWHfromCSI(w),
-                               unpostWHfromCSRWHfromCSI SHOWIF isDraftWHfromCSRWHfromCSI(w)
+    PROPERTIES(w) FORCE PANEL receiveWHfromCSI, postRecWHfromCSI SHOWIF isDraftRecWHfromCSI(w)
+
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS di = WHfromCSIDetail
     PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
@@ -570,39 +560,49 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                             sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                             quantityWHfromCSRDetail, nameUnitOfMeasureArticleSkuWHfromCSRDetail
 
-//    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
+    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
 
     OBJECTS df = WHfromCSDDetail
-    PROPERTIES (df) indexWHfromCSDDetail, objectClassName, barcodeWHfromCSDDetail, quantityWHfromCSDDetail
-//    FILTERS WHfromCSIWHfromCSD(WHfromCSDWHfromCSDDetail(df))==w
+    PROPERTIES (df) READONLY indexWHfromCSDDetail, barcodeWHfromCSDDetail, nameCategoryArticleSkuWHfromCSDDetail,
+                             nameBrandWHfromCSDDetail, sidArticleWHfromCSDDetail, sidSizeWHfromCSDDetail,
+                             sidColorWHfromCSDDetail, nameColorWHfromCSDDetail, //barcodeFreightUnitWHfromCSDDetail,
+                             quantityWHfromCSDDetail, nameUnitOfMeasureArticleSkuWHfromCSDDetail
+
+    FILTERS WHfromCSIWHfromCSDDetail(df)==w
 
 ;
 
 DESIGN WHfromCSIs FROM DEFAULT {
-    NEW docDetails.box BEFORE functions.box{
-        type=TABBED;
-        ADD di.box;
-        ADD dr.box {
-            title = 'Приемка';
-                ADD PROPERTY (deleteWHfromCSRWHfromCSI(w)) {
-                    panelLocation = TOOLBAR;
-                    askConfirm = TRUE;
-                }
-                ADD PROPERTY (acceptWHfromCSRWHfromCSI(w)) {
-                    panelLocation = TOOLBAR;
-                    askConfirm = TRUE;
-                }
-                ADD PROPERTY (modifyWHfromCSRWHfromCSI(w)){
-                    panelLocation = TOOLBAR;
-//                    askConfirm = TRUE;
-                }
-                ADD PROPERTY (postWHfromCSRWHfromCSI(w)) {
-                    panelLocation = TOOLBAR;
-                    askConfirm = TRUE;
-                }
-        };
-        ADD df.box {
-             title = 'Акт расхождений';
-        };
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD w.box;
+        NEW docDetail{
+
+            type = TABBED;
+            ADD di.box {
+               title = 'Спецификация';
+            }
+
+            NEW documentHistory {
+
+                title = 'История';
+                ADD w.historyGroup;
+                ADD w.postedGroup;
+            }
+
+            ADD dr.box {
+                title = 'Приемка';
+            }
+
+            ADD df.box {
+                 title = 'Акт расхождений';
+            }
+        }
     }
+
+    ADD functions.box;
 }
