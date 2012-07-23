@@ -138,7 +138,7 @@ FORM discountCards 'Дисконтные карты'
 CLASS share 'Акция (применение условий в момент продажи)' : historyObject, numberedObject, named;
 TABLE share (share);
 
-CLASS  shareGroup 'Группа акций' : named;
+CLASS  shareGroup 'Условия акций' : named;
 
 GROUP CRMGroup 'Реквизиты' : recognizeGroup;
 
@@ -167,6 +167,11 @@ percentShareGroup 'Процент скидки'  = DATA NUMERIC[8,3] (shareGroup
 resultPriceShareGroup 'Цена со скидкой' = DATA NUMERIC[14,2] (shareGroup);
 
 includeShareGroupSku 'В акции' = DATA BOOLEAN (shareGroup, sku);
+includeShareGroupSkuGroup 'В акции' = DATA BOOLEAN (shareGroup, skuGroup);
+
+includeShareGroupSkuGroupSku 'В акции' (shareGroup, skuGroup, sku) = UNION OVERRIDE includeShareGroupSkuGroup(shareGroup, skuGroup) AND sku AS sku,
+                                                                                    includeShareGroupSku(shareGroup, sku) AND skuGroup AS skuGroup;
+
 
 
 FORM share 'Акция'
@@ -188,14 +193,16 @@ FORM share 'Акция'
     TREE skuTree skg = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(skg)
     ORDER BY skuTreeName
+    PROPERTIES(sg, skg) includeShareGroupSkuGroup
 
     OBJECTS sk= sku
     PROPERTIES(sk)    READONLY nameSku
-    PROPERTIES(sg, sk) includeShareGroupSku
     FILTERS           isParentSkuGroupSku(skg, sk)
+    PROPERTIES(sg, skg, sk)   includeShareGroupSkuGroupSku
+
 
     FILTERGROUP filterSku
-        FILTER 'Только отмеченные' 'F10' includeShareGroupSku(sg, sk)  DEFAULT
+        FILTER 'Только отмеченные' 'F10' includeShareGroupSkuGroupSku(sg, skg, sk)  DEFAULT
 
     TREE treeStore a=STRING[3], t=chainStores, st=storeType
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
