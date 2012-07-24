@@ -19,6 +19,9 @@ REQUIRE System,
         RetailPrice,
         CRM,
         POS,
+        PriceChange,
+        Terminal,
+        UserPriceChange,
         InnerOrder,
         RomanLogicsModule;
 
@@ -131,6 +134,13 @@ NAVIGATOR {
                 ADD shares;
                 ADD discountCards;
             }
+        }
+    }
+
+    retail {
+        NEW retailPriceDocument 'Документы расценки' {
+            ADD inputListRegisters;
+            ADD userPriceChanges;
         }
     }
 

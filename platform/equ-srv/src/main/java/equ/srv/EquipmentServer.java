@@ -398,7 +398,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : supplierResult.entrySet()) {
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
-                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("supplier");
+                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeSupplier");
                 String type = (String) LM.findLCPByCompoundName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
@@ -415,7 +415,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : customerResult.entrySet()) {
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
-                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("customer");
+                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeCustomer");
                 String type = (String) LM.findLCPByCompoundName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }

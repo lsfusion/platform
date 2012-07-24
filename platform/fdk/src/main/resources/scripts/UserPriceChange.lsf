@@ -1,0 +1,259 @@
+MODULE UserPriceChange;
+
+REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode, Supplier;
+
+
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedDocument, priceTransactionDocument, historyObject;
+CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
+
+@defineDocument(userPriceChange);
+@defineDocumentDepartmentStore(userPriceChange);
+@defineDocumentPosted(userPriceChange);
+
+numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
+seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
+
+@defineDocumentDetailSku(userPriceChange, sku);
+
+@defineDocumentDetailQuantity(userPriceChange);
+@defineDocumentDetailBasePrice(userPriceChange);
+
+@defineDocumentDetailBasePricePrefix(userPriceChange, cur, ' (тек.)');
+@deriveBasePriceLedgerOnSkuChangePrefix(userPriceChange, cur, sku);
+
+@defineDocumentHeaderSkuQuantity(userPriceChange, sku);
+
+@defineDocumentHeaderPriceChange(userPriceChange);
+
+descriptionUserPriceChange 'Название документа' (userPriceChange) =
+    [FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](
+    seriesNumberObject(userPriceChange), dateUserPriceChange(userPriceChange));
+
+descriptionUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
+
+@defineAddDetailDialogSkuStock(userPriceChange, sku, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(userPriceChange, sku);
+@defineAddDetailDialogTerminal(userPriceChange, sku);
+
+@implementBaseSkuDepartmentStoreLedger(userPriceChange, sku);
+
+@implementPriceChangeDocument(userPriceChange, sku);
+@implementPriceChangeDocumentDetailAllPrice(userPriceChange);
+
+isDraftPriceTransactionDocument (document) += isDraftUserPriceChange(document);
+descriptionPriceTransactionDocument (document) += descriptionUserPriceChange(document);
+
+percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
+percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (userPriceChange);
+toShowDiscountUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percMarkupUserPriceChange(userPriceChange);
+toShowMarkupUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percDiscountUserPriceChange(userPriceChange);
+
+newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) =  [roundM1(X-(X*Y)/100)](
+    curRetailPriceUserPriceChangeDetail(userPriceChangeDetail), percDiscountUserPriceChange(userPriceChange));
+
+newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) = [roundM1(X+(X*Y)/100+(X+(X*Y)/100)*Z/100+F)](
+    curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
+    percMarkupUserPriceChange(userPriceChange),
+    curValueRetailVATUserPriceChangeDetail(userPriceChangeDetail),
+    (UNION OVERRIDE 0.0 IF userPriceChangeDetail IS userPriceChangeDetail, curWarePriceUserPriceChangeDetail(userPriceChangeDetail)));
+
+
+
+FORM addPercMarkupUserPriceChange 'Изменить наценку товара'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) percMarkupUserPriceChange
+;
+
+DESIGN addPercMarkupUserPriceChange FROM DEFAULT {
+    PROPERTY (percMarkupUserPriceChange) {
+        caption = 'Введите наценку';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
+dialogAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
+        FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
+                SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailVATUserPriceChangeDetail(userPriceChangeDetail) <- curRetailVATUserPriceChangeDetail(userPriceChangeDetail);
+                SET wareUserPriceChangeDetail(userPriceChangeDetail) <- curWareUserPriceChangeDetail(userPriceChangeDetail);
+                SET warePriceUserPriceChangeDetail(userPriceChangeDetail) <- curWarePriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newMarkupRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
+            }
+        }
+} TOOLBAR CONFIRM;
+
+
+FORM addPercDiscountUserPriceChange 'Сделать скидку'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) percDiscountUserPriceChange
+;
+
+DESIGN addPercDiscountUserPriceChange FROM DEFAULT {
+    PROPERTY (percDiscountUserPriceChange) {
+        caption = 'Введите скидку';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
+dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
+        FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
+        IF formResult() == formResult.ok THEN {
+            FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
+                SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailVATUserPriceChangeDetail(userPriceChangeDetail) <- curRetailVATUserPriceChangeDetail(userPriceChangeDetail);
+                SET wareUserPriceChangeDetail(userPriceChangeDetail) <- curWareUserPriceChangeDetail(userPriceChangeDetail);
+                SET warePriceUserPriceChangeDetail(userPriceChangeDetail) <- curWarePriceUserPriceChangeDetail(userPriceChangeDetail);
+                SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newDiscountRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
+            }
+        }
+} TOOLBAR CONFIRM;
+
+// todo: пока что сделал так, что можно выбрать только один экшн на изменение цены.
+
+toShowWareUserPriceChange 'Показывать строки с посудой' (userPriceChange) = GROUP SUM 1 IF curWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
+
+FORM userPriceChange 'Переоценка товаров'
+    OBJECTS u=userPriceChange FIXED PANEL
+    PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
+                   diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
+                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument,
+                   noteUserPriceChange, numberDisposalUserPriceChange, namePriceChangeCommitteeUserPriceChange
+
+    OBJECTS d=userPriceChangeDetail
+    PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
+                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+                   curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
+                   curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
+                   curNumberRetailVATUserPriceChangeDetail, curValueRetailVATUserPriceChangeDetail,
+                   numberRetailVATUserPriceChangeDetail, valueRetailVATUserPriceChangeDetail,
+                   curWarePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), warePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   curNumberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), curValueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   numberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), valueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
+
+    PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
+               dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
+
+    PROPERTIES(u) TODRAW d addDetailDialogSkuStockUserPriceChangeDetailUserPriceChange, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
+                           addDetailDialogBarcodeUserPriceChangeDetailUserPriceChange, deleteUserPriceChangeDetailUserPriceChange
+
+    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
+
+    EDIT userPriceChange OBJECT u
+;
+
+DESIGN userPriceChange FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerCol1 {
+                childConstraints = TO THE BOTTOM;
+                ADD u.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameDepartmentStoreUserPriceChange);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserPriceChange);
+                    ADD PROPERTY(timeUserPriceChange);
+                }
+                ADD u.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+
+            ADD u.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(calcRetailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
+        PROPERTY(numberRetailVATUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(valueRetailVATUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(warePriceUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(numberWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(valueWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
+        PROPERTY(retailPriceUserPriceChangeDetail) { background = #FFFFCC; }
+    }
+}
+
+FORM userPriceChanges 'Переоценки товаров'
+
+    OBJECTS u=userPriceChange
+    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
+                   diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
+                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
+
+
+    PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (u)          printPriceChange FORCE PANEL,
+                            ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
+                            postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
+
+    OBJECTS d=userPriceChangeDetail
+    PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
+                            curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
+                            curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
+                            curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
+                            curNumberRetailVATUserPriceChangeDetail, curValueRetailVATUserPriceChangeDetail,
+                            numberRetailVATUserPriceChangeDetail, valueRetailVATUserPriceChangeDetail,
+                            curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
+                            curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
+                            numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
+                            curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail
+
+
+    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
+;
+
+DESIGN userPriceChanges FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD u.box;
+        ADD d.box;
+    }
+
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
+    PROPERTY (delete(u)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    ADD u.printGroup {
+        childConstraints = TO THE BOTTOM;
+    }
+
+    ADD u.historyGroup {
+        childConstraints = TO THE BOTTOM;
+    }
+
+    ADD u.postedGroup {
+        childConstraints = TO THE BOTTOM;
+    }
+
+    POSITION u.historyGroup TO THE LEFT u.postedGroup;
+    POSITION u.postedGroup TO THE LEFT u.printGroup;
+    POSITION u.historyGroup TO THE LEFT u.printGroup;
+
+    ADD functions.box;
+}

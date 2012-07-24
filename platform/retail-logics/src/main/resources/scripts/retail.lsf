@@ -35,6 +35,7 @@ REQUIRE System,
         Label,
         Default,
         CRM,
+        UserPriceChange,
         CashOperation,
         POS;
 
@@ -1994,10 +1995,10 @@ createPriceMachineryPriceTransaction 'Все товары' = ACTION (stock) NEWS
     EXEC createMachineryPriceTransaction(stock AS stock);
 } CONFIRM IN incrementMachineryPriceGroup;
 
-META metaCodeDocumentMachineryPriceTransaction (document, stockProp)
+META metaCodeDocumentMachineryPriceTransaction (document, skuProp, stockProp)
 
     create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
+        SET createMachineryPriceTransactionItem(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
         SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
         EXEC createMachineryPriceTransaction(stockProp###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
@@ -2005,7 +2006,7 @@ META metaCodeDocumentMachineryPriceTransaction (document, stockProp)
 
     createSnapshot###document##MachineryPriceTransaction 'Перегрузить все позиции' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createMachineryPriceTransactionSnapshot() <- TRUE;
-        SET createMachineryPriceTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
+        SET createMachineryPriceTransactionItem(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
         SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
         EXEC createMachineryPriceTransaction(stockProp###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
@@ -3905,54 +3906,11 @@ sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
 
-//----------------------------------------------- Переоценка товара ---------------------------------------------------//
-
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedDocument, priceTransactionDocument, historyObject;
-CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
-CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
-
-@defineDocument(userPriceChange);
-@defineDocumentDepartmentStore(userPriceChange);
-@defineDocumentPosted(userPriceChange);
-
-numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
-seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
-
-@defineDocumentDetailSkuItem(userPriceChange);
-
-@defineDocumentDetailQuantity(userPriceChange);
-@defineDocumentDetailBasePrice(userPriceChange);
-
-@defineDocumentDetailBasePricePrefix(userPriceChange, cur, ' (тек.)');
-@deriveBasePriceLedgerOnSkuChangePrefix(userPriceChange, cur, item);
-
-@defineDocumentHeaderSkuQuantity(userPriceChange, item);
-
-@defineDocumentHeaderPriceChange(userPriceChange);
-
-descriptionUserPriceChange 'Название документа' (userPriceChange) =
-    [FORMULA STRING[200] '\'Акт переоценки \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](
-    seriesNumberObject(userPriceChange), dateUserPriceChange(userPriceChange));
-
-descriptionUserPriceChangeDetail 'Название документа' (userPriceChangeDetail) = descriptionUserPriceChange(userPriceChangeUserPriceChangeDetail(userPriceChangeDetail));
-
-@defineAddDetailDialogSkuStock(userPriceChange, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(userPriceChange, item);
-@defineAddDetailDialogTerminal(userPriceChange, item);
-
-@implementBaseSkuDepartmentStoreLedger(userPriceChange, item);
-
-@implementPriceChangeDocument(userPriceChange, item);
-@implementPriceChangeDocumentDetailAllPrice(userPriceChange);
-
-isDraftPriceTransactionDocument (document) += isDraftUserPriceChange(document);
-descriptionPriceTransactionDocument (document) += descriptionUserPriceChange(document);
-
 //------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
 
 isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
     retailPriceUserPriceChangeDetail(userPriceChangeDetail) < curRetailPriceUserPriceChangeDetail(userPriceChangeDetail)
-    IF banMarkdownItem(itemUserPriceChangeDetail(userPriceChangeDetail)) == TRUE;
+    IF banMarkdownItem(skuUserPriceChangeDetail(userPriceChangeDetail)) == TRUE;
 
 CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Уценка товара запрещена';
 
@@ -5283,17 +5241,17 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
     }
 };
 
-META metaCodeDocumentLabelTransaction (document)
+META metaCodeDocumentLabelTransaction (document, skuProp)
 
     create###document##LabelTransaction 'Печать ценников' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createLabelTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
+        SET createLabelTransactionItem(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
         SET createLabelTransactionDocument() <- document;
         EXEC createLabelTransaction(departmentStore###document(document), date###document(document));
         SET printedPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
 
     createSnapshot###document##LabelTransaction 'Перепечатать ценники' = ACTION (document) NEWSESSION AUTOAPPLY {
-        SET createLabelTransactionItem(item) <- TRUE IF quantity###document##DetailItem###document(item, document);
+        SET createLabelTransactionItem(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
         SET createLabelTransactionDocument() <- document AS priceTransactionDocument;
         SET createLabelTransactionSnapshot() <- TRUE;
         EXEC createLabelTransaction(departmentStore###document(document), date###document(document));
@@ -5304,8 +5262,8 @@ META metaCodeDocumentLabelTransaction (document)
 END
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
-@metaCodeDocumentMachineryPriceTransaction(shipment, departmentStore);
-@metaCodeDocumentLabelTransaction(shipment);
+@metaCodeDocumentMachineryPriceTransaction(shipment, item, departmentStore);
+@metaCodeDocumentLabelTransaction(shipment, item);
 
 toShowPriceImporterShipment 'Есть оптовая надбавка' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;
 
@@ -5492,8 +5450,8 @@ toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM spec
 
 quantityDisparityDetailItemDisparity 'Кол-во для закачки в оборудование (приход)' (item, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputItemDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
 
-@metaCodeDocumentMachineryPriceTransaction(disparity, departmentStore);
-@metaCodeDocumentLabelTransaction(disparity);
+@metaCodeDocumentMachineryPriceTransaction(disparity, item, departmentStore);
+@metaCodeDocumentLabelTransaction(disparity, item);
 
 printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(priceChangeDisparityDisparity(disparity)) IN printGroup;
 printInputPriceChangeDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(inputPriceChangeDisparityDisparity(disparity)) IN printGroup;
@@ -6821,234 +6779,24 @@ DESIGN inventories FROM DEFAULT {
 
 //---------------------------Акты переоценок-------------------------------------//
 
-@metaCodeDocumentMachineryPriceTransaction(userPriceChange, departmentStore);
-@metaCodeDocumentLabelTransaction(userPriceChange);
+@metaCodeDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);
+@metaCodeDocumentLabelTransaction(userPriceChange, sku);
 
-percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
-percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (userPriceChange);
-toShowDiscountUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percMarkupUserPriceChange(userPriceChange);
-toShowMarkupUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percDiscountUserPriceChange(userPriceChange);
+EXTEND FORM userPriceChanges
+    PROPERTIES(u) statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionUserPriceChange(u),
+                  statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionUserPriceChange(u)
 
-newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) =  [roundM1(X-(X*Y)/100)](
-    curRetailPriceUserPriceChangeDetail(userPriceChangeDetail), percDiscountUserPriceChange(userPriceChange));
+    PROPERTIES(u) createUserPriceChangeLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionUserPriceChange(u),
+                  createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
+                  createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
+                  createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u)
 
-newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) = [roundM1(X+(X*Y)/100+(X+(X*Y)/100)*Z/100+F)](
-    curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
-    percMarkupUserPriceChange(userPriceChange),
-    curValueRetailVATUserPriceChangeDetail(userPriceChangeDetail),
-    (UNION OVERRIDE 0.0 IF userPriceChangeDetail IS userPriceChangeDetail, curWarePriceUserPriceChangeDetail(userPriceChangeDetail)));
-
-
-
-FORM addPercMarkupUserPriceChange 'Изменить наценку товара'
-    OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) percMarkupUserPriceChange
 ;
-
-DESIGN addPercMarkupUserPriceChange FROM DEFAULT {
-    PROPERTY (percMarkupUserPriceChange) {
-        caption = 'Введите наценку';
-        font = 'Tahoma bold 64';
-        panelLabelAbove = TRUE;
-    }
-}
-
-dialogAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
-        FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
-                SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET retailVATUserPriceChangeDetail(userPriceChangeDetail) <- curRetailVATUserPriceChangeDetail(userPriceChangeDetail);
-                SET wareUserPriceChangeDetail(userPriceChangeDetail) <- curWareUserPriceChangeDetail(userPriceChangeDetail);
-                SET warePriceUserPriceChangeDetail(userPriceChangeDetail) <- curWarePriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newMarkupRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
-            }
-        }
-} TOOLBAR CONFIRM;
-
-
-FORM addPercDiscountUserPriceChange 'Сделать скидку'
-    OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) percDiscountUserPriceChange
-;
-
-DESIGN addPercDiscountUserPriceChange FROM DEFAULT {
-    PROPERTY (percDiscountUserPriceChange) {
-        caption = 'Введите скидку';
-        font = 'Tahoma bold 64';
-        panelLabelAbove = TRUE;
-    }
-}
-
-dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
-        FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
-                SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET retailVATUserPriceChangeDetail(userPriceChangeDetail) <- curRetailVATUserPriceChangeDetail(userPriceChangeDetail);
-                SET wareUserPriceChangeDetail(userPriceChangeDetail) <- curWareUserPriceChangeDetail(userPriceChangeDetail);
-                SET warePriceUserPriceChangeDetail(userPriceChangeDetail) <- curWarePriceUserPriceChangeDetail(userPriceChangeDetail);
-                SET retailPriceUserPriceChangeDetail(userPriceChangeDetail) <- newDiscountRetailPriceUserPriceChangeDetail(userPriceChange, userPriceChangeDetail);
-            }
-        }
-} TOOLBAR CONFIRM;
-
-// todo: пока что сделал так, что можно выбрать только один экшн на изменение цены.
-//       Для расчета новых показателей цены, необходимо чтобы все поля были не пустые.....
-
-toShowWareUserPriceChange 'Показывать строки с посудой' (userPriceChange) = GROUP SUM 1 IF curWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
-
-FORM userPriceChange 'Переоценка товаров'
-    OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
-                   dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                   diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument,
-                   noteUserPriceChange, numberDisposalUserPriceChange, namePriceChangeCommitteeUserPriceChange
-
-    OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                   curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
-                   curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                   curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
-                   curNumberRetailVATUserPriceChangeDetail, curValueRetailVATUserPriceChangeDetail,
-                   numberRetailVATUserPriceChangeDetail, valueRetailVATUserPriceChangeDetail,
-                   curWarePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), warePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
-                   curNumberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), curValueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
-                   numberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), valueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
-                   curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
-
-    PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
-               dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
-
-    PROPERTIES(u) TODRAW d addDetailDialogSkuStockUserPriceChangeDetailUserPriceChange, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
-                           addDetailDialogBarcodeUserPriceChangeDetailUserPriceChange, deleteUserPriceChangeDetailUserPriceChange
-
-    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
-
-    EDIT userPriceChange OBJECT u
-;
-
-DESIGN userPriceChange FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW header.box BEFORE d.box {
-            childConstraints = TO THE RIGHT;
-
-            NEW headerCol1 {
-                childConstraints = TO THE BOTTOM;
-                ADD u.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameDepartmentStoreUserPriceChange);
-                    ADD PROPERTY(nameNumeratorObject);
-                    ADD PROPERTY(numberObject);
-                    ADD PROPERTY(seriesObject);
-                    ADD PROPERTY(dateUserPriceChange);
-                    ADD PROPERTY(timeUserPriceChange);
-                }
-                ADD u.documentPrmGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-            }
-
-            ADD u.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-
-        PROPERTY(importerPriceUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(supplierPriceUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(calcRetailMarkupPriceChangeDocumentDetail) { background = #FFFFCC; }
-        PROPERTY(numberRetailVATUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(valueRetailVATUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(warePriceUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(numberWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(valueWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
-        PROPERTY(retailPriceUserPriceChangeDetail) { background = #FFFFCC; }
-    }
-}
-
-FORM userPriceChanges 'Переоценки товаров'
-
-    OBJECTS u=userPriceChange
-    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
-                   diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument,
-                   statusPrintPriceTransactionDocument BACKGROUND backgroundPrintLabelTransactionUserPriceChange(u),
-                   statusEquipmentPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransactionUserPriceChange(u)
-
-    PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
-    PROPERTIES (u)          createUserPriceChangeLabelTransaction FORCE PANEL SHOWIF showPrintLabelTransactionUserPriceChange(u),
-                            createSnapshotUserPriceChangeLabelTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
-                            createUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionUserPriceChange(u),
-                            createSnapshotUserPriceChangeMachineryPriceTransaction FORCE PANEL SHOWIF isPostedUserPriceChange(u),
-                            printPriceChange FORCE PANEL,
-                            ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
-                            postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
-
-    OBJECTS d=userPriceChangeDetail
-    PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameAttributeItemUserPriceChangeDetail, quantityUserPriceChangeDetail,
-                            curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
-                            curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
-                            curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
-                            curNumberRetailVATUserPriceChangeDetail, curValueRetailVATUserPriceChangeDetail,
-                            numberRetailVATUserPriceChangeDetail, valueRetailVATUserPriceChangeDetail,
-                            curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
-                            curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
-                            numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
-                            curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail
-
-
-    FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
-;
-
-DESIGN userPriceChanges FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD u.box;
-        ADD d.box;
-    }
-
-    PROPERTY(objectClassName) {
-        preferredCharWidth = 15;
-    }
-    PROPERTY (delete(u)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-
-    ADD u.printGroup {
-        childConstraints = TO THE BOTTOM;
-    }
-
-    ADD u.historyGroup {
-        childConstraints = TO THE BOTTOM;
-    }
-
-    ADD u.postedGroup {
-        childConstraints = TO THE BOTTOM;
-    }
-
-    POSITION u.historyGroup TO THE LEFT u.postedGroup;
-    POSITION u.postedGroup TO THE LEFT u.printGroup;
-    POSITION u.historyGroup TO THE LEFT u.printGroup;
-
-    ADD functions.box;
-}
-
 
 //---------------- Формы внутреннего перемещения (приход и расход)-------------------------------------//
 
-@metaCodeDocumentMachineryPriceTransaction(innerArrival, departmentStore);
-@metaCodeDocumentLabelTransaction(innerArrival);
+@metaCodeDocumentMachineryPriceTransaction(innerArrival, item, departmentStore);
+@metaCodeDocumentLabelTransaction(innerArrival, item);
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
@@ -7851,8 +7599,8 @@ DESIGN statements FROM DEFAULT {
 }
 
 //----------------------------------- Акты проработки -------------------------------------------------//
-@metaCodeDocumentMachineryPriceTransaction(actOfStudy, departmentStore);
-@metaCodeDocumentLabelTransaction(actOfStudy);
+@metaCodeDocumentMachineryPriceTransaction(actOfStudy, item, departmentStore);
+@metaCodeDocumentLabelTransaction(actOfStudy, item);
 
 FORM actOfStudy 'Акт проработки'
 

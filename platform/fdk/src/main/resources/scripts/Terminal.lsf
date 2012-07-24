@@ -51,8 +51,8 @@ nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов докуме
 // ------------------------------------- Виды справочников ТСД --------------------------------- //
 
 CLASS STATIC terminalHandbookType 'Вид справочника ТСД' {
-    supplier 'Поставщик',
-    customer 'Покупатель'
+    terminalHandbookTypeSupplier 'Поставщик',
+    terminalHandbookTypeCustomer 'Покупатель'
 };
 
 idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
@@ -349,8 +349,8 @@ fillTerminalDefaultValues 'Заполнить значения ТСД по ум�
 }
 
 fillDocumentTypeDefaultValues 'Заполнить типы документов ТСД по умолчанию' = ACTION () {
-    EXEC addTerminalHandbookType(terminalHandbookType.supplier, '01');
-    EXEC addTerminalHandbookType(terminalHandbookType.customer, '02');
+    EXEC addTerminalHandbookType(terminalHandbookType.terminalHandbookTypeSupplier, '01');
+    EXEC addTerminalHandbookType(terminalHandbookType.terminalHandbookTypeCustomer, '02');
 
     ADDOBJ groupTerminalDocumentType;
     FOR gtdt == addedObject() DO {

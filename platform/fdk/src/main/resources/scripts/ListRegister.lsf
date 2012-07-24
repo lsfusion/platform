@@ -231,6 +231,46 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
 printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup;
 printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup;
 
+
+FORM inputListRegisters 'Реестр цен (приход)'
+    OBJECTS l=inputListRegister
+    PROPERTIES (l)  READONLY numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+                    shipperListRegister, consigneeListRegister,
+                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
+                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
+    PROPERTIES (l)  printInputListRegister FORCE PANEL
+
+
+    OBJECTS d=inputListRegisterDetail
+    PROPERTIES (d)  READONLY indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
+                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
+                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
+                    retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
+
+    FILTERS listRegisterListRegisterDetail(d) == l
+;
+
+DESIGN inputListRegisters FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD l.box {
+            PROPERTY (printInputListRegister) {
+                panelLocation = TOOLBAR;
+            }
+        };
+        ADD d.box;
+    }
+
+    ADD functions.box;
+}
+
+
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 GROUP committeeGroup 'Комиссия' : publicGroup;
 
