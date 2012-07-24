@@ -151,6 +151,7 @@ CLASS transferPriceActTransfer 'Акт расценки' : transferPriceAct;
 CLASS transferPriceActTransferDetail 'Строка акта расценки': transferPriceActDetail;
 
 prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
+prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS batch;
 prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
-@defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevRangeVATBatch);
+@defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);

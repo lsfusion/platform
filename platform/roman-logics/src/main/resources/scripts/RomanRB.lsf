@@ -19,6 +19,7 @@ REQUIRE System,
         RetailPrice,
         CRM,
         POS,
+        InnerOrder,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -137,6 +138,9 @@ NAVIGATOR {
         logisticsClassifier {
             ADD warehouses;
         }
+        NEW transfers 'Трансферы' {
+            ADD innerOrders;
+        }
 
         NEW logisticsIncome 'Приходы' {
             ADD WHfromCSIs;
@@ -161,14 +165,6 @@ NAVIGATOR {
 
     retailClassifier {
         ADD stores;
-        ADD groupsCashRegister;
-    }
-
-    retail {
-        NEW POSSales 'Розничные продажи' {
-            ADD receipts;
-            ADD operationCashRegister;
-        }
     }
 
     CRM {

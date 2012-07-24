@@ -12,7 +12,7 @@ REQUIRE System,
 CLASS transferPriceAct 'Акт расценки' : inputListRegister, historyObject;
 CLASS transferPriceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
 
-META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, stockProp, importerPriceProp, VATProp)
+META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, stockProp, importerPriceProp, supplierPriceProp, VATProp)
 
     isStoreDestinationStock###object##Out 'Перемещение на магазин' (object##Out) = destinationStock###object##Out(object##Out) IS departmentStore;
 
@@ -58,16 +58,21 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     importerPriceTransferPriceAct###object##Detail 'Цена импортера' (transferPriceAct###object##Detail) = DATA NUMERIC[14,2] (transferPriceAct###object##Detail);
     importerPriceTransferPriceAct###object##Detail (detail) <- importerPriceProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
 
-    rangeRetailVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA range (transferPriceAct###object##Detail);
-    rangeRetailVATTransferPriceAct###object##Detail (detail) <- VATProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
+    supplierPriceTransferPriceAct###object##Detail 'Цена поставщика' (transferPriceAct###object##Detail) = DATA NUMERIC[14,2] (transferPriceAct###object##Detail);
+    supplierPriceTransferPriceAct###object##Detail (detail) <- supplierPriceProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
 
-    numberRetailVATTransferPriceAct###object##Detail 'НДС, номер' (transferPriceAct###object##Detail) = numberRange(rangeRetailVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
+    retailVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA range (transferPriceAct###object##Detail);
+    retailVATTransferPriceAct###object##Detail (detail) <- VATProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
+
+    numberRetailVATTransferPriceAct###object##Detail 'НДС, номер' (transferPriceAct###object##Detail) = numberRange(retailVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
     valueRetailVATTransferPriceAct###object##Detail 'НДС,%' (transferPriceAct###object##Detail) = valueRateRangeDate
-        (rangeRetailVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail), dateTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
+        (retailVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail), dateTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
 
     retailPriceTransferPriceAct###object##Detail 'Цена розничная' (transferPriceAct###object##Detail) = retailPrice###object##OutDetail(object##OutDetailTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
 
     printInputListRegister###object##In 'Реестр цен' (object##In) = printInputListRegister(transferPriceAct###object###object##Out(object##Out###object##In(object##In))) TOOLBAR;
+
+    @implementBaseISkuDepartmentStoreLedger(transferPriceAct###object, skuProp);
 
     // Расчет сумм и показателей для реестра цен
     importerSumTransferPriceAct###object##Detail (transferPriceAct###object##Detail) =

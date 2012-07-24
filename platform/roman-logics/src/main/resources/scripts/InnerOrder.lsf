@@ -1,0 +1,273 @@
+MODULE InnerOrder;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        DocumentTransfer,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// ---------------------------------------- Внутренний заказ ------------------------------------ //
+CLASS innerOrder 'Внутренний заказ': historyObject, numberedObject;
+CLASS innerOrderDetail 'Строка внутреннего заказа';
+
+@defineDocument(innerOrder);
+
+@defineDocumentStock(innerOrder, stock, 'Склад-отправитель');
+@defineDocumentStockPrefix(innerOrder, stock, 'Склад-получатель', destination);
+
+@defineDocumentDescription (innerOrder, 'Внутренний заказ');
+
+@defineDocumentDetailNumbered(innerOrder);
+
+@defineDocumentDetailSku(innerOrder, sku);
+
+@defineDocumentDetailQuantity(innerOrder);
+
+@defineDocumentDetailPackWeightSku(innerOrder);
+
+@defineDocumentDetailSkuBalance(innerOrder, sku, stock);
+
+@defineDocumentHeaderQuantity(innerOrder);
+@defineDocumentHeaderSkuQuantity(innerOrder, sku);
+
+@defineDocumentDetailSkuArticle(innerOrder);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(innerOrder, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(innerOrder, sku);
+
+FORM innerOrder 'Внутренний заказ'
+    OBJECTS o = innerOrder FIXED PANEL
+
+    PROPERTIES (o) numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+        nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
+        countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
+
+    OBJECTS d = innerOrderDetail
+
+    PROPERTIES(o) TODRAW d addDetailDialogSkuStockInnerOrderDetailInnerOrder, addDetailDialogBarcodeInnerOrderDetailInnerOrder,
+                           deleteInnerOrderDetailInnerOrder
+
+    FILTERS innerOrderInnerOrderDetail(d) == o
+
+    EDIT innerOrder OBJECT o
+;
+
+DESIGN innerOrder FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+            o.box {
+                childConstraints = TO THE RIGHT;
+                    NEW columnHeaderPrm {
+                    childConstraints = TO THE BOTTOM;
+                    ADD o.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (nameStockInnerOrder);
+                        ADD PROPERTY (nameDestinationStockInnerOrder);
+                        ADD PROPERTY (numberObject);
+                        ADD PROPERTY (seriesObject);
+                        ADD PROPERTY (dateInnerOrder);
+                        ADD PROPERTY (timeInnerOrder);
+                    }
+                    ADD o.documentPrmGroup;
+                }
+                NEW columnHeaderSum {
+                    ADD o.documentSumGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+            }
+        }
+    }
+}
+
+FORM innerOrders 'Внутренние заказы'
+    OBJECTS o = innerOrder
+    PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+                            nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
+                            countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
+
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL
+
+    OBJECTS d = innerOrderDetail
+
+    FILTERS innerOrderInnerOrderDetail(d) == o
+;
+
+DESIGN innerOrders FROM DEFAULT {
+    PROPERTY (delete(o)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD o.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD o.historyGroup;
+                ADD o.postedGroup;
+            }
+        }
+    }
+}
+
+@extendDocumentFormDetailSkuArticle(innerOrder, d, innerOrder);
+@extendDocumentFormDetailSkuArticleReadonly(innerOrders, d, innerOrder);
+
+// ---------------------------------------- Подбор товара ------------------------------------ //
+CLASS orderPicking 'Подбор товара по заказу': historyObject, numberedObject;
+CLASS orderPickingPosted 'Проведенный подбор товара по заказу': orderPicking, postedObject;
+
+CLASS orderPickingDetail 'Строка подбора товара по заказу';
+
+innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) IN idGroup;
+orderPickingInnerOrder 'Подбор заказа (ИД)' (innerOrder) = GROUP UNIQUE  orderPicking BY innerOrderOrderPicking(orderPicking);
+
+inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(orderPicking) == innerOrder;
+
+CONSTRAINT innerOrderOrderPicking(p1) == innerOrderOrderPicking(p2) AND p1 != p2 CHECKED BY innerOrderOrderPicking
+    MESSAGE 'Заказ задествован в другом подборе';
+
+@defineDocument(orderPicking);
+@defineDocumentPosted(orderPicking);
+
+@defineDocumentAggregationHeaderStockPrefix(innerOrder, orderPicking, stock, 'Склад-получатель', , destination);
+@defineDocumentAggregationHeaderStockPrefix(innerOrder, orderPicking, stock, 'Склад-отправитель', destination, );
+
+@defineDocumentAggregationHeaderNumber(innerOrder, orderPicking);
+
+@defineDocumentDescriptionCustom(orderPicking, orderPickingDetail, seriesNumberObject, 'Подбор товара по заказу');
+
+@defineDocumentDetailSku(orderPicking, sku);
+
+@defineDocumentDetailQuantity(orderPicking);
+
+@defineDocumentDetailSkuArticle(orderPicking);
+
+@defineDocumentHeaderQuantity(orderPicking);
+@defineDocumentHeaderSkuQuantity(orderPicking, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(orderPicking, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(orderPicking, sku);
+
+postOrderPickingInnerOrder 'Закрыть подборку' (innerOrder) = postOrderPicking(orderPickingInnerOrder(innerOrder)) TOOLBAR;
+isDraftOrderPickingInnerOrder (innerOrder) = isDraftOrderPicking(orderPickingInnerOrder(innerOrder));
+
+quantityOrderPickingInnerOrderSku 'Количество подобрано' (sku, innerOrder) =
+    quantityOrderPickingDetailSkuOrderPicking (sku, orderPickingInnerOrder(innerOrder));
+
+quantityOrderPickingInnerOrderDetail 'Количество подобрано' (innerOrderDetail) =
+    quantityOrderPickingInnerOrderSku(skuInnerOrderDetail(innerOrderDetail), innerOrderInnerOrderDetail(innerOrderDetail));
+
+FORM orderPicking 'Подбор товара'
+    OBJECTS p = orderPicking FIXED PANEL
+
+    PROPERTIES (p) numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
+        countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking
+
+    OBJECTS od = innerOrderDetail
+    PROPERTIES (od) quantityOrderPickingInnerOrderDetail
+    FILTERS innerOrderInnerOrderDetail (od) == innerOrderOrderPicking (p)
+    FILTERGROUP filters1
+        FILTER 'Неподобранные товары' 'F10' (quantityOrderPickingInnerOrderDetail(od) (-) quantityInnerOrderDetail(od)) < 0 DEFAULT
+
+    OBJECTS d = orderPickingDetail
+
+    PROPERTIES(p) TODRAW d addDetailDialogSkuStockOrderPickingDetailOrderPicking, addDetailDialogBarcodeOrderPickingDetailOrderPicking,
+                           deleteOrderPickingDetailOrderPicking
+
+    FILTERS orderPickingOrderPickingDetail(d) == p
+
+    EDIT orderPicking OBJECT p
+;
+
+@extendDocumentFormDetailSkuArticleReadonly(orderPicking, od, innerOrder);
+@extendDocumentFormDetailSkuArticle(orderPicking, d, orderPicking);
+
+DESIGN orderPicking FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+            p.box {
+                childConstraints = TO THE RIGHT;
+                    NEW columnHeaderPrm {
+                    childConstraints = TO THE BOTTOM;
+                    ADD p.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (nameStockOrderPicking);
+                        ADD PROPERTY (nameDestinationStockOrderPicking);
+                        ADD PROPERTY (numberObject);
+                        ADD PROPERTY (seriesObject);
+                        ADD PROPERTY (dateOrderPicking);
+                        ADD PROPERTY (timeOrderPicking);
+                    }
+                    ADD p.documentPrmGroup;
+                }
+                NEW columnHeaderSum {
+                    ADD p.documentSumGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+            }
+        }
+        NEW details.box BEFORE functions.box {
+            type = SPLITH;
+            ADD od.box;
+            ADD d.box;
+            POSITION od.box TO THE LEFT d.box;
+        }
+    }
+}
+
+pickUpInnerOrder 'Подобрать' (innerOrder) = ACTION (innerOrder) NEWSESSION {
+    IF orderPickingInnerOrder(innerOrder) IS orderPicking THEN {
+        FOR p == orderPickingInnerOrder(innerOrder) DO {
+            IF p IS orderPickingPosted THEN {
+                CHANGECLASS p TO orderPicking;
+            }
+            FORM orderPicking OBJECTS p = p MODAL;
+        }
+    } ELSE {
+        ADDOBJ orderPicking;
+        FOR p == addedObject() DO {
+            SET innerOrderOrderPicking (p) <- innerOrder AS innerOrder;
+            FORM orderPicking OBJECTS p = p MODAL;
+        }
+    }
+    IF formResult() == formResult.ok THEN EXEC apply();
+} TOOLBAR;
+
+EXTEND FORM innerOrders
+    OBJECTS pd=orderPickingDetail
+
+    PROPERTIES(o) pickUpInnerOrder, postOrderPickingInnerOrder SHOWIF isDraftOrderPickingInnerOrder(o)
+
+    FILTERS orderPickingOrderPickingDetail (pd) == orderPickingInnerOrder(o)
+;
+
+@extendDocumentFormDetailSkuArticleReadonly(innerOrders, pd, orderPicking);
+
+EXTEND DESIGN innerOrders {
+    documentDetail {
+        ADD pd.box {
+            title = 'Подборка';
+        }
+    }
+}
+
