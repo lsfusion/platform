@@ -27,6 +27,15 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
 
+warehouseFreight 'Склад фрахта (ИД)' = DATA warehouse(freight) IN idGroup;
+nameWarehouseFreight 'Склад фрахта' = name(warehouseFreight(freight)) IN baseGroup;
+
+EXTEND FORM freightListForm
+    PROPERTIES nameWarehouseFreight(freight)
+;
+
+
+
 EXTEND FORM stores
 
     PROPERTIES(s) READONLY sidDestination FORCE GRID

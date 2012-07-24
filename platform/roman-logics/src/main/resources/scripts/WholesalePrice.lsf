@@ -130,11 +130,6 @@ toCreateWholesalePriceDocument 'Прайс по декларации' =  ACTION 
     };
 } TOOLBAR CONFIRM;
 
-EXTEND FORM declarations
-     //PROPERTIES(d) sidDeclaration BACKGROUND isPriceSetDocumentDeclaration(d)
-     PROPERTIES(d) toCreateWholesalePriceDocument SHOWIF isPriceSetDocumentDeclaration(d)
-;
-
 FORM priceDeclaration 'Расценка деклараций'
     OBJECTS d=declaration
     PROPERTIES(d) READONLY sidDeclaration BACKGROUND isPriceSetDocumentDeclaration(d), objectClassName,

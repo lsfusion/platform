@@ -1955,6 +1955,8 @@ public class RomanLogicsModule extends LogicsModule {
         categoryArticle = addDProp(idGroup, "categoryArticle", "Номенклатурная группа товара (ИД)", category, article);
         nameOriginCategoryArticle = addJProp(intraAttributeGroup, "nameOriginCategoryArticle", "Номенклатурная группа товара (ориг.)", nameOrigin, categoryArticle, 1);
         nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", baseLM.name, categoryArticle, 1);
+        nameCategoryArticle.property.preferredCharWidth = 30;
+        nameCategoryArticle.property.minimumCharWidth = 15;
         categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", true, "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
         nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Номенклатурная группа товара", baseLM.name, categoryArticleSku, 1);
         nameCategoryArticleSku.property.preferredCharWidth = 50;
@@ -7841,7 +7843,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
+            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameCustomStoreFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setEditType(objFreight, PropertyEditType.READONLY);
             setEditType(formLogFreight, PropertyEditType.EDITABLE);
