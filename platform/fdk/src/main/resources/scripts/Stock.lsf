@@ -694,9 +694,8 @@ DESIGN currentBalanceSkuStock FROM DEFAULT {
 
 FORM stockDialog 'Склад'
 
-    TREE stockTree  a=STRING[3], sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
-    FILTERS stringEqualsAll(a)
+    TREE stockTree  sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
 
     OBJECTS ts = stock
     PROPERTIES READONLY tsTreeName = name(ts)
