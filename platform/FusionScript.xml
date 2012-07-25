@@ -38,7 +38,6 @@
       <keyword name="BOTTOM" />
       <keyword name="BREAK" />
       <keyword name="BY" />
-      <keyword name="CAPTION" />
       <keyword name="CASCADE" />
       <keyword name="CASE" />
       <keyword name="CC" />
@@ -154,6 +153,7 @@
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
+      <keyword name="ON" />
       <keyword name="OPENFILE" />
       <keyword name="OR" />
       <keyword name="ORDER" />
@@ -247,3 +247,4 @@
     <mapping ext="lsf" />
   </extensionMap>
 </filetype>
+

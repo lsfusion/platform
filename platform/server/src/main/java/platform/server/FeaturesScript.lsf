@@ -361,6 +361,13 @@ constraintAction (store, article) = ACTION (store, article) {
 
 WHEN foo(store,article)>10000 DO EXEC constraintAction(store, article) ORDER name(article) SESSION;
 
+/////////////GLOBAL EVENT STATEMENT//////////////
+// Syntax:
+// ON (APPLY | SESSION) action;
+
+globalInt() = DATA INTEGER ();
+ON SESSION SET globalInt() <- globalInt() (+) 1;
+
 ///////////////////ASPECT STATEMENT//////////////
 // Syntax:
 // BEFORE | AFTER propertyName(param1, ..., paramN) DO action;
@@ -399,6 +406,7 @@ PROPERTIES store(document), name(article), storeName(document), documentTypeStri
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
 PROPERTIES ADDOBJ(document), ADDOBJ(article)
+PROPERTIES globalInt()
 
 // Filters list syntax:
 // FILTERS propertyExpression1, ..., propertyExpressionK

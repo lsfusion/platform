@@ -192,6 +192,7 @@ statement
 		|	followsStatement
 		|	writeWhenStatement
 		|	eventStatement
+		|	globalEventStatement
 		|	aspectStatement
 		|	tableStatement
 		|	loggableStatement
@@ -1866,6 +1867,24 @@ eventStatement
 		)?
 		st=sessionType
 		';'
+	;
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// GLOBAL EVENT STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+globalEventStatement
+@init {
+	boolean onApply = true;
+}
+@after {
+	if (inPropParseState()) {
+		self.addScriptedGlobalEvent($action.property, !onApply);
+	}
+}
+	:	'ON' 
+		('APPLY' | 'SESSION' { onApply = false; })
+		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
 	;
 
 

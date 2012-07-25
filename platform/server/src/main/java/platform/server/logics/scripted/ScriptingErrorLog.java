@@ -396,6 +396,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("priority list contains namespace '%s' more than once", namespaceName));
     }
 
+    public void emitEventNoParametersError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "event should have no parameters");
+    }
+
     public void emitAmbiguousNameError(LsfLogicsParser parser, List<LogicsModule> modules, String name) throws SemanticErrorException {
         String msg = String.format("ambiguous name '%s', list of modules:", name);
         for (int i = 0; i < modules.size(); i++) {

@@ -1423,7 +1423,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + session + ");");
         checkActionProperty(event.property);
         List<Object> params = getParamsPlainList(asList(whenProp), orders);
-        ((LAP<?>)event.property).setEventAction(this, session, descending, false, params.toArray());
+        ((LAP)event.property).setEventAction(this, session, descending, false, params.toArray());
+    }
+
+    public void addScriptedGlobalEvent(LPWithParams event, boolean session) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + session + ");");
+        checkActionProperty(event.property);
+        checkEventNoParameters(event.property);
+        addBaseEvent((ActionProperty)event.property.property, session, false);
     }
 
     public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
@@ -2026,6 +2033,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkAbstractProperty(LP property, String propName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property.property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property.property).isAbstract())) {
             errLog.emitNotAbstractPropertyError(parser, propName);
+        }
+    }
+
+    public void checkEventNoParameters(LP property) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.property.interfaces.size() > 0) {
+            errLog.emitEventNoParametersError(parser);
         }
     }
 
