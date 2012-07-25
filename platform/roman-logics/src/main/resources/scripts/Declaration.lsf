@@ -339,15 +339,19 @@ correctionPriceDeclarationDetail 'Скорректированная цена' (
 supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = UNION OVERRIDE declarationSumRateDeclarationDetail(declarationDetail),
                                                                               correctionSumDeclarationDetail(declarationDetail) IN baseGroup;
 
-supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail) IN baseGroup;
+supplierPriceDeclarationDetail 'Цена' (declarationDetail) = round0(supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail)) IN baseGroup;
 
 // пошлины
+dutyPercentDeclarationDetail 'Пошлина (%)' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty());
+
 dutyDeclarationDetail 'Пошлина (расч.)' (declarationDetail) = UNION MAX
                       rateExchangeDeclarationDetail(declarationDetail) * sumNetWeightDeclarationDetail(declarationDetail) * dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty()),
-                      declarationSumRateDeclarationDetail(declarationDetail) * (dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty())/100) PERSISTENT;
+                      declarationSumRateDeclarationDetail(declarationDetail) * (dutyPercentDeclarationDetail(declarationDetail)/100) PERSISTENT;
 
 dutyDataDeclarationDetail 'Пошлина товара' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
 dutyDataDeclarationDetail (declarationDetail) <- dutyDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);   //dateDeclarationDetail(declarationDetail);
+
+dutyUnionDeclarationDetail 'Пошлина товара' (declarationDetail) = UNION OVERRIDE dutyDeclarationDetail(declarationDetail), dutyDataDeclarationDetail(declarationDetail);
 
 dutyDeclaration 'Сумма пошлин' (declaration) = GROUP SUM dutyDataDeclarationDetail(declarationDetail)
                                                       BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
@@ -362,7 +366,7 @@ dataValueSupplierVATCustomCategory10Date 'НДС поставщика, %' (custo
 valueCurrentRateSupplierVATCustomCategory10 'НДС поставщика, %' (customCategory10) = valueCurrentRateRange(supplierVATCustomCategory10(customCategory10));
 
 supplierVATRangeDeclarationDetail 'НДС' = DATA range(declarationDetail) IN baseGroup;
-supplierVATRangeDeclarationDetail(declarationDetail) <- supplierVATCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) WHEN CHANGED (dateRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)));
+supplierVATRangeDeclarationDetail(declarationDetail) <- supplierVATCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 @implementBatch(declaration, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
@@ -386,6 +390,8 @@ EXTEND FORM customCategoryForm
 ;
 
 
+numberRangeSupplierVATDeclarationDetail 'НДС' (declarationDetail) = numberRangeSupplierVATCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) IN baseGroup;
+
 sumDutyDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = UNION SUM declarationSumRateDeclarationDetail(declarationDetail),
                                                                                 dutyDataDeclarationDetail(declarationDetail);
 
@@ -401,6 +407,8 @@ VATDeclarationDetail 'НДС товара (расч.)' (declarationDetail) = rou
 
 VATDataDeclarationDetail 'НДС товара' = DATA NUMERIC[14,2](declarationDetail) IN baseGroup;
 VATDataDeclarationDetail (declarationDetail) <- VATDeclarationDetail(declarationDetail) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
+
+VATUnionDeclarationDetail 'НДС товара' (declarationDetail) = UNION OVERRIDE VATDeclarationDetail(declarationDetail), VATDataDeclarationDetail(declarationDetail);
 
 VATDeclaration 'Сумма НДС' (declaration) = GROUP SUM VATDeclarationDetail(declarationDetail)
                                                   BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
@@ -457,8 +465,15 @@ sumDeclarationDetail 'Стоимость' (declarationDetail) = supplierPriceDec
 
 sumDeclaration 'Сумма' (declaration) = GROUP SUM sumDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
-registrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = round0((sumDeclarationDetail(declarationDetail) * rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)))/
-                                                                            (quantityDeclarationDetail(declarationDetail) * sumDeclaration(declarationDeclarationDetail(declarationDetail)))) PERSISTENT;
+
+coeffDeclarationDetailDeclaration 'Удельный вес' (declarationDetail) = sumDeclarationDetail(declarationDetail)/sumDeclaration(declarationDeclarationDetail(declarationDetail));
+
+registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)) *
+                                                                         coeffDeclarationDetailDeclaration(declarationDetail);
+
+registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarationDetail) = round0(registrationSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail)) PERSISTENT;
+
+registrationRateDeclarationDetail 'Таможенный сбор (в валюте)' (declarationDetail) = round2(registrationDeclarationDetail(declarationDetail)/rateExchangeDeclarationDetail(declarationDetail));
 
 // учёт расходов на сертификацию
 expenseCertificateDeclaration 'Расходы на сертификацию (БУ)' (declaration) = GROUP SUM priceRateDeclarationDetail(declarationDetail) *
@@ -472,18 +487,21 @@ expenseCertificateManagerialDeclaration 'Расходы на сертифика�
                                                                                               BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
 
 
-dutyFinDeclarationDetail 'Пошлина' = (UNION OVERRIDE dutyDataDeclarationDetail(declarationDetail), correctionDutyDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail);
-VATFinDeclarationDetail 'НДС' = (UNION OVERRIDE VATDataDeclarationDetail(declarationDetail), correctionVATDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail);
+dutyFinDeclarationDetail 'Пошлина' = round0((UNION OVERRIDE dutyDataDeclarationDetail(declarationDetail), correctionDutyDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail));
+VATFinDeclarationDetail 'НДС' = round0((UNION OVERRIDE VATDataDeclarationDetail(declarationDetail), correctionVATDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail));
+
+dutyRateDeclarationDetail 'Пошлина (в валюте)' (declarationDetail) = round2(dutyFinDeclarationDetail(declarationDetail)/rateExchangeDeclarationDetail(declarationDetail));
+VATRateDeclarationDetail 'НДС (в валюте)' (declarationDetail) = round2(VATFinDeclarationDetail(declarationDetail)/rateExchangeDeclarationDetail(declarationDetail));
 
 priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDetail) = UNION SUM priceRateDeclarationDetail(declarationDetail),
                                                                                   dutyFinDeclarationDetail(declarationDetail),
                                                                                   VATFinDeclarationDetail(declarationDetail),
                                                                                   registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
-priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) = UNION SUM priceManagerialRateDeclarationDetail(declarationDetail),
-                                                                                            dutyFinDeclarationDetail(declarationDetail),
-                                                                                            VATFinDeclarationDetail(declarationDetail),
-                                                                                            registrationDeclarationDetail(declarationDetail) PERSISTENT;
+priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) = UNION SUM priceManagerialDeclarationDetail(declarationDetail),
+                                                                                            dutyRateDeclarationDetail(declarationDetail),
+                                                                                            VATRateDeclarationDetail(declarationDetail),
+                                                                                            registrationRateDeclarationDetail(declarationDetail) PERSISTENT;
 
 
 priceCustomBatch (batch) += priceCustomDeclarationDetail(batch);
@@ -666,17 +684,17 @@ FORM declaration 'Декларация'
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameCategoryDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail,
-                    sidCustomCategory10DeclarationDetail, netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
+    PROPERTIES (dd) sidCustomCategory10DeclarationDetail
+    PROPERTIES (dd) netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
-                    declarationPriceDeclarationDetail, supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
-                    dutyDeclarationDetail, dutyDataDeclarationDetail, VATDeclarationDetail, VATDataDeclarationDetail
+                    declarationPriceDeclarationDetail, supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail, dutyPercentDeclarationDetail,
+                    dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail, VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
     PROPERTIES (c, dd) sumCorrectionDeclarationDetail
 
-    PROPERTIES (dd) correctionPriceDeclarationDetail, correctionDutyDeclarationDetail, correctionDutyDataDeclarationDetail,
-                    diffDutyDeclarationDetail, registrationDeclarationDetail, priceCustomDeclarationDetail,
+    PROPERTIES (dd) diffDutyDeclarationDetail, diffVATDeclarationDetail, priceCustomDeclarationDetail,
                     priceManagerialCustomDeclarationDetail, ADDOBJ, delete
 
     PROPERTIES (dd) certificatedDeclarationDetail,
@@ -830,9 +848,9 @@ FORM declarations 'Декларации'
                             nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, shortNameUOMDeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                             quantityDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail, supplierPriceDeclarationDetail,
-                            dutyDeclarationDetail, dutyDataDeclarationDetail, VATDeclarationDetail, VATDataDeclarationDetail,
-                            correctionPriceDeclarationDetail, correctionDutyDeclarationDetail,
-                            correctionDutyDataDeclarationDetail, diffDutyDeclarationDetail, registrationDeclarationDetail,
+                            dutyPercentDeclarationDetail, dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail,
+                            VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail,
+                            correctionPriceDeclarationDetail, diffDutyDeclarationDetail, diffVATDeclarationDetail,
                             priceCustomDeclarationDetail, priceManagerialCustomDeclarationDetail
 
     PROPERTIES(dd) READONLY certificatedDeclarationDetail,
