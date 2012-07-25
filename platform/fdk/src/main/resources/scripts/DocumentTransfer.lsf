@@ -175,7 +175,7 @@ META defineDocumentFormTransferOutConsignment(object, prefix)
             ADD prefix.printGroup {
                 childConstraints = TO THE BOTTOM;
                 NEW case55{
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE BOTTOM;
 
                     NEW contOne {
                         title = 'Накладная';

@@ -7,15 +7,16 @@ REQUIRE System,
         RomanStock,
         DocumentTransfer,
         Sale,
+        Consignment,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Возврат ------------------------------------ //
 
-CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject;
+CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject, consignment;
 CLASS returnOutPosted 'Проведенный возврат товаров по накладным' : returnOut, postedObject;
-CLASS returnOutDetail 'Строка возврата товаров по накладным' : outFIFOSkuLedger;
+CLASS returnOutDetail 'Строка возврата товаров по накладным' : outFIFOSkuLedger, consignmentDetail;
 
 @defineDocumentTransferOut(return, 'Возврат товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(return, 'Возврат товаров по накладным');
@@ -71,6 +72,44 @@ useRetailPriceReturnOutDetail(detail) = stockReturnOutDetail(detail) IS departme
 quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
 sumOutSkuLedger(ledger) += accountSumReturnOutDetail(ledger);
+
+// Товарные накладные
+//@defineDocumentDetailPackWeightSku(returnOutBatch);
+
+@defineConsignment(returnOut);
+@implementConsignmentHeader(returnOut, stock);
+
+senderConsignment (consignment) += companyStock(stockReturnOut(consignment));
+recipientConsignment (consignment) += companyStock(destinationStockReturnOut(consignment));
+
+consignmentConsignmentDetail (consignmentDetail) += returnOutReturnOutDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuReturnOutDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityReturnOutDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += supplierPriceBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail));
+
+supplierSumReturnOutDetail (returnOutDetail) = supplierPriceBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail))*
+    quantityReturnOutDetail (returnOutDetail);
+
+sumConsignmentDetail (consignmentDetail) += supplierSumReturnOutDetail(consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail));
+
+sumVATReturnOutDetail (returnOutDetail) =  [round0(X*Y/100)](supplierSumReturnOutDetail(returnOutDetail),
+    valueSupplierVATBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail)));
+
+sumVATConsignmentDetail (consignmentDetail) +=  sumVATReturnOutDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += supplierSumReturnOutDetail(consignmentDetail) (+) sumVATReturnOutDetail(consignmentDetail);
+
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightReturnOutDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityReturnOutDetail (consignmentDetail);
+
+noteReturnOutDetail (returnOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
+    importerPriceBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail)));
+noteConsignmentDetail (consignmentDetail) += noteReturnOutDetail(consignmentDetail);
+
+@defineDocumentFormTransferOutConsignment(return, t);
+// todo: заполнить необходимыми данными
 
 // ---------------------------------------- Поступление ------------------------------------ //
 

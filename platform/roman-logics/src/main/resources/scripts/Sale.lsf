@@ -89,7 +89,7 @@ supplierSumSaleOutBatchDetail (saleOutBatchDetail) = supplierPriceBatchA(batchSa
 
 sumConsignmentDetail (consignmentDetail) += supplierSumSaleOutBatchDetail(consignmentDetail);
 
-vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchSaleOutBatchDetail(saleOutDetailSaleOutBatchDetail(consignmentDetail)));
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchSaleOutBatchDetail(consignmentDetail));
 
 sumVATSaleOutBatchDetail (saleOutBatchDetail) =  [round0(X*Y/100)](supplierSumSaleOutBatchDetail(saleOutBatchDetail),
     valueSupplierVATBatchA(batchSaleOutBatchDetail(saleOutBatchDetail)));
@@ -100,6 +100,12 @@ sumInvoiceConsignmentDetail (consignmentDetail) += supplierSumSaleOutBatchDetail
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);
+
+noteSaleOutBatchDetail (saleOutBatchDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
+    importerPriceBatchA(batchSaleOutBatchDetail(saleOutBatchDetail)));
+
+noteConsignmentDetail (consignmentDetail) += noteSaleOutBatchDetail(consignmentDetail) IF
+    supplierPriceBatchA(batchSaleOutBatchDetail(consignmentDetail)) != importerPriceBatchA(batchSaleOutBatchDetail(consignmentDetail));
 
 @defineDocumentFormTransferOutConsignment(sale, t);
 // todo: заполнить необходимыми данными
