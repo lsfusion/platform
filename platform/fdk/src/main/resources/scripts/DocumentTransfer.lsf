@@ -159,6 +159,48 @@ META defineDocumentFormTransferOutBatch(object)
 
 END
 
+
+META defineDocumentFormTransferOutConsignment(object, prefix)
+
+    EXTEND FORM object##Outs
+        PROPERTIES (prefix)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                         printConsignmentVerticalB, printConsignmentHorizontalB,
+                         printConsignmentSimpleHorizontal, editConsignment,
+                         printConsignmentSimpleVertical
+    ;
+
+    EXTEND DESIGN object##Outs {
+        documentDetail {
+            ADD prefix.printGroup {
+                childConstraints = TO THE BOTTOM;
+                NEW case55{
+                    childConstraints = TO THE RIGHT;
+
+                    NEW contOne {
+                        title = 'Накладная';
+                        ADD PROPERTY(editConsignment);
+                    }
+                    NEW tn{
+                        childConstraints = TO THE RIGHT;
+                        title = 'ТН-2';
+                        ADD PROPERTY(printConsignmentSimpleVertical);
+                        ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    }
+                }
+                NEW ttn1{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТТН-1';
+                    ADD PROPERTY(printConsignmentVerticalA);
+                    ADD PROPERTY(printConsignmentHorizontalA);
+                    ADD PROPERTY(printConsignmentVerticalB);
+                    ADD PROPERTY(printConsignmentHorizontalB);
+                }
+            }
+        }
+    }
+
+END
+
 META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentTables(object##In);

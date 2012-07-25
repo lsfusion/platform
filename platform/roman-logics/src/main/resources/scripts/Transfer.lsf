@@ -10,23 +10,24 @@ REQUIRE System,
         RetailPrice,
         Employee,
         StorePriceTransfer,
+        Consignment,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject;
+CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject, consignment;
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным' : outFIFOSkuLedger;
-CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)';
+CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)' : consignmentDetail;
 
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
 
 companyTransferOut (transferOut) = companyStock(stockTransferOut(transferOut));
 
-CONSTRAINT companyTransferOut(saleOut) != companyStock(destinationStockTransferOut(saleOut)) CHECKED BY destinationStockTransferOut
+CONSTRAINT companyTransferOut(transferOut) != companyStock(destinationStockTransferOut(transferOut)) CHECKED BY destinationStockTransferOut
     MESSAGE 'Перемещение товаров должно идти между складами одной компании';
 
 @defineDocumentDetailSkuArticle(transferOut);
@@ -75,6 +76,32 @@ sumOutSkuLedger(ledger) += accountSumTransferOutDetail(ledger);
 
 //CONSTRAINT isPostedTransferOutDetail(detail) AND NOT quantityTransferOutDetail(detail) == costedDataSkuLedger(detail)
 //    MESSAGE 'Не хватает остатков по партиям для перемещения товаров';
+
+// Товарные накладные
+@defineDocumentDetailPackWeightSku(transferOutBatch); // вес и к-во мест для партий
+
+@defineConsignment(transferOut);
+@implementConsignmentHeader(transferOut, stock);
+
+senderConsignment (consignment) += companyStock(stockTransferOut(consignment));
+recipientConsignment (consignment) += companyStock(destinationStockTransferOut(consignment));
+
+consignmentConsignmentDetail (consignmentDetail) += transferOutTransferOutBatchDetail (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuTransferOutBatchDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityTransferOutBatchDetail (consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail));
+sumConsignmentDetail (consignmentDetail) += retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail))*
+                                            quantityTransferOutBatchDetail (consignmentDetail);
+//vatConsignmentDetail (consignmentDetail) += valueRetailVATTransferOutBatchDetail (consignmentDetail);
+//sumVATConsignmentDetail (consignmentDetail) += retailVATISumTransferOutBatchDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail))*
+                                                   quantityTransferOutBatchDetail (consignmentDetail);
+
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatchDetail (consignmentDetail);
+
+@defineDocumentFormTransferOutConsignment(transfer, t);
+// todo: заполнить необходимыми данными
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
