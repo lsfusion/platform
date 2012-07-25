@@ -171,3 +171,17 @@ END
 META defineDocumentTransferAccount(concrete, retailProp)
     @defineDocumentTransferAccountCustom(concrete, retailProp, concrete##Detail, d);
 END
+
+// --------------------------------- Документы для генерации по трансферу -------------------------------- //
+CLASS ABSTRACT innerDocument 'Внутренний документ' : historyObject, numberedObject;
+
+dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (innerDocument);
+
+stockInnerDocument 'Склад-отправитель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
+nameStockInnerDocument 'Склад-отправитель' (innerDocument) = name(stockInnerDocument(innerDocument));
+
+destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
+nameDestinationStockInnerDocument 'Склад-получатель' (innerDocument) = name(destinationStockInnerDocument(innerDocument));
+
+countDetailInnerDocument 'Количество строк в документе' (innerDocument) = ABSTRACT INTEGER (innerDocument);
+quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRACT NUMERIC[14,3] (innerDocument);

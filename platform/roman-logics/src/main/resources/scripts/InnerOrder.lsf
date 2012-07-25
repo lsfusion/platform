@@ -5,7 +5,10 @@ REQUIRE System,
         RomanDocument,
         Stock,
         RomanStock,
+        RetailPrice,
         DocumentTransfer,
+        Move,
+        Transfer,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -163,12 +166,20 @@ CONSTRAINT innerOrderOrderPicking(p1) == innerOrderOrderPicking(p2) AND p1 != p2
 @defineDocumentHeaderQuantity(orderPicking);
 @defineDocumentHeaderSkuQuantity(orderPicking, sku);
 
+retailPriceOrderPickingDetail 'Цена розничная' = DATA NUMERIC[14,2] (orderPickingDetail);
+retailSumOrderPickingDetail 'Сумма розничная' (detail) = quantityOrderPickingDetail(detail) * retailPriceOrderPickingDetail(detail);
+
+retailPriceOrderPickingDetail(orderPickingDetail) <- priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuOrderPickingDetail(orderPickingDetail)), dateTimeOrderPickingDetail(orderPickingDetail))
+                                                        WHEN CHANGED(dateTimeOrderPickingDetail(orderPickingDetail))
+                                                             OR CHANGED(skuOrderPickingDetail(orderPickingDetail));
+
 // Кнопки подбора
 @defineAddDetailDialogSkuStock(orderPicking, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(orderPicking, sku);
 
-postOrderPickingInnerOrder 'Закрыть подборку' (innerOrder) = postOrderPicking(orderPickingInnerOrder(innerOrder)) TOOLBAR;
+postOrderPickingInnerOrder 'Закрыть подборку' (innerOrder) = postOrderPicking(orderPickingInnerOrder(innerOrder));
 isDraftOrderPickingInnerOrder (innerOrder) = isDraftOrderPicking(orderPickingInnerOrder(innerOrder));
+isPostedOrderPickingInnerOrder (innerOrder) = isPostedOrderPicking(orderPickingInnerOrder(innerOrder));
 
 quantityOrderPickingInnerOrderSku 'Количество подобрано' (sku, innerOrder) =
     quantityOrderPickingDetailSkuOrderPicking (sku, orderPickingInnerOrder(innerOrder));
@@ -201,6 +212,10 @@ FORM orderPicking 'Подбор товара'
 
 @extendDocumentFormDetailSkuArticleReadonly(orderPicking, od, innerOrder);
 @extendDocumentFormDetailSkuArticle(orderPicking, d, orderPicking);
+
+EXTEND FORM orderPicking
+    PROPERTIES(d) retailPriceOrderPickingDetail
+;
 
 DESIGN orderPicking FROM DEFAULT {
     main {
@@ -251,14 +266,72 @@ pickUpInnerOrder 'Подобрать' (innerOrder) = ACTION (innerOrder) NEWSESS
         }
     }
     IF formResult() == formResult.ok THEN EXEC apply();
-} TOOLBAR;
+};
+
+//Свойства генерируемых документов
+innerOrderInnerDocument (innerDocument) = ABSTRACT innerOrder (innerDocument);
+
+innerOrderMoveOut (moveOut) = DATA innerOrder (moveOut);
+
+innerOrderInnerDocument (innerDocument) += innerOrderMoveOut (innerDocument);
+stockInnerDocument (innerDocument) += stockMoveOut (innerDocument);
+destinationStockInnerDocument (innerDocument) += destinationStockMoveOut (innerDocument);
+
+countDetailInnerDocument (innerDocument) += countTransferOutDetailTransferOut (innerDocument);
+countDetailInnerDocument (innerDocument) += countMoveOutDetailMoveOut (innerDocument);
+
+quantityDetailInnerDocument (innerDocument) += quantityTransferOutDetailTransferOut (innerDocument);
+quantityDetailInnerDocument (innerDocument) += quantityMoveOutDetailMoveOut (innerDocument);
+
+createDocumentsInnerOrder 'Создать документы' (innerOrder) = ACTION (innerOrder) {
+    IF isPostedOrderPickingInnerOrder (innerOrder)
+    THEN {
+        ADDOBJ moveOut;
+        FOR m == addedObject() DO {
+            SET stockMoveOut(m) <- stockInnerOrder(innerOrder);
+            SET destinationStockMoveOut(m) <- destinationStockInnerOrder(innerOrder);
+            SET innerOrderMoveOut(m) <- innerOrder;
+
+            FOR innerOrderOrderPicking(orderPickingOrderPickingDetail(orderPickingDetail)) == innerOrder DO {
+                ADDOBJ moveOutDetail;
+                FOR d == addedObject() DO {
+                     SET moveOutMoveOutDetail(d) <- m;
+                     SET skuMoveOutDetail(d) <- skuOrderPickingDetail (orderPickingDetail);
+                     SET quantityMoveOutDetail(d) <- quantityOrderPickingDetail (orderPickingDetail);
+                }
+            }
+        }
+        EXEC apply();
+    }
+} TOOLBAR CONFIRM;
+
+editInnerDocument 'Редактировать' (innerDocument) = ACTION (innerDocument) {
+    IF innerDocument IS moveOut THEN {
+        FORM moveOut OBJECTS t = innerDocument MODAL;
+    } ELSE {
+        IF innerDocument IS transferOut THEN {
+            FORM transferOut OBJECTS t = innerDocument MODAL;
+        }
+    }
+} IMAGE 'edit.png';
+
 
 EXTEND FORM innerOrders
     OBJECTS pd=orderPickingDetail
 
-    PROPERTIES(o) pickUpInnerOrder, postOrderPickingInnerOrder SHOWIF isDraftOrderPickingInnerOrder(o)
+    PROPERTIES (o) createDocumentsInnerOrder
+    PROPERTIES(o) TODRAW pd FORCE PANEL pickUpInnerOrder, postOrderPickingInnerOrder SHOWIF isDraftOrderPickingInnerOrder(o)
 
     FILTERS orderPickingOrderPickingDetail (pd) == orderPickingInnerOrder(o)
+
+    OBJECTS id = innerDocument
+
+    PROPERTIES (id) READONLY objectClassName, seriesObject, numberObject, dateInnerDocument, nameStockInnerDocument,
+                    nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
+//    PROPERTIES (id) editFormMove_moveOut
+    PROPERTIES (id) editInnerDocument
+
+    FILTERS innerOrderInnerDocument(id)==o
 ;
 
 @extendDocumentFormDetailSkuArticleReadonly(innerOrders, pd, orderPicking);
@@ -267,7 +340,11 @@ EXTEND DESIGN innerOrders {
     documentDetail {
         ADD pd.box {
             title = 'Подборка';
+            ADD PROPERTY (pickUpInnerOrder);
+            ADD PROPERTY (postOrderPickingInnerOrder);
+        }
+        ADD id.box {
+            title = 'Документы';
         }
     }
 }
-
