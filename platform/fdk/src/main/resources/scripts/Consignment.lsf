@@ -369,7 +369,7 @@ DESIGN consignment FROM DEFAULT {
     }
 }
 
-editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png' CONFIRM;
+editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png';
 
 // ------------------------------------- Метакод по объявлению и имплементации накладных ------------------ //
 

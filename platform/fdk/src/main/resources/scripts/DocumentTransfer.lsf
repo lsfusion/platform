@@ -163,10 +163,11 @@ END
 META defineDocumentFormTransferOutConsignment(object, prefix)
 
     EXTEND FORM object##Outs
-        PROPERTIES (prefix)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
-                         printConsignmentVerticalB, printConsignmentHorizontalB,
-                         printConsignmentSimpleHorizontal, editConsignment,
-                         printConsignmentSimpleVertical
+        PROPERTIES (prefix) FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                            printConsignmentVerticalB, printConsignmentHorizontalB,
+                            printConsignmentSimpleHorizontal, editConsignment,
+                            printConsignmentSimpleVertical, printConsignmentSimpleAttach,
+                            printConsignmentAttach
     ;
 
     EXTEND DESIGN object##Outs {
@@ -185,15 +186,25 @@ META defineDocumentFormTransferOutConsignment(object, prefix)
                         title = 'ТН-2';
                         ADD PROPERTY(printConsignmentSimpleVertical);
                         ADD PROPERTY(printConsignmentSimpleHorizontal);
+                        ADD PROPERTY(printConsignmentSimpleAttach);
                     }
                 }
                 NEW ttn1{
                     childConstraints = TO THE RIGHT;
                     title = 'ТТН-1';
-                    ADD PROPERTY(printConsignmentVerticalA);
-                    ADD PROPERTY(printConsignmentHorizontalA);
-                    ADD PROPERTY(printConsignmentVerticalB);
-                    ADD PROPERTY(printConsignmentHorizontalB);
+                    NEW ttn1V {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(printConsignmentVerticalA);
+                        ADD PROPERTY(printConsignmentVerticalB);
+                    }
+                    NEW ttn1H {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(printConsignmentHorizontalA);
+                        ADD PROPERTY(printConsignmentHorizontalB);
+                    }
+                    NEW ttn1A {
+                        ADD PROPERTY(printConsignmentAttach);
+                    }
                 }
             }
         }
