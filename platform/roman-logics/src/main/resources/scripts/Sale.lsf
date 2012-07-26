@@ -75,28 +75,40 @@ sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
 
 @defineConsignment(saleOut);
 @implementConsignmentHeader(saleOut, stock);
+isCommissionSaleOutBatchDetail 'Продажа на комиссию' (saleOutBatchDetail) = isCommissionSaleOut(saleOutSaleOutBatchDetail(saleOutBatchDetail));
 
 senderConsignment (consignment) += companyStock(stockSaleOut(consignment));
 recipientConsignment (consignment) += companyStock(destinationStockSaleOut(consignment));
-
 consignmentConsignmentDetail (consignmentDetail) += saleOutSaleOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuSaleOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantitySaleOutBatchDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += supplierPriceBatchA(batchSaleOutBatchDetail(consignmentDetail));
 
-supplierSumSaleOutBatchDetail (saleOutBatchDetail) = supplierPriceBatchA(batchSaleOutBatchDetail(saleOutBatchDetail))*
+priceSaleOutBatchDetailC (saleOutBatchDetail) = retailPriceSaleOutDetail(saleOutDetailSaleOutBatchDetail(saleOutBatchDetail));
+priceSaleOutBatchDetailS (saleOutBatchDetail) = supplierPriceBatchA(batchSaleOutBatchDetail(saleOutBatchDetail));
+
+supplierSumSaleOutBatchDetailC (saleOutBatchDetail) = priceSaleOutBatchDetailC(saleOutBatchDetail) *
+    quantitySaleOutBatchDetail (saleOutBatchDetail);
+supplierSumSaleOutBatchDetailS (saleOutBatchDetail) = priceSaleOutBatchDetailS(saleOutBatchDetail) *
     quantitySaleOutBatchDetail (saleOutBatchDetail);
 
-sumConsignmentDetail (consignmentDetail) += supplierSumSaleOutBatchDetail(consignmentDetail);
-
-vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchSaleOutBatchDetail(consignmentDetail));
-
-sumVATSaleOutBatchDetail (saleOutBatchDetail) =  [round0(X*Y/100)](supplierSumSaleOutBatchDetail(saleOutBatchDetail),
+sumVATSaleOutBatchDetailS (saleOutBatchDetail) =  [round0(X*Y/100)](supplierSumSaleOutBatchDetailS(saleOutBatchDetail),
     valueSupplierVATBatchA(batchSaleOutBatchDetail(saleOutBatchDetail)));
 
-sumVATConsignmentDetail (consignmentDetail) +=  sumVATSaleOutBatchDetail(consignmentDetail);
 
-sumInvoiceConsignmentDetail (consignmentDetail) += supplierSumSaleOutBatchDetail(consignmentDetail) (+) sumVATSaleOutBatchDetail(consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(consignmentDetail) THEN priceSaleOutBatchDetailC(consignmentDetail)
+    ELSE priceSaleOutBatchDetailS(consignmentDetail);
+
+sumConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(consignmentDetail) THEN supplierSumSaleOutBatchDetailC(consignmentDetail)
+    ELSE supplierSumSaleOutBatchDetailS(consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchSaleOutBatchDetail(consignmentDetail))
+    AND NOT isCommissionSaleOutBatchDetail(consignmentDetail);
+
+sumVATConsignmentDetail (consignmentDetail) +=  sumVATSaleOutBatchDetailS(consignmentDetail)
+    AND NOT isCommissionSaleOutBatchDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(consignmentDetail) THEN supplierSumSaleOutBatchDetailC(consignmentDetail)
+    ELSE supplierSumSaleOutBatchDetailS(consignmentDetail) (+) sumVATSaleOutBatchDetailS(consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);

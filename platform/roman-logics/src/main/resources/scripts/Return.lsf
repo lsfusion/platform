@@ -74,39 +74,41 @@ limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF
 sumOutSkuLedger(ledger) += accountSumReturnOutDetail(ledger);
 
 // Товарные накладные
-//@defineDocumentDetailPackWeightSku(returnOutBatch);
 
 @defineConsignment(returnOut);
 @implementConsignmentHeader(returnOut, stock);
 
 senderConsignment (consignment) += companyStock(stockReturnOut(consignment));
 recipientConsignment (consignment) += companyStock(destinationStockReturnOut(consignment));
-
 consignmentConsignmentDetail (consignmentDetail) += returnOutReturnOutDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuReturnOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityReturnOutDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += supplierPriceBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail));
 
-supplierSumReturnOutDetail (returnOutDetail) = supplierPriceBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail))*
-    quantityReturnOutDetail (returnOutDetail);
-
-sumConsignmentDetail (consignmentDetail) += supplierSumReturnOutDetail(consignmentDetail);
-
-vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail));
-
-sumVATReturnOutDetail (returnOutDetail) =  [round0(X*Y/100)](supplierSumReturnOutDetail(returnOutDetail),
+supplierSumReturnOutDetailC (returnOutDetail) = retailPriceReturnOutDetail(returnOutDetail)* quantityReturnOutDetail (returnOutDetail);
+supplierSumReturnOutDetailS (returnOutDetail) = supplierPriceBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail))* quantityReturnOutDetail (returnOutDetail);
+sumVATReturnOutDetailS (returnOutDetail) =  [round0(X*Y/100)](supplierSumReturnOutDetailS(returnOutDetail),
     valueSupplierVATBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail)));
 
-sumVATConsignmentDetail (consignmentDetail) +=  sumVATReturnOutDetail(consignmentDetail);
+priceConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetail(consignmentDetail) THEN retailPriceReturnOutDetail(consignmentDetail)
+    ELSE supplierPriceBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail));
 
-sumInvoiceConsignmentDetail (consignmentDetail) += supplierSumReturnOutDetail(consignmentDetail) (+) sumVATReturnOutDetail(consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetail(consignmentDetail) THEN supplierSumReturnOutDetailC(consignmentDetail)
+    ELSE supplierSumReturnOutDetailS(consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(saleInBatchDetailReturnOutDetail(consignmentDetail))
+   AND NOT isCommissionReturnOutDetail(consignmentDetail);
+
+sumVATConsignmentDetail (consignmentDetail) +=  sumVATReturnOutDetailS(consignmentDetail) AND NOT isCommissionReturnOutDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetail(consignmentDetail) THEN supplierSumReturnOutDetailC(consignmentDetail)
+    ELSE supplierSumReturnOutDetailS(consignmentDetail) (+) sumVATReturnOutDetailS(consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightReturnOutDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityReturnOutDetail (consignmentDetail);
 
 noteReturnOutDetail (returnOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
     importerPriceBatchA(saleInBatchDetailReturnOutDetail(returnOutDetail)));
-noteConsignmentDetail (consignmentDetail) += noteReturnOutDetail(consignmentDetail);
+noteConsignmentDetail (consignmentDetail) += noteReturnOutDetail(consignmentDetail);  // нужно ли?
 
 @defineDocumentFormTransferOutConsignment(return, t);
 // todo: заполнить необходимыми данными

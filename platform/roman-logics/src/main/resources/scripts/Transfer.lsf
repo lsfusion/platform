@@ -85,17 +85,37 @@ sumOutSkuLedger(ledger) += accountSumTransferOutDetail(ledger);
 
 senderConsignment (consignment) += companyStock(stockTransferOut(consignment));
 recipientConsignment (consignment) += companyStock(destinationStockTransferOut(consignment));
-
 consignmentConsignmentDetail (consignmentDetail) += transferOutTransferOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuTransferOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityTransferOutBatchDetail (consignmentDetail);
-priceConsignmentDetail (consignmentDetail) += retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail));
-sumConsignmentDetail (consignmentDetail) += retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail))*
-                                            quantityTransferOutBatchDetail (consignmentDetail);
-//vatConsignmentDetail (consignmentDetail) += valueRetailVATTransferOutBatchDetail (consignmentDetail);
-//sumVATConsignmentDetail (consignmentDetail) += retailVATISumTransferOutBatchDetail (consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail))*
-                                                   quantityTransferOutBatchDetail (consignmentDetail);
+
+isStockToStockTransferOut 'Перемещение м/у складами' (transferOut) =  GROUP SUM 1
+    IF stockTransferOut(transferOut) == warehouse AS warehouse AND destinationStockTransferOut(transferOut) == warehouse AS warehouse
+    BY transferOut;
+
+isStockToStockTransferOutBatchDetail 'Перемещение м/у складами' (transferOutBatchDetail) = isStockToStockTransferOut(transferOutTransferOutBatchDetail(transferOutBatchDetail));
+isCommissionTransferOutBatchDetail 'Продажа на комиссию' (transferOutBatchDetail) = isCommissionTransferOut(transferOutTransferOutBatchDetail(transferOutBatchDetail));
+
+supplierSumTransferOutBatchDetail (transferOutBatchDetail) =  supplierPriceBatchA(batchTransferOutBatchDetail(transferOutBatchDetail)) * quantityTransferOutBatchDetail (transferOutBatchDetail);
+sumVatTransferOutBatchDetail (transferOutBatchDetail) = [round0(X*Y/100)](
+    valueSupplierVATBatchA(batchTransferOutBatchDetail(transferOutBatchDetail)), supplierSumTransferOutBatchDetail(transferOutBatchDetail));
+sumInvoiceTransferOutBatchDetail (transferOutBatchDetail) = supplierSumTransferOutBatchDetail(transferOutBatchDetail) (+) sumVatTransferOutBatchDetail(transferOutBatchDetail);
+
+priceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail)
+    THEN supplierPriceBatchA(batchTransferOutBatchDetail(consignmentDetail))
+    ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail));
+
+sumConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail)
+    THEN supplierSumTransferOutBatchDetail(consignmentDetail)
+    ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail))* quantityTransferOutBatchDetail (consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchTransferOutBatchDetail(consignmentDetail)) IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail);
+
+sumVATConsignmentDetail (consignmentDetail) += sumVatTransferOutBatchDetail(consignmentDetail) IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutBatchDetail(consignmentDetail) AND NOT isCommissionTransferOutBatchDetail(consignmentDetail)
+    THEN sumInvoiceTransferOutBatchDetail(consignmentDetail)
+    ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail)) * quantityTransferOutBatchDetail (consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatchDetail (consignmentDetail);
