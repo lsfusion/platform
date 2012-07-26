@@ -264,7 +264,7 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
 printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromRF) = ACTION (WHfromRF) {
 
     SET shouldBePrintWHfromRF(sku) <- NULL;
-    SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF),freightWHfromRF(WHfromRF));
+    SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
     FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF) MODAL;
 
 } CONFIRM;
@@ -300,9 +300,7 @@ coefficientArticleSkuWHfromRFDetail 'Кол-во в комплекте' (WHfromR
 backgroundWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityWHfromRFDetail(WHfromRFDetail) == 1;
 
 costWHfromRFDetail(WHfromRFDetail) =
-    priceInImporterFreightSku(companyWarehouse(warehouseWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail))) ,
-                              freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)),
-                              skuWHfromRFDetail(WHfromRFDetail));
+    priceInFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
 @implementBatch(WHfromRF, sku, warehouse, cost);
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
