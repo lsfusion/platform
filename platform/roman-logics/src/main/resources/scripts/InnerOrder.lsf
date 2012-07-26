@@ -276,7 +276,7 @@ innerOrderMoveOut (moveOut) = DATA innerOrder (moveOut);
 quantityInnerDocumentInnerOrder 'Количество документов' (innerOrder) =
     GROUP SUM 1 IF innerOrderInnerDocument (innerDocument) == innerOrder BY innerOrder;
 needInnerDocumentInnerOrder 'Необходимо создать документы по заказу' (innerOrder) =
-    innerOrder IS innerOrder AND NOT quantityInnerDocumentInnerOrder(innerOrder);
+    orderPickingInnerOrder(innerOrder) IS orderPickingPosted AND NOT quantityInnerDocumentInnerOrder(innerOrder);
 
 quantityPostedInnerDocumentInnerOrder 'Количество проведенных документов' (innerOrder) =
     GROUP SUM 1 IF (innerOrderInnerDocument (innerDocument) == innerOrder AND innerDocument IS postedObject) BY innerOrder;;
@@ -367,7 +367,7 @@ statusInnerOrder 'Статус' (innerOrder) =
 EXTEND FORM innerOrders
     OBJECTS pd=orderPickingDetail
 
-    PROPERTIES (o)  needInnerDocumentInnerOrder, statusInnerOrder, quantityDraftInnerDocumentInnerOrder, quantityInnerDocumentInnerOrder
+    PROPERTIES (o)  statusInnerOrder, quantityInnerDocumentInnerOrder
     PROPERTIES(o) TODRAW pd FORCE PANEL pickUpInnerOrder, postOrderPickingInnerOrder SHOWIF isDraftOrderPickingInnerOrder(o)
 
     FILTERS orderPickingOrderPickingDetail (pd) == orderPickingInnerOrder(o)
