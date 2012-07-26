@@ -185,3 +185,6 @@ nameDestinationStockInnerDocument 'Склад-получатель' (innerDocume
 
 countDetailInnerDocument 'Количество строк в документе' (innerDocument) = ABSTRACT INTEGER (innerDocument);
 quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRACT NUMERIC[14,3] (innerDocument);
+
+isPostedInnerDocument 'Закрыт' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
+isDraftInnerDocument 'Открыт' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
