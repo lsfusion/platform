@@ -208,10 +208,9 @@ FORM CStoWH 'Расход с СВХ'
                    innerInvoicesCStoWH, shortNameCurrencyCStoWH
 
     OBJECTS d = CStoWHDetail
-    PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
-                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
-                  sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail,
-                  priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
+    PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
+                  sidSizeCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
+                  sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, quantityCStoWHDetail, priceCStoWHDetail, sumCStoWHDetail
     PROPERTIES(d) delete
     PROPERTIES(c) TODRAW d deleteCStoWHDetailCStoWH
 
@@ -242,9 +241,9 @@ FORM CStoWHs 'Расходы с СВХ'
                      printConsignmentSimpleVertical
 
     OBJECTS d = CStoWHDetail
-    PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
-                  nameCategoryCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
-                  sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, priceCStoWHDetail, quantityCStoWHDetail, sumCStoWHDetail
+    PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
+                  sidSizeCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
+                  sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, quantityCStoWHDetail, priceCStoWHDetail, sumCStoWHDetail
 
     FILTERS inCStoWHCStoWHDetail(c, d)
 ;
