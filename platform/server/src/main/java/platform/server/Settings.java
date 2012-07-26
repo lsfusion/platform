@@ -543,4 +543,14 @@ public class Settings {
     public void setCommandLengthVolatileStats(int commandLengthVolatileStats) {
         this.commandLengthVolatileStats = commandLengthVolatileStats;
     }
+
+    private boolean disableReadSingleValues = false; // определять ли конкретные значения при записи запроса в таблицы
+
+    public boolean isDisableReadSingleValues() {
+        return disableReadSingleValues;
+    }
+
+    public void setDisableReadSingleValues(boolean disableReadSingleValues) {
+        this.disableReadSingleValues = disableReadSingleValues;
+    }
 }

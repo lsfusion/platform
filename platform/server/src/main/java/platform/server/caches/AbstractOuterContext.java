@@ -75,6 +75,11 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return aspectGetKeys();
     }
 
+    // проверка на статичность, временно потом более сложный алгоритм надо будет
+    public boolean isValue() {
+        return getOuterKeys().isEmpty();
+    }
+
     public int immutableHashCode() {
         return hashOuter(HashContext.hashCode);
     }

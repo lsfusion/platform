@@ -46,8 +46,4 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         return property.getInterfaceCommonClasses(commonValue);
     }
-
-    public PropertyChange<T> getFullChange() {
-        return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL, Where.TRUE);
-    }
 }

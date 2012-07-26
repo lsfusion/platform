@@ -233,7 +233,7 @@ public class Query<K,V> extends IQuery<K,V> {
 
     @IdentityLazy
     @Pack
-    public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {
+    public <B> ClassWhere<B> getClassWhere(Set<? extends V> classProps) {
         return (ClassWhere<B>) getClassWhere(where, mapKeys, BaseUtils.filterKeys(properties, classProps));
     }
 
@@ -269,16 +269,23 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     // жестковатая эвристика, но не страшно
+    @SynchronizedLazy
     @Pack
-    public IQuery<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) throws SQLException {
+    public PullValues<K, V> pullValues() {
+        Map<K, Expr> pullKeys = new HashMap<K, Expr>();
         pullValues(mapKeys, where, pullKeys);
+
         QueryTranslator keyTranslator = new PartialQueryTranslator(BaseUtils.rightCrossJoin(mapKeys, pullKeys));
         Where transWhere = where.translateQuery(keyTranslator);
         Map<V, Expr> transProps = keyTranslator.translate(properties);
+
+        Map<V, Expr> pullProps = new HashMap<V, Expr>();
         pullValues(transProps, transWhere, pullProps);
         if(pullKeys.isEmpty() && pullProps.isEmpty())
-            return this;
-        return new Query<K,V>(BaseUtils.filterNotKeys(mapKeys, pullKeys.keySet()), BaseUtils.filterNotKeys(transProps, pullProps.keySet()), transWhere);
+            return new PullValues<K, V>(this);
+
+        return new PullValues<K, V>(new Query<K,V>(BaseUtils.filterNotKeys(mapKeys, pullKeys.keySet()),
+                BaseUtils.filterNotKeys(transProps, pullProps.keySet()), transWhere), pullKeys, pullProps);
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax,OrderedMap<V,Boolean> orders,int selectTop) {
@@ -352,6 +359,12 @@ public class Query<K,V> extends IQuery<K,V> {
 
     @Message("message.query.execute")
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, OrderedMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
+        if(where.isFalse()) // оптимизация
+            return new OrderedMap<Map<K, Object>, Map<V, Object>>();
+        if(where.isTrue() && properties.isEmpty()) {
+            assert mapKeys.isEmpty();
+            return new OrderedMap<Map<K, Object>, Map<V, Object>>(new HashMap<K, Object>(), new HashMap<V, Object>());
+        }
         return compile(session.syntax, orders, selectTop).execute(session, env);
     }
 

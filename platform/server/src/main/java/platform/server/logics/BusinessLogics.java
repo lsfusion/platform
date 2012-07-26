@@ -1389,11 +1389,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
 
-            PropertyChange statusChanges = new PropertyChange(
-                    LM.connectionCurrentStatus.getMapKeys(),
-                    LM.connectionStatus.getDataObject("disconnectedConnection").getExpr(),
-                    LM.connectionCurrentStatus.property.getExpr(LM.connectionCurrentStatus.getMapKeys())
-                            .compare(LM.connectionStatus.getDataObject("connectedConnection").getExpr(), Compare.EQUALS));
+            PropertyChange statusChanges = new PropertyChange(LM.connectionStatus.getDataObject("disconnectedConnection"),
+                        BaseUtils.single(LM.connectionCurrentStatus.property.interfaces), LM.connectionStatus.getDataObject("connectedConnection"));
 
             session.change((CalcProperty) LM.connectionCurrentStatus.property, statusChanges);
 

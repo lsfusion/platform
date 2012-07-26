@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class IncrementTableProps extends IncrementProps {
 
-    private final TableProps tableProps = new TableProps();
+    public final TableProps tableProps = new TableProps();
 
     public IncrementTableProps() {
     }

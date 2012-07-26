@@ -86,22 +86,23 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     public void writeKeys(SQLSession session,Collection<Map<K,DataObject>> writeRows) throws SQLException {
-        table = table.rewrite(session, BaseUtils.joinCol(mapKeys, writeRows), this);
+        writeRows(session, BaseUtils.<Map<K,DataObject>, Map<V, ObjectValue>>toMap(writeRows, new HashMap<V, ObjectValue>()));
+    }
+
+    public void writeRows(SQLSession session,Map<Map<K,DataObject>,Map<V,ObjectValue>> writeRows) throws SQLException {
+        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> mapWriteRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
+        for(Map.Entry<Map<K, DataObject>, Map<V, ObjectValue>> writeRow : writeRows.entrySet())
+            mapWriteRows.put(BaseUtils.join(mapKeys, writeRow.getKey()), BaseUtils.join(mapProps, writeRow.getValue()));
+        table = table.rewrite(session, mapWriteRows, this);
     }
 
     public void writeRows(SQLSession session, Query<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         table = table.rewrite(session, new Query<KeyField,PropertyField>(query, mapKeys, mapProps), baseClass, env, this);
     }
 
-    public void addRows(SQLSession session, Query<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        Query<K, V> addQuery = new Query<K, V>(query.mapKeys);
-        Join<V> prevJoin = join(addQuery.mapKeys);
-
-        Where prevWhere = prevJoin.getWhere();
-        addQuery.and(prevWhere.or(query.where));
-        for(Map.Entry<V, Expr> property : query.properties.entrySet())
-            addQuery.properties.put(property.getKey(), prevJoin.getExpr(property.getKey()).ifElse(prevWhere, property.getValue()));
-        writeRows(session, addQuery, baseClass, env);
+    // добавляет ряды которых не было в таблице, или modify'ит
+    public void addRows(SQLSession session, Query<K, V> query, BaseClass baseClass, boolean update, QueryEnvironment env) throws SQLException {
+        table = table.addRows(session, new Query<KeyField, PropertyField>(query, mapKeys, mapProps), baseClass, update, env, this);
     }
 
     private PropertyField getField(V property) {

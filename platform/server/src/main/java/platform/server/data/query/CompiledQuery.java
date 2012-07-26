@@ -453,6 +453,11 @@ public class CompiledQuery<K,V> {
                     propertySelect.put(expr.getValue(), exprs.get(expr.getKey()).getType().getCast(SQLSyntax.NULL, syntax, false));
                 return "(" + syntax.getSelect("empty", SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "") + ")";
             }
+
+            // чтобы разбить рекурсию
+            protected boolean checkRecursivePush(Where fullWhere) {
+                return fullWhere.getComplexity(false) > InnerSelect.this.fullWhere.getComplexity(false); // не проталкиваем если, полученная сложность больше сложности всего запроса
+            }
         }
 
         private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
@@ -476,7 +481,7 @@ public class CompiledQuery<K,V> {
 
                 Where fullWhere = groupWhere;
                 StatKeys<Expr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
-                Where pushWhere;
+                Where pushWhere = null;
                 if(innerJoin.getJoins().size() > 1 && (pushWhere = whereJoins.getGroupPushWhere(innerJoin.getJoins(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                     fullWhere = fullWhere.and(pushWhere);
                 else
@@ -486,6 +491,9 @@ public class CompiledQuery<K,V> {
 
                 if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                     return getEmptySelect(groupWhere);
+
+                if(pushWhere!=null && checkRecursivePush(fullWhere))
+                    fullWhere = groupWhere;
 
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
@@ -543,6 +551,9 @@ public class CompiledQuery<K,V> {
 
                     if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                         return getEmptySelect(innerWhere);
+
+                    if(pushWhere!=null && checkRecursivePush(fullWhere))
+                        fullWhere = innerWhere;
                 }
 
                 Map<String,String> keySelect = new HashMap<String,String>();
@@ -627,6 +638,9 @@ public class CompiledQuery<K,V> {
 
                 if(fullWhere.pack().isFalse())
                     return getEmptySelect(innerWhere);
+
+                if(pushWhere!=null && checkRecursivePush(fullWhere))
+                    fullWhere = innerWhere;
 
                 Map<String, String> keySelect = new HashMap<String, String>();
                 Map<String, String> propertySelect = new HashMap<String, String>();
@@ -766,6 +780,9 @@ public class CompiledQuery<K,V> {
 
                 if(fullWhere.pack().isFalse())
                     return getEmptySelect(initialWhere);
+
+                if(pushWhere!=null && checkRecursivePush(fullWhere))
+                    fullWhere = initialWhere;
 
                 String outerParams = null;
                 Map<Value, String> innerParams;

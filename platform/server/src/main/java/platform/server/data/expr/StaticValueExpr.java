@@ -8,6 +8,8 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 public class StaticValueExpr extends StaticExpr<StaticClass> {
 
@@ -56,5 +58,10 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
             Type type = objectClass.getType();
             return type.getCast(type.getString(object, compile.syntax),compile.syntax, true);
         }*/
+    }
+
+    @Override
+    public ObjectValue getObjectValue() {
+        return new DataObject(object, objectClass);
     }
 }

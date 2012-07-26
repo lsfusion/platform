@@ -1,6 +1,5 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
@@ -13,7 +12,6 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.util.List;
@@ -38,8 +36,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update, groupLast);
     }
 
-    public void addRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        addRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, env);
+    public void addRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, boolean update, QueryEnvironment env) throws SQLException {
+        addRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, update, env);
     }
 
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SinglePropertyTableUsage<P> table) {

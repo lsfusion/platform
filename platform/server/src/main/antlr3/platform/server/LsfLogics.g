@@ -1876,14 +1876,16 @@ eventStatement
 globalEventStatement
 @init {
 	boolean onApply = true;
+	boolean single = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedGlobalEvent($action.property, !onApply);
+		self.addScriptedGlobalEvent($action.property, !onApply, single);
 	}
 }
 	:	'ON' 
 		('APPLY' | 'SESSION' { onApply = false; })
+		('SINGLE' { single = true; })?
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
 	;
 

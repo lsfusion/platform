@@ -179,20 +179,16 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         query.compile(BusinessLogics.debugSyntax);
     }
 
-    // проверка на статичность, временно потом более сложный алгоритм надо будет
-    public boolean isValue() {
-        return getOuterKeys().isEmpty();
-    }
     public static <K> Map<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, Map<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values
         Map<K, ObjectValue> mapValues = new HashMap<K, ObjectValue>();
         Map<K, Expr> mapExprValues = new HashMap<K, Expr>();
-        for(Map.Entry<K, Expr> mapExpr : mapExprs.entrySet())
-            if(mapExpr.getValue() instanceof ValueExpr)
-                mapValues.put(mapExpr.getKey(), ((ValueExpr) mapExpr.getValue()).getDataObject());
-            else if(mapExpr.getValue().getWhere().isFalse())
-                mapValues.put(mapExpr.getKey(), NullValue.instance);
+        for(Map.Entry<K, Expr> mapExpr : mapExprs.entrySet()) {
+            ObjectValue objectValue = mapExpr.getValue().getObjectValue();
+            if(objectValue!=null)
+                mapValues.put(mapExpr.getKey(), objectValue);
             else
                 mapExprValues.put(mapExpr.getKey(), mapExpr.getValue());
+        }
         if(mapExprValues.isEmpty()) // чисто для оптимизации чтобы лишний раз executeClasses не вызывать
             return mapValues;
         else

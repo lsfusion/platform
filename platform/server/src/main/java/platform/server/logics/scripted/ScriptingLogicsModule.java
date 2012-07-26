@@ -1426,11 +1426,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((LAP)event.property).setEventAction(this, session, descending, false, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, boolean session) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LPWithParams event, boolean session, boolean single) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + session + ");");
         checkActionProperty(event.property);
         checkEventNoParameters(event.property);
-        addBaseEvent((ActionProperty)event.property.property, session, false);
+        addBaseEvent((ActionProperty)event.property.property, session, false, single);
     }
 
     public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {

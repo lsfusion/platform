@@ -408,35 +408,45 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         updateSessionEvents(updateChanges, groupLast);
 
         changeClass(addClasses, removeClasses, toClass, change, sql, groupLast);
-
         newClasses.put(change, toClass);
 
         updateProperties(updateChanges, groupLast);
 
-        aspectChange(hadStoredChanges);
+        aspectAfterChange(hadStoredChanges);
     }
 
-    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException {
+    public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change, boolean groupLast) throws SQLException {
         boolean hadStoredChanges = hasStoredChanges();
+
+        if(neededProps!=null && property.event==null) { // если транзакция, нет change event'а, singleApply'им
+            assert isInTransaction();
+
+            SinglePropertyTableUsage<ClassPropertyInterface> changeTable = property.readFixChangeTable(sql, change, baseClass, getQueryEnv());
+
+            Pair<SinglePropertyTableUsage<ClassPropertyInterface>, SinglePropertyTableUsage<ClassPropertyInterface>> split = property.splitFitClasses(changeTable, sql, baseClass, env);
+
+            applySingleStored(property, split.first, Context.context.get().getBL());
+            change = SinglePropertyTableUsage.getChange(split.second);
+        }
 
         Set<DataProperty> updateChanges = Collections.singleton(property);
 
         updateSessionEvents(updateChanges, groupLast);
 
-        changeProperty(property, keys, newValue, sql, groupLast);
+        aspectChangeProperty(property, change, groupLast);
 
         updateProperties(updateChanges, groupLast);
 
-        aspectChange(hadStoredChanges);
+        aspectAfterChange(hadStoredChanges);
     }
 
     public static final SessionDataProperty isDataChanged = new SessionDataProperty("isDataChanged", "Is data changed", LogicalClass.instance);
-    private void aspectChange(boolean hadStoredChanges) throws SQLException {
+    private void aspectAfterChange(boolean hadStoredChanges) throws SQLException {
         if(!hadStoredChanges && hasStoredChanges()) {
             Set<SessionDataProperty> updateChanges = Collections.singleton(isDataChanged);
             updateSessionEvents(updateChanges, true);
 
-            changeProperty(isDataChanged, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(true, LogicalClass.instance), sql, true);
+            aspectChangeProperty(isDataChanged, new PropertyChange<ClassPropertyInterface>(new DataObject(true, LogicalClass.instance)), true);
 
             updateProperties(updateChanges, true);
         }
@@ -686,24 +696,107 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
-        for(CalcProperty<D> depend : BL.getAppliedDependFrom(property)) { // !!! важно в лексикографическом порядке должно быть
+        List<CalcProperty> dependProps = BL.getAppliedDependFrom(property); // !!! важно в лексикографическом порядке должно быть
+
+        if(neededProps!=null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
+            for(CalcProperty<D> depend : dependProps)
+                if(!neededProps.contains(depend)) {
+                    updatePendingApplyStart(property, change);
+                    break;
+                }
+        }
+
+        for(CalcProperty<D> depend : dependProps) {
             assert depend.isStored() || depend instanceof OldProperty;
+
+            if(neededProps!=null) { // управление pending'ом
+                assert !flush || !pendingSingleTables.containsKey(depend); // assert что если flush то уже обработано (так как в обратном лексикографике идет)
+                if(!neededProps.contains(depend)) { // если не нужная связь не обновляем
+                    if(!flush)
+                        continue;
+                } else { // если нужная то уже обновили
+                    if(flush) {
+                        if(depend.isStored())
+                            noUpdate.addNoChange(depend);
+                        continue;
+                    }
+                }
+            }
+
             if(depend.isStored()) { // читаем новое значение, запускаем рекурсию
                 SinglePropertyTableUsage<D> dependChange = depend.readChangeTable(sql, modifier, baseClass, env);
                 applySingleStored((CalcProperty)depend, (SinglePropertyTableUsage)dependChange, BL);
                 noUpdate.addNoChange(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать
             } else {
                 SinglePropertyTableUsage<D> dependChange = ((OldProperty<D>) depend).property.readChangeTable(sql, modifier, baseClass, env);
-                updateApplyStart((OldProperty<D>) depend, dependChange, baseClass);
+                updateApplyStart((OldProperty<D>) depend, dependChange);
             }
         }
-        savePropertyChanges(property.mapTable.table, Collections.singletonMap("value", (CalcProperty) property), property.mapTable.mapKeys, change);
+        savePropertyChanges(property, change);
         
         modifier.clean(sql); // hint'ы и ссылки почистить
     }
 
+    private OrderedMap<CalcProperty, SinglePropertyTableUsage> pendingSingleTables = new OrderedMap<CalcProperty, SinglePropertyTableUsage>();
+    boolean flush = false;
+
+    private FunctionSet<CalcProperty> neededProps = null;
+    private void startPendingSingles(ActionProperty action) throws SQLException {
+        assert isInTransaction();
+
+        if(!action.singleApply)
+            return;
+
+        neededProps = action.usedProps;
+    }
+
+    private <P extends PropertyInterface> void updatePendingApplyStart(CalcProperty<P> property, SinglePropertyTableUsage<P> tableUsage) throws SQLException { // изврат конечно
+        assert isInTransaction();
+
+        SinglePropertyTableUsage<P> prevTable = pendingSingleTables.get(property);
+        if(prevTable==null) {
+            prevTable = property.createChangeTable();
+            pendingSingleTables.put(property, prevTable);
+        }
+        Map<P, KeyExpr> mapKeys = property.getMapKeys();
+        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, false, env); // если он уже был в базе он не заместится
+    }
+
+    // assert что в pendingSingleTables в обратном лексикографике
+    private <T extends PropertyInterface> void flushPendingSingles(BusinessLogics BL) throws SQLException {
+        assert isInTransaction();
+
+        if(neededProps==null)
+            return;
+
+        flush = true;
+
+        // сначала "возвращаем" изменения в базе на предыдущее
+        for(Map.Entry<CalcProperty, SinglePropertyTableUsage> pendingSingle : pendingSingleTables.entrySet()) {
+            CalcProperty<T> property = pendingSingle.getKey();
+            SinglePropertyTableUsage<T> prevTable = pendingSingle.getValue();
+
+            Map<T, KeyExpr> mapKeys = property.getMapKeys();
+            SinglePropertyTableUsage<T> newTable = property.readChangeTable(sql, new PropertyChange<T>(mapKeys, property.getExpr(mapKeys), prevTable.join(mapKeys).getWhere()), baseClass, env);
+            savePropertyChanges(property, prevTable); // записываем старые изменения
+            pendingSingle.setValue(newTable); // сохраняем новые изменения
+        }
+
+        for (Map.Entry<CalcProperty, SinglePropertyTableUsage> pendingSingle : pendingSingleTables.reverse().entrySet()) {
+            applySingleStored(pendingSingle.getKey(), pendingSingle.getValue(), BL);
+            pendingSingleTables.remove(pendingSingle.getKey());
+        }
+
+        neededProps = null;
+        flush = false;
+    }
+
     private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, CalcProperty> changeTable) throws SQLException {
         savePropertyChanges(implementTable, BaseUtils.toMap(changeTable.getValues()), BaseUtils.toMap(changeTable.getKeys()), changeTable);
+    }
+
+    private <T extends PropertyInterface> void savePropertyChanges(CalcProperty<T> property, SinglePropertyTableUsage<T> change) throws SQLException {
+        savePropertyChanges(property.mapTable.table, Collections.singletonMap("value", (CalcProperty) property), property.mapTable.mapKeys, change);
     }
 
     private <K,V> void savePropertyChanges(Table implementTable, Map<V, CalcProperty> props, Map<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable) throws SQLException {
@@ -755,7 +848,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
             if(property instanceof ActionProperty) {
+                startPendingSingles((ActionProperty)property);
                 ((ActionProperty)property).execute(this);
+                flushPendingSingles(BL);
                 if(!isInTransaction()) // если ушли из транзакции вываливаемся
                     return false;
             }
@@ -799,11 +894,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             applySingleStored(property, result.first, BL);
             apply.add(property, result.second);
         }
-    }
-
-    @Message("message.session.apply.auto.execute")
-    public void executePending(@ParamMessage ActionProperty property, Map<ClassPropertyInterface, DataObject> context, boolean groupLast) throws SQLException {
-        property.execute(new ExecutionContext(context, null, null, this, null, groupLast));
     }
 
     protected SQLSession getSQL() {
@@ -890,7 +980,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     }
 
-    private void changeProperty(final DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, SQLSession session, boolean groupLast) throws SQLException {
+    private void aspectChangeProperty(final DataProperty property, PropertyChange<ClassPropertyInterface> change, boolean groupLast) throws SQLException {
         checkTransaction();
 
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.get(property);
@@ -898,7 +988,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        dataChange.insertRecord(session, keys, newValue, true, groupLast);
+        change.addRows(dataChange, sql, baseClass, true, getQueryEnv(), groupLast);
     }
 
     public void dropTables(SQLSession session) throws SQLException {
@@ -943,7 +1033,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         restart(true);
     }
 
-    public <P extends PropertyInterface> void updateApplyStart(OldProperty<P> property, SinglePropertyTableUsage<P> tableUsage, BaseClass baseClass) throws SQLException { // изврат конечно
+    private <P extends PropertyInterface> void updateApplyStart(OldProperty<P> property, SinglePropertyTableUsage<P> tableUsage) throws SQLException { // изврат конечно
         assert isInTransaction();
 
         SinglePropertyTableUsage<P> prevTable = apply.getTable(property);
@@ -952,7 +1042,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             apply.add(property, prevTable);
         }
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, env); // если он уже был в базе он не заместится
+        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, false, env); // если он уже был в базе он не заместится
         apply.eventChange(property);
         tableUsage.drop(sql);
     }
@@ -973,14 +1063,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     public <P extends PropertyInterface> SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, @ParamMessage Collection<CalcProperty> properties) throws SQLException {
         assert isInTransaction();
 
-        SessionTableUsage<KeyField, CalcProperty> changeTable =
-                new SessionTableUsage<KeyField, CalcProperty>(table.keys, new ArrayList<CalcProperty>(properties), Field.<KeyField>typeGetter(),
-                        new Type.Getter<CalcProperty>() {
-                            public Type getType(CalcProperty key) {
-                                return key.getType();
-                            }
-                        });
-
         // подготавливаем запрос
         Query<KeyField, CalcProperty> changesQuery = new Query<KeyField, CalcProperty>(table.keys);
         WhereBuilder changedWhere = new WhereBuilder();
@@ -989,6 +1071,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         changesQuery.and(changedWhere.toWhere());
 
         // подготовили - теперь надо сохранить в курсор и записать классы
+        SessionTableUsage<KeyField, CalcProperty> changeTable =
+                new SessionTableUsage<KeyField, CalcProperty>(table.keys, new ArrayList<CalcProperty>(properties), Field.<KeyField>typeGetter(),
+                        new Type.Getter<CalcProperty>() {
+                            public Type getType(CalcProperty key) {
+                                return key.getType();
+                            }
+                        });
         changeTable.writeRows(sql, changesQuery, baseClass, env);
         return changeTable;
     }

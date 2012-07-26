@@ -15,8 +15,8 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,9 +52,9 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return new CompiledQuery<K,V>(query.compile(syntax, orders.map(mapProps), top, subcontext, recursive),mapKeys,mapProps,mapValues);
     }
 
-    public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {
+    public <B> ClassWhere<B> getClassWhere(Set<? extends V> classProps) {
         // нужно перемаппить ClassWhere, здесь по большому счету не нужен mapValues потому как assert то классы совпадают
-        return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(BaseUtils.filterKeys(mapProps, classProps).values()), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
+        return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(new HashSet<MV>(BaseUtils.filterKeys(mapProps, classProps).values())), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
@@ -66,16 +66,12 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return new RemapJoin<V,MV>(query.joinExprs(BaseUtils.crossJoin(mapKeys,joinImplement),mapValues.map(joinValues)),mapProps);
     }
 
-    public IQuery<K, V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) throws SQLException {
-        Map<MK, Expr> mapPullKeys = new HashMap<MK, Expr>();
-        Map<MV, Expr> mapPullProps = new HashMap<MV, Expr>();
-        IQuery<MK, MV> mapQuery = query.pullValues(mapPullKeys, mapPullProps);
-        if(mapPullKeys.isEmpty() && mapPullProps.isEmpty())
-            return this;
+    public PullValues<K, V> pullValues() {
+        PullValues<MK, MV> pullValues = query.pullValues();
+        if(pullValues.isEmpty())
+            return new PullValues<K, V>(this);
 
-        pullKeys.putAll(BaseUtils.rightJoin(mapKeys, mapValues.mapKeys().translate(mapPullKeys)));
-        pullProps.putAll(BaseUtils.rightJoin(mapProps, mapValues.mapKeys().translate(mapPullProps)));
-        return mapQuery.map(BaseUtils.filterNotValues(mapKeys, mapPullKeys.keySet()), BaseUtils.filterNotValues(mapProps, mapPullProps.keySet()), mapValues);
+        return pullValues.map(mapKeys, mapProps, mapValues);
     }
 
     public long getComplexity(boolean outer) {

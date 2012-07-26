@@ -28,6 +28,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
@@ -81,6 +82,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
+    public static boolean depends(Collection<CalcProperty> properties, CalcProperty check) {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(CalcProperty property : properties)
+            if(depends(property, check))
+                return true;
+        return false;
+    }
+
     // используется если создаваемый WhereBuilder нужен только если задан changed
     public static WhereBuilder cascadeWhere(WhereBuilder changed) {
         return changed == null ? null : new WhereBuilder();
@@ -132,8 +141,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         assert isStored();
 
-        // оптимизация
-        if(!Settings.instance.isEnableApplySingleStored() || DataSession.notFitKeyClasses(this, changeTable))
+        if(!Settings.instance.isEnableApplySingleStored() || DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(createChangeTable(), changeTable);
         if(DataSession.fitClasses(this, changeTable))
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
@@ -143,6 +151,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Map<KeyField, Expr> mapKeys = crossJoin(mapTable.mapKeys, change.getMapExprs());
         Where classWhere = fieldClassWhere.getWhere(merge(mapKeys, Collections.singletonMap(field, change.expr)))
                 .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
+        
+        if(classWhere.isFalse()) // оптимизация
+            return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(createChangeTable(), changeTable);
+        if(classWhere.isTrue())
+            return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
 
         SinglePropertyTableUsage<T> fit = readChangeTable(sql, change.and(classWhere), baseClass, env);
         SinglePropertyTableUsage<T> notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
@@ -277,7 +290,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @Message("message.increment.read.properties")
     @ThisMessage
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        SinglePropertyTableUsage<T> readTable = readChangeTable(session, getIncrementChange(modifier), baseClass, env);
+        return readFixChangeTable(session, getIncrementChange(modifier), baseClass, env);
+    }
+
+    public SinglePropertyTableUsage<T> readFixChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+        SinglePropertyTableUsage<T> readTable = readChangeTable(session, change, baseClass, env);
 
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
@@ -288,7 +305,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         SinglePropertyTableUsage<T> changeTable = createChangeTable();
-        changeTable.writeRows(session, change.getQuery(), baseClass, env);
+        change.writeRows(changeTable, session, baseClass, env);
         return changeTable;
     }
 
@@ -645,10 +662,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         proceedNotNull(set, env, notNull);
     }
 
-    protected Expr getDefaultExpr() {
+    protected DataObject getDefaultObjectValue() {
         Type type = getType();
         if(type instanceof DataClass)
-            return ((DataClass) type).getDefaultExpr();
+            return ((DataClass) type).getDefaultObjectValue();
         else
             return null;
     }
@@ -656,11 +673,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     // assert что where содержит getWhere().not
     protected void proceedNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
         if(notNull) {
-            Expr defaultExpr = getDefaultExpr();
-            if(defaultExpr!=null)
-                env.change(this, new PropertyChange<T>(set, defaultExpr));
+            ObjectValue defaultValue = getDefaultObjectValue();
+            if(defaultValue!=null)
+                env.change(this, new PropertyChange<T>(set, defaultValue));
         } else
-            env.change(this, new PropertyChange<T>(set, CaseExpr.NULL));
+            env.change(this, new PropertyChange<T>(set, NullValue.instance));
     }
 
     public QuickSet<CalcProperty> getUsedEventChange(StructChanges propChanges, boolean cascade) {

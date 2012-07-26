@@ -196,15 +196,17 @@ needToCostDataSkuLedger 'Требуется расчет себестоимос�
                                                                         AND NOT quantitySkuLedger(ledger) == costedDataSkuLedger(ledger);
 
 resetCostDataSkuLedger 'Перерассчитать себестоимость' = ACTION (ledger) { //NEWSESSION AUTOAPPLY {
-    IF costedDataSkuLedger(ledger) THEN {
-        SET costDataSkuLedgerBatch(ledger, batch) <- NULL;
-//        EXEC apply(); // todo : здесь apply не нужен, но без этого следующая команда повиснет
-    }
+    SET costDataSkuLedgerBatch(ledger, batch) <- NULL;
     SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
 }
 
 // мгновенный расчет себестоимости
-WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
+//WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
+ON APPLY SINGLE {
+    SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE ASSIGNED(isPostedDataSkuLedger(ledger));
+    FOR ASSIGNED(isPostedDataSkuLedger(ledger)) DO
+        SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
+}
 
 setDataSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
 

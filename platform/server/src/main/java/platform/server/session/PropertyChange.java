@@ -87,6 +87,10 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(mapValues, new HashMap<T, KeyExpr>(), expr, Where.TRUE);
     }
 
+    public PropertyChange(ObjectValue value) {
+        this(value.getExpr(), new HashMap<T, DataObject>());
+    }
+
     public PropertyChange(ObjectValue value, T propInterface, DataObject intValue) {
         this(value.getExpr(), Collections.singletonMap(propInterface, intValue));
     }
@@ -98,8 +102,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this.where = where;
     }
 
-    public PropertyChange(PropertySet<T> set, Expr expr) {
-        this(set.mapValues, set.mapKeys, expr, set.where);
+    public PropertyChange(PropertySet<T> set, ObjectValue value) {
+        this(set.mapValues, set.mapKeys, value.getExpr(), set.where);
     }
 
     public PropertyChange(PropertyChange<T> change, Expr expr) {
@@ -192,6 +196,22 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             return new OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>>(mapValues, Collections.singletonMap("value", exprValue));
 
         return getQuery().executeClasses(env);
+    }
+
+    public void addRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, boolean update, QueryEnvironment queryEnv, boolean groupLast) throws SQLException {
+        ObjectValue exprValue;
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
+            table.insertRecord(session, mapValues, exprValue, update, groupLast);
+        else
+            table.addRows(session, getQuery(), baseClass, update, queryEnv);
+    }
+
+    public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {
+        ObjectValue exprValue;
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
+            table.writeRows(session, Collections.singletonMap(mapValues, Collections.singletonMap("value", exprValue)));
+        else
+            table.writeRows(session, getQuery(), baseClass, queryEnv);
     }
 
     @IdentityLazy

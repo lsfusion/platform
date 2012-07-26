@@ -24,7 +24,7 @@ public interface SessionChanges {
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException;
 
-    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException;
+    public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> keys, boolean groupLast) throws SQLException;
 
     public ConcreteClass getCurrentClass(DataObject value);
 

@@ -1,5 +1,6 @@
 package platform.server.data.query;
 
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.server.caches.AbstractInnerContext;
@@ -21,8 +22,10 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
+import javax.management.loading.MLet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +57,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
 
-    public abstract <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps);
+    public abstract <B> ClassWhere<B> getClassWhere(Set<? extends V> classProps);
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         return join(joinImplement, MapValuesTranslator.noTranslate);
@@ -65,7 +68,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public abstract Set<V> getProperties();
     public abstract Expr getExpr(V property);
-    public abstract Where getWhere();
+    public abstract Where getWhere();    
 
     public boolean isEmpty() {
         return getWhere().isFalse();
@@ -81,5 +84,31 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N
     public abstract <RMK, RMV> IQuery<RMK,RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps, MapValuesTranslate translate);
 
-    public abstract IQuery<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) throws SQLException;
+    
+    public static class PullValues<K, V> {
+        public final IQuery<K, V> query;
+        public final Map<K, Expr> pullKeys;
+        public final Map<V, Expr> pullProps;
+
+        public PullValues(IQuery<K, V> query) {
+            this(query, new HashMap<K, Expr>(), new HashMap<V, Expr>());
+        }
+
+        public PullValues(IQuery<K, V> query, Map<K, Expr> pullKeys, Map<V, Expr> pullProps) {
+            this.query = query;
+            this.pullKeys = pullKeys;
+            this.pullProps = pullProps;
+        }
+        
+        public boolean isEmpty() {
+            return pullKeys.isEmpty() && pullProps.isEmpty();
+        }
+        
+        public <MK, MV> PullValues<MK, MV> map(Map<MK, K> mapKeys, Map<MV, V> mapProps, MapValuesTranslate mapValues) {
+            return new PullValues<MK, MV>(query.map(BaseUtils.filterNotValues(mapKeys, pullKeys.keySet()), BaseUtils.filterNotValues(mapProps, pullProps.keySet()), mapValues),
+                    BaseUtils.rightJoin(mapKeys, mapValues.mapKeys().translate(pullKeys)),
+                    BaseUtils.rightJoin(mapProps, mapValues.mapKeys().translate(pullProps)));
+        }
+    }
+    public abstract PullValues<K, V> pullValues();
 }

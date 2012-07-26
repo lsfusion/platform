@@ -7,6 +7,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
+import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -58,23 +59,28 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
         this(session, keys, properties, count, fill, new Result<Integer>(), classes, propertyClasses, owner);
     }
+    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> queryClasses, Object owner) throws SQLException {
+        this(session, keys, properties, count, fill, new Result<Integer>(), queryClasses.first, queryClasses.second, owner);
+    }
 
     // создает таблицу batch'ем
     public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
         // прочитаем классы
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = SessionRows.getClasses(properties, rows);
         return new SessionTable(session, keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 session.insertBatchRecords(name, keys, rows);
                 return null;
             }
-        }, orClasses.first, orClasses.second, owner);
+        }, SessionRows.getClasses(properties, rows), owner);
     }
 
     public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, Integer count, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
         super(name, keys, properties, classes, propertyClasses);
 
         this.count = count;
+    }
+    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, Integer count, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> tableClasses) {
+        this(name, keys, properties, count, tableClasses.first, tableClasses.second);
     }
 
     public Set<PropertyField> getProperties() {
@@ -176,6 +182,13 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return name.hashCode() * 31 + getValueClass().hashCode();
     }
 
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses) {
+        Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : propertyClasses.entrySet())
+            orPropertyClasses.put(propertyClass.getKey(), propertyClass.getValue().or(orClasses.second.get(propertyClass.getKey())));
+        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes.or(orClasses.first), orPropertyClasses);
+    }
+
     public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
 
         Map<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
@@ -262,14 +275,34 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, final Object owner) throws SQLException {
 
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = orFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
-
         update = update && session.isRecord(this, keyFields);
-        int newCount = count + (update?0:1);
 
-        SessionTable result;
-        if(!SQLTemporaryPool.getDBStatistics(newCount).equals(SQLTemporaryPool.getDBStatistics(count)))
-            result = new SessionTable(session, keys, properties, newCount, new FillTemporaryTable() {
+        if(update)
+            session.updateRecords(this, keyFields, propFields);
+        else
+            session.insertRecord(this, keyFields, propFields);
+
+        return new SessionTable(name, keys, properties, count + (update?0:1),
+                        orFieldsClassWheres(classes, propertyClasses, keyFields, propFields)).
+                            updateStatistics(session, count, owner);
+    }
+
+    public SessionTable addRows(SQLSession session, Query<KeyField, PropertyField> query, boolean update, QueryEnvironment env, Object owner) throws SQLException {
+
+        ModifyQuery modify = new ModifyQuery(this, query, env);
+        int inserted;
+        if(update)
+            inserted = session.modifyRecords(modify);
+        else
+            inserted = session.insertLeftSelect(modify);
+        return new SessionTable(name, keys, properties, count + inserted,
+                        orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
+                            updateStatistics(session, count, owner);
+    }
+
+    public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {
+        if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount))) {
+            return new SessionTable(session, keys, properties, count, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException {
                     Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);
                     platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.mapKeys, SessionTable.this.keys));
@@ -279,15 +312,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     session.returnTemporaryTable(SessionTable.this, owner);
                     return null;
                 }
-            }, orClasses.first, orClasses.second, owner);
-        else
-            result = new SessionTable(name, keys, properties, newCount, orClasses.first, orClasses.second);
-
-        if(update)
-            session.updateRecords(result, keyFields, propFields);
-        else
-            session.insertRecord(result, keyFields, propFields);
-        return result;
+            }, classes, propertyClasses, owner);
+        }
+        return this;
     }
 
     public void deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
@@ -303,6 +330,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         platform.server.data.query.Join<PropertyField> dataJoin = joinAnd(dropValues.mapKeys);
         dropValues.and(dataJoin.getExpr(property).compare(object, Compare.EQUALS));
         dropValues.properties.put(property, Expr.NULL);
+
+        if(dropValues.isEmpty()) // оптимизация
+            return;
+
         session.updateRecords(new ModifyQuery(this, dropValues));
     }
 
@@ -310,7 +341,6 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if(addKeys.isEmpty() && addProps.isEmpty())
             return this;
 
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> andClasses = andFieldsClassWheres(classes, propertyClasses, addKeys, addProps);
         return new SessionTable(session, keys, BaseUtils.mergeSet(properties, addProps.keySet()), count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
@@ -323,7 +353,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 session.returnTemporaryTable(SessionTable.this, owner);
                 return null;
             }
-        }, andClasses.first, andClasses.second, owner);
+        }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner);
     }
 
     public SessionTable removeFields(final SQLSession session, Set<KeyField> removeKeys, Set<PropertyField> removeProps, final Object owner) throws SQLException {
@@ -333,7 +363,6 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         // assert что удаляемые ключи с одинаковыми значениями, но вообще может использоваться как слияние
         final List<KeyField> remainKeys = BaseUtils.filterNotList(keys, removeKeys);
         final Set<PropertyField> remainProps = BaseUtils.filterNotSet(properties, removeProps);
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> remainClasses = removeFieldsClassWheres(classes, propertyClasses, removeKeys, removeProps);
         return new SessionTable(session, remainKeys, remainProps, count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
@@ -355,7 +384,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 session.returnTemporaryTable(SessionTable.this, owner);
                 return null;
             }
-        }, remainClasses.first, remainClasses.second, owner);
+        }, removeFieldsClassWheres(classes, propertyClasses, removeKeys, removeProps), owner);
     }
 
     private BaseUtils.HashComponents<Value> components = null;

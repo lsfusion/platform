@@ -811,15 +811,23 @@ public class SQLSession extends MutableObject {
         return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
     }
 
+    public int insertLeftSelect(ModifyQuery modify) throws SQLException {
+        return executeDML(modify.getInsertLeftKeys(syntax));
+    }
+
     // сначала делает InsertSelect, затем UpdateRecords
     public int modifyRecords(ModifyQuery modify) throws SQLException {
-        if (modify.isEmpty()) return 0;
+        if (modify.isEmpty()) // оптимизация
+            return 0;
+
+        int result = 0;
         if (modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
             if (!isRecord(modify.table, new HashMap<KeyField, DataObject>()))
-                insertSelect(modify);
+                result = insertSelect(modify);
         } else
-            executeDML(modify.getInsertLeftKeys(syntax));
-        return updateRecords(modify);
+            result = insertLeftSelect(modify);
+        updateRecords(modify);
+        return result;
     }
 
     public void close() throws SQLException {

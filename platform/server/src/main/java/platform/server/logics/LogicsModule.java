@@ -2402,15 +2402,16 @@ public abstract class LogicsModule {
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         addProp(action);
 
-        addBaseEvent(action, session, resolve);
+        addBaseEvent(action, session, resolve, false);
     }
 
-    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, boolean session, boolean resolve) {
-        addBaseEvent(action, session ? SystemEvent.SESSION : SystemEvent.APPLY, resolve);
+    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, boolean session, boolean resolve, boolean single) {
+        addBaseEvent(action, session ? SystemEvent.SESSION : SystemEvent.APPLY, resolve, single);
     }
 
-    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, BaseEvent event, boolean resolve) {
+    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, BaseEvent event, boolean resolve, boolean single) {
         action.events.add(event);
+        action.singleApply = single;
         action.resolve = resolve;
     }
 

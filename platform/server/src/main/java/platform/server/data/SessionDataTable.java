@@ -5,10 +5,10 @@ import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
+import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
-import platform.server.data.query.AbstractJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
@@ -101,6 +101,13 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner).
               insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, groupLast, owner),
                 keys, fixedKeyValues, fixedPropValues);
+    }
+
+    @Override
+    public SessionData addRows(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, boolean update, QueryEnvironment env, Object owner) throws SQLException {
+        if(keyValues.isEmpty() && propertyValues.isEmpty() && !update) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
+            return new SessionDataTable(table.addRows(session, query, update, env, owner), keys, keyValues, propertyValues);
+        return super.addRows(session, query, baseClass, update, env, owner);
     }
 
     // для оптимизации групповых добавлений (batch processing'а)

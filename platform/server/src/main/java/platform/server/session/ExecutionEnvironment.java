@@ -39,12 +39,8 @@ public abstract class ExecutionEnvironment {
     }
 
     public <P extends PropertyInterface> void change(DataChanges mapChanges) throws SQLException {
-        for(Map.Entry<DataProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : mapChanges.read(this).entrySet()) {
-            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
-                getSession().changeProperty(propRow.getKey(), row.getKey(), row.getValue().get("value"), !iterator.hasNext());
-            }
-        }
+        for(DataProperty change : mapChanges.getProperties())
+            getSession().changeProperty(change, mapChanges.get(change), true);
     }
 
     public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {

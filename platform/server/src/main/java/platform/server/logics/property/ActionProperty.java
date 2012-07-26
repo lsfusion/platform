@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.FunctionSet;
 import platform.base.Pair;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ActionClass;
@@ -38,6 +39,19 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             result.addAll(dependAction.getUsedProps());
         return result;
     }
+    
+    public final FunctionSet<CalcProperty> usedProps = new FunctionSet<CalcProperty>() {
+        public boolean contains(CalcProperty element) {
+            return CalcProperty.depends(getChangeProps(), element) || CalcProperty.depends(getUsedProps(), element);
+        }
+        public boolean isEmpty() {
+            return false;
+        }
+        public boolean isFull() {
+            return false;
+        }
+    };
+
     @IdentityLazy
     public boolean hasCancel() {
         boolean hasCancel = false;
@@ -96,6 +110,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public Set<BaseEvent> events = new HashSet<BaseEvent>();
+    public boolean singleApply = false;
     public boolean resolve = false;
     public Collection<ActionPropertyMapImplement<?, P>> beforeAspects = new ArrayList<ActionPropertyMapImplement<?, P>>();
     public Collection<ActionPropertyMapImplement<?, P>> afterAspects = new ArrayList<ActionPropertyMapImplement<?, P>>();
