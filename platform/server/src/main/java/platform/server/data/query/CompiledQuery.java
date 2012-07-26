@@ -456,7 +456,8 @@ public class CompiledQuery<K,V> {
 
             // чтобы разбить рекурсию
             protected boolean checkRecursivePush(Where fullWhere) {
-                return fullWhere.getComplexity(false) > InnerSelect.this.fullWhere.getComplexity(false); // не проталкиваем если, полученная сложность больше сложности всего запроса
+                return false;
+//                return fullWhere.getComplexity(false) > InnerSelect.this.fullWhere.getComplexity(false); // не проталкиваем если, полученная сложность больше сложности всего запроса
             }
         }
 
