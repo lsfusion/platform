@@ -48,11 +48,11 @@ CLASS STATIC methodPrice 'Метод расчёта'
 
 
 CLASS ABSTRACT priceSetDocument 'Документ изменения цен' : transaction;
-CLASS basePriceSetDocument 'Изменение базовой цены' : priceSetDocument;
-CLASS discountPriceSetDocument 'Изменение цены продажи' : priceSetDocument;
-CLASS mixPriceSetDocument 'Изменение базовой и продажи' : basePriceSetDocument, discountPriceSetDocument;
+CLASS basePriceSetDocument 'Базовый прайс' : priceSetDocument;
+CLASS discountPriceSetDocument 'Распродажа' : priceSetDocument;
+CLASS mixPriceSetDocument 'Базовый прайс с распродажей' : basePriceSetDocument, discountPriceSetDocument;
 
-CLASS coefficientRetail 'Коэффициент надбавки';
+CLASS coefficientRetail 'Надбавка';
 
 //CLASS diapasonPrices 'Диапазон цен';
 //priceFromDiapasonPrices 'от' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
@@ -359,7 +359,7 @@ FORM discountPriceSetDocuments 'Распродажи'
 
 
 // розничный прайс по фрахту
-toCreatePriceSetDocument 'Расценка фрахта' =  ACTION (freight) NEWSESSION {
+toCreatePriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightPriceSetDocument(p) <- freight AS freight;
@@ -373,7 +373,7 @@ toCreatePriceSetDocument 'Расценка фрахта' =  ACTION (freight) NEW
     };
 } CONFIRM;
 
-FORM freights 'Ценообразование по фрахтам'
+FORM freights 'Расценка фрахтов'
 
     OBJECTS f=freight
     PROPERTIES(f) READONLY date BACKGROUND isPriceSetDocumentFreight(f), dateArrivalFreight,

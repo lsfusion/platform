@@ -114,7 +114,7 @@ FORM wholesalePriceDocuments 'Оптовые прайсы'
 ;
 
 
-toCreateWholesalePriceDocument 'Прайс по декларации' =  ACTION (declaration) NEWSESSION {
+toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWSESSION {
     ADDOBJ wholesalePriceDocument;
     FOR w == addedObject() DO {
         SET declarationWholesalePriceDocument(w) <- declaration AS declaration;

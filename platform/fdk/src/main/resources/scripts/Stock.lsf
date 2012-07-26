@@ -719,6 +719,7 @@ DESIGN stockDialog FROM DEFAULT {
                 title = 'Склады';
             }
 
+            ADD ts.box;
         }
 
         ADD functions.box;
