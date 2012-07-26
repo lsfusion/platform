@@ -1,4 +1,4 @@
-MODULE CRM;
+MODULE RetailCRM;
 
 REQUIRE System,
 
@@ -165,13 +165,13 @@ namePromotionGroupPromotion 'Группа акций' (promotion) = name(promoti
 
 CLASS promotionCondition 'Условия акций' : named;
 
-GROUP CRMGroup 'Реквизиты' : recognizeGroup;
+GROUP retailCRMGroup 'Реквизиты' : recognizeGroup;
 
-dateFromPromotion 'ОТ:' = DATA DATE (promotion) IN CRMGroup;
-dateToPromotion 'ДО:' = DATA DATE (promotion) IN CRMGroup;
+dateFromPromotion 'ОТ:' = DATA DATE (promotion) IN retailCRMGroup;
+dateToPromotion 'ДО:' = DATA DATE (promotion) IN retailCRMGroup;
 
-timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN CRMGroup;
-timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN CRMGroup;
+timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN retailCRMGroup;
+timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN retailCRMGroup;
 
 includePromotionDay 'В акции' = DATA BOOLEAN (promotion, DOW);
 includePromotionStore 'В акции' = DATA BOOLEAN (promotion, store);

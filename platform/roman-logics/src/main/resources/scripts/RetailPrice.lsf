@@ -198,7 +198,7 @@ pricePriceSetDocumentArticleDateTime(article, dateTime) = priceBasePriceSetDocum
 
 POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += pricePriceSetDocumentArticleDateTime(articleSku(sku), dateTime) IF departmentStore IS departmentStore;
 
-FORM coefficientRetail 'Коэффициент надбавки'
+FORM coefficientRetail 'Надбавка'
 
     OBJECTS c=coefficientRetail FIXED PANEL
     PROPERTIES(c) dateCoefficientRetail, markupCoefficientRetail
@@ -206,7 +206,7 @@ FORM coefficientRetail 'Коэффициент надбавки'
     EDIT coefficientRetail OBJECT c
 ;
 
-FORM coefficientRetails 'История коэффициентов'
+FORM coefficientRetails 'Надбавки'
 
     OBJECTS c=coefficientRetail
     PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
@@ -214,7 +214,7 @@ FORM coefficientRetails 'История коэффициентов'
 ;
 
 
-FORM priceSetDocument 'Документ базовых цен'
+FORM priceSetDocument 'Базовый прайс'
 
     OBJECTS p=basePriceSetDocument FIXED PANEL
     PROPERTIES(p) sidPriceSetDocument, date, timePriceSetDocument, toSetPricesPriceSetDocument
@@ -266,7 +266,7 @@ DESIGN priceSetDocument FROM DEFAULT {
 
 }
 
-FORM priceBaseChangeDocuments 'Документы базовых цен'
+FORM priceBaseChangeDocuments 'Базовые прайсы'
 
     OBJECTS p=basePriceSetDocument
     PROPERTIES(p) READONLY sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
@@ -383,18 +383,3 @@ FORM freights 'Ценообразование по фрахтам'
     FILTERGROUP filtersDocument
         FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f) DEFAULT
 ;
-
-
-// Акции, распродажи
-CLASS ABSTRACT action 'Акция';
-CLASS saleAction 'Распродажа': action;
-CLASS articleAction 'Акция по позициям': action;
-
-dateFromAction 'Дата с' = DATA DATE(action) IN baseGroup;
-dateToAction 'Дата по' = DATA DATE(action) IN baseGroup;
-
-inActionStore 'Магазин в акции' = DATA BOOLEAN(action, store);
-inActionArticle 'Артикул в акции' = DATA BOOLEAN(action, article);
-
-minSumClientArticleAction 'Мин. накопленная сумма' = DATA NUMERIC[14,2](articleAction) IN baseGroup;
-minSumCheckArticleAction 'Мин. сумма чека' = DATA NUMERIC[14,2](articleAction) IN baseGroup;

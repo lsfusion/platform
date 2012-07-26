@@ -7,7 +7,7 @@ REQUIRE System,
         CashRegister,
         CashOperation,
         Sales,
-        CRM,
+        RetailCRM,
         AccountDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 
 POSRoundDecimals () = -1;

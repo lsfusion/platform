@@ -34,7 +34,7 @@ REQUIRE System,
         Terminal,
         Label,
         Default,
-        CRM,
+        RetailCRM,
         UserPriceChange,
         CashOperation,
         POS;

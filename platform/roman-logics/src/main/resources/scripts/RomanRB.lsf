@@ -18,7 +18,7 @@ REQUIRE System,
         Move,
         WholesalePrice,
         RetailPrice,
-        CRM,
+        RetailCRM,
         POS,
         PriceChange,
         Terminal,
@@ -183,7 +183,7 @@ NAVIGATOR {
             ADD operationCashRegister;
             ADD POS;
         }
-        NEW CRM 'CRM' {
+        NEW RetailCRM 'CRM' {
             ADD clients;
             ADD discountCards;
             ADD promotionGroups;

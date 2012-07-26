@@ -5,7 +5,7 @@ REQUIRE System,
         Store,
         LegalEntity,
         Barcode,
-        CRM,
+        RetailCRM,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
