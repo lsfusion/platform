@@ -86,7 +86,6 @@ freightPriceSetDocument 'Фрахт документа (ИД)' = DATA freight(ba
 quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightPriceSetDocument(basePriceSetDocument) BY freightPriceSetDocument(basePriceSetDocument);
 isPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
 
-
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
@@ -367,7 +366,6 @@ toCreatePriceSetDocument 'Расценка фрахта' =  ACTION (freight) NEW
         };
     };
 } CONFIRM;
-
 
 FORM freights 'Ценообразование по фрахтам'
 

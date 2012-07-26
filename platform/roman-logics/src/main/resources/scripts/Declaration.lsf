@@ -649,21 +649,6 @@ FORM declarationInvoices 'Присоединение инвойсов'
 
 showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d NEWSESSION MODAL IN docGroup TOOLBAR;
 
-// розничный прайс по декларации
-toCreateDeclarationPriceSetDocument 'Расценка декларации' =  ACTION (declaration) NEWSESSION {
-    ADDOBJ basePriceSetDocument;
-    FOR p == addedObject() DO {
-        SET priceInPriceSetDocumentArticle(p, article) <- priceContractDeclarationArticle(declaration, article);
-        SET RRPPriceSetDocumentArticle(p, article) <- RRPDeclarationArticle(declaration, article);
-        SET inArticlePriceSetDocument(p, article) <- inDeclarationArticle(declaration, article);
-        FORM priceSetDocument OBJECTS p=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN {
-            EXEC apply();
-        };
-    };
-} CONFIRM IN docGroup;
-
-
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration,
@@ -678,7 +663,7 @@ FORM declaration 'Декларация'
 
     OBJECTS f=freight
     PROPERTIES (f, d) sidFreightDeclaration
-    PROPERTIES (f) date, toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
+    PROPERTIES (f) date
     FILTERS quantityFreightDeclaration (f, d)
 
     OBJECTS dd=declarationDetail
@@ -687,7 +672,7 @@ FORM declaration 'Декларация'
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
     PROPERTIES (dd) sidCustomCategory10DeclarationDetail
     PROPERTIES (dd) netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
-                    sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
+                    sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail ,
                     declarationPriceDeclarationDetail, supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail, dutyPercentDeclarationDetail,
                     dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail, VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail
 
@@ -829,6 +814,18 @@ DESIGN declaration FROM DEFAULT{
           }
     }
 
+    PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(supplierPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
+
+    PROPERTY(dutyPercentDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(dutyUnionDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberRangeSupplierVATDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(VATPercentDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(VATUnionDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(registrationDeclarationDetail) { background = #AAFFFF; }
+
     ADD functions.box;
 };
 
@@ -847,7 +844,8 @@ FORM declarations 'Декларации'
                             sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
                             nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, shortNameUOMDeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
-                            quantityDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail, supplierPriceDeclarationDetail,
+                            quantityDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
+                            supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
                             dutyPercentDeclarationDetail, dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail,
                             VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail,
                             correctionPriceDeclarationDetail, diffDutyDeclarationDetail, diffVATDeclarationDetail,
@@ -896,6 +894,18 @@ DESIGN declarations FROM DEFAULT {
             ADD s.box;
         }
     }
+
+    PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(supplierPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
+
+    PROPERTY(dutyPercentDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(dutyUnionDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberRangeSupplierVATDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(VATPercentDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(VATUnionDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(registrationDeclarationDetail) { background = #AAFFFF; }
 
     ADD functions.box;
 }
