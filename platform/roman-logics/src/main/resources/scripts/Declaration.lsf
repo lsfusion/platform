@@ -58,7 +58,7 @@ CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
 
 TABLE innerInvoice (innerInvoice);
 
-includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived;
+includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived AND routeFreight(freight) == route.rb;
 
 @defineAggregationDouble(importer, freight, formedInvoice, includeImporterFreight);
 
@@ -68,9 +68,6 @@ freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EX
 dateFreightInnerInvoice 'Дата инвойса' (formedInvoice) = dateArrivalFreight(freightInnerInvoice(formedInvoice)) IN baseGroup;
 
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived;
-
-customStoreInnerInvoice 'СВХ (ИД)' (innerInvoice) = customStoreFreight(freightInnerInvoice(innerInvoice)) IN idGroup;
-nameCustomStoreInnerInvoice 'СВХ' (innerInvoice) = name(customStoreInnerInvoice(innerInvoice)) IN baseGroup;
 
 importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
                                                                               importerDirectInvoice(innerInvoice) IN idGroup;
@@ -154,9 +151,6 @@ CONSTRAINT declarationInnerInvoice(innerInvoice) AND NOT(freightInnerInvoice(inn
 
 
 forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS declaration AND NOT declarationInnerInvoice(innerInvoice);
-
-CONSTRAINT customStoreDeclaration(declarationInnerInvoice(innerInvoice)) != customStoreInnerInvoice(innerInvoice) CHECKED
-    MESSAGE 'Инвойс для другого СВХ';
 
 CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importerInnerInvoice(innerInvoice) CHECKED
     MESSAGE 'Инвойс для другого импортёра';
@@ -841,9 +835,9 @@ FORM declarations 'Декларации'
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameCategoryDeclarationDetail, nameBrandDeclarationDetail,
                             sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                             sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
-                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail, shortNameUOMDeclarationDetail,
+                            nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                             netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
-                            quantityDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
+                            quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
                             supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
                             dutyPercentDeclarationDetail, dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail,
                             VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail,
@@ -912,7 +906,7 @@ DESIGN declarations FROM DEFAULT {
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
-    PROPERTIES(i) READONLY nameCustomStoreInnerInvoice, sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice
+    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice
     PROPERTIES(i) sidDeclarationInnerInvoice, delete
     FILTERS freightArrivedInnerInvoice(i)
 
