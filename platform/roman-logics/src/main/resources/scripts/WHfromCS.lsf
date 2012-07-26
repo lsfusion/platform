@@ -537,7 +537,7 @@ nameUnitOfMeasureArticleSkuWHfromCSDDetail 'Ед. измерения товар�
 
 FORM WHfromCSIs 'Поступления товара с СВХ'
     OBJECTS w = WHfromCSI
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWHfromCSI, timeWHfromCSI,
+    PROPERTIES (w) READONLY isPostedWHfromCSI FORCE GRID, numberWHfromCSI, seriesWHfromCSI, dateWHfromCSI, timeWHfromCSI,
                             nameWarehouseWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI,
                             quantityWHfromCSIDetailWHfromCSI, quantityWHfromCSRDetailWHfromCSI,
                             statusRecWHfromCSI, countDiffWHfromCSI, quantityDiffWHfromCSI
