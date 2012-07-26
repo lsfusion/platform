@@ -111,7 +111,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         for (DataSession session : sessions)
-            session.updateProperties(Collections.singleton(property), true);
+            session.updateProperties(Collections.singleton(property));
     }
 
     public void relogin(String login) throws RemoteException {

@@ -111,7 +111,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         ValueClass valueClass = getInterfaceClass();
         if(valueClass instanceof ConcreteObjectClass) {
             for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = set.executeClasses(env).iterator(); iterator.hasNext(); )
-                env.changeClass(null, BaseUtils.singleValue(iterator.next()), notNull ? (ConcreteObjectClass) valueClass : env.getSession().baseClass.unknown, !iterator.hasNext());
+                env.changeClass(null, BaseUtils.singleValue(iterator.next()), notNull ? (ConcreteObjectClass) valueClass : env.getSession().baseClass.unknown);
         }
     }
 

@@ -13,7 +13,6 @@ import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Map;
 
 public abstract class ExecutionEnvironment {
@@ -40,7 +39,7 @@ public abstract class ExecutionEnvironment {
 
     public <P extends PropertyInterface> void change(DataChanges mapChanges) throws SQLException {
         for(DataProperty change : mapChanges.getProperties())
-            getSession().changeProperty(change, mapChanges.get(change), true);
+            getSession().changeProperty(change, mapChanges.get(change));
     }
 
     public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
@@ -54,12 +53,12 @@ public abstract class ExecutionEnvironment {
     }
 
     public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
-        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv, true));
+        return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv));
     }
 
-    public abstract DataObject addObject(ConcreteCustomClass cls, boolean groupLast, DataObject pushed) throws SQLException;
+    public abstract DataObject addObject(ConcreteCustomClass cls, DataObject pushed) throws SQLException;
 
-    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException;
+    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException;
 
     public abstract boolean apply(BusinessLogics BL) throws SQLException;
 

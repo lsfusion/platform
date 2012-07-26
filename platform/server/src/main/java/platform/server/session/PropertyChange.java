@@ -198,10 +198,10 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().executeClasses(env);
     }
 
-    public void addRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, boolean update, QueryEnvironment queryEnv, boolean groupLast) throws SQLException {
+    public void addRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, boolean update, QueryEnvironment queryEnv) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            table.insertRecord(session, mapValues, exprValue, update, groupLast);
+            table.insertRecord(session, mapValues, exprValue, update);
         else
             table.addRows(session, getQuery(), baseClass, update, queryEnv);
     }

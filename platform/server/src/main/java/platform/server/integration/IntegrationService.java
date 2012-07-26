@@ -51,12 +51,11 @@ public class IntegrationService {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
 
         int counter = 0;
-        for (Iterator iterator = table.iterator(); iterator.hasNext();) {
-            PlainDataTable.Row row = (PlainDataTable.Row) iterator.next();
+        for (PlainDataTable.Row row : table) {
             Map<ImportField, ObjectValue> insertRow = new HashMap<ImportField, ObjectValue>();
             for (ImportField field : table.fields)
                 insertRow.put(field, ObjectValue.getValue(row.getValue(field), field.getFieldClass()));
-            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, false, !iterator.hasNext());
+            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, false);
         }
 
         if (deletes != null) {
@@ -112,10 +111,8 @@ public class IntegrationService {
                                        GroupType.ANY,
                                        Collections.singletonMap("key", keyExpr)).getWhere());
 
-            for (Iterator<Map<String, DataObject>> iterator = query.executeClasses(session).keySet().iterator(); iterator.hasNext();) {
-                Map<String, DataObject> row = iterator.next();
-                session.changeClass(row.get("key"), null, !iterator.hasNext());
-            }
+            for (Map<String, DataObject> row : query.executeClasses(session).keySet())
+                session.changeClass(row.get("key"), null);
         }
     }
 }

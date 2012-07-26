@@ -106,6 +106,15 @@ public class QuickSet<T> implements Iterable<T>, FunctionSet<T> {
     }
 
     public boolean intersect(FunctionSet<T> set) {
+        if(set instanceof QuickSet)
+            return intersect((QuickSet<T>)set);
+
+        if(set.isEmpty() || isEmpty())
+            return false;
+
+        if(set.isFull())
+            return true;
+
         for(int i=0;i<size;i++)
             if(set.contains(get(i)))
                 return true;

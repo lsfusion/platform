@@ -1,14 +1,13 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
-import platform.interop.Compare;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
-import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
@@ -59,31 +58,30 @@ public class IDTable extends GlobalTable {
         return query;
     }
 
-    public Integer generateID(SQLSession dataSession, int idType) throws SQLException {
+    private int freeID = 0;
+    private int maxReservedID = -1;
+    public int generateID(SQLSession dataSession, int idType) throws SQLException {
 
-        Integer freeID;
+        Integer result;
         synchronized (this) {
             assert !dataSession.isInTransaction();
 
-            dataSession.startTransaction();
-            freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value); // замещаем
-            reserveID(dataSession, idType, freeID);
-            dataSession.commitTransaction();
+            if(freeID > maxReservedID) { // читаем новый пул
+                dataSession.startTransaction();
+
+                freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value); // замещаем
+
+                maxReservedID = freeID + Settings.instance.getReserveIDStep();
+                Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
+                updateQuery.properties.put(value,new ValueExpr(maxReservedID + 1, SystemClass.instance));
+                dataSession.updateRecords(new ModifyQuery(this, updateQuery));
+
+                dataSession.commitTransaction();
+            }
+            result = freeID++;
         }
 
-        return freeID+1;
-    }
-
-    public void reserveID(SQLSession session, int idType, Integer ID) throws SQLException {
-        Query<KeyField, PropertyField> updateQuery = getReserveQuery(idType, ID);
-        session.updateRecords(new ModifyQuery(this,updateQuery));
-    }
-
-    @IdentityLazy
-    private Query<KeyField, PropertyField> getReserveQuery(int idType, Integer ID) {
-        Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
-        updateQuery.properties.put(value,new ValueExpr(ID+1, SystemClass.instance));
-        return updateQuery;
+        return result;
     }
 
     public StatKeys<KeyField> getStatKeys() {

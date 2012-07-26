@@ -39,7 +39,6 @@ import static platform.base.BaseUtils.join;
 
 public class ExecutionContext<P extends PropertyInterface> {
     private final Map<P, DataObject> keys;
-    private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
     private final ObjectValue pushedUserInput;
     private final DataObject pushedAddObject;
@@ -47,13 +46,12 @@ public class ExecutionContext<P extends PropertyInterface> {
     private final ExecutionEnvironment env;
     private final FormEnvironment<P> form;
 
-    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, boolean groupLast) {
+    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
         this.env = env;
         this.form = form;
-        this.groupLast = groupLast;
     }
 
     public ExecutionEnvironment getEnv() {
@@ -127,20 +125,16 @@ public class ExecutionContext<P extends PropertyInterface> {
         return mapObjects != null && mapObjects.size() == 1 ? BaseUtils.singleValue(mapObjects) : null;
     }
 
-    public boolean isGroupLast() {
-        return groupLast;
-    }
-
     public Modifier getModifier() {
         return getEnv().getModifier();
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        return getEnv().addObject(cls, groupLast, pushedAddObject);
+        return getEnv().addObject(cls, pushedAddObject);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException {
-        getEnv().changeClass(objectInstance, object, changeClass, isGroupLast());
+        getEnv().changeClass(objectInstance, object, changeClass);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, int clsID) throws SQLException {
@@ -166,7 +160,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, groupLast);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, Map<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -182,7 +176,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
-        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, groupLast);
+        return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal

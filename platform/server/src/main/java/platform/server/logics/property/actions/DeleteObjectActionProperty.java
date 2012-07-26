@@ -17,8 +17,6 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 
 public class DeleteObjectActionProperty extends CustomActionProperty {
 
@@ -40,7 +38,7 @@ public class DeleteObjectActionProperty extends CustomActionProperty {
         if (objectInstance != null) // если есть ObjectInstance формы, то используем его, иначе просто грохаем в сессии
             context.changeClass(objectInstance, context.getSingleKeyValue(), -1);
         else
-            context.getSession().changeClass(context.getSingleKeyValue(), null, context.isGroupLast());
+            context.getSession().changeClass(context.getSingleKeyValue(), null);
 
         if (nearObject != null)
             ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);

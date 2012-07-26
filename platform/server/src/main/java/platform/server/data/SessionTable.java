@@ -64,7 +64,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     // создает таблицу batch'ем
-    public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
+    public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
         // прочитаем классы
         return new SessionTable(session, keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
@@ -273,7 +273,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, final Object owner) throws SQLException {
+    public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, final Object owner) throws SQLException {
 
         update = update && session.isRecord(this, keyFields);
 

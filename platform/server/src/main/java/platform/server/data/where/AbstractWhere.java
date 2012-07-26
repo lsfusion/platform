@@ -164,7 +164,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
     public abstract MeanClassWheres calculateMeanClassWheres();
 
-    private Map<BaseExpr, BaseExpr> getExprValues(boolean and) {
+    private Map<BaseExpr, BaseExpr> getExprValues(boolean and, boolean only) {
         Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>();
         for(Where opWhere : and?getOr():getAnd())
             if(opWhere instanceof EqualsWhere) {
@@ -175,13 +175,23 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                 } else
                 if(where.operator2.isValue()) // && !(where.operator1 instanceof KeyExpr && and))
                     result.put(where.operator1, where.operator2);
-            }
+            } else
+                if(only)
+                    return null;
         return result;
+    }
+
+    private Map<BaseExpr, BaseExpr> getExprValues(boolean and) {
+        return getExprValues(and, false);
     }
 
     @TwinLazy
     public Map<BaseExpr, BaseExpr> getExprValues() {
         return getExprValues(true);
+    }
+
+    public Map<BaseExpr, BaseExpr> getOnlyExprValues() {
+        return getExprValues(true, true);
     }
 
     @TwinLazy

@@ -25,8 +25,8 @@ public class SingleKeyNoPropertyUsage extends NoPropertyTableUsage<String> {
         return getWhere(Collections.singletonMap("key", expr));
     }
 
-    public void insertRecord(SQLSession session, DataObject keyObject, boolean update, boolean groupLast) throws SQLException {
-        insertRecord(session, Collections.singletonMap("key", keyObject),new HashMap<Object, ObjectValue>(), update, groupLast);
+    public void insertRecord(SQLSession session, DataObject keyObject, boolean update) throws SQLException {
+        insertRecord(session, Collections.singletonMap("key", keyObject),new HashMap<Object, ObjectValue>(), update);
     }
 
     public void deleteRecords(SQLSession session, DataObject keyObject) throws SQLException {

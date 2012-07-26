@@ -44,7 +44,6 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.view.ComponentView;
 import platform.server.form.view.ContainerView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -317,16 +316,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final DataSession session;
 
-    public Set<CalcProperty> getUpdateProperties(StructChanges propChanges) {
-        return CalcProperty.hasChanges(getUsedProperties(), propChanges, true);
-    }
-
     public Set<CalcProperty> getUpdateProperties(QuickSet<CalcProperty> propChanges) {
         return CalcProperty.depends(getUsedProperties(), propChanges);
-    }
-
-    public Set<CalcProperty> getUpdateProperties() {
-        return CalcProperty.hasChanges(getUsedProperties(), getModifier().getPropertyChanges().getStruct(), false);
     }
 
     private final WeakReference<FocusListener<T>> weakFocusListener;
@@ -430,7 +421,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
         if(group.expandTable==null)
             group.expandTable = group.createKeyTable();
-        group.expandTable.insertRecord(session.sql, value, true, true);
+        group.expandTable.insertRecord(session.sql, value, true);
         group.updated |= UPDATED_EXPANDS;
     }
 
@@ -564,14 +555,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // добавляет во все
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        return addObject(cls, true, null);
+        return addObject(cls, null);
     }
 
-    public DataObject addObject(ConcreteCustomClass cls, boolean groupLast, DataObject pushed) throws SQLException {
+    public DataObject addObject(ConcreteCustomClass cls, DataObject pushed) throws SQLException {
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return null;
 
-        DataObject addObject = session.addObject(cls, groupLast, pushed);
+        DataObject addObject = session.addObject(cls, pushed);
 
         for (ObjectInstance object : getObjects()) {
             if (object instanceof CustomObjectInstance && cls.isChild(((CustomObjectInstance) object).baseClass)) {
@@ -582,7 +573,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return addObject;
     }
 
-    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls, boolean groupLast) throws SQLException {
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException {
         if(objectInstance instanceof CustomObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) objectInstance;
 
@@ -591,7 +582,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 dataChanged = true;
             }
         } else
-            session.changeClass(objectInstance, dataObject, cls, groupLast);
+            session.changeClass(objectInstance, dataObject, cls);
     }
 
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys) throws SQLException {

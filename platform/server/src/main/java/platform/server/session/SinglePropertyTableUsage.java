@@ -32,8 +32,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
 
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update, boolean groupLast) throws SQLException {
-        insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update, groupLast);
+    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update) throws SQLException {
+        insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update);
     }
 
     public void addRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, boolean update, QueryEnvironment env) throws SQLException {

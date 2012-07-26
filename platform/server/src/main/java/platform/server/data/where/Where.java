@@ -75,6 +75,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     Map<BaseExpr,BaseExpr> getExprValues();
     Map<BaseExpr,BaseExpr> getNotExprValues();
+    Map<BaseExpr,BaseExpr> getOnlyExprValues();
 
     static String TRUE_STRING = "1=1";
     static String FALSE_STRING = "1<>1";

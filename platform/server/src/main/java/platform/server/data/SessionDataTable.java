@@ -93,13 +93,13 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
+    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
         
         Map<KeyField, DataObject> fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
         Map<PropertyField, ObjectValue> fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
 
         return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner).
-              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, groupLast, owner),
+              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, owner),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
@@ -111,7 +111,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     // для оптимизации групповых добавлений (batch processing'а)
-    public SessionDataTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
+    public SessionDataTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
 
         this.keys = keys;
         // сначала пробежим по всем проверим с какими field'ами создавать таблицы и заодно propertyClasses узнаем, после этого batch'ем запишем
@@ -130,7 +130,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> tableRows = new HashMap<Map<KeyField,DataObject>, Map<PropertyField,ObjectValue>>();
         for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
             tableRows.put(BaseUtils.filterNotKeys(row.getKey(), keyValues.keySet()), BaseUtils.filterNotKeys(row.getValue(), propertyValues.keySet()));
-        table = SessionTable.create(session, BaseUtils.filterNotList(keys, keyValues.keySet()), BaseUtils.removeSet(properties, propertyValues.keySet()), tableRows, groupLast, owner);
+        table = SessionTable.create(session, BaseUtils.filterNotList(keys, keyValues.keySet()), BaseUtils.removeSet(properties, propertyValues.keySet()), tableRows, owner);
     }
 
     public void drop(SQLSession session, Object owner) throws SQLException {

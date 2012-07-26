@@ -89,7 +89,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 properties.put(priceField, new DataObject(price));
                 properties.put(noDiscField, noDisc==null ? NullValue.instance : new DataObject(true, LogicalClass.instance));
 
-                table.insertRecord(session.sql, new DataObject(barcode), properties, true, i == (recordCount - 1));
+                table.insertRecord(session.sql, new DataObject(barcode), properties, true);
             }
 
             Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.VEDLM.baseLM.barcodeToObject.property.getMapKeys();

@@ -8,7 +8,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.CaseExprInterface;
-import platform.server.data.query.AbstractJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
@@ -99,14 +98,14 @@ public class SessionRows extends SessionData<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
+    public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
 
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> orRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
         Map<PropertyField, ObjectValue> prevValue = orRows.put(keyFields,propFields);
         assert update || prevValue==null;
 
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
-            return new SessionDataTable(session, keys, properties, orRows, groupLast, owner);
+            return new SessionDataTable(session, keys, properties, orRows, owner);
         else
             return new SessionRows(keys, properties, orRows);
     }

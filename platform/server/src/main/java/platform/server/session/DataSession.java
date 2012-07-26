@@ -43,6 +43,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private SingleKeyPropertyUsage news = null;
     private Map<DataObject, ConcreteObjectClass> newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
+    public QuickSet<CalcProperty> getChangedProps() {
+        return new QuickSet<CalcProperty>(BaseUtils.mergeSet(getClassChanges(add.keySet(), remove.keySet(), news!=null), data.keySet()));
+    }
+
     private class DataModifier extends SessionModifier {
 
         public SQLSession getSQL() {
@@ -65,7 +69,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
 
         public QuickSet<CalcProperty> calculateProperties() {
-            return new QuickSet<CalcProperty>(BaseUtils.mergeSet(getClassChanges(add.keySet(), remove.keySet(), news!=null), data.keySet()));
+            return getChangedProps();
         }
     }
     private final DataModifier dataModifier = new DataModifier();
@@ -238,15 +242,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     public static class UpdateChanges {
 
-        public final Set<CalcProperty> properties;
+        public final QuickSet<CalcProperty> properties;
 
         public UpdateChanges() {
-            properties = new HashSet<CalcProperty>();
+            properties = new QuickSet<CalcProperty>();
         }
 
-        public UpdateChanges(DataSession session, FormInstance<?> form) {
-            assert form.session == session;
-            properties = new HashSet<CalcProperty>(form.getUpdateProperties());
+        public UpdateChanges(DataSession session) {
+            properties = session.getChangedProps();
         }
 
         public void add(UpdateChanges changes) {
@@ -321,7 +324,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         if(!cancel)
             for(Map.Entry<FormInstance,UpdateChanges> appliedChange : appliedChanges.entrySet())
-                appliedChange.getValue().add(new UpdateChanges(this, (FormInstance<?>) appliedChange.getKey()));
+                appliedChange.getValue().add(new UpdateChanges(this));
 
         assert Collections.disjoint(appliedChanges.keySet(),(cancel?updateChanges:incrementChanges).keySet());
         appliedChanges.putAll(cancel?updateChanges:incrementChanges);
@@ -354,23 +357,23 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     // с fill'ами addObject'ы
 
     public DataObject addObject(ConcreteCustomClass customClass) throws SQLException {
-        return addObject(customClass, true, true);
+        return addObject(customClass, true);
     }
 
-    public DataObject addObject(ConcreteCustomClass cls, boolean groupLast, DataObject pushed) throws SQLException {
-        return addObject(cls, true, groupLast, pushed);
+    public DataObject addObject(ConcreteCustomClass cls, DataObject pushed) throws SQLException {
+        return addObject(cls, true, pushed);
     }
 
-    public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault, boolean groupLast) throws SQLException {
-        return addObject(customClass, fillDefault, groupLast, null);
+    public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault) throws SQLException {
+        return addObject(customClass, fillDefault, null);
     }
 
-    public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault, boolean groupLast, DataObject object) throws SQLException {
+    public DataObject addObject(ConcreteCustomClass customClass, boolean fillDefault, DataObject object) throws SQLException {
         if(object==null)
             object = addObject();
 
         // запишем объекты, которые надо будет сохранять
-        changeClass(object, customClass, groupLast);
+        changeClass(object, customClass);
 
         if(fillDefault) {
             if(customClass.isChild(namedObject))
@@ -383,15 +386,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return object;
     }
 
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException {
+        changeClass(dataObject, cls);
+    }
+
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException {
-        changeClass(change, toClass, true);
-    }
-
-    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass cls, boolean groupLast) throws SQLException {
-        changeClass(object, cls, groupLast);
-    }
-
-    public void changeClass(DataObject change, ConcreteObjectClass toClass, boolean groupLast) throws SQLException {
         boolean hadStoredChanges = hasStoredChanges();
 
         if(toClass==null) toClass = baseClass.unknown;
@@ -405,17 +404,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         Collection<AggregateProperty<ClassPropertyInterface>> updateChanges = getClassChanges(addClasses, removeClasses, true);
 
-        updateSessionEvents(updateChanges, groupLast);
+        updateSessionEvents(updateChanges);
 
-        changeClass(addClasses, removeClasses, toClass, change, sql, groupLast);
+        changeClass(addClasses, removeClasses, toClass, change, sql);
         newClasses.put(change, toClass);
 
-        updateProperties(updateChanges, groupLast);
+        updateProperties(updateChanges);
 
         aspectAfterChange(hadStoredChanges);
     }
 
-    public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change, boolean groupLast) throws SQLException {
+    public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException {
         boolean hadStoredChanges = hasStoredChanges();
 
         if(neededProps!=null && property.event==null) { // если транзакция, нет change event'а, singleApply'им
@@ -431,11 +430,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         Set<DataProperty> updateChanges = Collections.singleton(property);
 
-        updateSessionEvents(updateChanges, groupLast);
+        updateSessionEvents(updateChanges);
 
-        aspectChangeProperty(property, change, groupLast);
+        aspectChangeProperty(property, change);
 
-        updateProperties(updateChanges, groupLast);
+        updateProperties(updateChanges);
 
         aspectAfterChange(hadStoredChanges);
     }
@@ -444,25 +443,21 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private void aspectAfterChange(boolean hadStoredChanges) throws SQLException {
         if(!hadStoredChanges && hasStoredChanges()) {
             Set<SessionDataProperty> updateChanges = Collections.singleton(isDataChanged);
-            updateSessionEvents(updateChanges, true);
+            updateSessionEvents(updateChanges);
 
-            aspectChangeProperty(isDataChanged, new PropertyChange<ClassPropertyInterface>(new DataObject(true, LogicalClass.instance)), true);
+            aspectChangeProperty(isDataChanged, new PropertyChange<ClassPropertyInterface>(new DataObject(true, LogicalClass.instance)));
 
-            updateProperties(updateChanges, true);
+            updateProperties(updateChanges);
         }
     }
 
-    public void updateProperties(Collection<? extends CalcProperty> changes, boolean groupLast) throws SQLException {
-        if(groupLast) {
-            dataModifier.eventChanges(changes);
+    public void updateProperties(Collection<? extends CalcProperty> changes) throws SQLException {
+        dataModifier.eventChanges(changes);
 
-//            StructChanges structChanges = new StructChanges(changes);
-            QuickSet<CalcProperty> structChanges = new QuickSet<CalcProperty>(changes);
-            for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
-                FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
-                incrementChange.getValue().properties.addAll(formInstance.getUpdateProperties(structChanges));
-                formInstance.dataChanged = true;
-            }
+        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
+            FormInstance<?> formInstance = (FormInstance<?>) incrementChange.getKey();
+            incrementChange.getValue().properties.addAll(changes);
+            formInstance.dataChanged = true;
         }
     }
 
@@ -488,8 +483,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return result;
     }
 
-    public <P extends PropertyInterface> void updateSessionEvents(Collection<? extends CalcProperty> changes, boolean groupLast) throws SQLException {
-        if(groupLast && !isInTransaction()) {
+    public <P extends PropertyInterface> void updateSessionEvents(Collection<? extends CalcProperty> changes) throws SQLException {
+        if(!isInTransaction()) {
             StructChanges structChanges = new StructChanges(changes);
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends())
                 if(!sessionEventChangedOld.contains(old) && old.property.hasChanges(structChanges, true)) // если влияет на old из сессионного event'а и еще не читалось
@@ -601,7 +596,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             incrementChange = appliedChanges.remove(form);
             if(incrementChange==null) // совсем не было
                 incrementChange = new UpdateChanges();
-            UpdateChanges formChanges = new UpdateChanges(this, form);
+            UpdateChanges formChanges = new UpdateChanges(this);
             // from = changes (сбрасываем пометку что не было restart'а)
             updateChanges.put(form, formChanges);
             // возвращаем applied + changes
@@ -609,7 +604,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
         incrementChanges.put(form,new UpdateChanges());
 
-        return incrementChange.properties;
+        return form.getUpdateProperties(incrementChange.properties);
     }
 
     public String applyMessage(BusinessLogics<?> BL) throws SQLException {
@@ -934,7 +929,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     };
 
-    private void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session, boolean groupLast) throws SQLException {
+    private void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session) throws SQLException {
         checkTransaction(); // важно что, вначале
 
         for(CustomClass addClass : addClasses) {
@@ -943,7 +938,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 addTable = new SingleKeyNoPropertyUsage(ObjectType.instance);
                 add.put(addClass, addTable);
             }
-            addTable.insertRecord(session, change, false, groupLast);
+            addTable.insertRecord(session, change, false);
 
             SingleKeyNoPropertyUsage removeTable = remove.get(addClass);
             if(removeTable!=null)
@@ -955,7 +950,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 removeTable = new SingleKeyNoPropertyUsage(ObjectType.instance);
                 remove.put(removeClass, removeTable);
             }
-            removeTable.insertRecord(session, change, false, groupLast);
+            removeTable.insertRecord(session, change, false);
 
             SingleKeyNoPropertyUsage addTable = add.get(removeClass);
             if(addTable!=null)
@@ -964,7 +959,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         if(news ==null)
             news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
-        news.insertRecord(session, change, toClass.getClassObject(), true, groupLast);
+        news.insertRecord(session, change, toClass.getClassObject(), true);
 
         for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dataChange : data.entrySet()) { // удаляем существующие изменения
             DataProperty property = dataChange.getKey();
@@ -980,7 +975,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     }
 
-    private void aspectChangeProperty(final DataProperty property, PropertyChange<ClassPropertyInterface> change, boolean groupLast) throws SQLException {
+    private void aspectChangeProperty(final DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException {
         checkTransaction();
 
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.get(property);
@@ -988,7 +983,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        change.addRows(dataChange, sql, baseClass, true, getQueryEnv(), groupLast);
+        change.addRows(dataChange, sql, baseClass, true, getQueryEnv());
     }
 
     public void dropTables(SQLSession session) throws SQLException {

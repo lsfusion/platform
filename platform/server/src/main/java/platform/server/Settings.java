@@ -553,4 +553,14 @@ public class Settings {
     public void setDisableReadSingleValues(boolean disableReadSingleValues) {
         this.disableReadSingleValues = disableReadSingleValues;
     }
+    
+    private int reserveIDStep = 50; // по сколько ID'ков будут резервировать себе сервера приложений у сервера БД
+
+    public int getReserveIDStep() {
+        return reserveIDStep;
+    }
+
+    public void setReserveIDStep(int reserveIDStep) {
+        this.reserveIDStep = reserveIDStep;
+    }
 }

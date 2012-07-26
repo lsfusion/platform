@@ -357,6 +357,31 @@ public class Query<K,V> extends IQuery<K,V> {
         return execute(form.session.sql, orders, selectTop, form.getQueryEnv());
     }
 
+    private OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSingle() { // оптимизация
+        Map<BaseExpr, BaseExpr> exprValues = where.getOnlyExprValues();
+        if(exprValues==null || exprValues.size()!=mapKeys.size())
+            return null;
+
+        Map<K, DataObject> keyValues = new HashMap<K, DataObject>();
+        Map<V, ObjectValue> propValues = new HashMap<V, ObjectValue>();
+        for(Map.Entry<K, KeyExpr> mapKey : mapKeys.entrySet()) {
+            BaseExpr keyValue = exprValues.get(mapKey.getValue());
+            ObjectValue objectValue;
+            if(keyValue!=null && (objectValue = keyValue.getObjectValue()) instanceof DataObject)
+                keyValues.put(mapKey.getKey(), (DataObject) objectValue);
+            else
+                return null;
+        }
+        for(Map.Entry<V, Expr> property : properties.entrySet()) {
+            ObjectValue objectValue; BaseExpr propValue;
+            if((objectValue = property.getValue().getObjectValue())!=null || 
+                    ((propValue = exprValues.get(property.getValue()))!=null && (objectValue = propValue.getObjectValue())!=null))
+                propValues.put(property.getKey(), objectValue);
+            else
+                return null;
+        }
+        return new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>(keyValues, propValues);
+    }
     @Message("message.query.execute")
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, OrderedMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
         if(where.isFalse()) // оптимизация
@@ -419,6 +444,10 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, OrderedMap<? extends V, Boolean> orders, int selectTop, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+        OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> singleResult = executeSingle(); // оптимизация
+        if(singleResult!=null)
+            return singleResult;
+
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
 
         if(where.isFalse()) return result; // иначе типы ключей не узнаем

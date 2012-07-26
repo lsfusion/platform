@@ -24,8 +24,8 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }, propertyType);
     }
 
-    public void insertRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, boolean update, boolean groupLast) throws SQLException {
-        insertRecord(session, Collections.singletonMap("key", keyObject),Collections.singletonMap("value", propertyObject), update, groupLast);
+    public void insertRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, boolean update) throws SQLException {
+        insertRecord(session, Collections.singletonMap("key", keyObject),Collections.singletonMap("value", propertyObject), update);
     }
 
     public Join<String> join(Expr expr) {

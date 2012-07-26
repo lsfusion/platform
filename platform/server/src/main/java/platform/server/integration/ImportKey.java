@@ -96,10 +96,8 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         noKeysQuery.and(GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, noKeysQuery.mapKeys).getWhere()); // в импортируемой таблице
         noKeysQuery.and(implement.property.getExpr(noKeysQuery.mapKeys, session.getModifier()).getWhere().not()); // для которых неопределился объект
 
-        for (Iterator<Map<P, DataObject>> iterator = noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet().iterator(); iterator.hasNext();) {
-            Map<P, DataObject> noKeysRow = iterator.next();
-            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false, !iterator.hasNext()), false, !iterator.hasNext());
-        }
+        for (Map<P, DataObject> noKeysRow : noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet())
+            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false), false);
 
         return propertyTable;
     }

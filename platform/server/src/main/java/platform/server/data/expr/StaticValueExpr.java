@@ -62,6 +62,9 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
 
     @Override
     public ObjectValue getObjectValue() {
-        return new DataObject(object, objectClass);
+        if(sID)
+            return ((StaticCustomClass)objectClass).getDataObject((String) object);
+        else
+            return new DataObject(object, objectClass);
     }
 }

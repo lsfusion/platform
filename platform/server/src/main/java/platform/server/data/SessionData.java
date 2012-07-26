@@ -35,7 +35,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public abstract boolean used(Query<?, ?> query);
 
-    public abstract SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException;
+    public abstract SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException;
 
     public abstract SessionData deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException;
 
@@ -146,10 +146,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionRows sessionRows = new SessionRows(keys, properties);
-            for (Iterator<Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>> iterator = readRows.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> writeRow = iterator.next();
-                sessionRows = (SessionRows) sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), false, !iterator.hasNext(), owner);
-            }
+            for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> writeRow : readRows.entrySet())
+                sessionRows = (SessionRows) sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), false, owner);
             return sessionRows;
         }
     }
@@ -184,7 +182,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 }
 
                 public SessionData singleRow(Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propValues) throws SQLException {
-                    return insertRecord(session, keyValues, propValues, update, true, owner);
+                    return insertRecord(session, keyValues, propValues, update, owner);
                 }
             });
             if(singleResult!=null)
@@ -209,7 +207,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         drop(session, owner);
 
         if(writeRows.size()> SessionRows.MAX_ROWS)
-            return new SessionDataTable(session, getKeys(), getProperties(), writeRows, true, owner);
+            return new SessionDataTable(session, getKeys(), getProperties(), writeRows, owner);
         else
             return new SessionRows(getKeys(), getProperties(), writeRows);
     }
