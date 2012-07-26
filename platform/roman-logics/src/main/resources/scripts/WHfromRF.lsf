@@ -297,7 +297,7 @@ mainCompositionOriginSkuWHfromRFDetail 'Состав' (WHfromRFDetail) = mainCom
 additionalCompositionOriginSkuWHfromRFDetail 'Дополнительный состав' (WHfromRFDetail) = additionalCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
 coefficientArticleSkuWHfromRFDetail 'Кол-во в комплекте' (WHfromRFDetail) = coefficientArticleSku(skuWHfromRFDetail(WHfromRFDetail));
 
-backgroundWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255,0,0) IF quantityWHfromRFDetail(WHfromRFDetail) == 1;
+backgroundWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityWHfromRFDetail(WHfromRFDetail) == 1;
 
 costWHfromRFDetail(WHfromRFDetail) =
     priceInImporterFreightSku(companyWarehouse(warehouseWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail))) ,

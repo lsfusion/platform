@@ -327,7 +327,7 @@ mainCompositionOriginSkuWHfromCSRDetail 'Состав' (WHfromCSRDetail) = mainC
 additionalCompositionOriginSkuWHfromCSRDetail 'Дополнительный состав' (WHfromCSRDetail) = additionalCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail));
 coefficientArticleSkuWHfromCSRDetail 'Кол-во в комплекте' (WHfromCSRDetail) = coefficientArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
 
-backgroundWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255,0,0) IF quantityWHfromCSRDetail(WHfromCSRDetail) == 1;
+backgroundWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityWHfromCSRDetail(WHfromCSRDetail) == 1;
 
 FORM WHfromCSR 'Приемка на оптовый склад'
 
