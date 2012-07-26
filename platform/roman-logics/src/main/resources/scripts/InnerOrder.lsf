@@ -367,7 +367,7 @@ statusInnerOrder 'Статус' (innerOrder) =
 EXTEND FORM innerOrders
     OBJECTS pd=orderPickingDetail
 
-    PROPERTIES (o) createDocumentsInnerOrder SHOWIF needInnerDocumentInnerOrder(o), statusInnerOrder, quantityDraftInnerDocumentInnerOrder, quantityInnerDocumentInnerOrder
+    PROPERTIES (o)  needInnerDocumentInnerOrder, statusInnerOrder, quantityDraftInnerDocumentInnerOrder, quantityInnerDocumentInnerOrder
     PROPERTIES(o) TODRAW pd FORCE PANEL pickUpInnerOrder, postOrderPickingInnerOrder SHOWIF isDraftOrderPickingInnerOrder(o)
 
     FILTERS orderPickingOrderPickingDetail (pd) == orderPickingInnerOrder(o)
@@ -376,9 +376,9 @@ EXTEND FORM innerOrders
 
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
-//    PROPERTIES (id) editFormMove_moveOut
     PROPERTIES (id) editInnerDocument SHOWIF isDraftInnerDocument(id), postInnerDocument SHOWIF isDraftInnerDocument(id),
                     unpostInnerDocument SHOWIF isPostedInnerDocument(id)
+    PROPERTIES (o) TODRAW id FORCE PANEL  createDocumentsInnerOrder SHOWIF needInnerDocumentInnerOrder(o)
 
     FILTERS innerOrderInnerDocument(id)==o
 ;
