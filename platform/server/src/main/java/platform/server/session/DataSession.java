@@ -848,11 +848,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
             if(property instanceof ActionProperty) {
-                startPendingSingles((ActionProperty)property);
+                startPendingSingles((ActionProperty) property);
                 ((ActionProperty)property).execute(this);
-                flushPendingSingles(BL);
                 if(!isInTransaction()) // если ушли из транзакции вываливаемся
                     return false;
+                flushPendingSingles(BL);
             }
             if(property instanceof CalcProperty) // постоянно-хранимые свойства
                 readStored((CalcProperty<PropertyInterface>) property, BL);
@@ -1023,6 +1023,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
 
         if(isInTransaction()) {
+            if(neededProps!=null) {
+                for(SinglePropertyTableUsage table : pendingSingleTables.values())
+                    table.drop(sql);
+                pendingSingleTables.clear();
+                neededProps = null;
+                assert !flush;
+            }
+                
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
             apply.clear(sql);
             dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
