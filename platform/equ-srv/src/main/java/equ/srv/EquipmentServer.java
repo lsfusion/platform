@@ -474,7 +474,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             ImportField quantityReceiptReturnDetailField = new ImportField(LM.findLCPByCompoundName("quantityReceiptReturnDetail"));
             ImportField priceReceiptReturnDetailField = new ImportField(LM.findLCPByCompoundName("priceReceiptReturnDetail"));
-            ImportField retailSumReceiptReturnDetailField = new ImportField(LM.findLCPByCompoundName("retailSumReceiptReturnDetail"));
+            ImportField retailSumReceiptReturnDetailField = new ImportField(LM.findLCPByCompoundName("sumReceiptReturnDetail"));
             ImportField discountSumReceiptReturnDetailField = new ImportField(LM.findLCPByCompoundName("discountSumReceiptReturnDetail"));
             ImportField discountSumReturnReceiptField = new ImportField(LM.findLCPByCompoundName("discountSumReturnReceipt"));
 
@@ -545,7 +545,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             returnProperties.add(new ImportProperty(idBarcodeReceiptDetailField, LM.findLCPByCompoundName("idBarcodeReceiptDetail").getMapping(receiptReturnDetailKey)));
             returnProperties.add(new ImportProperty(quantityReceiptReturnDetailField, LM.findLCPByCompoundName("quantityReceiptReturnDetail").getMapping(receiptReturnDetailKey)));
             returnProperties.add(new ImportProperty(priceReceiptReturnDetailField, LM.findLCPByCompoundName("priceReceiptReturnDetail").getMapping(receiptReturnDetailKey)));
-            returnProperties.add(new ImportProperty(retailSumReceiptReturnDetailField, LM.findLCPByCompoundName("retailSumReceiptReturnDetail").getMapping(receiptReturnDetailKey)));
+            returnProperties.add(new ImportProperty(retailSumReceiptReturnDetailField, LM.findLCPByCompoundName("sumReceiptReturnDetail").getMapping(receiptReturnDetailKey)));
             returnProperties.add(new ImportProperty(discountSumReceiptReturnDetailField, LM.findLCPByCompoundName("discountSumReceiptReturnDetail").getMapping(receiptReturnDetailKey)));
             returnProperties.add(new ImportProperty(numberReceiptField, LM.findLCPByCompoundName("receiptReceiptDetail").getMapping(receiptReturnDetailKey),
                     LM.baseLM.object(LM.findClassByCompoundName("receipt")).getMapping(receiptKey)));
@@ -569,9 +569,9 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                                 sale.numberReceiptDetail, sale.barcodeItem, sale.quantityReceiptDetail, sale.priceReceiptDetail, sale.sumReceiptDetail,
                                 sale.discountSumReceiptDetail, sale.discountSumReceipt, sale.seriesNumberDiscountCard));
                     if (sale.sumCash != 0)
-                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "cash", sale.sumCash, 1));
+                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "paymentMeansCash", sale.sumCash, 1));
                     if (sale.sumCard != 0)
-                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "card", sale.sumCard, 2));
+                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "paymentMeansCard", sale.sumCard, 2));
                 }
 
             List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,

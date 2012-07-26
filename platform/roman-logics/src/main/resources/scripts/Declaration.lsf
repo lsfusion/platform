@@ -647,7 +647,7 @@ FORM declarationInvoices 'Присоединение инвойсов'
     FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 ;
 
-showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d NEWSESSION MODAL IN docGroup TOOLBAR;
+showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d=declaration MODAL IN docGroup TOOLBAR;
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL

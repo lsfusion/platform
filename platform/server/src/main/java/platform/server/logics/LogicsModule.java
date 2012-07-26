@@ -952,11 +952,11 @@ public abstract class LogicsModule {
 
 
     protected LCP addTProp(Time time) {
-        return addTProp(genSID(), time);
+        return addTProp(genSID(), time.toString(), time);
     }
     
-    protected LCP addTProp(String sID, Time time) {
-        return addProperty(null, new LCP<PropertyInterface>(new TimeFormulaProperty(sID, time)));
+    protected LCP addTProp(String sID, String caption, Time time) {
+        return addProperty(null, new LCP<PropertyInterface>(new TimeFormulaProperty(sID, caption, time)));
     }
 
     protected <P extends PropertyInterface> LCP addTCProp(Time time, String name, boolean isStored, String caption, LCP<P> changeProp, ValueClass... classes) {

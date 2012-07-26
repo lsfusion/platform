@@ -13,8 +13,8 @@ public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface>
 
     private final Time time;
 
-    public TimeFormulaProperty(String sID, Time time) {
-        super(sID, time.toString(), new ArrayList<PropertyInterface>(), time.getConcreteValueClass());
+    public TimeFormulaProperty(String sID, String caption, Time time) {
+        super(sID, caption, new ArrayList<PropertyInterface>(), time.getConcreteValueClass());
 
         this.time = time;
 

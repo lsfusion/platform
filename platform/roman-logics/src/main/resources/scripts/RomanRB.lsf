@@ -130,9 +130,6 @@ NAVIGATOR {
 
             NEW discountPrice 'Распродажи' {
                 ADD discountPriceSetDocuments;
-                ADD shareTeams;
-                ADD shares;
-                ADD discountCards;
             }
         }
     }
@@ -175,10 +172,21 @@ NAVIGATOR {
 
     retailClassifier {
         ADD stores;
+        ADD groupsCashRegister;
     }
 
-    CRM {
-        ADD clients;
+    retail {
+        NEW POSSales 'Розничные продажи' {
+            ADD zReports;
+            ADD operationCashRegister;
+            ADD POS;
+        }
+        NEW CRM 'CRM' {
+            ADD clients;
+            ADD discountCards;
+            ADD promotionGroups;
+            ADD promotions;
+        }
     }
 
     printForms{

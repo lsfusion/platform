@@ -2,6 +2,7 @@ MODULE RetailPrice;
 
 REQUIRE System,
         MasterData,
+        POS,
         RomanLogicsModule;
 
 PRIORITY MasterData, RomanLogicsModule;
@@ -75,7 +76,9 @@ dateTimePriceSetDocument 'Дата/время документа' (priceSetDocum
 
 dateTimeToDataPriceSetDocument 'Дата/время окончания' = DATA DATETIME(priceSetDocument) IN baseGroup;
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,
-                                                                                            dateTimeToDataPriceSetDocument(priceSetDocument) IN baseGroup;
+                                                                                            dateTimeToDataPriceSetDocument(priceSetDocument) IN baseGroup PERSISTENT;
+
+CONSTRAINT dateTimeToPriceSetDocument(document) < dateTimePriceSetDocument(document) MESSAGE 'Дата/время окончания действия документа меньше даты/времени его начала';
 
 isDiscountPriceSetDocument 'Распродажа' = DATA BOOLEAN(priceSetDocument) IN baseGroup;
 keepDiscountPriceSetDocument 'Учитывать скидки' = DATA BOOLEAN(priceSetDocument) IN baseGroup;
@@ -191,6 +194,9 @@ toSetPricesPriceSetDocument 'Взять цены поставщика' =  ACTION
     };
 };
 
+pricePriceSetDocumentArticleDateTime(article, dateTime) = priceBasePriceSetDocumentArticleDateTime(article, dateTime) OR priceDiscountPriceSetDocumentArticleDateTime(article, dateTime);
+
+POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += pricePriceSetDocumentArticleDateTime(articleSku(sku), dateTime) IF departmentStore IS departmentStore;
 
 FORM coefficientRetail 'Коэффициент надбавки'
 

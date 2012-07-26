@@ -135,80 +135,80 @@ FORM discountCards 'Дисконтные карты'
 // todo: сделать генерацию штрих-кода для дисконтных карт
 //--------------------------Акции----------------------------------------//
 
-CLASS share 'Акция (применение условий в момент продажи)' : historyObject, numberedObject, named;
-TABLE share (share);
+CLASS promotion 'Акция' : historyObject, numberedObject, named;
+TABLE promotion (promotion);
 
-CLASS shareTeam 'Группа акций' : named;
-TABLE shareTeam (shareTeam);
+CLASS promotionGroup 'Группа акций' : named;
+TABLE promotionGroup (promotionGroup);
 
-shareTeamShare 'Группы акций ИД' (share) = DATA shareTeam(share) IN idGroup AUTOSET;
-nameShareTeamShare 'Группа акций' (share) = name(shareTeamShare(share)) IN baseGroup;
+promotionGroupPromotion 'Группы акций ИД' (promotion) = DATA promotionGroup(promotion) IN idGroup AUTOSET;
+namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;
 
-CLASS  shareGroup 'Условия акций' : named;
+CLASS promotionCondition 'Условия акций' : named;
 
 GROUP CRMGroup 'Реквизиты' : recognizeGroup;
 
-dateFromShare 'ОТ:' = DATA DATE (share) IN CRMGroup;
-dateToShare 'ДО:' = DATA DATE (share) IN CRMGroup;
+dateFromPromotion 'ОТ:' = DATA DATE (promotion) IN CRMGroup;
+dateToPromotion 'ДО:' = DATA DATE (promotion) IN CRMGroup;
 
-timeOfFromShare 'ОТ:' =  DATA TIME (share) IN CRMGroup;
-timeOfToShare 'ДО:' =  DATA TIME (share) IN CRMGroup;
+timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN CRMGroup;
+timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN CRMGroup;
 
-includeShareDay 'В акции' = DATA BOOLEAN (share, DOW);
-includeShareStore 'В акции' = DATA BOOLEAN (share, store);
-includeShareDiscountCard 'В акции' = DATA BOOLEAN (share, discountCard);
+includePromotionDay 'В акции' = DATA BOOLEAN (promotion, DOW);
+includePromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
+includePromotionDiscountCard 'В акции' = DATA BOOLEAN (promotion, discountCard);
 
-cumulativeSumShare 'Накоп. сумма' (share) = DATA NUMERIC[14,2] (share);
-minSumBillShare 'Сумма чека' (share) = DATA NUMERIC[14,2] (share);
+cumulativeSumPromotion 'Накоп. сумма' (promotion) = DATA NUMERIC[14,2] (promotion);
+minSumBillPromotion 'Сумма чека' (promotion) = DATA NUMERIC[14,2] (promotion);
 
-shareShareGroup = DATA share (shareGroup);
+promotionPromotionCondition = DATA promotion (promotionCondition);
 
-minQuantityShareGroup 'Количество С' = DATA NUMERIC[14,3] (shareGroup);
-maxQuantityShareGroup 'Количество ПО' = DATA NUMERIC[14,3] (shareGroup);
+minQuantityPromotionCondition 'Количество С' = DATA NUMERIC[14,3] (promotionCondition);
+maxQuantityPromotionCondition 'Количество ПО' = DATA NUMERIC[14,3] (promotionCondition);
 
-minSumShareGroup 'Диапазон сумм С' = DATA NUMERIC[16,2] (shareGroup);
-maxSumShareGroup 'Диапазон сумм ПО' = DATA NUMERIC[16,2] (shareGroup);
+minSumPromotionCondition 'Диапазон сумм С' = DATA NUMERIC[16,2] (promotionCondition);
+maxSumPromotionCondition 'Диапазон сумм ПО' = DATA NUMERIC[16,2] (promotionCondition);
 
-percentShareGroup 'Процент скидки'  = DATA NUMERIC[8,3] (shareGroup);
-resultPriceShareGroup 'Цена со скидкой' = DATA NUMERIC[14,2] (shareGroup);
+percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition);
+resultPricePromotionCondition 'Цена со скидкой' = DATA NUMERIC[14,2] (promotionCondition);
 
-includeShareGroupSku 'В акции' = DATA BOOLEAN (shareGroup, sku);
-includeShareGroupSkuGroup 'В акции' = DATA BOOLEAN (shareGroup, skuGroup);
+includePromotionConditionSku 'В акции' = DATA BOOLEAN (promotionCondition, sku);
+includePromotionConditionSkuGroup 'В акции' = DATA BOOLEAN (promotionCondition, skuGroup);
 
-includeShareGroupSkuGroupSku 'В акции' (shareGroup, skuGroup, sku) = UNION OVERRIDE includeShareGroupSkuGroup(shareGroup, skuGroup) AND sku AS sku,
-                                                                                    includeShareGroupSku(shareGroup, sku) AND skuGroup AS skuGroup;
+includePromotionConditionSkuGroupSku 'В акции' (promotionCondition, skuGroup, sku) = UNION OVERRIDE includePromotionConditionSkuGroup(promotionCondition, skuGroup) AND sku AS sku,
+                                                                                    includePromotionConditionSku(promotionCondition, sku) AND skuGroup AS skuGroup;
 
 
 
-FORM share 'Акция'
-    OBJECTS sh=share   FIXED PANEL
-    PROPERTIES(sh)     name, nameShareTeamShare, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
-                       cumulativeSumShare, minSumBillShare
-    OBJECTS d= DOW
+FORM promotion 'Акция'
+    OBJECTS sh=promotion   FIXED PANEL
+    PROPERTIES(sh)     name, namePromotionGroupPromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
+                       cumulativeSumPromotion, minSumBillPromotion
+    OBJECTS d=DOW
     PROPERTIES(d)     READONLY name
-    PROPERTIES(sh, d)  includeShareDay
+    PROPERTIES(sh, d)  includePromotionDay
     FILTERGROUP filterDOW
-        FILTER 'Только отмеченные' 'F11' includeShareDay(sh, d) DEFAULT
+        FILTER 'Только отмеченные' 'F11' includePromotionDay(sh, d) DEFAULT
 
-    OBJECTS sg= shareGroup
-    PROPERTIES(sg)     name, minQuantityShareGroup, maxQuantityShareGroup, minSumShareGroup, maxSumShareGroup, percentShareGroup,
-                       resultPriceShareGroup, ADDOBJ, delete
+    OBJECTS sg=promotionCondition
+    PROPERTIES(sg)     name, minQuantityPromotionCondition, maxQuantityPromotionCondition, minSumPromotionCondition, maxSumPromotionCondition, percentPromotionCondition,
+                       resultPricePromotionCondition, ADDOBJ, delete
 
-    FILTERS            shareShareGroup(sg)==sh
+    FILTERS            promotionPromotionCondition(sg)==sh
 
     TREE skuTree skg = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(skg)
     ORDER BY skuTreeName
-    PROPERTIES(sg, skg) includeShareGroupSkuGroup
+    PROPERTIES(sg, skg) includePromotionConditionSkuGroup
 
     OBJECTS sk= sku
     PROPERTIES(sk)    READONLY nameSku
     FILTERS           isParentSkuGroupSku(skg, sk)
-    PROPERTIES(sg, skg, sk)   includeShareGroupSkuGroupSku
+    PROPERTIES(sg, skg, sk)   includePromotionConditionSkuGroupSku
 
 
     FILTERGROUP filterSku
-        FILTER 'Только отмеченные' 'F10' includeShareGroupSkuGroupSku(sg, skg, sk)  DEFAULT
+        FILTER 'Только отмеченные' 'F10' includePromotionConditionSkuGroupSku(sg, skg, sk)  DEFAULT
 
     TREE treeStore a=STRING[3], t=chainStores, st=storeType
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
@@ -221,20 +221,20 @@ FORM share 'Акция'
 
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 
-    PROPERTIES(sh, s) includeShareStore
+    PROPERTIES(sh, s) includePromotionStore
     FILTERGROUP filterStore
-        FILTER 'Только отмеченные' 'F9' includeShareStore(sh, s) DEFAULT
+        FILTER 'Только отмеченные' 'F9' includePromotionStore(sh, s) DEFAULT
 
     OBJECTS dis= discountCard
     PROPERTIES(dis)    READONLY seriesNumberObject, barcode, nameClientDiscountCard
-    PROPERTIES(sh, dis) includeShareDiscountCard
+    PROPERTIES(sh, dis) includePromotionDiscountCard
     FILTERGROUP filterDiscountCard
-        FILTER 'Только отмеченные' 'F8' includeShareDiscountCard(sh, dis) DEFAULT
+        FILTER 'Только отмеченные' 'F8' includePromotionDiscountCard(sh, dis) DEFAULT
 
-    EDIT share OBJECT sh
+    EDIT promotion OBJECT sh
 ;
 
-DESIGN share FROM DEFAULT {
+DESIGN promotion FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
 
@@ -248,7 +248,7 @@ DESIGN share FROM DEFAULT {
                     preferredCharWidth = 30;
 
                 }
-                ADD PROPERTY(nameShareTeamShare(sh));
+                ADD PROPERTY(namePromotionGroupPromotion(sh));
             }
             ADD sh.numberedGroup {
                 childConstraints = TO THE BOTTOM;
@@ -256,20 +256,20 @@ DESIGN share FROM DEFAULT {
             NEW row11 {
                 title = 'Диапозон дат';
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(dateFromShare);
-                ADD PROPERTY(dateToShare);
+                ADD PROPERTY(dateFromPromotion);
+                ADD PROPERTY(dateToPromotion);
             }
             NEW row12 {
                 title = 'Часы';
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(timeOfFromShare);
-                ADD PROPERTY(timeOfToShare);
+                ADD PROPERTY(timeOfFromPromotion);
+                ADD PROPERTY(timeOfToPromotion);
             }
             NEW row13 {
                 title = 'Суммы';
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(cumulativeSumShare);
-                ADD PROPERTY(minSumBillShare);
+                ADD PROPERTY(cumulativeSumPromotion);
+                ADD PROPERTY(minSumBillPromotion);
             }
         }
 
@@ -314,33 +314,33 @@ DESIGN share FROM DEFAULT {
 
 
 
-FORM shares 'Акции'
-    OBJECTS sh=share
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
-                       cumulativeSumShare, minSumBillShare
+FORM promotions 'Акции'
+    OBJECTS sh=promotion
+    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
+                       cumulativeSumPromotion, minSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
     PROPERTIES (sh) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated
 
 ;
 
-FORM shareTeam 'Группа акций'
-    OBJECTS st=shareTeam FIXED PANEL
+FORM promotionGroup 'Группа акций'
+    OBJECTS st=promotionGroup FIXED PANEL
     PROPERTIES(st)     name
-    EDIT shareTeam OBJECT st
+    EDIT promotionGroup OBJECT st
 
 ;
 
-FORM shareTeams 'Группы акций'
-    OBJECTS st=shareTeam
+FORM promotionGroups 'Группы акций'
+    OBJECTS st=promotionGroup
     PROPERTIES(st)     READONLY name
     PROPERTIES(st)     ADDFORM, EDITFORM, delete
 
-    OBJECTS sh=share
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromShare, dateToShare, timeOfFromShare, timeOfToShare,
-                       cumulativeSumShare, minSumBillShare
+    OBJECTS sh=promotion
+    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
+                       cumulativeSumPromotion, minSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
-    FILTERS shareTeamShare(sh)==st
+    FILTERS promotionGroupPromotion(sh)==st
 
 ;

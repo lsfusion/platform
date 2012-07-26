@@ -194,7 +194,7 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTI
 
                 IF dialogBarcodeDetail() IS WHfromCSRDetail THEN {
                     SET quantityWHfromCSRDetail(detail) IF detail == dialogBarcodeDetail() <-
-                        quantityWHfromCSRDetail(detail) (+) (1 IF detail IS WHfromCSRDetail);
+                        quantityWHfromCSRDetail(detail) (+) (1.0 IF detail IS WHfromCSRDetail);
                     } ELSE {
 
                         ADDOBJ WHfromCSRDetail;
@@ -202,7 +202,7 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTI
                             SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
                             SET skuWHfromCSRDetail(w) <- dialogBarcodeSku();
                             SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
-                            SET quantityWHfromCSRDetail(w) <- 1;
+                            SET quantityWHfromCSRDetail(w) <- 1.0;
                         }
                     }
             }

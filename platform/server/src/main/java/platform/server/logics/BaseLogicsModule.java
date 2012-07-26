@@ -219,7 +219,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LCP currentTime;
     public LCP currentUser;
     public LCP currentSession;
-    public LCP currentComputer;
+    public LCP currentComputer, hostnameCurrentComputer;
     public LAP changeUser;
     protected LCP isServerRestarting;
     public LCP<PropertyInterface> barcode;
@@ -847,14 +847,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
         currentMonth = addJProp(baseGroup, "currentMonth", getString("logics.date.current.month"), numberMonthInDate, currentDate);
         currentYear = addJProp(baseGroup, "currentYear", getString("logics.date.current.year"), yearInDate, currentDate);
-        currentHour = addTProp("currentHour", Time.HOUR);
-        currentMinute = addTProp("currentMinute", Time.MINUTE);
-        currentEpoch = addTProp("currentEpoch", Time.EPOCH);
-        currentDateTime = addTProp("currentDateTime", Time.DATETIME);
+        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
+        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
+        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
+        currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
         currentTime = addJProp("currentTime", getString("logics.date.current.time"), timeInDateTime, currentDateTime);
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentSession = addProperty(null, new LCP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
+
         currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
+        hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostname, currentComputer);
+
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
         changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
 

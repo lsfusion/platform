@@ -7819,7 +7819,7 @@ volumeSoldItemDepartmentStoreDateFromTo 'Объем проданного тов�
 // sumSoldSkuStockDateFromTo 'Продано, сумма' (item, departmentStore, dateFrom, dateTo)   - рубли
 //quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo)                      - шт.
 
-retailSumCardDepartmentDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==paymentMeans.card
+retailSumCardDepartmentDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==paymentMeans.paymentMeansCard
     AND dateReceipt(receiptPayment(payment)) >= (dateFrom AS DATE) AND dateReceipt(receiptPayment(payment)) <= (dateTo AS DATE) AND isPostedReceipt(receiptPayment(payment))
         BY departmentStoreReceipt(receiptPayment(payment)), dateFrom, dateTo;
 
@@ -8997,7 +8997,7 @@ NAVIGATOR {
             ADD statements;
         }
         NEW retailSale 'Розничные продажи'{
-            ADD receipts;
+            ADD zReports;
             ADD operationCashRegister;
         }
         NEW priceManagement 'Управление ценами' {

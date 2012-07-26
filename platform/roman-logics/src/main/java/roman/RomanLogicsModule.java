@@ -3763,9 +3763,6 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(retailClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
 
-        NavigatorElement CRM = addNavigatorElement(baseLM.baseElement, "CRM", "CRM");
-        CRM.window = leftToolbar;
-
         NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
         addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));
