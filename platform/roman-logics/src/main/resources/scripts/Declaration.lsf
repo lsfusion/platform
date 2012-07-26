@@ -687,11 +687,10 @@ FORM declaration 'Декларация'
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 
     OBJECTS gd=groupDeclaration
-    PROPERTIES (gd) READONLY numberGroupDeclaration, nameBrandGroupDeclaration, nameCategoryGroupDeclaration, sidArticleGroupDeclaration,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration,
-                    sidCustomCategory10GroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
-                    sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, quantityGroupDeclaration,
-                    sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
+    PROPERTIES (gd) READONLY numberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration, sidArticleGroupDeclaration,
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
+                    sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
+                    quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     sumGroupDeclaration, netWeightGroupDeclaration, grossWeightGroupDeclaration
 
     OBJECTS ii2=innerInvoice
@@ -858,8 +857,8 @@ FORM declarations 'Декларации'
     FILTERS inDeclarationDeclarationDetail(d, dd)
 
     OBJECTS s=sku
-    PROPERTIES (s) READONLY FORCE GRID barcode, nameBrandSupplierArticleSku, sidArticleSku, nameCategoryArticleSku, mainCompositionSku,
-                            sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
+    PROPERTIES (s) READONLY FORCE GRID barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                            sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem,  mainCompositionSku
 
     PROPERTIES (d, s) quantityCertificatedDeclarationSku
 
