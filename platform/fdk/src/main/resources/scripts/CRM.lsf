@@ -30,13 +30,8 @@ FORM clients 'Покупатели (Ф.Л.)'
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 ;
 
-// ---------------------------- Нумераторы по умолчанию --------------------------------- //
-
-defaultNumeratorDiscountCards = DATA numerator ();
-nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
-
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
-CLASS discountCard 'Дисконтная карта' : numeratedObject, barcodeObject;
+CLASS discountCard 'Дисконтная карта' : numeratedObject;
 TABLE discountCard (discountCard);
 
 CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаров' : named;
@@ -44,19 +39,28 @@ CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаро�
 discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
 
 clientDiscountCard (discountCard) = DATA client(discountCard) IN idGroup;
-nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard));
+nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard)) IN recognizeGroup;
 
-dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard);
-dateToDiscountCard 'Дата окончания действия' (discountCard) = DATA DATE (discountCard);
+GROUP discountCardDateGroup 'Срок действия' : baseGroup;
+dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard) IN discountCardDateGroup;
+dateDiscountCard (discountCard) <- currentDate() WHEN ASSIGNED(discountCard IS discountCard);
+
+dateToDiscountCard 'Дата окончания действия' (discountCard) = DATA DATE (discountCard) IN discountCardDateGroup;
 
 inDiscountCardDiscountSkuGroup 'Вкл.' (discountCard, discountSkuGroup) = ABSTRACT BOOLEAN (discountCard, discountSkuGroup);
 inDiscountSkuGroupSku 'Вкл' = ABSTRACT BOOLEAN (discountSkuGroup, sku);
 
-blockDiscountCard 'Признак блокировки карты' (discountCard) = DATA STRING[100] (discountCard) IN baseGroup MINCHARWIDTH 40 PREFCHARWIDTH 40;
-
 percentDiscountCard 'Процент скидки' (discountCard) = DATA NUMERIC[8,3] (discountCard);
 
 // накопительная сумма  : потом посчитать ее по карте
+
+// ---------------------------- Нумераторы по умолчанию --------------------------------- //
+
+defaultNumeratorDiscountCards = DATA numerator ();
+nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
+
+initValueNumeratorObject(object) += defaultNumeratorDiscountCards() IF object IS discountCard;
+initWhenNumeratorObject(object) += ASSIGNED(object IS discountCard);
 
 FORM generationDiscountCards 'Генерация дисконтных карт'
     OBJECTS n=numerator  FIXED PANEL
@@ -69,8 +73,8 @@ DESIGN generationDiscountCards FROM DEFAULT {
     main{
         PROPERTY(intValueQuantityCards) {
             caption = 'Количество дисконтных карт';
-            }
         }
+    }
 }
 
 generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
@@ -90,8 +94,9 @@ generateDiscountCards 'Сгенерировать дисконтные карт�
 
 FORM discountCard 'Дисконтная карта'
     OBJECTS d=discountCard FIXED PANEL
-    PROPERTIES(d) seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
-                  percentDiscountCard, blockDiscountCard
+    PROPERTIES(d) nameClientDiscountCard, percentDiscountCard,
+                  nameNumeratorObject, numberObject, seriesObject,
+                  dateDiscountCard, dateToDiscountCard
 
     OBJECTS dg=discountSkuGroup
     PROPERTIES(dg) READONLY name
@@ -106,21 +111,35 @@ FORM discountCard 'Дисконтная карта'
 DESIGN discountCard FROM DEFAULT {
     main{
         preferredSize = (1024, 768);
-        ADD d.box {
-            childConstraints = TO THE BOTTOM;
-        };
-        ADD dg.box;
-        ADD functions.box;
+        d.box {
+            d.panel {
+                childConstraints = TO THE BOTTOM;
+                NEW row1 {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameClientDiscountCard) {
+                        font = 'Tahoma 24';
+                    }
+                    ADD PROPERTY(percentDiscountCard) {
+                        font = 'Tahoma 24';
+                    }
+                }
+                NEW row2 {
+                    childConstraints = TO THE RIGHT;
+                    ADD d.numberedGroup;
+                    ADD d.discountCardDateGroup;
+                }
+            }
+        }
     }
 }
 
 FORM discountCards 'Дисконтные карты'
     OBJECTS d=discountCard
-    PROPERTIES(d) READONLY seriesNumberObject, barcode, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
-                  percentDiscountCard, blockDiscountCard
+    PROPERTIES(d) READONLY numberObject, seriesObject, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
+                  percentDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
-    ORDER BY seriesNumberObject
+    ORDER BY seriesObject, numberObject
 
     OBJECTS dg=discountSkuGroup
     PROPERTIES(dg) READONLY name
@@ -182,7 +201,7 @@ includePromotionConditionSkuGroupSku 'В акции' (promotionCondition, skuGro
 
 FORM promotion 'Акция'
     OBJECTS sh=promotion   FIXED PANEL
-    PROPERTIES(sh)     name, namePromotionGroupPromotion, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
+    PROPERTIES(sh)     name, namePromotionGroupPromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
                        cumulativeSumPromotion, minSumBillPromotion
     OBJECTS d=DOW
     PROPERTIES(d)     READONLY name
@@ -226,7 +245,7 @@ FORM promotion 'Акция'
         FILTER 'Только отмеченные' 'F9' includePromotionStore(sh, s) DEFAULT
 
     OBJECTS dis= discountCard
-    PROPERTIES(dis)    READONLY seriesNumberObject, barcode, nameClientDiscountCard
+    PROPERTIES(dis)    READONLY numberObject, seriesObject, nameClientDiscountCard
     PROPERTIES(sh, dis) includePromotionDiscountCard
     FILTERGROUP filterDiscountCard
         FILTER 'Только отмеченные' 'F8' includePromotionDiscountCard(sh, dis) DEFAULT
@@ -290,7 +309,7 @@ DESIGN promotion FROM DEFAULT {
                 ADD sk.box {
                     fillHorizontal = 2;
                 }
-            };
+            }
 
             NEW row22 {
                 type = SPLITH;
@@ -302,10 +321,9 @@ DESIGN promotion FROM DEFAULT {
                 ADD s.box {
                     fillHorizontal = 2;
                 }
-            };
+            }
             ADD dis.box;
-            ADD d.box {
-            };
+            ADD d.box;
         }
 
         ADD functions.box;
@@ -316,7 +334,7 @@ DESIGN promotion FROM DEFAULT {
 
 FORM promotions 'Акции'
     OBJECTS sh=promotion
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
+    PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
                        cumulativeSumPromotion, minSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
