@@ -100,7 +100,7 @@ barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromCSR) =
 
 withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
 
-FORM addBarcodeWHfromCSRSku 'Поиск товара(с коробами и выбором шрих-кода)'
+FORM addBarcodeWHfromCSRFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
 
     OBJECTS w = WHfromCSR
 
@@ -120,12 +120,26 @@ FORM addBarcodeWHfromCSRSku 'Поиск товара(с коробами и вы
 
 ;
 
-DESIGN addBarcodeWHfromCSRSku FROM DEFAULT {
+DESIGN addBarcodeWHfromCSRFreightUnitSku FROM DEFAULT {
 
     f.box{
         caption = 'Короб';
     }
 }
+
+FORM addBarcodeWHfromCSRSku 'Поиск товара(с выбором шрих-кода)'
+
+    OBJECTS w = WHfromCSR
+
+    OBJECTS s = RomanLogicsModule.item
+    PROPERTIES(s) READONLY sidArticleSku, barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
+
+    FILTERS quantitySkuCStoWH (s, CStoWHWHfromCSI(WHfromCSIWHfromCSR(w))) > 0
+
+    FILTERGROUP filters1
+        FILTER 'Товар без шрих-кода' 'F9' withOutBarcodeSku(s) DEFAULT
+
+;
 
 FORM addSkuWHfromCSR 'Ввод товара'
 
@@ -180,7 +194,11 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTI
 
             IF selectedBarcode() IS STRING[14] AND NOT dialogBarcodeSku() IS sku THEN {
 
-                FORM addBarcodeWHfromCSRSku OBJECTS f = currentFreightUnit(WHfromCSR), w = WHfromCSR MODAL;
+                IF currentFreightUnit(WHfromCSR) THEN {
+                    FORM addBarcodeWHfromCSRFreightUnitSku OBJECTS f = currentFreightUnit(WHfromCSR), w = WHfromCSR MODAL;
+                } ELSE {
+                    FORM addBarcodeWHfromCSRSku OBJECTS w = WHfromCSR MODAL;
+                }
                 IF formResult() == formResult.ok THEN {
                     SET barcode(sku) IF sku == chosenObject('s') <- selectedBarcode();
                     SET dialogBarcodeSku() <- chosenObject('s');
@@ -214,6 +232,7 @@ fillWHfromCSRDetailsSkuFreightUnit 'Заполнить строки из кор�
     FOR isNotShippedSkuFreightUnitWHfromCSR (sku AS sku, currentFreightUnit(WHfromCSR), WHfromCSR AS WHfromCSR) DO {
         ADDOBJ WHfromCSRDetail;
         FOR w == addedObject() DO {
+            SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
             SET skuWHfromCSRDetail (w) <- sku AS sku;
             SET quantityWHfromCSRDetail (w) <- quantitySkuFreightUnitCStoWH (sku AS sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
             SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
