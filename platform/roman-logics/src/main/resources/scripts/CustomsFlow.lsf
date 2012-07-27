@@ -136,9 +136,9 @@ toFillQuantityInputDetailDeclarationFreightUnit 'Проставить колич
 inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice (declarationDetailCStoWHDetail(CStoWHDetail), innerInvoice)
     BY CStoWHCStoWHDetail(CStoWHDetail), innerInvoice;
 
-stringInnerInvoice (innerInvoice) =
-    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
-    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
+//stringInnerInvoice (innerInvoice) =
+//    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
+//    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
 
 innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
     IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 20;
