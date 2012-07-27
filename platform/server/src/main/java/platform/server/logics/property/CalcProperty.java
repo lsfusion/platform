@@ -74,7 +74,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return property.getRecDepends().intersect(check);
     }
 
-    public static Set<CalcProperty> depends(Collection<CalcProperty> properties, QuickSet<CalcProperty> check) {
+    public static Set<CalcProperty> depends(Iterable<CalcProperty> properties, QuickSet<CalcProperty> check) {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
         for(CalcProperty property : properties)
             if(depends(property, check))

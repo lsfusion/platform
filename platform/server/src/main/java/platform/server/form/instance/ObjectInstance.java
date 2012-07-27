@@ -1,6 +1,6 @@
 package platform.server.form.instance;
 
-import platform.interop.FormEventType;
+import platform.base.FunctionSet;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
@@ -63,7 +63,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException;
 
-    public abstract boolean classChanged(Collection<CalcProperty> changedProps);
+    public abstract boolean classChanged(FunctionSet<CalcProperty> changedProps);
 
     public abstract Type getType();
 
@@ -72,7 +72,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) { return false; }
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) { return false; }
     public void fillProperties(Set<CalcProperty> properties) { }
 
     protected Expr getExpr() {

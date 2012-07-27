@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
+import platform.base.FunctionSet;
 import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.interop.ClassViewType;
@@ -260,13 +261,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     // с активным интерфейсом, assertion что содержит все ObjectInstance
     OrderedMap<OrderInstance,Boolean> orders = new OrderedMap<OrderInstance, Boolean>();
 
-    public void fillUpdateProperties(Set<CalcProperty> properties) {
-        for(FilterInstance filter : filters)
-            filter.fillProperties(properties);
-        for(OrderInstance order : orders.keySet())
-            order.fillProperties(properties);
-    }
-
     boolean upKeys, downKeys;
     public OrderedMap<Map<ObjectInstance,DataObject>,Map<OrderInstance,ObjectValue>> keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
 
@@ -490,7 +484,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     
     @Message("message.form.update.group.keys")
     @ThisMessage
-    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean hidden, boolean refresh, FormChanges result, Collection<CalcProperty> changedProps) throws SQLException {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, boolean hidden, boolean refresh, FormChanges result, FunctionSet<CalcProperty> changedProps) throws SQLException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }

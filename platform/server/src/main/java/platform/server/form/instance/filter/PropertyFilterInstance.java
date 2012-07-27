@@ -1,5 +1,6 @@
 package platform.server.form.instance.filter;
 
+import platform.base.FunctionSet;
 import platform.interop.Compare;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -10,7 +11,6 @@ import platform.server.logics.property.PropertyInterface;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,7 +42,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
         return property.dataUpdated(changedProps);
     }
 

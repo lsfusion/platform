@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import platform.base.QuickSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
@@ -32,7 +33,7 @@ public interface SessionChanges {
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;
 
     // узнает список изменений произошедших без него
-    public Collection<CalcProperty> update(FormInstance<?> toUpdate) throws SQLException;
+    public QuickSet<CalcProperty> update(FormInstance<?> toUpdate) throws SQLException;
 
     public String applyMessage(BusinessLogics<?> BL) throws SQLException;
 }

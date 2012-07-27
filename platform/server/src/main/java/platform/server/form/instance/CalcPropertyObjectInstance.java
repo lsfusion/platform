@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.base.FunctionSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.logics.DataObject;
@@ -9,7 +10,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,7 +65,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         properties.add(property);
     }
 
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
         return changedProps.contains(property);
     }
 }

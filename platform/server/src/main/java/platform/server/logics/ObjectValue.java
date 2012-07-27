@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import platform.base.FunctionSet;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
@@ -58,7 +59,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     
     public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
     public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) {return false;}
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {return false;}
     public void fillProperties(Set<CalcProperty> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 

@@ -1,6 +1,7 @@
 package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
+import platform.base.FunctionSet;
 import platform.interop.Compare;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -17,7 +18,6 @@ import platform.server.session.PropertyChange;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,7 +61,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
         return super.dataUpdated(changedProps) || value.dataUpdated(changedProps);
     }
 

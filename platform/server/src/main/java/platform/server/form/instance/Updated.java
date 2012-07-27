@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.base.FunctionSet;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.Property;
 
@@ -12,7 +13,7 @@ public interface Updated {
     boolean classUpdated(Set<GroupObjectInstance> gridGroups);
     // изменилось что-то использующее в getExpr конкретные value (один из верхних объектов)
     boolean objectUpdated(Set<GroupObjectInstance> gridGroups);
-    boolean dataUpdated(Collection<CalcProperty> changedProps);
+    boolean dataUpdated(FunctionSet<CalcProperty> changedProps);
     
     void fillProperties(Set<CalcProperty> properties);
 

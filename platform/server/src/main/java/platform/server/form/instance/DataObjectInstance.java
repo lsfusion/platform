@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
+import platform.base.FunctionSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
@@ -12,7 +13,6 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Set;
 
 // ObjectInstance table'ы
@@ -48,7 +48,7 @@ public class DataObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public boolean classChanged(Collection<CalcProperty> changedProps) {
+    public boolean classChanged(FunctionSet<CalcProperty> changedProps) {
         return false;
     }
 

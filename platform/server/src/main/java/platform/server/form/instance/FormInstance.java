@@ -317,10 +317,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final DataSession session;
 
-    public Set<CalcProperty> getUpdateProperties(QuickSet<CalcProperty> propChanges) {
-        return CalcProperty.depends(getUsedProperties(), propChanges);
-    }
-
     private final WeakReference<FocusListener<T>> weakFocusListener;
     public FocusListener<T> getFocusListener() {
         return weakFocusListener.get();
@@ -894,39 +890,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    @IdentityLazy
-    public Collection<CalcProperty> getUsedProperties() {
-        Set<CalcProperty> usedProperties = new HashSet<CalcProperty>();
-        for (PropertyDrawInstance<?> propertyDraw : properties) {
-            usedProperties.add(propertyDraw.getDrawInstance().property);
-            if (propertyDraw.propertyCaption != null) {
-                usedProperties.add((CalcProperty) propertyDraw.propertyCaption.property);
-            }
-            if (propertyDraw.propertyReadOnly != null) {
-                usedProperties.add((CalcProperty) propertyDraw.propertyReadOnly.property);
-            }
-            if (propertyDraw.propertyFooter != null) {
-                usedProperties.add((CalcProperty) propertyDraw.propertyFooter.property);
-            }
-            if (propertyDraw.propertyBackground != null) {
-                usedProperties.add((CalcProperty) propertyDraw.propertyBackground.property);
-            }
-            if (propertyDraw.propertyForeground != null) {
-                usedProperties.add((CalcProperty) propertyDraw.propertyForeground.property);
-            }
-        }
-        for (GroupObjectInstance group : groups) {
-            if (group.propertyBackground != null) {
-                usedProperties.add((CalcProperty) group.propertyBackground.property);
-            }
-            if (group.propertyForeground != null) {
-                usedProperties.add((CalcProperty) group.propertyForeground.property);
-            }
-            group.fillUpdateProperties(usedProperties);
-        }
-        return usedProperties;
-    }
-
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOK, boolean interactive) throws SQLException {
         return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, newSession, checkOnOK, interactive, null);
     }
@@ -1027,7 +990,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return updated.objectUpdated(groupObjects);
     }
 
-    private boolean propertyUpdated(CalcPropertyObjectInstance updated, Set<GroupObjectInstance> groupObjects, Collection<CalcProperty> changedProps) {
+    private boolean propertyUpdated(CalcPropertyObjectInstance updated, Set<GroupObjectInstance> groupObjects, FunctionSet<CalcProperty> changedProps) {
         return dataUpdated(updated, changedProps)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
                 || objectUpdated(updated, groupObjects);
@@ -1040,7 +1003,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return false;
     }
 
-    private boolean dataUpdated(Updated updated, Collection<CalcProperty> changedProps) {
+    private boolean dataUpdated(Updated updated, FunctionSet<CalcProperty> changedProps) {
         return updated.dataUpdated(changedProps);
     }
 
@@ -1095,12 +1058,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         final FormChanges result = new FormChanges();
 
         // если изменились данные, применяем изменения
-        Collection<CalcProperty> changedProps;
+        FunctionSet<CalcProperty> changedProps;
         if (dataChanged) {
             session.executeSessionEvents();
-            changedProps = session.update(this);
+            changedProps = CalcProperty.getDependsSet(session.update(this));
         } else
-            changedProps = new ArrayList<CalcProperty>();
+            changedProps = EmptyFunctionSet.instance();
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : groups) {
@@ -1133,7 +1096,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return result;
     }
 
-    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, Set<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties, Collection<CalcProperty> changedProps) {
+    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, Set<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties, FunctionSet<CalcProperty> changedProps) {
         if (drawProperty!=null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
             if(hidden)
                 pendingHidden.add(propertyReader);
@@ -1144,7 +1107,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private Map<PropertyReaderInstance, Set<GroupObjectInstance>> getChangedDrawProps(FormChanges result, Collection<CalcProperty> changedProps) {
+    private Map<PropertyReaderInstance, Set<GroupObjectInstance>> getChangedDrawProps(FormChanges result, FunctionSet<CalcProperty> changedProps) {
         final Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReaderInstance, Set<GroupObjectInstance>>();
 
         for (PropertyDrawInstance<?> drawProperty : properties) {

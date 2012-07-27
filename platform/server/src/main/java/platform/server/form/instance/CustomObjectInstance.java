@@ -1,6 +1,6 @@
 package platform.server.form.instance;
 
-import platform.interop.FormEventType;
+import platform.base.FunctionSet;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
@@ -15,7 +15,6 @@ import platform.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Set;
 
 public class CustomObjectInstance extends ObjectInstance {
@@ -104,7 +103,7 @@ public class CustomObjectInstance extends ObjectInstance {
         }
     }
 
-    public boolean classChanged(Collection<CalcProperty> changedProps) {
+    public boolean classChanged(FunctionSet<CalcProperty> changedProps) {
         return changedProps.contains(gridClass.getProperty());
     }
 

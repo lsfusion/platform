@@ -1,5 +1,6 @@
 package platform.server.form.instance.filter;
 
+import platform.base.FunctionSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
@@ -11,7 +12,6 @@ import platform.server.session.Modifier;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +36,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
         return filter.dataUpdated(changedProps);
     }
 

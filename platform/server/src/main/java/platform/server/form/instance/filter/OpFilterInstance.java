@@ -1,6 +1,7 @@
 package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
+import platform.base.FunctionSet;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
@@ -13,7 +14,6 @@ import platform.server.session.ExecutionEnvironment;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Set;
 
 public abstract class OpFilterInstance extends FilterInstance {
@@ -40,7 +40,7 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(Collection<CalcProperty> changedProps) {
+    public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {
         return op1.dataUpdated(changedProps) || op2.dataUpdated(changedProps);
     }
 

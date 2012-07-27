@@ -584,7 +584,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     // узнает список изменений произошедших без него
-    public Collection<CalcProperty> update(FormInstance<?> form) throws SQLException {
+    public QuickSet<CalcProperty> update(FormInstance<?> form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         UpdateChanges incrementChange = incrementChanges.get(form);
@@ -604,7 +604,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
         incrementChanges.put(form,new UpdateChanges());
 
-        return form.getUpdateProperties(incrementChange.properties);
+        return incrementChange.properties;
     }
 
     public String applyMessage(BusinessLogics<?> BL) throws SQLException {
