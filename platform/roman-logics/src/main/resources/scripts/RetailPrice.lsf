@@ -43,7 +43,7 @@ EXTEND FORM globalParamForm
 CLASS STATIC methodPrice 'Метод расчёта'
 {
     coefficient 'С надбавкой',
-    RRP 'Рекомендемая',
+    RRP 'Рекомендуемая',
     previous 'Предыдущая'
 };
 
@@ -65,7 +65,7 @@ TABLE priceSetDocumentArticle(priceSetDocument, article);
 defaultNumeratorPriceSetDocuments = DATA numerator ();
 nameDefaultNumeratorPriceSetDocuments 'Нумератор для розничных прайсов' = name(defaultNumeratorPriceSetDocuments());
 
-initValueNumeratorObject(object) += defaultNumeratorDiscountCards() IF object IS priceSetDocument;
+initValueNumeratorObject(object) += defaultNumeratorPriceSetDocuments() IF object IS priceSetDocument;
 initWhenNumeratorObject(object) += ASSIGNED(object IS priceSetDocument);
 
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
@@ -137,45 +137,14 @@ priceOutRatePriceSetDocumentArticle 'С надбавкой (руб.)' (basePrice
 
 
 priceRetailPriceSetDocumentArticle 'Цена розничная' (basePriceSetDocument, article) =
-           CASE
-               WHEN methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)
-               WHEN methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN RRPRatePriceSetDocumentArticle(basePriceSetDocument, article)
-               WHEN methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous THEN PREV(priceBBasePriceSetDocumentArticle(basePriceSetDocument, article))
-               DEFAULT 0 AND basePriceSetDocument IS basePriceSetDocument AND article IS article
-           END MINCHARWIDTH 15;
-
+           IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article) ELSE
+             IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN RRPRatePriceSetDocumentArticle(basePriceSetDocument, article) ELSE
+                PREV(priceBBasePriceSetDocumentArticle(basePriceSetDocument, article)) IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous;
 
 priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceRetailPriceSetDocumentArticle(basePriceSetDocument, article)
                             WHEN CHANGED (methodPriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (RRPRatePriceSetDocumentArticle(basePriceSetDocument, article));
-
-//---------------------------- НДС розничный для товара ----------------------------------------//
-TABLE articleDate(article, DATE);
-
-@defineHistorizableCustom(retailVATArticle, 'НДС розницы', range, numberRange, article, sidArticle, baseGroup);
-
-CONSTRAINT taxRange(dataRetailVATArticleDate(article, date)) != tax.taxVAT CHECKED BY dataRetailVATArticleDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-dataValueRetailVATArticleDate 'НДС, %' (article, date) = valueRateRangeDate(dataRetailVATArticleDate(article, date), date);
-valueCurrentRateRetailVATArticle 'НДС, %' (article) = valueCurrentRateRange(retailVATArticle(article));
-
-EXTEND FORM addRetailVATArticle
-    PROPERTIES READONLY FORCE GRID dataValueRetailVATArticleDate(a, d)
-;
-EXTEND FORM dialogRetailVATArticle
-    PROPERTIES dataValueRetailVATArticleDate(a, d)
-;
-
-EXTEND FORM nomenclatureForm
-    PROPERTIES numberRangeRetailVATArticle(article), dialogRetailVATArticle(article), valueCurrentRateRetailVATArticle(article)
-;
-
-percentVATPriceSetDocumentArticle 'НДС (%)' = DATA NUMERIC[14,3](basePriceSetDocument, article) IN baseGroup;
-percentVATPriceSetDocumentArticle(basePriceSetDocument, article) <- valueCurrentRateRetailVATArticle(article) WHEN CHANGED (date(basePriceSetDocument));
-
-sumVATPriceSetDocumentArticle 'НДС (руб.)' = [round0(X*Y/(Y+100))](priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article),
-                                                                      percentVATPriceSetDocumentArticle(basePriceSetDocument, article));
 
 // для уценки
 priceInRateBBasePriceSetDocumentArticle 'Цена поставщика (руб.)' (discountPriceSetDocument, article) = ratePriceSetDocumentArticle (discountPriceSetDocument, article) *
@@ -244,7 +213,7 @@ FORM priceSetDocument 'Базовый прайс'
                       RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
                       ratePriceSetDocumentArticle, RRPRatePriceSetDocumentArticle, priceOutRatePriceSetDocumentArticle,
                       priceBBasePriceSetDocumentArticle, nameMethodPriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                      priceDataBasePriceSetDocumentArticle, percentVATPriceSetDocumentArticle, sumVATPriceSetDocumentArticle
+                      priceDataBasePriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(p, a)
 
@@ -314,7 +283,7 @@ FORM priceBaseChangeDocuments 'Базовые прайсы'
                                RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
                                ratePriceSetDocumentArticle,
                                priceBBasePriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                               priceDataBasePriceSetDocumentArticle, percentVATPriceSetDocumentArticle, sumVATPriceSetDocumentArticle
+                               priceDataBasePriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(p, a)
 ;
