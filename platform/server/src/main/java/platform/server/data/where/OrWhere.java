@@ -206,7 +206,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 staticWheres[sn++] = wheres[j];
                 onlyObjects = onlyObjects && wheres[j] instanceof ObjectWhere;
             }
-        Where result = toWhere(staticWheres);
+        Where result = toWhere(staticWheres, check);
         if(onlyObjects && checkTrue(orCheckNull(orCheckNull(result,siblingNewWheres[2]),siblingNewWheres[3]),falseWhere)) {
             change.type = FollowType.WIDE;
             return TRUE;

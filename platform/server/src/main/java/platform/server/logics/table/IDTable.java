@@ -69,11 +69,11 @@ public class IDTable extends GlobalTable {
             if(freeID > maxReservedID) { // читаем новый пул
                 dataSession.startTransaction();
 
-                freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value); // замещаем
+                freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value) + 1; // замещаем
 
                 maxReservedID = freeID + Settings.instance.getReserveIDStep();
                 Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
-                updateQuery.properties.put(value,new ValueExpr(maxReservedID + 1, SystemClass.instance));
+                updateQuery.properties.put(value,new ValueExpr(maxReservedID, SystemClass.instance));
                 dataSession.updateRecords(new ModifyQuery(this, updateQuery));
 
                 dataSession.commitTransaction();

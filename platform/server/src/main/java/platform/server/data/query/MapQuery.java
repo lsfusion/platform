@@ -108,7 +108,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
     }
 
     public Where getWhere() {
-        return query.getWhere();
+        return query.getWhere().translateOuter(mapValues.mapKeys());
     }
 
     public QuickSet<Value> getValues() {
