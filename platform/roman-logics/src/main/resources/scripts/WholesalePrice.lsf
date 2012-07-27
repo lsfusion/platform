@@ -80,25 +80,47 @@ FORM wholesalePriceDocument 'Оптовый прайс'
     EDIT wholesalePriceDocument OBJECT w
 ;
 
+
 DESIGN wholesalePriceDocument FROM DEFAULT {
+    main {
 
+        NEW allContainer {
+            childConstraints = TO THE BOTTOM;
+            type = SPLITV;
 
-    treeSupplierBrand.tree.box {
-        title = 'Поставщики-Бренды';
-        fillHorizontal = 1.5;
+            NEW topContainer {
+
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+
+                NEW treeContainer {
+
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+
+                    ADD treeSupplierBrand.tree.box {
+                        fillHorizontal = 1.5;
+                    }
+
+                    ADD treeCategory.tree.box {
+                        fillHorizontal = 1.5;
+                    }
+                }
+
+                ADD aa.box {
+                    fillHorizontal = 1.5;
+                }
+            }
+
+            ADD a.box {
+                fillVertical = 1.5;
+            }
+        }
     }
-    treeCategory.tree.box {
-        title = 'Номенклатурные группы';
-    }
 
-    aa.box {
-        fillHorizontal = 1.5;
-    }
-
-    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
-    POSITION treeCategory.tree.box TO THE LEFT aa.box;
-
+    ADD functions.box;
 }
+
 
 FORM wholesalePriceDocuments 'Оптовые прайсы'
 

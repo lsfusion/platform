@@ -3,6 +3,7 @@ MODULE RetailPrice;
 REQUIRE System,
         MasterData,
         POS,
+        RomanStock,
         RomanLogicsModule;
 
 PRIORITY MasterData, RomanLogicsModule;
@@ -47,7 +48,7 @@ CLASS STATIC methodPrice 'Метод расчёта'
 };
 
 
-CLASS ABSTRACT priceSetDocument 'Документ изменения цен' : transaction;
+CLASS ABSTRACT priceSetDocument 'Документ изменения цен' : transaction, numeratedObject;
 CLASS basePriceSetDocument 'Базовый прайс' : priceSetDocument;
 CLASS discountPriceSetDocument 'Распродажа' : priceSetDocument;
 CLASS mixPriceSetDocument 'Базовый прайс с распродажей' : basePriceSetDocument, discountPriceSetDocument;
@@ -60,6 +61,10 @@ CLASS coefficientRetail 'Надбавка';
 //priceConversionDiapasonPrices 'Округлённая цена' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
 
 TABLE priceSetDocumentArticle(priceSetDocument, article);
+
+defaultNumeratorPriceSetDocuments = DATA numerator ();
+nameDefaultNumeratorPriceSetDocuments 'Нумератор для прайсов' = name(defaultNumeratorPriceSetDocuments());
+
 
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
 markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
@@ -217,7 +222,7 @@ FORM coefficientRetails 'Надбавки'
 FORM priceSetDocument 'Базовый прайс'
 
     OBJECTS p=basePriceSetDocument FIXED PANEL
-    PROPERTIES(p) sidPriceSetDocument, date, timePriceSetDocument, toSetPricesPriceSetDocument
+    PROPERTIES(p) sidPriceSetDocument, nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, toSetPricesPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -241,6 +246,9 @@ FORM priceSetDocument 'Базовый прайс'
 
     FILTERS inArticlePriceSetDocument(p, a)
 
+    FILTERGROUP filtersBalance
+        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(a) DEFAULT
+
     FILTERGROUP filtersMethod
         FILTER 'Показывать без метода' 'F9' notMethodPriceSetDocumentArticle(p, a)
 
@@ -253,17 +261,43 @@ FORM priceSetDocument 'Базовый прайс'
 ;
 
 DESIGN priceSetDocument FROM DEFAULT {
-    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
-    POSITION treeCategory.tree.box TO THE LEFT aa.box;
+    main {
 
-    treeSupplierBrand.tree {
-        fillHorizontal = 1.5;
+        NEW allContainer {
+            childConstraints = TO THE BOTTOM;
+            type = SPLITV;
+
+            NEW topContainer {
+
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+
+                NEW treeContainer {
+
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+
+                    ADD treeSupplierBrand.tree.box {
+                        fillHorizontal = 1.5;
+                    }
+
+                    ADD treeCategory.tree.box {
+                        fillHorizontal = 1.5;
+                    }
+                }
+
+                ADD aa.box {
+                    fillHorizontal = 1.5;
+                }
+            }
+
+            ADD a.box {
+                fillVertical = 1.5;
+            }
+        }
     }
 
-    aa.box {
-        fillHorizontal = 1.5;
-    }
-
+    ADD functions.box;
 }
 
 FORM priceBaseChangeDocuments 'Базовые прайсы'
@@ -301,7 +335,7 @@ showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle
 FORM discountPriceSetDocument 'Распродажа'
 
     OBJECTS d=discountPriceSetDocument FIXED PANEL
-    PROPERTIES(d) sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(d) sidPriceSetDocument, nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -330,18 +364,44 @@ FORM discountPriceSetDocument 'Распродажа'
 ;
 
 DESIGN discountPriceSetDocument FROM DEFAULT {
-    POSITION treeSupplierBrand.tree.box TO THE LEFT treeCategory.tree.box;
-    POSITION treeCategory.tree.box TO THE LEFT aa.box;
+    main {
 
-    treeSupplierBrand.tree {
-        fillHorizontal = 1.5;
+        NEW allContainer {
+            childConstraints = TO THE BOTTOM;
+            type = SPLITV;
+
+            NEW topContainer {
+
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+
+                NEW treeContainer {
+
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+
+                    ADD treeSupplierBrand.tree.box {
+                        fillHorizontal = 1.5;
+                    }
+
+                    ADD treeCategory.tree.box {
+                        fillHorizontal = 1.5;
+                    }
+                }
+
+                ADD aa.box {
+                    fillHorizontal = 1.5;
+                }
+            }
+
+            ADD a.box {
+                fillVertical = 1.5;
+            }
+        }
     }
 
-    aa.box {
-        fillHorizontal = 1.5;
-    }
+    ADD functions.box;
 }
-
 
 FORM discountPriceSetDocuments 'Распродажи'
 
@@ -371,7 +431,7 @@ toCreatePriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
             EXEC apply();
         };
     };
-} CONFIRM;
+} TOOLBAR CONFIRM;
 
 FORM freights 'Расценка фрахтов'
 
@@ -383,3 +443,4 @@ FORM freights 'Расценка фрахтов'
     FILTERGROUP filtersDocument
         FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f) DEFAULT
 ;
+
