@@ -360,6 +360,7 @@ dataValueSupplierVATCustomCategory10Date 'НДС поставщика, %' (custo
 valueCurrentRateSupplierVATCustomCategory10 'НДС поставщика, %' (customCategory10) = valueCurrentRateRange(supplierVATCustomCategory10(customCategory10));
 
 supplierVATRangeDeclarationDetail 'НДС' = DATA range(declarationDetail) IN baseGroup;
+numberSupplierVATRangeDeclarationDetail 'НДС' (declarationDetail) = numberRange(supplierVATRangeDeclarationDetail(declarationDetail));
 supplierVATRangeDeclarationDetail(declarationDetail) <- supplierVATCustomCategory10(customCategory10DeclarationDetail(declarationDetail)) WHEN ASSIGNED(declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 @implementBatch(declaration, sku, customStore, supplierPrice);
@@ -395,6 +396,16 @@ VATPercentCategoryDeclarationDetail 'НДС (%)' (declarationDetail) = valueCurr
 VATPercentDeclarationDetail 'НДС (%)' (declarationDetail) = UNION OVERRIDE VATPercentCustomDeclarationDetail(declarationDetail),
                                                                            VATPercentOriginDeclarationDetail(declarationDetail),
                                                                            VATPercentCategoryDeclarationDetail(declarationDetail);
+
+rangeCustomCategory10 'Шкала' (customCategory10) = numberRange(valueCurrentRangeValue(dutyPercentCustomCategory10TypeDuty(customCategory10, typeDutyNDS()))) IN baseGroup;
+
+
+toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTOAPPLY {
+
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentRangeValue(dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS())) WHERE d == 2011_01_01;
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentRangeValue(NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
+};
+
 
 VATDeclarationDetail 'НДС товара (расч.)' (declarationDetail) = round0(sumDutyDeclarationDetail(declarationDetail) *
                                                                        VATPercentDeclarationDetail(declarationDetail)/100) PERSISTENT;
@@ -462,8 +473,8 @@ sumDeclaration 'Сумма' (declaration) = GROUP SUM sumDeclarationDetail(decla
 
 coeffDeclarationDetailDeclaration 'Удельный вес' (declarationDetail) = sumDeclarationDetail(declarationDetail)/sumDeclaration(declarationDeclarationDetail(declarationDetail));
 
-registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)) *
-                                                                         coeffDeclarationDetailDeclaration(declarationDetail);
+registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = round0(rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)) *
+                                                                                coeffDeclarationDetailDeclaration(declarationDetail));
 
 registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarationDetail) = round0(registrationSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail)) PERSISTENT;
 
@@ -665,16 +676,18 @@ FORM declaration 'Декларация'
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
     PROPERTIES (dd) sidCustomCategory10DeclarationDetail
-    PROPERTIES (dd) netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
+    PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail ,
                     declarationPriceDeclarationDetail, supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail, dutyPercentDeclarationDetail,
-                    dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail, VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail
+                    dutyUnionDeclarationDetail
+    PROPERTIES (dd) numberSupplierVATRangeDeclarationDetail
+    PROPERTIES (dd) READONLY VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationSumDeclarationDetail
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
     PROPERTIES (c, dd) sumCorrectionDeclarationDetail
 
     PROPERTIES (dd) diffDutyDeclarationDetail, diffVATDeclarationDetail, priceCustomDeclarationDetail,
-                    priceManagerialCustomDeclarationDetail, ADDOBJ, delete
+                    priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail, ADDOBJ, delete
 
     PROPERTIES (dd) certificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
@@ -691,7 +704,6 @@ FORM declaration 'Декларация'
     PROPERTIES (ii2) sidInnerInvoice, dateInnerInvoice
 
     FILTERS inDeclarationGroupDeclaration(d, gd), inGroupDeclarationInnerInvoice(gd, ii2)
-
 
 
     OBJECTS sf=(s=sku, fu=freightUnit)
@@ -814,10 +826,10 @@ DESIGN declaration FROM DEFAULT{
 
     PROPERTY(dutyPercentDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(dutyUnionDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(numberRangeSupplierVATDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(numberSupplierVATRangeDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(VATPercentDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(VATUnionDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(registrationDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(registrationSumDeclarationDetail) { background = #AAFFFF; }
 
     ADD functions.box;
 };
@@ -840,9 +852,9 @@ FORM declarations 'Декларации'
                             quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
                             supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
                             dutyPercentDeclarationDetail, dutyUnionDeclarationDetail, numberRangeSupplierVATDeclarationDetail,
-                            VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationDeclarationDetail,
+                            VATPercentDeclarationDetail, VATUnionDeclarationDetail, registrationSumDeclarationDetail,
                             correctionPriceDeclarationDetail, diffDutyDeclarationDetail, diffVATDeclarationDetail,
-                            priceCustomDeclarationDetail, priceManagerialCustomDeclarationDetail
+                            priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
 
     PROPERTIES(dd) READONLY certificatedDeclarationDetail,
                             sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
@@ -870,7 +882,6 @@ DESIGN declarations FROM DEFAULT {
     }
 
     PROPERTY (exportDeclaration(d)) {
-        //caption = 'Удалить';
         panelLocation = TOOLBAR;
     }
 
@@ -898,7 +909,7 @@ DESIGN declarations FROM DEFAULT {
     PROPERTY(numberRangeSupplierVATDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(VATPercentDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(VATUnionDeclarationDetail) { background = #AAFFFF; }
-    PROPERTY(registrationDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(registrationSumDeclarationDetail) { background = #AAFFFF; }
 
     ADD functions.box;
 }

@@ -2982,8 +2982,6 @@ public class RomanLogicsModule extends LogicsModule {
         addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
         addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
 
-        //customStoreFreight = addDProp(idGroup, "customStoreFreight", "СВХ (ИД)", customStore, freight);
-        //nameCustomStoreFreight = addJProp(baseGroup, "nameCustomStoreFreight", "СВХ", baseLM.name, customStoreFreight, 1);
 
         warehouseFreight  = addDProp(idGroup, "warehouseFreight", "Склад фрахта (ИД)", BL.getModule("MasterData").getClassByName("warehouse"), freight);
         nameWarehouseFreight = addJProp(baseGroup, "nameWarehouseFreight", "Склад фрахта", baseLM.name, warehouseFreight, 1);
@@ -6332,7 +6330,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameWarehouseFreight, nameFreightTypeFreight, grossWeightFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.READONLY);
 
@@ -7847,7 +7845,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, formLogFreight, nameRouteFreight, nameExporterFreight, nameWarehouseFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
+            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setEditType(objFreight, PropertyEditType.READONLY);
             setEditType(formLogFreight, PropertyEditType.EDITABLE);

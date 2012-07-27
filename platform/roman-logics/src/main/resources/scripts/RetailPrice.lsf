@@ -87,7 +87,7 @@ keepDiscountPriceSetDocument 'Учитывать скидки' = DATA BOOLEAN(pr
 freightPriceSetDocument 'Фрахт документа (ИД)' = DATA freight(basePriceSetDocument) IN idGroup;
 
 quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightPriceSetDocument(basePriceSetDocument) BY freightPriceSetDocument(basePriceSetDocument);
-isPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
+isPriceSetDocumentFreight 'Расценён' (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
 
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
@@ -376,8 +376,8 @@ toCreatePriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
 FORM freights 'Расценка фрахтов'
 
     OBJECTS f=freight
-    PROPERTIES(f) READONLY date BACKGROUND isPriceSetDocumentFreight(f), dateArrivalFreight,
-                           descriptionFreight, nameRouteFreight, nameExporterFreight, freightGrossWeight
+    PROPERTIES(f) READONLY date, dateArrivalFreight, descriptionFreight, nameRouteFreight, nameExporterFreight,
+                  freightGrossWeight, isPriceSetDocumentFreight BACKGROUND isPriceSetDocumentFreight(f)
     PROPERTIES(f) FORCE PANEL toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument
