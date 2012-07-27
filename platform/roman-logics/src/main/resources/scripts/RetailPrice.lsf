@@ -193,7 +193,7 @@ FORM coefficientRetails 'Надбавки'
 FORM priceSetDocument 'Базовый прайс'
 
     OBJECTS p=basePriceSetDocument FIXED PANEL
-    PROPERTIES(p) sidPriceSetDocument, nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, toSetPricesPriceSetDocument
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument, toSetPricesPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -274,7 +274,7 @@ DESIGN priceSetDocument FROM DEFAULT {
 FORM priceBaseChangeDocuments 'Базовые прайсы'
 
     OBJECTS p=basePriceSetDocument
-    PROPERTIES(p) READONLY sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
@@ -306,7 +306,7 @@ showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle
 FORM discountPriceSetDocument 'Распродажа'
 
     OBJECTS d=discountPriceSetDocument FIXED PANEL
-    PROPERTIES(d) sidPriceSetDocument, nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(d) nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
