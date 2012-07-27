@@ -367,7 +367,7 @@ statusInnerOrder 'Статус' (innerOrder) =
 EXTEND FORM innerOrders
     OBJECTS pd=orderPickingDetail
 
-    PROPERTIES (o)  statusInnerOrder, quantityInnerDocumentInnerOrder
+    PROPERTIES (o) READONLY statusInnerOrder, quantityInnerDocumentInnerOrder
     PROPERTIES(o) TODRAW pd FORCE PANEL pickUpInnerOrder, postOrderPickingInnerOrder SHOWIF isDraftOrderPickingInnerOrder(o)
 
     FILTERS orderPickingOrderPickingDetail (pd) == orderPickingInnerOrder(o)
@@ -397,3 +397,126 @@ EXTEND DESIGN innerOrders {
         }
     }
 }
+
+// ---------------------------------------- Приемка ------------------------------------ //
+
+CLASS innerOrderRec 'Приемка товаров по внутреннему заказу' : historyObject;
+CLASS innerOrderRecPosted 'Проведенная приемка товаров по внутреннему заказу' : innerOrderRec, postedObject;
+
+CLASS innerOrderRecDetail 'Строка приемки товаров по внутреннему заказу';
+
+//@defineDocumentTransferRec(innerOrder, 'Приемка товаров по внутреннему заказу', sku, stock);
+
+@defineDocument(innerOrderRec);
+
+innerOrderInnerOrderRec (innerOrderRec) = DATA innerOrder (innerOrderRec);
+innerOrderRecInnerOrder (innerOrder) = GROUP UNIQUE innerOrderRec BY innerOrderInnerOrderRec(innerOrderRec) WHERE innerOrderRec IS innerOrderRec;
+
+innerOrderInnerOrderRecDetail (detail) = innerOrderInnerOrderRec(innerOrderRecInnerOrderRecDetail(detail));
+innerOrderRecInnerOrderDetail (detail) = innerOrderRecInnerOrder(innerOrderInnerOrderDetail(detail));
+
+@defineDocumentAggregationHeaderStockPrefix(innerOrder, innerOrderRec, stock, 'Склад-получатель', destination, );
+
+@defineDocumentPosted(innerOrderRec);
+
+@defineDocumentDetailSku(innerOrderRec, sku);
+
+@defineDocumentDetailQuantity(innerOrderRec);
+
+@defineAddDetailDialogSkuStock(innerOrderRec, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(innerOrderRec, sku);
+
+@defineDocumentHeaderQuantity(innerOrderRec);
+@defineDocumentHeaderSkuQuantity(innerOrderRec, sku);
+//
+//@defineDocumentFormTransferRec(innerOrder, 'Приемка товаров по внутреннему заказу');
+
+FORM innerOrderRec 'Приемка товаров по внутреннему заказу'
+    OBJECTS t = innerOrderRec FIXED PANEL
+
+    PROPERTIES (t) dateInnerOrderRec, timeInnerOrderRec,
+                   nameStockInnerOrderRec, noteInnerOrderRec,
+                   countInnerOrderRecDetailInnerOrderRec, quantityInnerOrderRecDetailInnerOrderRec
+
+    OBJECTS d = innerOrderRecDetail
+
+    PROPERTIES(t) TODRAW d addDetailDialogSkuStockInnerOrderRecDetailInnerOrderRec, addDetailDialogBarcodeInnerOrderRecDetailInnerOrderRec,
+                           deleteInnerOrderRecDetailInnerOrderRec
+
+    FILTERS innerOrderRecInnerOrderRecDetail(d) == t
+
+    EDIT innerOrderRec OBJECT t
+;
+
+DESIGN innerOrderRec FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        t.box {
+            childConstraints = TO THE RIGHT;
+            NEW column1 {
+                childConstraints = TO THE BOTTOM;
+                ADD t.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameStockInnerOrderRec);
+                    ADD PROPERTY (dateInnerOrderRec);
+                    ADD PROPERTY (timeInnerOrderRec);
+                }
+                ADD t.documentPrmGroup;
+            }
+            ADD t.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+}
+///
+receiveInnerOrder 'Принять' (innerOrder) = ACTION (innerOrder) NEWSESSION {
+    IF innerOrderRecInnerOrder(innerOrder) IS innerOrderRec THEN {
+        FOR r == innerOrderRecInnerOrder(innerOrder) DO {
+            IF r IS innerOrderRecPosted THEN {
+                CHANGECLASS r TO innerOrderRec;
+            }
+            FORM innerOrderRec OBJECTS t = r MODAL;
+        }
+    } ELSE {
+        ADDOBJ innerOrderRec;
+        FOR t == addedObject() DO {
+            SET innerOrderInnerOrderRec (t) <- innerOrder AS innerOrder;
+            FORM innerOrderRec OBJECTS t = t MODAL;
+        }
+    }
+    IF formResult() == formResult.ok THEN EXEC apply();
+} TOOLBAR;
+
+postRecInnerOrder 'Пометить как принятое' (innerOrder) = postInnerOrderRec(innerOrderRecInnerOrder(innerOrder)) TOOLBAR;
+isDraftRecInnerOrder (innerOrder) = isDraftInnerOrderRec(innerOrderRecInnerOrder(innerOrder));
+
+statusRecInnerOrder 'Статус приемки' (innerOrder) =
+    IF innerOrderRecInnerOrder (innerOrder) IS innerOrderRecPosted THEN 'Принят' IF innerOrder IS innerOrder ELSE
+    IF innerOrderRecInnerOrder (innerOrder) IS innerOrderRec THEN 'Принимается' IF innerOrder IS innerOrder ELSE
+    'Не принят' IF innerOrder IS innerOrder PREFCHARWIDTH 15 MINCHARWIDTH 15;
+
+quantityInnerOrderRecDetailInnerOrder 'Кол-во принятое' (innerOrder) = quantityInnerOrderRecDetailInnerOrderRec(innerOrderRecInnerOrder(innerOrder));
+
+EXTEND FORM innerOrders
+    PROPERTIES(o) quantityInnerOrderRecDetailInnerOrder, statusRecInnerOrder
+
+    OBJECTS r = innerOrderRecDetail
+    PROPERTIES(o) TODRAW r receiveInnerOrder, postRecInnerOrder SHOWIF isDraftRecInnerOrder(o)
+    FILTERS innerOrderInnerOrderRecDetail(r) == o
+;
+
+EXTEND DESIGN innerOrders {
+    documentDetail {
+        ADD r.box {
+            title = 'Приемка';
+        }
+    }
+}
+///
+
+@defineDocumentDetailSkuArticle(innerOrderRec);
+@extendDocumentFormDetailSkuArticle(innerOrderRec, d, innerOrderRec);
+
+@extendDocumentFormDetailSkuArticleReadonly(innerOrders, r, innerOrderRec);
+
