@@ -754,7 +754,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             pendingSingleTables.put(property, prevTable);
         }
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, false, env); // если он уже был в базе он не заместится
+        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Insert.LEFT, env); // если он уже был в базе он не заместится
     }
 
     // assert что в pendingSingleTables в обратном лексикографике
@@ -938,7 +938,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 addTable = new SingleKeyNoPropertyUsage(ObjectType.instance);
                 add.put(addClass, addTable);
             }
-            addTable.insertRecord(session, change, false);
+            addTable.insertRecord(session, change, Insert.ADD);
 
             SingleKeyNoPropertyUsage removeTable = remove.get(addClass);
             if(removeTable!=null)
@@ -950,7 +950,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 removeTable = new SingleKeyNoPropertyUsage(ObjectType.instance);
                 remove.put(removeClass, removeTable);
             }
-            removeTable.insertRecord(session, change, false);
+            removeTable.insertRecord(session, change, Insert.ADD);
 
             SingleKeyNoPropertyUsage addTable = add.get(removeClass);
             if(addTable!=null)
@@ -959,7 +959,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         if(news ==null)
             news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
-        news.insertRecord(session, change, toClass.getClassObject(), true);
+        news.insertRecord(session, change, toClass.getClassObject(), Insert.MODIFY);
 
         for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dataChange : data.entrySet()) { // удаляем существующие изменения
             DataProperty property = dataChange.getKey();
@@ -983,7 +983,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        change.addRows(dataChange, sql, baseClass, true, getQueryEnv());
+        change.addRows(dataChange, sql, baseClass, Insert.MODIFY, getQueryEnv());
     }
 
     public void dropTables(SQLSession session) throws SQLException {
@@ -1045,7 +1045,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             apply.add(property, prevTable);
         }
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, false, env); // если он уже был в базе он не заместится
+        prevTable.addRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Insert.LEFT, env); // если он уже был в базе он не заместится
         apply.eventChange(property);
         tableUsage.drop(sql);
     }

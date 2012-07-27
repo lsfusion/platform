@@ -22,6 +22,7 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
+import platform.server.data.Insert;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -421,7 +422,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
         if(group.expandTable==null)
             group.expandTable = group.createKeyTable();
-        group.expandTable.insertRecord(session.sql, value, true);
+        group.expandTable.insertRecord(session.sql, value, Insert.MODIFY);
         group.updated |= UPDATED_EXPANDS;
     }
 

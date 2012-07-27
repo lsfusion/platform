@@ -35,7 +35,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public abstract boolean used(Query<?, ?> query);
 
-    public abstract SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException;
+    public abstract SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, Object owner) throws SQLException;
 
     public abstract SessionData deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException;
 
@@ -147,7 +147,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionRows sessionRows = new SessionRows(keys, properties);
             for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> writeRow : readRows.entrySet())
-                sessionRows = (SessionRows) sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), false, owner);
+                sessionRows = (SessionRows) sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), Insert.ADD, owner);
             return sessionRows;
         }
     }
@@ -173,7 +173,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return result;
     }
 
-    public SessionData addRows(final SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, final boolean update, QueryEnvironment env, final Object owner) throws SQLException {
+    public SessionData addRows(final SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, final Insert type, QueryEnvironment env, final Object owner) throws SQLException {
         if(!Settings.instance.isDisableReadSingleValues()) {
             SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new HashMap<KeyField, DataObject>(),
                     new HashMap<PropertyField, ObjectValue>(), new ResultSingleValues<SessionData>() {
@@ -182,7 +182,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 }
 
                 public SessionData singleRow(Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propValues) throws SQLException {
-                    return insertRecord(session, keyValues, propValues, update, owner);
+                    return insertRecord(session, keyValues, propValues, type, owner);
                 }
             });
             if(singleResult!=null)
@@ -193,10 +193,10 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         Join<PropertyField> prevJoin = join(addQuery.mapKeys);
 
         Where prevWhere = prevJoin.getWhere();
-        addQuery.and(prevWhere.or(query.where));
+        addQuery.and(type == Insert.UPDATE ? prevWhere : prevWhere.or(query.where));
         for(Map.Entry<PropertyField, Expr> property : query.properties.entrySet()) {
             Expr prevExpr = prevJoin.getExpr(property.getKey());
-            addQuery.properties.put(property.getKey(), update ?
+            addQuery.properties.put(property.getKey(), type==Insert.MODIFY || type==Insert.UPDATE ?
                     property.getValue().ifElse(query.where, prevExpr) : prevExpr.ifElse(prevWhere, property.getValue()));
         }
         return rewrite(session, addQuery, baseClass, env, owner);

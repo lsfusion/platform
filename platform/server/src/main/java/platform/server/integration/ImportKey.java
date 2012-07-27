@@ -3,6 +3,7 @@ package platform.server.integration;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.data.Insert;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -97,7 +98,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         noKeysQuery.and(implement.property.getExpr(noKeysQuery.mapKeys, session.getModifier()).getWhere().not()); // для которых неопределился объект
 
         for (Map<P, DataObject> noKeysRow : noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet())
-            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false), false);
+            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false), Insert.ADD);
 
         return propertyTable;
     }

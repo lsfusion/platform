@@ -77,8 +77,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return table.join(BaseUtils.join(mapKeys, mapExprs)).getWhere();
     }
 
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, boolean update) throws SQLException {
-        table = table.insertRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), update, this);
+    public void insertRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, Insert type) throws SQLException {
+        table = table.insertRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), type, this);
     }
 
     public void deleteRecords(SQLSession session, Map<K, DataObject> keyObjects) throws SQLException {
@@ -101,8 +101,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
-    public void addRows(SQLSession session, Query<K, V> query, BaseClass baseClass, boolean update, QueryEnvironment env) throws SQLException {
-        table = table.addRows(session, new Query<KeyField, PropertyField>(query, mapKeys, mapProps), baseClass, update, env, this);
+    public void addRows(SQLSession session, Query<K, V> query, BaseClass baseClass, Insert type, QueryEnvironment env) throws SQLException {
+        table = table.addRows(session, new Query<KeyField, PropertyField>(query, mapKeys, mapProps), baseClass, type, env, this);
     }
 
     private PropertyField getField(V property) {

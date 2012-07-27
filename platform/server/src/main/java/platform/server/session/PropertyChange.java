@@ -9,6 +9,7 @@ import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.data.Insert;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.Value;
@@ -198,12 +199,12 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().executeClasses(env);
     }
 
-    public void addRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, boolean update, QueryEnvironment queryEnv) throws SQLException {
+    public void addRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Insert type, QueryEnvironment queryEnv) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            table.insertRecord(session, mapValues, exprValue, update);
+            table.insertRecord(session, mapValues, exprValue, type);
         else
-            table.addRows(session, getQuery(), baseClass, update, queryEnv);
+            table.addRows(session, getQuery(), baseClass, type, queryEnv);
     }
 
     public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {

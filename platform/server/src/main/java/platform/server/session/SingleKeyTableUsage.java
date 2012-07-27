@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import platform.server.data.Insert;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Join;
@@ -26,8 +27,8 @@ public class SingleKeyTableUsage<P> extends SessionTableUsage<String, P> {
         return join(Collections.singletonMap("key", key));
     }
 
-    public void insertRecord(SQLSession session, DataObject key, Map<P, ObjectValue> propertyValues, boolean update) throws SQLException {
-        insertRecord(session, Collections.singletonMap("key", key), propertyValues, update);
+    public void insertRecord(SQLSession session, DataObject key, Map<P, ObjectValue> propertyValues, Insert type) throws SQLException {
+        insertRecord(session, Collections.singletonMap("key", key), propertyValues, type);
     }
 
 }

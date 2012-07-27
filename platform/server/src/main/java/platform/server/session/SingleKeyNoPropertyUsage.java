@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import platform.server.data.Insert;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
@@ -25,8 +26,8 @@ public class SingleKeyNoPropertyUsage extends NoPropertyTableUsage<String> {
         return getWhere(Collections.singletonMap("key", expr));
     }
 
-    public void insertRecord(SQLSession session, DataObject keyObject, boolean update) throws SQLException {
-        insertRecord(session, Collections.singletonMap("key", keyObject),new HashMap<Object, ObjectValue>(), update);
+    public void insertRecord(SQLSession session, DataObject keyObject, Insert type) throws SQLException {
+        insertRecord(session, Collections.singletonMap("key", keyObject),new HashMap<Object, ObjectValue>(), type);
     }
 
     public void deleteRecords(SQLSession session, DataObject keyObject) throws SQLException {

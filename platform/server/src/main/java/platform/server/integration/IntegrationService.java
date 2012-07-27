@@ -2,6 +2,7 @@ package platform.server.integration;
 
 import platform.server.Message;
 import platform.server.classes.IntegerClass;
+import platform.server.data.Insert;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -55,7 +56,7 @@ public class IntegrationService {
             Map<ImportField, ObjectValue> insertRow = new HashMap<ImportField, ObjectValue>();
             for (ImportField field : table.fields)
                 insertRow.put(field, ObjectValue.getValue(row.getValue(field), field.getFieldClass()));
-            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, false);
+            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, Insert.ADD);
         }
 
         if (deletes != null) {

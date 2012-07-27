@@ -93,21 +93,21 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
+    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, Object owner) throws SQLException {
         
         Map<KeyField, DataObject> fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
         Map<PropertyField, ObjectValue> fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
 
         return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner).
-              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, owner),
+              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), type, owner),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
     @Override
-    public SessionData addRows(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, boolean update, QueryEnvironment env, Object owner) throws SQLException {
-        if(keyValues.isEmpty() && propertyValues.isEmpty() && !update) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
-            return new SessionDataTable(table.addRows(session, query, update, env, owner), keys, keyValues, propertyValues);
-        return super.addRows(session, query, baseClass, update, env, owner);
+    public SessionData addRows(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, Insert type, QueryEnvironment env, Object owner) throws SQLException {
+        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type==Insert.LEFT || type==Insert.ADD)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
+            return new SessionDataTable(table.addRows(session, query, type, env, owner), keys, keyValues, propertyValues);
+        return super.addRows(session, query, baseClass, type, env, owner);
     }
 
     // для оптимизации групповых добавлений (batch processing'а)

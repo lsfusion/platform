@@ -98,11 +98,20 @@ public class SessionRows extends SessionData<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
+    public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, Object owner) throws SQLException {
+
+        if(type==Insert.LEFT)
+            if(rows.containsKey(keyFields))
+                return this;
+        if(type==Insert.ADD)
+            if(rows.containsKey(keyFields))
+                throw new RuntimeException("should not be");
+        if(type==Insert.UPDATE)
+            if(!rows.containsKey(keyFields))
+                return this;
 
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> orRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
-        Map<PropertyField, ObjectValue> prevValue = orRows.put(keyFields,propFields);
-        assert update || prevValue==null;
+        orRows.put(keyFields,propFields);
 
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
             return new SessionDataTable(session, keys, properties, orRows, owner);

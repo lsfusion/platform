@@ -7,7 +7,6 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
-import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -32,7 +31,6 @@ import java.util.*;
 import static java.util.Collections.singletonMap;
 import static platform.base.BaseUtils.hashEquals;
 import static platform.base.BaseUtils.merge;
-import static platform.base.BaseUtils.singleValue;
 
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
 
@@ -273,9 +271,17 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, final Object owner) throws SQLException {
+    public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, final Object owner) throws SQLException {
 
-        update = update && session.isRecord(this, keyFields);
+        boolean update = (type==Insert.UPDATE);
+        if(type==Insert.MODIFY || type==Insert.LEFT) {
+            if(session.isRecord(this, keyFields)) {
+                if(type==Insert.MODIFY)
+                    update = true;
+                else
+                    return this;
+            }
+        }
 
         if(update)
             session.updateRecords(this, keyFields, propFields);
@@ -287,14 +293,27 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                             updateStatistics(session, count, owner);
     }
 
-    public SessionTable addRows(SQLSession session, Query<KeyField, PropertyField> query, boolean update, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionTable addRows(SQLSession session, Query<KeyField, PropertyField> query, Insert type, QueryEnvironment env, Object owner) throws SQLException {
 
         ModifyQuery modify = new ModifyQuery(this, query, env);
         int inserted;
-        if(update)
-            inserted = session.modifyRecords(modify);
-        else
-            inserted = session.insertLeftSelect(modify);
+        switch (type) {
+            case MODIFY:
+                inserted = session.modifyRecords(modify);
+                break;
+            case LEFT:
+                inserted = session.insertLeftSelect(modify);
+                break;
+            case ADD:
+                inserted = session.insertSelect(modify);
+                break;
+            case UPDATE:
+                session.updateRecords(modify);
+                inserted = 0;
+                break;
+            default:
+                throw new RuntimeException("should not be");
+        }
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, owner);

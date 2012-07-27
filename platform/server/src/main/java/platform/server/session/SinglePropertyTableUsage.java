@@ -1,6 +1,7 @@
 package platform.server.session;
 
 import platform.server.classes.BaseClass;
+import platform.server.data.Insert;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -32,12 +33,12 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
 
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update) throws SQLException {
-        insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update);
+    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, Insert type) throws SQLException {
+        insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), type);
     }
 
-    public void addRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, boolean update, QueryEnvironment env) throws SQLException {
-        addRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, update, env);
+    public void addRows(SQLSession session, Map<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Insert type, QueryEnvironment env) throws SQLException {
+        addRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env);
     }
 
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SinglePropertyTableUsage<P> table) {
