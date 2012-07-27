@@ -63,8 +63,10 @@ CLASS coefficientRetail 'Надбавка';
 TABLE priceSetDocumentArticle(priceSetDocument, article);
 
 defaultNumeratorPriceSetDocuments = DATA numerator ();
-nameDefaultNumeratorPriceSetDocuments 'Нумератор для прайсов' = name(defaultNumeratorPriceSetDocuments());
+nameDefaultNumeratorPriceSetDocuments 'Нумератор для розничных прайсов' = name(defaultNumeratorPriceSetDocuments());
 
+initValueNumeratorObject(object) += defaultNumeratorDiscountCards() IF object IS priceSetDocument;
+initWhenNumeratorObject(object) += ASSIGNED(object IS priceSetDocument);
 
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
 markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;

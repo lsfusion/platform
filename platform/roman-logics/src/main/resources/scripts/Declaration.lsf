@@ -297,7 +297,7 @@ declarationPriceDeclarationDetail 'Цена товара (БУ)' (declarationDet
 
 priceManagerialDeclarationDetail 'Цена товара (УУ)' (declarationDetail) = priceInFullImporterFreightSku(importerDeclarationDetail(declarationDetail),
                                                                                                         freightDeclarationDetail(declarationDetail),
-                                                                                                        skuDeclarationDetail(declarationDetail));
+                                                                                                        skuDeclarationDetail(declarationDetail)) PERSISTENT;
 
 priceManagerialRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = priceManagerialDeclarationDetail(declarationDetail) *
                                                                                     rateExchangeDeclarationDetail(declarationDetail);
@@ -368,7 +368,6 @@ quantityBatch (batch) += quantityDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
 supplierPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
-// todo : так нельзя делать - изменится НДС по ТНВЭД и будут чудеса
 rangeVATBatchA (batch) += supplierVATRangeDeclarationDetail(batch);
 sumInSkuLedger(batch) += supplierSumDeclarationDetail(batch);
 
@@ -492,7 +491,7 @@ expenseCertificateManagerialDeclaration 'Расходы на сертифика�
                                                                                               BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
 
 
-dutyFinDeclarationDetail 'Пошлина' = round0((UNION OVERRIDE dutyDataDeclarationDetail(declarationDetail), correctionDutyDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail));
+dutyFinDeclarationDetail 'Пошлина' = round0((UNION OVERRIDE dutyDataDeclarationDetail(declarationDetail), correctionDutyDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail)) PERSISTENT;
 VATFinDeclarationDetail 'НДС' = round0((UNION OVERRIDE VATDataDeclarationDetail(declarationDetail), correctionVATDataDeclarationDetail(declarationDetail))/quantityDeclarationDetail(declarationDetail));
 
 dutyRateDeclarationDetail 'Пошлина (в валюте)' (declarationDetail) = round2(dutyFinDeclarationDetail(declarationDetail)/rateExchangeDeclarationDetail(declarationDetail));
@@ -652,7 +651,9 @@ FORM declarationInvoices 'Присоединение инвойсов'
     FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 ;
 
-showFormDeclarationInvoices 'Присоединить инвойсы' (declaration) = ACTION FORM declarationInvoices OBJECTS d=declaration MODAL IN docGroup TOOLBAR;
+showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (declaration) {
+    FORM declarationInvoices OBJECTS d=declaration MODAL;
+} IN docGroup TOOLBAR;
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
