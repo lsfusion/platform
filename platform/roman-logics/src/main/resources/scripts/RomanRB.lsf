@@ -169,6 +169,7 @@ NAVIGATOR {
         NEW logisticsAggregations 'Сводная информация' {
             ADD stockCost;
             ADD stockBalance;
+            ADD sumAccountDocumentLedger;
         }
     }
 

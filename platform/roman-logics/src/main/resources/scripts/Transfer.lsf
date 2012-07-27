@@ -11,13 +11,14 @@ REQUIRE System,
         Employee,
         StorePriceTransfer,
         Consignment,
+        AccountDocument,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject, innerDocument, consignment;
+CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject, innerDocument, consignment, outAccountDocumentLedger;
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным' : outFIFOSkuLedger;
 CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)' : consignmentDetail;
@@ -125,7 +126,7 @@ packQuantityConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatc
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS transferIn 'Поступление товаров по накладным' : historyObject;
+CLASS transferIn 'Поступление товаров по накладным' : historyObject, incAccountDocumentLedger;
 CLASS transferInDetail 'Строка поступления товаров по накладным' : inLIFOSkuLedger;
 
 @defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
@@ -202,3 +203,25 @@ prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS b
 prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
 @defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
+
+//---------------------------------------- Товарный отчет ------------------------- //
+
+// расход
+dateTimeAccountDocumentLedger (ledger) += dateTimeTransferOut(ledger);
+isPostedAccountDocumentLedger (ledger) += isPostedTransferOut(ledger);
+departmentStoreAccountDocumentLedger (ledger) += stockTransferOut(ledger) IF stockTransferOut (ledger) IS departmentStore;
+descriptionAccountDocumentLedger (ledger) += descriptionTransferOut(ledger);
+
+sumOutAccountDocumentLedger (ledger) += accountSumTransferOut(ledger);
+sumItemOutAccountDocumentLedger (ledger) += accountSumTransferOut(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferOut;
+
+// приход
+dateTimeAccountDocumentLedger (ledger) += dateTimeTransferIn(ledger);
+isPostedAccountDocumentLedger (ledger) += isPostedTransferIn(ledger);
+departmentStoreAccountDocumentLedger (ledger) += stockTransferIn(ledger) IF stockTransferIn (ledger) IS departmentStore;
+descriptionAccountDocumentLedger (ledger) += descriptionTransferIn(ledger);
+
+sumIncAccountDocumentLedger (ledger) += accountSumTransferIn(ledger);
+sumItemIncAccountDocumentLedger (ledger) += accountSumTransferIn(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferIn;

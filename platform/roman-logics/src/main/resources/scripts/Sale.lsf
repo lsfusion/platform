@@ -124,7 +124,7 @@ noteConsignmentDetail (consignmentDetail) += noteSaleOutBatchDetail(consignmentD
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS saleIn 'Покупка товаров по накладным' : historyObject;
+CLASS saleIn 'Покупка товаров по накладным' : historyObject, incAccountDocumentLedger;
 CLASS saleInDetail 'Строка покупки товаров по накладным';
 CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)' : batchA;
 
@@ -264,3 +264,25 @@ prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS b
 prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
 @defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
+
+//---------------------------------------- Товарный отчет ------------------------- //
+
+//// расход
+//dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
+//isPostedAccountDocumentLedger (ledger) += isPostedSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
+//departmentStoreAccountDocumentLedger (ledger) += stockSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
+//descriptionAccountDocumentLedger (ledger) += descriptionSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
+//
+//sumOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
+//sumItemOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
+//sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferOut;
+
+// приход
+dateTimeAccountDocumentLedger (ledger) += dateTimeSaleIn(ledger);
+isPostedAccountDocumentLedger (ledger) += isPostedSaleIn(ledger);
+departmentStoreAccountDocumentLedger (ledger) += stockSaleIn(ledger) IF stockSaleIn (ledger) IS departmentStore;
+descriptionAccountDocumentLedger (ledger) += descriptionSaleIn(ledger);
+
+sumIncAccountDocumentLedger (ledger) += accountSumSaleIn(ledger);
+sumItemIncAccountDocumentLedger (ledger) += accountSumSaleIn(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleIn;

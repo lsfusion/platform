@@ -14,7 +14,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Возврат ------------------------------------ //
 
-CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject, consignment;
+CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
 CLASS returnOutPosted 'Проведенный возврат товаров по накладным' : returnOut, postedObject;
 CLASS returnOutDetail 'Строка возврата товаров по накладным' : outFIFOSkuLedger, consignmentDetail;
 
@@ -190,3 +190,15 @@ accountSumReturnDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, 
 sumOutSkuLedger(ledger) += accountSumReturnDiffSDetail(ledger);
 
 skipASkuLedger (ledger) += ledger IS returnDiffSDetail;
+
+//---------------------------------------- Товарный отчет ------------------------- //
+
+// расход
+dateTimeAccountDocumentLedger (ledger) += dateTimeReturnOut(ledger);
+isPostedAccountDocumentLedger (ledger) += isPostedReturnOut(ledger);
+departmentStoreAccountDocumentLedger (ledger) += stockReturnOut(ledger) IF stockReturnOut (ledger) IS departmentStore;
+descriptionAccountDocumentLedger (ledger) += descriptionReturnOut(ledger);
+
+sumOutAccountDocumentLedger (ledger) += accountSumReturnOut(ledger);
+sumItemOutAccountDocumentLedger (ledger) += accountSumReturnOut(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS returnOut;

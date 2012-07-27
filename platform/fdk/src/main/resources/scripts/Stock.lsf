@@ -58,6 +58,8 @@ shortNameUOMSku (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
 TABLE skuGroupSku(skuGroup, sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
+isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku);
+
 // ----------------------------------- Ledger ------------------------------------------ //
 
 CLASS ABSTRACT skuLedger 'Изменение остатка по товару';

@@ -525,6 +525,7 @@ inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item)
 @metaCodeShowItemAttribute(ware, 'Показывать посуду', displayGroup);
 
 isContainerItem 'Тара' = DATA BOOLEAN (item) IN headGroup;
+isContainerSku (sku) += isContainerItem(sku);
 //@metaCodeShowItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
 
 manufacturerItem 'Производитель (ИД)' = DATA legalEntity (item) IN idGroup;
@@ -952,17 +953,6 @@ EXTEND FORM dialogRetailVATItem
     PROPERTIES dataValueRetailVATItemDate(a, d)
 ;
 
-// --------- Суммы для товарного отчета по переоценке --------------- //
-
-diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, товар' (priceChangeDocument) =
-    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) AND NOT isContainerItem(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
-        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
-diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
-    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerItem(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
-        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
-
-sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
 
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
@@ -9002,7 +8992,7 @@ NAVIGATOR {
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
-            ADD shares;
+            ADD promotions;
         }
         NEW mixturePatterns 'Пересортица' {
             ADD disparities;

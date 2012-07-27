@@ -118,8 +118,17 @@ diffRetailSumPriceChangeDocumentDetailPriceChangeDocument 'Сумма перео
 
 // ---------------------------------------- Имплементация товарного отчета --------------------------- //
 
+diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, товар' (priceChangeDocument) =
+    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) AND NOT isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
+        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма переоценки, тара' (priceChangeDocument) =
+    GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
+        BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
+
 @implementAccountDocumentLedger(priceChangeDocument);
 sumIncAccountDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
 
                          // --------- Комиссия переоценки --------------- //
 
