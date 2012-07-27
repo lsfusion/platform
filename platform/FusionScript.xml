@@ -38,15 +38,19 @@
       <keyword name="BOTTOM" />
       <keyword name="BREAK" />
       <keyword name="BY" />
+      <keyword name="CANCEL" />
       <keyword name="CASCADE" />
       <keyword name="CASE" />
       <keyword name="CC" />
       <keyword name="CENTER" />
+      <keyword name="CHANGE" />
       <keyword name="CHANGECLASS" />
       <keyword name="CHANGED" />
+      <keyword name="CHANGEWYS" />
       <keyword name="CHECK" />
       <keyword name="CHECKED" />
       <keyword name="CLASS" />
+      <keyword name="CLOSE" />
       <keyword name="COLOR" />
       <keyword name="COLUMNS" />
       <keyword name="CONCAT" />
@@ -69,6 +73,7 @@
       <keyword name="DOCX" />
       <keyword name="DOUBLE" />
       <keyword name="DRAWROOT" />
+      <keyword name="DROP" />
       <keyword name="ECHO" />
       <keyword name="EDIT" />
       <keyword name="EDITABLE" />
@@ -79,6 +84,7 @@
       <keyword name="EMAIL" />
       <keyword name="END" />
       <keyword name="EQUAL" />
+      <keyword name="EVENTS" />
       <keyword name="EXCELFILE" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
@@ -153,6 +159,7 @@
       <keyword name="OBJECT" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
+      <keyword name="OK" />
       <keyword name="ON" />
       <keyword name="OPENFILE" />
       <keyword name="OR" />

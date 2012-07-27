@@ -8,12 +8,15 @@ grammar LsfLogics;
 	import platform.interop.PropertyEditType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.interop.form.layout.ContainerType;
+	import platform.interop.form.ServerResponse;
+	import platform.interop.FormEventType;
 	import platform.interop.navigator.FormShowType;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
 	import platform.server.form.entity.FormEntity;
+	import platform.server.form.entity.ActionPropertyObjectEntity;
 	import platform.server.form.navigator.NavigatorElement;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
@@ -286,6 +289,7 @@ scope {
 		|	formFiltersList
 		|	formPropertiesList
 		|	formHintsList
+		|	formEventsList
 		|	filterGroupDeclaration
 		|	formOrderByList
 		|	dialogFormDeclaration
@@ -406,11 +410,11 @@ treeGroupParentDeclaration returns [List<String> properties = new ArrayList<Stri
 formCommonGroupObject returns [ScriptingGroupObject groupObject]
 	:	sdecl=formSingleGroupObjectDeclaration
 		{
-			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption));
+			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event));
 		}
 	|	mdecl=formMultiGroupObjectDeclaration
 		{
-			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions);
+			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events);
 		}
 	;
 
@@ -431,30 +435,31 @@ formGroupObjectPageSize returns [Integer value = null]
 	:	'PAGESIZE' size = intLiteral { $value = $size.val; }
 	;
 
-formSingleGroupObjectDeclaration returns [String name, String className, String caption] 
-	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; }
+formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
+	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; }
 	;
 
-formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions]
+formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<String> captions, List<ActionPropertyObjectEntity> events]
 @init {
 	$objectNames = new ArrayList<String>();
 	$classNames = new ArrayList<String>();
 	$captions = new ArrayList<String>();
+	$events = new ArrayList<ActionPropertyObjectEntity>();
 }
 	:	(gname=ID { $groupName = $gname.text; } '=')?
 		'('
-			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); }
-			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); })+
+			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); }
+			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); })+
 		')'
 	;
 
 
-formObjectDeclaration returns [String name, String className, String caption] 
+formObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
 	:	(objectName=ID { $name = $objectName.text; } '=')?	
 		id=classId { $className = $id.sid; }
 		(c=stringLiteral { $caption = $c.val; })?
+		('ON' 'CHANGE' faprop=formActionProperty { $event = $faprop.action; })?
 	; 
-	
 	
 formPropertiesList
 @init {
@@ -503,6 +508,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
+		|	event = formPropertyEvent { $options.addEvent($event.type, $event.action); }
 		)*
 	;
 
@@ -629,6 +635,57 @@ formHintsList
 	:	(('HINTNOUPDATE') | ('HINTTABLE' { hintNoUpdate = false; })) 'LIST'
 		list=nonEmptyCompoundIdList	
 	;
+
+formEventsList
+@init {
+	List<ActionPropertyObjectEntity> actions = new ArrayList<ActionPropertyObjectEntity>();
+	List<FormEventType> types = new ArrayList<FormEventType>();
+}
+@after {
+	if (inPropParseState()) {
+		$formStatement::form.addScriptedFormEvents(actions, types);
+	}
+}
+	:	'EVENTS'
+		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); }
+		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); })*
+	;
+
+
+formEventDeclaration returns [ActionPropertyObjectEntity action, FormEventType type]
+	:	'ON' 
+		(	'OK' 	 { $type = FormEventType.OK; }
+		|	'APPLY'	 { $type = FormEventType.APPLY; }	
+		|	'CLOSE'	 { $type = FormEventType.CLOSE; }
+		|	'INIT'	 { $type = FormEventType.INIT; }
+		|	'CANCEL' { $type = FormEventType.CANCEL; }
+		|	'DROP'	 { $type = FormEventType.NULL; }
+		)
+		faprop=formActionProperty { $action = $faprop.action; }
+	;
+
+formPropertyEvent returns [String type, ActionPropertyObjectEntity action]
+	:	'ON'
+		('CHANGE' { $type = ServerResponse.CHANGE; } | 'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; })
+		prop=formActionProperty { $action = $prop.action; }
+	; 
+	
+formActionProperty returns [ActionPropertyObjectEntity action]
+@init {
+	List<String> context = new ArrayList<String>();
+	if (inPropParseState()) {
+		context = $formStatement::form.getObjectsNames();
+	}
+}
+@after {
+	if (inPropParseState()) {
+		$action = $formStatement::form.getActionPropertyObject(context, $def.property);
+	}
+}	
+	:	def=actionPropertyDefinitionBody[context, false]
+	; 
+	
+
 	
 filterGroupDeclaration
 @init {
@@ -667,7 +724,7 @@ formFilterDeclaration returns [LP property, List<String> mapping]
 }
 @after {
 	if (inPropParseState()) {
-		$mapping = self.getUsedObjectNames(context, $expr.property.usedParams);
+		$mapping = $formStatement::form.getUsedObjectNames(context, $expr.property.usedParams);
 	}	
 }
 	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }

@@ -2,6 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
+import platform.interop.FormEventType;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ColorClass;
 import platform.server.classes.CustomClass;
@@ -59,7 +60,12 @@ public class ScriptingFormEntity {
                 String objectName = nvl(groupObject.objects.get(j), className);
                 String objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
-                addObjectEntity(objectName, new ObjectEntity(form.genID(), cls, objectCaption), groupObj);
+                ObjectEntity obj = new ObjectEntity(form.genID(), cls, objectCaption);
+                addObjectEntity(objectName, obj, groupObj);
+
+                if (groupObject.events.get(j) != null) {
+                    form.addActionsOnEvent(obj, groupObject.events.get(j));
+                }
             }
 
             String groupName = groupObject.groupName;
@@ -149,6 +155,14 @@ public class ScriptingFormEntity {
 
     public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return LM.getPropertyWithMapping(form, name, mapping);
+    }
+
+    public List<String> getUsedObjectNames(List<String> context, List<Integer> usedParams) {
+        List<String> usedNames = new ArrayList<String>();
+        for (int usedIndex : usedParams) {
+            usedNames.add(context.get(usedIndex));
+        }
+        return usedNames;
     }
 
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -281,6 +295,13 @@ public class ScriptingFormEntity {
         if (hintTable != null && hintTable) {
             form.addHintsIncrementTable((CalcProperty) property.propertyObject.property);
         }
+
+        List<String> eventTypes = options.getEventTypes();
+        if (eventTypes != null) {
+            for (int i = 0; i < eventTypes.size(); i++) {
+                property.setEditAction(eventTypes.get(i), options.getEvents().get(i));
+            }
+        }
     }
 
     private CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<?> groundProperty, boolean back) {
@@ -371,6 +392,17 @@ public class ScriptingFormEntity {
         }
 
         form.addRegularFilterGroup(regularFilterGroup);
+    }
+
+    public ActionPropertyObjectEntity getActionPropertyObject(List<String> context, ScriptingLogicsModule.LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
+        return form.addPropertyObject((LAP) action.property, getMappingObjectsArray(getUsedObjectNames(context, action.usedParams)));
+    }
+
+    public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<FormEventType> types) {
+        assert actions.size() == types.size();
+        for (int i = 0; i < actions.size(); i++) {
+            form.addActionsOnEvent(types.get(i), actions.get(i));
+        }
     }
 
     public PropertyObjectEntity addPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {

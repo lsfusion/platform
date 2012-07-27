@@ -383,15 +383,19 @@ BEFORE constraintAction(store, article) DO MESSAGE 'Before Aspect';
 FORM documentArticle 'По документам'
 
 // GroupObjects list syntax:
-// OBJECTS [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>],
+// OBJECTS [alias=] className ['<caption>'] | [groupAlias=] (object1 definition, ..., objectN definition) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>],
 //         ...
-//         [alias=] className ['<caption>'] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>]
+//         [alias=] className ['<caption>'] | [groupAlias=] (object1 definition, ..., objectN definition) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>]
+
+// Object definition syntax:
+// [alias=] className ['<caption>'] [ON CHANGE action]
+
 OBJECTS document, article
 
 // TreeGroup list syntax:
-// TREE [SID] [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>],
+// TREE [SID] [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] (object1 definition, ..., objectN definition) [PARENT <properties separated with space>],
 //            ...
-//            [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] ([alias1=] className1 ['<caption1>'], ..., [aliasN=] classNameN ['<captionN>']) [PARENT <properties separated with space>]
+//            [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] (object1 definition, ..., objectN definition) [PARENT <properties separated with space>]
 
 // Property list syntax:
 // PROPERTIES [commonOptions] [alias1=]propName1(param1, ..., paramN1) [options1], ..., [aliasK=]propNameK(param1, ..., paramNK) [optionsK]
@@ -400,7 +404,7 @@ OBJECTS document, article
 // Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
 // Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
-//                     [FOREGROUND <mappedProperty>]
+//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action]
 
 PROPERTIES store(document), name(article), storeName(document), documentTypeString(document)
 PROPERTIES quantity(document, article)
@@ -410,11 +414,19 @@ PROPERTIES globalInt()
 
 // Filters list syntax:
 // FILTERS propertyExpression1, ..., propertyExpressionK
-FILTERS name(article);
+FILTERS name(article)
+
+// Events list syntax:
+// EVENTS
+// ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) action1,
+// ...
+// ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) actionN
+EVENTS
+    ON CANCEL MESSAGE 'changes were canceled',
+    ON APPLY MESSAGE 'form apply message';
 
 // Hints list syntax:
 // HINTNOUPDATE | HINTTABLE propertyName1, ..., propertyNameN
-
 
 
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;

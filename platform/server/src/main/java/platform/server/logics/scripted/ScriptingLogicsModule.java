@@ -212,21 +212,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
 
-    public List<String> getUsedObjectNames(List<String> context, List<Integer> usedParams) {
-        List<String> usedNames = new ArrayList<String>();
-        for (int usedIndex : usedParams) {
-            usedNames.add(context.get(usedIndex));
-        }
-        return usedNames;
-    }
-
     public ValueClass findClassByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-            ValueClass valueClass = getPredefinedClass(name);
-            if (valueClass == null) {
-                valueClass = classResolver.resolve(name);
-            }
-            checkClass(valueClass, name);
-            return valueClass;
+        ValueClass valueClass = getPredefinedClass(name);
+        if (valueClass == null) {
+            valueClass = classResolver.resolve(name);
+        }
+        checkClass(valueClass, name);
+        return valueClass;
     }
 
     public void addScriptedClass(String className, String captionStr, boolean isAbstract, boolean isStatic,
