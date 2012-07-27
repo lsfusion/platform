@@ -219,8 +219,8 @@ META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentAggregation(object##Out, object##In, is###object##Out);
 
-    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-получатель', , destination);
-    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-отправитель', destination, );
+    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-получатель', destination, );
+    @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-отправитель', , source);
 
     @defineDocumentAggregationPosted(object##Out, object##In);
 
@@ -244,7 +244,7 @@ META defineDocumentFormTransferIn(object, caption)
     FORM object##Ins caption
         OBJECTS t = object##In
         PROPERTIES (t) READONLY isPosted###object##In FORCE GRID, number###object##In, series###object##In, date###object##In, time###object##In,
-                                nameStock###object##In, nameDestinationStock###object##In, note###object##In,
+                                nameStock###object##In, nameSourceStock###object##In, note###object##In,
                                 count###object##InDetail###object##In, quantity###object##InDetail###object##In
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
