@@ -255,6 +255,9 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP nameTypeExchangeCustom;
     public LCP typeExchangePayCustom;
     public LCP nameTypeExchangePayCustom;
+    public LCP typeExchangePayManagerial;
+    public LCP nameTypeExchangePayManagerial;
+
     public LCP typeExchangeRetail;
     public LCP nameTypeExchangeRetail;
     private LCP currencyCustom;
@@ -1583,7 +1586,10 @@ public class RomanLogicsModule extends LogicsModule {
         typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", typeExchange);
         nameTypeExchangeCustom = addJProp(baseGroup, "nameTypeExchangeCustom", "Тип обмена валют для мин.цен", baseLM.name, typeExchangeCustom);
         typeExchangePayCustom = addDProp(idGroup, "typeExchangePayCustom", "Тип обмена валют для платежей (ИД)", typeExchange);
-        nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей", baseLM.name, typeExchangePayCustom);
+        nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей (БУ)", baseLM.name, typeExchangePayCustom);
+        typeExchangePayManagerial = addDProp(idGroup, "typeExchangePayManagerial", "Тип обмена валют для платежей (ИД)", typeExchange);
+        nameTypeExchangePayManagerial = addJProp(baseGroup, "nameTypeExchangePayManagerial", "Тип обмена валют для платежей (УУ)", baseLM.name, typeExchangePayManagerial);
+
         currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта мин.цен (ИД)", baseLM.currency);
         nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", baseLM.name, currencyCustom);
         currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", baseLM.currency);
@@ -3999,6 +4005,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(nameTypeExchangeSTX);
             addPropertyDraw(nameTypeExchangeCustom);
             addPropertyDraw(nameTypeExchangePayCustom);
+            addPropertyDraw(nameTypeExchangePayManagerial);
             addPropertyDraw(nameTypeExchangeRetail);
             addPropertyDraw(nameCurrencyCustom);
             addPropertyDraw(nameCurrencyPayCustom);
