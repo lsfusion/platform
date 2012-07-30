@@ -7,7 +7,16 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, RB;
 
-CLASS wholesalePriceDocument 'Оптовый прайс' : transaction;
+CLASS wholesalePriceDocument 'Оптовый прайс' : transaction, numeratedObject;
+
+defaultNumeratorWholesalePriceDocument = DATA numerator ();
+nameDefaultNumeratorWholesalePriceDocument 'Нумератор для оптовых прайсов' = name(defaultNumeratorWholesalePriceDocument());
+
+initValueNumeratorObject(object) += defaultNumeratorWholesalePriceDocument() IF object IS wholesalePriceDocument;
+initWhenNumeratorObject(object) += ASSIGNED(object IS wholesalePriceDocument);
+
+timeWholesalePriceDocument 'Время документа' = DATA TIME (wholesalePriceDocument);
+timeWholesalePriceDocument (wholesalePriceDocument) <- currentTime() WHEN ASSIGNED(wholesalePriceDocument AS wholesalePriceDocument);
 
 dateTimeWholesalePriceDocument 'Дата/время' = DATA DATETIME(wholesalePriceDocument);
 dateTimeWholesalePriceDocument(wholesalePriceDocument) <- currentDateTime() WHEN ASSIGNED(wholesalePriceDocument IS wholesalePriceDocument);
@@ -18,6 +27,11 @@ quantityWholesalePriceSetDocumentDeclaration (declaration) = GROUP SUM 1 IF decl
                                                            BY declarationWholesalePriceDocument(wholesalePriceDocument);
 isWholesalePriceSetDocumentDeclaration (declaration) = TRUE IF NOT quantityWholesalePriceSetDocumentDeclaration(declaration) AND declaration IS declaration;
 
+isPriceSetDeclaration 'Статус' (declaration) = IF isWholesalePriceSetDocumentDeclaration(declaration)
+                                     THEN 'Не расцененная' AND declaration IS declaration
+                                     ELSE 'Расцененная' AND declaration IS declaration;
+
+backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(255, 128, 128) IF isPriceSetDeclaration (declaration) == 'Не расцененная';
 
 inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
@@ -57,7 +71,7 @@ priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <
 FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS w=wholesalePriceDocument FIXED PANEL
-    PROPERTIES(w) dateTimeWholesalePriceDocument
+    PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, date, timeWholesalePriceDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -66,7 +80,7 @@ FORM wholesalePriceDocument 'Оптовый прайс'
     PROPERTIES READONLY OBJVALUE(vv), name(c)
 
     OBJECTS aa=article
-    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
     PROPERTIES (w, aa) inArticleWholesalePriceDocument
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
@@ -75,7 +89,10 @@ FORM wholesalePriceDocument 'Оптовый прайс'
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (w, a) priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
-    FILTERS inArticleWholesalePriceDocument(w, a)
+    FILTERS inArticleWholesalePriceDocument(w, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
+
+    FILTERGROUP filtersBalance
+        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
 
     FILTERGROUP filtersCategory
         FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
@@ -88,6 +105,15 @@ FORM wholesalePriceDocument 'Оптовый прайс'
 
 DESIGN wholesalePriceDocument FROM DEFAULT {
     main {
+
+        ADD w.box{
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(nameNumeratorObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(date);
+            ADD PROPERTY(timeWholesalePriceDocument);
+        }
 
         NEW allContainer {
             childConstraints = TO THE BOTTOM;
@@ -130,7 +156,7 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
 FORM wholesalePriceDocuments 'Оптовые прайсы'
 
     OBJECTS w=wholesalePriceDocument
-    PROPERTIES(w) READONLY dateTimeWholesalePriceDocument
+    PROPERTIES(w) READONLY numberObject, seriesObject, dateTimeWholesalePriceDocument
     PROPERTIES(w) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
@@ -158,9 +184,10 @@ toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWS
 } TOOLBAR CONFIRM;
 
 FORM priceDeclaration 'Расценка деклараций'
-    OBJECTS d=declaration
-    PROPERTIES(d) READONLY sidDeclaration BACKGROUND isWholesalePriceSetDocumentDeclaration(d), objectClassName,
-                  dateTimeDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration
+    OBJECTS d = registeredDeclaration
+    PROPERTIES(d) READONLY isPriceSetDeclaration BACKGROUND backgroundWholesalePriceSetDocument(d),
+                           sidDeclaration BACKGROUND isWholesalePriceSetDocumentDeclaration(d),
+                           dateTimeDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration
     PROPERTIES(d) toCreateWholesalePriceDocument SHOWIF isWholesalePriceSetDocumentDeclaration(d)
 
     FILTERGROUP filtersDocument

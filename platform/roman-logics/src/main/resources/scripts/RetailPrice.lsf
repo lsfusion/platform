@@ -100,11 +100,20 @@ keepDiscountPriceSetDocument 'Учитывать скидки' = DATA BOOLEAN(pr
 freightPriceSetDocument 'Фрахт документа (ИД)' = DATA freight(basePriceSetDocument) IN idGroup;
 
 quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightPriceSetDocument(basePriceSetDocument) BY freightPriceSetDocument(basePriceSetDocument);
-isPriceSetDocumentFreight 'Расценён' (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
+isPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
+
+isPriceSetFreight 'Статус' (freight) = IF isPriceSetDocumentFreight(freight)
+                                     THEN 'Не расценен' AND freight IS freight
+                                     ELSE 'Расценен' AND freight IS freight;
+
+backgroundPriceSetDocument 'Цвет' (freight) = RGB(255, 128, 128) IF isPriceSetFreight(freight) == 'Не расценен';
 
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
+
+isRRPPriceSetDocumentArticle 'Есть рекомендуемая цена' (basePriceSetDocument, article) =
+    TRUE IF RRPPriceSetDocumentArticle(basePriceSetDocument, article);
 
 ratePriceSetDocument 'Обменный курс' (priceSetDocument, article) = nearestRateExchange(typeExchangeRetail(),
                                                                                              currencyTypeExchange(typeExchangeSTX()),
@@ -217,10 +226,11 @@ FORM priceSetDocument 'Базовый прайс'
     PROPERTIES READONLY OBJVALUE(vv), name(c)
 
     OBJECTS aa=article
-    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
     PROPERTIES (p, aa) inArticlePriceSetDocument
 
-    FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
+    FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
+            inArticleCategory(c, aa)
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -230,10 +240,13 @@ FORM priceSetDocument 'Базовый прайс'
                       priceBBasePriceSetDocumentArticle, nameMethodPriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
                       priceDataBasePriceSetDocumentArticle
 
-    FILTERS inArticlePriceSetDocument(p, a)
+    FILTERS inArticlePriceSetDocument(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
+
+    FILTERGROUP filters
+        FILTER 'Есть рекомендуемая цена' 'F7' isRRPPriceSetDocumentArticle(p, a)
 
     FILTERGROUP filtersBalance
-        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(a) DEFAULT
+        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
 
     FILTERGROUP filtersMethod
         FILTER 'Показывать без метода' 'F9' notMethodPriceSetDocumentArticle(p, a)
@@ -248,6 +261,17 @@ FORM priceSetDocument 'Базовый прайс'
 
 DESIGN priceSetDocument FROM DEFAULT {
     main {
+
+        ADD p.box{
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(nameNumeratorObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(date);
+            ADD PROPERTY(timePriceSetDocument);
+            ADD PROPERTY(dateTimeToPriceSetDocument);
+            ADD PROPERTY(toSetPricesPriceSetDocument);
+        }
 
         NEW allContainer {
             childConstraints = TO THE BOTTOM;
@@ -421,9 +445,9 @@ toCreatePriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
 
 FORM freights 'Расценка фрахтов'
 
-    OBJECTS f=freight
-    PROPERTIES(f) READONLY date, dateArrivalFreight, descriptionFreight, nameRouteFreight, nameExporterFreight,
-                  freightGrossWeight, isPriceSetDocumentFreight BACKGROUND isPriceSetDocumentFreight(f)
+    OBJECTS f = freightPriced
+    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, dateArrivalFreight,
+                           descriptionFreight, nameRouteFreight, nameExporterFreight, freightGrossWeight
     PROPERTIES(f) FORCE PANEL toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument
