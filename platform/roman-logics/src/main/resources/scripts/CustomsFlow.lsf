@@ -51,7 +51,7 @@ sumGrossWeightCStoWHDetail 'Вес брутто' (CStoWHDetail) =
     grossWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)) * quantityCStoWHDetail(CStoWHDetail);
 
 priceCStoWHDetail 'Цена' (CStoWHDetail) = supplierPriceDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
-sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail);
+sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDetail) * quantityCStoWHDetail(CStoWHDetail) PERSISTENT;
 sumCStoWHDetailCStoWH 'Общая стоимость' (CStoWH) =
     GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 

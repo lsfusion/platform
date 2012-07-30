@@ -59,6 +59,10 @@ CLASS basePriceSetDocument 'Базовый прайс' : priceSetDocument;
 CLASS discountPriceSetDocument 'Распродажа' : priceSetDocument;
 CLASS mixPriceSetDocument 'Базовый прайс с распродажей' : basePriceSetDocument, discountPriceSetDocument;
 
+TABLE priceSetDocument (priceSetDocument);
+TABLE basePriceSetDocument (basePriceSetDocument);
+TABLE discountPriceSetDocument (discountPriceSetDocument);
+
 CLASS coefficientRetail 'Надбавка';
 
 //CLASS diapasonPrices 'Диапазон цен';

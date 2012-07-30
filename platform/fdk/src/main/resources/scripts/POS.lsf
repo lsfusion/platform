@@ -57,6 +57,7 @@ CLASS receiptSaleDetail 'Строка продажи' : receiptDetail, outFIFOSk
 CLASS receiptReturnDetail 'Строка возврата' : receiptDetail, inLIFOSkuLedger;
 
 TABLE receipt (receipt);
+TABLE receiptDetail (receiptDetail);
 TABLE receiptSaleDetail (receiptSaleDetail);
 TABLE receiptReturnDetail (receiptReturnDetail);
 
@@ -438,10 +439,12 @@ closedCurrentZReport () = TRUE AND NOT currentZReport();
 // Операции с чеками
 
 createCurrentReceipt 'Создать новый чек' = ACTION () {
-    ADDOBJ receipt;
-    FOR r == addedObject() DO {
-        SET zReportReceipt(r) <- currentZReport();
-        SET numberReceipt(r) <- maxNumberReceiptZReport(currentZReport()) (+) 1;
+    IF currentZReport() THEN {
+        ADDOBJ receipt;
+        FOR r == addedObject() DO {
+            SET zReportReceipt(r) <- currentZReport();
+            SET numberReceipt(r) <- maxNumberReceiptZReport(currentZReport()) (+) 1;
+        }
     }
 }
 
@@ -727,6 +730,9 @@ FORM POS
     FILTERS receiptReceiptDetail(d) == r
 
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport(), closeCurrentZReport SHOWIF currentZReport()
+
+    EVENTS
+        ON INIT EXEC createCurrentReceipt()
 ;
 
 DESIGN POS FROM DEFAULT {

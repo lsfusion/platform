@@ -1482,6 +1482,9 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("importerFreightUnitSku", importer, freightUnit, sku);
         addTable("importerFreightSku", importer, freight, sku);
 
+        addTable("freightUnitBrandSupplier", freightUnit, brandSupplier);
+        addTable("freightUnitArticle", freightUnit, article);
+
         addTable("articleColorSupplier", article, colorSupplier);
         addTable("articleSizeSupplier", article, sizeSupplier);
         addTable("listArticleColorSupplier", list, article, colorSupplier);

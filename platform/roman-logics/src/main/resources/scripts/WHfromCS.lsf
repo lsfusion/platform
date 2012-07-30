@@ -45,9 +45,12 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 
 costWHfromCSIBatch(WHfromCSI, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY WHfromCSIWHfromCSIDetail(ledger), batch;
 
+sumWHfromCSIDetail 'Сумма' (detail) = sumCStoWHDetail(CStoWHDetailWHfromCSIDetail(detail)) PERSISTENT;
+
 @implementSkuLedger(WHfromCSI, sku, warehouse);
 quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
+sumInSkuLedger(ledger) += sumWHfromCSIDetail(ledger);
 
 nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа' (WHfromCSIDetail) = nameCategoryArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
 nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));

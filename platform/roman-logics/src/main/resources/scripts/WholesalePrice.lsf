@@ -18,6 +18,9 @@ initWhenNumeratorObject(object) += ASSIGNED(object IS wholesalePriceDocument);
 timeWholesalePriceDocument 'Время документа' = DATA TIME (wholesalePriceDocument);
 timeWholesalePriceDocument (wholesalePriceDocument) <- currentTime() WHEN ASSIGNED(wholesalePriceDocument AS wholesalePriceDocument);
 
+TABLE wholesalePriceDocument (wholesalePriceDocument);
+TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
+
 dateTimeWholesalePriceDocument 'Дата/время' = DATA DATETIME(wholesalePriceDocument);
 dateTimeWholesalePriceDocument(wholesalePriceDocument) <- currentDateTime() WHEN ASSIGNED(wholesalePriceDocument IS wholesalePriceDocument);
 

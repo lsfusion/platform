@@ -164,6 +164,7 @@ promotionGroupPromotion 'Группы акций ИД' (promotion) = DATA promot
 namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;
 
 CLASS promotionCondition 'Условия акций' : named;
+TABLE promotionCondition (promotionCondition);
 
 GROUP retailCRMGroup 'Реквизиты' : recognizeGroup;
 

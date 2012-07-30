@@ -45,6 +45,8 @@ EXTEND FORM currentBalanceSkuStock
     PROPERTIES(bt, st) currentBalanceABatchStock
 ;
 
+TABLE articleStock (article, stock);
+
 currentBalanceArticleStock 'Тек. остаток' = GROUP SUM currentBalanceSkuStock(sku, stock) BY articleSku(sku), stock PERSISTENT;
 currentBalanceArticle 'Тек. остаток' = GROUP SUM currentBalanceArticleStock(article, stock) BY article PERSISTENT;
 
