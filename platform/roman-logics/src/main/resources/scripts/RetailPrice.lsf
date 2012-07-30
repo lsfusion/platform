@@ -25,10 +25,16 @@ META metaCodePriceBaseDiscount(document, caption)
 
     price###document##ArticleDateTime(article, dateTime) = priceData###document##Article(document##ArticleDateTime(article, dateTime), article);
     priceIn###document##ArticleDateTime(article, dateTime) = priceInPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article);
+    prevPriceIn###document##ArticleDateTime(article, dateTime) = PREV(priceInPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article));
+
     RRP###document##ArticleDateTime(article, dateTime) = RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article);
+    prevRRP###document##ArticleDateTime(article, dateTime) = PREV(RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article));
 
     priceB###document##Article 'Предыдущая цена'(document, article) = price###document##ArticleDateTime(article, dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
-    priceInB###document##Article 'Предыдущая поставщика'(document, article) = priceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+    priceInB###document##Article 'Предыдущая поставщика'(document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+    prevPriceInB###document##Article 'Предыдущая поставщика' (document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+
+    prevRRPB###document##Article 'Предыдущая рекомендуемая'(document, article) = prevRRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
     RRPB###document##Article 'Предыдущая рекомендуемая'(document, article) = RRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
 
 END
@@ -97,6 +103,7 @@ quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightPriceSetDocume
 isPriceSetDocumentFreight 'Расценён' (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
 
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
+
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
 ratePriceSetDocument 'Обменный курс' (priceSetDocument, article) = nearestRateExchange(typeExchangeRetail(),
@@ -162,6 +169,14 @@ priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- p
 
 inArticlePriceSetDocument 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
 inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
+
+
+//проставление текущих значений при расценке
+priceInPriceSetDocumentArticle(basePriceSetDocument, article) <- prevPriceInBBasePriceSetDocumentArticle (basePriceSetDocument, article)
+    WHEN ASSIGNED(inArticlePriceSetDocument(basePriceSetDocument, article));
+
+RRPPriceSetDocumentArticle(basePriceSetDocument, article) <- prevRRPBBasePriceSetDocumentArticle (basePriceSetDocument, article)
+    WHEN ASSIGNED(inArticlePriceSetDocument(basePriceSetDocument, article));
 
 toSetPricesPriceSetDocument 'Взять цены поставщика' =  ACTION (basePriceSetDocument) {
     FOR p == basePriceSetDocument AND inArticlePriceSetDocument(p, article) DO {
