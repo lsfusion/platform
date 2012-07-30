@@ -30,12 +30,12 @@ META metaCodePriceBaseDiscount(document, caption)
     RRP###document##ArticleDateTime(article, dateTime) = RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article);
     prevRRP###document##ArticleDateTime(article, dateTime) = PREV(RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article));
 
-    priceB###document##Article 'Предыдущая цена'(document, article) = price###document##ArticleDateTime(article, dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
-    priceInB###document##Article 'Предыдущая поставщика'(document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
-    prevPriceInB###document##Article 'Предыдущая поставщика' (document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+    priceB###document##Article caption###' (предыдущая)' (document, article) = price###document##ArticleDateTime(article, dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    priceInB###document##Article 'Цена поставщика (предыдущая)' (document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+    prevPriceInB###document##Article 'Цена поставщика (предыдущая)' (document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
 
-    prevRRPB###document##Article 'Предыдущая рекомендуемая'(document, article) = prevRRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
-    RRPB###document##Article 'Предыдущая рекомендуемая'(document, article) = RRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+    prevRRPB###document##Article 'Рекомендуемая цена (предыдущая)' (document, article) = prevRRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+    RRPB###document##Article 'Рекомендуемая цена (предыдущая)' (document, article) = RRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
 
 END
 
@@ -286,7 +286,7 @@ DESIGN priceSetDocument FROM DEFAULT {
 
                     childConstraints = TO THE RIGHT;
                     type = SPLITH;
-
+                    fillHorizontal = 2;
                     ADD treeSupplierBrand.tree.box {
                         fillHorizontal = 1.5;
                     }
@@ -297,7 +297,7 @@ DESIGN priceSetDocument FROM DEFAULT {
                 }
 
                 ADD aa.box {
-                    fillHorizontal = 1.5;
+                    fillHorizontal = 3;
                 }
             }
 
@@ -354,7 +354,8 @@ FORM discountPriceSetDocument 'Распродажа'
     PROPERTIES READONLY OBJVALUE(vv), name(c)
 
     OBJECTS aa=article
-    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
+    PROPERTIES (d, aa) READONLY priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle
     PROPERTIES (d, aa) inArticlePriceSetDocument
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
@@ -400,7 +401,7 @@ DESIGN discountPriceSetDocument FROM DEFAULT {
                 }
 
                 ADD aa.box {
-                    fillHorizontal = 1.5;
+                    fillHorizontal = 3;
                 }
             }
 
