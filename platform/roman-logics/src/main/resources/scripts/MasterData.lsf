@@ -70,6 +70,7 @@ FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
 
 //----------------------Определения себестоимости при создании оптового прайса  ----------------------//
 
+// todo : это нужно убрать
 priceCustomBatch 'Себестоимость (БУ)' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 priceManagerialBatch 'Себестоимость (УУ)' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 

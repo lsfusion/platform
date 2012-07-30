@@ -3568,7 +3568,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement itemClassifier = addNavigatorElement(classifier, "itemClassifier", "Номенклатура");
 
-        addFormEntity(new NomenclatureFormEntity(itemClassifier, "nomenclatureForm", "Товары"));
+        addFormEntity(new SkuFormEntity(itemClassifier, "skus", "Товары"));
 
         CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(itemClassifier, "category", "Товарные группы"));
         category.setDialogForm(categoryForm, categoryForm.objCategory);
@@ -5891,14 +5891,14 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
 
-    private class NomenclatureFormEntity extends FormEntity<RomanBusinessLogics> {
+    private class SkuFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSupplier;
         private ObjectEntity objCategory;
         private ObjectEntity objArticle;
         private ObjectEntity objSku;
 
-        private NomenclatureFormEntity(NavigatorElement parent, String sID, String caption) {
+        private SkuFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);

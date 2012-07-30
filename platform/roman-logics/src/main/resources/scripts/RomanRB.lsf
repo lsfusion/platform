@@ -192,6 +192,10 @@ NAVIGATOR {
         }
     }
 
+    settings {
+        ADD syncBarcodeSkuForm;
+    }
+
     printForms{
         ADD consignmentVerticalA;
         ADD consignmentHorizontalA;
