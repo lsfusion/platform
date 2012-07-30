@@ -22,14 +22,8 @@ isWholesalePriceSetDocumentDeclaration (declaration) = TRUE IF NOT quantityWhole
 inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
 priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
-//priceCustomDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
-priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- priceCustomDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
-    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
 
 priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
-//priceManagerialDeclarationArticle(declarationWholesalePriceDocument(wholesalePriceDocument), article);
-priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- priceManagerialDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
-    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
 
 priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
 
@@ -47,7 +41,18 @@ documentWholesalePriceArticleDateTime (article, dateTime) = concatWholesalePrice
 
 priceWholesaleArticleDateTime(article, dateTime) = priceWholesalePriceDocumentArticle(documentWholesalePriceArticleDateTime(article, dateTime), article);
 
+//подстановка значений себестоимости из последнего оптового прайса
+priceCustomWholesaleArticleDateTime(article, dateTime) =  priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
+prevPriceCustomWholesaleArticleDateTime(article, dateTime) =  PREV(priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
 
+priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceCustomWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+
+priceManagerialWholesaleArticleDateTime(article, dateTime) =  priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
+prevPriceManagerialWholesaleArticleDateTime(article, dateTime) =  PREV(priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
+
+priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceManagerialWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
 
 FORM wholesalePriceDocument 'Оптовый прайс'
 
