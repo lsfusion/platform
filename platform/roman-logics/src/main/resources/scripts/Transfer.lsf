@@ -120,6 +120,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutB
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatchDetail (consignmentDetail);
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMTransferOutBatchDetail (consignmentDetail);
 
 @defineDocumentFormTransferOutConsignment(transfer, t);
 // todo: заполнить необходимыми данными

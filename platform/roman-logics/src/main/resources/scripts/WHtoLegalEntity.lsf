@@ -53,7 +53,7 @@ CLASS invoiceWHOutDetail 'Строка реализации товара по б
 //----------------
 
 companyInvoiceWHOut (invoiceWHOut) = companyWarehouse(warehouseInvoiceWHOut(invoiceWHOut));
-@defineDocumentContract(invoiceWHOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, companyInvoiceWHOut, destinationCustomerInvoiceWHOut,
+@defineDocumentContract(invoiceWHOut, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoiceWHOut, destinationCustomerInvoiceWHOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -208,6 +208,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceInvoiceWHOutDetail(
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightInvoiceWHOutDetail (consignmentDetail);
 packQuantityConsignmentDetail (consignmentDetail) += packQuantityInvoiceWHOutDetail (consignmentDetail);
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMInvoiceWHOutDetail (consignmentDetail);
 
 noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
     importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
@@ -218,7 +219,7 @@ noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentD
 @defineDocumentFormTransferOutConsignment(invoiceWH, t);
 
 EXTEND FORM invoiceWHOut
-    PROPERTIES(t) numberContractSkuCompanyInvoiceWHOut, notChangeBalanceInvoiceWHOut
+    PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, notChangeBalanceInvoiceWHOut
     PROPERTIES(d) descriptionBatchInvoiceWHOutDetail, supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
                   valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail
 ;
