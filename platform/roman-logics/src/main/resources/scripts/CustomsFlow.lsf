@@ -143,7 +143,8 @@ inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInner
 innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
     IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-currencyCStoWH 'Валюта (ИД)' (CStoWH) = DATA currency (CStoWH);
+currencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyDeclaration(declarationCStoWHDetail(CStoWHDetail));
+currencyCStoWH (CStoWH) = GROUP EQUAL currencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);
 shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH));
 
 // кол-во отгруженного товара по коробам и sku
@@ -249,50 +250,58 @@ FORM CStoWHs 'Расходы с СВХ'
 ;
 
 DESIGN CStoWHs FROM DEFAULT {
-    ADD c.box{
-        PROPERTY (delete(c)) {
-            panelLocation = TOOLBAR;
-            askConfirm = TRUE;
-        }
-    }
-    ADD d.box;
-    NEW footer.container {
-        childConstraints = TO THE BOTTOM;
 
-        NEW cont3 {
-            childConstraints = TO THE RIGHT;
-            ADD c.historyGroup {
-                childConstraints = TO THE BOTTOM;
-            }
+    NEW topContainer {
 
-            ADD c.postedGroup {
-                childConstraints = TO THE BOTTOM;
+        type = SPLITV;
+
+        ADD c.box{
+            PROPERTY (delete(c)) {
+                panelLocation = TOOLBAR;
+                askConfirm = TRUE;
             }
         }
 
-        ADD c.printGroup {
-            childConstraints = TO THE BOTTOM;
-            NEW case55{
-                childConstraints = TO THE RIGHT;
+        NEW docContainer{
 
-                NEW contOne {
-                    title = 'Накладная';
-                    ADD PROPERTY(editConsignment);
-                }
-                NEW tn{
+            type = TABBED;
+            ADD d.box{
+                caption = 'Спецификация';
+            }
+
+            NEW historyContainer{
+
+                caption = 'История';
+                childConstraints = TO THE BOTTOM;
+                ADD c.historyGroup;
+                ADD c.postedGroup;
+            }
+
+            ADD c.printGroup {
+
+                caption = 'Печать';
+                childConstraints = TO THE BOTTOM;
+                NEW firstCase{
                     childConstraints = TO THE RIGHT;
-                    title = 'ТН-2';
-                    ADD PROPERTY(printConsignmentSimpleVertical);
-                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    NEW contOne {
+                        title = 'Накладная';
+                        ADD PROPERTY(editConsignment);
+                    }
+                    NEW tn{
+                        childConstraints = TO THE RIGHT;
+                        title = 'ТН-2';
+                        ADD PROPERTY(printConsignmentSimpleVertical);
+                        ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    }
                 }
-            }
-            NEW ttn1{
-                childConstraints = TO THE RIGHT;
-                title = 'ТТН-1';
-                ADD PROPERTY(printConsignmentVerticalA);
-                ADD PROPERTY(printConsignmentHorizontalA);
-                ADD PROPERTY(printConsignmentVerticalB);
-                ADD PROPERTY(printConsignmentHorizontalB);
+                NEW ttn1{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТТН-1';
+                    ADD PROPERTY(printConsignmentVerticalA);
+                    ADD PROPERTY(printConsignmentHorizontalA);
+                    ADD PROPERTY(printConsignmentVerticalB);
+                    ADD PROPERTY(printConsignmentHorizontalB);
+                }
             }
         }
     }
