@@ -42,10 +42,16 @@ priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wh
 
 priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
 
+markupWholesalePriceDocumentArticle 'Оптовая надбавка' = DATA NUMERIC[8,3] (wholesalePriceDocument, article);
+
+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- 0.0 //IF (wholesalePriceDocument IS wholesalePriceDocument AND article IS article)
+    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+
 priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
 
-priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)
-    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
+    (priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)*(1+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article)/100))
+    WHEN CHANGED (markupWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
 orderWholesalePriceDocument = LIST(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
 
@@ -90,7 +96,8 @@ FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (w, a) priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
+    PROPERTIES (w, a) priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle,
+                      markupWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
     FILTERS inArticleWholesalePriceDocument(w, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
 
@@ -164,7 +171,8 @@ FORM wholesalePriceDocuments 'Оптовые прайсы'
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (w, a) READONLY priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
+    PROPERTIES (w, a) READONLY priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle,
+                               markupWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
     FILTERS inArticleWholesalePriceDocument(w, a)
 ;
