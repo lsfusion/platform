@@ -1291,6 +1291,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
 		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullSession = $s.inSession; }
+		|	eventSetting [property, namedParams]
 		)*
 	;
 
@@ -1441,6 +1442,19 @@ aggPropSetting [LP property]
 
 notNullSetting returns [boolean toResolve = false, boolean inSession = false]
 	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } st=sessionType { $inSession = $st.session; })?
+	;
+
+eventSetting [LP property, List<String> context]
+@init {
+	String type = null;
+}
+@after {
+	if (inPropParseState()) {
+		self.setScriptedEditAction(property, type, $action.property);
+	}	
+}
+	:	'ON' ('CHANGE' { type = ServerResponse.CHANGE; } | 'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; })
+		action=actionPropertyDefinitionBody[context, false]
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

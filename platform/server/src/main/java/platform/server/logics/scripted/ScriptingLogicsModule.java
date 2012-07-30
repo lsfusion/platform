@@ -554,6 +554,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((CalcProperty)property.property).aggProp = true;
     }
 
+    public void setScriptedEditAction(LP property, String actionType, LPWithParams action) {
+        List<Object> params = getParamsPlainList(Arrays.asList(action));
+        List<ActionPropertyMapImplement> actionImplements = readActionImplements(property.listInterfaces, params.toArray());
+        property.property.setEditAction(actionType, actionImplements.get(0));
+    }
+
     private <T extends LP> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         setPropertySID(lp, name, false);
