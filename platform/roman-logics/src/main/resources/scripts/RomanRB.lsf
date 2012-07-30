@@ -23,7 +23,9 @@ REQUIRE System,
         PriceChange,
         Terminal,
         UserPriceChange,
+        WHtoLegalEntity,
         InnerOrder,
+        Customer,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -164,6 +166,7 @@ NAVIGATOR {
             ADD saleOuts;
             ADD returnOuts;
             ADD moveOuts;
+            ADD invoiceWHOuts;
         }
 
         NEW logisticsAggregations 'Сводная информация' {
@@ -189,6 +192,14 @@ NAVIGATOR {
             ADD discountCards;
             ADD promotionGroups;
             ADD promotions;
+        }
+    }
+    wholesaleTrade {
+        NEW tradeClassifier  'Справочники' TO leftToolbar {
+            ADD customers;
+        }
+        NEW tradeDocument 'Отгрузки' TO leftToolbar {
+            ADD invoiceWHOuts;
         }
     }
 

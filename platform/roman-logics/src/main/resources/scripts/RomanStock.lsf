@@ -121,3 +121,11 @@ EXTEND FORM costSkuLedger
 ;
 
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+
+FORM batchADialogForm 'Партия'
+    OBJECTS ba = batchA
+    PROPERTIES (ba) READONLY nameSkuBatch, descriptionBatch, nameOwnerBatchA, importerPriceBatchA, supplierPriceBatchA,
+                   numberSupplierVATBatchA, valueSupplierVATBatchA, currentBalanceBatch
+
+    DIALOG batchA OBJECT ba
+;

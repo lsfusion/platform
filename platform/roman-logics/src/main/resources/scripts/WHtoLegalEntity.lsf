@@ -1,0 +1,231 @@
+MODULE WHtoLegalEntity;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        DocumentTransfer,
+        ListRegister,
+        RetailPrice,
+        Employee,
+        StorePriceTransfer,
+        Consignment,
+        WholesalePrice,
+        Customer,
+        AccountDocument,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// ---------------------------------------- Перемещение ------------------------------------ //
+
+CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
+CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
+CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету' : outFIFOSkuLedger, consignmentDetail;
+
+@defineDocument(invoiceWHOut);
+
+@defineDocumentStock(invoiceWHOut, warehouse, 'Склад-отправитель');
+@defineDocumentStockPrefix(invoiceWHOut, customer, 'Покупатель', destination);
+
+@defineDocumentPosted(invoiceWHOut);
+
+@defineDocumentDescription (invoiceWHOut, 'Реализация товара по безналичному расчету');
+
+@defineDocumentDetailNumbered(invoiceWHOut);
+
+@defineDocumentDetailSku(invoiceWHOut, sku);
+
+@defineDocumentDetailQuantity(invoiceWHOut);
+
+@defineDocumentDetailPackWeightSku(invoiceWHOut);
+
+@defineDocumentDetailSkuBalance(invoiceWHOut, sku, warehouse);
+
+@defineDocumentHeaderQuantity(invoiceWHOut);
+@defineDocumentHeaderSkuQuantity(invoiceWHOut, sku);
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStock(invoiceWHOut, sku, warehouse, dialogSku);
+@defineAddDetailDialogBarcode(invoiceWHOut, sku);
+
+//----------------
+
+companyInvoiceWHOut (invoiceWHOut) = companyWarehouse(warehouseInvoiceWHOut(invoiceWHOut));
+@defineDocumentContract(invoiceWHOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, companyInvoiceWHOut, destinationCustomerInvoiceWHOut,
+                        'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
+                        'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
+
+notChangeBalanceInvoiceWHOut 'Не проводить по учету' (invoiceWHOut) = DATA BOOLEAN (invoiceWHOut) IN documentPrmGroup;
+notChangeBalanceInvoiceWHOutDetail 'Не проводить по учету' (invoiceWHOutDetail) = notChangeBalanceInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
+
+supplierPriceInvoiceWHOutDetail 'Отпускная цена' = DATA NUMERIC[14,2] (invoiceWHOutDetail);
+supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuInvoiceWHOutDetail(invoiceWHOutDetail)), dateTimeInvoiceWHOutDetail(invoiceWHOutDetail))
+    WHEN CHANGED(skuInvoiceWHOutDetail(invoiceWHOutDetail)) OR CHANGED(dateTimeInvoiceWHOutDetail(invoiceWHOutDetail));
+
+supplierSumInvoiceWHOutDetail 'Сумма без НДС' = supplierPriceInvoiceWHOutDetail(invoiceWHOutDetail) * quantityInvoiceWHOutDetail(invoiceWHOutDetail);
+
+
+batchAInvoiceWHOutDetail = DATA batchA (invoiceWHOutDetail);
+descriptionBatchInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = descriptionBatch(batchAInvoiceWHOutDetail(invoiceWHOutDetail));
+
+CONSTRAINT skuBatch(batchAInvoiceWHOutDetail(detail)) != skuInvoiceWHOutDetail(detail) CHECKED BY batchAInvoiceWHOutDetail
+    MESSAGE 'Товар партии строки должен соответствовать SKU строки';
+
+FORM invoiceWHOut 'Реализация товара по безналичному расчету'
+    OBJECTS t = invoiceWHOut FIXED PANEL
+
+    PROPERTIES (t) numberObject, seriesObject, dateInvoiceWHOut, timeInvoiceWHOut,
+                   nameWarehouseInvoiceWHOut, nameDestinationCustomerInvoiceWHOut, noteInvoiceWHOut,
+                   countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
+
+    OBJECTS d = invoiceWHOutDetail
+
+    PROPERTIES(t) TODRAW d addDetailDialogSkuStockInvoiceWHOutDetailInvoiceWHOut, addDetailDialogBarcodeInvoiceWHOutDetailInvoiceWHOut,
+                           deleteInvoiceWHOutDetailInvoiceWHOut
+
+    FILTERS invoiceWHOutInvoiceWHOutDetail(d) == t
+
+    EDIT invoiceWHOut OBJECT t
+;
+
+DESIGN invoiceWHOut FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        t.box {
+            childConstraints = TO THE RIGHT;
+            NEW columnHeaderPrm {
+                childConstraints = TO THE BOTTOM;
+                ADD t.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameWarehouseInvoiceWHOut);
+                    ADD PROPERTY (nameDestinationCustomerInvoiceWHOut);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateInvoiceWHOut);
+                    ADD PROPERTY (timeInvoiceWHOut);
+                }
+                ADD t.documentPrmGroup;
+            }
+            NEW columnHeaderSum {
+                ADD t.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+    }
+}
+
+FORM invoiceWHOuts 'Реализации товара по безналичному расчету'
+    OBJECTS t = invoiceWHOut
+    PROPERTIES (t) READONLY isPostedInvoiceWHOut FORCE GRID, numberObject, seriesObject, dateInvoiceWHOut, timeInvoiceWHOut,
+                            nameWarehouseInvoiceWHOut, nameDestinationCustomerInvoiceWHOut, noteInvoiceWHOut,
+                            countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
+
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL SHOWIF isDraftInvoiceWHOut(t),
+                   postInvoiceWHOut SHOWIF isDraftInvoiceWHOut(t), unpostInvoiceWHOut SHOWIF isPostedInvoiceWHOut(t)
+
+    OBJECTS d = invoiceWHOutDetail
+
+    FILTERS invoiceWHOutInvoiceWHOutDetail(d) == t
+;
+
+DESIGN invoiceWHOuts FROM DEFAULT {
+    PROPERTY (delete(t)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD t.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD t.historyGroup;
+                ADD t.postedGroup;
+            }
+        }
+    }
+}
+
+
+@defineDocumentDetailSkuArticle(invoiceWHOut);
+@extendDocumentFormDetailSkuArticle(invoiceWHOut, d, invoiceWHOut);
+@extendDocumentFormDetailSkuArticleReadonly(invoiceWHOuts, d, invoiceWHOut);
+
+
+@defineDocumentTransferRetail(invoiceWHOut);
+
+// Проводим по регистру
+@implementSkuLedger(invoiceWHOut, sku, warehouse);
+quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, warehouseInvoiceWHOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch);
+sumOutSkuLedger(ledger) += supplierSumInvoiceWHOutDetail(ledger);
+
+skipSkuLedger (ledger) += notChangeBalanceInvoiceWHOutDetail(ledger);
+
+
+// Товарные накладные
+
+valueSupplierVATInvoiceWHOutDetail 'НДС,%' (invoiceWHOutDetail) = valueSupplierVATBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail));
+sumVATInvoiceWHOutDetail 'Сумма НДС' (invoiceWHOutDetail) =  [round0(X*Y/100)](supplierSumInvoiceWHOutDetail(invoiceWHOutDetail),
+    valueSupplierVATBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
+
+sumInvoiceInvoiceWHOutDetail 'Сумма с НДС' (invoiceWHOutDetail) = supplierSumInvoiceWHOutDetail(invoiceWHOutDetail) (+) sumVATInvoiceWHOutDetail(invoiceWHOutDetail);
+
+@defineConsignment(invoiceWHOut);
+@implementConsignmentHeader(invoiceWHOut, warehouse);
+//isCommissionInvoiceWHOutDetail 'Продажа на комиссию' (invoiceWHOutDetail) = isCommissionInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
+
+senderConsignment (consignment) += companyWarehouse(warehouseInvoiceWHOut(consignment));
+recipientConsignment (consignment) += destinationCustomerInvoiceWHOut(consignment);
+consignmentConsignmentDetail (consignmentDetail) += invoiceWHOutInvoiceWHOutDetail(consignmentDetail);
+skuConsignmentDetail (consignmentDetail) += skuInvoiceWHOutDetail (consignmentDetail);
+quantityConsignmentDetail (consignmentDetail) += quantityInvoiceWHOutDetail (consignmentDetail);
+
+priceConsignmentDetail (consignmentDetail) += supplierPriceInvoiceWHOutDetail(consignmentDetail);
+
+sumConsignmentDetail (consignmentDetail) += supplierSumInvoiceWHOutDetail (consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueSupplierVATBatchA(batchAInvoiceWHOutDetail(consignmentDetail));
+
+sumVATConsignmentDetail (consignmentDetail) +=  sumVATInvoiceWHOutDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceInvoiceWHOutDetail(consignmentDetail);
+
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightInvoiceWHOutDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityInvoiceWHOutDetail (consignmentDetail);
+
+noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
+    importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
+
+noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentDetail) IF
+    importerPriceBatchA(batchAInvoiceWHOutDetail(consignmentDetail)) != supplierPriceInvoiceWHOutDetail(consignmentDetail);
+
+@defineDocumentFormTransferOutConsignment(invoiceWH, t);
+
+EXTEND FORM invoiceWHOut
+    PROPERTIES(t) numberContractSkuCompanyInvoiceWHOut, notChangeBalanceInvoiceWHOut
+    PROPERTIES(d) descriptionBatchInvoiceWHOutDetail, supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
+                  valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail
+;
+
+EXTEND FORM invoiceWHOuts
+    PROPERTIES(t) READONLY notChangeBalanceInvoiceWHOut
+    PROPERTIES(d) READONLY supplierPriceInvoiceWHOutDetail
+;
+
+// todo: нужно будет добавить в диалоговую форму партии остатки по партии для склада, с которого планируется отргузка

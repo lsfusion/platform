@@ -267,15 +267,15 @@ prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
 //---------------------------------------- Товарный отчет ------------------------- //
 
-//// расход
-//dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
-//isPostedAccountDocumentLedger (ledger) += isPostedSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
+//// расход  todo: возможно понадобится, если может быть отгрузка с магазина на магазин другого ЮЛ
+//dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger) IF;
+//isPostedAccountDocumentLedger (ledger) += isPostedSaleOut(ledger) IF;
 //departmentStoreAccountDocumentLedger (ledger) += stockSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
-//descriptionAccountDocumentLedger (ledger) += descriptionSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
+//descriptionAccountDocumentLedger (ledger) += descriptionSaleOut(ledger);
 //
 //sumOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
 //sumItemOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
-//sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferOut;
+//sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleOut;
 
 // приход
 dateTimeAccountDocumentLedger (ledger) += dateTimeSaleIn(ledger);

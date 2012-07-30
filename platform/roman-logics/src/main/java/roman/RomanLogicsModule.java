@@ -3758,6 +3758,9 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement retail = addNavigatorElement(baseLM.baseElement, "retail", "Розница");
         retail.window = leftToolbar;
 
+        NavigatorElement wholesaleTrade = addNavigatorElement(baseLM.baseElement, "wholesaleTrade", "Оптовая торговля");
+        wholesaleTrade.window = leftToolbar;
+
         NavigatorElement retailClassifier = addNavigatorElement(retail, "retailClassifier", "Справочники");
         retailClassifier.add(commonSize.getListForm(baseLM).form);
         addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
