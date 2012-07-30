@@ -135,6 +135,9 @@ exportDeclaration 'Экспортировать декларацию' = ACTION C
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
 nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN docGroup;
 
+currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
+nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
+
 dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (declaration) IN baseGroup;
 
 declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA declaration(innerInvoice) IN idGroup;
@@ -276,7 +279,7 @@ nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration)
 typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustom() WHEN CHANGED (dateDeclaration(declaration));
 typeExchangeManagerialDeclaration(declaration) <- typeExchangePayManagerial() WHEN CHANGED (dateDeclaration(declaration));
 
-currencyDeclaration (declaration) = currencyTypeExchange(typeExchangeSTX()) IF declaration IS declaration;
+//currencyDeclaration (declaration) = currencyTypeExchange(typeExchangeSTX()) IF declaration IS declaration;
 
 @defineNearestRateExchangeObject(declaration, custom, dateDeclaration, baseGroup);
 @defineNearestRateExchangeObject(declaration, managerial, dateDeclaration, baseGroup);
@@ -679,7 +682,7 @@ showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, innerInvoicesDeclaration,
-                  dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
+                  dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration, nameCurrencyDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, rateSumRegistrationDeclaration, dutyDeclaration, VATDeclaration, totalCustomSum,
                   diffDutyDeclararion, diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices
@@ -846,7 +849,7 @@ DESIGN declaration FROM DEFAULT{
 FORM declarations 'Декларации'
     OBJECTS d=declaration
     PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration,
-                           dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
+                           dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration, nameCurrencyDeclaration,
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
                            expenseCertificateDeclaration
