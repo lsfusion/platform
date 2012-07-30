@@ -1,6 +1,6 @@
 MODULE RomanStock;
 
-REQUIRE Stock, Barcode, Supplier, RomanLogicsModule;
+REQUIRE Stock, Barcode, RomanLogicsModule, Contract;
 
 PRIORITY Stock, RomanLogicsModule;
 

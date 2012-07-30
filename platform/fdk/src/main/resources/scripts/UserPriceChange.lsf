@@ -1,6 +1,6 @@
 MODULE UserPriceChange;
 
-REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode, Supplier;
+REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode;
 
 
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedDocument, priceTransactionDocument, historyObject;

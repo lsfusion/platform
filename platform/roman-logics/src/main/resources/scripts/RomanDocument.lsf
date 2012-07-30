@@ -1,6 +1,6 @@
 MODULE RomanDocument;
 
-REQUIRE Document, Stock, Barcode, StorePrice, Supplier;
+REQUIRE Document, Stock, Barcode, StorePrice;
 
 META defineRBDocument (object, stock, stockCaption, skuProp, caption)
 
