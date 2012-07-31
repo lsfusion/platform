@@ -106,7 +106,7 @@ inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
     BY CStoWHCStoWHDetail(CStoWHDetail), declarationCStoWHDetail(CStoWHDetail);
 
 declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255(sidDeclaration(declaration))
-    IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH MINCHARWIDTH 10            PREFCHARWIDTH 20;
+    IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = SESSION DATA NUMERIC[14,3] (freightUnit, declarationDetail);
 
@@ -141,11 +141,11 @@ inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInner
 //    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
 
 innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
-    IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 currencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyDeclaration(declarationCStoWHDetail(CStoWHDetail));
 currencyCStoWH (CStoWH) = GROUP EQUAL currencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);
-shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH));
+shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH)) IN documentPrmGroup;
 
 // кол-во отгруженного товара по коробам и sku
 quantityCStoWHFreightUnitSku(CStoWH, freightUnit, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
@@ -205,8 +205,8 @@ FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH,
-                   inputDeclarationDetailCStoWH, deleteCStoWHDetailCStoWH, declarationsCStoWH,
-                   innerInvoicesCStoWH, shortNameCurrencyCStoWH
+                   inputDeclarationDetailCStoWH, shortNameCurrencyCStoWH
+    PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
@@ -223,6 +223,37 @@ FORM CStoWH 'Расход с СВХ'
 DESIGN CStoWH FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
+        c.box {
+            childConstraints = TO THE RIGHT;
+            NEW columnHeaderPrm {
+                childConstraints = TO THE BOTTOM;
+                ADD c.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (nameCustomStoreCStoWH);
+                    ADD PROPERTY (nameWarehouseCStoWH);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateCStoWH);
+                    ADD PROPERTY (timeCStoWH);
+                }
+                ADD c.documentPrmGroup {
+                    title = 'Справочная информация';
+                    childConstraints = TO THE RIGHT;
+                };
+            }
+
+            NEW columnHeaderDeclaration {
+                title = 'Декларации';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(inputDeclarationDetailCStoWH);
+                ADD PROPERTY(declarationsCStoWH);
+            }
+            NEW columnHeaderSum {
+                ADD c.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
     }
 }
 
@@ -278,11 +309,10 @@ DESIGN CStoWHs FROM DEFAULT {
             }
 
             ADD c.printGroup {
-
-                caption = 'Печать';
                 childConstraints = TO THE BOTTOM;
-                NEW firstCase{
-                    childConstraints = TO THE RIGHT;
+                NEW case55{
+                    childConstraints = TO THE BOTTOM;
+
                     NEW contOne {
                         title = 'Накладная';
                         ADD PROPERTY(editConsignment);
@@ -297,10 +327,16 @@ DESIGN CStoWHs FROM DEFAULT {
                 NEW ttn1{
                     childConstraints = TO THE RIGHT;
                     title = 'ТТН-1';
-                    ADD PROPERTY(printConsignmentVerticalA);
-                    ADD PROPERTY(printConsignmentHorizontalA);
-                    ADD PROPERTY(printConsignmentVerticalB);
-                    ADD PROPERTY(printConsignmentHorizontalB);
+                    NEW ttn1V {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(printConsignmentVerticalA);
+                        ADD PROPERTY(printConsignmentVerticalB);
+                    }
+                    NEW ttn1H {
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(printConsignmentHorizontalA);
+                        ADD PROPERTY(printConsignmentHorizontalB);
+                    }
                 }
             }
         }
