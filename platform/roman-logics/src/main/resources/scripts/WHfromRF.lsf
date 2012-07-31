@@ -28,7 +28,7 @@ isWHfromRFFreight(freight) = TRUE IF (routeFreight(freight) == route.rf AND frei
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
 
-@defineDocumentAggregationHeaderStock(freight, WHfromRF, warehouse, 'Оптовый склад');
+//@defineDocumentAggregationHeaderStock(freight, WHfromRF, warehouse, 'Оптовый склад');
 
 @defineDocumentRelation(WHfromRF);
 @defineDocumentPosted(WHfromRF);
@@ -36,7 +36,7 @@ descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArr
 @defineDocumentTime(WHfromRF);
 @defineDocumentHeaderNote(WHfromRF);
 @defineDocumentDetailActions(WHfromRF);
-@defineDocumentDetailStock(WHfromRF, warehouse, 'Оптовый склад');
+@defineDocumentStock(WHfromRF, warehouse, 'Оптовый склад');
 @defineDocumentDetailSku(WHfromRF, sku);
 @defineDocumentDetailQuantity(WHfromRF);
 @defineDocumentDescription(WHfromRF, 'Поступление товара из РФ');
