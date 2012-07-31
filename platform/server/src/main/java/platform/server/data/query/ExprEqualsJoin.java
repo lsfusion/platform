@@ -42,11 +42,11 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
     }
 
     public InnerJoins getInnerJoins() {
-        throw new RuntimeException("not supported yet");
+        return ExprJoin.getInnerJoins(expr1).and(ExprJoin.getInnerJoins(expr2));
     }
 
     public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
-        throw new RuntimeException("not supported yet");
+        return InnerExpr.getFollowJoins(this, upWheres);
     }
 
     public NotNullExprSet getExprFollows(boolean recursive) {

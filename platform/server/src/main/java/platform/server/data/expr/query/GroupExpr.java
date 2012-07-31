@@ -95,7 +95,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     public StatKeys<KeyExpr> getStatGroup() {
-        Where where = query.getWhere().and(getInner().getGroupWhere());
+        Where where = getInner().getFullWhere();
 
         QuickSet<KeyExpr> pushedKeys = new QuickSet<KeyExpr>();
         for(Expr groupExpr : group.keySet()) {
@@ -201,7 +201,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
         Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
         String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(getInner().getInnerKeys().toMap(),
-                BaseUtils.toMap(BaseUtils.mergeSet(group.keySet(), query.getExprs())), query.getWhere().and(Expr.getWhere(group.keySet())))
+                BaseUtils.toMap(BaseUtils.mergeSet(group.keySet(), query.getExprs())), getInner().getFullWhere())
             .compile(source.syntax, subcontext).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params, null);
         for(Map.Entry<Expr, BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));

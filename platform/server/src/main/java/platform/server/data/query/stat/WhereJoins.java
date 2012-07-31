@@ -326,10 +326,11 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
 
     public Where getPartitionPushWhere(Map<KeyExpr, BaseExpr> joinMap, Set<Expr> partitions, Map<WhereJoin, Where> upWheres, QueryJoin<KeyExpr, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
+        joinMap = BaseUtils.filterKeys(joinMap, AbstractOuterContext.getOuterKeys(partitions)); // так как в partitions могут быть не все ключи, то в явную добавим условия на не null для таких ключей
         Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
-        if(pushWhere!=null)
+        if(pushWhere!=null) {
             return GroupExpr.create(new QueryTranslator(joinMap).translate(toMap(partitions)), pushWhere, BaseUtils.toMap(partitions)).getWhere();
-        else
+        } else
             return null;
     }
     

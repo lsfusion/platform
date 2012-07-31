@@ -2186,6 +2186,10 @@ public abstract class LogicsModule {
         return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, noDialog, baseLM.getAddedObjectProperty()));
     }
 
+    public LAP getFormAddObjectAction(ObjectEntity obj, boolean noDialog) {
+        return addAProp(new SimpleAddObjectActionProperty(genSID(), (CustomClass) obj.baseClass, noDialog, baseLM.getAddedObjectProperty()));
+    }
+
     @IdentityLazy
     protected LAP getAddObjectActionWithClassCheck(CustomClass baseClass, ValueClass checkClass) {
         LAP addObjectAction = getAddObjectAction(baseClass);

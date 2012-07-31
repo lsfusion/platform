@@ -50,7 +50,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return Collections.singletonMap(0, (BaseExpr)baseExpr);
     }
 
-    public InnerJoins getInnerJoins() {
+    public static InnerJoins getInnerJoins(BaseExpr baseExpr) {
         InnerJoins result = new InnerJoins();
         NotNullExprSet notNullExprs = baseExpr.getExprFollows(true, false);
         for(int i=0;i<notNullExprs.size;i++) {
@@ -59,6 +59,10 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
                 result = result.and(new InnerJoins(((InnerExpr)notNullExpr).getInnerJoin()));
         }
         return result;
+    }
+
+    public InnerJoins getInnerJoins() {
+        return getInnerJoins(baseExpr);
     }
 
     public boolean isClassJoin() {

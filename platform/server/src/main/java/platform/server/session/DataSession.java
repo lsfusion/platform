@@ -417,7 +417,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException {
         boolean hadStoredChanges = hasStoredChanges();
 
-        if(neededProps!=null && property.event==null) { // если транзакция, нет change event'а, singleApply'им
+        if(neededProps!=null && property.isStored() && property.event==null) { // если транзакция, нет change event'а, singleApply'им
             assert isInTransaction();
 
             SinglePropertyTableUsage<ClassPropertyInterface> changeTable = property.readFixChangeTable(sql, change, baseClass, getQueryEnv());

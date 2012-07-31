@@ -461,7 +461,7 @@ public class Settings {
         this.disableAutoHints = disableAutoHints;
     }
 
-    private boolean disableWrapComplexity = false;
+    private boolean disableWrapComplexity = true;
 
     public boolean isDisableWrapComplexity() {
         return disableWrapComplexity;
@@ -469,6 +469,16 @@ public class Settings {
 
     public void setDisableWrapComplexity(boolean disableWrapComplexity) {
         this.disableWrapComplexity = disableWrapComplexity;
+    }
+
+    public boolean applyNoIncrement = true;
+
+    public boolean isApplyNoIncrement() {
+        return applyNoIncrement;
+    }
+
+    public void setApplyNoIncrement(boolean applyNoIncrement) {
+        this.applyNoIncrement = applyNoIncrement;
     }
 
     public boolean applyVolatileStats = false;

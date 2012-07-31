@@ -14,6 +14,7 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.*;
@@ -65,7 +66,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOperator1.compare(packOperator2, getCompare());
     }
 
-    public ExprJoin groupJoinsWheres(List<Expr> orderTop, boolean not) {
+    public WhereJoin groupJoinsWheres(List<Expr> orderTop, boolean not) {
         if(operator1.isValue()) {
             if(operator2.isTableIndexed() && orderTop.contains(operator2))
                 return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, not);
@@ -78,10 +79,12 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             if(getCompare().equals(Compare.EQUALS) && !not)
                 return new ExprStatJoin(operator1, Stat.ONE);
         }
+        if(getCompare().equals(Compare.EQUALS) && !not)
+            return new ExprEqualsJoin(operator1, operator2);
         return null;        
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
-        ExprJoin exprJoin = groupJoinsWheres(orderTop, false);
+        WhereJoin exprJoin = groupJoinsWheres(orderTop, false);
         if(exprJoin!=null)
             return new GroupJoinsWheres(exprJoin, this, noWhere);
         return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));

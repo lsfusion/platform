@@ -13,6 +13,7 @@ import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -75,7 +76,7 @@ public class NotWhere extends ObjectWhere {
     }
 
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
-        ExprJoin exprJoin;
+        WhereJoin exprJoin;
         if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
             return new GroupJoinsWheres(exprJoin, this, noWhere);
         return new GroupJoinsWheres(this, noWhere);

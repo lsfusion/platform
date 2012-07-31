@@ -62,7 +62,13 @@ public abstract class NotNullExpr extends VariableClassExpr {
         }
 
         public Where translateQuery(QueryTranslator translator) {
-            return getExpr().translateQuery(translator).getWhere();
+            Expr translateExpr = getExpr().translateQuery(translator);
+//            if(translateExpr instanceof BaseExpr) // ??? в pack на это нарвались, здесь по идее может быть аналогичная ситуация
+//                return ((BaseExpr)translateExpr).getNotNullWhere();
+            if(BaseUtils.hashEquals(translateExpr, NotNullExpr.this)) // чтобы бесконечных циклов не было
+                return this;
+            else
+                return translateExpr.getWhere();
         }
 
         public QuickSet<OuterContext> calculateOuterDepends() {

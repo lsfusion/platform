@@ -1430,8 +1430,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @ManualLazy
     public Modifier getModifier() {
-        if(modifier==null)
-            modifier = new OverrideSessionModifier(createEnvironmentIncrement(isModal, this instanceof DialogInstance, isNewSession), getNoHints(), entity.hintsIncrementTable, entity.hintsNoUpdate, session.getModifier());
+        if(modifier==null) {
+            FunctionSet<CalcProperty> noHints = getNoHints();
+            modifier = new OverrideSessionModifier(createEnvironmentIncrement(isModal, this instanceof DialogInstance, isNewSession), noHints, noHints, entity.hintsIncrementTable, entity.hintsNoUpdate, session.getModifier());
+        }
         return modifier;
     }
 

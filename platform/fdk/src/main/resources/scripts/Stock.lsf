@@ -202,17 +202,23 @@ resetCostDataSkuLedger 'Перерассчитать себестоимость'
     SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
 }
 
+iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
+
 // мгновенный расчет себестоимости
 //WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
 ON APPLY SINGLE {
     SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE ASSIGNED(isPostedDataSkuLedger(ledger));
-    FOR ASSIGNED(isPostedDataSkuLedger(ledger)) DO
-        SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch);
+
+    LOCAL orderedLedger = INTEGER (dataSkuLedger);
+    SET orderedLedger(ledger) <- PARTITION SUM 1 IF ASSIGNED(isPostedDataSkuLedger(ledger)) BY skuDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger);
+
+    FOR iterate(i, 1, [GROUP MAX orderedLedger(ledger)]()) DO
+        SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch) WHERE orderedLedger(ledger) == i;
 }
 
 setDataSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
 
-    SET costDataSkuLedgerBatch(ledger, batch) AND needToCostDataSkuLedger(ledger) <- NULL;
+    SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE needToCostDataSkuLedger(ledger);
     EXEC apply();
 
     FOR needToCostDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger) DO {

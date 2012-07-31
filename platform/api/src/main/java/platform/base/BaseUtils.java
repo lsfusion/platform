@@ -198,6 +198,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, QuickSet<K> keys) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (!keys.contains(entry.getKey()))
+                result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
     public static <K, V> Map<K, V> filterNotValues(Map<K, V> map, Collection<? extends V> values) {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {

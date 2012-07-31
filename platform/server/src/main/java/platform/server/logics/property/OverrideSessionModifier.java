@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.*;
+import platform.server.Settings;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -106,11 +107,11 @@ public class OverrideSessionModifier extends SessionModifier {
         modifier.unregisterView(this);
     }
 
-    public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, FunctionSet<CalcProperty> forceHintIncrement, FunctionSet<CalcProperty> forceNoUpdate, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+    public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, FunctionSet<CalcProperty> forceDisableNoUpdate, FunctionSet<CalcProperty> forceHintIncrement, FunctionSet<CalcProperty> forceNoUpdate, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
         this.override = override;
         this.modifier = modifier;
         this.forceDisableHintIncrement = forceDisableHintIncrement;
-        this.forceDisableNoUpdate = forceDisableHintIncrement;
+        this.forceDisableNoUpdate = forceDisableNoUpdate;
         this.forceHintIncrement = forceHintIncrement;
         this.forceNoUpdate = forceNoUpdate;
 
@@ -122,11 +123,15 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, forceDisableHintIncrement, EmptyFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), modifier);
+        this(override, forceDisableHintIncrement, FullFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), modifier);
     }
 
     public OverrideSessionModifier(IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, EmptyFunctionSet.<CalcProperty>instance(), modifier);
+        this(override, Settings.instance.isApplyNoIncrement(), modifier);
+    }
+
+    public OverrideSessionModifier(IncrementProps override, boolean disableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
+        this(override, disableHintIncrement ? FullFunctionSet.<CalcProperty>instance() : EmptyFunctionSet.<CalcProperty>instance(), modifier);
     }
 
     @Override
