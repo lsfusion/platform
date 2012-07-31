@@ -139,13 +139,6 @@ NAVIGATOR {
         }
     }
 
-    retail {
-        NEW retailPriceDocument 'Документы расценки' {
-            ADD inputListRegisters;
-            ADD userPriceChanges;
-        }
-    }
-
     logistics {
         logisticsClassifier {
             ADD warehouses;
@@ -184,6 +177,10 @@ NAVIGATOR {
     }
 
     retail {
+        NEW retailPriceDocument 'Документы расценки' {
+            ADD inputListRegisters;
+            ADD userPriceChanges;
+        }
         NEW POSSales 'Розничные продажи' {
             ADD zReports;
             ADD operationCashRegister;

@@ -16,16 +16,13 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
 
     isStoreDestinationStock###object##Out 'Перемещение на магазин' (object##Out) = destinationStock###object##Out(object##Out) IS departmentStore;
 
-    needTransferPriceAct###object##Out (object##Out) = isStoreDestinationStock###object##Out(object##Out)
-                                                 AND NOT isCommission###object##Out(object##Out);
-
     needTransferPriceActDetail###object##OutDetailBatch (object##OutDetail, batch) = costSkuLedgerBatch(object##OutDetail, batch)
         AND destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetail)) IS departmentStore
         AND batch IS batchA;
 
     @defineDocumentTables (transferPriceAct###object);
 
-    @defineAggregation (object##Out, transferPriceAct###object, needTransferPriceAct###object##Out);
+    @defineAggregation (object##Out, transferPriceAct###object, isStoreDestinationStock###object##Out);
     @defineAggregationDouble(object##OutDetail, batch, transferPriceAct###object##Detail, needTransferPriceActDetail###object##OutDetailBatch);
     transferPriceAct###object##TransferPriceAct###object##Detail (transferPriceAct###object##Detail) =
         transferPriceAct###object###object##Out(object##Out###object##OutDetail(object##OutDetailTransferPriceAct###object###Detail(transferPriceAct###object##Detail)));

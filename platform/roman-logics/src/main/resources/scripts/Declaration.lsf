@@ -861,7 +861,7 @@ DESIGN declaration FROM DEFAULT{
 FORM declarations 'Декларации'
     OBJECTS d=declaration
     PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration,
-                           dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration, nameCurrencyDeclaration,
+                           dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
                            expenseCertificateDeclaration

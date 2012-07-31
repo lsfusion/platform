@@ -91,9 +91,9 @@ FORM registerCommitteeDialog 'Комиссии для реестра цен'
 CLASS ABSTRACT inputListRegister 'Реестр (внутр.)' ;
 CLASS ABSTRACT inputListRegisterDetail 'Строка реестра (внутр.)' ;
 
-numberListRegister 'Номер' (inputListRegister) =  ABSTRACT STRING[18] (inputListRegister);
+numberListRegister 'Номер' (inputListRegister) =  ABSTRACT STRING[18] (inputListRegister) MINCHARWIDTH 7;
 
-seriesListRegister 'Серия' (inputListRegister) = ABSTRACT STRING[2] (inputListRegister);
+seriesListRegister 'Серия' (inputListRegister) = ABSTRACT STRING[2] (inputListRegister) FIXEDCHARWIDTH 2;
 
 dateListRegister 'Дата' (inputListRegister) = ABSTRACT DATE (inputListRegister);
 

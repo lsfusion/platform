@@ -30,6 +30,12 @@ CLASS saleOutBatchDetail 'Строка продажи товаров по нак
 
 @extendDocumentFormDetailSkuArticleReadonly(saleOuts, o, saleOutBatch);
 
+importerPriceSaleOutBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchSaleOutBatchDetail(detail));
+supplierPriceSaleOutBatchDetail 'Цена поставщика' (detail) = supplierPriceBatchA(batchSaleOutBatchDetail(detail));
+EXTEND FORM saleOuts
+    PROPERTIES(o) READONLY importerPriceSaleOutBatchDetail, supplierPriceSaleOutBatchDetail
+;
+
 CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockSaleOut(saleOut)) CHECKED BY destinationStockSaleOut
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
 
