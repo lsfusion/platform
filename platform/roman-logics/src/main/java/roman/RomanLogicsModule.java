@@ -263,7 +263,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP currencyCustom;
     private LCP nameCurrencyCustom;
     public LCP currencyPayCustom;
-    public LCP nameCurrencyPayCustom;
+    //public LCP nameCurrencyPayCustom;
     private LCP NDSPercentCustom;
     private LCP lessCmpDate;
     private LCP nearestPredDate;
@@ -1592,7 +1592,7 @@ public class RomanLogicsModule extends LogicsModule {
         currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта мин.цен (ИД)", baseLM.currency);
         nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", baseLM.name, currencyCustom);
         currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", baseLM.currency);
-        nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", baseLM.name, currencyPayCustom);
+        //nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", baseLM.name, currencyPayCustom);
         typeExchangeRetail = addDProp(idGroup, "typeExchangeRetail", "Тип обмена для розницы", typeExchange);
         nameTypeExchangeRetail = addJProp(baseGroup, "nameTypeExchangeRetail", "Тип обмена для розницы", baseLM.name, typeExchangeRetail);
 
@@ -4003,7 +4003,6 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(nameTypeExchangePayManagerial);
             addPropertyDraw(nameTypeExchangeRetail);
             addPropertyDraw(nameCurrencyCustom);
-            addPropertyDraw(nameCurrencyPayCustom);
             addPropertyDraw(NDSPercentCustom);
             addPropertyDraw(sidTypeDutyDuty);
             addPropertyDraw(nameTypeDutyDuty);

@@ -67,6 +67,10 @@ freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EX
 
 dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
 
+currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IN idGroup;
+currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice), currencyFormedInvoice(innerInvoice) IN idGroup;
+nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = name(currencyInnerInvoice(innerInvoice)) IN baseGroup;
+
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived;
 
 importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
@@ -154,6 +158,11 @@ CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importe
     MESSAGE 'Инвойс для другого импортёра';
 
 importerDeclarationInnerInvoice (declaration, innerInvoice) = importerDeclaration(declaration) == importerInnerInvoice(innerInvoice);
+
+CONSTRAINT currencyDeclaration(declarationInnerInvoice(innerInvoice)) != currencyInnerInvoice(innerInvoice) CHECKED
+    MESSAGE 'Инвойс с другой валютой';
+
+currencyDeclarationInnerInvoice (declaration, innerInvoice) = currencyDeclaration(declaration) == currencyInnerInvoice(innerInvoice);
 
 innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
                                                                                BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
@@ -436,7 +445,7 @@ sumRegistrationDeclaration 'Таможенный сбор (расч.)' (declarat
 rateSumRegistrationDeclaration 'Сумма таможенного сбора' (declaration) = round0(sumRegistrationDeclaration(declaration) *
                                                                                 rateExchangeCustomDataDeclaration(declaration)) IN sumGroup PERSISTENT MINCHARWIDTH 12;
 
-totalCustomSum 'Сумма платежей' (declaration) = UNION SUM dutyDeclaration(declaration), VATDeclaration(declaration), rateSumRegistrationDeclaration(declaration) IN sumGroup MINCHARWIDTH 17;
+totalCustomSum 'Сумма платежей' (declaration) = round0(UNION SUM dutyDeclaration(declaration), VATDeclaration(declaration), rateSumRegistrationDeclaration(declaration)) IN sumGroup MINCHARWIDTH 17;
 
 
 // корректировка таможенной стоимости
@@ -469,7 +478,7 @@ diffVATDeclarationDetail 'Разница НДС' (declarationDetail) = correctio
 diffVATDeclararion 'Разница НДС' (declaration) = GROUP SUM diffVATDeclarationDetail(declarationDetail)
                                                         BY declarationDeclarationDetail(declarationDetail) IN corrGroup PERSISTENT;
 
-diffDeclaration 'Сумма доп. платежей' (declaration) = UNION SUM diffDutyDeclararion(declaration), diffVATDeclararion(declaration) IN corrGroup;
+diffDeclaration 'Сумма доп. платежей' (declaration) = round0(UNION SUM diffDutyDeclararion(declaration), diffVATDeclararion(declaration)) IN corrGroup;
 
 
 sumDeclarationDetail 'Стоимость' (declarationDetail) = supplierPriceDeclarationDetail(declarationDetail) * quantityDeclarationDetail(declarationDetail);
@@ -663,13 +672,16 @@ innerInvoicesDeclaration 'Инвойсы' (declaration) = GROUP CONCAT stringInn
 
 FORM declarationInvoices 'Присоединение инвойсов'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameCustomStoreDeclaration, sidDeclaration, dateTimeDeclaration, beginTimeDeclaration, endTimeDeclaration,
-                  nameImporterDeclaration
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameCurrencyDeclaration,
+                  dateTimeDeclaration, beginTimeDeclaration, endTimeDeclaration
 
     OBJECTS ii=innerInvoice
     PROPERTIES (ii) sidInnerInvoice, dateInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice
     PROPERTIES (d, ii) inDeclarationInnerInvoice
     FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+
+    FILTERGROUP filtersCurrency
+        FILTER 'Только с валютой декларации' 'F10' currencyDeclarationInnerInvoice(d, ii) DEFAULT
 
     FILTERGROUP filtersImporter
         FILTER 'Только импортёра декларации' 'F11' importerDeclarationInnerInvoice(d, ii) DEFAULT
@@ -681,8 +693,8 @@ showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, innerInvoicesDeclaration,
-                  dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration, nameCurrencyDeclaration,
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameCurrencyDeclaration,
+                  innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, rateSumRegistrationDeclaration, dutyDeclaration, VATDeclaration, totalCustomSum,
                   diffDutyDeclararion, diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices
@@ -929,7 +941,7 @@ DESIGN declarations FROM DEFAULT {
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
-    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice
+    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, nameCurrencyInnerInvoice
     PROPERTIES(i) sidDeclarationInnerInvoice, delete
     FILTERS freightArrivedInnerInvoice(i)
 
