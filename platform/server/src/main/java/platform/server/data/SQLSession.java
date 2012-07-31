@@ -7,6 +7,7 @@ import platform.base.OrderedMap;
 import platform.base.Result;
 import platform.server.Message;
 import platform.server.ParamMessage;
+import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.ExecuteEnvironment;
 import platform.server.data.query.IQuery;
@@ -98,6 +99,9 @@ public class SQLSession extends MutableObject {
 
     private int prevIsolation;
     public void startTransaction() throws SQLException {
+        if(Settings.instance.isApplyVolatileStats())
+            pushVolatileStats(null);
+
         needPrivate();
 
         if(inTransaction++ == 0) {
@@ -119,6 +123,9 @@ public class SQLSession extends MutableObject {
         transactionTables.clear();
 
         tryCommon();
+
+        if(Settings.instance.isApplyVolatileStats())
+            popVolatileStats(null);
     }
 
     public void rollbackTransaction() throws SQLException {

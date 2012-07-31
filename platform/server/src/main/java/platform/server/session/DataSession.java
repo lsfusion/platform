@@ -130,8 +130,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private Transaction applyTransaction; // restore point
 
     private void startTransaction() throws SQLException {
-        if(Settings.instance.isApplyVolatileStats())
-            sql.pushVolatileStats(null);
         sql.startTransaction();
     }
     private void checkTransaction() {
@@ -144,9 +142,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             applyTransaction = null;
         }
         sql.rollbackTransaction();
-        if(Settings.instance.isApplyVolatileStats())
-            sql.popVolatileStats(null);
-
 //        checkSessionTableMap();
     }
 /*    private void checkSessionTableMap() {
@@ -168,8 +163,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private void commitTransaction() throws SQLException {
         applyTransaction = null;
         sql.commitTransaction();
-        if(Settings.instance.isApplyVolatileStats())
-            sql.popVolatileStats(null);
     }
 
     public static Set<IsClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {

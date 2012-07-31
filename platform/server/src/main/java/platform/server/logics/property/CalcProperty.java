@@ -636,10 +636,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    public void setJoinNotNull(Map<T, ? extends Expr> implementKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), env, notNull);
-    }
     public void setNotNull(Map<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
         setNotNull(values, new HashMap<T, KeyExpr>(), Where.TRUE, env, notNull, check);
     }

@@ -166,18 +166,28 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     private Map<BaseExpr, BaseExpr> getExprValues(boolean and, boolean only) {
         Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>();
-        for(Where opWhere : and?getOr():getAnd())
+        for(Where opWhere : and?getOr():getAnd()) {
+            BaseExpr expr = null; BaseExpr valueExpr = null;
             if(opWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)opWhere;
                 if(where.operator1.isValue()) { //  && !(where.operator2 instanceof KeyExpr && and))
-                    if(!where.operator2.isValue()) // если operator2 тоже value то нет смысла, обозначать
-                        result.put(where.operator2, where.operator1);
+                    if(!where.operator2.isValue()) { // если operator2 тоже value то нет смысла, обозначать
+                        expr = where.operator2;
+                        valueExpr = where.operator1;
+                    }
                 } else
-                if(where.operator2.isValue()) // && !(where.operator1 instanceof KeyExpr && and))
-                    result.put(where.operator1, where.operator2);
-            } else
+                if(where.operator2.isValue()) { // && !(where.operator1 instanceof KeyExpr && and))
+                    expr = where.operator1;
+                    valueExpr = where.operator2;
+                }
+            }
+            
+            if(expr!=null)
+                result.put(expr, valueExpr);
+            else
                 if(only)
                     return null;
+        }
         return result;
     }
 
