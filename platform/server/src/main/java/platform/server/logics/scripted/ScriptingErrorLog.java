@@ -411,6 +411,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, msg);
     }
 
+    public void emitNeighbourPropertyError(LsfLogicsParser parser, String name1, String name2) throws SemanticErrorException {
+        emitSimpleError(parser, format("properties '%s' and '%s' should be in on group", name1, name2));
+    }
+
     private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
