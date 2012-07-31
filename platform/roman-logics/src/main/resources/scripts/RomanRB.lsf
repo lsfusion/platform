@@ -167,7 +167,6 @@ NAVIGATOR {
         NEW logisticsAggregations 'Сводная информация' {
             ADD stockCost;
             ADD stockBalance;
-            ADD sumAccountDocumentLedger;
         }
     }
 
@@ -191,6 +190,9 @@ NAVIGATOR {
             ADD discountCards;
             ADD promotionGroups;
             ADD promotions;
+        }
+        NEW retailAggregations 'Сводная информация' {
+            ADD sumAccountDocumentLedger;
         }
     }
     wholesaleTrade {

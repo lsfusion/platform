@@ -2806,7 +2806,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityStockSku = addSGProp(baseGroup, "quantityStockSku", true, true, "Оприход. в короб для транспортировки", quantityShipmentStockSku, 2, 3);
 
-        quantityFreightUnitSku = addCUProp(baseGroup, "quantityFreightUnitSku", "Кол-во в коробе", quantityDirectSupplierBoxSku, quantityStockSku);
+        quantityFreightUnitSku = addCUProp(baseGroup, "quantityFreightUnitSku", "Кол-во в коробе", quantityDirectSupplierBoxSku, addJProp(baseLM.and1, quantityStockSku, 1, 2, is(freightUnit), 1));
 
         quantityFreightUnitArticle = addSGProp(baseGroup, "quantityFreightUnitArticle", true, true, "Кол-во в коробе", quantityFreightUnitSku, 1, articleSku, 2);
 
@@ -2953,7 +2953,7 @@ public class RomanLogicsModule extends LogicsModule {
         palletCountFreightType = addDProp(baseGroup, "palletCountFreightType", "Кол-во паллет", IntegerClass.instance, freightType);
         volumeFreightType = addDProp(baseGroup, "volumeFreightType", "Объем", NumericClass.get(14, 3), freightType);
 
-        descriptionFreight = addDProp(baseGroup, "descriptionFreight", "Описание машины", StringClass.get(50), freight);
+        descriptionFreight = addDProp(baseGroup, "descriptionFreight", "Описание", StringClass.get(50), freight);
 
         freightTypeFreight = addDProp(idGroup, "freightTypeFreight", "Тип машины (ИД)", freightType, freight);
         nameFreightTypeFreight = addJProp(baseGroup, "nameFreightTypeFreight", "Тип машины", baseLM.name, freightTypeFreight, 1);
@@ -3728,7 +3728,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightChangeFormEntity(null, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(null, "freightInvoiceForm", "Расценка фрахта"));
 
-        addFormEntity(new FreightListFormEntity(shipmentDocument, "freightListForm", "Список фрахтов"));
+        addFormEntity(new FreightListFormEntity(shipmentDocument, "freightListForm", "Фрахты"));
         addFormEntity(new PrintDocumentFormEntity(shipmentDocument, "printDocumentForm", "Печать документов"));
 
         //shipmentDocument.add(actionFreight);
@@ -3756,7 +3756,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement logisticsClassifier = addNavigatorElement(logistics, "logisticsClassifier", "Справочники");
 
-        NavigatorElement retail = addNavigatorElement(baseLM.baseElement, "retail", "Розница");
+        NavigatorElement retail = addNavigatorElement(baseLM.baseElement, "retail", "Розничная торговля");
         retail.window = leftToolbar;
 
         NavigatorElement wholesaleTrade = addNavigatorElement(baseLM.baseElement, "wholesaleTrade", "Оптовая торговля");
@@ -7849,7 +7849,9 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, formLogFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, netWeightInvoicedFreight, grossWeightFreight, palletNumberFreight, freightBoxNumberFreight);
+            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight,
+                                              nameRouteFreight, nameExporterFreight, netWeightInvoicedFreight, grossWeightFreight,
+                                              palletNumberFreight, freightBoxNumberFreight, descriptionFreight, formLogFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setEditType(objFreight, PropertyEditType.READONLY);
             setEditType(formLogFreight, PropertyEditType.EDITABLE);

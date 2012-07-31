@@ -109,16 +109,16 @@ isPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreigh
 
 isPriceSetFreight 'Статус' (freight) = IF isPriceSetDocumentFreight(freight)
                                      THEN 'Не расценен' AND freight IS freight
-                                     ELSE 'Расценен' AND freight IS freight;
+                                     ELSE 'Расценен' AND freight IS freight MINCHARWIDTH 11;
 
-backgroundPriceSetDocument 'Цвет' (freight) = RGB(255, 128, 128) IF isPriceSetFreight(freight) == 'Не расценен';
+backgroundPriceSetDocument 'Цвет' (freight) = RGB(255, 128, 128) IF isPriceSetDocumentFreight(freight);
 
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
-isRRPPriceSetDocumentArticle 'Есть рекомендуемая цена' (basePriceSetDocument, article) =
-    TRUE IF RRPPriceSetDocumentArticle(basePriceSetDocument, article);
+isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (basePriceSetDocument, article) =
+    basePriceSetDocument IS basePriceSetDocument AND article IS article AND NOT RRPPriceSetDocumentArticle(basePriceSetDocument, article);
 
 ratePriceSetDocument 'Обменный курс' (priceSetDocument, article) = nearestRateExchange(typeExchangeRetail(),
                                                                                              currencyTypeExchange(typeExchangeSTX()),
@@ -263,7 +263,8 @@ FORM priceSetDocument 'Базовый прайс'
     FILTERS inArticlePriceSetDocument(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
 
     FILTERGROUP filters
-        FILTER 'Есть рекомендуемая цена' 'F7' isRRPPriceSetDocumentArticle(p, a)
+        FILTER 'Есть рекомендуемая цена' 'F7' RRPPriceSetDocumentArticle(p, a)
+        FILTER 'Нет рекомендуемой цены' 'shift F7' isNotRRPPriceSetDocumentArticle(p, a)
 
     FILTERGROUP filtersBalance
         FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
@@ -336,7 +337,7 @@ FORM priceBaseChangeDocuments 'Базовые прайсы'
     PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
-                              EDITFORM SHOWIF isDraftPriceSetDocument(p), delete
+                              EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -451,7 +452,7 @@ FORM discountPriceSetDocuments 'Распродажи'
     PROPERTIES(d) READONLY statusPriceSetDocument, sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(d) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(d),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(d), ADDFORM,
-                              EDITFORM SHOWIF isDraftPriceSetDocument(d), delete
+                              EDITFORM SHOWIF isDraftPriceSetDocument(d), delete SHOWIF isDraftPriceSetDocument(d)
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -483,13 +484,13 @@ toCreatePriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
             EXEC apply();
         };
     };
-} TOOLBAR CONFIRM;
+} TOOLBAR;
 
 FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightPriced
-    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, dateArrivalFreight,
-                           descriptionFreight, nameRouteFreight, nameExporterFreight, freightGrossWeight
+    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, dateArrivalFreight,
+                           nameRouteFreight, nameExporterFreight, freightGrossWeight, descriptionFreight
     PROPERTIES(f) FORCE PANEL toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument

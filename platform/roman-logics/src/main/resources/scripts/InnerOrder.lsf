@@ -186,7 +186,7 @@ retailPriceOrderPickingDetail(orderPickingDetail) <- priceDiscountPriceSetDocume
 @defineAddDetailDialogSkuStock(orderPicking, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(orderPicking, sku);
 
-postOrderPickingInnerOrder 'Закрыть подборку' (innerOrder) = postOrderPicking(orderPickingInnerOrder(innerOrder));
+postOrderPickingInnerOrder 'Закрыть подборку' (innerOrder) = postOrderPicking(orderPickingInnerOrder(innerOrder)) TOOLBAR;
 isDraftOrderPickingInnerOrder (innerOrder) = isDraftOrderPicking(orderPickingInnerOrder(innerOrder));
 isPostedOrderPickingInnerOrder (innerOrder) = isPostedOrderPicking(orderPickingInnerOrder(innerOrder));
 
@@ -275,7 +275,7 @@ pickUpInnerOrder 'Подобрать' (innerOrder) = ACTION (innerOrder) NEWSESS
         }
     }
     IF formResult() == formResult.ok THEN EXEC apply();
-};
+} TOOLBAR;
 
 //Свойства генерируемых документов
 innerOrderInnerDocument (innerDocument) = ABSTRACT innerOrder (innerDocument);
