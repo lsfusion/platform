@@ -52,12 +52,39 @@ CONSTRAINT skuBatch(saleInBatchDetailReturnOutDetail(detail)) != skuReturnOutDet
 CONSTRAINT contractSkuCompanyReturnOut(returnOutReturnOutDetail(detail)) != contractSkuCompanySaleInBatchDetail(saleInBatchDetailReturnOutDetail(detail)) CHECKED BY saleInBatchDetailReturnOutDetail
     MESSAGE 'Договор партии строки возврата должен соответствовать договору возврата';
 
+currentBalanceBatchReturnOutDetail 'Текущий остаток' (batch, returnOutDetail) = currentBalanceBatchStock(batch, stockReturnOut(returnOutReturnOutDetail(returnOutDetail)));
+currentBalanceReturnOutDetail 'Текущий остаток' (returnOutDetail) = currentBalanceBatchReturnOutDetail(saleInBatchDetailReturnOutDetail(returnOutDetail), returnOutDetail);
+
+FORM saleInBatchDetailDialog 'Партия'
+
+    OBJECTS rd = returnOutDetail FIXED PANEL
+
+    OBJECTS bt = saleInBatchDetail
+    PROPERTIES (bt) READONLY nameSkuBatch, nameStockBatch, descriptionBatch, nameOwnerBatchA, numberCommissionContractSkuBatchA,
+                            importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
+
+    PROPERTIES(bt, rd) READONLY currentBalanceBatchReturnOutDetail
+    FILTERGROUP balanceFilters
+            FILTER 'Товары с остатком' 'F10' currentBalanceBatchReturnOutDetail(bt, rd) != 0 DEFAULT
+
+    FILTERS skuBatch(bt) == skuReturnOutDetail(rd) AND
+            contractSkuCompanyReturnOut(returnOutReturnOutDetail(rd)) == contractSkuCompanySaleInBatchDetail(bt)
+;
+
+dialogBatchReturnOutDetail 'Партия' (returnOutDetail) = ACTION (returnOutDetail) {
+    FORM saleInBatchDetailDialog  MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET saleInBatchDetailReturnOutDetail(returnOutDetail) <- chosenObject('bt');
+    }
+}SHORTCUT descriptionBatchReturnOutDetail ;
+
+
 EXTEND FORM returnOut
-    PROPERTIES(d) descriptionBatchReturnOutDetail
+    PROPERTIES(d) descriptionBatchReturnOutDetail, dialogBatchReturnOutDetail, currentBalanceReturnOutDetail READONLY
 ;
 
 EXTEND FORM returnOuts
-    PROPERTIES(d) descriptionBatchReturnOutDetail
+    PROPERTIES(d) READONLY descriptionBatchReturnOutDetail
 ;
 
 @defineDocumentTransferRetail(returnOut);
