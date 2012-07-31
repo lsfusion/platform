@@ -50,7 +50,7 @@ markupWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- 0.0 //IF
 priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
 
 priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
-    (priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)*(1+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article)/100))
+    round0(priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)*(1+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article)/100))
     WHEN CHANGED (markupWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
 orderWholesalePriceDocument = LIST(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
