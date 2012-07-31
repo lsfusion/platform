@@ -124,6 +124,8 @@ retailVATSumListRegisterDetailListRegister 'Сумма НДС' (inputListRegiste
 
 retailSumListRegisterDetailListRegister 'Розничная сумма' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
 
+notPassToBookkeepingListRegister 'Не передавать в бухгалтерию' (inputListRegister) = ABSTRACT BOOLEAN (inputListRegister);
+
 registerCommitteeListRegister  (inputListRegister) = ABSTRACT registerCommittee (inputListRegister);
 nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = name(registerCommitteeListRegister(inputListRegister));
 nameFormedManListRegister 'Цены сформировал' (inputListRegister) = nameFormedManCommittee(registerCommitteeListRegister(inputListRegister));

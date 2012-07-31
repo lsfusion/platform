@@ -205,6 +205,10 @@ prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
 @defineDocumentTransferPriceAct (transfer, 'Акт расценки (перемещение)', 'Строка акта расценки (перемещение)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
 
+notPassToBookkeepingListRegister (inputListRegister) += destinationStockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS departmentStore
+    AND stockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS departmentStore
+    OR  isCommissionTransferOut(transferOutTransferPriceActTransfer(inputListRegister));
+
 //---------------------------------------- Товарный отчет ------------------------- //
 
 // расход
