@@ -2156,11 +2156,11 @@ public class RomanLogicsModule extends LogicsModule {
         addItemSIDArticleSupplierColorSizeBarcode = addJoinAProp("Ввод товара", addItemArticleCompositeColorSizeBarcode, articleSIDSupplier, 1, 2, 3, 4, 5);
 
         // Weight
-        netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", NumericClass.get(14, 3), article);
+        netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", NumericClass.get(14, 6), article);
         netWeightArticleSku = addJProp(intraAttributeGroup, "netWeightArticleSku", "Вес нетто (ориг.)", netWeightArticle, articleSku, 1);
-        netWeightArticleSize = addDProp(intraAttributeGroup, "netWeightArticleSize", "Вес нетто размера", NumericClass.get(14, 3), article, sizeSupplier);
+        netWeightArticleSize = addDProp(intraAttributeGroup, "netWeightArticleSize", "Вес нетто размера", NumericClass.get(14, 6), article, sizeSupplier);
 
-        netWeightDataSku = addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", NumericClass.get(14, 3), sku);
+        netWeightDataSku = addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", NumericClass.get(14, 6), sku);
         netWeightArticleSizeSku = addJProp(intraAttributeGroup, true, "netWeightArticleSizeSku", "Вес нетто", netWeightArticleSize, articleSku, 1, sizeSupplierItem, 1);
         netWeightSku = addSUProp(intraAttributeGroup, "netWeightSku", "Вес нетто (ед.)", Union.OVERRIDE, netWeightArticleSku, netWeightArticleSizeSku);
 

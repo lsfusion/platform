@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10">
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="329"/>
+	<property name="ireport.x" value="890"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -150,7 +150,7 @@
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<text><![CDATA[Масса груза]]></text>
+					<text><![CDATA[Масса груза, т.]]></text>
 				</staticText>
 				<staticText>
 					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="0" y="0" width="555" height="15"/>
@@ -343,10 +343,10 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{packQuantityConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###" isBlankWhenNull="true">
+				<textField pattern="#,##0.######" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="460" y="0" width="30" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
-						<font size="9"/>
+						<font size="6"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{grossWeightConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
@@ -1008,7 +1008,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{packQuantityConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.######" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="460" y="0" width="30" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -1017,7 +1017,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grossWeightConsignmentDetail}]]></textFieldExpression>
 			</textField>

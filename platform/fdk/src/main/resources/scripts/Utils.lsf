@@ -26,6 +26,7 @@ round1 (number) = round(number, 1);
 round2 (number) = round(number, 2);
 round3 (number) = round(number, 3);
 
+round6 (number) = round(number, 6);
 // --------------------------------------------- Двойное имя --------------------------------- //
 
 CLASS doubleNamed 'Объект с кратким наименованием' : named;

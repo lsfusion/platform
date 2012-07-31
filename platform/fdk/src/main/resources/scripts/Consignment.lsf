@@ -127,7 +127,7 @@ sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = ABSTRACT NUMER
 sumInvoiceConsignmentDetail 'Сумма с НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
 
 packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
-grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = ABSTRACT NUMERIC[14,5] (consignmentDetail);
+grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = ABSTRACT NUMERIC[14,6] (consignmentDetail);
 
 noteConsignmentDetail 'Примечание' (consignmentDetail) = ABSTRACT STRING[100] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
