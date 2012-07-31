@@ -568,10 +568,6 @@ public class RomanLogicsModule extends LogicsModule {
     LCP nameExporterFreight;
     LCP addressOriginExporterFreight;
     LCP addressExporterFreight;
-    public LCP customStoreFreight;
-    public LCP nameCustomStoreFreight;
-    public LCP warehouseFreight;
-    public LCP nameWarehouseFreight;
 
     private LCP inInvoiceFreight;
     private LCP netWeightInvoicedFreight;
@@ -2990,10 +2986,6 @@ public class RomanLogicsModule extends LogicsModule {
         nameExporterFreight = addJProp(baseGroup, "nameExporterFreight", "Экспортер", baseLM.name, exporterFreight, 1);
         addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
         addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
-
-
-        warehouseFreight  = addDProp(idGroup, "warehouseFreight", "Склад фрахта (ИД)", BL.getModule("MasterData").getClassByName("warehouse"), freight);
-        nameWarehouseFreight = addJProp(baseGroup, "nameWarehouseFreight", "Склад фрахта", baseLM.name, warehouseFreight, 1);
 
         inInvoiceFreight = addDProp(baseGroup, "inInvoiceFreight", "Вкл.", LogicalClass.instance, invoice, freight);
         netWeightInvoicedFreight = addSGProp(baseGroup, "netWeightInvoicedFreight", "Вес инвойсов", addJProp(baseLM.and1, netWeightDocument, 1, inInvoiceFreight, 1, 2), 2);
