@@ -18,7 +18,8 @@ META metaCodePriceBaseDiscount(document, caption)
     concat###document##ArticleDateTime (article, dateTime) = GROUP MAX order###document(document) AND
                                                                        priceData###document##Article(document, article) AND
                                                                        dateTimePriceSetDocument(document) < (dateTime AS DATETIME) AND
-                                                                       dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME)
+                                                                       dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
+                                                                       isPostedPriceSetDocument(document)
                                                                     BY article, dateTime;
 
     document##ArticleDateTime (article, dateTime) = concat###document##ArticleDateTime(article, dateTime)[2];
@@ -140,6 +141,21 @@ markupPriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficie
 
 priceOutPriceSetDocumentArticle 'Цена с надбавкой' (basePriceSetDocument, article) = round2(priceInPriceSetDocumentArticle(basePriceSetDocument, article) *
                                                                                                   markupPriceSetDocumentArticle(basePriceSetDocument, article));
+
+isPostedPriceSetDocument 'Закрыт' (priceSetDocument) = DATA BOOLEAN (priceSetDocument);
+isDraftPriceSetDocument 'Открыт' (priceSetDocument) = priceSetDocument IS priceSetDocument AND NOT isPostedPriceSetDocument(priceSetDocument);
+
+postPriceSetDocument 'Провести' (priceSetDocument) = [ACTION (priceSetDocument) NEWSESSION AUTOAPPLY {
+    IF priceSetDocument IS priceSetDocument AND NOT isPostedPriceSetDocument(priceSetDocument) THEN
+    SET isPostedPriceSetDocument(priceSetDocument) <- TRUE; } ] (priceSetDocument) TOOLBAR CONFIRM;
+
+unpostPriceSetDocument 'Распровести' (priceSetDocument) = [ACTION (priceSetDocument) NEWSESSION AUTOAPPLY {
+    IF isPostedPriceSetDocument(priceSetDocument) THEN
+    SET isPostedPriceSetDocument(priceSetDocument) <- NULL; } ] (priceSetDocument) TOOLBAR CONFIRM;
+
+statusPriceSetDocument 'Статус' (priceSetDocument) = IF isPostedPriceSetDocument(priceSetDocument)
+                                                      THEN ('Закрыт' AND priceSetDocument IS priceSetDocument)
+                                                      ELSE ('Открыт' AND priceSetDocument IS priceSetDocument);
 
 @metaCodePriceBaseDiscount(basePriceSetDocument, 'Базовая цена');
 @metaCodePriceBaseDiscount(discountPriceSetDocument, 'Цена с уценкой');
@@ -317,8 +333,10 @@ DESIGN priceSetDocument FROM DEFAULT {
 FORM priceBaseChangeDocuments 'Базовые прайсы'
 
     OBJECTS p=basePriceSetDocument
-    PROPERTIES(p) READONLY numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
-    PROPERTIES(p) ADDFORM, EDITFORM, delete
+    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
+                              unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
+                              EDITFORM SHOWIF isDraftPriceSetDocument(p), delete
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -330,6 +348,15 @@ FORM priceBaseChangeDocuments 'Базовые прайсы'
 
     FILTERS inArticlePriceSetDocument(p, a)
 ;
+
+DESIGN priceBaseChangeDocuments FROM DEFAULT {
+
+    PROPERTY (delete(p)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+}
 
 
 //уценки
@@ -421,8 +448,10 @@ DESIGN discountPriceSetDocument FROM DEFAULT {
 FORM discountPriceSetDocuments 'Распродажи'
 
     OBJECTS d=discountPriceSetDocument
-    PROPERTIES(d) READONLY sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    PROPERTIES(d) READONLY statusPriceSetDocument, sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(d) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(d),
+                              unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(d), ADDFORM,
+                              EDITFORM SHOWIF isDraftPriceSetDocument(d), delete
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -431,6 +460,14 @@ FORM discountPriceSetDocuments 'Распродажи'
 
     FILTERS inArticlePriceSetDocument(d, a)
 ;
+
+DESIGN discountPriceSetDocuments FROM DEFAULT {
+
+    PROPERTY (delete(d)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+}
 
 
 // розничный прайс по фрахту
