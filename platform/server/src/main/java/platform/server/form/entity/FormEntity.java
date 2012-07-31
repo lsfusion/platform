@@ -11,15 +11,11 @@ import platform.interop.PropertyEditType;
 import platform.interop.navigator.FormShowType;
 import platform.server.Context;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.ManualLazy;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ComponentView;
 import platform.server.form.view.DefaultFormView;
@@ -37,15 +33,12 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.PropertyChange;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -541,7 +534,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         property.setSID(sidToSet);
     }
 
-    protected <P extends PropertyInterface> void removePropertyDraw(PropertyDrawEntity<P> property) {
+    public <P extends PropertyInterface> void removePropertyDraw(PropertyDrawEntity<P> property) {
         propertyDraws.remove(property);
     }
 

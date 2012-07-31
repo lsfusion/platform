@@ -15,7 +15,6 @@ grammar LsfLogics;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
-	import platform.server.form.entity.FormEntity;
 	import platform.server.form.entity.ActionPropertyObjectEntity;
 	import platform.server.form.navigator.NavigatorElement;
 	import platform.server.form.view.ComponentView;
@@ -30,7 +29,6 @@ grammar LsfLogics;
 	import platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 	import platform.server.logics.scripted.ScriptingLogicsModule.GroupingType;
 	import platform.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
-	import platform.server.mail.EmailActionProperty;
 	import platform.server.mail.EmailActionProperty.FormStorageType;
 	import platform.server.mail.AttachmentFormat;
 	import javax.mail.Message;
@@ -508,6 +506,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
+		|	'BEFORE' pdraw=ID { $options.setNeighbourPropertyName($pdraw.text); $options.setNeighbourType(true); }
+		|	'AFTER'  pdraw=ID { $options.setNeighbourPropertyName($pdraw.text); $options.setNeighbourType(false); }
 		|	event = formPropertyEvent { $options.addEvent($event.type, $event.action); }
 		)*
 	;

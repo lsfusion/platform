@@ -2,10 +2,7 @@ package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
-import platform.server.form.entity.ActionPropertyObjectEntity;
-import platform.server.form.entity.CalcPropertyObjectEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +24,8 @@ public class FormPropertyOptions {
     private GroupObjectEntity toDraw;
     private List<String> eventTypes;
     private List<ActionPropertyObjectEntity> events;
+    private String neighbourPropertyName;
+    private Boolean isRightNeighbour;
 
     public PropertyEditType getEditType() {
         return editType;
@@ -149,7 +148,23 @@ public class FormPropertyOptions {
         this.events = events;
    }
 
-   public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
+    public String getNeighbourPropertyName() {
+        return neighbourPropertyName;
+    }
+
+    public void setNeighbourPropertyName(String neighbourPropertyName) {
+        this.neighbourPropertyName = neighbourPropertyName;
+    }
+
+    public Boolean isRightNeighbour() {
+        return isRightNeighbour;
+    }
+
+    public void setNeighbourType(Boolean isRightNeighbour) {
+        this.isRightNeighbour = isRightNeighbour;
+    }
+
+    public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
         merged.setEditType(nvl(overrides.getEditType(), editType));
@@ -166,6 +181,8 @@ public class FormPropertyOptions {
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEvents(nvl(overrides.getEvents(), events));
         merged.setEventTypes(nvl(overrides.getEventTypes(), eventTypes));
+        merged.setNeighbourPropertyName(nvl(overrides.getNeighbourPropertyName(), neighbourPropertyName));
+        merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
         return merged;
     }
 }

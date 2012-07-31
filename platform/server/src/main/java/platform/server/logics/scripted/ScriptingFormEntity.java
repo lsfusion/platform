@@ -248,7 +248,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void applyPropertyOptions(PropertyDrawEntity property, FormPropertyOptions options) {
+    public void applyPropertyOptions(PropertyDrawEntity property, FormPropertyOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (options.getEditType() != null) {
             property.setEditType(options.getEditType());
         }
@@ -301,6 +301,22 @@ public class ScriptingFormEntity {
             for (int i = 0; i < eventTypes.size(); i++) {
                 property.setEditAction(eventTypes.get(i), options.getEvents().get(i));
             }
+        }
+
+        if (options.getNeighbourPropertyName() != null) {
+            PropertyDrawEntity neighbour = getPropertyDrawByName(options.getNeighbourPropertyName());
+            if (neighbour.getToDraw(form) != property.getToDraw(form)) {
+                LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyName(), property.getSID());
+            }
+            form.removePropertyDraw(property);
+            int neighbourIndex = form.propertyDraws.indexOf(neighbour);
+            if (!options.isRightNeighbour()) {
+                ++neighbourIndex;
+            }
+            if (neighbour.shouldBeLast) {   // поддерживаем shouldBeLast на всякий случай
+                property.shouldBeLast = true;
+            }
+            form.propertyDraws.add(neighbourIndex, property);
         }
     }
 
