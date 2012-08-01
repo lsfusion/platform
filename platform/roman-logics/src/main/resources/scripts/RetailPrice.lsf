@@ -403,10 +403,16 @@ FORM discountPriceSetDocument 'Распродажа'
                       priceDataDiscountPriceSetDocumentArticle//, priceRetailPriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(d, a)
-     FILTERGROUP filtersCategory
+
+    FILTERGROUP filtersBalance
+        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
+
+    FILTERGROUP filtersCategory
         FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
+
     FILTERGROUP filtersBrand
         FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
+
     EDIT discountPriceSetDocument OBJECT d
 ;
 
