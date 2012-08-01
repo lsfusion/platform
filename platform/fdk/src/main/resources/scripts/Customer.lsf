@@ -30,9 +30,9 @@ FORM contractSkuCustomer 'Договор с опт. покупателем'
     PROPERTIES(c) nameCustomerContractSkuCustomer, nameCompanyContractSkuCustomer,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku, dialogTypeContractSku,
-                  nameFormContractSku, dialogFormContractSku,
-                  delayContractSku, dialogDelayContractSku
+                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
+                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
+                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
 
     EDIT contractSkuCustomer OBJECT c
 ;
@@ -50,9 +50,12 @@ FORM contractsSkuCustomer 'Договора'
 
 FORM customer 'Оптовый покупатель'
     OBJECTS cu=customer FIXED PANEL
-    PROPERTIES(cu) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
-                   dialogAddressLegalEntity, postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity,
-                   dialogManagerLegalEntity, accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
+    PROPERTIES(cu) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
+                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(cu),
+                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(cu),
+                   managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(cu),
+                   accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(cu),
+                   phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(cu),
                    UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 
     OBJECTS a=account

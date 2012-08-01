@@ -115,9 +115,9 @@ FORM contractSku 'Договор на поставку товаров'
     PROPERTIES(c) namePartyAContract, namePartyBContract,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku, dialogTypeContractSku,
-                  nameFormContractSku, dialogFormContractSku,
-                  delayContractSku, dialogDelayContractSku
+                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
+                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
+                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
 
     EDIT contract OBJECT c
 ;
@@ -142,9 +142,9 @@ FORM contractSkuCompany 'Договор'
     PROPERTIES(c) nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku, dialogTypeContractSku,
-                  nameFormContractSku, dialogFormContractSku,
-                  delayContractSku, dialogDelayContractSku
+                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
+                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
+                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
 
     EDIT contractSkuCompany OBJECT c
 ;

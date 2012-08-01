@@ -132,9 +132,12 @@ TABLE company (company);
 
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
-    PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity, addressLegalEntity,
-                   dialogAddressLegalEntity, postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity,
-                   dialogManagerLegalEntity, accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
+    PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
+                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
+                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(co),
+                   managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(co),
+                   accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(co),
+                   phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(co),
                    UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
 
     OBJECTS a=account

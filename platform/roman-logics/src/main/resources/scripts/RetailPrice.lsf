@@ -85,8 +85,6 @@ markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRet
 uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRetail(coefficientRetail)
                                                         WHERE coefficientRetail IS coefficientRetail;
 
-sidPriceSetDocument 'Номер' = DATA STRING[10] (priceSetDocument) IN baseGroup;
-
 timePriceSetDocument 'Время документа' = DATA TIME (priceSetDocument);
 timePriceSetDocument (priceSetDocument) <- currentTime() WHEN ASSIGNED(priceSetDocument AS priceSetDocument);
 
@@ -111,7 +109,7 @@ isPriceSetFreight 'Статус' (freight) = IF isPriceSetDocumentFreight(freigh
                                      THEN 'Не расценен' AND freight IS freight
                                      ELSE 'Расценен' AND freight IS freight MINCHARWIDTH 11;
 
-backgroundPriceSetDocument 'Цвет' (freight) = RGB(255, 128, 128) IF isPriceSetDocumentFreight(freight);
+backgroundPriceSetDocument 'Цвет' (freight) = RGB(212,255,212) IF isPriceSetDocumentFreight(freight);
 
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
@@ -449,7 +447,7 @@ DESIGN discountPriceSetDocument FROM DEFAULT {
 FORM discountPriceSetDocuments 'Распродажи'
 
     OBJECTS d=discountPriceSetDocument
-    PROPERTIES(d) READONLY statusPriceSetDocument, sidPriceSetDocument, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(d) READONLY statusPriceSetDocument, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(d) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(d),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(d), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(d), delete SHOWIF isDraftPriceSetDocument(d)

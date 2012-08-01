@@ -72,15 +72,15 @@ FORM saleInBatchDetailDialog 'Партия'
 ;
 
 dialogBatchReturnOutDetail 'Партия' (returnOutDetail) = ACTION (returnOutDetail) {
-    FORM saleInBatchDetailDialog  MODAL;
+    FORM saleInBatchDetailDialog OBJECTS rd = returnOutDetail MODAL;
     IF formResult() == formResult.ok THEN {
         SET saleInBatchDetailReturnOutDetail(returnOutDetail) <- chosenObject('bt');
     }
-}SHORTCUT descriptionBatchReturnOutDetail ;
+}
 
 
 EXTEND FORM returnOut
-    PROPERTIES(d) descriptionBatchReturnOutDetail, dialogBatchReturnOutDetail, currentBalanceReturnOutDetail READONLY
+    PROPERTIES(d) descriptionBatchReturnOutDetail ON CHANGE EXEC dialogBatchReturnOutDetail(d), currentBalanceReturnOutDetail READONLY
 ;
 
 EXTEND FORM returnOuts

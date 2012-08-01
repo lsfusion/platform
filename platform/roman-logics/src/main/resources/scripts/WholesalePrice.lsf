@@ -34,7 +34,7 @@ isPriceSetDeclaration 'Статус' (declaration) = IF isWholesalePriceSetDocum
                                      THEN 'Не расцененная' AND declaration IS declaration
                                      ELSE 'Расцененная' AND declaration IS declaration MINCHARWIDTH 14;
 
-backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(255, 128, 128) IF isWholesalePriceSetDocumentDeclaration(declaration);
+backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(212,255,212) IF isWholesalePriceSetDocumentDeclaration(declaration);
 
 inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
@@ -191,7 +191,7 @@ toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWS
             EXEC apply();
         };
     };
-} TOOLBAR CONFIRM;
+} TOOLBAR;
 
 FORM priceDeclaration 'Расценка деклараций'
     OBJECTS d = registeredDeclaration

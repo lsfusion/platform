@@ -50,7 +50,7 @@ CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku);
-nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
+nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
 
 UOMSku (sku) = ABSTRACT UOM (sku);
 shortNameUOMSku (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
