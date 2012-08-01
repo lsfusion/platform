@@ -55,7 +55,7 @@ initWhenNumeratorObject(object) += ASSIGNED(object IS innerOrder);
 FORM innerOrder 'Внутренний заказ'
     OBJECTS o = innerOrder FIXED PANEL
 
-    PROPERTIES (o) numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+    PROPERTIES (o) nameNumeratorObject, numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
         nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
         countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
 
@@ -80,6 +80,7 @@ DESIGN innerOrder FROM DEFAULT {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY (nameStockInnerOrder);
                         ADD PROPERTY (nameDestinationStockInnerOrder);
+                        ADD PROPERTY (nameNumeratorObject);
                         ADD PROPERTY (numberObject);
                         ADD PROPERTY (seriesObject);
                         ADD PROPERTY (dateInnerOrder);
