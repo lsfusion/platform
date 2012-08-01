@@ -1,0 +1,77 @@
+MODULE PriceInterval;
+
+REQUIRE System, Utils;
+
+CLASS priceInterval 'Диапазон цен';
+
+fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
+toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
+modifierPriceInterval 'Округлённая цена интервала' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
+
+denominatorPrice 'Делитель (округление цен)' =  DATA NUMERIC[14,3]();
+minPrice 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3]();
+priceRound 'До скольки знаков округлять розничную цену' =  DATA INTEGER ();
+
+integerPrice 'Целое' (price) = divideInteger((price AS NUMERIC[14,3]), denominatorPrice());
+fractionPrice 'Дробное' (price) = (price AS NUMERIC[14,3]) - integerPrice(price)* denominatorPrice();
+
+inIntervalPrice(price, priceInterval) = fractionPrice(price) >= fromPriceInterval(priceInterval)
+    AND fractionPrice(price) <= toPriceInterval(priceInterval);
+
+priceIntervalPrice (price) = GROUP MAX priceInterval IF inIntervalPrice(price, priceInterval) BY price AS NUMERIC[14,3];
+
+roundPrice 'Розничная цена с округлением' (price) = IF (price AS NUMERIC[14,3]) > minPrice() AND priceIntervalPrice(price)
+    THEN integerPrice(price)*denominatorPrice() + modifierPriceInterval(priceIntervalPrice(price))
+    ELSE round(price AS NUMERIC[14,3], priceRound());
+
+
+FORM priceIntervals 'Округления розничных цен'
+
+    OBJECTS p=priceInterval
+    PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval
+    PROPERTIES(p) ADDOBJ, delete
+
+    OBJECTS nu=NUMERIC[14,3] FIXED PANEL
+    PROPERTIES val = OBJVALUE(nu), roundPrice(nu) READONLY
+
+    PROPERTIES()  denominatorPrice, minPrice, priceRound
+;
+
+DESIGN priceIntervals FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+
+        NEW centerContainer {
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                childConstraints = TO THE BOTTOM;
+                type = TABBED;
+                fillHorizontal = 2.5;
+                ADD p.box;
+                ADD nu.box {
+                    title = 'Форма для тестирования округления цены';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (val) {
+                        caption = 'Введите число для примера';
+                        panelLabelAbove = TRUE;
+                        font = 'Tahoma bold 36';
+                    }
+                    ADD PROPERTY (roundPrice(nu)) {
+                        caption = 'Результат';
+                        panelLabelAbove = TRUE;
+                        font = 'Tahoma bold 36';
+                    }
+                }
+            }
+            NEW row2 {
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 1;
+                ADD PROPERTY (denominatorPrice) { panelLabelAbove = TRUE; font = 'Tahoma bold 72'; }
+                ADD PROPERTY (minPrice) { panelLabelAbove = TRUE; font = 'Tahoma bold 72'; }
+                ADD PROPERTY (priceRound) { panelLabelAbove = TRUE; font = 'Tahoma bold 72'; }
+            }
+        }
+
+        ADD functions.box;
+    }
+}

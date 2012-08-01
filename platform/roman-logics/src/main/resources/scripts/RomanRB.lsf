@@ -25,6 +25,7 @@ REQUIRE System,
         UserPriceChange,
         WHtoLegalEntity,
         InnerOrder,
+        PriceInterval,
         Customer,
         RomanLogicsModule;
 
@@ -127,6 +128,7 @@ NAVIGATOR {
                 ADD coefficientRetails;
                 ADD priceBaseChangeDocuments;
                 ADD freights;
+                ADD priceIntervals;
             }
 
             NEW wholesalePrice 'Оптовое ценообразование' {

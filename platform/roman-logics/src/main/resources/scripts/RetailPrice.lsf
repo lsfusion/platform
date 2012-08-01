@@ -4,6 +4,7 @@ REQUIRE System,
         MasterData,
         POS,
         RomanStock,
+        PriceInterval,
         RomanLogicsModule;
 
 PRIORITY MasterData, RomanLogicsModule;
@@ -65,11 +66,6 @@ TABLE basePriceSetDocument (basePriceSetDocument);
 TABLE discountPriceSetDocument (discountPriceSetDocument);
 
 CLASS coefficientRetail 'Надбавка';
-
-//CLASS diapasonPrices 'Диапазон цен';
-//priceFromDiapasonPrices 'от' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
-//priceToDiapasonPrices 'до' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
-//priceConversionDiapasonPrices 'Округлённая цена' = DATA NUMERIC[14,3](diapasonPrices) IN baseGroup;
 
 TABLE priceSetDocumentArticle(priceSetDocument, article);
 
@@ -171,8 +167,8 @@ priceOutRatePriceSetDocumentArticle 'С надбавкой (руб.)' (basePrice
 
 
 priceRetailPriceSetDocumentArticle 'Цена розничная' (basePriceSetDocument, article) =
-           IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article) ELSE
-             IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN RRPRatePriceSetDocumentArticle(basePriceSetDocument, article) ELSE
+           IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN roundPrice(priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) ELSE
+             IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN roundPrice(RRPRatePriceSetDocumentArticle(basePriceSetDocument, article)) ELSE
                 PREV(priceBBasePriceSetDocumentArticle(basePriceSetDocument, article)) IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous;
 
 priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceRetailPriceSetDocumentArticle(basePriceSetDocument, article)

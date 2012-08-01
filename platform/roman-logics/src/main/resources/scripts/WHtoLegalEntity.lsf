@@ -218,10 +218,34 @@ noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentD
 
 @defineDocumentFormTransferOutConsignment(invoiceWH, t);
 
+currentBalanceBatchInvoiceWHOutDetail 'Текущий остаток' (batchA, invoiceWHOutDetail) = currentBalanceBatchStock(batchA, warehouseInvoiceWHOutDetail(invoiceWHOutDetail));
+currentBalanceInvoiceWHOutDetail 'Текущий остаток' (invoiceWHOutDetail) = currentBalanceBatchInvoiceWHOutDetail(batchAInvoiceWHOutDetail(invoiceWHOutDetail), invoiceWHOutDetail);
+
+FORM batchADialogForm 'Партия'
+
+    OBJECTS d = invoiceWHOutDetail FIXED PANEL
+    OBJECTS bt = batchA
+    PROPERTIES (bt) READONLY nameSkuBatch, descriptionBatch, nameOwnerBatchA, importerPriceBatchA, supplierPriceBatchA,
+                   numberSupplierVATBatchA, valueSupplierVATBatchA
+    PROPERTIES(bt, d) READONLY currentBalanceBatchInvoiceWHOutDetail
+
+    FILTERGROUP balanceFilters
+            FILTER 'Товары с остатком' 'F10' currentBalanceBatchInvoiceWHOutDetail(bt, d) != 0 DEFAULT
+
+    FILTERS skuBatch(bt) == skuInvoiceWHOutDetail(d)
+;
+
+dialogBatchAInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = ACTION (invoiceWHOutDetail) {
+    FORM batchADialogForm OBJECTS d = invoiceWHOutDetail MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET batchAInvoiceWHOutDetail(invoiceWHOutDetail) <- chosenObject('bt');
+    }
+}
+
 EXTEND FORM invoiceWHOut
     PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, notChangeBalanceInvoiceWHOut
-    PROPERTIES(d) descriptionBatchInvoiceWHOutDetail, supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
-                  valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail
+    PROPERTIES(d) descriptionBatchInvoiceWHOutDetail ON CHANGE EXEC dialogBatchAInvoiceWHOutDetail(d), supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
+                  valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail, currentBalanceInvoiceWHOutDetail
 ;
 
 EXTEND FORM invoiceWHOuts
@@ -229,4 +253,3 @@ EXTEND FORM invoiceWHOuts
     PROPERTIES(d) READONLY supplierPriceInvoiceWHOutDetail
 ;
 
-// todo: нужно будет добавить в диалоговую форму партии остатки по партии для склада, с которого планируется отргузка

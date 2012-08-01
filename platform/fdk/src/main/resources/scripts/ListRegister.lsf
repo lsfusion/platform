@@ -198,7 +198,7 @@ FORM listRegister 'Реестр цен (поставка)' PRINT
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister, invoiceSumListRegisterDetailListRegister, markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
                     nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
-                    nameHeadManListRegister
+                    nameHeadManListRegister, notPassToBookkeepingListRegister
 
     OBJECTS d=listRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
@@ -218,7 +218,7 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
                     nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
-                    nameHeadManListRegister
+                    nameHeadManListRegister, notPassToBookkeepingListRegister
 
     OBJECTS d=inputListRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
@@ -240,7 +240,8 @@ FORM inputListRegisters 'Реестр цен (приход)'
                     shipperListRegister, consigneeListRegister,
                     quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
-                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
+                    notPassToBookkeepingListRegister
     PROPERTIES (l)  printInputListRegister FORCE PANEL
 
 
