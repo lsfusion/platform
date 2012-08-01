@@ -43,6 +43,7 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 
 freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
+destinationCStoWHDetail (CStoWHDetail) = destinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
 nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
 
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));

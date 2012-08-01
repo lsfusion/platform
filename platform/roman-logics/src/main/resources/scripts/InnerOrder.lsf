@@ -73,7 +73,7 @@ DESIGN innerOrder FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
             o.box {
-                childConstraints = TO THE RIGHT;
+//                childConstraints = TO THE RIGHT;
                     NEW columnHeaderPrm {
                     childConstraints = TO THE BOTTOM;
                     ADD o.documentHeaderGroup {
@@ -87,12 +87,10 @@ DESIGN innerOrder FROM DEFAULT {
                         ADD PROPERTY (timeInnerOrder);
                     }
                     ADD o.documentPrmGroup;
-                }
-                NEW columnHeaderSum {
                     ADD o.documentSumGroup {
                         childConstraints = TO THE BOTTOM;
                     }
-            }
+                }
         }
     }
 }

@@ -93,6 +93,9 @@ companyStock (stock) += companyDepartmentStore(stock);
 nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
 UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
 
+primaryDepartmentStoreStore 'Основной отдел' (store) =
+    GROUP MIN departmentStore BY storeDepartmentStore(departmentStore);
+
 addressDepartmentStore 'Адрес' (departmentStore) = addressStore(storeDepartmentStore(departmentStore));
 
 @defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, publicGroup);

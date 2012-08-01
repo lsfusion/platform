@@ -9,6 +9,7 @@ REQUIRE System,
         RomanDocument,
         Consignment,
         CStoWH,
+        InnerOrder,
         Barcode,
         MasterData,
         RomanLogicsModule;
@@ -46,6 +47,9 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 costWHfromCSIBatch(WHfromCSI, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY WHfromCSIWHfromCSIDetail(ledger), batch;
 
 sumWHfromCSIDetail 'Сумма' (detail) = sumCStoWHDetail(CStoWHDetailWHfromCSIDetail(detail)) PERSISTENT;
+
+destinationWHfromCSIDetail(WHfromCSIDetail) = destinationCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail));
+nameDestinationWHfromCSIDetail 'Пункт назначения' (WHfromCSIDetail) = nameDestinationCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail));
 
 @implementSkuLedger(WHfromCSI, sku, warehouse);
 quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
@@ -102,6 +106,44 @@ currentFreightUnit 'Тек. короб (ИД)' (WHfromCSR) = SESSION DATA freigh
 barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromCSR) = barcode(currentFreightUnit(WHfromCSR));
 
 withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
+
+destinationWHfromCSRDetail (WHfromCSRDetail) = destinationFreightBox(freightUnitWHfromCSRDetail(WHfromCSRDetail));
+nameDestinationWHfromCSRDetail 'Пункт назначения' (WHfromCSRDetail) = nameDestinationFreightBox(freightUnitWHfromCSRDetail(WHfromCSRDetail));
+
+quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+                                               BY destinationWHfromCSRDetail(WHfromCSRDetail),
+                                                  WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+innerOrderStoreWHfromCSI (store, WHfromCSI) = DATA innerOrder (RomanLogicsModule.store, WHfromCSI);
+
+createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' = [ACTION (store, WHfromCSI) NEWSESSION {
+
+    ADDOBJ innerOrder;
+    FOR i == addedObject() DO {
+        SET innerOrderStoreWHfromCSI(store, WHfromCSI) <- i AS innerOrder;
+        SET stockInnerOrder(i) <- warehouseWHfromCSI(WHfromCSI);
+        SET destinationStockInnerOrder(i) <- primaryDepartmentStoreStore(store AS RomanLogicsModule.store);
+        ADDOBJ orderPickingPosted;
+        FOR p == addedObject() DO {
+            SET innerOrderOrderPicking (p) <- i AS innerOrder;
+            FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI DO {
+                ADDOBJ innerOrderDetail;
+                FOR d == addedObject() DO {
+                    SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                    SET innerOrderInnerOrderDetail(d) <- i AS innerOrder;
+                    SET quantityInnerOrderDetail(d) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                    ADDOBJ orderPickingDetail;
+                    FOR pd == addedObject() DO {
+                        SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                        SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
+                        SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                    }
+                }
+            }
+        }
+    }
+    EXEC apply();
+}] (store, WHfromCSI) AND NOT innerOrderStoreWHfromCSI(store, WHfromCSI);
 
 FORM addBarcodeWHfromCSRFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
 
@@ -344,7 +386,8 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     PROPERTIES(d) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
                            nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail, sidSizeWHfromCSRDetail,
-                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail
+                           sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
+                           nameDestinationWHfromCSRDetail
 
     PROPERTIES(d) quantityWHfromCSRDetail
 
@@ -572,7 +615,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
     PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
                             nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail, sidSizeWHfromCSIDetail,
                             sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, barcodeFreightUnitWHfromCSIDetail,
-                            quantityWHfromCSIDetail, nameUnitOfMeasureArticleSkuWHfromCSIDetail
+                            nameDestinationWHfromCSIDetail, quantityWHfromCSIDetail, nameUnitOfMeasureArticleSkuWHfromCSIDetail
 
     FILTERS WHfromCSIWHfromCSIDetail(di) == w
 
@@ -580,7 +623,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
     PROPERTIES(dr) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
                             nameBrandWHfromCSRDetail, sidArticleWHfromCSRDetail, sidSizeWHfromCSRDetail,
                             sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
-                            quantityWHfromCSRDetail, nameUnitOfMeasureArticleSkuWHfromCSRDetail
+                            nameDestinationWHfromCSRDetail, quantityWHfromCSRDetail, nameUnitOfMeasureArticleSkuWHfromCSRDetail
 
     FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
 
@@ -591,6 +634,12 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                              signedQuantityWHfromCSDDetail, nameUnitOfMeasureArticleSkuWHfromCSDDetail
 
     FILTERS WHfromCSIWHfromCSDDetail(df)==w
+
+    OBJECTS s = RomanLogicsModule.store
+    PROPERTIES(s) READONLY name
+    PROPERTIES createInnerOrderStoreWHfromCSI(s, w)
+
+    FILTERS quantitySkuStoreWHfromCSI(s, w) > 0
 
 ;
 
@@ -622,6 +671,10 @@ DESIGN WHfromCSIs FROM DEFAULT {
 
             ADD df.box {
                  title = 'Акт расхождений';
+            }
+
+            ADD s.box{
+                title = 'Внутренние заказы';
             }
         }
     }
