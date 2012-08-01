@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableObject implements PackInterface<T> {
+public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableObject {
     
     public final KeyEqual keyEqual;
     public final Where where;

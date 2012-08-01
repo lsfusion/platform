@@ -15,6 +15,7 @@ import platform.server.data.expr.PullExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.query.innerjoins.GroupJoinsWhere;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.*;
 import platform.server.data.type.Type;
@@ -308,7 +309,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public Collection<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive, List<Expr> orderTop) {
-        Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = where.getWhereJoins(tryExclusive, getKeys(), orderTop);
+        Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = where.getPackWhereJoins(tryExclusive, getKeys(), orderTop);
         isExclusive.set(whereJoinsExcl.second);
         return whereJoinsExcl.first;
     }

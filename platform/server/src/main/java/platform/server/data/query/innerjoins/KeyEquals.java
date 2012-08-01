@@ -150,17 +150,23 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
     }
 
     //по аналогии с GroupStatType, сливает одинаковые
-    private Collection<GroupJoinsWhere> merge(Collection<GroupJoinsWhere> whereJoins, GroupJoinsWhere join) {
+    public static Collection<GroupJoinsWhere> merge(Collection<GroupJoinsWhere> whereJoins, GroupJoinsWhere join) {
+        return merge(whereJoins, Collections.singleton(join));
+    }
+
+    public static Collection<GroupJoinsWhere> merge(Collection<GroupJoinsWhere> whereJoins, Collection<GroupJoinsWhere> joins) {
         Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>(whereJoins);
-        for(Iterator<GroupJoinsWhere> i=result.iterator();i.hasNext();) {
-            GroupJoinsWhere where = i.next();
-            if(where.keyEqual.equals(join.keyEqual) && where.joins.equals(join.joins)) {
-                i.remove();
-                join = new GroupJoinsWhere(join.keyEqual, join.joins, join.joins.orUpWheres(join.upWheres, where.upWheres), join.where.or(where.where));
-                break;
+        for(GroupJoinsWhere join : joins) {
+            for(Iterator<GroupJoinsWhere> i=result.iterator();i.hasNext();) {
+                GroupJoinsWhere where = i.next();
+                if(where.keyEqual.equals(join.keyEqual) && where.joins.equals(join.joins)) {
+                    i.remove();
+                    join = new GroupJoinsWhere(join.keyEqual, join.joins, join.joins.orUpWheres(join.upWheres, where.upWheres), join.where.or(where.where));
+                    break;
+                }
             }
+            result.add(join);
         }
-        result.add(join);
         return result;
     }
 

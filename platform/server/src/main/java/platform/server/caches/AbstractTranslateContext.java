@@ -139,7 +139,14 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
     protected long calculateComplexity(boolean outer) {
         throw new RuntimeException("not supported yet");
     }
-    
+
+    public static <K, T extends PackInterface<T>> Map<K, T> pack(Map<K, T> map) {
+        Map<K, T> result = new HashMap<K, T>();
+        for(Map.Entry<K, T> entry : map.entrySet())
+            result.put(entry.getKey(), entry.getValue().pack());
+        return result;
+    }
+
     public static <T extends PackInterface<T>> List<T> pack(List<T> exprs) {
         List<T> result = new ArrayList<T>();
         for(T expr : exprs)

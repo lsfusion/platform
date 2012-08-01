@@ -82,6 +82,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
+    <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop);
     <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop);
     <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
     <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> keys);

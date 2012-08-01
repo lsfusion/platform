@@ -179,8 +179,8 @@ public class CompiledQuery<K,V> {
         boolean useFJ = syntax.useFJ();
         noExclusive = noExclusive || Settings.instance.isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<Boolean>();
-        Collection<GroupJoinsWhere> queryJoins = GroupJoinsWhere.pack(query.getWhereJoins(!useFJ && !noExclusive, unionAll, 
-                                top > 0 && syntax.orderTopTrouble() ? mapList(orders.keyList(), query.properties) : new ArrayList<Expr>()));
+        Collection<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
+                                top > 0 && syntax.orderTopTrouble() ? mapList(orders.keyList(), query.properties) : new ArrayList<Expr>());
         union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.instance.isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             Map<V, Type> castTypes = new HashMap<V, Type>();

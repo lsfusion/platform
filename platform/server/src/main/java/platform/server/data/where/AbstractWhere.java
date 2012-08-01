@@ -213,6 +213,47 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
     }
 
+    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
+        Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, orderTop);
+        Collection<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;
+        boolean exclusive = whereJoinsExcl.second;
+
+        if(whereJoins.size()==1) // нет смысла упаковывать если один whereJoins
+            return whereJoinsExcl;
+        else {
+            Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
+
+            List<Where> recPacks = new ArrayList<Where>();
+            if(!exclusive) recPacks.add(Where.FALSE);
+            for(GroupJoinsWhere innerJoin : whereJoins) {
+                if(innerJoin.isComplex())
+                    result.add(innerJoin);
+                else { // не будем запускать рекурсию
+                    Where packWhere = innerJoin.where.pack();
+                    if(BaseUtils.hashEquals(innerJoin.where, packWhere))
+                        result.add(innerJoin);
+                    else {
+                        Where fullPackWhere = innerJoin.keyEqual.getWhere().and(packWhere);
+                        if(exclusive)
+                            recPacks.add(fullPackWhere); // если не exclusive
+                        else
+                            recPacks.set(0, recPacks.get(0).or(fullPackWhere));
+                    }
+                }
+            }
+            
+            if(result.size()==whereJoins.size())
+                return whereJoinsExcl;
+
+            for(Where recPack : recPacks) {
+                Pair<Collection<GroupJoinsWhere>, Boolean> recWhereJoins = recPack.getPackWhereJoins(exclusive, keepStat, orderTop);
+                exclusive = exclusive && recWhereJoins.second;
+                result = KeyEquals.merge(result, recWhereJoins.first);
+            }
+            return new Pair<Collection<GroupJoinsWhere>, Boolean>(result, exclusive);
+        }
+    }
+
     // 2-й параметр чисто для оптимизации пока
     public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
         return getKeyEquals().getWhereJoins(tryExclusive, keepStat, orderTop);

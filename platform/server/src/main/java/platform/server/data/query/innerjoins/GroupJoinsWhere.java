@@ -3,6 +3,7 @@ package platform.server.data.query.innerjoins;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.Settings;
+import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.PackInterface;
 import platform.server.data.expr.BaseExpr;
@@ -33,24 +34,6 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
         this.upWheres = upWheres;
     }
 
-    public static Collection<GroupJoinsWhere> pack(Collection<GroupJoinsWhere> whereJoins) {
-        if(whereJoins.size()==1) // нет смысла упаковывать если один whereJoins
-            return whereJoins;
-        else {
-            Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
-            for(GroupJoinsWhere innerJoin : whereJoins) {
-                if(innerJoin.isComplex())
-                    result.add(innerJoin);
-                else {
-                    GroupJoinsWhere packJoin = innerJoin.pack();
-                    if(!packJoin.where.isFalse())
-                        result.add(packJoin);
-                }
-            }
-            return result;
-        }
-    }
-
     public static long getComplexity(Collection<GroupJoinsWhere> whereJoins, boolean outer) {
         int complexity = 0;
         for(GroupJoinsWhere whereJoin : whereJoins)
@@ -64,9 +47,6 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 
     public boolean isComplex() {
         return getComplexity(false) > Settings.instance.getLimitWhereJoinPack();
-    }
-    public GroupJoinsWhere pack() { // upWheres особого смысла паковать нет, все равно
-        return new GroupJoinsWhere(keyEqual, joins, where.pack(), upWheres);
     }
 
     @Override

@@ -390,8 +390,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         Set<CustomClass> addClasses = new HashSet<CustomClass>();
         Set<CustomClass> removeClasses = new HashSet<CustomClass>();
-        ConcreteObjectClass prevClass = (ConcreteObjectClass) getCurrentClass(change);
-        toClass.getDiffSet(prevClass,addClasses,removeClasses);
+        toClass.getDiffSet((ConcreteObjectClass) getCurrentClass(change),addClasses,removeClasses);
 
         assert Collections.disjoint(addClasses,removeClasses);
 
