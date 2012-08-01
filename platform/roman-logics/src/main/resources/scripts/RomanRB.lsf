@@ -122,6 +122,7 @@ NAVIGATOR {
 
     prices {
         NEW pricesDocument 'Документы' {
+            ADD priceSetDocuments;
             NEW retailPriceBase 'Розничное ценообразование'{
                 ADD coefficientRetails;
                 ADD priceBaseChangeDocuments;
