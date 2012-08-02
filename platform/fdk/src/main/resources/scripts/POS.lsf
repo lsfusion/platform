@@ -287,7 +287,7 @@ discountSumReceiptDetailZReport 'Сумма скидок Z-отчета' (zRepor
 discountSumReceiptZReport 'Сумма скидок по чекам Z-отчета' (zReport) = GROUP SUM discountSumReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
 discountSumZReport 'Сумма скидок Z-отчета' (zReport) = discountSumReceiptDetailZReport(zReport) (+) discountSumReceiptZReport(zReport);
 
-@implementAccountDocumentLedger(zReport);
+@implementAccountDocumentLedger(zReport, departmentStore);
 sumOutAccountDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;

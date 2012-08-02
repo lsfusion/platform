@@ -14,6 +14,7 @@ stockGroupStock (stock) = ABSTRACT stockGroup (stock);
 
 companyStock (stock) = ABSTRACT company (stock);
 nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
+UNPStock 'УНП' (stock) = UNPLegalEntity(companyStock(stock));
 
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 

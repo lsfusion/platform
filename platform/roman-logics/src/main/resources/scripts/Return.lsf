@@ -143,7 +143,7 @@ noteConsignmentDetail (consignmentDetail) += noteReturnOutDetail(consignmentDeta
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS returnIn 'Получение товаров по накладным' : historyObject;
+CLASS returnIn 'Получение товаров по накладным' : historyObject, incAccountDocumentLedger;
 CLASS returnInDetail 'Строка получения товаров по накладным' : inLIFOSkuLedger;
 
 @defineDocumentTransferIn(return, 'Получение товаров по накладным', sku, stock);
@@ -224,19 +224,19 @@ skipASkuLedger (ledger) += ledger IS returnDiffSDetail;
 // расход
 dateTimeAccountDocumentLedger (ledger) += dateTimeReturnOut(ledger);
 isPostedAccountDocumentLedger (ledger) += isPostedReturnOut(ledger);
-departmentStoreAccountDocumentLedger (ledger) += stockReturnOut(ledger) IF stockReturnOut (ledger) IS departmentStore;
+stockAccountDocumentLedger (ledger) += stockReturnOut(ledger);
 descriptionAccountDocumentLedger (ledger) += descriptionReturnOut(ledger);
 
 sumOutAccountDocumentLedger (ledger) += accountSumReturnOut(ledger);
 sumItemOutAccountDocumentLedger (ledger) += accountSumReturnOut(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS returnOut;
 
-//// приход    todo: возможно понадобится, если может быть отгрузка с магазина на магазин другого ЮЛ
-//dateTimeAccountDocumentLedger (ledger) += dateTimeReturnIn(ledger);
-//isPostedAccountDocumentLedger (ledger) += isPostedReturnIn(ledger);
-//departmentStoreAccountDocumentLedger (ledger) += stockReturnIn(ledger) IF stockReturnIn (ledger) IS departmentStore;
-//descriptionAccountDocumentLedger (ledger) += descriptionReturnIn(ledger);
-//
-//sumIncAccountDocumentLedger (ledger) += accountSumReturnIn(ledger);
-//sumItemIncAccountDocumentLedger (ledger) += accountSumReturnIn(ledger);
-//sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS returnIn;
+// приход
+dateTimeAccountDocumentLedger (ledger) += dateTimeReturnIn(ledger);
+isPostedAccountDocumentLedger (ledger) += isPostedReturnIn(ledger);
+stockAccountDocumentLedger (ledger) += stockReturnIn(ledger);
+descriptionAccountDocumentLedger (ledger) += descriptionReturnIn(ledger);
+
+sumIncAccountDocumentLedger (ledger) += accountSumReturnIn(ledger);
+sumItemIncAccountDocumentLedger (ledger) += accountSumReturnIn(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS returnIn;

@@ -283,7 +283,6 @@ DESIGN priceBaseSetDocument FROM DEFAULT {
             ADD PROPERTY(datePriceSetDocument);
             ADD PROPERTY(timePriceSetDocument);
             ADD PROPERTY(dateTimeToPriceSetDocument);
-            ADD PROPERTY(toSetPricesPriceSetDocument);
         }
 
         NEW allContainer {
@@ -498,7 +497,7 @@ FORM freights 'Расценка фрахтов'
 
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument, toSetPricesPriceSetDocument
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -556,7 +555,6 @@ DESIGN priceSetDocument FROM DEFAULT {
             ADD PROPERTY(datePriceSetDocument);
             ADD PROPERTY(timePriceSetDocument);
             ADD PROPERTY(dateTimeToPriceSetDocument);
-            ADD PROPERTY(toSetPricesPriceSetDocument);
         }
 
         NEW allContainer {

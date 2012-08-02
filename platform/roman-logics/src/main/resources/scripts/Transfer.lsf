@@ -214,7 +214,7 @@ notPassToBookkeepingListRegister (inputListRegister) += destinationStockTransfer
 // расход
 dateTimeAccountDocumentLedger (ledger) += dateTimeTransferOut(ledger);
 isPostedAccountDocumentLedger (ledger) += isPostedTransferOut(ledger);
-departmentStoreAccountDocumentLedger (ledger) += stockTransferOut(ledger) IF stockTransferOut (ledger) IS departmentStore;
+stockAccountDocumentLedger (ledger) += stockTransferOut(ledger);
 descriptionAccountDocumentLedger (ledger) += descriptionTransferOut(ledger);
 
 sumOutAccountDocumentLedger (ledger) += accountSumTransferOut(ledger);
@@ -224,7 +224,7 @@ sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferOut;
 // приход
 dateTimeAccountDocumentLedger (ledger) += dateTimeTransferIn(ledger);
 isPostedAccountDocumentLedger (ledger) += isPostedTransferIn(ledger);
-departmentStoreAccountDocumentLedger (ledger) += stockTransferIn(ledger) IF stockTransferIn (ledger) IS departmentStore;
+stockAccountDocumentLedger (ledger) += stockTransferIn(ledger);
 descriptionAccountDocumentLedger (ledger) += descriptionTransferIn(ledger);
 
 sumIncAccountDocumentLedger (ledger) += accountSumTransferIn(ledger);

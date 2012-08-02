@@ -17,7 +17,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, consignment;
+CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
 CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
 CLASS saleOutDetail 'Строка продажи товаров по накладным' : outFIFOSkuLedger;
 CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)': consignmentDetail;
@@ -277,20 +277,19 @@ notPassToBookkeepingListRegister (inputListRegister) += isCommissionSaleOut(sale
 
 //---------------------------------------- Товарный отчет ------------------------- //
 
-//// расход  todo: возможно понадобится, если может быть отгрузка с магазина на магазин другого ЮЛ
-//dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger) IF;
-//isPostedAccountDocumentLedger (ledger) += isPostedSaleOut(ledger) IF;
-//departmentStoreAccountDocumentLedger (ledger) += stockSaleOut(ledger) IF stockSaleOut(ledger) IS departmentStore;
-//descriptionAccountDocumentLedger (ledger) += descriptionSaleOut(ledger);
-//
-//sumOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
-//sumItemOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
-//sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleOut;
+dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger);
+isPostedAccountDocumentLedger (ledger) += isPostedSaleOut(ledger);
+stockAccountDocumentLedger (ledger) += stockSaleOut(ledger);
+descriptionAccountDocumentLedger (ledger) += descriptionSaleOut(ledger);
+
+sumOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
+sumItemOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleOut;
 
 // приход
 dateTimeAccountDocumentLedger (ledger) += dateTimeSaleIn(ledger);
 isPostedAccountDocumentLedger (ledger) += isPostedSaleIn(ledger);
-departmentStoreAccountDocumentLedger (ledger) += stockSaleIn(ledger) IF stockSaleIn (ledger) IS departmentStore;
+stockAccountDocumentLedger (ledger) += stockSaleIn(ledger);
 descriptionAccountDocumentLedger (ledger) += descriptionSaleIn(ledger);
 
 sumIncAccountDocumentLedger (ledger) += accountSumSaleIn(ledger);
