@@ -8698,7 +8698,7 @@ fillDatabaseDefaultValues 'Заполнить базу значениями по
 
 FORM parameters 'Параметры'
     PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection,
-                    nameDefaultNumeratorDiscountCards, skuStockAverageInterval, calcCurrentQuantitySoldInterval
+                    nameDefaultNumeratorDiscountCard, skuStockAverageInterval, calcCurrentQuantitySoldInterval
 ;
 
 //---------------------------------------------- Заполнение БД -------------------------------------------------//

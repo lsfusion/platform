@@ -99,7 +99,7 @@ TABLE discountPriceSetDocument (discountPriceSetDocument);
 TABLE priceSetDocumentArticle(priceSetDocument, article);
 
 defaultNumeratorPriceSetDocuments = DATA numerator ();
-nameDefaultNumeratorPriceSetDocuments 'Нумератор для розничных прайсов' = name(defaultNumeratorPriceSetDocuments());
+nameDefaultNumeratorPriceSetDocument 'Нумератор для розничных прайсов' = name(defaultNumeratorPriceSetDocuments());
 
 initValueNumeratorObject(object) += defaultNumeratorPriceSetDocuments() IF object IS priceSetDocument;
 initWhenNumeratorObject(object) += ASSIGNED(object IS priceSetDocument);

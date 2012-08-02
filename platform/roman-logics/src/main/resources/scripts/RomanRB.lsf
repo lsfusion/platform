@@ -84,9 +84,9 @@ DESIGN store FROM DEFAULT {
 }
 
 EXTEND FORM globalParamForm
-    PROPERTIES nameDefaultNumeratorDiscountCards(), nameDefaultNumeratorPriceSetDocuments(),
-               nameDefaultNumeratorWholesalePriceDocument(), toSetRangeCustomCategories10(),
-               nameDefaultNumeratorInnerOrders()
+    PROPERTIES nameDefaultNumeratorDiscountCard(), nameDefaultNumeratorPromotion(), nameDefaultNumeratorPriceSetDocument(),
+               nameDefaultNumeratorWholesalePriceDocument(), nameDefaultNumeratorInnerOrder(),
+               toSetRangeCustomCategories10()
 ;
 
 

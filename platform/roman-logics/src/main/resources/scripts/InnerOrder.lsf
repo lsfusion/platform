@@ -18,7 +18,7 @@ CLASS innerOrder 'Внутренний заказ': historyObject, numeratedObje
 CLASS innerOrderDetail 'Строка внутреннего заказа';
 
 defaultNumeratorInnerOrders = DATA numerator ();
-nameDefaultNumeratorInnerOrders 'Нумератор для внутренних заказов' = name(defaultNumeratorInnerOrders());
+nameDefaultNumeratorInnerOrder 'Нумератор для внутренних заказов' = name(defaultNumeratorInnerOrders());
 
 //numeratorInnerOrder 'Нумератор (ИД)' = DATA numerator (innerOrder);
 //nameNumeratorInnerOrder 'Нумератор' = name(numeratorInnerOrder(innerOrder));

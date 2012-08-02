@@ -57,7 +57,7 @@ percentDiscountCard 'Процент скидки' (discountCard) = DATA NUMERIC[
 // ---------------------------- Нумераторы по умолчанию --------------------------------- //
 
 defaultNumeratorDiscountCards = DATA numerator ();
-nameDefaultNumeratorDiscountCards 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
+nameDefaultNumeratorDiscountCard 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
 
 initValueNumeratorObject(object) += defaultNumeratorDiscountCards() IF object IS discountCard;
 initWhenNumeratorObject(object) += ASSIGNED(object IS discountCard);
@@ -154,16 +154,23 @@ FORM discountCards 'Дисконтные карты'
 // todo: сделать генерацию штрих-кода для дисконтных карт
 //--------------------------Акции----------------------------------------//
 
-CLASS promotion 'Акция' : historyObject, numberedObject, named;
+CLASS promotion 'Акция' : historyObject, numeratedObject, named;
 TABLE promotion (promotion);
 
 CLASS promotionGroup 'Группа акций' : named;
 TABLE promotionGroup (promotionGroup);
 
+// ----------------- Нумератор -------------------- //
+defaultNumeratorPromotion = DATA numerator ();
+nameDefaultNumeratorPromotion 'Нумератор для акций' = name(defaultNumeratorPromotion());
+
+initValueNumeratorObject(object) += defaultNumeratorPromotion() IF object IS promotion;
+initWhenNumeratorObject(object) += ASSIGNED(object IS promotion);
+
 promotionGroupPromotion 'Группы акций ИД' (promotion) = DATA promotionGroup(promotion) IN idGroup AUTOSET;
 namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;
 
-CLASS promotionCondition 'Условия акций' : named;
+CLASS promotionCondition 'Условие акции' : named;
 TABLE promotionCondition (promotionCondition);
 
 GROUP retailCRMGroup 'Реквизиты' : recognizeGroup;
@@ -202,7 +209,9 @@ includePromotionConditionSkuGroupSku 'В акции' (promotionCondition, skuGro
 
 FORM promotion 'Акция'
     OBJECTS sh=promotion   FIXED PANEL
-    PROPERTIES(sh)     name, namePromotionGroupPromotion, numberObject, seriesObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
+    PROPERTIES(sh)     name, namePromotionGroupPromotion,
+                       nameNumeratorObject, numberObject, seriesObject,
+                       dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
                        cumulativeSumPromotion, minSumBillPromotion
     OBJECTS d=DOW
     PROPERTIES(d)     READONLY name
@@ -293,22 +302,27 @@ DESIGN promotion FROM DEFAULT {
             }
         }
 
-        ADD sg.box {
-            fillVertical = 1;
-        }
         NEW row2 {
             fillVertical = 2;
             fillHorizontal = 3;
             type = TABBED;
             NEW row21 {
-                type = SPLITH;
-                title = 'Товары';
-                childConstraints = TO THE RIGHT;
-                ADD skuTree.tree.box {
-                    fillHorizontal = 1;
+                title = 'Условия';
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+                ADD sg.box {
+                    fillVertical = 1;
                 }
-                ADD sk.box {
-                    fillHorizontal = 2;
+                NEW row212 {
+                    type = SPLITH;
+                    title = 'Товары';
+                    childConstraints = TO THE RIGHT;
+                    ADD skuTree.tree.box {
+                        fillHorizontal = 1;
+                    }
+                    ADD sk.box {
+                        fillHorizontal = 2;
+                    }
                 }
             }
 

@@ -302,12 +302,12 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
                                                                                 BY sku, stock, date](sku, stock, date);
 
     // без учета текущей даты/времени
-    balanceB##postfix##SkuStockDateTime 'Остаток на начало дня'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
+    balanceB##postfix##SkuStockDateTime 'Остаток (до)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
                                                                               (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
                                                                                          BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
     // с учетом текущей даты/времени
-    balanceA##postfix##SkuStockDateTime 'Остаток на конец дня'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
+    balanceA##postfix##SkuStockDateTime 'Остаток (после)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
                                                                              (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
