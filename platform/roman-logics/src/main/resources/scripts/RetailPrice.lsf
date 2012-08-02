@@ -189,7 +189,7 @@ priceDiscountPriceSetDocumentArticle 'Цена без процентов' (disco
                                                                                                         (priceBBasePriceSetDocumentArticle(discountPriceSetDocument, article),
                                                                                                          percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, article)) IN baseGroup;
 
-priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article)
+priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
                                         WHEN CHANGED (priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
 inArticlePriceSetDocument 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
