@@ -6767,6 +6767,11 @@ DESIGN inventories FROM DEFAULT {
     }
 }
 
+
+//---------------------------Товарный отчет-------------------------------------//
+
+@extendStockFormAccountDocumentLedger(departmentStore, d);
+
 //---------------------------Акты переоценок-------------------------------------//
 
 @metaCodeDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);

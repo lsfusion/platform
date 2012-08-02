@@ -6,6 +6,7 @@ REQUIRE System,
         LegalEntity,
         Barcode,
         RetailCRM,
+        AccountDocument,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -210,3 +211,24 @@ EXTEND DESIGN company {
         }
     }
 }
+
+
+@extendStockFormAccountDocumentLedger(warehouse, w);
+@extendStockFormAccountDocumentLedger(departmentStore, d);
+@extendStockFormAccountDocumentLedger(customStore, c);
+
+//----------------------------Concat для фрахта и декларации--------------------------//
+
+canonicalBrandFreight 'Бренды' (freight) = castToString255(
+    [GROUP CONCAT commonName(brandSupplier) IF quantityFreightBrandSupplier(freight, brandSupplier), ' , ' BY freight](freight))
+    MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+EXTEND FORM freightListForm
+    PROPERTIES(freight) canonicalBrandFreight AFTER descriptionFreight
+;
+
+//= GROUP SUM
+//
+//canonicalBrandFreight 'Бренды' (declaration) = castToString255(
+//    [GROUP CONCAT brandDeclarationDetail(declarationDetail), ' , ' BY declarationDeclarationDetail(declarationDetail)](declaration))
+//    MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
