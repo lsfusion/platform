@@ -402,7 +402,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
     PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d), // ON CHANGE EXEC changeNameCategoryArticleSkuWHfromCSRDetail(d),
                               nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               netWeightSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),

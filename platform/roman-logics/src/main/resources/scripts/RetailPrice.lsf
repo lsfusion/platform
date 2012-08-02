@@ -9,6 +9,35 @@ REQUIRE System,
 
 PRIORITY MasterData, RomanLogicsModule;
 
+// -------------------------------------- Надбавки --------------------------------------- //
+
+CLASS coefficientRetail 'Надбавка';
+
+dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
+markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
+
+uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRetail(coefficientRetail)
+                                                        WHERE coefficientRetail IS coefficientRetail;
+
+coefficientRetailDate(coefficientRetail, date) = coefficientRetail IF dateCoefficientRetail(coefficientRetail) <= date AND date AS DATE;
+actingCoefficientRetailDate(date) = GROUP MAX dateCoefficientRetail(coefficientRetailDate(coefficientRetail, date)) BY date;
+
+FORM coefficientRetail 'Надбавка'
+
+    OBJECTS c=coefficientRetail FIXED PANEL
+    PROPERTIES(c) dateCoefficientRetail, markupCoefficientRetail
+
+    EDIT coefficientRetail OBJECT c
+;
+
+FORM coefficientRetails 'Надбавки'
+
+    OBJECTS c=coefficientRetail
+    PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
+// ------------------------------------------------ Прайсы -------------------------------- //
 
 META metaCodePriceBaseDiscount(document, caption)
 
@@ -56,7 +85,7 @@ CLASS STATIC methodPrice 'Метод расчёта'
 };
 
 
-CLASS ABSTRACT priceSetDocument 'Документ изменения цен' : transaction, numeratedObject;
+CLASS ABSTRACT priceSetDocument 'Документ изменения цен' : numeratedObject;
 CLASS basePriceSetDocument 'Базовый прайс' : priceSetDocument;
 CLASS discountPriceSetDocument 'Распродажа' : priceSetDocument;
 CLASS mixPriceSetDocument 'Базовый прайс с распродажей' : basePriceSetDocument, discountPriceSetDocument;
@@ -65,7 +94,7 @@ TABLE priceSetDocument (priceSetDocument);
 TABLE basePriceSetDocument (basePriceSetDocument);
 TABLE discountPriceSetDocument (discountPriceSetDocument);
 
-CLASS coefficientRetail 'Надбавка';
+@defineDocumentHeaderTime(priceSetDocument);
 
 TABLE priceSetDocumentArticle(priceSetDocument, article);
 
@@ -75,18 +104,7 @@ nameDefaultNumeratorPriceSetDocuments 'Нумератор для розничн�
 initValueNumeratorObject(object) += defaultNumeratorPriceSetDocuments() IF object IS priceSetDocument;
 initWhenNumeratorObject(object) += ASSIGNED(object IS priceSetDocument);
 
-dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
-markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
-
-uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRetail(coefficientRetail)
-                                                        WHERE coefficientRetail IS coefficientRetail;
-
-timePriceSetDocument 'Время документа' = DATA TIME (priceSetDocument);
-timePriceSetDocument (priceSetDocument) <- currentTime() WHEN ASSIGNED(priceSetDocument AS priceSetDocument);
-
-dateTimePriceSetDocument 'Дата/время документа' (priceSetDocument) = toDateTime(date(priceSetDocument), timePriceSetDocument(priceSetDocument));
-
-dateTimeToDataPriceSetDocument 'Дата/время окончания' = DATA DATETIME(priceSetDocument) IN baseGroup;
+dateTimeToDataPriceSetDocument 'Дата/время окончания' = DATA DATETIME(priceSetDocument) IN documentPrmGroup;
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,
                                                                                             dateTimeToDataPriceSetDocument(priceSetDocument) IN baseGroup PERSISTENT;
 
@@ -114,19 +132,16 @@ RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[
 isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (basePriceSetDocument, article) =
     basePriceSetDocument IS basePriceSetDocument AND article IS article AND NOT RRPPriceSetDocumentArticle(basePriceSetDocument, article);
 
-ratePriceSetDocument 'Обменный курс' (priceSetDocument, article) = nearestRateExchange(typeExchangeRetail(),
-                                                                                             currencyTypeExchange(typeExchangeSTX()),
-                                                                                             priceSetDocument) AND article IS article;
+typeExchangePriceSetDocument (priceSetDocument) = typeExchangeRetail() AND priceSetDocument IS priceSetDocument;
+currencyPriceSetDocument (priceSetDocument) = currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument;
+@defineNearestRateExchangeObject(priceSetDocument, , datePriceSetDocument, publicGroup);
 
 rateDataPriceSetDocumentArticle 'Обменный курс' = DATA NUMERIC[14,2](priceSetDocument, article) IN baseGroup;
 
-ratePriceSetDocumentArticle 'Обменный курс' (basePriceSetDocument, article) = UNION OVERRIDE ratePriceSetDocument(basePriceSetDocument, article),
-                                                                                                   rateDataPriceSetDocumentArticle(basePriceSetDocument, article);
+ratePriceSetDocumentArticle 'Обменный курс' (basePriceSetDocument, article) = UNION OVERRIDE rateExchangePriceSetDocument(basePriceSetDocument) AND article IS article,
+                                                                                             rateDataPriceSetDocumentArticle(basePriceSetDocument, article);
 
-coefficientRetailDate(coefficientRetail, date) = coefficientRetail IF dateCoefficientRetail(coefficientRetail) <= date AND date AS DATE;
-actingCoefficientRetailDate(date) = GROUP MAX dateCoefficientRetail(coefficientRetailDate(coefficientRetail, date)) BY date;
-
-coefficientRetailPriceSetDocument 'Коэффициент документа' (basePriceSetDocument) = uniqueCoefficientRetail(actingCoefficientRetailDate(date(basePriceSetDocument))) IN idGroup;
+coefficientRetailPriceSetDocument 'Коэффициент документа' (basePriceSetDocument) = uniqueCoefficientRetail(actingCoefficientRetailDate(datePriceSetDocument(basePriceSetDocument))) IN idGroup;
 markupCoefficientRetailPriceSetDocumentArticle 'Коэффициент документа' (basePriceSetDocument, article) = markupCoefficientRetail(coefficientRetailPriceSetDocument(basePriceSetDocument))
                                                                                                                AND article IS article IN baseGroup;
 
@@ -206,37 +221,14 @@ RRPPriceSetDocumentArticle(basePriceSetDocument, article) <- prevRRPBBasePriceSe
 percentDiscountPriceSetDocumentArticle (document, article) <- prevPercentDiscountPriceSetDocumentArticle (document, article)
     WHEN ASSIGNED(inArticlePriceSetDocument(document, article));
 
-toSetPricesPriceSetDocument 'Взять цены поставщика' =  ACTION (basePriceSetDocument) {
-    FOR p == basePriceSetDocument AND inArticlePriceSetDocument(p, article) DO {
-        SET priceInPriceSetDocumentArticle(p, article) <- priceInBBasePriceSetDocumentArticle (p, article);
-        SET RRPPriceSetDocumentArticle(p, article) <- RRPBBasePriceSetDocumentArticle (p, article);
-    };
-};
-
 pricePriceSetDocumentArticleDateTime(article, dateTime) = priceBasePriceSetDocumentArticleDateTime(article, dateTime) OR priceDiscountPriceSetDocumentArticleDateTime(article, dateTime);
 
 POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += pricePriceSetDocumentArticleDateTime(articleSku(sku), dateTime) IF departmentStore IS departmentStore;
 
-FORM coefficientRetail 'Надбавка'
-
-    OBJECTS c=coefficientRetail FIXED PANEL
-    PROPERTIES(c) dateCoefficientRetail, markupCoefficientRetail
-
-    EDIT coefficientRetail OBJECT c
-;
-
-FORM coefficientRetails 'Надбавки'
-
-    OBJECTS c=coefficientRetail
-    PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-;
-
-
 FORM priceBaseSetDocument 'Базовый прайс'
 
     OBJECTS p=basePriceSetDocument FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument, toSetPricesPriceSetDocument
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -288,7 +280,7 @@ DESIGN priceBaseSetDocument FROM DEFAULT {
             ADD PROPERTY(nameNumeratorObject);
             ADD PROPERTY(numberObject);
             ADD PROPERTY(seriesObject);
-            ADD PROPERTY(date);
+            ADD PROPERTY(datePriceSetDocument);
             ADD PROPERTY(timePriceSetDocument);
             ADD PROPERTY(dateTimeToPriceSetDocument);
             ADD PROPERTY(toSetPricesPriceSetDocument);
@@ -334,7 +326,7 @@ DESIGN priceBaseSetDocument FROM DEFAULT {
 FORM priceBaseChangeDocuments 'Базовые прайсы'
 
     OBJECTS p=basePriceSetDocument
-    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
@@ -377,7 +369,7 @@ showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle
 FORM discountPriceSetDocument 'Распродажа'
 
     OBJECTS d=discountPriceSetDocument FIXED PANEL
-    PROPERTIES(d) nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(d) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -393,7 +385,8 @@ FORM discountPriceSetDocument 'Распродажа'
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
 
     OBJECTS a=article
-    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, showFormLogPriceArticle
+    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+    PROPERTIES(a)          showFormLogPriceArticle
     PROPERTIES (d, a) ratePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, priceBBasePriceSetDocumentArticle,
                       percentDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
                       priceDataDiscountPriceSetDocumentArticle//, priceRetailPriceSetDocumentArticle
@@ -455,7 +448,7 @@ DESIGN discountPriceSetDocument FROM DEFAULT {
 FORM discountPriceSetDocuments 'Распродажи'
 
     OBJECTS d=discountPriceSetDocument
-    PROPERTIES(d) READONLY statusPriceSetDocument, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(d) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(d) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(d),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(d), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(d), delete SHOWIF isDraftPriceSetDocument(d)
@@ -505,7 +498,7 @@ FORM freights 'Расценка фрахтов'
 
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument, toSetPricesPriceSetDocument
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument, toSetPricesPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -560,7 +553,7 @@ DESIGN priceSetDocument FROM DEFAULT {
             ADD PROPERTY(nameNumeratorObject);
             ADD PROPERTY(numberObject);
             ADD PROPERTY(seriesObject);
-            ADD PROPERTY(date);
+            ADD PROPERTY(datePriceSetDocument);
             ADD PROPERTY(timePriceSetDocument);
             ADD PROPERTY(dateTimeToPriceSetDocument);
             ADD PROPERTY(toSetPricesPriceSetDocument);
@@ -606,7 +599,7 @@ DESIGN priceSetDocument FROM DEFAULT {
 FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS p=priceSetDocument
-    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, date, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)

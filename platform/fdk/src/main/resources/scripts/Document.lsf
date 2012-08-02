@@ -70,7 +70,7 @@ META defineDocumentHeaderTime (object)
     time###object 'Время документа' = DATA TIME (object) IN documentHeaderGroup;
     time###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
 
-    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object));
+    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object)) PERSISTENT;
 END
 
 META defineDocumentDetailTimeCustom (object, detail)

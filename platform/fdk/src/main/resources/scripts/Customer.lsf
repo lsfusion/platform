@@ -27,7 +27,7 @@ partyBContract (contract) += customerContractSkuCustomer(contract);
 // Формы
 FORM contractSkuCustomer 'Договор с опт. покупателем'
     OBJECTS c=contractSkuCustomer FIXED PANEL
-    PROPERTIES(c) nameCustomerContractSkuCustomer, nameCompanyContractSkuCustomer,
+    PROPERTIES(c) nameCompanyContractSkuCustomer, nameCustomerContractSkuCustomer,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
                   nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),

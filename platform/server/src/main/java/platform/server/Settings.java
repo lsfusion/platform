@@ -481,7 +481,7 @@ public class Settings {
         this.applyNoIncrement = applyNoIncrement;
     }
 
-    public boolean applyVolatileStats = false;
+    public boolean applyVolatileStats = true;
 
     public boolean isApplyVolatileStats() {
         return applyVolatileStats;

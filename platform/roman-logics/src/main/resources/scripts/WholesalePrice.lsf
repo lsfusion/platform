@@ -7,22 +7,18 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, RB;
 
-CLASS wholesalePriceDocument 'Оптовый прайс' : transaction, numeratedObject;
+CLASS wholesalePriceDocument 'Оптовый прайс' : numeratedObject;
+
+TABLE wholesalePriceDocument (wholesalePriceDocument);
+TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
+
+@defineDocumentHeaderTime(wholesalePriceDocument);
 
 defaultNumeratorWholesalePriceDocument = DATA numerator ();
 nameDefaultNumeratorWholesalePriceDocument 'Нумератор для оптовых прайсов' = name(defaultNumeratorWholesalePriceDocument());
 
 initValueNumeratorObject(object) += defaultNumeratorWholesalePriceDocument() IF object IS wholesalePriceDocument;
 initWhenNumeratorObject(object) += ASSIGNED(object IS wholesalePriceDocument);
-
-timeWholesalePriceDocument 'Время документа' = DATA TIME (wholesalePriceDocument);
-timeWholesalePriceDocument (wholesalePriceDocument) <- currentTime() WHEN ASSIGNED(wholesalePriceDocument AS wholesalePriceDocument);
-
-TABLE wholesalePriceDocument (wholesalePriceDocument);
-TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
-
-dateTimeWholesalePriceDocument 'Дата/время' = DATA DATETIME(wholesalePriceDocument);
-dateTimeWholesalePriceDocument(wholesalePriceDocument) <- currentDateTime() WHEN ASSIGNED(wholesalePriceDocument IS wholesalePriceDocument);
 
 declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
 
@@ -80,7 +76,7 @@ priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <
 FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS w=wholesalePriceDocument FIXED PANEL
-    PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, date, timeWholesalePriceDocument
+    PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -121,7 +117,7 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
             ADD PROPERTY(nameNumeratorObject);
             ADD PROPERTY(numberObject);
             ADD PROPERTY(seriesObject);
-            ADD PROPERTY(date);
+            ADD PROPERTY(dateWholesalePriceDocument);
             ADD PROPERTY(timeWholesalePriceDocument);
         }
 
@@ -166,7 +162,7 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
 FORM wholesalePriceDocuments 'Оптовые прайсы'
 
     OBJECTS w=wholesalePriceDocument
-    PROPERTIES(w) READONLY numberObject, seriesObject, dateTimeWholesalePriceDocument
+    PROPERTIES(w) READONLY numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument
     PROPERTIES(w) ADDFORM, EDITFORM, delete
 
     OBJECTS a=article
