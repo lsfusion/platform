@@ -570,7 +570,7 @@ DESIGN priceSetDocument FROM DEFAULT {
 FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS p=priceSetDocument
-    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY objectClassName, statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
@@ -591,6 +591,9 @@ DESIGN priceSetDocuments FROM DEFAULT {
     PROPERTY (delete(p)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
+    }
+    PROPERTY(objectClassName) {
+         preferredCharWidth = 10;
     }
 
 }
