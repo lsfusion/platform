@@ -24,7 +24,10 @@ CLASS WHfromRFDetail 'Строка прихода из РФ' : batchB;
 
 isWHfromRFFreight(freight) = TRUE IF (routeFreight(freight) == route.rf AND freight IS freightArrived);
 
-@defineAggregation(freight, WHfromRF, isWHfromRFFreight);
+//@defineAggregation(freight, WHfromRF, isWHfromRFFreight);
+
+freightWHfromRF (WHfromRF) = DATA freightArrived (WHfromRF);
+nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF));
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
 
@@ -308,7 +311,7 @@ skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
 FORM WHfromRF 'Приемка товара на оптовый склад'
 
 OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
-    PROPERTIES(w) numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
+    PROPERTIES(w) numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
                   fillWHfromRFDetailsSkuFreightUnit, printMarksSkuFreightUnit, printMarksSkuWHfromRF TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w)
@@ -362,6 +365,7 @@ DESIGN WHfromRF FROM DEFAULT {
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateWHfromRF);
                     ADD PROPERTY(timeWHfromRF);
+                    ADD PROPERTY(nameFreightWHfromRF);
                     ADD PROPERTY(nameWarehouseWHfromRF);
                 }
 
@@ -411,7 +415,7 @@ FORM WHfromRFs 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF
 
-    PROPERTIES(w) READONLY numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameWarehouseWHfromRF,
+    PROPERTIES(w) READONLY numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF,
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
                            descriptionFreightWHfromRF
 
