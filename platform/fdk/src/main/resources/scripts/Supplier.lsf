@@ -115,8 +115,8 @@ FORM supplier 'Поставщик'
     FILTERS stockGroupStock(st) == sg
 
     PROPERTIES(s, st) emailOrderSupplierStock, contactSupplierStock
-    PROPERTIES       overNameControlSupplierStockDate(s, st, dt) BACKGROUND dataControlSupplierStockDate(s, st, dt) ON CHANGE overDialogControlSupplierStockDate(s, st),
-                     overNameSureSupplierStockDate(s, st, dt) BACKGROUND dataSureSupplierStockDate(s, st, dt) ON CHANGE overDialogSureSupplierStockDate(s, st)
+    PROPERTIES       overNameControlSupplierStockDate(s, st, dt) BACKGROUND dataControlSupplierStockDate(s, st, dt) ON CHANGE EXEC overDialogControlSupplierStockDate(s, st),
+                     overNameSureSupplierStockDate(s, st, dt) BACKGROUND dataSureSupplierStockDate(s, st, dt) ON CHANGE EXEC overDialogSureSupplierStockDate(s, st)
 
     EDIT supplier OBJECT s
 ;
