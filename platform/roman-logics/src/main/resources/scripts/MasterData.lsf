@@ -224,6 +224,6 @@ canonicalBrandFreight 'Бренды' (freight) = castToString255(
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 EXTEND FORM freightListForm
-    PROPERTIES(freight) canonicalBrandFreight AFTER descriptionFreight
+    PROPERTIES(freight) canonicalBrandFreight BEFORE dateArrivalFreight
 ;
 

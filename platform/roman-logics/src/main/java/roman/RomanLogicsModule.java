@@ -7851,7 +7851,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight,
                                               nameRouteFreight, netWeightInvoicedFreight, grossWeightFreight,
-                                              palletNumberFreight, freightBoxNumberFreight, descriptionFreight, formLogFreight);
+                                              palletNumberFreight, freightBoxNumberFreight, formLogFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setEditType(objFreight, PropertyEditType.READONLY);
             setEditType(formLogFreight, PropertyEditType.EDITABLE);

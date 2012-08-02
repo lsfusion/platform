@@ -192,9 +192,6 @@ priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceReta
                                  CHANGED (RRPRatePriceSetDocumentArticle(basePriceSetDocument, article));
 
 // для уценки
-priceInRateBBasePriceSetDocumentArticle 'Цена поставщика (руб.)' (discountPriceSetDocument, article) = ratePriceSetDocumentArticle (discountPriceSetDocument, article) *
-                                                                                                             priceInBBasePriceSetDocumentArticle(discountPriceSetDocument, article) MINCHARWIDTH 15;
-
 percentDiscountPriceSetDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, article) IN baseGroup;
 
 prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTime) = PREV(percentDiscountPriceSetDocumentArticle(discountPriceSetDocumentArticleDateTime(article, dateTime), article));
@@ -225,133 +222,7 @@ pricePriceSetDocumentArticleDateTime(article, dateTime) = priceBasePriceSetDocum
 
 POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += pricePriceSetDocumentArticleDateTime(articleSku(sku), dateTime) IF departmentStore IS departmentStore;
 
-FORM priceBaseSetDocument 'Базовый прайс'
-
-    OBJECTS p=basePriceSetDocument FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
-
-    TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
-    PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
-
-    TREE treeCategory vv=STRING[3], c=category
-    PROPERTIES READONLY OBJVALUE(vv), name(c)
-
-    OBJECTS aa=article
-    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
-    PROPERTIES (p, aa) READONLY priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle
-    PROPERTIES (p, aa) inArticlePriceSetDocument
-
-    FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
-            inArticleCategory(c, aa)
-
-    OBJECTS a=article
-    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (p, a) priceInPriceSetDocumentArticle,
-                      RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
-                      ratePriceSetDocumentArticle, RRPRatePriceSetDocumentArticle, priceOutRatePriceSetDocumentArticle,
-                      priceBBasePriceSetDocumentArticle, nameMethodPriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                      priceDataBasePriceSetDocumentArticle
-
-    FILTERS inArticlePriceSetDocument(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
-
-    FILTERGROUP filters
-        FILTER 'Есть рекомендуемая цена' 'F7' RRPPriceSetDocumentArticle(p, a)
-        FILTER 'Нет рекомендуемой цены' 'shift F7' isNotRRPPriceSetDocumentArticle(p, a)
-
-    FILTERGROUP filtersBalance
-        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
-
-    FILTERGROUP filtersMethod
-        FILTER 'Показывать без метода' 'F9' notMethodPriceSetDocumentArticle(p, a)
-
-    FILTERGROUP filtersCategory
-        FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
-    FILTERGROUP filtersBrand
-        FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
-
-    EDIT basePriceSetDocument OBJECT p
-;
-
-DESIGN priceBaseSetDocument FROM DEFAULT {
-    main {
-
-        ADD p.box{
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(nameNumeratorObject);
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(seriesObject);
-            ADD PROPERTY(datePriceSetDocument);
-            ADD PROPERTY(timePriceSetDocument);
-            ADD PROPERTY(dateTimeToPriceSetDocument);
-        }
-
-        NEW allContainer {
-            childConstraints = TO THE BOTTOM;
-            type = SPLITV;
-
-            NEW topContainer {
-
-                childConstraints = TO THE RIGHT;
-                type = SPLITH;
-
-                NEW treeContainer {
-
-                    childConstraints = TO THE RIGHT;
-                    type = SPLITH;
-                    fillHorizontal = 2;
-                    ADD treeSupplierBrand.tree.box {
-                        fillHorizontal = 1.5;
-                    }
-
-                    ADD treeCategory.tree.box {
-                        fillHorizontal = 1.5;
-                    }
-                }
-
-                ADD aa.box {
-                    fillHorizontal = 3;
-                }
-            }
-
-            ADD a.box {
-                fillVertical = 1.5;
-            }
-        }
-    }
-
-    ADD functions.box;
-}
-
-FORM priceBaseChangeDocuments 'Базовые прайсы'
-
-    OBJECTS p=basePriceSetDocument
-    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
-    PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
-                              unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
-                              EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
-
-    OBJECTS a=article
-    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (p, a) READONLY priceInPriceSetDocumentArticle,
-                               RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
-                               ratePriceSetDocumentArticle,
-                               priceBBasePriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                               priceDataBasePriceSetDocumentArticle
-
-    FILTERS inArticlePriceSetDocument(p, a)
-;
-
-DESIGN priceBaseChangeDocuments FROM DEFAULT {
-
-    PROPERTY (delete(p)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-
-}
-
-
-//уценки
+// ------ История распродаж ------------ //
 FORM logPriceArticle 'История цен'
 
     OBJECTS a=article
@@ -365,108 +236,6 @@ FORM logPriceArticle 'История цен'
 
 showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle OBJECTS a NEWSESSION MODAL;
 
-FORM discountPriceSetDocument 'Распродажа'
-
-    OBJECTS d=discountPriceSetDocument FIXED PANEL
-    PROPERTIES(d) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
-
-    TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
-    PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
-
-    TREE treeCategory vv=STRING[3], c=category
-    PROPERTIES READONLY OBJVALUE(vv), name(c)
-
-    OBJECTS aa=article
-    PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
-    PROPERTIES (d, aa) READONLY priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle
-    PROPERTIES (d, aa) inArticlePriceSetDocument
-
-    FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
-
-    OBJECTS a=article
-    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES(a)          showFormLogPriceArticle
-    PROPERTIES (d, a) ratePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, priceBBasePriceSetDocumentArticle,
-                      percentDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
-                      priceDataDiscountPriceSetDocumentArticle//, priceRetailPriceSetDocumentArticle
-
-    FILTERS inArticlePriceSetDocument(d, a)
-
-    FILTERGROUP filtersBalance
-        FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
-
-    FILTERGROUP filtersCategory
-        FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
-
-    FILTERGROUP filtersBrand
-        FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
-
-    EDIT discountPriceSetDocument OBJECT d
-;
-
-DESIGN discountPriceSetDocument FROM DEFAULT {
-    main {
-
-        NEW allContainer {
-            childConstraints = TO THE BOTTOM;
-            type = SPLITV;
-
-            NEW topContainer {
-
-                childConstraints = TO THE RIGHT;
-                type = SPLITH;
-
-                NEW treeContainer {
-
-                    childConstraints = TO THE RIGHT;
-                    type = SPLITH;
-
-                    ADD treeSupplierBrand.tree.box {
-                        fillHorizontal = 1.5;
-                    }
-
-                    ADD treeCategory.tree.box {
-                        fillHorizontal = 1.5;
-                    }
-                }
-
-                ADD aa.box {
-                    fillHorizontal = 3;
-                }
-            }
-
-            ADD a.box {
-                fillVertical = 1.5;
-            }
-        }
-    }
-
-    ADD functions.box;
-}
-
-FORM discountPriceSetDocuments 'Распродажи'
-
-    OBJECTS d=discountPriceSetDocument
-    PROPERTIES(d) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
-    PROPERTIES(d) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(d),
-                              unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(d), ADDFORM,
-                              EDITFORM SHOWIF isDraftPriceSetDocument(d), delete SHOWIF isDraftPriceSetDocument(d)
-
-    OBJECTS a=article
-    PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (d, a) READONLY ratePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, priceBBasePriceSetDocumentArticle,
-                               priceBDiscountPriceSetDocumentArticle, priceDataDiscountPriceSetDocumentArticle//, priceRetailPriceSetDocumentArticle
-
-    FILTERS inArticlePriceSetDocument(d, a)
-;
-
-DESIGN discountPriceSetDocuments FROM DEFAULT {
-
-    PROPERTY (delete(d)) {
-        panelLocation = TOOLBAR;
-        askConfirm = TRUE;
-    }
-}
 
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
@@ -491,11 +260,12 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, a) priceInPriceSetDocumentArticle,
                       RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
                       ratePriceSetDocumentArticle, RRPRatePriceSetDocumentArticle, priceOutRatePriceSetDocumentArticle,
-                      priceBBasePriceSetDocumentArticle, nameMethodPriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                      priceDataBasePriceSetDocumentArticle
+                      priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
+                      nameMethodPriceSetDocumentArticle,
+                      priceRetailPriceSetDocumentArticle, priceDataBasePriceSetDocumentArticle
 
-    PROPERTIES (p, a) percentDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
-                      priceDataDiscountPriceSetDocumentArticle//, priceRetailPriceSetDocumentArticle
+    PROPERTIES (p, a) percentDiscountPriceSetDocumentArticle,
+                      priceDiscountPriceSetDocumentArticle, priceDataDiscountPriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
 
@@ -570,7 +340,7 @@ DESIGN priceSetDocument FROM DEFAULT {
 FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS p=priceSetDocument
-    PROPERTIES(p) READONLY objectClassName, statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
@@ -579,9 +349,11 @@ FORM priceSetDocuments 'Розничные прайсы'
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, a) READONLY priceInPriceSetDocumentArticle,
                                RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
-                               ratePriceSetDocumentArticle, priceBBasePriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
-                               priceDataBasePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle,
-                               priceBDiscountPriceSetDocumentArticle, priceDataDiscountPriceSetDocumentArticle
+                               ratePriceSetDocumentArticle,
+                               priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
+                               priceRetailPriceSetDocumentArticle, priceDataBasePriceSetDocumentArticle,
+                               percentDiscountPriceSetDocumentArticle,
+                               priceDataDiscountPriceSetDocumentArticle
 
     FILTERS inArticlePriceSetDocument(p, a)
 ;
@@ -616,8 +388,8 @@ createPriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
 FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightPriced
-    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, dateArrivalFreight,
-                           nameRouteFreight, nameExporterFreight, freightGrossWeight, descriptionFreight, canonicalBrandFreight
+    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, canonicalBrandFreight, dateArrivalFreight,
+                           nameRouteFreight, nameExporterFreight, freightGrossWeight
     PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument
