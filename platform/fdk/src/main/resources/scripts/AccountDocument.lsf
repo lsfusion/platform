@@ -1,6 +1,6 @@
 MODULE AccountDocument;
 
-REQUIRE System, Store, Employee, Utils;
+REQUIRE System, Stock, Employee, Utils;
 
 CLASS ABSTRACT accountDocumentLedger 'Учетный документ';
 TABLE accountDocumentLedger (accountDocumentLedger);
@@ -13,8 +13,8 @@ dateAccountDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountDocume
 
 isPostedAccountDocumentLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (accountDocumentLedger) PERSISTENT;
 
-departmentStoreAccountDocumentLedger (ledger) = ABSTRACT departmentStore (accountDocumentLedger) PERSISTENT;
-nameDepartmentStoreAccountDocumentLedger 'Отдел магазина' (ledger) = name(departmentStoreAccountDocumentLedger(ledger));
+stockAccountDocumentLedger (ledger) = ABSTRACT stock (accountDocumentLedger) PERSISTENT;
+nameStockAccountDocumentLedger 'Отдел' (ledger) = name(stockAccountDocumentLedger(ledger));
 
 descriptionAccountDocumentLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (accountDocumentLedger) PERSISTENT;
 
@@ -35,161 +35,157 @@ sumContainerAccountDocumentLedger 'Сумма, тара' (ledger) = UNION EXCLUS
 
 // -------------------------------------- Агрегированные суммы за интервал --------------------------------------------- //
 
-countIncAccountDocumentDepartmentStoreDateInterval 'Количество приходных док-ов' (departmentStore, dtFrom, dtTo)=
+countIncAccountDocumentStockDateInterval 'Количество приходных док-ов' (stock, dtFrom, dtTo)=
     GROUP SUM 1 IF incAccountDocumentLedger AS incAccountDocumentLedger AND isPostedAccountDocumentLedger(incAccountDocumentLedger)
         AND dateAccountDocumentLedger(incAccountDocumentLedger) >= (dtFrom AS DATE) AND dateAccountDocumentLedger(incAccountDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountDocumentLedger(incAccountDocumentLedger), dtFrom, dtTo IN ledgerGroup;
+            BY stockAccountDocumentLedger(incAccountDocumentLedger), dtFrom, dtTo IN ledgerGroup;
 
-countOutAccountDocumentDepartmentStoreDateInterval 'Количество расходных док-ов' (departmentStore, dtFrom, dtTo)=
+countOutAccountDocumentStockDateInterval 'Количество расходных док-ов' (stock, dtFrom, dtTo)=
     GROUP SUM 1 IF outAccountDocumentLedger AS outAccountDocumentLedger AND isPostedAccountDocumentLedger(outAccountDocumentLedger)
         AND dateAccountDocumentLedger(outAccountDocumentLedger) >= (dtFrom AS DATE) AND dateAccountDocumentLedger(outAccountDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountDocumentLedger(outAccountDocumentLedger), dtFrom, dtTo IN ledgerGroup;
+            BY stockAccountDocumentLedger(outAccountDocumentLedger), dtFrom, dtTo IN ledgerGroup;
 
 
-sumItemIncAccountDocumentDepartmentStoreDateInterval 'Сумма прихода, товар' (departmentStore, dtFrom, dtTo)=
+sumItemIncAccountDocumentStockDateInterval 'Сумма прихода, товар' (stock, dtFrom, dtTo)=
     GROUP SUM sumItemIncAccountDocumentLedger(incAccountDocumentLedger)  AND isPostedAccountDocumentLedger(incAccountDocumentLedger)
         AND dateAccountDocumentLedger(incAccountDocumentLedger) >= (dtFrom AS DATE) AND dateAccountDocumentLedger(incAccountDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountDocumentLedger(incAccountDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
+            BY stockAccountDocumentLedger(incAccountDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
 
-sumItemOutAccountDocumentDepartmentStoreDateInterval 'Сумма расхода, товар' (departmentStore, dtFrom, dtTo)=
+sumItemOutAccountDocumentStoreDateInterval 'Сумма расхода, товар' (stock, dtFrom, dtTo)=
     GROUP SUM sumItemOutAccountDocumentLedger(outAccountDocumentLedger) AND isPostedAccountDocumentLedger(outAccountDocumentLedger)
         AND dateAccountDocumentLedger(outAccountDocumentLedger) >= (dtFrom AS DATE) AND dateAccountDocumentLedger(outAccountDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountDocumentLedger(outAccountDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
+            BY stockAccountDocumentLedger(outAccountDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
 
 
-sumContainerIncAccountDocumentDepartmentStoreDateInterval 'Сумма прихода, тара' (departmentStore, dtFrom, dtTo)=
+sumContainerIncAccountDocumentStockDateInterval 'Сумма прихода, тара' (stock, dtFrom, dtTo)=
     GROUP SUM sumContainerIncAccountDocumentLedger(incAccountDocumentLedger) AND isPostedAccountDocumentLedger(incAccountDocumentLedger)
         AND dateAccountDocumentLedger(incAccountDocumentLedger) >= (dtFrom AS DATE) AND dateAccountDocumentLedger(incAccountDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountDocumentLedger(incAccountDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
+            BY stockAccountDocumentLedger(incAccountDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
 
-sumContainerOutAccountDocumentDepartmentStoreDateInterval 'Сумма расхода, тара' (departmentStore, dtFrom, dtTo)=
+sumContainerOutAccountDocumentStockDateInterval 'Сумма расхода, тара' (stock, dtFrom, dtTo)=
     GROUP SUM sumContainerOutAccountDocumentLedger(outAccountDocumentLedger) AND isPostedAccountDocumentLedger(outAccountDocumentLedger)
         AND dateAccountDocumentLedger(outAccountDocumentLedger) >= (dtFrom AS DATE) AND dateAccountDocumentLedger(outAccountDocumentLedger) <= (dtTo AS DATE)
-            BY departmentStoreAccountDocumentLedger(outAccountDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
+            BY stockAccountDocumentLedger(outAccountDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
 
 // -------------------------------------- Остатки по суммам --------------------------------------------- //
 
-currentSumAccountDocumentLedger 'Текущий остаток по документам' (departmentStore) = GROUP SUM sumAccountDocumentLedger (ledger) AND isPostedAccountDocumentLedger(ledger)
-                                                                                           BY departmentStoreAccountDocumentLedger(ledger) PERSISTENT;
+currentSumAccountDocumentLedger 'Текущий остаток по документам' (stock) = GROUP SUM sumAccountDocumentLedger (ledger) AND isPostedAccountDocumentLedger(ledger)
+                                                                                           BY stockAccountDocumentLedger(ledger) PERSISTENT;
 
-sumAccountBDocumentLedgerDateTime 'Остаток на начало' (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+sumAccountBDocumentLedgerDateTime 'Остаток на начало' (stock, dateTime) = UNION SUM currentSumAccountDocumentLedger(stock) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+                                                                         BY stockAccountDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumAccountADocumentLedgerDateTime 'Остаток на конец' (departmentStore, dateTime) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+sumAccountADocumentLedgerDateTime 'Остаток на конец' (stock, dateTime) = UNION SUM currentSumAccountDocumentLedger(stock) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateTimeAccountDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+                                                                         BY stockAccountDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumAccountBDocumentLedgerDate 'Остаток на начало' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
+sumAccountBDocumentLedgerDate 'Остаток на начало' (stock, date) = UNION SUM currentSumAccountDocumentLedger(stock) AND date IS DATE,
                                                                             -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountDocumentLedger(ledger), date](departmentStore, date) IN ledgerGroup;
+                                                                            BY stockAccountDocumentLedger(ledger), date](stock, date) IN ledgerGroup;
 
-sumAccountADocumentLedgerDate 'Остаток на конец' (departmentStore, date) = UNION SUM currentSumAccountDocumentLedger(departmentStore) AND date IS DATE,
+sumAccountADocumentLedgerDate 'Остаток на конец' (stock, date) = UNION SUM currentSumAccountDocumentLedger(stock) AND date IS DATE,
                                                                            -[GROUP SUM sumAccountDocumentLedger (ledger) AND dateAccountDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountDocumentLedger(ledger), date](departmentStore, date) IN ledgerGroup;
+                                                                           BY stockAccountDocumentLedger(ledger), date](stock, date) IN ledgerGroup;
 
 // -------------------------------------- Остатки по суммам (товар) --------------------------------------------- //
 
-currentSumItemAccountDocumentLedger 'Текущий остаток по документам, товар' (departmentStore) = GROUP SUM sumItemAccountDocumentLedger (ledger) AND isPostedAccountDocumentLedger(ledger)
-                                                                                           BY departmentStoreAccountDocumentLedger(ledger) PERSISTENT;
+currentSumItemAccountDocumentLedger 'Текущий остаток по документам, товар' (stock) = GROUP SUM sumItemAccountDocumentLedger (ledger) AND isPostedAccountDocumentLedger(ledger)
+                                                                                           BY stockAccountDocumentLedger(ledger) PERSISTENT;
 
-sumItemAccountBDocumentLedgerDateTime 'Остаток на начало, товар' (departmentStore, dateTime) = UNION SUM currentSumItemAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+sumItemAccountBDocumentLedgerDateTime 'Остаток на начало, товар' (stock, dateTime) = UNION SUM currentSumItemAccountDocumentLedger(stock) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumItemAccountDocumentLedger (ledger) AND dateTimeAccountDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+                                                                         BY stockAccountDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumItemAccountADocumentLedgerDateTime 'Остаток на конец, товар' (departmentStore, dateTime) = UNION SUM currentSumItemAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+sumItemAccountADocumentLedgerDateTime 'Остаток на конец, товар' (stock, dateTime) = UNION SUM currentSumItemAccountDocumentLedger(stock) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumItemAccountDocumentLedger (ledger) AND dateTimeAccountDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+                                                                         BY stockAccountDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumItemAccountBDocumentLedgerDate 'Остаток на начало, товар' (departmentStore, date) = UNION SUM currentSumItemAccountDocumentLedger(departmentStore) AND date IS DATE,
+sumItemAccountBDocumentLedgerDate 'Остаток на начало, товар' (stock, date) = UNION SUM currentSumItemAccountDocumentLedger(stock) AND date IS DATE,
                                                                             -[GROUP SUM sumItemAccountDocumentLedger (ledger) AND dateAccountDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountDocumentLedger(ledger), date](departmentStore, date) IN ledgerItemGroup;
+                                                                            BY stockAccountDocumentLedger(ledger), date](stock, date) IN ledgerItemGroup;
 
-sumItemAccountADocumentLedgerDate 'Остаток на конец, товар' (departmentStore, date) = UNION SUM currentSumItemAccountDocumentLedger(departmentStore) AND date IS DATE,
+sumItemAccountADocumentLedgerDate 'Остаток на конец, товар' (stock, date) = UNION SUM currentSumItemAccountDocumentLedger(stock) AND date IS DATE,
                                                                            -[GROUP SUM sumItemAccountDocumentLedger (ledger) AND dateAccountDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountDocumentLedger(ledger), date](departmentStore, date) IN ledgerItemGroup;
+                                                                           BY stockAccountDocumentLedger(ledger), date](stock, date) IN ledgerItemGroup;
 
 // -------------------------------------- Остатки по суммам (тара) --------------------------------------------- //
 
-currentSumContainerAccountDocumentLedger 'Текущий остаток по документам, тара' (departmentStore) = GROUP SUM sumContainerAccountDocumentLedger (ledger) AND isPostedAccountDocumentLedger(ledger)
-                                                                                           BY departmentStoreAccountDocumentLedger(ledger) PERSISTENT;
-sumContainerAccountBDocumentLedgerDateTime 'Остаток на начало, тара' (departmentStore, dateTime) = UNION SUM currentSumContainerAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+currentSumContainerAccountDocumentLedger 'Текущий остаток по документам, тара' (stock) = GROUP SUM sumContainerAccountDocumentLedger (ledger) AND isPostedAccountDocumentLedger(ledger)
+                                                                                           BY stockAccountDocumentLedger(ledger) PERSISTENT;
+sumContainerAccountBDocumentLedgerDateTime 'Остаток на начало, тара' (stock, dateTime) = UNION SUM currentSumContainerAccountDocumentLedger(stock) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumContainerAccountDocumentLedger (ledger) AND dateTimeAccountDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedAccountDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+                                                                         BY stockAccountDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumContainerAccountADocumentLedgerDateTime 'Остаток на конец, тара' (departmentStore, dateTime) = UNION SUM currentSumContainerAccountDocumentLedger(departmentStore) AND dateTime IS DATETIME,
+sumContainerAccountADocumentLedgerDateTime 'Остаток на конец, тара' (stock, dateTime) = UNION SUM currentSumContainerAccountDocumentLedger(stock) AND dateTime IS DATETIME,
                                                                          -[GROUP SUM sumContainerAccountDocumentLedger (ledger) AND dateTimeAccountDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedAccountDocumentLedger(ledger)
-                                                                         BY departmentStoreAccountDocumentLedger(ledger), dateTime](departmentStore, dateTime);
+                                                                         BY stockAccountDocumentLedger(ledger), dateTime](stock, dateTime);
 
-sumContainerAccountBDocumentLedgerDate 'Остаток на начало, тара' (departmentStore, date) = UNION SUM currentSumContainerAccountDocumentLedger(departmentStore) AND date IS DATE,
+sumContainerAccountBDocumentLedgerDate 'Остаток на начало, тара' (stock, date) = UNION SUM currentSumContainerAccountDocumentLedger(stock) AND date IS DATE,
                                                                             -[GROUP SUM sumContainerAccountDocumentLedger (ledger) AND dateAccountDocumentLedger(ledger) >= (date AS DATE) AND isPostedAccountDocumentLedger(ledger)
-                                                                            BY departmentStoreAccountDocumentLedger(ledger), date](departmentStore, date) IN ledgerContainerGroup;
+                                                                            BY stockAccountDocumentLedger(ledger), date](stock, date) IN ledgerContainerGroup;
 
-sumContainerAccountADocumentLedgerDate 'Остаток на конец, тара' (departmentStore, date) = UNION SUM currentSumContainerAccountDocumentLedger(departmentStore) AND date IS DATE,
+sumContainerAccountADocumentLedgerDate 'Остаток на конец, тара' (stock, date) = UNION SUM currentSumContainerAccountDocumentLedger(stock) AND date IS DATE,
                                                                            -[GROUP SUM sumContainerAccountDocumentLedger (ledger) AND dateAccountDocumentLedger(ledger) > (date AS DATE) AND isPostedAccountDocumentLedger(ledger)
-                                                                           BY departmentStoreAccountDocumentLedger(ledger), date](departmentStore, date) IN ledgerContainerGroup;
+                                                                           BY stockAccountDocumentLedger(ledger), date](stock, date) IN ledgerContainerGroup;
 
 // -------------------------------------- Подитоги --------------------------------------------- //
 
-subtotalItemIncAccountDocumentDepartmentStoreDateInterval 'Итого с остатком, товар' (departmentStore, dtFrom, dtTo) = UNION SUM
-    sumItemAccountBDocumentLedgerDate(departmentStore, dtFrom) AND dtTo AS DATE,
-    sumItemIncAccountDocumentDepartmentStoreDateInterval(departmentStore, dtFrom, dtTo) IN ledgerItemGroup;
+subtotalItemIncAccountDocumentStockDateInterval 'Итого с остатком, товар' (stock, dtFrom, dtTo) = UNION SUM
+    sumItemAccountBDocumentLedgerDate(stock, dtFrom) AND dtTo AS DATE,
+    sumItemIncAccountDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerItemGroup;
 
-subtotalContainerIncAccountDocumentDepartmentStoreDateInterval 'Итого с остатком, тара' (departmentStore, dtFrom, dtTo) = UNION SUM
-    sumContainerAccountBDocumentLedgerDate(departmentStore, dtFrom) AND dtTo AS DATE,
-    sumContainerIncAccountDocumentDepartmentStoreDateInterval(departmentStore, dtFrom, dtTo) IN ledgerContainerGroup;
+subtotalContainerIncAccountDocumentStockDateInterval 'Итого с остатком, тара' (stock, dtFrom, dtTo) = UNION SUM
+    sumContainerAccountBDocumentLedgerDate(stock, dtFrom) AND dtTo AS DATE,
+    sumContainerIncAccountDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerContainerGroup;
 
 
 // ------------------------------------------- Ответственные лица --------------------------------------------- //
 
-MRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (departmentStore);
-nameMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет' (departmentStore) =
-    commonName (MRPDepartmentStore(departmentStore));
-namePositionMRPDepartmentStore 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
-    namePositionEmployee(MRPDepartmentStore(departmentStore));
-CONSTRAINT MRPDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, MRPDepartmentStore(departmentStore))
-    CHECKED BY MRPDepartmentStore MESSAGE 'МОЛ не сотрудник отдела';
+MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (stock);
+nameMRPStock 'Материально ответственное лицо, подписывающее товарный отчет' (stock) =
+    commonName (MRPStock(stock));
+namePositionMRPStock 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
+    namePositionEmployee(MRPStock(stock));
+CONSTRAINT MRPStock(stock) AND NOT inEmployeeDivisionEmployee(stock, MRPStock(stock))
+    CHECKED BY MRPStock MESSAGE 'МОЛ не сотрудник отдела';
 
-bookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (departmentStore);
-nameBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет' (departmentStore) = commonName(bookkeeperDepartmentStore(departmentStore));
-namePositionBookkeeperDepartmentStore 'Бухгалтер, принимающий товарный отчет (должность)' =
-    namePositionEmployee(bookkeeperDepartmentStore(departmentStore));
-CONSTRAINT bookkeeperDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, bookkeeperDepartmentStore(departmentStore))
-    CHECKED BY bookkeeperDepartmentStore MESSAGE 'Бухгалтер не сотрудник отдела';
+bookkeeperStock 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (stock);
+nameBookkeeperStock 'Бухгалтер, принимающий товарный отчет' (stock) = commonName(bookkeeperStock(stock));
+namePositionBookkeeperStock 'Бухгалтер, принимающий товарный отчет (должность)' =
+    namePositionEmployee(bookkeeperStock(stock));
+CONSTRAINT bookkeeperStock(stock) AND NOT inEmployeeDivisionEmployee(stock, bookkeeperStock(stock))
+    CHECKED BY bookkeeperStock MESSAGE 'Бухгалтер не сотрудник отдела';
 
-personCheckDepartmentStore 'Кто проверяет товарный отчет (ИД)' = DATA employee (departmentStore);
-namePersonCheckDepartmentStore 'Кто проверяет товарный отчет' (departmentStore) = commonName(personCheckDepartmentStore(departmentStore));
-namePositionPersonCheckDepartmentStore 'Кто проверяет товарный отчет (должность)' =
-    namePositionEmployee(personCheckDepartmentStore(departmentStore));
-CONSTRAINT personCheckDepartmentStore(departmentStore) AND NOT inEmployeeDivisionEmployee(departmentStore, personCheckDepartmentStore(departmentStore))
-    CHECKED BY personCheckDepartmentStore MESSAGE 'Проверяющий не сотрудник отдела';
-
-EXTEND FORM departmentStore
-    PROPERTIES(d)   nameMRPDepartmentStore, nameBookkeeperDepartmentStore, namePersonCheckDepartmentStore //namePositionMRPDepartmentStore, namePositionBookkeeperDepartmentStore, namePositionPersonCheckDepartmentStore
-;
+personCheckStock 'Кто проверяет товарный отчет (ИД)' = DATA employee (stock);
+namePersonCheckStock 'Кто проверяет товарный отчет' (stock) = commonName(personCheckStock(stock));
+namePositionPersonCheckStock 'Кто проверяет товарный отчет (должность)' =
+    namePositionEmployee(personCheckStock(stock));
+CONSTRAINT personCheckStock(stock) AND NOT inEmployeeDivisionEmployee(stock, personCheckStock(stock))
+    CHECKED BY personCheckStock MESSAGE 'Проверяющий не сотрудник отдела';
 
 // -------------------------------------- Формы --------------------------------------------- //
 
 FORM sumAccountDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
-            ds = departmentStore FIXED PANEL
+            ds = stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore, UNPDepartmentStore,
-    nameMRPDepartmentStore, namePositionMRPDepartmentStore, nameBookkeeperDepartmentStore,
-    namePositionBookkeeperDepartmentStore, namePersonCheckDepartmentStore, namePositionPersonCheckDepartmentStore
+    PROPERTIES(ds) SELECTOR name, nameCompanyStock, UNPStock,
+    nameMRPStock, namePositionMRPStock, nameBookkeeperStock,
+    namePositionBookkeeperStock, namePersonCheckStock, namePositionPersonCheckStock
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
                sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
-    PROPERTIES(ds, dtFrom, dtTo) countIncAccountDocumentDepartmentStoreDateInterval, countOutAccountDocumentDepartmentStoreDateInterval,
-               sumItemIncAccountDocumentDepartmentStoreDateInterval, sumContainerIncAccountDocumentDepartmentStoreDateInterval,
-               subtotalItemIncAccountDocumentDepartmentStoreDateInterval, subtotalContainerIncAccountDocumentDepartmentStoreDateInterval,
-               sumItemOutAccountDocumentDepartmentStoreDateInterval, sumContainerOutAccountDocumentDepartmentStoreDateInterval
+    PROPERTIES(ds, dtFrom, dtTo) countIncAccountDocumentStockDateInterval, countOutAccountDocumentStockDateInterval,
+               sumItemIncAccountDocumentStockDateInterval, sumContainerIncAccountDocumentStockDateInterval,
+               subtotalItemIncAccountDocumentStockDateInterval, subtotalContainerIncAccountDocumentStockDateInterval,
+               sumItemOutAccountDocumentStoreDateInterval, sumContainerOutAccountDocumentStockDateInterval
 
     OBJECTS il = incAccountDocumentLedger
     PROPERTIES(il) SELECTOR iDateTime = dateTimeAccountDocumentLedger, iObjName = objectClassName, iDescription = descriptionAccountDocumentLedger,
                    sumItemIncAccountDocumentLedger, sumContainerIncAccountDocumentLedger, sumIncAccountDocumentLedger
     FILTERS isPostedAccountDocumentLedger(il),
-            departmentStoreAccountDocumentLedger(il) == ds,
+            stockAccountDocumentLedger(il) == ds,
             dateAccountDocumentLedger(il) >= dtFrom,
             dateAccountDocumentLedger(il) <= dtTo
     ORDER BY iDateTime
@@ -198,7 +194,7 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
     PROPERTIES(ol) SELECTOR oDateTime = dateTimeAccountDocumentLedger, oObjName = objectClassName, oDescription = descriptionAccountDocumentLedger,
                    sumItemOutAccountDocumentLedger, sumContainerOutAccountDocumentLedger, sumOutAccountDocumentLedger
     FILTERS isPostedAccountDocumentLedger(ol),
-            departmentStoreAccountDocumentLedger(ol) == ds,
+            stockAccountDocumentLedger(ol) == ds,
             dateAccountDocumentLedger(ol) >= dtFrom,
             dateAccountDocumentLedger(ol) <= dtTo
     ORDER BY oDateTime
@@ -212,30 +208,30 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
         NEW row1 {
             title = 'МОЛ';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameMRPDepartmentStore(ds)){
+            ADD PROPERTY (nameMRPStock(ds)){
                 caption = 'Имя';
             }
-            ADD PROPERTY (namePositionMRPDepartmentStore(ds)){
+            ADD PROPERTY (namePositionMRPStock(ds)){
                 caption = 'Должность';
             }
         }
         NEW row2 {
             title = 'Проверяющий';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (namePersonCheckDepartmentStore(ds)){
+            ADD PROPERTY (namePersonCheckStock(ds)){
                 caption = 'Имя';
             }
-            ADD PROPERTY (namePositionPersonCheckDepartmentStore(ds)){
+            ADD PROPERTY (namePositionPersonCheckStock(ds)){
                 caption = 'Должность';
             }
         }
         NEW row3{
             title = 'Бухгалтер';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameBookkeeperDepartmentStore(ds)){
+            ADD PROPERTY (nameBookkeeperStock(ds)){
                 caption = 'Имя';
             }
-            ADD PROPERTY (namePositionBookkeeperDepartmentStore(ds)){
+            ADD PROPERTY (namePositionBookkeeperStock(ds)){
                 caption = 'Должность';
             }
         }
@@ -273,9 +269,8 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
          NEW container12 {
             title = 'Организация';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameCompanyDepartmentStore(ds));
-            ADD PROPERTY (nameStoreDepartmentStore(ds));
-            ADD PROPERTY (UNPDepartmentStore(ds));
+            ADD PROPERTY (nameCompanyStock(ds));
+            ADD PROPERTY (UNPStock(ds));
          }
     }
 
@@ -292,10 +287,15 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
 }
 
 // ------------------------------------------ Макросы ----------------------------------------------------- //
-META implementAccountDocumentLedger (concrete)
+META implementAccountDocumentLedger (concrete, stockProp)
     dateTimeAccountDocumentLedger (ledger) += dateTime###concrete(ledger);
     isPostedAccountDocumentLedger (ledger) += isPosted###concrete(ledger);
-    departmentStoreAccountDocumentLedger (ledger) += departmentStore###concrete(ledger);
+    stockAccountDocumentLedger (ledger) += stockProp###concrete(ledger);
     descriptionAccountDocumentLedger (ledger) += description###concrete(ledger);
 END
 
+META extendStockFormAccountDocumentLedger(form, object)
+    EXTEND FORM form
+        PROPERTIES(object)   nameMRPStock, nameBookkeeperStock, namePersonCheckStock //namePositionMRPStock, namePositionBookkeeperStock, namePositionPersonCheckStock
+    ;
+END
