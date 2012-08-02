@@ -2396,7 +2396,7 @@ sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(studyOutput, item);
 
-@implementAccountDocumentLedger(parish);
+@implementAccountDocumentLedger(parish, departmentStore);
 sumIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS parish;
@@ -2430,7 +2430,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityStudyInputDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(studyInput, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStudyInputDetail(ledger);
 
-@implementAccountDocumentLedger(consumption);
+@implementAccountDocumentLedger(consumption, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS consumption;
@@ -2716,7 +2716,7 @@ sumItemShortageCollationSheet 'Сумма недостачи, товар' (colla
 sumContainerShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
     [GROUP SUM sumShortageCollationSheetItem(collationSheet, item) IF includeCollationSheetItem(collationSheet, item) IF isContainerItem(item) BY collationSheet](collationSheet));
 
-@implementAccountDocumentLedger(collationSheet);
+@implementAccountDocumentLedger(collationSheet, departmentStore);
 sumOutAccountDocumentLedger (ledger) += sumShortageCollationSheet(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemShortageCollationSheet(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerShortageCollationSheet(ledger);
@@ -3021,7 +3021,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityStatementDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(statement, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStatementDetail(ledger);
 
-@implementAccountDocumentLedger(statement);
+@implementAccountDocumentLedger(statement, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumStatementDetailStatement(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemStatementDetailStatement(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerStatementDetailStatement(ledger);
@@ -3170,7 +3170,7 @@ sumInSkuLedger (ledger) += retailSumShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
-@implementAccountDocumentLedger(shipment);
+@implementAccountDocumentLedger(shipment, departmentStore);
 sumIncAccountDocumentLedger (ledger) += retailSumShipmentDetailShipment(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumItemShipmentDetailShipment(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerShipmentDetailShipment(ledger);
@@ -3358,7 +3358,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityWastageDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(wastage, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumWastageDetail(ledger);
 
-@implementAccountDocumentLedger(wastage);
+@implementAccountDocumentLedger(wastage, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumWastageDetailWastage(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemWastageDetailWastage(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerWastageDetailWastage(ledger);
@@ -3433,7 +3433,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(writeOff, item, departmentStore);
 sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 
-@implementAccountDocumentLedger(writeOff);
+@implementAccountDocumentLedger(writeOff, departmentStore);
 sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
@@ -3481,7 +3481,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(innerFlow, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumInnerFlowDetail(ledger);
 
-@implementAccountDocumentLedger(innerFlow);
+@implementAccountDocumentLedger(innerFlow, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumInnerFlowDetailInnerFlow(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemInnerFlowDetailInnerFlow(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDetailInnerFlow(ledger);
@@ -3653,7 +3653,7 @@ sumInSkuLedger (ledger) += retailSumInnerArrivalDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(innerArrival, item);
 
-@implementAccountDocumentLedger(innerArrival);
+@implementAccountDocumentLedger(innerArrival, departmentStore);
 sumIncAccountDocumentLedger (ledger) += retailSumInnerArrivalDetailInnerArrival(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumItemInnerArrivalDetailInnerArrival(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerInnerArrivalDetailInnerArrival(ledger);
@@ -3810,7 +3810,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnSupplierDetail(ledger) AND batch == batchReturnSupplierDetail(ledger);
 sumOutSkuLedger (ledger) += retailSumReturnSupplierDetail(ledger);
 
-@implementAccountDocumentLedger(returnSupplier);
+@implementAccountDocumentLedger(returnSupplier, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumReturnSupplierDetailReturnSupplier(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemReturnSupplierDetailReturnSupplier(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerReturnSupplierDetailReturnSupplier(ledger);
@@ -3891,7 +3891,7 @@ descriptionSaleDiscountDocument (saleDiscountDocument) =
     [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterSaleDiscountDocument(saleDiscountDocument), nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
 
-@implementAccountDocumentLedger(saleDiscountDocument);
+@implementAccountDocumentLedger(saleDiscountDocument, departmentStore);
 sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
