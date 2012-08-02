@@ -614,7 +614,7 @@ FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightPriced
     PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, dateArrivalFreight,
-                           nameRouteFreight, nameExporterFreight, freightGrossWeight, descriptionFreight
+                           nameRouteFreight, nameExporterFreight, freightGrossWeight, descriptionFreight, canonicalBrandFreight
     PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument

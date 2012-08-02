@@ -669,6 +669,13 @@ innerInvoicesDeclaration 'Инвойсы' (declaration) = GROUP CONCAT stringInn
     IF inDeclarationInnerInvoice (declaration, innerInvoice), ', ' BY declaration IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 
+quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
+    BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
+
+canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
+    [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , ' BY declaration](declaration))
+    MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
 
 FORM declarationInvoices 'Присоединение инвойсов'
     OBJECTS d=declaration FIXED PANEL
@@ -864,7 +871,7 @@ FORM declarations 'Декларации'
                            dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, rateSumRegistrationDeclaration,
                            dutyDeclaration, VATDeclaration, totalCustomSum, diffDutyDeclararion, diffVATDeclararion, diffDeclaration,
-                           expenseCertificateDeclaration
+                           expenseCertificateDeclaration, canonicalBrandDeclaration
     PROPERTIES(d) FORCE PANEL exportDeclaration, ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail

@@ -161,7 +161,7 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES (c) numberObject, seriesObject
 
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, currentBalanceDeclaration, quantityInputDeclaration
+    PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, currentBalanceDeclaration, quantityInputDeclaration, canonicalBrandDeclaration
     PROPERTIES(d) toFillQuantityInputAllDeclarationDetails
 
     OBJECTS f=freightUnit

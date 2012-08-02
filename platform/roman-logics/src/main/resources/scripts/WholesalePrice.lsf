@@ -192,7 +192,8 @@ toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWS
 FORM priceDeclaration 'Расценка деклараций'
     OBJECTS d = registeredDeclaration
     PROPERTIES(d) READONLY isPriceSetDeclaration BACKGROUND backgroundWholesalePriceSetDocument(d),
-                           sidDeclaration, dateTimeDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration
+                           sidDeclaration, dateTimeDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration,
+                           canonicalBrandDeclaration
     PROPERTIES(d) toCreateWholesalePriceDocument SHOWIF isWholesalePriceSetDocumentDeclaration(d)
 
     FILTERGROUP filtersDocument
