@@ -177,7 +177,7 @@ nameMethodPriceSetDocumentArticle 'Метод расчёта' (basePriceSetDocum
 RRPRatePriceSetDocumentArticle 'Рекомендуемая (руб.)' (basePriceSetDocument, article) = round0(RRPPriceSetDocumentArticle(basePriceSetDocument, article) *
                                                                                                      ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
 
-priceOutRatePriceSetDocumentArticle 'С надбавкой (руб.)' (basePriceSetDocument, article) = round0(priceOutPriceSetDocumentArticle(basePriceSetDocument, article) *
+priceOutRatePriceSetDocumentArticle 'Ценва с надбавкой (руб.)' (basePriceSetDocument, article) = round0(priceOutPriceSetDocumentArticle(basePriceSetDocument, article) *
                                                                                                         ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
 
 
@@ -468,33 +468,6 @@ DESIGN discountPriceSetDocuments FROM DEFAULT {
     }
 }
 
-
-// розничный прайс по фрахту
-toCreatePriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
-    ADDOBJ basePriceSetDocument;
-    FOR p == addedObject() DO {
-        SET freightPriceSetDocument(p) <- freight AS freight;
-        SET priceInPriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
-        SET RRPPriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
-        SET inArticlePriceSetDocument(p, article) <- inFreightArticle(freight, article);
-        FORM priceBaseSetDocument OBJECTS p=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN {
-            EXEC apply();
-        };
-    };
-} TOOLBAR;
-
-FORM freights 'Расценка фрахтов'
-
-    OBJECTS f = freightPriced
-    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, dateArrivalFreight,
-                           nameRouteFreight, nameExporterFreight, freightGrossWeight, descriptionFreight
-    PROPERTIES(f) FORCE PANEL toCreatePriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
-
-    FILTERGROUP filtersDocument
-        FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f) DEFAULT
-;
-
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
     PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
@@ -621,3 +594,29 @@ DESIGN priceSetDocuments FROM DEFAULT {
     }
 
 }
+
+// розничный прайс по фрахту
+createPriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
+    ADDOBJ basePriceSetDocument;
+    FOR p == addedObject() DO {
+        SET freightPriceSetDocument(p) <- freight AS freight;
+        SET priceInPriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
+        SET RRPPriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
+        SET inArticlePriceSetDocument(p, article) <- inFreightArticle(freight, article);
+        FORM priceSetDocument OBJECTS p=addedObject() MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC apply();
+        };
+    };
+} TOOLBAR;
+
+FORM freights 'Расценка фрахтов'
+
+    OBJECTS f = freightPriced
+    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, dateArrivalFreight,
+                           nameRouteFreight, nameExporterFreight, freightGrossWeight, descriptionFreight
+    PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
+
+    FILTERGROUP filtersDocument
+        FILTER 'Показывать нерасценённые фрахты' 'F11' isPriceSetDocumentFreight(f) DEFAULT
+;

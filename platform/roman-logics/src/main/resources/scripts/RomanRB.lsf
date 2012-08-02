@@ -126,7 +126,8 @@ NAVIGATOR {
 //            ADD priceSetDocuments;
             NEW retailPriceBase 'Розничное ценообразование'{
                 ADD coefficientRetails;
-                ADD priceBaseChangeDocuments;
+                ADD priceSetDocuments;
+//                ADD priceBaseChangeDocuments;
                 ADD freights;
                 ADD priceIntervals;
             }
@@ -136,9 +137,9 @@ NAVIGATOR {
                 ADD priceDeclaration;
             }
 
-            NEW discountPrice 'Распродажи' {
-                ADD discountPriceSetDocuments;
-            }
+//            NEW discountPrice 'Распродажи' {
+//                ADD discountPriceSetDocuments;
+//            }
         }
     }
 
