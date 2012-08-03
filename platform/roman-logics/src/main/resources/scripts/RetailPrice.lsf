@@ -614,8 +614,8 @@ DESIGN priceSetDocument FROM DEFAULT {
 }
 
 quantityStorePriceSetDocumentArticle 'Кол-во' (store, priceSetDocument, article) =
-    GROUP SUM balanceBSkuStockDateTime(sku, primaryDepartmentStoreStore(store), dateTimePriceSetDocument(priceSetDocument))
-    BY store, priceSetDocument, articleSku(sku);
+    GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
+    BY storeDepartmentStore(departmentStore), priceSetDocument, articleSku(sku);
 
 countStorePriceSetDocumentArticle(store, priceSetDocument, article) = castToInteger(quantityStorePriceSetDocumentArticle(store, priceSetDocument, article));
 
